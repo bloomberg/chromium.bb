@@ -10,6 +10,7 @@
 #include "cc/animation/animation_player.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/time_util.h"
 #include "cc/layers/layer.h"
@@ -17,7 +18,6 @@
 
 using cc::Animation;
 using cc::AnimationCurve;
-using cc::EaseTimingFunction;
 using cc::FloatKeyframe;
 using cc::KeyframedFloatAnimationCurve;
 using cc::KeyframedTransformAnimationCurve;
@@ -37,7 +37,8 @@ int AddOpacityTransition(Target* target,
 
   std::unique_ptr<TimingFunction> func;
   if (!use_timing_function)
-    func = EaseTimingFunction::Create();
+    func = CubicBezierTimingFunction::CreatePreset(
+        CubicBezierTimingFunction::EaseType::EASE);
   if (duration > 0.0)
     curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), start_opacity,
                                              std::move(func)));

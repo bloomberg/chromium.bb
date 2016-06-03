@@ -69,38 +69,6 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
   DISALLOW_ASSIGN(CubicBezierTimingFunction);
 };
 
-class CC_EXPORT EaseTimingFunction {
- public:
-  static std::unique_ptr<TimingFunction> Create();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseTimingFunction);
-};
-
-class CC_EXPORT EaseInTimingFunction {
- public:
-  static std::unique_ptr<TimingFunction> Create();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseInTimingFunction);
-};
-
-class CC_EXPORT EaseOutTimingFunction {
- public:
-  static std::unique_ptr<TimingFunction> Create();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseOutTimingFunction);
-};
-
-class CC_EXPORT EaseInOutTimingFunction {
- public:
-  static std::unique_ptr<TimingFunction> Create();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(EaseInOutTimingFunction);
-};
-
 class CC_EXPORT StepsTimingFunction : public TimingFunction {
  public:
   // Web Animations specification, 3.12.4. Timing in discrete steps.

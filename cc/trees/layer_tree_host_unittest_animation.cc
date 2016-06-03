@@ -725,7 +725,8 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
         std::unique_ptr<ScrollOffsetAnimationCurve> curve(
             ScrollOffsetAnimationCurve::Create(
                 gfx::ScrollOffset(500.f, 550.f),
-                EaseInOutTimingFunction::Create()));
+                CubicBezierTimingFunction::CreatePreset(
+                    CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
         std::unique_ptr<Animation> animation(Animation::Create(
             std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
         animation->set_needs_synchronized_start_time(true);
@@ -940,8 +941,10 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
-                                           EaseInOutTimingFunction::Create()));
+        ScrollOffsetAnimationCurve::Create(
+            gfx::ScrollOffset(6500.f, 7500.f),
+            CubicBezierTimingFunction::CreatePreset(
+                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
     std::unique_ptr<Animation> animation(Animation::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     animation->set_needs_synchronized_start_time(true);

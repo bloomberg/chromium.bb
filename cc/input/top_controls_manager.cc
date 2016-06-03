@@ -202,7 +202,8 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   top_controls_animation_->AddKeyframe(FloatKeyframe::Create(
       start_time + base::TimeDelta::FromMilliseconds(kShowHideMaxDurationMs),
       TopControlsShownRatio() + max_ending_ratio,
-      EaseTimingFunction::Create()));
+      CubicBezierTimingFunction::CreatePreset(
+          CubicBezierTimingFunction::EaseType::EASE)));
   animation_direction_ = direction;
   client_->DidChangeTopControlsPosition();
 }

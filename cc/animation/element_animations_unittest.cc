@@ -268,8 +268,9 @@ TEST_F(ElementAnimationsTest,
 
   // Animation with initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve_fixed(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   curve_fixed->SetInitialValue(initial_value);
   const int animation1_id = 1;
   std::unique_ptr<Animation> animation_fixed(Animation::Create(
@@ -284,8 +285,9 @@ TEST_F(ElementAnimationsTest,
 
   // Animation without initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   const int animation2_id = 2;
   std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), animation2_id, 0, TargetProperty::SCROLL_OFFSET));
@@ -762,8 +764,9 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
 
   std::unique_ptr<Animation> animation(
       Animation::Create(std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
@@ -840,8 +843,9 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   curve->SetInitialValue(initial_value);
   double duration_in_seconds = curve->Duration().InSecondsF();
 
@@ -899,8 +903,9 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   gfx::ScrollOffset initial_value(500.f, 100.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
 
   std::unique_ptr<Animation> animation(
       Animation::Create(std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
@@ -987,8 +992,9 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   // First test the 1-argument version of RemoveAnimation.
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
 
   int animation_id = 1;
   std::unique_ptr<Animation> animation(Animation::Create(
@@ -1011,8 +1017,9 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   EXPECT_FALSE(animations_impl->scroll_offset_animation_was_interrupted());
 
   // Now, test the 2-argument version of RemoveAnimation.
-  curve = ScrollOffsetAnimationCurve::Create(target_value,
-                                             EaseInOutTimingFunction::Create());
+  curve = ScrollOffsetAnimationCurve::Create(
+      target_value, CubicBezierTimingFunction::CreatePreset(
+                        CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
   animation = Animation::Create(std::move(curve), animation_id, 0,
                                 TargetProperty::SCROLL_OFFSET);
   animation->set_needs_synchronized_start_time(true);
@@ -1088,8 +1095,9 @@ TEST_F(ElementAnimationsTest,
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   curve->SetInitialValue(initial_value);
   TimeDelta duration = curve->Duration();
   std::unique_ptr<Animation> to_add(
@@ -1909,8 +1917,9 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(target_value,
-                                         EaseInOutTimingFunction::Create()));
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
   curve->SetInitialValue(initial_value);
   std::unique_ptr<Animation> animation(Animation::Create(
       std::move(curve), animation_id, 0, TargetProperty::SCROLL_OFFSET));

@@ -8931,7 +8931,9 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
 
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
-  std::unique_ptr<TimingFunction> func = EaseTimingFunction::Create();
+  std::unique_ptr<TimingFunction> func =
+      CubicBezierTimingFunction::CreatePreset(
+          CubicBezierTimingFunction::EaseType::EASE);
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta(), 0.9f, std::move(func)));
   curve->AddKeyframe(

@@ -18,19 +18,21 @@ TimingFunction::~TimingFunction() {}
 
 std::unique_ptr<TimingFunction> CubicBezierTimingFunction::CreatePreset(
     EaseType ease_type) {
+  // These numbers come from
+  // http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
   switch (ease_type) {
     case EaseType::EASE:
       return base::WrapUnique(
-          new CubicBezierTimingFunction(EaseType::EASE, 0.25, 0.1, 0.25, 1.0));
+          new CubicBezierTimingFunction(ease_type, 0.25, 0.1, 0.25, 1.0));
     case EaseType::EASE_IN:
-      return base::WrapUnique(new CubicBezierTimingFunction(
-          EaseType::EASE_IN, 0.42, 0.0, 1.0, 1.0));
+      return base::WrapUnique(
+          new CubicBezierTimingFunction(ease_type, 0.42, 0.0, 1.0, 1.0));
     case EaseType::EASE_OUT:
-      return base::WrapUnique(new CubicBezierTimingFunction(
-          EaseType::EASE_OUT, 0.0, 0.0, 0.58, 1.0));
+      return base::WrapUnique(
+          new CubicBezierTimingFunction(ease_type, 0.0, 0.0, 0.58, 1.0));
     case EaseType::EASE_IN_OUT:
-      return base::WrapUnique(new CubicBezierTimingFunction(
-          EaseType::EASE_IN_OUT, 0.42, 0.0, 0.58, 1));
+      return base::WrapUnique(
+          new CubicBezierTimingFunction(ease_type, 0.42, 0.0, 0.58, 1));
     default:
       NOTREACHED();
       return nullptr;
@@ -72,27 +74,6 @@ std::unique_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
   return base::WrapUnique(new CubicBezierTimingFunction(*this));
 }
 
-// These numbers come from
-// http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
-std::unique_ptr<TimingFunction> EaseTimingFunction::Create() {
-  return CubicBezierTimingFunction::CreatePreset(
-      CubicBezierTimingFunction::EaseType::EASE);
-}
-
-std::unique_ptr<TimingFunction> EaseInTimingFunction::Create() {
-  return CubicBezierTimingFunction::CreatePreset(
-      CubicBezierTimingFunction::EaseType::EASE_IN);
-}
-
-std::unique_ptr<TimingFunction> EaseOutTimingFunction::Create() {
-  return CubicBezierTimingFunction::CreatePreset(
-      CubicBezierTimingFunction::EaseType::EASE_OUT);
-}
-
-std::unique_ptr<TimingFunction> EaseInOutTimingFunction::Create() {
-  return CubicBezierTimingFunction::CreatePreset(
-      CubicBezierTimingFunction::EaseType::EASE_IN_OUT);
-}
 
 std::unique_ptr<StepsTimingFunction> StepsTimingFunction::Create(
     int steps,

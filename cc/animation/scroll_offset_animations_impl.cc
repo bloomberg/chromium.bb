@@ -39,7 +39,8 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
     const gfx::ScrollOffset& current_offset) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve =
       ScrollOffsetAnimationCurve::Create(
-          target_offset, EaseInOutTimingFunction::Create(),
+          target_offset, CubicBezierTimingFunction::CreatePreset(
+                             CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
           ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
   curve->SetInitialValue(current_offset);
 

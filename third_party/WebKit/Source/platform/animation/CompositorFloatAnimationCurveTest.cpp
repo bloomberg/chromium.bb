@@ -119,7 +119,7 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction)
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
-        cc::EaseTimingFunction::Create());
+        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE));
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->GetValue(time), curve->getValue(time));
@@ -147,7 +147,7 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction)
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
-        cc::EaseInTimingFunction::Create());
+        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE_IN));
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->GetValue(time), curve->getValue(time));
@@ -162,7 +162,7 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction)
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
-        cc::EaseOutTimingFunction::Create());
+        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE_OUT));
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->GetValue(time), curve->getValue(time));
@@ -177,7 +177,7 @@ TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction)
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
-        cc::EaseInOutTimingFunction::Create());
+        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->GetValue(time), curve->getValue(time));
@@ -211,7 +211,7 @@ TEST(WebFloatAnimationCurveTest, DefaultTimingFunction)
     curve->addLinearKeyframe(CompositorFloatKeyframe(1, 1));
 
     std::unique_ptr<cc::TimingFunction> timingFunction(
-        cc::EaseTimingFunction::Create());
+        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE));
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->GetValue(time), curve->getValue(time));
