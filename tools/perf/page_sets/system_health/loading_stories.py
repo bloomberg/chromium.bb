@@ -293,7 +293,7 @@ class _LoadCase(page_module.Page):
     name = 'load:%s:%s' % (group, page_spec.name)
     super(_LoadCase, self).__init__(
         page_set=story_set, name=name, url=url,
-        credentials_path='data/credentials.json',
+        credentials_path='../data/credentials.json',
         grouping_keys={'case': 'load', 'group': group})
     self._page_spec = page_spec
 
@@ -335,7 +335,8 @@ class _MemorySystemHealthStorySet(story.StorySet):
 
   def __init__(self):
     super(_MemorySystemHealthStorySet, self).__init__(
-        archive_data_file='data/memory_system_health_%s.json' % self.PLATFORM,
+        archive_data_file=('../data/memory_system_health_%s.json' %
+                           self.PLATFORM),
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     for group_name, page_specs in _SINGLE_PAGE_SPECS.iteritems():
