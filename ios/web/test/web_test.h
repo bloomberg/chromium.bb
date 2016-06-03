@@ -84,6 +84,9 @@ class WebTestWithWebController : public WebTest,
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
+  // Returns web state for this web controller.
+  web::WebState* web_state();
+
   // The web controller for testing.
   base::WeakNSObject<CRWWebController> webController_;
   // true if a task has been processed.

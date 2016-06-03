@@ -201,6 +201,10 @@ void WebTestWithWebController::DidProcessTask(
   processed_a_task_ = true;
 }
 
+web::WebState* WebTestWithWebController::web_state() {
+  return web_state_impl_.get();
+}
+
 bool WebTestWithWebController::ResetPageIfNavigationStalled(
     NSString* load_check) {
   NSString* inner_html = EvaluateJavaScriptAsString(
