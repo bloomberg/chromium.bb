@@ -139,10 +139,10 @@ TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
   base::DictionaryValue* feature2 = new base::DictionaryValue();
   feature2->SetString("channel", "trunk");
   base::ListValue* extension_types = new base::ListValue();
-  extension_types->Append(new base::StringValue("extension"));
+  extension_types->AppendString("extension");
   feature2->Set("extension_types", extension_types);
   base::ListValue* contexts = new base::ListValue();
-  contexts->Append(new base::StringValue("blessed_extension"));
+  contexts->AppendString("blessed_extension");
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 

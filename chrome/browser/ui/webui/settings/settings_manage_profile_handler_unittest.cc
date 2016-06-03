@@ -73,9 +73,8 @@ class ManageProfileHandlerTest : public testing::Test {
 
 TEST_F(ManageProfileHandlerTest, HandleSetProfileIconAndName) {
   base::ListValue list_args;
-  list_args.Append(
-      new base::StringValue("chrome://theme/IDR_PROFILE_AVATAR_15"));
-  list_args.Append(new base::StringValue("New Profile Name"));
+  list_args.AppendString("chrome://theme/IDR_PROFILE_AVATAR_15");
+  list_args.AppendString("New Profile Name");
   handler()->HandleSetProfileIconAndName(&list_args);
 
   PrefService* pref_service = profile()->GetPrefs();
@@ -88,7 +87,7 @@ TEST_F(ManageProfileHandlerTest, HandleSetProfileIconAndName) {
 
 TEST_F(ManageProfileHandlerTest, HandleGetAvailableIcons) {
   base::ListValue list_args;
-  list_args.Append(new base::StringValue("get-icons-callback-id"));
+  list_args.AppendString("get-icons-callback-id");
   handler()->HandleGetAvailableIcons(&list_args);
 
   EXPECT_EQ(1U, web_ui()->call_data().size());

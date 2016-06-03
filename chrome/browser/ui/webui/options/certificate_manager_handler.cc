@@ -1181,7 +1181,7 @@ void CertificateManagerHandler::PopulateTree(
     std::sort(nodes->begin(), nodes->end(), comparator);
 
     base::ListValue args;
-    args.Append(new base::StringValue(tree_name));
+    args.AppendString(tree_name);
     args.Append(nodes);
     web_ui()->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
   }

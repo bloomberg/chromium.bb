@@ -497,7 +497,7 @@ bool GenerateInfoSpec(const std::string& values, int* result) {
   for (const std::string& cur :
        base::SplitString(values, ",", base::KEEP_WHITESPACE,
                          base::SPLIT_WANT_NONEMPTY))
-    list_value.Append(new base::StringValue(cur));
+    list_value.AppendString(cur);
   return ExtraInfoSpec::InitFromValue(list_value, result);
 }
 
@@ -1262,11 +1262,11 @@ TEST(ExtensionWebRequestHelpersTest,
 
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
   base::ListValue list_value;
-  list_value.Append(new base::FundamentalValue('1'));
-  list_value.Append(new base::FundamentalValue('2'));
-  list_value.Append(new base::FundamentalValue('3'));
-  list_value.Append(new base::FundamentalValue(0xFE));
-  list_value.Append(new base::FundamentalValue(0xD1));
+  list_value.AppendInteger('1');
+  list_value.AppendInteger('2');
+  list_value.AppendInteger('3');
+  list_value.AppendInteger(0xFE);
+  list_value.AppendInteger(0xD1);
 
   unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
   std::string string_value(reinterpret_cast<char *>(char_value), 5);

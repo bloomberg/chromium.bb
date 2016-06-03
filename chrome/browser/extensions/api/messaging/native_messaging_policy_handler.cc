@@ -82,7 +82,7 @@ bool NativeMessagingHostListPolicyHandler::CheckAndGetList(
                        IDS_POLICY_VALUE_FORMAT_ERROR);
       continue;
     }
-    filtered_list->Append(new base::StringValue(name));
+    filtered_list->AppendString(name);
   }
 
   if (names)

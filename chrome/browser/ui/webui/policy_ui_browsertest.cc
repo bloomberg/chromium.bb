@@ -215,9 +215,9 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
 
   // Set the values of four existing policies.
   std::unique_ptr<base::ListValue> restore_on_startup_urls(new base::ListValue);
-  restore_on_startup_urls->Append(new base::StringValue("aaa"));
-  restore_on_startup_urls->Append(new base::StringValue("bbb"));
-  restore_on_startup_urls->Append(new base::StringValue("ccc"));
+  restore_on_startup_urls->AppendString("aaa");
+  restore_on_startup_urls->AppendString("bbb");
+  restore_on_startup_urls->AppendString("ccc");
   values.Set(policy::key::kRestoreOnStartupURLs, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
              std::move(restore_on_startup_urls), nullptr);

@@ -364,7 +364,7 @@ Status ExecuteSwitchToFrame(Session* session,
     } else {
       return Status(kUnknownError, "invalid 'id'");
     }
-    args.Append(new base::StringValue(xpath));
+    args.AppendString(xpath);
   }
   std::string frame;
   Status status = web_view->GetFrameByFunction(
@@ -750,7 +750,7 @@ Status ExecuteGetStorageItem(const char* storage,
   if (!params.GetString("key", &key))
     return Status(kUnknownError, "'key' must be a string");
   base::ListValue args;
-  args.Append(new base::StringValue(key));
+  args.AppendString(key);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       base::StringPrintf("function(key) { return %s[key]; }", storage),
@@ -789,8 +789,8 @@ Status ExecuteSetStorageItem(const char* storage,
   if (!params.GetString("value", &storage_value))
     return Status(kUnknownError, "'value' must be a string");
   base::ListValue args;
-  args.Append(new base::StringValue(key));
-  args.Append(new base::StringValue(storage_value));
+  args.AppendString(key);
+  args.AppendString(storage_value);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       base::StringPrintf("function(key, value) { %s[key] = value; }", storage),
@@ -808,7 +808,7 @@ Status ExecuteRemoveStorageItem(const char* storage,
   if (!params.GetString("key", &key))
     return Status(kUnknownError, "'key' must be a string");
   base::ListValue args;
-  args.Append(new base::StringValue(key));
+  args.AppendString(key);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       base::StringPrintf("function(key) { %s.removeItem(key) }", storage),

@@ -325,7 +325,7 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
     std::unique_ptr<base::ListValue> permissions_list(new base::ListValue());
     for (std::set<std::string>::const_iterator i = permissions.begin();
         i != permissions.end(); ++i) {
-      permissions_list->Append(new base::StringValue(*i));
+      permissions_list->AppendString(*i);
     }
     manifest.Set("permissions", permissions_list.release());
   }
@@ -444,7 +444,7 @@ scoped_refptr<Extension> CreatePackagedAppWithPermissions(
   base::DictionaryValue* app = new base::DictionaryValue();
   base::DictionaryValue* background = new base::DictionaryValue();
   base::ListValue* scripts = new base::ListValue();
-  scripts->Append(new base::StringValue("test.js"));
+  scripts->AppendString("test.js");
   background->Set("scripts", scripts);
   app->Set("background", background);
   values.Set(manifest_keys::kApp, app);
@@ -452,7 +452,7 @@ scoped_refptr<Extension> CreatePackagedAppWithPermissions(
     std::unique_ptr<base::ListValue> permissions_list(new base::ListValue());
     for (std::set<std::string>::const_iterator i = permissions.begin();
         i != permissions.end(); ++i) {
-      permissions_list->Append(new base::StringValue(*i));
+      permissions_list->AppendString(*i);
     }
     values.Set("permissions", permissions_list.release());
   }
@@ -685,7 +685,7 @@ TEST(ExtensionAPITest, FeaturesRequireContexts) {
   base::DictionaryValue* test1 = new base::DictionaryValue();
   base::DictionaryValue* test2 = new base::DictionaryValue();
   base::ListValue* contexts = new base::ListValue();
-  contexts->Append(new base::StringValue("content_script"));
+  contexts->AppendString("content_script");
   test1->Set("contexts", contexts);
   test1->SetString("channel", "stable");
   test2->SetString("channel", "stable");

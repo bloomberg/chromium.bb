@@ -138,7 +138,7 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   base::ListValue* languages_list = new base::ListValue();
   for (std::vector<std::string>::iterator it = languages.begin();
        it != languages.end(); ++it) {
-    languages_list->Append(new base::StringValue(*it));
+    languages_list->AppendString(*it);
   }
 
   localized_strings->Set("translateSupportedLanguages", languages_list);

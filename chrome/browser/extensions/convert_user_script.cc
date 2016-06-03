@@ -103,7 +103,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   root->SetBoolean(keys::kConvertedFromUserScript, true);
 
   base::ListValue* js_files = new base::ListValue();
-  js_files->Append(new base::StringValue("script.js"));
+  js_files->AppendString("script.js");
 
   // If the script provides its own match patterns, we use those. Otherwise, we
   // generate some using the include globs.
@@ -111,12 +111,12 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   if (!script.url_patterns().is_empty()) {
     for (URLPatternSet::const_iterator i = script.url_patterns().begin();
          i != script.url_patterns().end(); ++i) {
-      matches->Append(new base::StringValue(i->GetAsString()));
+      matches->AppendString(i->GetAsString());
     }
   } else {
     // TODO(aa): Derive tighter matches where possible.
-    matches->Append(new base::StringValue("http://*/*"));
-    matches->Append(new base::StringValue("https://*/*"));
+    matches->AppendString("http://*/*");
+    matches->AppendString("https://*/*");
   }
 
   // Read the exclude matches, if any are present.
@@ -125,17 +125,17 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     for (URLPatternSet::const_iterator i =
          script.exclude_url_patterns().begin();
          i != script.exclude_url_patterns().end(); ++i) {
-      exclude_matches->Append(new base::StringValue(i->GetAsString()));
+      exclude_matches->AppendString(i->GetAsString());
     }
   }
 
   base::ListValue* includes = new base::ListValue();
   for (size_t i = 0; i < script.globs().size(); ++i)
-    includes->Append(new base::StringValue(script.globs().at(i)));
+    includes->AppendString(script.globs().at(i));
 
   base::ListValue* excludes = new base::ListValue();
   for (size_t i = 0; i < script.exclude_globs().size(); ++i)
-    excludes->Append(new base::StringValue(script.exclude_globs().at(i)));
+    excludes->AppendString(script.exclude_globs().at(i));
 
   base::DictionaryValue* content_script = new base::DictionaryValue();
   content_script->Set(keys::kMatches, matches);

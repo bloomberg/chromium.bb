@@ -98,7 +98,7 @@ bool WebstoreInlineInstallerTest::TestMultipleVerifiedSites(
   base::ListValue* sites = new base::ListValue();
   for (std::vector<std::string>::const_iterator it = verified_sites.begin();
        it != verified_sites.end(); ++it) {
-    sites->Append(new base::StringValue(*it));
+    sites->AppendString(*it);
   }
   base::DictionaryValue webstore_data;
   webstore_data.Set("verified_sites", sites);

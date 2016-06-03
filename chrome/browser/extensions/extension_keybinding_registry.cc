@@ -120,7 +120,7 @@ void ExtensionKeybindingRegistry::CommandExecuted(
     granter->GrantIfRequested(extension);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::StringValue(command));
+  args->AppendString(command);
 
   std::unique_ptr<Event> event(new Event(events::COMMANDS_ON_COMMAND,
                                          kOnCommandEventName, std::move(args)));

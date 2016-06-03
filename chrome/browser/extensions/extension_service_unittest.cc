@@ -747,7 +747,7 @@ class ExtensionServiceTest
     base::ListValue* list_value = new base::ListValue();
     for (std::set<std::string>::const_iterator iter = value.begin();
          iter != value.end(); ++iter)
-      list_value->Append(new base::StringValue(*iter));
+      list_value->AppendString(*iter);
 
     SetPref(extension_id, pref_path, list_value, msg);
   }
@@ -1644,8 +1644,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   host_permissions.insert("http://*.google.com.hk/*");
 
   base::ListValue* api_permissions = new base::ListValue();
-  api_permissions->Append(
-      new base::StringValue("tabs"));
+  api_permissions->AppendString("tabs");
   SetPref(extension_id, "granted_permissions.api",
           api_permissions, "granted_permissions.api");
   SetPrefStringSet(

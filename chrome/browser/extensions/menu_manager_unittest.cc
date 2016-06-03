@@ -225,16 +225,12 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   ASSERT_TRUE(contexts.ToValue()->GetAsInteger(&contexts_value));
 
   base::ListValue* document_url_patterns(new base::ListValue());
-  document_url_patterns->Append(
-      new base::StringValue("http://www.google.com/*"));
-  document_url_patterns->Append(
-      new base::StringValue("http://www.reddit.com/*"));
+  document_url_patterns->AppendString("http://www.google.com/*");
+  document_url_patterns->AppendString("http://www.reddit.com/*");
 
   base::ListValue* target_url_patterns(new base::ListValue());
-  target_url_patterns->Append(
-      new base::StringValue("http://www.yahoo.com/*"));
-  target_url_patterns->Append(
-      new base::StringValue("http://www.facebook.com/*"));
+  target_url_patterns->AppendString("http://www.yahoo.com/*");
+  target_url_patterns->AppendString("http://www.facebook.com/*");
 
   base::DictionaryValue value;
   value.SetBoolean("incognito", incognito);

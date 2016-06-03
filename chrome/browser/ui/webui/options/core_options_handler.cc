@@ -357,7 +357,7 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
             PreferenceCallbackMap::const_iterator> range =
       pref_callback_map_.equal_range(name);
   base::ListValue result_value;
-  result_value.Append(new base::StringValue(name));
+  result_value.AppendString(name);
   result_value.Append(value.release());
   for (PreferenceCallbackMap::const_iterator iter = range.first;
        iter != range.second; ++iter) {

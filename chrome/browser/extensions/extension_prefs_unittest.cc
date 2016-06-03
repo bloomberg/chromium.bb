@@ -171,9 +171,9 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
         permission_info->CreateAPIPermission());
     {
       std::unique_ptr<base::ListValue> value(new base::ListValue());
-      value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
-      value->Append(new base::StringValue("udp-bind::8080"));
-      value->Append(new base::StringValue("udp-send-to::8888"));
+      value->AppendString("tcp-connect:*.example.com:80");
+      value->AppendString("udp-bind::8080");
+      value->AppendString("udp-send-to::8888");
       ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
     }
     api_perm_set1_.insert(permission.release());

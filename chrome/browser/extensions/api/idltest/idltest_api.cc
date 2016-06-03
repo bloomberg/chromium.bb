@@ -20,7 +20,7 @@ std::unique_ptr<base::ListValue> CopyBinaryValueToIntegerList(
   std::unique_ptr<base::ListValue> output(new base::ListValue());
   const char* input_buffer = input->GetBuffer();
   for (size_t i = 0; i < input->GetSize(); i++) {
-    output->Append(new base::FundamentalValue(input_buffer[i]));
+    output->AppendInteger(input_buffer[i]);
   }
   return output;
 }

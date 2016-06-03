@@ -2001,10 +2001,10 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
     base::ListValue* option = new base::ListValue();
     double factor = *i;
     int percent = static_cast<int>(factor * 100 + 0.5);
-    option->Append(new base::StringValue(base::FormatPercent(percent)));
-    option->Append(new base::FundamentalValue(factor));
+    option->AppendString(base::FormatPercent(percent));
+    option->AppendDouble(factor);
     bool selected = content::ZoomValuesEqual(factor, default_zoom_factor);
-    option->Append(new base::FundamentalValue(selected));
+    option->AppendBoolean(selected);
     zoom_factors_value.Append(option);
   }
 

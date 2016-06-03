@@ -289,7 +289,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
     manifest.SetString(manifest_keys::kName, kTestExtensionName);
     base::ListValue* permission_list = new base::ListValue;
-    permission_list->Append(new base::StringValue("gcm"));
+    permission_list->AppendString("gcm");
     manifest.Set(manifest_keys::kPermissions, permission_list);
 
     std::string error;

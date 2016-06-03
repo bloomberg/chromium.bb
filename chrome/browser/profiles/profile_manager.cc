@@ -1070,7 +1070,7 @@ void ProfileManager::Observe(
           profile_path !=
               base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
         profile_paths.insert(profile_path);
-        profile_list->Append(new base::StringValue(profile_path));
+        profile_list->AppendString(profile_path);
       }
     }
   }

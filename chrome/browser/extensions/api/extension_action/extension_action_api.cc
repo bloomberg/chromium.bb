@@ -551,14 +551,10 @@ bool ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
 bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
-  list->Append(
-      new base::FundamentalValue(static_cast<int>(SkColorGetR(color))));
-  list->Append(
-      new base::FundamentalValue(static_cast<int>(SkColorGetG(color))));
-  list->Append(
-      new base::FundamentalValue(static_cast<int>(SkColorGetB(color))));
-  list->Append(
-      new base::FundamentalValue(static_cast<int>(SkColorGetA(color))));
+  list->AppendInteger(static_cast<int>(SkColorGetR(color)));
+  list->AppendInteger(static_cast<int>(SkColorGetG(color)));
+  list->AppendInteger(static_cast<int>(SkColorGetB(color)));
+  list->AppendInteger(static_cast<int>(SkColorGetA(color)));
   SetResult(std::move(list));
   return true;
 }

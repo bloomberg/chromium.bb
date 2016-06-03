@@ -175,8 +175,8 @@ TEST_F(SigninSupervisedUserImportHandlerTest, NotAuthenticated) {
 
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(kTestCallbackId));
-  list_args.Append(new base::StringValue(profile()->GetPath().AsUTF16Unsafe()));
+  list_args.AppendString(kTestCallbackId);
+  list_args.AppendString(profile()->GetPath().AsUTF16Unsafe());
   handler()->GetExistingSupervisedUsers(&list_args);
 
   // Expect an error response.
@@ -199,8 +199,8 @@ TEST_F(SigninSupervisedUserImportHandlerTest, AuthError) {
 
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(kTestCallbackId));
-  list_args.Append(new base::StringValue(profile()->GetPath().AsUTF16Unsafe()));
+  list_args.AppendString(kTestCallbackId);
+  list_args.AppendString(profile()->GetPath().AsUTF16Unsafe());
   handler()->GetExistingSupervisedUsers(&list_args);
 
   // Expect an error response.
@@ -225,8 +225,8 @@ TEST_F(SigninSupervisedUserImportHandlerTest, CustodianIsSupervised) {
 
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(kTestCallbackId));
-  list_args.Append(new base::StringValue(profile_->GetPath().AsUTF16Unsafe()));
+  list_args.AppendString(kTestCallbackId);
+  list_args.AppendString(profile_->GetPath().AsUTF16Unsafe());
   handler()->GetExistingSupervisedUsers(&list_args);
 
   // Expect to do nothing.
@@ -236,8 +236,8 @@ TEST_F(SigninSupervisedUserImportHandlerTest, CustodianIsSupervised) {
 TEST_F(SigninSupervisedUserImportHandlerTest, SendExistingSupervisedUsers) {
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(kTestCallbackId));
-  list_args.Append(new base::StringValue(profile()->GetPath().AsUTF16Unsafe()));
+  list_args.AppendString(kTestCallbackId);
+  list_args.AppendString(profile()->GetPath().AsUTF16Unsafe());
   handler()->GetExistingSupervisedUsers(&list_args);
 
   // Expect a success response.

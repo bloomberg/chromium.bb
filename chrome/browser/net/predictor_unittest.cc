@@ -81,8 +81,7 @@ static base::ListValue* FindSerializationMotivation(
 // Create a new empty serialization list.
 static base::ListValue* NewEmptySerializationList() {
   base::ListValue* list = new base::ListValue;
-  list->Append(
-      new base::FundamentalValue(Predictor::kPredictorReferrerVersion));
+  list->AppendInteger(Predictor::kPredictorReferrerVersion);
   return list;
 }
 
@@ -99,7 +98,7 @@ static void AddToSerializedList(const GURL& motivation,
   if (!motivation_list) {
     // This is the first mention of this motivation, so build a list.
     motivation_list = new base::ListValue;
-    motivation_list->Append(new base::StringValue(motivation.spec()));
+    motivation_list->AppendString(motivation.spec());
     // Provide empty subresource list.
     motivation_list->Append(new base::ListValue());
 
@@ -115,8 +114,8 @@ static void AddToSerializedList(const GURL& motivation,
   // case, during deserialization, the latency value we supply plus the
   // existing value(s) will be added to the referrer.
 
-  subresource_list->Append(new base::StringValue(subresource.spec()));
-  subresource_list->Append(new base::FundamentalValue(use_rate));
+  subresource_list->AppendString(subresource.spec());
+  subresource_list->AppendDouble(use_rate);
 }
 
 // For a given motivation, and subresource, find what latency is currently

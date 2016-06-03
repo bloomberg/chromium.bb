@@ -469,8 +469,8 @@ void PreferencesBrowserTest::UseDefaultTestPrefs(bool includeListPref) {
     pref_names_.push_back(prefs::kURLsToRestoreOnStartup);
     policy_names_.push_back(policy::key::kRestoreOnStartupURLs);
     base::ListValue* list = new base::ListValue;
-    list->Append(new base::StringValue("http://www.example.com"));
-    list->Append(new base::StringValue("http://example.com"));
+    list->AppendString("http://www.example.com");
+    list->AppendString("http://example.com");
     non_default_values_.push_back(list);
   }
 

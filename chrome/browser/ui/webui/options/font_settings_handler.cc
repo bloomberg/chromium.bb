@@ -208,7 +208,7 @@ void FontSettingsHandler::FontsListHasLoaded(
     bool has_value = font->GetString(1, &value);
     DCHECK(has_value);
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(value);
-    font->Append(new base::StringValue(has_rtl_chars ? "rtl" : "ltr"));
+    font->AppendString(has_rtl_chars ? "rtl" : "ltr");
   }
 
   base::ListValue encoding_list;
@@ -230,27 +230,27 @@ void FontSettingsHandler::FontsListHasLoaded(
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
       base::string16 name = it->encoding_display_name;
       bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(name);
-      option->Append(new base::StringValue(encoding));
-      option->Append(new base::StringValue(name));
-      option->Append(new base::StringValue(has_rtl_chars ? "rtl" : "ltr"));
+      option->AppendString(encoding);
+      option->AppendString(name);
+      option->AppendString(has_rtl_chars ? "rtl" : "ltr");
     } else {
       // Add empty name/value to indicate a separator item.
-      option->Append(new base::StringValue(std::string()));
-      option->Append(new base::StringValue(std::string()));
+      option->AppendString(std::string());
+      option->AppendString(std::string());
     }
     encoding_list.Append(option);
   }
 
   base::ListValue selected_values;
-  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
-      standard_font_.GetValue())));
-  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
-      serif_font_.GetValue())));
-  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
-      sans_serif_font_.GetValue())));
-  selected_values.Append(new base::StringValue(MaybeGetLocalizedFontName(
-      fixed_font_.GetValue())));
-  selected_values.Append(new base::StringValue(font_encoding_.GetValue()));
+  selected_values.AppendString(
+      MaybeGetLocalizedFontName(standard_font_.GetValue()));
+  selected_values.AppendString(
+      MaybeGetLocalizedFontName(serif_font_.GetValue()));
+  selected_values.AppendString(
+      MaybeGetLocalizedFontName(sans_serif_font_.GetValue()));
+  selected_values.AppendString(
+      MaybeGetLocalizedFontName(fixed_font_.GetValue()));
+  selected_values.AppendString(font_encoding_.GetValue());
 
   web_ui()->CallJavascriptFunction("FontSettings.setFontsData",
                                    *list.get(), encoding_list,

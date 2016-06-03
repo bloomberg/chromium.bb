@@ -232,9 +232,9 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   for (std::vector<std::string>::iterator it = languages.begin();
        it != languages.end(); ++it) {
     const std::string& lang = *it;
-    languages_list->Append(new base::StringValue(lang));
+    languages_list->AppendString(lang);
     if (translate::TranslateDownloadManager::IsAlphaLanguage(lang))
-      alpha_languages_list->Append(new base::StringValue(lang));
+      alpha_languages_list->AppendString(lang);
   }
 
   dict.Set("languages", languages_list);

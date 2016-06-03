@@ -121,13 +121,13 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
   dict->SetString(keys::kTransitionTypeKey, transition_type_string);
   base::ListValue* qualifiers = new base::ListValue();
   if (transition_type & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
-    qualifiers->Append(new base::StringValue("client_redirect"));
+    qualifiers->AppendString("client_redirect");
   if (transition_type & ui::PAGE_TRANSITION_SERVER_REDIRECT)
-    qualifiers->Append(new base::StringValue("server_redirect"));
+    qualifiers->AppendString("server_redirect");
   if (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK)
-    qualifiers->Append(new base::StringValue("forward_back"));
+    qualifiers->AppendString("forward_back");
   if (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)
-    qualifiers->Append(new base::StringValue("from_address_bar"));
+    qualifiers->AppendString("from_address_bar");
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);

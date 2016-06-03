@@ -49,7 +49,7 @@ base::ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
   for (URLPatternSet::const_iterator perm = pattern_set.begin();
        perm != pattern_set.end();
        ++perm) {
-    permissions->Append(new base::StringValue(perm->GetAsString()));
+    permissions->AppendString(perm->GetAsString());
   }
 
   return permissions;
@@ -61,7 +61,7 @@ base::ListValue* GetAPIPermissions(const Extension* ext) {
       ext->permissions_data()->active_permissions().GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
        perm != perm_list.end(); ++perm) {
-    permissions->Append(new base::StringValue(perm->c_str()));
+    permissions->AppendString(perm->c_str());
   }
   return permissions;
 }

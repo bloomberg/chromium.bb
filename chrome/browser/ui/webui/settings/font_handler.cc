@@ -134,7 +134,7 @@ void FontHandler::FontListHasLoaded(std::string callback_id,
     DCHECK(has_value);
 
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(value);
-    font->Append(new base::StringValue(has_rtl_chars ? "rtl" : "ltr"));
+    font->AppendString(has_rtl_chars ? "rtl" : "ltr");
   }
 
   // Character encoding list.

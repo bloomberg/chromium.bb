@@ -518,7 +518,7 @@ TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
       GetConfiguration(NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(),
                        ENCRYPT_PASSWORDS, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -537,7 +537,7 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
       GetConfiguration(NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(),
                        ENCRYPT_ALL_DATA, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -559,7 +559,7 @@ TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
       GetConfiguration(NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(),
                        ENCRYPT_PASSWORDS, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -583,7 +583,7 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
       GetConfiguration(&dict, SYNC_ALL_DATA, GetAllTypes(), "gaiaPassphrase",
                        ENCRYPT_PASSWORDS, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   // Act as if an encryption passphrase is required the first time, then never
   // again after that.
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired()).WillOnce(Return(true));
@@ -608,7 +608,7 @@ TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
       GetConfiguration(&dict, SYNC_ALL_DATA, GetAllTypes(), "custom_passphrase",
                        ENCRYPT_PASSWORDS, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -633,7 +633,7 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
                                       "invalid_passphrase", ENCRYPT_PASSWORDS,
                                       PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -671,7 +671,7 @@ TEST_F(SyncSetupHandlerTest, TestSyncIndividualTypes) {
         GetConfiguration(NULL, CHOOSE_WHAT_TO_SYNC, type_to_set, std::string(),
                          ENCRYPT_PASSWORDS, PAYMENTS_INTEGRATION_ENABLED);
     base::ListValue list_args;
-    list_args.Append(new base::StringValue(args));
+    list_args.AppendString(args);
     EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -692,7 +692,7 @@ TEST_F(SyncSetupHandlerTest, TestSyncAllManually) {
       GetConfiguration(NULL, CHOOSE_WHAT_TO_SYNC, GetAllTypes(), std::string(),
                        ENCRYPT_PASSWORDS, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -932,7 +932,7 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAllDisallowed) {
       GetConfiguration(NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(),
                        ENCRYPT_ALL_DATA, PAYMENTS_INTEGRATION_ENABLED);
   base::ListValue list_args;
-  list_args.Append(new base::StringValue(args));
+  list_args.AppendString(args);
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())

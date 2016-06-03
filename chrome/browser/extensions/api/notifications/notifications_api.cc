@@ -158,7 +158,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
         by_user ? EventRouter::USER_GESTURE_ENABLED
                 : EventRouter::USER_GESTURE_NOT_ENABLED;
     std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
-    args->Append(new base::FundamentalValue(by_user));
+    args->AppendBoolean(by_user);
     SendEvent(events::NOTIFICATIONS_ON_CLOSED,
               notifications::OnClosed::kEventName, gesture, std::move(args));
   }
@@ -180,7 +180,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   void ButtonClick(int index) override {
     std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
-    args->Append(new base::FundamentalValue(index));
+    args->AppendInteger(index);
     SendEvent(events::NOTIFICATIONS_ON_BUTTON_CLICKED,
               notifications::OnButtonClicked::kEventName,
               EventRouter::USER_GESTURE_ENABLED, std::move(args));
@@ -211,7 +211,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   std::unique_ptr<base::ListValue> CreateBaseEventArgs() {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(new base::StringValue(id_));
+    args->AppendString(id_);
     return args;
   }
 

@@ -228,7 +228,7 @@ void TabsEventRouter::TabInsertedAt(WebContents* contents,
 
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new FundamentalValue(tab_id));
+  args->AppendInteger(tab_id);
 
   base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kNewWindowIdKey,
@@ -250,8 +250,7 @@ void TabsEventRouter::TabDetachedAt(WebContents* contents, int index) {
   }
 
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(
-      new FundamentalValue(ExtensionTabUtil::GetTabId(contents)));
+  args->AppendInteger(ExtensionTabUtil::GetTabId(contents));
 
   base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kOldWindowIdKey,
@@ -272,7 +271,7 @@ void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   int tab_id = ExtensionTabUtil::GetTabId(contents);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new FundamentalValue(tab_id));
+  args->AppendInteger(tab_id);
 
   base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->SetInteger(tabs_constants::kWindowIdKey,
@@ -294,7 +293,7 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
                                        int reason) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   int tab_id = ExtensionTabUtil::GetTabId(new_contents);
-  args->Append(new FundamentalValue(tab_id));
+  args->AppendInteger(tab_id);
 
   base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kWindowIdKey,
@@ -338,7 +337,7 @@ void TabsEventRouter::TabSelectionChanged(
     if (!contents)
       break;
     int tab_id = ExtensionTabUtil::GetTabId(contents);
-    all_tabs->Append(new FundamentalValue(tab_id));
+    all_tabs->AppendInteger(tab_id);
   }
 
   std::unique_ptr<base::ListValue> args(new base::ListValue);
@@ -367,8 +366,7 @@ void TabsEventRouter::TabMoved(WebContents* contents,
                                int from_index,
                                int to_index) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(
-      new FundamentalValue(ExtensionTabUtil::GetTabId(contents)));
+  args->AppendInteger(ExtensionTabUtil::GetTabId(contents));
 
   base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kWindowIdKey,
@@ -486,8 +484,8 @@ void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
   const int new_tab_id = ExtensionTabUtil::GetTabId(new_contents);
   const int old_tab_id = ExtensionTabUtil::GetTabId(old_contents);
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new FundamentalValue(new_tab_id));
-  args->Append(new FundamentalValue(old_tab_id));
+  args->AppendInteger(new_tab_id);
+  args->AppendInteger(old_tab_id);
 
   DispatchEvent(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
                 events::TABS_ON_REPLACED, tabs::OnReplaced::kEventName,

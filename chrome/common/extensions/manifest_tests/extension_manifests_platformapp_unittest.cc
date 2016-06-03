@@ -126,8 +126,8 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   for (const char* api_name : kPlatformAppExperimentalApis) {
     // DictionaryValue will take ownership of this ListValue.
     base::ListValue *permissions = new base::ListValue();
-    permissions->Append(new base::StringValue("experimental"));
-    permissions->Append(new base::StringValue(api_name));
+    permissions->AppendString("experimental");
+    permissions->AppendString(api_name);
     manifest->Set("permissions", permissions);
     manifests.push_back(
         base::WrapUnique(new ManifestData(manifest->CreateDeepCopy(), "")));

@@ -31,6 +31,6 @@ TEST_F(ValidAppManifestTest, AllowUnrecognizedPermissions) {
       LoadManifest("valid_app.json", &error));
   base::ListValue* permissions = NULL;
   ASSERT_TRUE(manifest->GetList("permissions", &permissions));
-  permissions->Append(new base::StringValue("not-a-valid-permission"));
+  permissions->AppendString("not-a-valid-permission");
   LoadAndExpectSuccess(ManifestData(std::move(manifest), ""));
 }

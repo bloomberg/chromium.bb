@@ -90,9 +90,9 @@ static void GetHandlersAsListValue(
   ProtocolHandlerRegistry::ProtocolHandlerList::const_iterator handler;
   for (handler = handlers.begin(); handler != handlers.end(); ++handler) {
     base::ListValue* handlerValue = new base::ListValue();
-    handlerValue->Append(new base::StringValue(handler->protocol()));
-    handlerValue->Append(new base::StringValue(handler->url().spec()));
-    handlerValue->Append(new base::StringValue(handler->url().host()));
+    handlerValue->AppendString(handler->protocol());
+    handlerValue->AppendString(handler->url().spec());
+    handlerValue->AppendString(handler->url().host());
     handler_list->Append(handlerValue);
   }
 }

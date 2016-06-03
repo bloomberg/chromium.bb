@@ -83,7 +83,7 @@ static scoped_refptr<Extension> CreateExtension(
   base::ListValue* permissions = new base::ListValue();
   manifest.Set(extensions::manifest_keys::kPermissions, permissions);
   if (background_permission) {
-    permissions->Append(new base::StringValue("background"));
+    permissions->AppendString("background");
   }
 
   std::string error;

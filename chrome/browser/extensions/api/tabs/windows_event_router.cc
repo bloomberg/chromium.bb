@@ -117,11 +117,10 @@ bool WillDispatchWindowFocusedEvent(
 
   if (cant_cross_incognito || !visible_to_listener) {
     event->event_args->Clear();
-    event->event_args->Append(
-        new base::FundamentalValue(extension_misc::kUnknownWindowId));
+    event->event_args->AppendInteger(extension_misc::kUnknownWindowId);
   } else {
     event->event_args->Clear();
-    event->event_args->Append(new base::FundamentalValue(window_id));
+    event->event_args->AppendInteger(window_id);
   }
   return true;
 }
@@ -210,7 +209,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
 
   int window_id = window_controller->GetWindowId();
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::FundamentalValue(window_id));
+  args->AppendInteger(window_id);
   DispatchEvent(events::WINDOWS_ON_REMOVED, windows::OnRemoved::kEventName,
                 window_controller, std::move(args));
 }

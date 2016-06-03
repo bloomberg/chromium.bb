@@ -45,14 +45,13 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   manifest->SetString(extensions::manifest_keys::kVersion, "0.1");
   manifest->SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   base::ListValue* background_script_list = new base::ListValue;
-  background_script_list->Append(new base::StringValue("background.js"));
+  background_script_list->AppendString("background.js");
   manifest->Set(extensions::manifest_keys::kPlatformAppBackgroundScripts,
                 background_script_list);
 
   base::ListValue* permission_detail_list = new base::ListValue;
   for (size_t i = 0; i < media_galleries_permissions.size(); i++)
-    permission_detail_list->Append(
-        new base::StringValue(media_galleries_permissions[i]));
+    permission_detail_list->AppendString(media_galleries_permissions[i]);
   base::DictionaryValue* media_galleries_permission =
       new base::DictionaryValue();
   media_galleries_permission->Set("mediaGalleries", permission_detail_list);

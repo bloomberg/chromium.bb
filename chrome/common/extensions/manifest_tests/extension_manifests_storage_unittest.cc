@@ -15,7 +15,7 @@ TEST_F(ChromeManifestTest, StorageAPIManifestVersionAvailability) {
     base_manifest.SetString(keys::kName, "test");
     base_manifest.SetString(keys::kVersion, "0.1");
     base::ListValue* permissions = new base::ListValue();
-    permissions->Append(new base::StringValue("storage"));
+    permissions->AppendString("storage");
     base_manifest.Set(keys::kPermissions, permissions);
   }
 

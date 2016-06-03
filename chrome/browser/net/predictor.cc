@@ -588,7 +588,7 @@ void Predictor::TrimReferrersNow() {
 void Predictor::SerializeReferrers(base::ListValue* referral_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   referral_list->Clear();
-  referral_list->Append(new base::FundamentalValue(kPredictorReferrerVersion));
+  referral_list->AppendInteger(kPredictorReferrerVersion);
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it) {
     // Serialize the list of subresource names.
@@ -596,7 +596,7 @@ void Predictor::SerializeReferrers(base::ListValue* referral_list) {
 
     // Create a list for each referer.
     base::ListValue* motivator(new base::ListValue);
-    motivator->Append(new base::StringValue(it->first.spec()));
+    motivator->AppendString(it->first.spec());
     motivator->Append(subresource_list);
 
     referral_list->Append(motivator);
@@ -1248,13 +1248,12 @@ void Predictor::InitialObserver::GetInitialDnsResolutionList(
   DCHECK(startup_list);
   startup_list->Clear();
   DCHECK_EQ(0u, startup_list->GetSize());
-  startup_list->Append(
-      new base::FundamentalValue(kPredictorStartupFormatVersion));
+  startup_list->AppendInteger(kPredictorStartupFormatVersion);
   for (FirstNavigations::iterator it = first_navigations_.begin();
        it != first_navigations_.end();
        ++it) {
     DCHECK(it->first == Predictor::CanonicalizeUrl(it->first));
-    startup_list->Append(new base::StringValue(it->first.spec()));
+    startup_list->AppendString(it->first.spec());
   }
 }
 

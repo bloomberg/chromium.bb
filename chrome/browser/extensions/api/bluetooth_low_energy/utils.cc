@@ -24,7 +24,7 @@ std::unique_ptr<base::ListValue> CharacteristicPropertiesToValue(
            properties.begin();
        iter != properties.end();
        ++iter)
-    property_list->Append(new base::StringValue(ToString(*iter)));
+    property_list->AppendString(ToString(*iter));
   return property_list;
 }
 

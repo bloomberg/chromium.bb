@@ -38,7 +38,7 @@ std::unique_ptr<base::ListValue> GetAvatarIcons() {
   std::unique_ptr<base::ListValue> avatar_icons(new base::ListValue);
   for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); ++i) {
     std::string avatar_url = profiles::GetDefaultAvatarIconUrl(i);
-    avatar_icons->Append(new base::StringValue(avatar_url));
+    avatar_icons->AppendString(avatar_url);
   }
 
   return avatar_icons;

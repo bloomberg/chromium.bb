@@ -737,13 +737,13 @@ TEST_F(ExtensionAdminPolicyTest, BlacklistedByDefault) {
   EXPECT_FALSE(BlacklistedByDefault(NULL));
 
   base::ListValue blacklist;
-  blacklist.Append(new base::StringValue(kNonExistingExtension));
+  blacklist.AppendString(kNonExistingExtension);
   EXPECT_FALSE(BlacklistedByDefault(&blacklist));
-  blacklist.Append(new base::StringValue("*"));
+  blacklist.AppendString("*");
   EXPECT_TRUE(BlacklistedByDefault(&blacklist));
 
   blacklist.Clear();
-  blacklist.Append(new base::StringValue("*"));
+  blacklist.AppendString("*");
   EXPECT_TRUE(BlacklistedByDefault(&blacklist));
 }
 
@@ -757,11 +757,11 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadRequired) {
 
   // Required extensions may load even if they're on the blacklist.
   base::ListValue blacklist;
-  blacklist.Append(new base::StringValue(extension_->id()));
+  blacklist.AppendString(extension_->id());
   EXPECT_TRUE(
       UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
 
-  blacklist.Append(new base::StringValue("*"));
+  blacklist.AppendString("*");
   EXPECT_TRUE(
       UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
 }
@@ -784,12 +784,12 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadWhitelisted) {
   CreateExtension(Manifest::INTERNAL);
 
   base::ListValue whitelist;
-  whitelist.Append(new base::StringValue(extension_->id()));
+  whitelist.AppendString(extension_->id());
   EXPECT_TRUE(
       UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(), NULL));
 
   base::ListValue blacklist;
-  blacklist.Append(new base::StringValue(extension_->id()));
+  blacklist.AppendString(extension_->id());
   EXPECT_TRUE(
       UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(), NULL));
   base::string16 error;
@@ -804,7 +804,7 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlacklisted) {
 
   // Blacklisted by default.
   base::ListValue blacklist;
-  blacklist.Append(new base::StringValue("*"));
+  blacklist.AppendString("*");
   EXPECT_FALSE(
       UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
   base::string16 error;
@@ -813,20 +813,20 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlacklisted) {
   EXPECT_FALSE(error.empty());
 
   // Extension on the blacklist, with and without wildcard.
-  blacklist.Append(new base::StringValue(extension_->id()));
+  blacklist.AppendString(extension_->id());
   EXPECT_FALSE(
       UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
   blacklist.Clear();
-  blacklist.Append(new base::StringValue(extension_->id()));
+  blacklist.AppendString(extension_->id());
   EXPECT_FALSE(
       UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(), NULL));
 
   // With a whitelist. There's no such thing as a whitelist wildcard.
   base::ListValue whitelist;
-  whitelist.Append(new base::StringValue("behllobkkfkfnphdnhnkndlbkcpglgmj"));
+  whitelist.AppendString("behllobkkfkfnphdnhnkndlbkcpglgmj");
   EXPECT_FALSE(
       UserMayLoad(&blacklist, &whitelist, NULL, NULL, extension_.get(), NULL));
-  whitelist.Append(new base::StringValue("*"));
+  whitelist.AppendString("*");
   EXPECT_FALSE(
       UserMayLoad(&blacklist, &whitelist, NULL, NULL, extension_.get(), NULL));
 }

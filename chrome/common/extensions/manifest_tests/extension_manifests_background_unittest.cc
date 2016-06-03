@@ -103,7 +103,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
   base::ListValue* permissions = new base::ListValue();
-  permissions->Append(new base::StringValue("webRequest"));
+  permissions->AppendString("webRequest");
   manifest->Set(keys::kPermissions, permissions);
   LoadAndExpectError(ManifestData(manifest.get(), ""),
                      errors::kWebRequestConflictsWithLazyBackground);

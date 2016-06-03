@@ -76,7 +76,7 @@ void InvalidationsMessageHandler::OnRegistrationChange(
   for (std::multiset<std::string>::const_iterator it =
        registered_handlers.begin();
        it != registered_handlers.end(); ++it) {
-    list_of_handlers.Append(new base::StringValue(*it));
+    list_of_handlers.AppendString(*it);
   }
   web_ui()->CallJavascriptFunction("chrome.invalidations.updateHandlers",
                                    list_of_handlers);
