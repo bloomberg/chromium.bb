@@ -27,11 +27,11 @@ CGFloat BubblePadding() {
 // divider. The desired value is 8px. We get 3px by subtracting the existing
 // padding in location_bar_view from 8px.
 CGFloat DividerPadding() {
-  return ui::MaterialDesignController::IsModeMaterial() ? 3.0 : 0.0;
+  return ui::MaterialDesignController::IsModeMaterial() ? 2.0 : 0.0;
 }
 
 // Padding between the icon and label.
-const CGFloat kIconLabelPadding = 4.0;
+CGFloat kIconLabelPadding = 4.0;
 
 // Inset for the background.
 const CGFloat kBackgroundYInset = 4.0;
@@ -70,6 +70,7 @@ NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
   if (image_) {
     // Center the image vertically.
     const NSSize imageSize = [image_ size];
+
     imageRect.origin.y +=
         std::floor((NSHeight(frame) - imageSize.height) / 2.0);
     imageRect.size = imageSize;
