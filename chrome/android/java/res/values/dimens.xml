@@ -288,7 +288,7 @@
     <dimen name="snippets_thumbnail_size">72dp</dimen>
     <dimen name="snippets_padding_and_peeking_card_height">16dp</dimen>
     <dimen name="snippets_vertical_spacing">1dp</dimen>
-    <dimen name="snippets_article_header_height">56dp</dimen>
+    <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_card_elevation">2dp</dimen>
 
     <!-- Interests page -->
