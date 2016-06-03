@@ -441,6 +441,42 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Isolate*
     return result;
 }
 
+v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(v8::Isolate* isolate, v8::Local<v8::Object> constructor, ExecutionContext* context, int argc, v8::Local<v8::Value> argv[])
+{
+    TRACE_EVENT0("v8", "v8.callAsConstructor");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
+
+    int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
+    if (depth >= kMaxRecursionDepth)
+        return v8::MaybeLocal<v8::Value>(throwStackOverflowExceptionIfNeeded(isolate));
+
+    CHECK(!context->isIteratingOverObservers());
+
+    if (ScriptForbiddenScope::isScriptForbidden()) {
+        throwScriptForbiddenException(isolate);
+        return v8::MaybeLocal<v8::Value>();
+    }
+
+    // TODO(dominicc): When inspector supports tracing object
+    // invocation, change this to use v8::Object instead of
+    // v8::Function. All callers use functions because
+    // CustomElementsRegistry#define's IDL signature is Function.
+    CHECK(constructor->IsFunction());
+    v8::Local<v8::Function> function = constructor.As<v8::Function>();
+
+    bool shouldTraceFunctionCall = !depth;
+    if (shouldTraceFunctionCall)
+        TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data", InspectorFunctionCallEvent::data(context, function));
+    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+    ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
+    v8::MaybeLocal<v8::Value> result = constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
+    crashIfIsolateIsDead(isolate);
+    ThreadDebugger::didExecuteScript(isolate);
+    if (shouldTraceFunctionCall)
+        TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
+    return result;
+}
+
 v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> function, ExecutionContext* context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> args[], v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.callFunction");

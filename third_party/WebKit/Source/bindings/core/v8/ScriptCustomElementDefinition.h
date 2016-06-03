@@ -6,16 +6,17 @@
 #define ScriptCustomElementDefinition_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "v8.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
 class CustomElementDescriptor;
 class CustomElementsRegistry;
-class ScriptState;
 
 class CORE_EXPORT ScriptCustomElementDefinition final :
     public CustomElementDefinition {
@@ -47,6 +48,7 @@ private:
 
     // Implementations of |CustomElementDefinition|
     ScriptValue getConstructorForScript() final;
+    bool runConstructor(Element*) override;
 
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_constructor;

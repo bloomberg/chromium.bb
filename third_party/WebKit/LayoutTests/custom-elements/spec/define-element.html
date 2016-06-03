@@ -87,7 +87,7 @@ test_with_window((w) => {
     let not_a_constructor = () => {};
     let invalid_name = 'annotation-xml';
     w.customElements.define(invalid_name, not_a_constructor);
-  }, 'Defining an element with an invalid name and invalid constructor ' +
+  }, 'defining an element with an invalid name and invalid constructor ' +
      'should throw a TypeError for the constructor and not a SyntaxError');
 
   class C extends w.HTMLElement {}
@@ -96,7 +96,70 @@ test_with_window((w) => {
     let invalid_name = 'annotation-xml';
     let reused_constructor = C;
     w.customElements.define(invalid_name, reused_constructor);
-  }, 'Defining an element with an invalid name and a reused constructor ' +
+  }, 'defining an element with an invalid name and a reused constructor ' +
      'should throw a SyntaxError for the name and not a NotSupportedError');
 }, 'Order of checks');
+
+test_with_window((w) => {
+  let doc = w.document;
+  doc.body.innerHTML = `
+<a-a id="a">
+  <p>
+    <a-a id="b"></a-a>
+    <a-a id="c"></a-a>
+  </p>
+  <a-a id="d"></a-a>
+</a-a>`;
+  let invocations = [];
+  class C extends w.HTMLElement {
+    constructor() {
+      super();
+      console.log(this.getAttribute('id'));
+      invocations.push(this);
+    }
+  }
+  w.customElements.define('a-a', C);
+  assert_array_equals(['a', 'b', 'c', 'd'], invocations.map((e) => e.id),
+                      'four elements should have been upgraded in doc order');
+}, 'Upgrade: existing elements');
+
+test_with_window((w) => {
+  let doc = w.document;
+  let a = doc.createElement('a-a');
+  doc.body.appendChild(a);
+  assert_equals(w.HTMLElement.prototype, Object.getPrototypeOf(a),
+                'the undefined autonomous element should be a HTMLElement');
+  let invocations = [];
+  class C extends w.HTMLElement {
+    constructor() {
+      super();
+      assert_equals(C.prototype, Object.getPrototypeOf(a),
+                    'the HTMLElement constructor should set the prototype ' +
+                    'to the defined prototype');
+      invocations.push(this);
+    }
+  }
+  w.customElements.define('a-a', C);
+  assert_array_equals([a], invocations,
+                      'the constructor should have been invoked for the in-' +
+                      'document element');
+}, 'Upgrade: sets prototype of existing elements');
+
+test_with_window((w) => {
+  let doc = w.document;
+  var shadow = doc.body.attachShadow({mode: 'open'});
+  let a = doc.createElement('a-a');
+  shadow.appendChild(a);
+  let invocations = [];
+  class C extends w.HTMLElement {
+    constructor() {
+      super();
+      invocations.push(this);
+    }
+  }
+  w.customElements.define('a-a', C);
+  assert_array_equals([a], invocations,
+                      'the constructor should have been invoked once for the ' +
+                      'elements in the shadow tree');
+}, 'Upgrade: shadow tree');
 </script>
