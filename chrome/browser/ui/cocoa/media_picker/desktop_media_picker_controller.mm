@@ -11,6 +11,8 @@
 #import "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/media/combined_desktop_media_list.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_item.h"
 #include "chrome/common/chrome_switches.h"
@@ -245,14 +247,19 @@ const int kExcessButtonPadding = 6;
   sourceID.audio_share = [audioShareCheckbox_ isEnabled] &&
                          [audioShareCheckbox_ state] == NSOnState;
 
-  // If the media source is an tab, activate it.
   if (sourceID.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+    // Activate the selected tab and bring the browser window for the selected
+    // tab to the front.
     content::WebContents* tab = content::WebContents::FromRenderFrameHost(
         content::RenderFrameHost::FromID(
             sourceID.web_contents_id.render_process_id,
             sourceID.web_contents_id.main_render_frame_id));
-    if (tab)
+    if (tab) {
       tab->GetDelegate()->ActivateContents(tab);
+      Browser* browser = chrome::FindBrowserWithWebContents(tab);
+      if (browser && browser->window())
+        browser->window()->Activate();
+    }
   }
 
   // Notify the |callback_| asynchronously because it may release the

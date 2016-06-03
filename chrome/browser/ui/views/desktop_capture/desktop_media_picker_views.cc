@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/media/desktop_media_list.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "chrome/browser/ui/views/desktop_media_picker_views_deprecated.h"
@@ -315,14 +317,19 @@ bool DesktopMediaPickerDialogView::Accept() {
                        audio_share_checkbox_->visible() &&
                        audio_share_checkbox_->checked();
 
-  // If the media source is an tab, activate it.
   if (source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
+    // Activate the selected tab and bring the browser window for the selected
+    // tab to the front.
     content::WebContents* tab = content::WebContents::FromRenderFrameHost(
         content::RenderFrameHost::FromID(
             source.web_contents_id.render_process_id,
             source.web_contents_id.main_render_frame_id));
-    if (tab)
+    if (tab) {
       tab->GetDelegate()->ActivateContents(tab);
+      Browser* browser = chrome::FindBrowserWithWebContents(tab);
+      if (browser && browser->window())
+        browser->window()->Activate();
+    }
   }
 
   if (parent_)
