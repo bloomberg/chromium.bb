@@ -24,7 +24,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 1800
         },
         "test": "android_webview_test_apk"
       },
@@ -123,7 +123,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 1200
+          "hard_timeout": 2400
         },
         "test": "chrome_public_test_apk"
       },
