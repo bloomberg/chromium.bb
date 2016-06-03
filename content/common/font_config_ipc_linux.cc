@@ -15,6 +15,7 @@
 
 #include <functional>
 #include <memory>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -158,21 +159,21 @@ SkStreamAsset* FontConfigIPC::openStream(const FontIdentity& identity) {
   return mapFileDescriptorToStream(result_fd);
 }
 
-SkTypeface* FontConfigIPC::createTypeface(
+sk_sp<SkTypeface> FontConfigIPC::makeTypeface(
     const SkFontConfigInterface::FontIdentity& identity) {
   base::AutoLock lock(lock_);
   auto mapped_typefaces_it = mapped_typefaces_.Get(identity);
   if (mapped_typefaces_it != mapped_typefaces_.end())
-    return SkSafeRef(mapped_typefaces_it->second.get());
+    return mapped_typefaces_it->second;
 
   SkStreamAsset* typeface_stream = openStream(identity);
   if (!typeface_stream)
     return nullptr;
   sk_sp<SkTypeface> typeface_from_stream(
-      SkTypeface::CreateFromStream(typeface_stream, identity.fTTCIndex));
+      SkTypeface::MakeFromStream(typeface_stream, identity.fTTCIndex));
   auto mapped_typefaces_insert_it =
-      mapped_typefaces_.Put(identity, typeface_from_stream);
-  return SkSafeRef(mapped_typefaces_insert_it->second.get());
+      mapped_typefaces_.Put(identity, std::move(typeface_from_stream));
+  return mapped_typefaces_insert_it->second;
 }
 
 }  // namespace content

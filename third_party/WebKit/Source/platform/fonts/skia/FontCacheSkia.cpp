@@ -38,6 +38,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 #include "wtf/Assertions.h"
@@ -54,7 +55,7 @@ static PassRefPtr<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(int fo
     SkFontConfigInterface::FontIdentity fontIdentity;
     fontIdentity.fID = fontconfigInterfaceId;
     fontIdentity.fTTCIndex = ttcIndex;
-    return adoptRef(fci->createTypeface(fontIdentity));
+    return blink::fromSkSp(fci->makeTypeface(fontIdentity));
 }
 #endif
 
