@@ -117,7 +117,15 @@ AdvancedSettingsWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/autofill',
 };
 
-TEST_F('AdvancedSettingsWebUITest', 'testAdvancedSettingsShown', function() {
+// TODO(crbug.com/617066) Flakes on Win.
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_testAdvancedSettingsShown ' +
+    'DISABLED_testAdvancedSettingsShown');
+GEN('#else');
+GEN('#define MAYBE_testAdvancedSettingsShown testAdvancedSettingsShown');
+GEN('#endif');
+TEST_F('AdvancedSettingsWebUITest', 'MAYBE_testAdvancedSettingsShown',
+    function() {
   assertEquals(this.browsePreload, document.location.href);
   expectFalse($('advanced-settings').hidden);
 });

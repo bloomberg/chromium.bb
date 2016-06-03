@@ -41,8 +41,16 @@ AutofillOptionsWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/autofill',
 };
 
+// TODO(crbug.com/617066) Flakes on Win.
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_testOpenAutofillOptions ' +
+    'DISABLED_testOpenAutofillOptions');
+GEN('#else');
+GEN('#define MAYBE_testOpenAutofillOptions testOpenAutofillOptions');
+GEN('#endif');
 // Test opening the autofill options has correct location.
-TEST_F('AutofillOptionsWebUITest', 'testOpenAutofillOptions', function() {
+TEST_F('AutofillOptionsWebUITest', 'MAYBE_testOpenAutofillOptions',
+    function() {
   assertEquals(this.browsePreload, document.location.href);
 });
 
