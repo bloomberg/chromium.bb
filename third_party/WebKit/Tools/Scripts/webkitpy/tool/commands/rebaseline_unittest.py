@@ -1,33 +1,8 @@
-# Copyright (C) 2010 Google Inc. All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#    * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#    * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import unittest
-import webkitpy.tool.commands.rebaseline
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
@@ -42,7 +17,7 @@ from webkitpy.tool.commands.rebaseline import *
 from webkitpy.tool.mocktool import MockTool, MockOptions
 
 
-class _BaseTestCase(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
     MOCK_WEB_RESULT = 'MOCK Web result, convert 404 to None=True'
     WEB_PREFIX = 'http://example.com/f/builders/MOCK Mac10.11/results/layout-test-results'
 
@@ -122,7 +97,7 @@ class _BaseTestCase(unittest.TestCase):
             self.command._builder_data[builder] = data
 
 
-class TestCopyExistingBaselinesInternal(_BaseTestCase):
+class TestCopyExistingBaselinesInternal(BaseTestCase):
     command_constructor = CopyExistingBaselinesInternal
 
     def setUp(self):
@@ -260,7 +235,7 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
                          'original win7 result')
 
 
-class TestRebaselineTest(_BaseTestCase):
+class TestRebaselineTest(BaseTestCase):
     command_constructor = RebaselineTest  # AKA webkit-patch rebaseline-test-internal
 
     def setUp(self):
@@ -361,7 +336,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win10"}], "delete": []}\n')
 
 
-class TestAbstractParallelRebaselineCommand(_BaseTestCase):
+class TestAbstractParallelRebaselineCommand(BaseTestCase):
     command_constructor = AbstractParallelRebaselineCommand
 
     def test_builders_to_fetch_from(self):
@@ -377,7 +352,7 @@ class TestAbstractParallelRebaselineCommand(_BaseTestCase):
         self.assertEqual(builders_to_fetch, ["MOCK Win7", "MOCK Win10"])
 
 
-class TestRebaselineJson(_BaseTestCase):
+class TestRebaselineJson(BaseTestCase):
     command_constructor = RebaselineJson
 
     def setUp(self):
@@ -471,7 +446,7 @@ class TestRebaselineJson(_BaseTestCase):
                           [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--results-directory', '/tmp', '--verbose']]])
 
 
-class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
+class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
     command_constructor = RebaselineJson
 
     def setUp(self):
@@ -574,7 +549,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
             new_expectations, "Bug(x) [ Linux Mac10.10 Win ] userscripts/first-test.html [ Failure ]\n")
 
 
-class TestRebaseline(_BaseTestCase):
+class TestRebaseline(BaseTestCase):
     # This command shares most of its logic with RebaselineJson, so these tests just test what is different.
 
     command_constructor = Rebaseline  # AKA webkit-patch rebaseline
@@ -639,7 +614,7 @@ class MockLineRemovingExecutive(MockExecutive):
         return command_outputs
 
 
-class TestRebaselineExpectations(_BaseTestCase):
+class TestRebaselineExpectations(BaseTestCase):
     command_constructor = RebaselineExpectations
 
     def setUp(self):
@@ -851,15 +826,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 """)
 
 
-class _FakeOptimizer(BaselineOptimizer):
-
-    def read_results_by_directory(self, baseline_name):
-        if baseline_name.endswith('txt'):
-            return {'LayoutTests/passes/text.html': '123456'}
-        return {}
-
-
-class TestOptimizeBaselines(_BaseTestCase):
+class TestOptimizeBaselines(BaseTestCase):
     command_constructor = OptimizeBaselines
 
     def _write_test_file(self, port, path, contents):
@@ -940,33 +907,7 @@ class TestOptimizeBaselines(_BaseTestCase):
             test_port.layout_tests_dir(), 'another/test-expected.png')))
 
 
-class TestAnalyzeBaselines(_BaseTestCase):
-    command_constructor = AnalyzeBaselines
-
-    def setUp(self):
-        super(TestAnalyzeBaselines, self).setUp()
-        self.port = self.tool.port_factory.get('test')
-        self.tool.port_factory.get = (lambda port_name=None, options=None: self.port)
-        self.lines = []
-        self.command._optimizer_class = _FakeOptimizer
-        # pylint bug warning about unnecessary lambda? pylint: disable=W0108
-        self.command._write = (lambda msg: self.lines.append(msg))
-
-    def test_default(self):
-        self.command.execute(MockOptions(suffixes='txt', missing=False, platform=None), ['passes/text.html'], self.tool)
-        self.assertEqual(self.lines,
-                         ['passes/text-expected.txt:',
-                          '  (generic): 123456'])
-
-    def test_missing_baselines(self):
-        self.command.execute(MockOptions(suffixes='png,txt', missing=True, platform=None), ['passes/text.html'], self.tool)
-        self.assertEqual(self.lines,
-                         ['passes/text-expected.png: (no baselines found)',
-                          'passes/text-expected.txt:',
-                          '  (generic): 123456'])
-
-
-class TestAutoRebaseline(_BaseTestCase):
+class TestAutoRebaseline(BaseTestCase):
     command_constructor = AutoRebaseline
 
     def _write_test_file(self, port, path, contents):

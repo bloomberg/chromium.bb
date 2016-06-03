@@ -278,46 +278,6 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         print json.dumps(self._scm_changes)
 
 
-class AnalyzeBaselines(AbstractRebaseliningCommand):
-    name = "analyze-baselines"
-    help_text = "Analyzes the baselines for the given tests and prints results that are identical."
-    show_in_main_help = True
-    argument_names = "TEST_NAMES"
-
-    def __init__(self):
-        super(AnalyzeBaselines, self).__init__(options=[
-            self.suffixes_option,
-            optparse.make_option('--missing', action='store_true', default=False, help='Show missing baselines as well.'),
-        ] + self.platform_options)
-        self._optimizer_class = BaselineOptimizer  # overridable for testing
-        self._baseline_optimizer = None
-        self._port = None
-
-    def _write(self, msg):
-        print msg
-
-    def _analyze_baseline(self, options, test_name):
-        for suffix in self._baseline_suffix_list:
-            baseline_name = _baseline_name(self._tool.filesystem, test_name, suffix)
-            results_by_directory = self._baseline_optimizer.read_results_by_directory(baseline_name)
-            if results_by_directory:
-                self._write("%s:" % baseline_name)
-                self._baseline_optimizer.write_by_directory(results_by_directory, self._write, "  ")
-            elif options.missing:
-                self._write("%s: (no baselines found)" % baseline_name)
-
-    def execute(self, options, args, tool):
-        self._baseline_suffix_list = options.suffixes.split(',')
-        port_names = tool.port_factory.all_port_names(options.platform)
-        if not port_names:
-            print "No port names match '%s'" % options.platform
-            return
-        self._port = tool.port_factory.get(port_names[0])
-        self._baseline_optimizer = self._optimizer_class(tool, self._port, port_names, skip_scm_commands=False)
-        for test_name in self._port.tests(args):
-            self._analyze_baseline(options, test_name)
-
-
 class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     """Base class for rebaseline commands that do some tasks in parallel."""
     # Not overriding execute() - pylint: disable=abstract-method
