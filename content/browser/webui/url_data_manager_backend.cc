@@ -53,7 +53,7 @@ namespace content {
 namespace {
 
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
-    "Content-Security-Policy: script-src chrome://resources 'self'";
+    "Content-Security-Policy: ";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
 static const char kNetworkErrorKey[] = "netError";
@@ -153,9 +153,24 @@ class URLRequestChromeJob : public net::URLRequestJob {
     content_security_policy_object_source_ = data;
   }
 
+  void set_content_security_policy_script_source(
+      const std::string& data) {
+    content_security_policy_script_source_ = data;
+  }
+
   void set_content_security_policy_frame_source(
       const std::string& data) {
     content_security_policy_frame_source_ = data;
+  }
+
+  void set_content_security_policy_style_source(
+      const std::string& data) {
+    content_security_policy_style_source_ = data;
+  }
+
+  void set_content_security_policy_image_source(
+      const std::string& data) {
+    content_security_policy_image_source_ = data;
   }
 
   void set_deny_xframe_options(bool deny_xframe_options) {
@@ -189,9 +204,6 @@ class URLRequestChromeJob : public net::URLRequestJob {
   static void DelayStartForDevTools(
       const base::WeakPtr<URLRequestChromeJob>& job);
 
-  // Specific resources require unsafe-eval in the Content Security Policy.
-  bool RequiresUnsafeEval() const;
-
   // Do the actual copy from data_ (the data we're serving) into |buf|.
   // Separate from ReadRawData so we can handle async I/O. Returns the number of
   // bytes read.
@@ -216,8 +228,11 @@ class URLRequestChromeJob : public net::URLRequestJob {
   bool add_content_security_policy_;
 
   // These are used with the CSP.
+  std::string content_security_policy_script_source_;
   std::string content_security_policy_object_source_;
   std::string content_security_policy_frame_source_;
+  std::string content_security_policy_style_source_;
+  std::string content_security_policy_image_source_;
 
   // If true, sets  the "X-Frame-Options: DENY" header.
   bool deny_xframe_options_;
@@ -249,8 +264,6 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       pending_buf_size_(0),
       allow_caching_(true),
       add_content_security_policy_(true),
-      content_security_policy_object_source_("object-src 'none';"),
-      content_security_policy_frame_source_("frame-src 'none';"),
       deny_xframe_options_(true),
       send_content_type_header_(false),
       is_incognito_(is_incognito),
@@ -316,9 +329,11 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // response headers.
   if (add_content_security_policy_) {
     std::string base = kChromeURLContentSecurityPolicyHeaderBase;
-    base.append(RequiresUnsafeEval() ? " 'unsafe-eval'; " : "; ");
+    base.append(content_security_policy_script_source_);
     base.append(content_security_policy_object_source_);
     base.append(content_security_policy_frame_source_);
+    base.append(content_security_policy_style_source_);
+    base.append(content_security_policy_image_source_);
     info->headers->AddHeader(base);
   }
 
@@ -412,12 +427,6 @@ void URLRequestChromeJob::StartAsync() {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
   }
-}
-
-// TODO(tsepez,mfoltz): Refine this method when tests have been fixed to not use
-// eval()/new Function().  http://crbug.com/525224
-bool URLRequestChromeJob::RequiresUnsafeEval() const {
-  return true;
 }
 
 namespace {
@@ -612,10 +621,16 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   job->set_allow_caching(source->source()->AllowCaching());
   job->set_add_content_security_policy(
       source->source()->ShouldAddContentSecurityPolicy());
+  job->set_content_security_policy_script_source(
+      source->source()->GetContentSecurityPolicyScriptSrc());
   job->set_content_security_policy_object_source(
       source->source()->GetContentSecurityPolicyObjectSrc());
   job->set_content_security_policy_frame_source(
       source->source()->GetContentSecurityPolicyFrameSrc());
+  job->set_content_security_policy_style_source(
+      source->source()->GetContentSecurityPolicyStyleSrc());
+  job->set_content_security_policy_image_source(
+      source->source()->GetContentSecurityPolicyImgSrc());
   job->set_deny_xframe_options(
       source->source()->ShouldDenyXFrameOptions());
   job->set_send_content_type_header(

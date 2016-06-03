@@ -68,7 +68,10 @@ class NewTabUI : public content::WebUIController {
         const content::URLDataSource::GotDataCallback& callback) override;
     std::string GetMimeType(const std::string&) const override;
     bool ShouldReplaceExistingSource() const override;
-    bool ShouldAddContentSecurityPolicy() const override;
+    std::string GetContentSecurityPolicyScriptSrc() const override;
+    std::string GetContentSecurityPolicyStyleSrc() const override;
+    std::string GetContentSecurityPolicyImgSrc() const override;
+    std::string GetContentSecurityPolicyFrameSrc() const override;
 
     // Adds |resource| to the source. |resource_id| is resource id or 0,
     // which means return empty data set. |mime_type| is mime type of the

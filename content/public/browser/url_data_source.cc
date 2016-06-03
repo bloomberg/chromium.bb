@@ -33,12 +33,27 @@ bool URLDataSource::ShouldAddContentSecurityPolicy() const {
   return true;
 }
 
+std::string URLDataSource::GetContentSecurityPolicyScriptSrc() const {
+  // Specific resources require unsafe-eval in the Content Security Policy.
+  // TODO(tsepez,mfoltz): Remove 'unsafe-eval' when tests have been fixed to
+  // not use eval()/new Function().  http://crbug.com/525224
+  return "script-src chrome://resources 'self' 'unsafe-eval';";
+}
+
 std::string URLDataSource::GetContentSecurityPolicyObjectSrc() const {
   return "object-src 'none';";
 }
 
 std::string URLDataSource::GetContentSecurityPolicyFrameSrc() const {
   return "frame-src 'none';";
+}
+
+std::string URLDataSource::GetContentSecurityPolicyStyleSrc() const {
+  return std::string();
+}
+
+std::string URLDataSource::GetContentSecurityPolicyImgSrc() const {
+  return std::string();
 }
 
 bool URLDataSource::ShouldDenyXFrameOptions() const {

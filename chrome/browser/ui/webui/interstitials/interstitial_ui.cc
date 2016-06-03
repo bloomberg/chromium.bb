@@ -46,7 +46,9 @@ class InterstitialHTMLSource : public content::URLDataSource {
   // content::URLDataSource:
   std::string GetMimeType(const std::string& mime_type) const override;
   std::string GetSource() const override;
-  bool ShouldAddContentSecurityPolicy() const override;
+  std::string GetContentSecurityPolicyScriptSrc() const override;
+  std::string GetContentSecurityPolicyStyleSrc() const override;
+  std::string GetContentSecurityPolicyImgSrc() const override;
   void StartDataRequest(
       const std::string& path,
       int render_process_id,
@@ -308,9 +310,17 @@ std::string InterstitialHTMLSource::GetSource() const {
   return chrome::kChromeUIInterstitialHost;
 }
 
-bool InterstitialHTMLSource::ShouldAddContentSecurityPolicy()
-    const {
-  return false;
+std::string InterstitialHTMLSource::GetContentSecurityPolicyScriptSrc() const {
+  // 'unsafe-inline' is added to script-src.
+  return "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline';";
+}
+
+std::string InterstitialHTMLSource::GetContentSecurityPolicyStyleSrc() const {
+  return "style-src 'self' 'unsafe-inline';";
+}
+
+std::string InterstitialHTMLSource::GetContentSecurityPolicyImgSrc() const {
+  return "img-src data:;";
 }
 
 void InterstitialHTMLSource::StartDataRequest(

@@ -131,8 +131,21 @@ bool AppLauncherPageUI::HTMLSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
-bool AppLauncherPageUI::HTMLSource::ShouldAddContentSecurityPolicy() const {
-  return false;
+std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyScriptSrc()
+    const {
+  // 'unsafe-inline' is added to script-src.
+  return "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline';";
+}
+
+std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyStyleSrc()
+    const {
+  return "style-src 'self' chrome://resources chrome://theme 'unsafe-inline';";
+}
+
+std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyImgSrc()
+    const {
+  return "img-src chrome://extension-icon chrome://theme chrome://resources "
+      "data:;";
 }
 
 AppLauncherPageUI::HTMLSource::~HTMLSource() {}

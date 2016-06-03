@@ -59,7 +59,15 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
   std::string GetMimeType(const std::string&) const override {
     return "text/html";
   }
-  bool ShouldAddContentSecurityPolicy() const override { return false; }
+  std::string GetContentSecurityPolicyScriptSrc() const override {
+    // 'unsafe-inline' is added to script-src.
+    return "script-src 'self' chrome://resources 'unsafe-eval' "
+        "'unsafe-inline';";
+  }
+
+  std::string GetContentSecurityPolicyStyleSrc() const override {
+    return "style-src 'self' chrome://resources 'unsafe-inline';";
+  }
 
  private:
   ~SystemInfoUIHTMLSource() override {}

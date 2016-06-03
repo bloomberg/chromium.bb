@@ -228,8 +228,26 @@ bool NewTabUI::NewTabHTMLSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
-bool NewTabUI::NewTabHTMLSource::ShouldAddContentSecurityPolicy() const {
-  return false;
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyScriptSrc()
+    const {
+  // 'unsafe-inline' and google resources are added to script-src.
+  return "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline' "
+      "*.google.com *.gstatic.com;";
+}
+
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyStyleSrc()
+    const {
+  return "style-src 'self' chrome://resources 'unsafe-inline' chrome://theme;";
+}
+
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyImgSrc()
+    const {
+  return "img-src chrome-search://thumb chrome-search://thumb2 data:;";
+}
+
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyFrameSrc()
+    const {
+  return "frame-src chrome-search://most-visited;";
 }
 
 void NewTabUI::NewTabHTMLSource::AddResource(const char* resource,

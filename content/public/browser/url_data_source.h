@@ -86,22 +86,33 @@ class CONTENT_EXPORT URLDataSource {
   // Returns true if responses from this URLDataSource can be cached.
   virtual bool AllowCaching() const;
 
-  // If you are overriding this, then you have a bug.
+  // If you are overriding the following two methods, then you have a bug.
   // It is not acceptable to disable content-security-policy on chrome:// pages
   // to permit functionality excluded by CSP, such as inline script.
   // Instead, you must go back and change your WebUI page so that it is
   // compliant with the policy. This typically involves ensuring that all script
-  // is delivered through the data manager backend. Talk to tsepez for more
-  // info.
+  // is delivered through the data manager backend. Do not disable CSP on your
+  // page without first contacting the chrome security team.
   virtual bool ShouldAddContentSecurityPolicy() const;
+  // For pre-existing code, enabling CSP with relaxed script-src attributes
+  // may be marginally better than disabling CSP outright.
+  // Do not override this method without first contacting the chrome security
+  // team.
+  // By default, "script-src chrome://resources 'self' 'unsafe-eval';" is added
+  // to CSP. Override to change this.
+  virtual std::string GetContentSecurityPolicyScriptSrc() const;
 
-  // It is OK to override the following two methods to a custom CSP directive
+  // It is OK to override the following methods to a custom CSP directive
   // thereby slightly reducing the protection applied to the page.
 
   // By default, "object-src 'none';" is added to CSP. Override to change this.
   virtual std::string GetContentSecurityPolicyObjectSrc() const;
   // By default, "frame-src 'none';" is added to CSP. Override to change this.
   virtual std::string GetContentSecurityPolicyFrameSrc() const;
+  // By default empty. Override to change this.
+  virtual std::string GetContentSecurityPolicyStyleSrc() const;
+  // By default empty. Override to change this.
+  virtual std::string GetContentSecurityPolicyImgSrc() const;
 
   // By default, the "X-Frame-Options: DENY" header is sent. To stop this from
   // happening, return false. It is OK to return false as needed.
