@@ -117,7 +117,8 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     net::NetworkDelegate* network_delegate,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     const base::CommandLine& command_line,
-    bool quick_check_enabled) {
+    bool quick_check_enabled,
+    bool pac_https_url_stripping_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool use_v8 = !command_line.HasSwitch(switches::kWinHttpProxyResolver);
   // TODO(eroman): Figure out why this doesn't work in single-process mode.
@@ -187,11 +188,10 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
   }
 
   proxy_service->set_quick_check_enabled(quick_check_enabled);
-
-  if (command_line.HasSwitch(switches::kUnsafePacUrl)) {
-    proxy_service->set_sanitize_url_policy(
-        net::ProxyService::SanitizeUrlPolicy::UNSAFE);
-  }
+  proxy_service->set_sanitize_url_policy(
+      pac_https_url_stripping_enabled
+          ? net::ProxyService::SanitizeUrlPolicy::SAFE
+          : net::ProxyService::SanitizeUrlPolicy::UNSAFE);
 
   return proxy_service;
 }

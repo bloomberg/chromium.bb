@@ -52,7 +52,8 @@ class ProxyServiceFactory {
       net::NetworkDelegate* network_delegate,
       std::unique_ptr<net::ProxyConfigService> proxy_config_service,
       const base::CommandLine& command_line,
-      bool quick_check_enabled);
+      bool quick_check_enabled,
+      bool pac_https_url_stripping_enabled);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyServiceFactory);

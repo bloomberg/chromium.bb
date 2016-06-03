@@ -1767,6 +1767,16 @@
     ]
   },
 
+  "PacHttpsUrlStrippingEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "PacHttpsUrlStrippingEnabled": true },
+    "pref_mappings": [
+      { "pref": "proxy.pac_https_url_stripping_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "RegisteredProtocolHandlers": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

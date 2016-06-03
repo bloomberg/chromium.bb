@@ -770,6 +770,7 @@ extern const char kPartnerBookmarkMappings[];
 #endif
 
 extern const char kQuickCheckEnabled[];
+extern const char kPacHttpsUrlStrippingEnabled[];
 extern const char kBrowserGuestModeEnabled[];
 extern const char kBrowserAddPersonEnabled[];
 

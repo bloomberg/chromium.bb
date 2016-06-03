@@ -387,7 +387,6 @@ void NotifyContextGettersOfShutdownOnIO(
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrefService* pref_service = profile->GetPrefs();
-  PrefService* local_state_pref_service = g_browser_process->local_state();
 
   std::unique_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
@@ -499,10 +498,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
     signin_allowed_.MoveToThread(io_task_runner);
   }
-
-  quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
-                            local_state_pref_service);
-  quick_check_enabled_.MoveToThread(io_task_runner);
 
   media_device_id_salt_ = new MediaDeviceIDSalt(pref_service, IsOffTheRecord());
 
@@ -1069,7 +1064,8 @@ void ProfileIOData::Init(
       io_thread_globals->proxy_script_fetcher_context.get(),
       io_thread_globals->system_network_delegate.get(),
       std::move(profile_params_->proxy_config_service), command_line,
-      quick_check_enabled_.GetValue());
+      io_thread->WpadQuickCheckEnabled(),
+      io_thread->PacHttpsUrlStrippingEnabled());
   transport_security_state_.reset(new net::TransportSecurityState());
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   transport_security_persister_.reset(
@@ -1279,7 +1275,6 @@ void ProfileIOData::ShutdownOnUIThread(
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
   network_prediction_options_.Destroy();
-  quick_check_enabled_.Destroy();
   if (media_device_id_salt_.get())
     media_device_id_salt_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();

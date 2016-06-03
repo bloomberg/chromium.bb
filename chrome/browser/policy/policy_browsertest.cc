@@ -54,6 +54,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
@@ -1350,6 +1351,48 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableSpdy) {
   UpdateProviderPolicy(policies);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
+}
+
+namespace {
+
+// The following helpers retrieve whether https:// URL stripping is
+// enabled for PAC scripts. It needs to run on the IO thread.
+void GetPacHttpsUrlStrippingEnabledOnIOThread(IOThread* io_thread,
+                                              bool* enabled) {
+  *enabled = io_thread->PacHttpsUrlStrippingEnabled();
+}
+
+bool GetPacHttpsUrlStrippingEnabled() {
+  bool enabled;
+  base::RunLoop loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetPacHttpsUrlStrippingEnabledOnIOThread,
+                 g_browser_process->io_thread(), base::Unretained(&enabled)),
+      loop.QuitClosure());
+  loop.Run();
+  return enabled;
+}
+
+}  // namespace
+
+// Verifies that stripping of https:// URLs before sending to PAC scripts can
+// be disabled via a policy. Also verifies that stripping is enabled by
+// default.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DisablePacHttpsUrlStripping) {
+  // Stripping is enabled by default.
+  EXPECT_TRUE(GetPacHttpsUrlStrippingEnabled());
+
+  // Disable it via a policy.
+  PolicyMap policies;
+  policies.Set(key::kPacHttpsUrlStrippingEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  UpdateProviderPolicy(policies);
+  content::RunAllPendingInMessageLoop();
+
+  // It should now reflect as disabled.
+  EXPECT_FALSE(GetPacHttpsUrlStrippingEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {

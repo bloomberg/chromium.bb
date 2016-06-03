@@ -377,6 +377,10 @@ IOThread::IOThread(
                             local_state);
   quick_check_enabled_.MoveToThread(io_thread_proxy);
 
+  pac_https_url_stripping_enabled_.Init(prefs::kPacHttpsUrlStrippingEnabled,
+                                        local_state);
+  pac_https_url_stripping_enabled_.MoveToThread(io_thread_proxy);
+
   is_spdy_allowed_by_policy_ =
       policy_service
           ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
@@ -824,6 +828,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   data_reduction_proxy::RegisterPrefs(registry);
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
+  registry->RegisterBooleanPref(prefs::kPacHttpsUrlStrippingEnabled, true);
 }
 
 void IOThread::UpdateServerWhitelist() {
@@ -933,7 +938,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
       net_log_, globals_->proxy_script_fetcher_context.get(),
       globals_->system_network_delegate.get(),
       std::move(system_proxy_config_service_), command_line,
-      quick_check_enabled_.GetValue());
+      WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled());
 
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, params_, net_log_));
@@ -949,6 +954,14 @@ void IOThread::RegisterSTHObserver(net::ct::STHObserver* observer) {
 
 void IOThread::UnregisterSTHObserver(net::ct::STHObserver* observer) {
   chrome_browser_net::GetGlobalSTHDistributor()->UnregisterObserver(observer);
+}
+
+bool IOThread::WpadQuickCheckEnabled() const {
+  return quick_check_enabled_.GetValue();
+}
+
+bool IOThread::PacHttpsUrlStrippingEnabled() const {
+  return pac_https_url_stripping_enabled_.GetValue();
 }
 
 // static

@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 331
+#   For your editing convenience: highest ID currently used: 332
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8579,6 +8579,25 @@
       https://support.google.com/a/answer/1668854.
 
       Users cannot change or override this setting.''',
+    },
+    {
+      'name': 'PacHttpsUrlStrippingEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [ 'chrome.*:52-', 'chrome_os:52-' ],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 332,
+      'caption': '''Enable PAC URL stripping (for https://)''',
+      'tags': ['system-security'],
+      'desc': '''Strips privacy and security sensitive parts of https:// URLs before passing them on to PAC scripts (Proxy Auto Config) used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> during proxy resolution.
+
+      When not set (or set to true) the default behavior is to strip https:// URLs before submitting them to a PAC script. In this manner the PAC script is not able to view data that is ordinarily protected by an encrypted channel (like the path and query).
+
+      When the policy is set to false, this security feature is disabled, and PAC scripts are granted the ability to view the full URL. This setting applies to all PAC scripts regardless of origin. For instance it applies to PAC scripts obtained through WPAD as well as those fetched over an insecure transport.''',
     },
   ],
   'messages': {
