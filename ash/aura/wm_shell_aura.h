@@ -2,34 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_AURA_WM_GLOBALS_AURA_H_
-#define ASH_WM_AURA_WM_GLOBALS_AURA_H_
+#ifndef ASH_AURA_WM_SHELL_AURA_H_
+#define ASH_AURA_WM_SHELL_AURA_H_
 
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_globals.h"
+#include "ash/aura/wm_lookup_aura.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/aura/wm_lookup_aura.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
-namespace wm {
 
-class ASH_EXPORT WmGlobalsAura : public WmGlobals,
-                                 public aura::client::ActivationChangeObserver,
-                                 public WindowTreeHostManager::Observer,
-                                 public ShellObserver {
+class ASH_EXPORT WmShellAura : public WmShell,
+                               public aura::client::ActivationChangeObserver,
+                               public WindowTreeHostManager::Observer,
+                               public ShellObserver {
  public:
-  WmGlobalsAura();
-  ~WmGlobalsAura() override;
+  WmShellAura();
+  ~WmShellAura() override;
 
-  static WmGlobalsAura* Get();
+  static WmShellAura* Get();
 
-  // WmGlobals:
+  // WmShell:
   WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
@@ -44,7 +43,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   void LockCursor() override;
   void UnlockCursor() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
-  void RecordUserMetricsAction(WmUserMetricsAction action) override;
+  void RecordUserMetricsAction(wm::WmUserMetricsAction action) override;
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
@@ -81,10 +80,9 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
 
   base::ObserverList<WmOverviewModeObserver> overview_mode_observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(WmGlobalsAura);
+  DISALLOW_COPY_AND_ASSIGN(WmShellAura);
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_AURA_WM_GLOBALS_AURA_H_
+#endif  // ASH_AURA_WM_SHELL_AURA_H_

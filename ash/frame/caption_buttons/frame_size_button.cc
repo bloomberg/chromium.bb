@@ -4,6 +4,7 @@
 
 #include "ash/frame/caption_buttons/frame_size_button.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -11,7 +12,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
@@ -224,14 +224,14 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
     aura::Window* window = frame_->GetNativeWindow();
     if (!phantom_window_controller_.get()) {
       phantom_window_controller_.reset(
-          new PhantomWindowController(wm::WmWindowAura::Get(window)));
+          new PhantomWindowController(WmWindowAura::Get(window)));
     }
     gfx::Rect phantom_bounds_in_parent =
         (snap_type_ == SNAP_LEFT)
             ? wm::GetDefaultLeftSnappedWindowBoundsInParent(
-                  wm::WmWindowAura::Get(window))
+                  WmWindowAura::Get(window))
             : wm::GetDefaultRightSnappedWindowBoundsInParent(
-                  wm::WmWindowAura::Get(window));
+                  WmWindowAura::Get(window));
     phantom_window_controller_->Show(ScreenUtil::ConvertRectToScreen(
         window->parent(), phantom_bounds_in_parent));
   } else {

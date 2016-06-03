@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_AURA_WM_ROOT_CONTROLLER_AURA_H_
-#define ASH_WM_AURA_WM_ROOT_CONTROLLER_AURA_H_
+#ifndef ASH_AURA_WM_ROOT_CONTROLLER_AURA_H_
+#define ASH_AURA_WM_ROOT_CONTROLLER_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -18,8 +18,6 @@ class Window;
 namespace ash {
 
 class RootWindowController;
-
-namespace wm {
 
 class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
                                               public ShellObserver {
@@ -36,10 +34,10 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
 
   // WmRootWindowController:
   bool HasShelf() override;
-  WmGlobals* GetGlobals() override;
-  WorkspaceWindowState GetWorkspaceWindowState() override;
+  WmShell* GetShell() override;
+  wm::WorkspaceWindowState GetWorkspaceWindowState() override;
   AlwaysOnTopController* GetAlwaysOnTopController() override;
-  WmShelf* GetShelf() override;
+  wm::WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
   void ConfigureWidgetInitParamsForContainer(
       views::Widget* widget,
@@ -62,7 +60,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowControllerAura);
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_AURA_WM_ROOT_CONTROLLER_AURA_H_
+#endif  // ASH_AURA_WM_ROOT_CONTROLLER_AURA_H_

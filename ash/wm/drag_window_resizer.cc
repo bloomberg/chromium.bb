@@ -4,12 +4,12 @@
 
 #include "ash/wm/drag_window_resizer.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/weak_ptr.h"
@@ -168,7 +168,7 @@ bool DragWindowResizer::ShouldAllowMouseWarp() {
 }
 
 aura::Window* DragWindowResizer::GetAuraTarget() {
-  return wm::WmWindowAura::GetAuraWindow(GetTarget());
+  return WmWindowAura::GetAuraWindow(GetTarget());
 }
 
 }  // namespace ash

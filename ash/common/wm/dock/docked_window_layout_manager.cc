@@ -12,10 +12,10 @@
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
@@ -122,7 +122,7 @@ class DockedBackgroundWidget : public views::Widget,
       UpdateBackground();
   }
 
-  void InitWidget(wm::WmWindow* parent) {
+  void InitWidget(WmWindow* parent) {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -134,7 +134,7 @@ class DockedBackgroundWidget : public views::Widget,
         this, parent->GetShellWindowId(), &params);
     Init(params);
     SetVisibilityChangedAnimationsEnabled(false);
-    wm::WmWindow* wm_window = wm::WmLookup::Get()->GetWindowForWidget(this);
+    WmWindow* wm_window = WmLookup::Get()->GetWindowForWidget(this);
     wm_window->SetLockedToRoot(true);
     opaque_background_.SetColor(SK_ColorBLACK);
     opaque_background_.SetBounds(gfx::Rect(GetWindowBoundsInScreen().size()));
@@ -215,21 +215,21 @@ class DockedBackgroundWidget : public views::Widget,
 namespace {
 
 // Returns true if a window is a popup or a transient child.
-bool IsPopupOrTransient(const wm::WmWindow* window) {
+bool IsPopupOrTransient(const WmWindow* window) {
   return (window->GetType() == ui::wm::WINDOW_TYPE_POPUP ||
           window->GetTransientParent());
 }
 
 // Certain windows (minimized, hidden or popups) are not docked and are ignored
 // by layout logic even when they are children of a docked container.
-bool IsWindowDocked(const wm::WmWindow* window) {
+bool IsWindowDocked(const WmWindow* window) {
   return (window->IsVisible() && !window->GetWindowState()->IsMinimized() &&
           !IsPopupOrTransient(window));
 }
 
-void UndockWindow(wm::WmWindow* window) {
+void UndockWindow(WmWindow* window) {
   gfx::Rect previous_bounds = window->GetBounds();
-  wm::WmWindow* old_parent = window->GetParent();
+  WmWindow* old_parent = window->GetParent();
   window->SetParentUsingContext(window, gfx::Rect());
   if (window->GetParent() != old_parent) {
     wm::ReparentTransientChildrenOfChild(window, old_parent,
@@ -243,7 +243,7 @@ void UndockWindow(wm::WmWindow* window) {
 // Returns width that is as close as possible to |target_width| while being
 // consistent with docked min and max restrictions and respects the |window|'s
 // minimum and maximum size.
-int GetWindowWidthCloseTo(const wm::WmWindow* window, int target_width) {
+int GetWindowWidthCloseTo(const WmWindow* window, int target_width) {
   if (!window->GetWindowState()->CanResize()) {
     DCHECK_LE(window->GetBounds().width(),
               DockedWindowLayoutManager::kMaxDockWidth);
@@ -261,7 +261,7 @@ int GetWindowWidthCloseTo(const wm::WmWindow* window, int target_width) {
 
 // Returns height that is as close as possible to |target_height| while
 // respecting the |window|'s minimum and maximum size.
-int GetWindowHeightCloseTo(const wm::WmWindow* window, int target_height) {
+int GetWindowHeightCloseTo(const WmWindow* window, int target_height) {
   if (!window->GetWindowState()->CanResize())
     return window->GetBounds().height();
   int minimum_height =
@@ -277,9 +277,9 @@ int GetWindowHeightCloseTo(const wm::WmWindow* window, int target_height) {
 }  // namespace
 
 struct DockedWindowLayoutManager::WindowWithHeight {
-  explicit WindowWithHeight(wm::WmWindow* window)
+  explicit WindowWithHeight(WmWindow* window)
       : window(window), height(window->GetBounds().height()) {}
-  wm::WmWindow* window;
+  WmWindow* window;
   int height;
 };
 
@@ -297,8 +297,8 @@ struct DockedWindowLayoutManager::CompareMinimumHeight {
 // Half of |delta| is used as a transition point at which windows could ideally
 // swap positions.
 struct DockedWindowLayoutManager::CompareWindowPos {
-  CompareWindowPos(wm::WmWindow* dragged_window,
-                   wm::WmWindow* docked_container,
+  CompareWindowPos(WmWindow* dragged_window,
+                   WmWindow* docked_container,
                    float delta)
       : dragged_window_(dragged_window),
         docked_container_(docked_container),
@@ -308,8 +308,8 @@ struct DockedWindowLayoutManager::CompareWindowPos {
                   const WindowWithHeight& window_with_height2) {
     // Use target coordinates since animations may be active when windows are
     // reordered.
-    wm::WmWindow* win1(window_with_height1.window);
-    wm::WmWindow* win2(window_with_height2.window);
+    WmWindow* win1(window_with_height1.window);
+    WmWindow* win2(window_with_height2.window);
     gfx::Rect win1_bounds =
         docked_container_->ConvertRectToScreen(win1->GetTargetBounds());
     gfx::Rect win2_bounds =
@@ -352,15 +352,14 @@ struct DockedWindowLayoutManager::CompareWindowPos {
   }
 
  private:
-  wm::WmWindow* dragged_window_;
-  wm::WmWindow* docked_container_;
+  WmWindow* dragged_window_;
+  WmWindow* docked_container_;
   float delta_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // A class that observes shelf for bounds changes.
-class DockedWindowLayoutManager::ShelfWindowObserver
-    : public wm::WmWindowObserver {
+class DockedWindowLayoutManager::ShelfWindowObserver : public WmWindowObserver {
  public:
   explicit ShelfWindowObserver(DockedWindowLayoutManager* docked_layout_manager)
       : docked_layout_manager_(docked_layout_manager) {
@@ -375,8 +374,8 @@ class DockedWindowLayoutManager::ShelfWindowObserver
     }
   }
 
-  // wm::WmWindowObserver:
-  void OnWindowBoundsChanged(wm::WmWindow* window,
+  // WmWindowObserver:
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
     shelf_bounds_in_screen_ =
@@ -397,8 +396,7 @@ class DockedWindowLayoutManager::ShelfWindowObserver
 
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager public implementation:
-DockedWindowLayoutManager::DockedWindowLayoutManager(
-    wm::WmWindow* dock_container)
+DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
     : dock_container_(dock_container),
       root_window_controller_(dock_container->GetRootWindowController()),
       in_layout_(false),
@@ -416,7 +414,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       last_action_time_(base::Time::Now()),
       background_widget_(nullptr) {
   DCHECK(dock_container);
-  dock_container->GetGlobals()->AddActivationObserver(this);
+  dock_container->GetShell()->AddActivationObserver(this);
   root_window_controller_->AddObserver(this);
 }
 
@@ -425,12 +423,11 @@ DockedWindowLayoutManager::~DockedWindowLayoutManager() {
 }
 
 // static
-DockedWindowLayoutManager* DockedWindowLayoutManager::Get(
-    wm::WmWindow* window) {
+DockedWindowLayoutManager* DockedWindowLayoutManager::Get(WmWindow* window) {
   if (!window)
     return nullptr;
 
-  wm::WmWindow* root = window->GetRootWindow();
+  WmWindow* root = window->GetRootWindow();
   return static_cast<DockedWindowLayoutManager*>(
       root->GetChildByShellWindowId(kShellWindowId_DockedContainer)
           ->GetLayoutManager());
@@ -440,11 +437,11 @@ void DockedWindowLayoutManager::Shutdown() {
   background_widget_.reset();
   shelf_observer_.reset();
   shelf_ = nullptr;
-  for (wm::WmWindow* child : dock_container_->GetChildren()) {
+  for (WmWindow* child : dock_container_->GetChildren()) {
     child->RemoveObserver(this);
     child->GetWindowState()->RemoveObserver(this);
   }
-  dock_container_->GetGlobals()->RemoveActivationObserver(this);
+  dock_container_->GetShell()->RemoveActivationObserver(this);
   root_window_controller_->RemoveObserver(this);
 }
 
@@ -458,7 +455,7 @@ void DockedWindowLayoutManager::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void DockedWindowLayoutManager::StartDragging(wm::WmWindow* window) {
+void DockedWindowLayoutManager::StartDragging(WmWindow* window) {
   DCHECK(!dragged_window_);
   dragged_window_ = window;
   DCHECK(!IsPopupOrTransient(window));
@@ -486,7 +483,7 @@ void DockedWindowLayoutManager::StartDragging(wm::WmWindow* window) {
        WindowResizer::kBoundsChange_Resizes) &&
       (dragged_state->drag_details()->size_change_direction &
        WindowResizer::kBoundsChangeDirection_Horizontal)) {
-    for (wm::WmWindow* window1 : dock_container_->GetChildren()) {
+    for (WmWindow* window1 : dock_container_->GetChildren()) {
       if (IsWindowDocked(window1) && window1 != dragged_window_ &&
           window1->GetBounds().width() == docked_width_) {
         window1->GetWindowState()->set_bounds_changed_by_user(false);
@@ -495,7 +492,7 @@ void DockedWindowLayoutManager::StartDragging(wm::WmWindow* window) {
   }
 }
 
-void DockedWindowLayoutManager::DockDraggedWindow(wm::WmWindow* window) {
+void DockedWindowLayoutManager::DockDraggedWindow(WmWindow* window) {
   DCHECK(!IsPopupOrTransient(window));
   OnDraggedWindowDocked(window);
   Relayout();
@@ -547,7 +544,7 @@ void DockedWindowLayoutManager::SetShelf(wm::WmShelf* shelf) {
 }
 
 DockedAlignment DockedWindowLayoutManager::GetAlignmentOfWindow(
-    const wm::WmWindow* window) const {
+    const WmWindow* window) const {
   const gfx::Rect& bounds(window->GetBoundsInScreen());
 
   // Test overlap with an existing docked area first.
@@ -573,12 +570,12 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
 }
 
 DockedAlignment DockedWindowLayoutManager::CalculateAlignmentExcept(
-    const wm::WmWindow* window) const {
+    const WmWindow* window) const {
   // Find a child that is not the window being queried and is not a popup.
   // If such exists the current alignment is returned - even if some of the
   // children are hidden or minimized (so they can be restored without losing
   // the docked state).
-  for (wm::WmWindow* child : dock_container_->GetChildren()) {
+  for (WmWindow* child : dock_container_->GetChildren()) {
     if (window != child && !IsPopupOrTransient(child))
       return alignment_;
   }
@@ -588,7 +585,7 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignmentExcept(
 }
 
 bool DockedWindowLayoutManager::CanDockWindow(
-    wm::WmWindow* window,
+    WmWindow* window,
     DockedAlignment desired_alignment) {
   // Don't allow interactive docking of windows with transient parents such as
   // modal browser dialogs. Prevent docking of panels attached to shelf during
@@ -671,7 +668,7 @@ void DockedWindowLayoutManager::OnWindowResized() {
   UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_RESIZED);
 }
 
-void DockedWindowLayoutManager::OnWindowAddedToLayout(wm::WmWindow* child) {
+void DockedWindowLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   if (IsPopupOrTransient(child))
     return;
   // Dragged windows are already observed by StartDragging and do not change
@@ -699,7 +696,7 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(wm::WmWindow* child) {
     RecordUmaAction(DOCKED_ACTION_DOCK, event_source_);
 }
 
-void DockedWindowLayoutManager::OnWindowRemovedFromLayout(wm::WmWindow* child) {
+void DockedWindowLayoutManager::OnWindowRemovedFromLayout(WmWindow* child) {
   if (IsPopupOrTransient(child))
     return;
   // Dragged windows are stopped being observed by FinishDragging and do not
@@ -720,9 +717,8 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(wm::WmWindow* child) {
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
-void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
-    wm::WmWindow* child,
-    bool visible) {
+void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(WmWindow* child,
+                                                               bool visible) {
   if (IsPopupOrTransient(child))
     return;
 
@@ -734,7 +730,7 @@ void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
 }
 
 void DockedWindowLayoutManager::SetChildBounds(
-    wm::WmWindow* child,
+    WmWindow* child,
     const gfx::Rect& requested_bounds) {
   // The minimum constraints have to be applied first by the layout manager.
   gfx::Rect actual_new_bounds(requested_bounds);
@@ -773,7 +769,7 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(bool is_fullscreen) {
     base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
     // Use a copy of children array because a call to MinimizeDockedWindow or
     // RestoreDockedWindow can change order.
-    for (wm::WmWindow* window : dock_container_->GetChildren()) {
+    for (WmWindow* window : dock_container_->GetChildren()) {
       if (IsPopupOrTransient(window))
         continue;
       wm::WindowState* window_state = window->GetWindowState();
@@ -814,7 +810,7 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged() {
 void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
     wm::WindowState* window_state,
     wm::WindowStateType old_type) {
-  wm::WmWindow* window = window_state->window();
+  WmWindow* window = window_state->window();
   if (IsPopupOrTransient(window))
     return;
   // The window property will still be set, but no actual change will occur
@@ -842,7 +838,7 @@ void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
 // DockedWindowLayoutManager, WindowObserver implementation:
 
 void DockedWindowLayoutManager::OnWindowBoundsChanged(
-    wm::WmWindow* window,
+    WmWindow* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   // Only relayout if the dragged window would get docked.
@@ -850,7 +846,7 @@ void DockedWindowLayoutManager::OnWindowBoundsChanged(
     Relayout();
 }
 
-void DockedWindowLayoutManager::OnWindowVisibilityChanging(wm::WmWindow* window,
+void DockedWindowLayoutManager::OnWindowVisibilityChanging(WmWindow* window,
                                                            bool visible) {
   if (IsPopupOrTransient(window))
     return;
@@ -865,7 +861,7 @@ void DockedWindowLayoutManager::OnWindowVisibilityChanging(wm::WmWindow* window,
   window->SetVisibilityAnimationType(animation_type);
 }
 
-void DockedWindowLayoutManager::OnWindowDestroying(wm::WmWindow* window) {
+void DockedWindowLayoutManager::OnWindowDestroying(WmWindow* window) {
   if (dragged_window_ == window) {
     FinishDragging(DOCKED_ACTION_NONE, DOCKED_ACTION_SOURCE_UNKNOWN);
     DCHECK(!dragged_window_);
@@ -877,16 +873,15 @@ void DockedWindowLayoutManager::OnWindowDestroying(wm::WmWindow* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DockedWindowLayoutManager, wm::WmActivationObserver implementation:
+// DockedWindowLayoutManager, WmActivationObserver implementation:
 
-void DockedWindowLayoutManager::OnWindowActivated(wm::WmWindow* gained_active,
-                                                  wm::WmWindow* lost_active) {
+void DockedWindowLayoutManager::OnWindowActivated(WmWindow* gained_active,
+                                                  WmWindow* lost_active) {
   if (gained_active && IsPopupOrTransient(gained_active))
     return;
   // Ignore if the window that is not managed by this was activated.
-  wm::WmWindow* ancestor = nullptr;
-  for (wm::WmWindow* parent = gained_active; parent;
-       parent = parent->GetParent()) {
+  WmWindow* ancestor = nullptr;
+  for (WmWindow* parent = gained_active; parent; parent = parent->GetParent()) {
     if (parent->GetParent() == dock_container_) {
       ancestor = parent;
       break;
@@ -899,8 +894,7 @@ void DockedWindowLayoutManager::OnWindowActivated(wm::WmWindow* gained_active,
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager private implementation:
 
-void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
-    wm::WmWindow* child) {
+void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(WmWindow* child) {
   // Minimize any windows that don't fit without overlap.
   const gfx::Rect work_area =
       dock_container_->GetDisplayNearestWindow().work_area();
@@ -909,9 +903,9 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
   if (child)
     available_room -= GetWindowHeightCloseTo(child, 0);
   // Use a copy of children array because a call to Minimize can change order.
-  std::vector<wm::WmWindow*> children(dock_container_->GetChildren());
+  std::vector<WmWindow*> children(dock_container_->GetChildren());
   for (auto iter = children.rbegin(); iter != children.rend(); ++iter) {
-    wm::WmWindow* window(*iter);
+    WmWindow* window(*iter);
     if (window == child || !IsWindowDocked(window))
       continue;
     int room_needed =
@@ -943,7 +937,7 @@ void DockedWindowLayoutManager::MinimizeDockedWindow(
 
 void DockedWindowLayoutManager::RestoreDockedWindow(
     wm::WindowState* window_state) {
-  wm::WmWindow* window = window_state->window();
+  WmWindow* window = window_state->window();
   DCHECK(!IsPopupOrTransient(window));
 
   // Evict the window if it can no longer be docked because of its height.
@@ -983,7 +977,7 @@ void DockedWindowLayoutManager::RecordUmaAction(DockedAction action,
   int docked_visible_count = 0;
   int docked_panels_count = 0;
   int large_windows_count = 0;
-  for (wm::WmWindow* window : dock_container_->GetChildren()) {
+  for (WmWindow* window : dock_container_->GetChildren()) {
     if (IsPopupOrTransient(window))
       continue;
     docked_all_count++;
@@ -1012,7 +1006,7 @@ void DockedWindowLayoutManager::UpdateDockedWidth(int width) {
   UMA_HISTOGRAM_COUNTS_10000("Ash.Dock.Width", docked_width_);
 }
 
-void DockedWindowLayoutManager::OnDraggedWindowDocked(wm::WmWindow* window) {
+void DockedWindowLayoutManager::OnDraggedWindowDocked(WmWindow* window) {
   DCHECK(!is_dragged_window_docked_);
   is_dragged_window_docked_ = true;
 }
@@ -1027,7 +1021,7 @@ bool DockedWindowLayoutManager::IsAnyWindowDocked() {
 }
 
 DockedAlignment DockedWindowLayoutManager::GetEdgeNearestWindow(
-    const wm::WmWindow* window) const {
+    const WmWindow* window) const {
   const gfx::Rect bounds(window->GetBoundsInScreen());
   const gfx::Rect container_bounds = dock_container_->GetBoundsInScreen();
   // Give one pixel preference for docking on the right side to a window that
@@ -1047,9 +1041,9 @@ void DockedWindowLayoutManager::Relayout() {
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
   gfx::Rect dock_bounds = dock_container_->GetBoundsInScreen();
-  wm::WmWindow* active_window = nullptr;
+  WmWindow* active_window = nullptr;
   std::vector<WindowWithHeight> visible_windows;
-  for (wm::WmWindow* window : dock_container_->GetChildren()) {
+  for (WmWindow* window : dock_container_->GetChildren()) {
     if (!IsWindowDocked(window) || window == dragged_window_)
       continue;
 
@@ -1062,7 +1056,7 @@ void DockedWindowLayoutManager::Relayout() {
       continue;
     }
     if (window->IsFocused() ||
-        window->Contains(window->GetGlobals()->GetFocusedWindow())) {
+        window->Contains(window->GetShell()->GetFocusedWindow())) {
       DCHECK(!active_window);
       active_window = window;
     }
@@ -1128,7 +1122,7 @@ int DockedWindowLayoutManager::CalculateIdealWidth(
   for (std::vector<WindowWithHeight>::const_iterator iter =
            visible_windows.begin();
        iter != visible_windows.end(); ++iter) {
-    const wm::WmWindow* window = iter->window;
+    const WmWindow* window = iter->window;
     int min_window_width = window->GetBounds().width();
     int max_window_width = min_window_width;
     if (!window->GetWindowState()->bounds_changed_by_user()) {
@@ -1176,7 +1170,7 @@ void DockedWindowLayoutManager::FanOutChildren(
                              dock_container_, delta));
   for (std::vector<WindowWithHeight>::iterator iter = visible_windows->begin();
        iter != visible_windows->end(); ++iter) {
-    wm::WmWindow* window = iter->window;
+    WmWindow* window = iter->window;
     gfx::Rect bounds =
         dock_container_->ConvertRectToScreen(window->GetTargetBounds());
     // A window is extended or shrunk to be as close as possible to the ideal
@@ -1262,7 +1256,7 @@ void DockedWindowLayoutManager::UpdateDockBounds(
   }
 }
 
-void DockedWindowLayoutManager::UpdateStacking(wm::WmWindow* active_window) {
+void DockedWindowLayoutManager::UpdateStacking(WmWindow* active_window) {
   if (!active_window) {
     if (!last_active_window_)
       return;
@@ -1281,8 +1275,8 @@ void DockedWindowLayoutManager::UpdateStacking(wm::WmWindow* active_window) {
   // Use the middle of each window to figure out how to stack the window.
   // This allows us to update the stacking when a window is being dragged around
   // by the titlebar.
-  std::map<int, wm::WmWindow*> window_ordering;
-  for (wm::WmWindow* child : dock_container_->GetChildren()) {
+  std::map<int, WmWindow*> window_ordering;
+  for (WmWindow* child : dock_container_->GetChildren()) {
     if (!IsWindowDocked(child) ||
         (child == dragged_window_ && !is_dragged_window_docked_)) {
       continue;
@@ -1293,15 +1287,14 @@ void DockedWindowLayoutManager::UpdateStacking(wm::WmWindow* active_window) {
   }
   int active_center_y = active_window->GetBounds().CenterPoint().y();
 
-  wm::WmWindow* previous_window = nullptr;
-  for (std::map<int, wm::WmWindow*>::const_iterator it =
-           window_ordering.begin();
+  WmWindow* previous_window = nullptr;
+  for (std::map<int, WmWindow*>::const_iterator it = window_ordering.begin();
        it != window_ordering.end() && it->first < active_center_y; ++it) {
     if (previous_window)
       dock_container_->StackChildAbove(it->second, previous_window);
     previous_window = it->second;
   }
-  for (std::map<int, wm::WmWindow*>::const_reverse_iterator it =
+  for (std::map<int, WmWindow*>::const_reverse_iterator it =
            window_ordering.rbegin();
        it != window_ordering.rend() && it->first > active_center_y; ++it) {
     if (previous_window)

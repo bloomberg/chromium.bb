@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
@@ -14,7 +15,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"
@@ -38,7 +38,7 @@ LockWindowState::~LockWindowState() {
 void LockWindowState::OnWMEvent(wm::WindowState* window_state,
                                 const wm::WMEvent* event) {
   aura::Window* window =
-      ash::wm::WmWindowAura::GetAuraWindow(window_state->window());
+      ash::WmWindowAura::GetAuraWindow(window_state->window());
   gfx::Rect bounds = window->bounds();
 
   switch (event->type()) {
@@ -197,7 +197,7 @@ void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
     keyboard_bounds = keyboard_controller->current_keyboard_bounds();
   }
   gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInRoot(
-      ash::wm::WmWindowAura::GetAuraWindow(window_state->window()));
+      ash::WmWindowAura::GetAuraWindow(window_state->window()));
 
   bounds.set_height(bounds.height() - keyboard_bounds.height());
 

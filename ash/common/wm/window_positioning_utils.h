@@ -13,9 +13,10 @@ class Size;
 }
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // We force at least this many DIPs for any window on the screen.
 const int kMinimumOnScreenArea = 25;

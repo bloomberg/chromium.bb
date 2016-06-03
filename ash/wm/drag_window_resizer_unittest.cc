@@ -4,6 +4,7 @@
 
 #include "ash/wm/drag_window_resizer.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/display/display_manager.h"
@@ -14,7 +15,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -144,7 +144,7 @@ class DragWindowResizerTest : public test::AshTestBase {
       aura::Window* window,
       const gfx::Point& point_in_parent,
       int window_component) {
-    return CreateWindowResizer(wm::WmWindowAura::Get(window), point_in_parent,
+    return CreateWindowResizer(WmWindowAura::Get(window), point_in_parent,
                                window_component,
                                aura::client::WINDOW_MOVE_SOURCE_MOUSE)
         .release();

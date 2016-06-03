@@ -4,9 +4,9 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "base/timer/timer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -180,7 +180,7 @@ void AutoclickControllerImpl::DoAutoclick() {
   gfx::Point screen_location =
       aura::Env::GetInstance()->last_mouse_location();
   aura::Window* root_window =
-      wm::WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(screen_location));
+      WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(screen_location));
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
   gfx::Point click_location(screen_location);

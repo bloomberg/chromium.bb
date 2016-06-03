@@ -16,9 +16,9 @@
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/mus/background_layout.h"
-#include "ash/mus/bridge/wm_globals_mus.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shelf_mus.h"
+#include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
 #include "ash/mus/fill_layout.h"
@@ -172,7 +172,7 @@ void RootWindowController::OnEmbed(::mus::Window* root) {
   app_->OnRootWindowControllerGotRoot(this);
 
   wm_root_window_controller_.reset(
-      new WmRootWindowControllerMus(app_->globals(), this));
+      new WmRootWindowControllerMus(app_->shell(), this));
 
   CreateContainers();
 
@@ -181,7 +181,7 @@ void RootWindowController::OnEmbed(::mus::Window* root) {
         GetWindowForContainer(kActivationContainers[i]));
   }
 
-  wm::WmWindow* always_on_top_container =
+  WmWindow* always_on_top_container =
       WmWindowMus::Get(root)->GetChildByShellWindowId(
           kShellWindowId_AlwaysOnTopContainer);
   always_on_top_controller_.reset(

@@ -45,7 +45,7 @@ class RootWindowController;
 class RootWindowsObserver;
 class ShelfLayoutImpl;
 class UserWindowControllerImpl;
-class WmGlobalsMus;
+class WmShellMus;
 class WmLookupMus;
 class WmScreen;
 
@@ -67,7 +67,7 @@ class WindowManagerApplication
   // RootWindowController that has a valid root window.
   std::set<RootWindowController*> GetRootControllers();
 
-  WmGlobalsMus* globals() { return globals_.get(); }
+  WmShellMus* shell() { return shell_.get(); }
 
   // Called when the root window of |root_controller| is obtained.
   void OnRootWindowControllerGotRoot(RootWindowController* root_controller);
@@ -129,7 +129,7 @@ class WindowManagerApplication
   std::unique_ptr<display::Screen> screen_;
   std::unique_ptr<views::AuraInit> aura_init_;
 
-  std::unique_ptr<WmGlobalsMus> globals_;
+  std::unique_ptr<WmShellMus> shell_;
   std::unique_ptr<WmLookupMus> lookup_;
 
   // The |shelf_layout_| object is created once OnEmbed() is called. Until that

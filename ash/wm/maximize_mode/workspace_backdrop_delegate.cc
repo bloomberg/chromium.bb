@@ -83,21 +83,20 @@ WorkspaceBackdropDelegate::~WorkspaceBackdropDelegate() {
   background_->GetNativeView()->layer()->SetOpacity(0.0f);
 }
 
-void WorkspaceBackdropDelegate::OnWindowAddedToLayout(wm::WmWindow* child) {
+void WorkspaceBackdropDelegate::OnWindowAddedToLayout(WmWindow* child) {
   RestackBackdrop();
 }
 
-void WorkspaceBackdropDelegate::OnWindowRemovedFromLayout(wm::WmWindow* child) {
+void WorkspaceBackdropDelegate::OnWindowRemovedFromLayout(WmWindow* child) {
   RestackBackdrop();
 }
 
-void WorkspaceBackdropDelegate::OnChildWindowVisibilityChanged(
-    wm::WmWindow* child,
-    bool visible) {
+void WorkspaceBackdropDelegate::OnChildWindowVisibilityChanged(WmWindow* child,
+                                                               bool visible) {
   RestackBackdrop();
 }
 
-void WorkspaceBackdropDelegate::OnWindowStackingChanged(wm::WmWindow* window) {
+void WorkspaceBackdropDelegate::OnWindowStackingChanged(WmWindow* window) {
   RestackBackdrop();
 }
 

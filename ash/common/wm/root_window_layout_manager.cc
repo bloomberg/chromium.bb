@@ -4,8 +4,8 @@
 
 #include "ash/common/wm/root_window_layout_manager.h"
 
-#include "ash/common/wm/wm_window.h"
-#include "ash/common/wm/wm_window_tracker.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_tracker.h"
 
 namespace ash {
 namespace wm {

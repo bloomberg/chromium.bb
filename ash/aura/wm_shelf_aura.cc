@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/aura/wm_shelf_aura.h"
+#include "ash/aura/wm_shelf_aura.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/shelf/wm_shelf_observer.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -56,8 +56,7 @@ void WmShelfAura::UpdateIconPositionForWindow(WmWindow* window) {
   shelf_->UpdateIconPositionForWindow(WmWindowAura::GetAuraWindow(window));
 }
 
-gfx::Rect WmShelfAura::GetScreenBoundsOfItemIconForWindow(
-    wm::WmWindow* window) {
+gfx::Rect WmShelfAura::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   return shelf_->GetScreenBoundsOfItemIconForWindow(
       WmWindowAura::GetAuraWindow(window));
 }

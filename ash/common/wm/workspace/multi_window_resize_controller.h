@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -34,14 +34,14 @@ enum Direction {
 // MultiWindowResizeController is driven by WorkspaceEventFilter.
 class ASH_EXPORT MultiWindowResizeController
     : public views::MouseWatcherListener,
-      public wm::WmWindowObserver {
+      public WmWindowObserver {
  public:
   MultiWindowResizeController();
   ~MultiWindowResizeController() override;
 
   // If necessary, shows the resize widget. |window| is the window the mouse
   // is over, |component| the edge and |point| the location of the mouse.
-  void Show(wm::WmWindow* window, int component, const gfx::Point& point);
+  void Show(WmWindow* window, int component, const gfx::Point& point);
 
   // Hides the resize widget.
   void Hide();
@@ -50,7 +50,7 @@ class ASH_EXPORT MultiWindowResizeController
   void MouseMovedOutOfHost() override;
 
   // WindowObserver overrides:
-  void OnWindowDestroying(wm::WmWindow* window) override;
+  void OnWindowDestroying(WmWindow* window) override;
 
  private:
   friend class MultiWindowResizeControllerTest;
@@ -69,17 +69,17 @@ class ASH_EXPORT MultiWindowResizeController
     bool is_valid() const { return window1 && window2; }
 
     // The left/top window to resize.
-    wm::WmWindow* window1;
+    WmWindow* window1;
 
     // Other window to resize.
-    wm::WmWindow* window2;
+    WmWindow* window2;
 
     // Direction
     Direction direction;
 
     // Windows after |window2| that are to be resized. Determined at the time
     // the resize starts.
-    std::vector<wm::WmWindow*> other_windows;
+    std::vector<WmWindow*> other_windows;
   };
 
   class ResizeMouseWatcherHost;
@@ -89,28 +89,27 @@ class ASH_EXPORT MultiWindowResizeController
 
   // Returns a ResizeWindows based on the specified arguments. Use is_valid()
   // to test if the return value is a valid multi window resize location.
-  ResizeWindows DetermineWindows(wm::WmWindow* window,
+  ResizeWindows DetermineWindows(WmWindow* window,
                                  int window_component,
                                  const gfx::Point& point) const;
 
   // Variant of DetermineWindows() that uses the current location of the mouse
   // to determine the resize windows.
-  ResizeWindows DetermineWindowsFromScreenPoint(wm::WmWindow* window) const;
+  ResizeWindows DetermineWindowsFromScreenPoint(WmWindow* window) const;
 
   // Finds a window by edge (one of the constants HitTestCompat.
-  wm::WmWindow* FindWindowByEdge(wm::WmWindow* window_to_ignore,
-                                 int edge_want,
-                                 int x_in_parent,
-                                 int y_in_parent) const;
+  WmWindow* FindWindowByEdge(WmWindow* window_to_ignore,
+                             int edge_want,
+                             int x_in_parent,
+                             int y_in_parent) const;
 
   // Returns the first window touching |window|.
-  wm::WmWindow* FindWindowTouching(wm::WmWindow* window,
-                                   Direction direction) const;
+  WmWindow* FindWindowTouching(WmWindow* window, Direction direction) const;
 
   // Places any windows touching |start| into |others|.
-  void FindWindowsTouching(wm::WmWindow* start,
+  void FindWindowsTouching(WmWindow* start,
                            Direction direction,
-                           std::vector<wm::WmWindow*>* others) const;
+                           std::vector<WmWindow*>* others) const;
 
   // Shows the resizer if the mouse is still at a valid location. This is called
   // from the |show_timer_|.
@@ -146,7 +145,7 @@ class ASH_EXPORT MultiWindowResizeController
   bool IsOverWindows(const gfx::Point& location_in_screen) const;
 
   // Returns true if |location_in_screen| is over |component| in |window|.
-  bool IsOverComponent(wm::WmWindow* window,
+  bool IsOverComponent(WmWindow* window,
                        const gfx::Point& location_in_screen,
                        int component) const;
 

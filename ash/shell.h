@@ -162,6 +162,7 @@ class WebNotificationTray;
 class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
+class WmShellAura;
 
 namespace shell {
 class WindowWatcher;
@@ -169,10 +170,6 @@ class WindowWatcher;
 
 namespace test {
 class ShellTestApi;
-}
-
-namespace wm {
-class WmGlobalsAura;
 }
 
 // Shell is a singleton object that presents the Shell API and implements the
@@ -661,7 +658,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
       scoped_overview_animation_settings_factory_;
-  std::unique_ptr<wm::WmGlobalsAura> wm_globals_;
+  std::unique_ptr<WmShellAura> wm_shell_;
 
   // When no explicit target display/RootWindow is given, new windows are
   // created on |scoped_target_root_window_| , unless NULL in

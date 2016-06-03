@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/aura/aura_layout_manager_adapter.h"
+#include "ash/aura/aura_layout_manager_adapter.h"
 
-#include "ash/common/wm/wm_layout_manager.h"
-#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm_layout_manager.h"
 
 namespace ash {
-namespace wm {
 
 AuraLayoutManagerAdapter::AuraLayoutManagerAdapter(
     std::unique_ptr<WmLayoutManager> wm_layout_manager)
@@ -47,5 +46,4 @@ void AuraLayoutManagerAdapter::SetChildBounds(
                                      requested_bounds);
 }
 
-}  // namespace wm
 }  // namespace ash

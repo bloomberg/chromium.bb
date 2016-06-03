@@ -8,9 +8,9 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_window.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
@@ -66,7 +66,7 @@ int GetWindowComponent(WmWindow* window, const ui::LocatedEvent& event) {
 // the window is destroyed ResizerWindowDestroyed() is invoked back on the
 // WmToplevelWindowEventHandler to clean up.
 class WmToplevelWindowEventHandler::ScopedWindowResizer
-    : public wm::WmWindowObserver,
+    : public WmWindowObserver,
       public wm::WindowStateObserver {
  public:
   ScopedWindowResizer(WmToplevelWindowEventHandler* handler,
@@ -79,7 +79,7 @@ class WmToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
-  void OnWindowDestroying(wm::WmWindow* window) override;
+  void OnWindowDestroying(WmWindow* window) override;
 
   // WindowStateObserver overrides:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
@@ -99,7 +99,7 @@ WmToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     WmToplevelWindowEventHandler* handler,
     std::unique_ptr<WindowResizer> resizer)
     : handler_(handler), resizer_(std::move(resizer)), grabbed_capture_(false) {
-  wm::WmWindow* target = resizer_->GetTarget();
+  WmWindow* target = resizer_->GetTarget();
   target->AddObserver(this);
   target->GetWindowState()->AddObserver(this);
 
@@ -110,7 +110,7 @@ WmToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
 }
 
 WmToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
-  wm::WmWindow* target = resizer_->GetTarget();
+  WmWindow* target = resizer_->GetTarget();
   target->RemoveObserver(this);
   target->GetWindowState()->RemoveObserver(this);
   if (grabbed_capture_)
@@ -129,7 +129,7 @@ void WmToplevelWindowEventHandler::ScopedWindowResizer::
 }
 
 void WmToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
-    wm::WmWindow* window) {
+    WmWindow* window) {
   DCHECK_EQ(resizer_->GetTarget(), window);
   handler_->ResizerWindowDestroyed();
 }
@@ -137,13 +137,13 @@ void WmToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 // WmToplevelWindowEventHandler
 // --------------------------------------------------
 
-WmToplevelWindowEventHandler::WmToplevelWindowEventHandler(WmGlobals* globals)
-    : globals_(globals), first_finger_hittest_(HTNOWHERE) {
-  globals_->AddDisplayObserver(this);
+WmToplevelWindowEventHandler::WmToplevelWindowEventHandler(WmShell* shell)
+    : shell_(shell), first_finger_hittest_(HTNOWHERE) {
+  shell_->AddDisplayObserver(this);
 }
 
 WmToplevelWindowEventHandler::~WmToplevelWindowEventHandler() {
-  globals_->RemoveDisplayObserver(this);
+  shell_->RemoveDisplayObserver(this);
 }
 
 void WmToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {

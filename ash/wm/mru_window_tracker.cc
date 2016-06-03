@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/ash_focus_rules.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
@@ -87,7 +87,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
          ix != mru_windows->rend(); ++ix) {
       // Exclude windows in non-switchable containers and those which cannot
       // be activated.
-      if (!wm::IsSwitchableContainer(wm::WmWindowAura::Get((*ix)->parent())) ||
+      if (!wm::IsSwitchableContainer(WmWindowAura::Get((*ix)->parent())) ||
           !should_include_window_predicate.Run(*ix)) {
         continue;
       }

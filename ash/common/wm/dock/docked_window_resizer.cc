@@ -9,10 +9,10 @@
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
 #include "ash/common/wm/workspace/magnetism_matcher.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"
@@ -29,7 +29,7 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     return nullptr;
 
   return DockedWindowLayoutManager::Get(
-      wm::WmLookup::Get()
+      WmLookup::Get()
           ->GetRootWindowControllerWithDisplayId(display.id())
           ->GetWindow());
 }
@@ -186,11 +186,11 @@ void DockedWindowResizer::StartedDragging(
           kShellWindowId_DefaultContainer) {
     // Reparent the window into the docked windows container in order to get it
     // on top of other docked windows.
-    wm::WmWindow* docked_container =
+    WmWindow* docked_container =
         GetTarget()->GetRootWindow()->GetChildByShellWindowId(
             kShellWindowId_DockedContainer);
-    ReparentChildWithTransientChildren(GetTarget(), GetTarget()->GetParent(),
-                                       docked_container);
+    wm::ReparentChildWithTransientChildren(
+        GetTarget(), GetTarget()->GetParent(), docked_container);
     if (!resizer)
       return;
   }
@@ -203,7 +203,7 @@ void DockedWindowResizer::FinishedDragging(
   if (!did_move_or_resize_)
     return;
   did_move_or_resize_ = false;
-  wm::WmWindow* window = GetTarget();
+  WmWindow* window = GetTarget();
   const bool is_attached_panel =
       window->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
       window_state_->panel_attached();
@@ -258,13 +258,12 @@ void DockedWindowResizer::FinishedDragging(
 DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
     bool is_resized,
     bool is_attached_panel) {
-  wm::WmWindow* window = GetTarget();
+  WmWindow* window = GetTarget();
 
   // Check if the window needs to be docked or returned to workspace.
   DockedAction action = DOCKED_ACTION_NONE;
-  wm::WmWindow* dock_container =
-      window->GetRootWindow()->GetChildByShellWindowId(
-          kShellWindowId_DockedContainer);
+  WmWindow* dock_container = window->GetRootWindow()->GetChildByShellWindowId(
+      kShellWindowId_DockedContainer);
   if ((is_resized || !is_attached_panel) &&
       is_docked_ != (window->GetParent() == dock_container)) {
     if (is_docked_) {
@@ -281,7 +280,7 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
       // mouse is).
       gfx::Rect near_last_location(last_location_, gfx::Size());
       // Reparenting will cause Relayout and possible dock shrinking.
-      wm::WmWindow* previous_parent = window->GetParent();
+      WmWindow* previous_parent = window->GetParent();
       window->SetParentUsingContext(window, near_last_location);
       if (window->GetParent() != previous_parent) {
         wm::ReparentTransientChildrenOfChild(window, previous_parent,

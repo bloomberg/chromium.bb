@@ -5,10 +5,10 @@
 #include "ash/common/wm/workspace/multi_window_resize_controller.h"
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "grit/ash_resources.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
@@ -33,21 +33,21 @@ const int kHideDelayMS = 500;
 // Padding from the bottom/right edge the resize widget is shown at.
 const int kResizeWidgetPadding = 15;
 
-bool ContainsX(wm::WmWindow* window, int x) {
+bool ContainsX(WmWindow* window, int x) {
   return x >= 0 && x <= window->GetBounds().width();
 }
 
-bool ContainsScreenX(wm::WmWindow* window, int x_in_screen) {
+bool ContainsScreenX(WmWindow* window, int x_in_screen) {
   gfx::Point window_loc =
       window->ConvertPointFromScreen(gfx::Point(x_in_screen, 0));
   return ContainsX(window, window_loc.x());
 }
 
-bool ContainsY(wm::WmWindow* window, int y) {
+bool ContainsY(WmWindow* window, int y) {
   return y >= 0 && y <= window->GetBounds().height();
 }
 
-bool ContainsScreenY(wm::WmWindow* window, int y_in_screen) {
+bool ContainsScreenY(WmWindow* window, int y_in_screen) {
   gfx::Point window_loc =
       window->ConvertPointFromScreen(gfx::Point(0, y_in_screen));
   return ContainsY(window, window_loc.y());
@@ -149,7 +149,7 @@ MultiWindowResizeController::~MultiWindowResizeController() {
   Hide();
 }
 
-void MultiWindowResizeController::Show(wm::WmWindow* window,
+void MultiWindowResizeController::Show(WmWindow* window,
                                        int component,
                                        const gfx::Point& point_in_window) {
   // When the resize widget is showing we ignore Show() requests. Instead we
@@ -208,7 +208,7 @@ void MultiWindowResizeController::MouseMovedOutOfHost() {
   Hide();
 }
 
-void MultiWindowResizeController::OnWindowDestroying(wm::WmWindow* window) {
+void MultiWindowResizeController::OnWindowDestroying(WmWindow* window) {
   // Have to explicitly reset the WindowResizer, otherwise Hide() does nothing.
   window_resizer_.reset();
   Hide();
@@ -216,7 +216,7 @@ void MultiWindowResizeController::OnWindowDestroying(wm::WmWindow* window) {
 
 MultiWindowResizeController::ResizeWindows
 MultiWindowResizeController::DetermineWindowsFromScreenPoint(
-    wm::WmWindow* window) const {
+    WmWindow* window) const {
   gfx::Point mouse_location(
       display::Screen::GetScreen()->GetCursorScreenPoint());
   mouse_location = window->ConvertPointFromScreen(mouse_location);
@@ -233,7 +233,7 @@ void MultiWindowResizeController::CreateMouseWatcher() {
 }
 
 MultiWindowResizeController::ResizeWindows
-MultiWindowResizeController::DetermineWindows(wm::WmWindow* window,
+MultiWindowResizeController::DetermineWindows(WmWindow* window,
                                               int window_component,
                                               const gfx::Point& point) const {
   ResizeWindows result;
@@ -270,15 +270,15 @@ MultiWindowResizeController::DetermineWindows(wm::WmWindow* window,
   return result;
 }
 
-wm::WmWindow* MultiWindowResizeController::FindWindowByEdge(
-    wm::WmWindow* window_to_ignore,
+WmWindow* MultiWindowResizeController::FindWindowByEdge(
+    WmWindow* window_to_ignore,
     int edge_want,
     int x_in_parent,
     int y_in_parent) const {
-  wm::WmWindow* parent = window_to_ignore->GetParent();
-  std::vector<wm::WmWindow*> windows = parent->GetChildren();
+  WmWindow* parent = window_to_ignore->GetParent();
+  std::vector<WmWindow*> windows = parent->GetChildren();
   for (auto i = windows.rbegin(); i != windows.rend(); ++i) {
-    wm::WmWindow* window = *i;
+    WmWindow* window = *i;
     if (window == window_to_ignore || !window->IsVisible())
       continue;
 
@@ -316,15 +316,15 @@ wm::WmWindow* MultiWindowResizeController::FindWindowByEdge(
   return NULL;
 }
 
-wm::WmWindow* MultiWindowResizeController::FindWindowTouching(
-    wm::WmWindow* window,
+WmWindow* MultiWindowResizeController::FindWindowTouching(
+    WmWindow* window,
     Direction direction) const {
   int right = window->GetBounds().right();
   int bottom = window->GetBounds().bottom();
-  wm::WmWindow* parent = window->GetParent();
-  std::vector<wm::WmWindow*> windows = parent->GetChildren();
+  WmWindow* parent = window->GetParent();
+  std::vector<WmWindow*> windows = parent->GetChildren();
   for (auto i = windows.rbegin(); i != windows.rend(); ++i) {
-    wm::WmWindow* other = *i;
+    WmWindow* other = *i;
     if (other == window || !other->IsVisible())
       continue;
     switch (direction) {
@@ -350,9 +350,9 @@ wm::WmWindow* MultiWindowResizeController::FindWindowTouching(
 }
 
 void MultiWindowResizeController::FindWindowsTouching(
-    wm::WmWindow* start,
+    WmWindow* start,
     Direction direction,
-    std::vector<wm::WmWindow*>* others) const {
+    std::vector<WmWindow*>* others) const {
   while (start) {
     start = FindWindowTouching(start, direction);
     if (start)
@@ -384,7 +384,7 @@ void MultiWindowResizeController::ShowNow() {
   ResizeView* view = new ResizeView(this, windows_.direction);
   resize_widget_->set_focus_on_creation(false);
   resize_widget_->Init(params);
-  wm::WmLookup::Get()
+  WmLookup::Get()
       ->GetWindowForWidget(resize_widget_.get())
       ->SetVisibilityAnimationType(::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   resize_widget_->SetContentsView(view);
@@ -405,7 +405,7 @@ void MultiWindowResizeController::StartResize(
   DCHECK(windows_.is_valid());
   gfx::Point location_in_parent =
       windows_.window2->GetParent()->ConvertPointFromScreen(location_in_screen);
-  std::vector<wm::WmWindow*> windows;
+  std::vector<WmWindow*> windows;
   windows.push_back(windows_.window2);
   DCHECK(windows_.other_windows.empty());
   FindWindowsTouching(windows_.window2, windows_.direction,
@@ -516,7 +516,7 @@ bool MultiWindowResizeController::IsOverWindows(
   // Check whether |location_in_screen| is in the event target's resize region.
   // This is tricky because a window's resize region can extend outside a
   // window's bounds.
-  wm::WmWindow* target =
+  WmWindow* target =
       windows_.window1->GetRootWindowController()->FindEventTarget(
           location_in_screen);
   if (target == windows_.window1) {
@@ -532,7 +532,7 @@ bool MultiWindowResizeController::IsOverWindows(
 }
 
 bool MultiWindowResizeController::IsOverComponent(
-    wm::WmWindow* window,
+    WmWindow* window,
     const gfx::Point& location_in_screen,
     int component) const {
   gfx::Point window_loc = window->ConvertPointFromScreen(location_in_screen);

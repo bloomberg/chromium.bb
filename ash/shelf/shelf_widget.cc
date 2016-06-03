@@ -5,10 +5,11 @@
 #include "ash/shelf/shelf_widget.h"
 
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_constants.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
-#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_constants.h"
@@ -21,7 +22,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
@@ -557,8 +557,8 @@ void ShelfWidget::DelegateView::UpdateBackground(int alpha) {
   SchedulePaint();
 }
 
-ShelfWidget::ShelfWidget(wm::WmWindow* wm_shelf_container,
-                         wm::WmWindow* wm_status_container,
+ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
+                         WmWindow* wm_status_container,
                          WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
       background_animator_(delegate_view_, 0, wm::kShelfBackgroundAlpha),
@@ -581,7 +581,7 @@ ShelfWidget::ShelfWidget(wm::WmWindow* wm_shelf_container,
   shelf_layout_manager_ = new ShelfLayoutManager(this);
   shelf_layout_manager_->AddObserver(this);
   aura::Window* shelf_container =
-      wm::WmWindowAura::GetAuraWindow(wm_shelf_container);
+      WmWindowAura::GetAuraWindow(wm_shelf_container);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
@@ -595,7 +595,7 @@ ShelfWidget::ShelfWidget(wm::WmWindow* wm_shelf_container,
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
 
   aura::Window* status_container =
-      wm::WmWindowAura::GetAuraWindow(wm_status_container);
+      WmWindowAura::GetAuraWindow(wm_status_container);
   status_container->SetLayoutManager(
       new StatusAreaLayoutManager(status_container, this));
 

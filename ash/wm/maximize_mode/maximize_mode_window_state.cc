@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_state_delegate.h"
@@ -15,7 +16,6 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
@@ -205,7 +205,7 @@ void MaximizeModeWindowState::AttachState(
   current_state_type_ = previous_state->GetType();
 
   aura::Window* window =
-      ash::wm::WmWindowAura::GetAuraWindow(window_state->window());
+      ash::WmWindowAura::GetAuraWindow(window_state->window());
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (widget) {
     gfx::Rect bounds = widget->GetRestoredBounds();
@@ -233,7 +233,7 @@ void MaximizeModeWindowState::AttachState(
 
 void MaximizeModeWindowState::DetachState(wm::WindowState* window_state) {
   // From now on, we can use the default session restore mechanism again.
-  ash::wm::WmWindowAura::GetAuraWindow(window_state->window())
+  ash::WmWindowAura::GetAuraWindow(window_state->window())
       ->ClearProperty(ash::kRestoreBoundsOverrideKey);
   window_state->set_can_be_dragged(true);
 }

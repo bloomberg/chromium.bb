@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_AURA_WM_WINDOW_AURA_H_
-#define ASH_WM_AURA_WM_WINDOW_AURA_H_
+#ifndef ASH_AURA_WM_WINDOW_AURA_H_
+#define ASH_AURA_WM_WINDOW_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {
-namespace wm {
 
 // WmWindowAura is tied to the life of the underlying aura::Window.
 class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
@@ -44,7 +43,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   // WmWindow:
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
-  WmGlobals* GetGlobals() const override;
+  WmShell* GetShell() const override;
   void SetName(const char* name) override;
   base::string16 GetTitle() const override;
   void SetShellWindowId(int id) override;
@@ -72,7 +71,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool IsSystemModal() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
   int GetIntProperty(WmWindowProperty key) override;
-  const WindowState* GetWindowState() const override;
+  const wm::WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   void SetParentUsingContext(WmWindow* context,
                              const gfx::Rect& screen_bounds) override;
@@ -169,7 +168,6 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WmWindowAura);
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_AURA_WM_WINDOW_AURA_H_
+#endif  // ASH_AURA_WM_WINDOW_AURA_H_

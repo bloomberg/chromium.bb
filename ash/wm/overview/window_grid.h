@@ -11,7 +11,7 @@
 #include <set>
 #include <vector>
 
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "ash/wm/overview/window_selector.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -44,10 +44,10 @@ class WindowSelectorItem;
 //    0, 3, 6, 1, 4, 2, 5
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
-class ASH_EXPORT WindowGrid : public wm::WmWindowObserver {
+class ASH_EXPORT WindowGrid : public WmWindowObserver {
  public:
-  WindowGrid(wm::WmWindow* root_window,
-             const std::vector<wm::WmWindow*>& window_list,
+  WindowGrid(WmWindow* root_window,
+             const std::vector<WmWindow*>& window_list,
              WindowSelector* window_selector);
   ~WindowGrid() override;
 
@@ -68,7 +68,7 @@ class ASH_EXPORT WindowGrid : public wm::WmWindowObserver {
 
   // Returns true if a window is contained in any of the WindowSelectorItems
   // this grid owns.
-  bool Contains(const wm::WmWindow* window) const;
+  bool Contains(const WmWindow* window) const;
 
   // Dims the items whose titles do not contain |pattern| and prevents their
   // selection. The pattern has its accents removed and is converted to
@@ -86,16 +86,16 @@ class ASH_EXPORT WindowGrid : public wm::WmWindowObserver {
   bool is_selecting() const { return selection_widget_ != nullptr; }
 
   // Returns the root window in which the grid displays the windows.
-  const wm::WmWindow* root_window() const { return root_window_; }
+  const WmWindow* root_window() const { return root_window_; }
 
   const std::vector<WindowSelectorItem*>& window_list() const {
     return window_list_.get();
   }
 
-  // wm::WmWindowObserver:
-  void OnWindowDestroying(wm::WmWindow* window) override;
+  // WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override;
   // TODO(flackr): Handle window bounds changed in WindowSelectorItem.
-  void OnWindowBoundsChanged(wm::WmWindow* window,
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
@@ -118,7 +118,7 @@ class ASH_EXPORT WindowGrid : public wm::WmWindowObserver {
   const gfx::Rect GetSelectionBounds() const;
 
   // Root window the grid is in.
-  wm::WmWindow* root_window_;
+  WmWindow* root_window_;
 
   // Pointer to the window selector that spawned this grid.
   WindowSelector* window_selector_;
@@ -127,7 +127,7 @@ class ASH_EXPORT WindowGrid : public wm::WmWindowObserver {
   ScopedVector<WindowSelectorItem> window_list_;
 
   // Vector containing the observed windows.
-  std::set<wm::WmWindow*> observed_windows_;
+  std::set<WmWindow*> observed_windows_;
 
   // Widget that indicates to the user which is the selected window.
   std::unique_ptr<views::Widget> selection_widget_;

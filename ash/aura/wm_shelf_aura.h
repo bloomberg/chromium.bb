@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_AURA_WM_SHELF_AURA_H_
-#define ASH_WM_AURA_WM_SHELF_AURA_H_
+#ifndef ASH_AURA_WM_SHELF_AURA_H_
+#define ASH_AURA_WM_SHELF_AURA_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/shelf/wm_shelf.h"
@@ -37,7 +37,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;
   void UpdateIconPositionForWindow(WmWindow* window) override;
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(wm::WmWindow* window) override;
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
   void AddObserver(WmShelfObserver* observer) override;
   void RemoveObserver(WmShelfObserver* observer) override;
 
@@ -62,4 +62,4 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_AURA_WM_SHELF_AURA_H_
+#endif  // ASH_AURA_WM_SHELF_AURA_H_

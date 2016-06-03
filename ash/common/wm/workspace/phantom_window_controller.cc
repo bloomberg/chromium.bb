@@ -8,9 +8,9 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_finder.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "grit/ash_resources.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -61,10 +61,7 @@ void AnimateToBounds(views::Widget* widget,
     return;
 
   ui::ScopedLayerAnimationSettings scoped_setter(
-      wm::WmLookup::Get()
-          ->GetWindowForWidget(widget)
-          ->GetLayer()
-          ->GetAnimator());
+      WmLookup::Get()->GetWindowForWidget(widget)->GetLayer()->GetAnimator());
   scoped_setter.SetTweenType(gfx::Tween::EASE_IN);
   scoped_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -77,7 +74,7 @@ void AnimateToBounds(views::Widget* widget,
 
 // PhantomWindowController ----------------------------------------------------
 
-PhantomWindowController::PhantomWindowController(wm::WmWindow* window)
+PhantomWindowController::PhantomWindowController(WmWindow* window)
     : window_(window) {}
 
 PhantomWindowController::~PhantomWindowController() {}
@@ -106,7 +103,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
 }
 
 std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
-    wm::WmWindow* root_window,
+    WmWindow* root_window,
     const gfx::Rect& bounds_in_screen) {
   std::unique_ptr<views::Widget> phantom_widget(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
@@ -122,8 +119,8 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   phantom_widget->set_focus_on_creation(false);
   phantom_widget->Init(params);
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
-  wm::WmWindow* phantom_widget_window =
-      wm::WmLookup::Get()->GetWindowForWidget(phantom_widget.get());
+  WmWindow* phantom_widget_window =
+      WmLookup::Get()->GetWindowForWidget(phantom_widget.get());
   phantom_widget_window->SetShellWindowId(kShellWindowId_PhantomWindow);
   phantom_widget->SetBounds(bounds_in_screen);
   // TODO(sky): I suspect this is never true, verify that.

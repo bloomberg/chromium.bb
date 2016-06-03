@@ -5,7 +5,7 @@
 #include "ash/common/wm/switchable_windows.h"
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 
 namespace ash {
 namespace wm {
@@ -18,7 +18,7 @@ const int kSwitchableWindowContainerIds[] = {
 const size_t kSwitchableWindowContainerIdsLength =
     arraysize(kSwitchableWindowContainerIds);
 
-bool IsSwitchableContainer(const wm::WmWindow* window) {
+bool IsSwitchableContainer(const WmWindow* window) {
   if (!window)
     return false;
   const int shell_window_id = window->GetShellWindowId();

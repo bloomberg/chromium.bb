@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_display_observer.h"
 #include "ash/common/wm/wm_types.h"
+#include "ash/common/wm_display_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,11 +25,10 @@ class GestureEvent;
 namespace ash {
 
 class WindowResizer;
+class WmShell;
+class WmWindow;
 
 namespace wm {
-
-class WmGlobals;
-class WmWindow;
 
 // WmToplevelWindowEventHandler handles dragging and resizing of top level
 // windows. WmToplevelWindowEventHandler is forwarded events, such as from an
@@ -48,7 +47,7 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   };
   using EndClosure = base::Callback<void(DragResult)>;
 
-  explicit WmToplevelWindowEventHandler(WmGlobals* globals);
+  explicit WmToplevelWindowEventHandler(WmShell* shell);
   ~WmToplevelWindowEventHandler() override;
 
   void OnKeyEvent(ui::KeyEvent* event);
@@ -103,7 +102,7 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   // WmDisplayObserver:
   void OnDisplayConfigurationChanging() override;
 
-  WmGlobals* globals_;
+  WmShell* shell_;
 
   // The hittest result for the first finger at the time that it initially
   // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h

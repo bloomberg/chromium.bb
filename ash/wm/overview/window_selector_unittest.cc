@@ -7,6 +7,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
@@ -23,7 +24,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
@@ -214,11 +214,10 @@ class WindowSelectorTest : public test::AshTestBase {
                                              aura::Window* window) {
     const std::vector<WindowSelectorItem*>& windows =
         GetWindowItemsForRoot(grid_index);
-    auto iter =
-        std::find_if(windows.cbegin(), windows.cend(),
-                     [window](const WindowSelectorItem* item) {
-                       return item->Contains(wm::WmWindowAura::Get(window));
-                     });
+    auto iter = std::find_if(windows.cbegin(), windows.cend(),
+                             [window](const WindowSelectorItem* item) {
+                               return item->Contains(WmWindowAura::Get(window));
+                             });
     if (iter == windows.end())
       return nullptr;
     return *iter;
@@ -247,7 +246,7 @@ class WindowSelectorTest : public test::AshTestBase {
         ws->grid_list_[ws->selected_grid_index_]->SelectedWindow();
     if (!item)
       return nullptr;
-    return wm::WmWindowAura::GetAuraWindow(item->GetWindow());
+    return WmWindowAura::GetAuraWindow(item->GetWindow());
   }
 
   bool selection_widget_active() {
@@ -277,8 +276,8 @@ class WindowSelectorTest : public test::AshTestBase {
   void IsWindowAndCloseButtonInScreen(aura::Window* window,
                                       WindowSelectorItem* window_item) {
     aura::Window* root_window =
-        wm::WmWindowAura::GetAuraWindow(window_item->root_window());
-    EXPECT_TRUE(window_item->Contains(wm::WmWindowAura::Get(window)));
+        WmWindowAura::GetAuraWindow(window_item->root_window());
+    EXPECT_TRUE(window_item->Contains(WmWindowAura::Get(window)));
     EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
         ToEnclosingRect(GetTransformedTargetBounds(window))));
     EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
@@ -418,9 +417,9 @@ TEST_F(WindowSelectorTest, MinimizeMovement) {
                          root_window->bounds().width() / 2,
                          root_window->bounds().height());
   std::unique_ptr<aura::Window> left_window(CreateWindow(left_bounds));
-  wm::WmWindow* left_window_wm = wm::WmWindowAura::Get(left_window.get());
+  WmWindow* left_window_wm = WmWindowAura::Get(left_window.get());
   std::unique_ptr<aura::Window> right_window(CreateWindow(right_bounds));
-  wm::WmWindow* right_window_wm = wm::WmWindowAura::Get(right_window.get());
+  WmWindow* right_window_wm = WmWindowAura::Get(right_window.get());
 
   // The window should stay on the same side of the screen regardless of which
   // one was active on entering overview mode.
@@ -460,9 +459,9 @@ TEST_F(WindowSelectorTest, MinimizeMovementSecondDisplay) {
   gfx::Rect left_bounds(400, 0, 200, 400);
   gfx::Rect right_bounds(600, 0, 200, 400);
   std::unique_ptr<aura::Window> left_window(CreateWindow(left_bounds));
-  wm::WmWindow* left_window_wm = wm::WmWindowAura::Get(left_window.get());
+  WmWindow* left_window_wm = WmWindowAura::Get(left_window.get());
   std::unique_ptr<aura::Window> right_window(CreateWindow(right_bounds));
-  wm::WmWindow* right_window_wm = wm::WmWindowAura::Get(right_window.get());
+  WmWindow* right_window_wm = WmWindowAura::Get(right_window.get());
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[1], left_window->GetRootWindow());
@@ -1298,13 +1297,13 @@ TEST_F(WindowSelectorTest, BasicTabKeyNavigation) {
       GetWindowItemsForRoot(0);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_windows[1]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_windows[1]->GetWindow()));
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
 }
 
 // Tests traversing some windows in overview mode with the arrow keys in every
@@ -1382,16 +1381,16 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
       GetWindowItemsForRoot(1);
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_root1[0]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_root1[0]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_root1[1]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_root1[1]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_root2[0]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_root2[0]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            wm::WmWindowAura::GetAuraWindow(overview_root2[1]->GetWindow()));
+            WmWindowAura::GetAuraWindow(overview_root2[1]->GetWindow()));
 }
 
 // Tests first monitor when display order doesn't match left to right screen
@@ -1499,10 +1498,10 @@ TEST_F(WindowSelectorTest, SelectWindowWithReturnKey) {
 TEST_F(WindowSelectorTest, WindowOverviewHidesCalloutWidgets) {
   std::unique_ptr<aura::Window> panel1(
       CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  wm::WmWindow* wm_panel1 = wm::WmWindowAura::Get(panel1.get());
+  WmWindow* wm_panel1 = WmWindowAura::Get(panel1.get());
   std::unique_ptr<aura::Window> panel2(
       CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  wm::WmWindow* wm_panel2 = wm::WmWindowAura::Get(panel2.get());
+  WmWindow* wm_panel2 = WmWindowAura::Get(panel2.get());
   PanelLayoutManager* panel_manager = PanelLayoutManager::Get(wm_panel1);
 
   // By default, panel callout widgets are visible.

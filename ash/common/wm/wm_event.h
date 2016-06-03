@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
-// TODO(sky): move to common.
 namespace ash {
 namespace wm {
 

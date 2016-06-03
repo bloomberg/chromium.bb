@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -92,10 +92,9 @@ class FocusCyclerTest : public AshTestBase {
   bool CreateTray() {
     if (tray_)
       return false;
-    wm::WmWindow* parent =
-        wm::WmGlobals::Get()
-            ->GetRootWindowForNewWindows()
-            ->GetChildByShellWindowId(kShellWindowId_StatusContainer);
+    WmWindow* parent =
+        WmShell::Get()->GetRootWindowForNewWindows()->GetChildByShellWindowId(
+            kShellWindowId_StatusContainer);
 
     StatusAreaWidget* widget = new StatusAreaWidget(parent, shelf_widget());
     widget->CreateTrayViews();

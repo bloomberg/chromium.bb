@@ -4,8 +4,8 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
@@ -21,8 +21,8 @@
 
 namespace ash {
 
-ToplevelWindowEventHandler::ToplevelWindowEventHandler(wm::WmGlobals* globals)
-    : wm_toplevel_window_event_handler_(globals), weak_factory_(this) {}
+ToplevelWindowEventHandler::ToplevelWindowEventHandler(WmShell* shell)
+    : wm_toplevel_window_event_handler_(shell), weak_factory_(this) {}
 
 ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {}
 
@@ -33,13 +33,13 @@ void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   wm_toplevel_window_event_handler_.OnMouseEvent(event,
-                                                 wm::WmWindowAura::Get(target));
+                                                 WmWindowAura::Get(target));
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  wm_toplevel_window_event_handler_.OnGestureEvent(
-      event, wm::WmWindowAura::Get(target));
+  wm_toplevel_window_event_handler_.OnGestureEvent(event,
+                                                   WmWindowAura::Get(target));
 }
 
 aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
@@ -75,7 +75,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   wm::WmToplevelWindowEventHandler::DragResult result =
       wm::WmToplevelWindowEventHandler::DragResult::SUCCESS;
   if (!wm_toplevel_window_event_handler_.AttemptToStartDrag(
-          wm::WmWindowAura::Get(source), drag_location, HTCAPTION, move_source,
+          WmWindowAura::Get(source), drag_location, HTCAPTION, move_source,
           base::Bind(&ToplevelWindowEventHandler::OnDragCompleted,
                      weak_factory_.GetWeakPtr(), &result, &run_loop))) {
     return aura::client::MOVE_CANCELED;

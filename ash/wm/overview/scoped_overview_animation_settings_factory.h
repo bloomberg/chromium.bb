@@ -12,10 +12,7 @@
 namespace ash {
 
 class ScopedOverviewAnimationSettings;
-
-namespace wm {
 class WmWindow;
-}
 
 // Factory for creating ScopedOverviewAnimationSettings.
 class ScopedOverviewAnimationSettingsFactory {
@@ -24,7 +21,7 @@ class ScopedOverviewAnimationSettingsFactory {
 
   virtual std::unique_ptr<ScopedOverviewAnimationSettings>
   CreateOverviewAnimationSettings(OverviewAnimationType animation_type,
-                                  wm::WmWindow* window) = 0;
+                                  WmWindow* window) = 0;
 
  protected:
   ScopedOverviewAnimationSettingsFactory();

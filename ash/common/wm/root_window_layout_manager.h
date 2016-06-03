@@ -5,7 +5,7 @@
 #ifndef ASH_COMMON_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 #define ASH_COMMON_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 
-#include "ash/common/wm/wm_layout_manager.h"
+#include "ash/common/wm_layout_manager.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -29,7 +29,7 @@ class RootWindowLayoutManager : public WmLayoutManager {
                       const gfx::Rect& requested_bounds) override;
 
  private:
-  wm::WmWindow* owner_;
+  WmWindow* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };

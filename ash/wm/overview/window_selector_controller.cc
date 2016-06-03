@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -43,8 +43,7 @@ void WindowSelectorController::ToggleOverview() {
     if (!CanSelect())
       return;
 
-    std::vector<wm::WmWindow*> windows =
-        wm::WmGlobals::Get()->GetMruWindowList();
+    std::vector<WmWindow*> windows = WmShell::Get()->GetMruWindowList();
     auto end =
         std::remove_if(windows.begin(), windows.end(),
                        std::not1(std::ptr_fun(&WindowSelector::IsSelectable)));

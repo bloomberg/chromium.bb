@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/aura/wm_window_aura.h"
+#include "ash/aura/wm_window_aura.h"
 
 #include "ash/ash_constants.h"
+#include "ash/aura/aura_layout_manager_adapter.h"
+#include "ash/aura/wm_root_window_controller_aura.h"
+#include "ash/aura/wm_shell_aura.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_layout_manager.h"
-#include "ash/common/wm/wm_window_observer.h"
-#include "ash/common/wm/wm_window_property.h"
+#include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_window_observer.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/aura_layout_manager_adapter.h"
-#include "ash/wm/aura/wm_globals_aura.h"
-#include "ash/wm/aura/wm_root_window_controller_aura.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
@@ -38,12 +38,11 @@
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WmWindowAura*);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::WmWindowAura*);
 
 namespace ash {
-namespace wm {
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::wm::WmWindowAura, kWmWindowKey, nullptr);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::WmWindowAura, kWmWindowKey, nullptr);
 
 namespace {
 
@@ -120,8 +119,8 @@ WmRootWindowController* WmWindowAura::GetRootWindowController() {
   return root ? WmRootWindowControllerAura::Get(root) : nullptr;
 }
 
-WmGlobals* WmWindowAura::GetGlobals() const {
-  return WmGlobals::Get();
+WmShell* WmWindowAura::GetShell() const {
+  return WmShell::Get();
 }
 
 void WmWindowAura::SetName(const char* name) {
@@ -254,7 +253,7 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
   return 0;
 }
 
-const WindowState* WmWindowAura::GetWindowState() const {
+const wm::WindowState* WmWindowAura::GetWindowState() const {
   return ash::wm::GetWindowState(window_);
 }
 
@@ -344,7 +343,7 @@ void WmWindowAura::SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
 
 void WmWindowAura::SetBoundsDirect(const gfx::Rect& bounds) {
   BoundsSetter().SetBounds(window_, bounds);
-  SnapWindowToPixelBoundary(window_);
+  wm::SnapWindowToPixelBoundary(window_);
 }
 
 void WmWindowAura::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
@@ -512,15 +511,15 @@ bool WmWindowAura::IsFocused() const {
 }
 
 bool WmWindowAura::IsActive() const {
-  return IsActiveWindow(window_);
+  return wm::IsActiveWindow(window_);
 }
 
 void WmWindowAura::Activate() {
-  ActivateWindow(window_);
+  wm::ActivateWindow(window_);
 }
 
 void WmWindowAura::Deactivate() {
-  DeactivateWindow(window_);
+  wm::DeactivateWindow(window_);
 }
 
 void WmWindowAura::SetFullscreen() {
@@ -577,7 +576,7 @@ void WmWindowAura::SetSnapsChildrenToPhysicalPixelBoundary() {
 }
 
 void WmWindowAura::SnapToPixelBoundaryIfNecessary() {
-  SnapWindowToPixelBoundary(window_);
+  wm::SnapWindowToPixelBoundary(window_);
 }
 
 void WmWindowAura::SetChildrenUseExtendedHitRegion() {
@@ -665,5 +664,4 @@ void WmWindowAura::OnWindowTitleChanged(aura::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowTitleChanged(this));
 }
 
-}  // namespace wm
 }  // namespace ash

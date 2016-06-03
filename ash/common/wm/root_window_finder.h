@@ -13,9 +13,10 @@ class Rect;
 }  // namespace gfx
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // Returns the RootWindow at |point| in the virtual screen coordinates.
 // Returns NULL if the root window does not exist at the given

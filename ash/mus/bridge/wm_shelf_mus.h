@@ -25,13 +25,13 @@ class WmShelfMus : public wm::WmShelf {
   ~WmShelfMus() override;
 
   // wm::WmShelf:
-  wm::WmWindow* GetWindow() override;
+  WmWindow* GetWindow() override;
   wm::ShelfAlignment GetAlignment() const override;
   wm::ShelfBackgroundType GetBackgroundType() const override;
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;
-  void UpdateIconPositionForWindow(wm::WmWindow* window) override;
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(wm::WmWindow* window) override;
+  void UpdateIconPositionForWindow(WmWindow* window) override;
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
   void AddObserver(wm::WmShelfObserver* observer) override;
   void RemoveObserver(wm::WmShelfObserver* observer) override;
 

@@ -7,9 +7,9 @@
 #include "ash/ash_switches.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -220,7 +220,7 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
       message_center(),
       message_center_tray_.get(),
       popup_alignment_delegate_.get()));
-  const display::Display& display = wm::WmLookup::Get()
+  const display::Display& display = WmLookup::Get()
                                         ->GetWindowForWidget(status_area_widget)
                                         ->GetDisplayNearestWindow();
   popup_alignment_delegate_->StartObserving(display::Screen::GetScreen(),
@@ -253,8 +253,8 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
     max_height = GetShelfLayoutManager()->GetIdealBounds().y();
   } else {
     // Assume the status area and bubble bottoms are aligned when vertical.
-    wm::WmWindow* status_area_window =
-        wm::WmLookup::Get()->GetWindowForWidget(status_area_widget());
+    WmWindow* status_area_window =
+        WmLookup::Get()->GetWindowForWidget(status_area_widget());
     gfx::Rect bounds_in_root =
         status_area_window->GetRootWindow()->ConvertRectFromScreen(
             status_area_window->GetBoundsInScreen());

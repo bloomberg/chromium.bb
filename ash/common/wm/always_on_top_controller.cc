@@ -5,15 +5,15 @@
 #include "ash/common/wm/always_on_top_controller.h"
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/wm_window.h"
-#include "ash/common/wm/wm_window_property.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {
 
-AlwaysOnTopController::AlwaysOnTopController(wm::WmWindow* viewport)
+AlwaysOnTopController::AlwaysOnTopController(WmWindow* viewport)
     : always_on_top_container_(viewport) {
   always_on_top_container_->SetLayoutManager(
       base::WrapUnique(new WorkspaceLayoutManager(viewport, nullptr)));
@@ -27,9 +27,9 @@ AlwaysOnTopController::~AlwaysOnTopController() {
     always_on_top_container_->RemoveObserver(this);
 }
 
-wm::WmWindow* AlwaysOnTopController::GetContainer(wm::WmWindow* window) const {
+WmWindow* AlwaysOnTopController::GetContainer(WmWindow* window) const {
   DCHECK(always_on_top_container_);
-  if (window->GetBoolProperty(wm::WmWindowProperty::ALWAYS_ON_TOP))
+  if (window->GetBoolProperty(WmWindowProperty::ALWAYS_ON_TOP))
     return always_on_top_container_;
   return always_on_top_container_->GetRootWindow()->GetChildByShellWindowId(
       kShellWindowId_DefaultContainer);
@@ -47,7 +47,7 @@ void AlwaysOnTopController::SetLayoutManagerForTest(
 }
 
 void AlwaysOnTopController::OnWindowTreeChanged(
-    wm::WmWindow* window,
+    WmWindow* window,
     const TreeChangeParams& params) {
   if (params.old_parent == always_on_top_container_)
     params.target->RemoveObserver(this);
@@ -55,20 +55,19 @@ void AlwaysOnTopController::OnWindowTreeChanged(
     params.target->AddObserver(this);
 }
 
-void AlwaysOnTopController::OnWindowPropertyChanged(
-    wm::WmWindow* window,
-    wm::WmWindowProperty property) {
+void AlwaysOnTopController::OnWindowPropertyChanged(WmWindow* window,
+                                                    WmWindowProperty property) {
   if (window != always_on_top_container_ &&
-      property == wm::WmWindowProperty::ALWAYS_ON_TOP) {
+      property == WmWindowProperty::ALWAYS_ON_TOP) {
     DCHECK(window->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
            window->GetType() == ui::wm::WINDOW_TYPE_POPUP);
-    wm::WmWindow* container = GetContainer(window);
+    WmWindow* container = GetContainer(window);
     if (window->GetParent() != container)
       container->AddChild(window);
   }
 }
 
-void AlwaysOnTopController::OnWindowDestroying(wm::WmWindow* window) {
+void AlwaysOnTopController::OnWindowDestroying(WmWindow* window) {
   if (window == always_on_top_container_) {
     always_on_top_container_->RemoveObserver(this);
     always_on_top_container_ = nullptr;

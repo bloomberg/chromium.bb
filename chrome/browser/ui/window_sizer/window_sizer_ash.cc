@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -111,6 +111,6 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
       browser_->window() ? browser_->window()->GetNativeWindow() : NULL;
 
   ash::WindowPositioner::GetBoundsAndShowStateForNewWindow(
-      ash::wm::WmWindowAura::Get(browser_window), is_saved_bounds,
+      ash::WmWindowAura::Get(browser_window), is_saved_bounds,
       passed_show_state, bounds_in_screen, show_state);
 }

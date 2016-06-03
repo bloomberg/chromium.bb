@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/aura/wm_root_window_controller_aura.h"
+#include "ash/aura/wm_root_window_controller_aura.h"
 
-#include "ash/common/wm/wm_root_window_controller_observer.h"
+#include "ash/aura/wm_shelf_aura.h"
+#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_globals_aura.h"
-#include "ash/wm/aura/wm_shelf_aura.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WmRootWindowControllerAura*);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::WmRootWindowControllerAura*);
 
 namespace ash {
-namespace wm {
 
 // TODO(sky): it likely makes more sense to hang this off RootWindowSettings.
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::wm::WmRootWindowControllerAura,
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::WmRootWindowControllerAura,
                                  kWmRootWindowControllerKey,
                                  nullptr);
 
@@ -66,11 +65,11 @@ bool WmRootWindowControllerAura::HasShelf() {
   return root_window_controller_->shelf_widget() != nullptr;
 }
 
-WmGlobals* WmRootWindowControllerAura::GetGlobals() {
-  return WmGlobals::Get();
+WmShell* WmRootWindowControllerAura::GetShell() {
+  return WmShell::Get();
 }
 
-WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
+wm::WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
   return root_window_controller_->workspace_controller()->GetWindowState();
 }
 
@@ -78,7 +77,7 @@ AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {
   return root_window_controller_->always_on_top_controller();
 }
 
-WmShelf* WmRootWindowControllerAura::GetShelf() {
+wm::WmShelf* WmRootWindowControllerAura::GetShelf() {
   return root_window_controller_->shelf_widget()
              ? root_window_controller_->shelf_widget()->shelf()->wm_shelf()
              : nullptr;
@@ -144,5 +143,4 @@ void WmRootWindowControllerAura::OnShelfAlignmentChanged(
                     OnShelfAlignmentChanged());
 }
 
-}  // namespace wm
 }  // namespace ash

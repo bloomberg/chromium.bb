@@ -4,13 +4,13 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -42,8 +42,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_MOVED: {
       int component =
           target->delegate()->GetNonClientComponent(event->location());
-      multi_window_resize_controller_.Show(wm::WmWindowAura::Get(target),
-                                           component, event->location());
+      multi_window_resize_controller_.Show(WmWindowAura::Get(target), component,
+                                           event->location());
       break;
     }
     case ui::ET_MOUSE_ENTERED:
@@ -113,7 +113,7 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     wm::WindowState* target_state,
     ui::MouseEvent* event) {
-  wm::WmWindow* target = target_state->window();
+  WmWindow* target = target_state->window();
   if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
     int component = target->GetNonClientComponent(event->location());
     if (component == HTBOTTOM || component == HTTOP) {

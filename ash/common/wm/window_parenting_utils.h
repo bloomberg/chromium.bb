@@ -6,9 +6,10 @@
 #define ASH_COMMON_WM_WINDOW_PARENTING_UTILS_H_
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // Changes the parent of a |child| and all its transient children that are
 // themselves children of |old_parent| to |new_parent|.

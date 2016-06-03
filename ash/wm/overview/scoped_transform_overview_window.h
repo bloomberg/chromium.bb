@@ -20,10 +20,7 @@ class Rect;
 namespace ash {
 
 class ScopedOverviewAnimationSettings;
-
-namespace wm {
 class WmWindow;
-}
 
 // Manages a window, and it's transient children, in the overview mode. This
 // class allows transforming the windows with a helper to determine the best
@@ -47,7 +44,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
                                             const gfx::Rect& dst_rect);
 
-  explicit ScopedTransformOverviewWindow(wm::WmWindow* window);
+  explicit ScopedTransformOverviewWindow(WmWindow* window);
   ~ScopedTransformOverviewWindow();
 
   gfx::Transform get_overview_transform() const { return overview_transform_; }
@@ -76,7 +73,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
       ScopedAnimationSettings* animation_settings);
 
   // Returns true if this window selector window contains the |target|.
-  bool Contains(const wm::WmWindow* target) const;
+  bool Contains(const WmWindow* target) const;
 
   // Returns the original target bounds of all transformed windows.
   gfx::Rect GetTargetBoundsInScreen() const;
@@ -97,12 +94,12 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
 
   // Applies the |transform| to the overview window and all of its transient
   // children.
-  void SetTransform(wm::WmWindow* root_window, const gfx::Transform& transform);
+  void SetTransform(WmWindow* root_window, const gfx::Transform& transform);
 
   // Set's the opacity of the managed windows.
   void SetOpacity(float opacity);
 
-  wm::WmWindow* window() const { return window_; }
+  WmWindow* window() const { return window_; }
 
   // Closes the transient root of the window managed by |this|.
   void Close();
@@ -112,7 +109,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   void ShowWindowIfMinimized();
 
   // A weak pointer to the real window in the overview.
-  wm::WmWindow* window_;
+  WmWindow* window_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.

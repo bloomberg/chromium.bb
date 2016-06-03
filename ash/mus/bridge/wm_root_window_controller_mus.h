@@ -5,7 +5,7 @@
 #ifndef ASH_MUS_BRIDGE_WM_ROOT_WINDOW_CONTROLLER_MUS_H_
 #define ASH_MUS_BRIDGE_WM_ROOT_WINDOW_CONTROLLER_MUS_H_
 
-#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -21,13 +21,13 @@ namespace ash {
 namespace mus {
 
 class RootWindowController;
-class WmGlobalsMus;
+class WmShellMus;
 class WmWindowMus;
 
 // WmRootWindowController implementations for mus.
-class WmRootWindowControllerMus : public wm::WmRootWindowController {
+class WmRootWindowControllerMus : public WmRootWindowController {
  public:
-  WmRootWindowControllerMus(WmGlobalsMus* globals,
+  WmRootWindowControllerMus(WmShellMus* shell,
                             RootWindowController* root_window_controller);
   ~WmRootWindowControllerMus() override;
 
@@ -53,23 +53,23 @@ class WmRootWindowControllerMus : public wm::WmRootWindowController {
 
   // WmRootWindowController:
   bool HasShelf() override;
-  wm::WmGlobals* GetGlobals() override;
+  WmShell* GetShell() override;
   wm::WorkspaceWindowState GetWorkspaceWindowState() override;
   AlwaysOnTopController* GetAlwaysOnTopController() override;
   wm::WmShelf* GetShelf() override;
-  wm::WmWindow* GetWindow() override;
+  WmWindow* GetWindow() override;
   void ConfigureWidgetInitParamsForContainer(
       views::Widget* widget,
       int shell_container_id,
       views::Widget::InitParams* init_params) override;
-  wm::WmWindow* FindEventTarget(const gfx::Point& location_in_screen) override;
-  void AddObserver(wm::WmRootWindowControllerObserver* observer) override;
-  void RemoveObserver(wm::WmRootWindowControllerObserver* observer) override;
+  WmWindow* FindEventTarget(const gfx::Point& location_in_screen) override;
+  void AddObserver(WmRootWindowControllerObserver* observer) override;
+  void RemoveObserver(WmRootWindowControllerObserver* observer) override;
 
  private:
-  WmGlobalsMus* globals_;
+  WmShellMus* shell_;
   RootWindowController* root_window_controller_;
-  base::ObserverList<wm::WmRootWindowControllerObserver> observers_;
+  base::ObserverList<WmRootWindowControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowControllerMus);
 };

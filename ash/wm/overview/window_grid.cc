@@ -13,10 +13,10 @@
 #include "ash/ash_switches.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -39,7 +39,7 @@
 namespace ash {
 namespace {
 
-using Windows = std::vector<wm::WmWindow*>;
+using Windows = std::vector<WmWindow*>;
 
 // An observer which holds onto the passed widget until the animation is
 // complete.
@@ -72,14 +72,14 @@ void CleanupWidgetAfterAnimationObserver::OnImplicitAnimationsCompleted() {
 
 // A comparator for locating a given target window.
 struct WindowSelectorItemComparator {
-  explicit WindowSelectorItemComparator(const wm::WmWindow* target_window)
+  explicit WindowSelectorItemComparator(const WmWindow* target_window)
       : target(target_window) {}
 
   bool operator()(WindowSelectorItem* window) const {
     return window->GetWindow() == target;
   }
 
-  const wm::WmWindow* target;
+  const WmWindow* target;
 };
 
 // Conceptually the window overview is a table or grid of cells having this
@@ -127,7 +127,7 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
 // items in the window selection. |bounding_rect| is set to the centered
 // rectangle containing the grid and |item_size| is set to the size of each
 // individual item.
-void CalculateOverviewSizes(wm::WmWindow* root_window,
+void CalculateOverviewSizes(WmWindow* root_window,
                             size_t items,
                             gfx::Rect* bounding_rect,
                             gfx::Size* item_size) {
@@ -167,8 +167,8 @@ void CalculateOverviewSizes(wm::WmWindow* root_window,
 // minimize the distance each window will travel to enter overview. For
 // equidistant windows preserves a stable order between overview sessions
 // by comparing window pointers.
-void ReorderItemsGreedyLeastMovement(std::vector<wm::WmWindow*>* items,
-                                     wm::WmWindow* root_window) {
+void ReorderItemsGreedyLeastMovement(std::vector<WmWindow*>* items,
+                                     WmWindow* root_window) {
   if (items->empty())
     return;
   gfx::Rect bounding_rect;
@@ -187,7 +187,7 @@ void ReorderItemsGreedyLeastMovement(std::vector<wm::WmWindow*>* items,
     size_t swap_index = i;
     int64_t shortest_distance = std::numeric_limits<int64_t>::max();
     for (size_t j = i; j < items->size(); ++j) {
-      wm::WmWindow* window = (*items)[j];
+      WmWindow* window = (*items)[j];
       const gfx::Rect screen_target_bounds =
           window->ConvertRectToScreen(window->GetTargetBounds());
       int64_t distance =
@@ -208,11 +208,11 @@ void ReorderItemsGreedyLeastMovement(std::vector<wm::WmWindow*>* items,
 
 }  // namespace
 
-WindowGrid::WindowGrid(wm::WmWindow* root_window,
-                       const std::vector<wm::WmWindow*>& windows,
+WindowGrid::WindowGrid(WmWindow* root_window,
+                       const std::vector<WmWindow*>& windows,
                        WindowSelector* window_selector)
     : root_window_(root_window), window_selector_(window_selector) {
-  std::vector<wm::WmWindow*> windows_in_root;
+  std::vector<WmWindow*> windows_in_root;
   for (auto window : windows) {
     if (window->GetRootWindow() == root_window)
       windows_in_root.push_back(window);
@@ -232,7 +232,7 @@ WindowGrid::WindowGrid(wm::WmWindow* root_window,
 }
 
 WindowGrid::~WindowGrid() {
-  for (wm::WmWindow* window : observed_windows_)
+  for (WmWindow* window : observed_windows_)
     window->RemoveObserver(this);
 }
 
@@ -339,7 +339,7 @@ WindowSelectorItem* WindowGrid::SelectedWindow() const {
   return window_list_[selected_index_];
 }
 
-bool WindowGrid::Contains(const wm::WmWindow* window) const {
+bool WindowGrid::Contains(const WmWindow* window) const {
   for (const WindowSelectorItem* window_item : window_list_) {
     if (window_item->Contains(window))
       return true;
@@ -360,7 +360,7 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
   }
 }
 
-void WindowGrid::OnWindowDestroying(wm::WmWindow* window) {
+void WindowGrid::OnWindowDestroying(WmWindow* window) {
   window->RemoveObserver(this);
   observed_windows_.erase(window);
   ScopedVector<WindowSelectorItem>::iterator iter =
@@ -391,7 +391,7 @@ void WindowGrid::OnWindowDestroying(wm::WmWindow* window) {
   PositionWindows(true);
 }
 
-void WindowGrid::OnWindowBoundsChanged(wm::WmWindow* window,
+void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
   auto iter = std::find_if(window_list_.begin(), window_list_.end(),
@@ -418,8 +418,8 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
       ->ConfigureWidgetInitParamsForContainer(
           selection_widget_.get(), kShellWindowId_DefaultContainer, &params);
   selection_widget_->Init(params);
-  wm::WmWindow* selection_widget_window =
-      wm::WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
+  WmWindow* selection_widget_window =
+      WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
   // Disable the "bounce in" animation when showing the window.
   selection_widget_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   // The selection widget should not activate the shelf when passing under it.
@@ -455,8 +455,8 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
   if (selection_widget_ && (recreate_selection_widget || out_of_bounds)) {
     // Animate the old selection widget and then destroy it.
     views::Widget* old_selection = selection_widget_.get();
-    wm::WmWindow* old_selection_window =
-        wm::WmLookup::Get()->GetWindowForWidget(old_selection);
+    WmWindow* old_selection_window =
+        WmLookup::Get()->GetWindowForWidget(old_selection);
     gfx::Vector2d fade_out_direction =
         GetSlideVectorForFadeIn(direction, old_selection_window->GetBounds());
 
@@ -492,8 +492,8 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
 
 void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
   if (animate) {
-    wm::WmWindow* selection_widget_window =
-        wm::WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
+    WmWindow* selection_widget_window =
+        WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
     ui::ScopedLayerAnimationSettings animation_settings(
         selection_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(

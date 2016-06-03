@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -15,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
@@ -149,7 +149,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
       const gfx::Point& point_in_parent,
       int window_component) {
     WindowResizer* resizer =
-        CreateWindowResizer(wm::WmWindowAura::Get(window), point_in_parent,
+        CreateWindowResizer(WmWindowAura::Get(window), point_in_parent,
                             window_component,
                             aura::client::WINDOW_MOVE_SOURCE_MOUSE)
             .release();
@@ -165,7 +165,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->CreateDragDetails(point_in_parent, window_component, source);
     return WorkspaceWindowResizer::Create(
-        window_state, wm::WmWindowAura::FromAuraWindows(attached_windows));
+        window_state, WmWindowAura::FromAuraWindows(attached_windows));
   }
 
   PhantomWindowController* snap_phantom_window_controller() const {
@@ -568,7 +568,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   {
     gfx::Rect expected_bounds_in_parent(
         wm::GetDefaultLeftSnappedWindowBoundsInParent(
-            wm::WmWindowAura::Get(window_.get())));
+            WmWindowAura::Get(window_.get())));
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -586,7 +586,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   {
     gfx::Rect expected_bounds_in_parent(
         wm::GetDefaultRightSnappedWindowBoundsInParent(
-            wm::WmWindowAura::Get(window_.get())));
+            WmWindowAura::Get(window_.get())));
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));

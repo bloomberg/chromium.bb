@@ -13,10 +13,10 @@
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_util.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_root_window_controller.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -55,8 +55,8 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   if (!display_area.Intersects(restore_bounds)) {
     const display::Display& display =
         display::Screen::GetScreen()->GetDisplayMatching(restore_bounds);
-    WmGlobals* globals = window_state->window()->GetGlobals();
-    WmWindow* new_root = globals->GetRootWindowForDisplayId(display.id());
+    WmShell* shell = window_state->window()->GetShell();
+    WmWindow* new_root = shell->GetRootWindowForDisplayId(display.id());
     if (new_root != window_state->window()->GetRootWindow()) {
       WmWindow* new_container = new_root->GetChildByShellWindowId(
           window_state->window()->GetParent()->GetShellWindowId());
@@ -65,8 +65,8 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   }
 }
 
-DockedWindowLayoutManager* GetDockedWindowLayoutManager(WmGlobals* globals) {
-  return DockedWindowLayoutManager::Get(globals->GetActiveWindow());
+DockedWindowLayoutManager* GetDockedWindowLayoutManager(WmShell* shell) {
+  return DockedWindowLayoutManager::Get(shell->GetActiveWindow());
 }
 
 class ScopedPreferredAlignmentResetter {
@@ -107,7 +107,7 @@ class ScopedDockedLayoutEventSourceResetter {
 
 void CycleSnapDock(WindowState* window_state, WMEventType event) {
   DockedWindowLayoutManager* dock_layout =
-      GetDockedWindowLayoutManager(window_state->window()->GetGlobals());
+      GetDockedWindowLayoutManager(window_state->window()->GetShell());
   wm::WindowStateType desired_snap_state =
       event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT
           ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED

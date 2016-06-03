@@ -9,6 +9,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/metrics/user_metrics_recorder.h"
@@ -28,7 +29,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"
@@ -656,7 +656,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
   ::wm::ConvertPointFromScreen(
-      wm::WmWindowAura::GetAuraWindow(
+      WmWindowAura::GetAuraWindow(
           ash::wm::GetRootWindowAt(location_in_screen_coordinates)),
       &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
@@ -679,7 +679,7 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
   ::wm::ConvertPointFromScreen(
-      wm::WmWindowAura::GetAuraWindow(
+      WmWindowAura::GetAuraWindow(
           ash::wm::GetRootWindowAt(location_in_screen_coordinates)),
       &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,

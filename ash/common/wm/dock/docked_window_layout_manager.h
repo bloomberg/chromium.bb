@@ -11,10 +11,10 @@
 #include "ash/common/wm/dock/dock_types.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/window_state_observer.h"
-#include "ash/common/wm/wm_activation_observer.h"
-#include "ash/common/wm/wm_root_window_controller_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_root_window_controller_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -27,9 +27,9 @@ class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
 class Shelf;
+class WmRootWindowController;
 
 namespace wm {
-class WmRootWindowController;
 class WmShelf;
 }
 
@@ -47,9 +47,9 @@ class WmShelf;
 // common functionality.
 class ASH_EXPORT DockedWindowLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
-      public wm::WmRootWindowControllerObserver,
-      public wm::WmWindowObserver,
-      public wm::WmActivationObserver,
+      public WmRootWindowControllerObserver,
+      public WmWindowObserver,
+      public WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
       public wm::WindowStateObserver {
  public:
@@ -59,12 +59,12 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Minimum width of the docked windows area.
   static const int kMinDockWidth;
 
-  explicit DockedWindowLayoutManager(wm::WmWindow* dock_container);
+  explicit DockedWindowLayoutManager(WmWindow* dock_container);
   ~DockedWindowLayoutManager() override;
 
   // Returns the DockedWindowLayoutManager in the specified hierarchy. This
   // searches from the root of |window|.
-  static DockedWindowLayoutManager* Get(wm::WmWindow* window);
+  static DockedWindowLayoutManager* Get(WmWindow* window);
 
   // Disconnects observers before container windows get destroyed.
   void Shutdown();
@@ -75,10 +75,10 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Called by a DockedWindowResizer to update which window is being dragged.
   // Starts observing the window unless it is a child.
-  void StartDragging(wm::WmWindow* window);
+  void StartDragging(WmWindow* window);
 
   // Called by a DockedWindowResizer when a dragged window is docked.
-  void DockDraggedWindow(wm::WmWindow* window);
+  void DockDraggedWindow(WmWindow* window);
 
   // Called by a DockedWindowResizer when a dragged window is no longer docked.
   void UndockDraggedWindow();
@@ -97,7 +97,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   void SetShelf(wm::WmShelf* shelf);
 
   // Calculates if a window is touching the screen edges and returns edge.
-  DockedAlignment GetAlignmentOfWindow(const wm::WmWindow* window) const;
+  DockedAlignment GetAlignmentOfWindow(const WmWindow* window) const;
 
   // Used to snap docked windows to the side of screen during drag.
   DockedAlignment CalculateAlignment() const;
@@ -112,9 +112,9 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Returns true when a window can be docked. Windows cannot be docked at the
   // edge used by the shelf or the edge opposite from existing dock.
-  bool CanDockWindow(wm::WmWindow* window, DockedAlignment desired_alignment);
+  bool CanDockWindow(WmWindow* window, DockedAlignment desired_alignment);
 
-  wm::WmWindow* dock_container() const { return dock_container_; }
+  WmWindow* dock_container() const { return dock_container_; }
 
   // Returns current bounding rectangle of docked windows area.
   const gfx::Rect& docked_bounds() const { return docked_bounds_; }
@@ -130,15 +130,14 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // SnapLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(wm::WmWindow* child) override;
-  void OnWillRemoveWindowFromLayout(wm::WmWindow* child) override {}
-  void OnWindowRemovedFromLayout(wm::WmWindow* child) override;
-  void OnChildWindowVisibilityChanged(wm::WmWindow* child,
-                                      bool visibile) override;
-  void SetChildBounds(wm::WmWindow* child,
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(WmWindow* child) override {}
+  void OnWindowRemovedFromLayout(WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // wm::WmRootWindowControllerObserver:
+  // WmRootWindowControllerObserver:
   void OnWorkAreaChanged() override;
   void OnFullscreenStateChanged(bool is_fullscreen) override;
   void OnShelfAlignmentChanged() override;
@@ -147,16 +146,16 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
                                   wm::WindowStateType old_type) override;
 
-  // wm::WmWindowObserver:
-  void OnWindowBoundsChanged(wm::WmWindow* window,
+  // WmWindowObserver:
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
-  void OnWindowVisibilityChanging(wm::WmWindow* window, bool visible) override;
-  void OnWindowDestroying(wm::WmWindow* window) override;
+  void OnWindowVisibilityChanging(WmWindow* window, bool visible) override;
+  void OnWindowDestroying(WmWindow* window) override;
 
-  // wm::WmActivationObserver:
-  void OnWindowActivated(wm::WmWindow* gained_active,
-                         wm::WmWindow* lost_active) override;
+  // WmActivationObserver:
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
 
  private:
   struct CompareMinimumHeight;
@@ -174,7 +173,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   static const int kIdealWidth;
 
   // Returns the alignment of the docked windows other than the |child|.
-  DockedAlignment CalculateAlignmentExcept(const wm::WmWindow* child) const;
+  DockedAlignment CalculateAlignmentExcept(const WmWindow* child) const;
 
   // Determines if the |alignment| is applicable taking into account
   // the shelf alignment.
@@ -182,7 +181,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Keep at most kMaxVisibleWindows visible in the dock and minimize the rest
   // (except for |child|).
-  void MaybeMinimizeChildrenExcept(wm::WmWindow* child);
+  void MaybeMinimizeChildrenExcept(WmWindow* child);
 
   // Minimize / restore window and relayout.
   void MinimizeDockedWindow(wm::WindowState* window_state);
@@ -195,7 +194,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   void UpdateDockedWidth(int width);
 
   // Updates docked layout state when a window gets inside the dock.
-  void OnDraggedWindowDocked(wm::WmWindow* window);
+  void OnDraggedWindowDocked(WmWindow* window);
 
   // Updates docked layout state when a window gets outside the dock.
   void OnDraggedWindowUndocked();
@@ -207,7 +206,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // the |dock_container_|'s left edge than the |window|'s right edge to
   // the |dock_container_|'s right edge. Returns DOCKED_ALIGNMENT_RIGHT
   // otherwise.
-  DockedAlignment GetEdgeNearestWindow(const wm::WmWindow* window) const;
+  DockedAlignment GetEdgeNearestWindow(const WmWindow* window) const;
 
   // Called whenever the window layout might change.
   void Relayout();
@@ -240,15 +239,15 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Called whenever the window stacking order needs to be updated (e.g. focus
   // changes or a window is moved).
-  void UpdateStacking(wm::WmWindow* active_window);
+  void UpdateStacking(WmWindow* active_window);
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
 
   // Parent window associated with this layout manager.
-  wm::WmWindow* dock_container_;
+  WmWindow* dock_container_;
 
-  wm::WmRootWindowController* root_window_controller_;
+  WmRootWindowController* root_window_controller_;
 
   // Protect against recursive calls to Relayout().
   bool in_layout_;
@@ -257,7 +256,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Windows are tracked by docked layout manager only if they are docked;
   // however we need to know if a window is being dragged in order to avoid
   // positioning it or even considering it for layout.
-  wm::WmWindow* dragged_window_;
+  WmWindow* dragged_window_;
 
   // True if the window being dragged is currently docked.
   bool is_dragged_window_docked_;
@@ -292,7 +291,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // The last active window. Used to maintain stacking order even if no windows
   // are currently focused.
-  wm::WmWindow* last_active_window_;
+  WmWindow* last_active_window_;
 
   // Timestamp of the last user-initiated action that changed docked state.
   // Used in UMA metrics.

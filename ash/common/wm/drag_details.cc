@@ -5,7 +5,7 @@
 #include "ash/common/wm/drag_details.h"
 
 #include "ash/common/wm/window_resizer.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 
@@ -42,7 +42,7 @@ int GetSizeChangeDirectionForWindowComponent(int window_component) {
 
 }  // namespace
 
-DragDetails::DragDetails(wm::WmWindow* window,
+DragDetails::DragDetails(WmWindow* window,
                          const gfx::Point& location,
                          int window_component,
                          aura::client::WindowMoveSource source)

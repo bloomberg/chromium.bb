@@ -4,7 +4,7 @@
 
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 
 namespace ash {
 namespace wm {

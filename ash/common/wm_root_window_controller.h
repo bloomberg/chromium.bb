@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_ROOT_WINDOW_CONTROLLER_H_
-#define ASH_COMMON_WM_WM_ROOT_WINDOW_CONTROLLER_H_
+#ifndef ASH_COMMON_WM_ROOT_WINDOW_CONTROLLER_H_
+#define ASH_COMMON_WM_ROOT_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/workspace/workspace_types.h"
@@ -16,13 +16,13 @@ class Point;
 namespace ash {
 
 class AlwaysOnTopController;
+class WmShell;
+class WmRootWindowControllerObserver;
+class WmWindow;
 
 namespace wm {
-
-class WmGlobals;
-class WmRootWindowControllerObserver;
 class WmShelf;
-class WmWindow;
+}
 
 // Provides state associated with a root of a window hierarchy.
 class ASH_EXPORT WmRootWindowController {
@@ -31,13 +31,13 @@ class ASH_EXPORT WmRootWindowController {
 
   virtual bool HasShelf() = 0;
 
-  virtual WmGlobals* GetGlobals() = 0;
+  virtual WmShell* GetShell() = 0;
 
-  virtual WorkspaceWindowState GetWorkspaceWindowState() = 0;
+  virtual wm::WorkspaceWindowState GetWorkspaceWindowState() = 0;
 
   virtual AlwaysOnTopController* GetAlwaysOnTopController() = 0;
 
-  virtual WmShelf* GetShelf() = 0;
+  virtual wm::WmShelf* GetShelf() = 0;
 
   // Returns the window associated with this WmRootWindowController.
   virtual WmWindow* GetWindow() = 0;
@@ -60,7 +60,6 @@ class ASH_EXPORT WmRootWindowController {
   virtual void RemoveObserver(WmRootWindowControllerObserver* observer) = 0;
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_ROOT_WINDOW_CONTROLLER_H_
+#endif  // ASH_COMMON_WM_ROOT_WINDOW_CONTROLLER_H_

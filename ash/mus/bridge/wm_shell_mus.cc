@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/bridge/wm_globals_mus.h"
+#include "ash/mus/bridge/wm_shell_mus.h"
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_resizer.h"
-#include "ash/common/wm/wm_activation_observer.h"
+#include "ash/common/wm_activation_observer.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
@@ -20,27 +20,27 @@
 namespace ash {
 namespace mus {
 
-WmGlobalsMus::WmGlobalsMus(::mus::WindowTreeClient* client) : client_(client) {
+WmShellMus::WmShellMus(::mus::WindowTreeClient* client) : client_(client) {
   client_->AddObserver(this);
-  WmGlobals::Set(this);
+  WmShell::Set(this);
 }
 
-WmGlobalsMus::~WmGlobalsMus() {
+WmShellMus::~WmShellMus() {
   RemoveClientObserver();
-  WmGlobals::Set(nullptr);
+  WmShell::Set(nullptr);
 }
 
 // static
-WmGlobalsMus* WmGlobalsMus::Get() {
-  return static_cast<WmGlobalsMus*>(wm::WmGlobals::Get());
+WmShellMus* WmShellMus::Get() {
+  return static_cast<WmShellMus*>(WmShell::Get());
 }
 
-void WmGlobalsMus::AddRootWindowController(
+void WmShellMus::AddRootWindowController(
     WmRootWindowControllerMus* controller) {
   root_window_controllers_.push_back(controller);
 }
 
-void WmGlobalsMus::RemoveRootWindowController(
+void WmShellMus::RemoveRootWindowController(
     WmRootWindowControllerMus* controller) {
   auto iter = std::find(root_window_controllers_.begin(),
                         root_window_controllers_.end(), controller);
@@ -49,7 +49,7 @@ void WmGlobalsMus::RemoveRootWindowController(
 }
 
 // static
-WmWindowMus* WmGlobalsMus::GetToplevelAncestor(::mus::Window* window) {
+WmWindowMus* WmShellMus::GetToplevelAncestor(::mus::Window* window) {
   while (window) {
     if (IsActivationParent(window->parent()))
       return WmWindowMus::Get(window);
@@ -58,7 +58,7 @@ WmWindowMus* WmGlobalsMus::GetToplevelAncestor(::mus::Window* window) {
   return nullptr;
 }
 
-WmRootWindowControllerMus* WmGlobalsMus::GetRootWindowControllerWithDisplayId(
+WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
   for (WmRootWindowControllerMus* root_window_controller :
        root_window_controllers_) {
@@ -69,121 +69,118 @@ WmRootWindowControllerMus* WmGlobalsMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
-wm::WmWindow* WmGlobalsMus::NewContainerWindow() {
+WmWindow* WmShellMus::NewContainerWindow() {
   return WmWindowMus::Get(client_->NewWindow());
 }
 
-wm::WmWindow* WmGlobalsMus::GetFocusedWindow() {
+WmWindow* WmShellMus::GetFocusedWindow() {
   return WmWindowMus::Get(client_->GetFocusedWindow());
 }
 
-wm::WmWindow* WmGlobalsMus::GetActiveWindow() {
+WmWindow* WmShellMus::GetActiveWindow() {
   return GetToplevelAncestor(client_->GetFocusedWindow());
 }
 
-wm::WmWindow* WmGlobalsMus::GetPrimaryRootWindow() {
+WmWindow* WmShellMus::GetPrimaryRootWindow() {
   return root_window_controllers_[0]->GetWindow();
 }
 
-wm::WmWindow* WmGlobalsMus::GetRootWindowForDisplayId(int64_t display_id) {
+WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
   return GetRootWindowControllerWithDisplayId(display_id)->GetWindow();
 }
 
-wm::WmWindow* WmGlobalsMus::GetRootWindowForNewWindows() {
+WmWindow* WmShellMus::GetRootWindowForNewWindows() {
   NOTIMPLEMENTED();
   return root_window_controllers_[0]->GetWindow();
 }
 
-std::vector<wm::WmWindow*> WmGlobalsMus::GetMruWindowList() {
+std::vector<WmWindow*> WmShellMus::GetMruWindowList() {
   NOTIMPLEMENTED();
-  return std::vector<wm::WmWindow*>();
+  return std::vector<WmWindow*>();
 }
 
-std::vector<wm::WmWindow*> WmGlobalsMus::GetMruWindowListIgnoreModals() {
+std::vector<WmWindow*> WmShellMus::GetMruWindowListIgnoreModals() {
   NOTIMPLEMENTED();
-  return std::vector<wm::WmWindow*>();
+  return std::vector<WmWindow*>();
 }
 
-bool WmGlobalsMus::IsForceMaximizeOnFirstRun() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool WmGlobalsMus::IsUserSessionBlocked() {
+bool WmShellMus::IsForceMaximizeOnFirstRun() {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool WmGlobalsMus::IsScreenLocked() {
+bool WmShellMus::IsUserSessionBlocked() {
   NOTIMPLEMENTED();
   return false;
 }
 
-void WmGlobalsMus::LockCursor() {
+bool WmShellMus::IsScreenLocked() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WmShellMus::LockCursor() {
   NOTIMPLEMENTED();
 }
 
-void WmGlobalsMus::UnlockCursor() {
+void WmShellMus::UnlockCursor() {
   NOTIMPLEMENTED();
 }
 
-std::vector<wm::WmWindow*> WmGlobalsMus::GetAllRootWindows() {
-  std::vector<wm::WmWindow*> wm_windows(root_window_controllers_.size());
+std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
+  std::vector<WmWindow*> wm_windows(root_window_controllers_.size());
   for (size_t i = 0; i < root_window_controllers_.size(); ++i)
     wm_windows[i] = root_window_controllers_[i]->GetWindow();
   return wm_windows;
 }
 
-void WmGlobalsMus::RecordUserMetricsAction(wm::WmUserMetricsAction action) {
+void WmShellMus::RecordUserMetricsAction(wm::WmUserMetricsAction action) {
   NOTIMPLEMENTED();
 }
 
-std::unique_ptr<WindowResizer> WmGlobalsMus::CreateDragWindowResizer(
+std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {
   return base::WrapUnique(
       new DragWindowResizer(std::move(next_window_resizer), window_state));
 }
 
-bool WmGlobalsMus::IsOverviewModeSelecting() {
+bool WmShellMus::IsOverviewModeSelecting() {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool WmGlobalsMus::IsOverviewModeRestoringMinimizedWindows() {
+bool WmShellMus::IsOverviewModeRestoringMinimizedWindows() {
   NOTIMPLEMENTED();
   return false;
 }
 
-void WmGlobalsMus::AddActivationObserver(wm::WmActivationObserver* observer) {
+void WmShellMus::AddActivationObserver(WmActivationObserver* observer) {
   activation_observers_.AddObserver(observer);
 }
 
-void WmGlobalsMus::RemoveActivationObserver(
-    wm::WmActivationObserver* observer) {
+void WmShellMus::RemoveActivationObserver(WmActivationObserver* observer) {
   activation_observers_.RemoveObserver(observer);
 }
 
-void WmGlobalsMus::AddDisplayObserver(wm::WmDisplayObserver* observer) {
+void WmShellMus::AddDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WmGlobalsMus::RemoveDisplayObserver(wm::WmDisplayObserver* observer) {
+void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WmGlobalsMus::AddOverviewModeObserver(
-    wm::WmOverviewModeObserver* observer) {
+void WmShellMus::AddOverviewModeObserver(WmOverviewModeObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WmGlobalsMus::RemoveOverviewModeObserver(
-    wm::WmOverviewModeObserver* observer) {
+void WmShellMus::RemoveOverviewModeObserver(WmOverviewModeObserver* observer) {
   NOTIMPLEMENTED();
 }
 
 // static
-bool WmGlobalsMus::IsActivationParent(::mus::Window* window) {
+bool WmShellMus::IsActivationParent(::mus::Window* window) {
   if (!window)
     return false;
 
@@ -194,7 +191,7 @@ bool WmGlobalsMus::IsActivationParent(::mus::Window* window) {
   return false;
 }
 
-void WmGlobalsMus::RemoveClientObserver() {
+void WmShellMus::RemoveClientObserver() {
   if (!client_)
     return;
 
@@ -203,18 +200,18 @@ void WmGlobalsMus::RemoveClientObserver() {
 }
 
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
-void WmGlobalsMus::OnWindowTreeFocusChanged(::mus::Window* gained_focus,
-                                            ::mus::Window* lost_focus) {
+void WmShellMus::OnWindowTreeFocusChanged(::mus::Window* gained_focus,
+                                          ::mus::Window* lost_focus) {
   WmWindowMus* gained_active = GetToplevelAncestor(gained_focus);
   WmWindowMus* lost_active = GetToplevelAncestor(gained_focus);
   if (gained_active == lost_active)
     return;
 
-  FOR_EACH_OBSERVER(wm::WmActivationObserver, activation_observers_,
+  FOR_EACH_OBSERVER(WmActivationObserver, activation_observers_,
                     OnWindowActivated(gained_active, lost_active));
 }
 
-void WmGlobalsMus::OnWillDestroyClient(::mus::WindowTreeClient* client) {
+void WmShellMus::OnWillDestroyClient(::mus::WindowTreeClient* client) {
   DCHECK_EQ(client, client_);
   RemoveClientObserver();
 }

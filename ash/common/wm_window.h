@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_WINDOW_H_
-#define ASH_COMMON_WM_WM_WINDOW_H_
+#ifndef ASH_COMMON_WM_WINDOW_H_
+#define ASH_COMMON_WM_WINDOW_H_
 
 #include <memory>
 #include <vector>
@@ -32,15 +32,17 @@ class Layer;
 }
 
 namespace ash {
-namespace wm {
 
-class WMEvent;
-class WmGlobals;
 class WmLayoutManager;
 class WmRootWindowController;
+class WmShell;
 class WmWindowObserver;
 enum class WmWindowProperty;
+
+namespace wm {
+class WMEvent;
 class WindowState;
+}
 
 // This class exists as a porting layer to allow ash/wm to work with
 // aura::Window or mus::Window. See aura::Window for details on the functions.
@@ -60,7 +62,7 @@ class ASH_EXPORT WmWindow {
   virtual WmRootWindowController* GetRootWindowController() = 0;
 
   // TODO(sky): fix constness.
-  virtual WmGlobals* GetGlobals() const = 0;
+  virtual WmShell* GetShell() const = 0;
 
   // Used for debugging.
   virtual void SetName(const char* name) = 0;
@@ -110,11 +112,11 @@ class ASH_EXPORT WmWindow {
   virtual bool GetBoolProperty(WmWindowProperty key) = 0;
   virtual int GetIntProperty(WmWindowProperty key) = 0;
 
-  WindowState* GetWindowState() {
-    return const_cast<WindowState*>(
+  wm::WindowState* GetWindowState() {
+    return const_cast<wm::WindowState*>(
         const_cast<const WmWindow*>(this)->GetWindowState());
   }
-  virtual const WindowState* GetWindowState() const = 0;
+  virtual const wm::WindowState* GetWindowState() const = 0;
 
   virtual WmWindow* GetToplevelWindow() = 0;
 
@@ -257,7 +259,6 @@ class ASH_EXPORT WmWindow {
   virtual ~WmWindow() {}
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_WINDOW_H_
+#endif  // ASH_COMMON_WM_WINDOW_H_

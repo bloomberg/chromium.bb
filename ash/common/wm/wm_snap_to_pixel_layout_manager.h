@@ -6,7 +6,7 @@
 #define ASH_COMMON_WM_WM_SNAP_TO_PIXEL_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_layout_manager.h"
+#include "ash/common/wm_layout_manager.h"
 #include "base/macros.h"
 
 namespace ash {

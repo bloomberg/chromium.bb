@@ -10,36 +10,36 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/wm/window_state_observer.h"
-#include "ash/common/wm/wm_activation_observer.h"
-#include "ash/common/wm/wm_layout_manager.h"
-#include "ash/common/wm/wm_root_window_controller_observer.h"
 #include "ash/common/wm/wm_types.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_root_window_controller_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
+class WmShell;
+class WmRootWindowController;
 class WorkspaceLayoutManagerBackdropDelegate;
 
 namespace wm {
-class WmGlobals;
-class WmRootWindowController;
 class WorkspaceLayoutManagerDelegate;
 class WMEvent;
 }
 
 // LayoutManager used on the window created for a workspace.
 class ASH_EXPORT WorkspaceLayoutManager
-    : public wm::WmLayoutManager,
-      public wm::WmWindowObserver,
-      public wm::WmActivationObserver,
+    : public WmLayoutManager,
+      public WmWindowObserver,
+      public WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
-      public wm::WmRootWindowControllerObserver,
+      public WmRootWindowControllerObserver,
       public wm::WindowStateObserver {
  public:
   WorkspaceLayoutManager(
-      wm::WmWindow* window,
+      WmWindow* window,
       std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate);
 
   ~WorkspaceLayoutManager() override;
@@ -52,35 +52,34 @@ class ASH_EXPORT WorkspaceLayoutManager
   void SetMaximizeBackdropDelegate(
       std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate);
 
-  // Overridden from wm::WmLayoutManager:
+  // Overridden from WmLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(wm::WmWindow* child) override;
-  void OnWillRemoveWindowFromLayout(wm::WmWindow* child) override;
-  void OnWindowRemovedFromLayout(wm::WmWindow* child) override;
-  void OnChildWindowVisibilityChanged(wm::WmWindow* child,
-                                      bool visibile) override;
-  void SetChildBounds(wm::WmWindow* child,
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
+  void OnWindowRemovedFromLayout(WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // wm::WmRootWindowControllerObserver overrides:
+  // WmRootWindowControllerObserver overrides:
   void OnWorkAreaChanged() override;
   void OnFullscreenStateChanged(bool is_fullscreen) override;
 
-  // Overriden from wm::WmWindowObserver:
+  // Overriden from WmWindowObserver:
   void OnWindowTreeChanged(
-      wm::WmWindow* window,
-      const wm::WmWindowObserver::TreeChangeParams& params) override;
-  void OnWindowPropertyChanged(wm::WmWindow* window,
-                               wm::WmWindowProperty property) override;
-  void OnWindowStackingChanged(wm::WmWindow* window) override;
-  void OnWindowDestroying(wm::WmWindow* window) override;
-  void OnWindowBoundsChanged(wm::WmWindow* window,
+      WmWindow* window,
+      const WmWindowObserver::TreeChangeParams& params) override;
+  void OnWindowPropertyChanged(WmWindow* window,
+                               WmWindowProperty property) override;
+  void OnWindowStackingChanged(WmWindow* window) override;
+  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  // wm::WmActivationObserver overrides:
-  void OnWindowActivated(wm::WmWindow* gained_active,
-                         wm::WmWindow* lost_active) override;
+  // WmActivationObserver overrides:
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
 
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
@@ -90,7 +89,7 @@ class ASH_EXPORT WorkspaceLayoutManager
                                    wm::WindowStateType old_type) override;
 
  private:
-  typedef std::set<wm::WmWindow*> WindowSet;
+  typedef std::set<WmWindow*> WindowSet;
 
   // Adjusts the bounds of all managed windows when the display area changes.
   // This happens when the display size, work area insets has changed.
@@ -118,12 +117,12 @@ class ASH_EXPORT WorkspaceLayoutManager
   bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
 
   // Animates the window bounds to |bounds|.
-  void SetChildBoundsAnimated(wm::WmWindow* child, const gfx::Rect& bounds);
+  void SetChildBoundsAnimated(WmWindow* child, const gfx::Rect& bounds);
 
-  wm::WmWindow* window_;
-  wm::WmWindow* root_window_;
-  wm::WmRootWindowController* root_window_controller_;
-  wm::WmGlobals* globals_;
+  WmWindow* window_;
+  WmWindow* root_window_;
+  WmRootWindowController* root_window_controller_;
+  WmShell* shell_;
 
   std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate_;
 

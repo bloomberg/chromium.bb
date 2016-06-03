@@ -11,9 +11,10 @@
 #include "base/macros.h"
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // List of containers which contain windows that can be switched via Alt+Tab to.
 ASH_EXPORT extern const int kSwitchableWindowContainerIds[];

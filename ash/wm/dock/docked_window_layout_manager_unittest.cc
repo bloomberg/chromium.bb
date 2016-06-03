@@ -5,6 +5,7 @@
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_resizer.h"
@@ -23,7 +24,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -78,7 +78,7 @@ class DockedWindowLayoutManagerTest
           test::TestShelfDelegate::instance();
       shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
-          PanelLayoutManager::Get(wm::WmWindowAura::Get(window));
+          PanelLayoutManager::Get(WmWindowAura::Get(window));
       manager->Relayout();
     }
     return window;
@@ -94,7 +94,7 @@ class DockedWindowLayoutManagerTest
           test::TestShelfDelegate::instance();
       shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
-          PanelLayoutManager::Get(wm::WmWindowAura::Get(window));
+          PanelLayoutManager::Get(WmWindowAura::Get(window));
       manager->Relayout();
     }
     return window;
@@ -104,7 +104,7 @@ class DockedWindowLayoutManagerTest
       aura::Window* window,
       const gfx::Point& point_in_parent,
       int window_component) {
-    return CreateWindowResizer(wm::WmWindowAura::Get(window), point_in_parent,
+    return CreateWindowResizer(WmWindowAura::Get(window), point_in_parent,
                                window_component,
                                aura::client::WINDOW_MOVE_SOURCE_MOUSE)
         .release();
@@ -266,7 +266,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   DockedWindowLayoutManager* manager =
-      DockedWindowLayoutManager::Get(wm::WmWindowAura::Get(window.get()));
+      DockedWindowLayoutManager::Get(WmWindowAura::Get(window.get()));
 
   // Create two additional windows and test their auto-placement
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -316,7 +316,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   DockedWindowLayoutManager* manager =
-      DockedWindowLayoutManager::Get(wm::WmWindowAura::Get(window.get()));
+      DockedWindowLayoutManager::Get(WmWindowAura::Get(window.get()));
 
   // Create two additional windows and test their auto-placement
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -370,7 +370,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   DockedWindowLayoutManager* manager =
-      DockedWindowLayoutManager::Get(wm::WmWindowAura::Get(window.get()));
+      DockedWindowLayoutManager::Get(WmWindowAura::Get(window.get()));
 
   // Create two additional windows and test their auto-placement
   bounds = gfx::Rect(616, 32, 231, 320);

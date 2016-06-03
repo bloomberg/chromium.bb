@@ -68,8 +68,8 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   std::unique_ptr<WindowResizer> next_window_resizer_;
 
   // Panel container window.
-  wm::WmWindow* panel_container_;
-  wm::WmWindow* initial_panel_container_;
+  WmWindow* panel_container_;
+  WmWindow* initial_panel_container_;
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;

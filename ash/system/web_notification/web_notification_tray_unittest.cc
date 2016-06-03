@@ -9,10 +9,10 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -153,7 +153,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(1, 2, 3, 4);
-    wm::WmGlobals::Get()
+    WmShell::Get()
         ->GetPrimaryRootWindow()
         ->GetRootWindowController()
         ->ConfigureWidgetInitParamsForContainer(
@@ -438,7 +438,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   // Put |widget| into fullscreen without forcing the shelf to hide. Currently,
   // this is used by immersive fullscreen and forces the shelf to be auto
   // hidden.
-  wm::WmLookup::Get()
+  WmLookup::Get()
       ->GetWindowForWidget(widget.get())
       ->GetWindowState()
       ->set_hide_shelf_when_fullscreen(false);

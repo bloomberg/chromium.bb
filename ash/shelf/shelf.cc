@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/aura/wm_shelf_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/focus_cycler.h"
@@ -23,7 +24,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

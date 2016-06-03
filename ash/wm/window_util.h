@@ -24,9 +24,10 @@ class Event;
 }
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // Utility functions for window activation.
 ASH_EXPORT void ActivateWindow(aura::Window* window);

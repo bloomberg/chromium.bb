@@ -8,18 +8,18 @@
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 namespace wm {
 namespace {
 
-WmWindow* FindContainerRoot(WmGlobals* globals, const gfx::Rect& bounds) {
+WmWindow* FindContainerRoot(WmShell* shell, const gfx::Rect& bounds) {
   if (bounds == gfx::Rect())
-    return globals->GetRootWindowForNewWindows();
+    return shell->GetRootWindowForNewWindows();
   return GetRootWindowMatching(bounds);
 }
 
@@ -35,7 +35,7 @@ WmWindow* GetSystemModalContainer(WmWindow* root, WmWindow* window) {
   // all modal windows are placed into the normal modal container.
   // In case of missing transient parent (it could happen for alerts from
   // background pages) assume that the window belongs to user session.
-  if (!window->GetGlobals()->IsUserSessionBlocked() ||
+  if (!window->GetShell()->IsUserSessionBlocked() ||
       !window->GetTransientParent()) {
     return root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
   }
@@ -74,7 +74,7 @@ WmWindow* GetDefaultParent(WmWindow* context,
     // Transient window should use the same root as its transient parent.
     target_root = transient_parent->GetRootWindow();
   } else {
-    target_root = FindContainerRoot(context->GetGlobals(), bounds);
+    target_root = FindContainerRoot(context->GetShell(), bounds);
   }
 
   switch (window->GetType()) {

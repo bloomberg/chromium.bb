@@ -16,7 +16,7 @@ include_rules = [
 
 specific_include_rules = {
   ".*aura\..*": [
-    "+ash/wm/aura",
+    "+ash/aura",
     "+ash/wm/overview",
     "+ui/aura",
   ],

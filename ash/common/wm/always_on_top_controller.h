@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -18,13 +18,13 @@ class WorkspaceLayoutManager;
 // 'AlwaysOnTop' property. That is, putting a window into the worskpace
 // container if its "AlwaysOnTop" property is false. Otherwise, put it in
 // |always_on_top_container_|.
-class ASH_EXPORT AlwaysOnTopController : public wm::WmWindowObserver {
+class ASH_EXPORT AlwaysOnTopController : public WmWindowObserver {
  public:
-  explicit AlwaysOnTopController(wm::WmWindow* viewport);
+  explicit AlwaysOnTopController(WmWindow* viewport);
   ~AlwaysOnTopController() override;
 
   // Gets container for given |window| based on its "AlwaysOnTop" property.
-  wm::WmWindow* GetContainer(wm::WmWindow* window) const;
+  WmWindow* GetContainer(WmWindow* window) const;
 
   WorkspaceLayoutManager* GetLayoutManager() const;
 
@@ -32,14 +32,14 @@ class ASH_EXPORT AlwaysOnTopController : public wm::WmWindowObserver {
       std::unique_ptr<WorkspaceLayoutManager> layout_manager);
 
  private:
-  // Overridden from wm::WmWindowObserver:
-  void OnWindowTreeChanged(wm::WmWindow* window,
+  // Overridden from WmWindowObserver:
+  void OnWindowTreeChanged(WmWindow* window,
                            const TreeChangeParams& params) override;
-  void OnWindowPropertyChanged(wm::WmWindow* window,
-                               wm::WmWindowProperty property) override;
-  void OnWindowDestroying(wm::WmWindow* window) override;
+  void OnWindowPropertyChanged(WmWindow* window,
+                               WmWindowProperty property) override;
+  void OnWindowDestroying(WmWindow* window) override;
 
-  wm::WmWindow* always_on_top_container_;
+  WmWindow* always_on_top_container_;
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnTopController);
 };

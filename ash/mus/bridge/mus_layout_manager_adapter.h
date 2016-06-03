@@ -11,13 +11,11 @@
 #include "components/mus/public/cpp/window_observer.h"
 
 namespace ash {
-namespace wm {
 class WmLayoutManager;
-}
 
 namespace mus {
 
-// Used to associate a mus::Window with an wm::WmLayoutManager. This
+// Used to associate a mus::Window with an WmLayoutManager. This
 // attaches an observer to the mus::Window and calls the appropriate methods on
 // the WmLayoutManager at the appropriate time.
 //
@@ -30,10 +28,10 @@ namespace mus {
 class MusLayoutManagerAdapter : public ::mus::WindowObserver {
  public:
   MusLayoutManagerAdapter(::mus::Window* window,
-                          std::unique_ptr<wm::WmLayoutManager> layout_manager);
+                          std::unique_ptr<WmLayoutManager> layout_manager);
   ~MusLayoutManagerAdapter() override;
 
-  wm::WmLayoutManager* layout_manager() { return layout_manager_.get(); }
+  WmLayoutManager* layout_manager() { return layout_manager_.get(); }
 
  private:
   // WindowObserver attached to child windows. A separate class is used to
@@ -62,7 +60,7 @@ class MusLayoutManagerAdapter : public ::mus::WindowObserver {
 
   ::mus::Window* window_;
   ChildWindowObserver child_window_observer_;
-  std::unique_ptr<wm::WmLayoutManager> layout_manager_;
+  std::unique_ptr<WmLayoutManager> layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MusLayoutManagerAdapter);
 };

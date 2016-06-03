@@ -4,9 +4,9 @@
 
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 
-#include "ash/common/wm/wm_root_window_controller_observer.h"
-#include "ash/mus/bridge/wm_globals_mus.h"
+#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/mus/bridge/wm_shelf_mus.h"
+#include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
 #include "ash/mus/root_window_controller.h"
@@ -31,16 +31,16 @@ namespace ash {
 namespace mus {
 
 WmRootWindowControllerMus::WmRootWindowControllerMus(
-    WmGlobalsMus* globals,
+    WmShellMus* shell,
     RootWindowController* root_window_controller)
-    : globals_(globals), root_window_controller_(root_window_controller) {
-  globals_->AddRootWindowController(this);
+    : shell_(shell), root_window_controller_(root_window_controller) {
+  shell_->AddRootWindowController(this);
   root_window_controller_->root()->SetLocalProperty(kWmRootWindowControllerKey,
                                                     this);
 }
 
 WmRootWindowControllerMus::~WmRootWindowControllerMus() {
-  globals_->RemoveRootWindowController(this);
+  shell_->RemoveRootWindowController(this);
 }
 
 // static
@@ -54,7 +54,7 @@ const WmRootWindowControllerMus* WmRootWindowControllerMus::Get(
 
 void WmRootWindowControllerMus::NotifyFullscreenStateChange(
     bool is_fullscreen) {
-  FOR_EACH_OBSERVER(wm::WmRootWindowControllerObserver, observers_,
+  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
                     OnFullscreenStateChanged(is_fullscreen));
 }
 
@@ -83,8 +83,8 @@ bool WmRootWindowControllerMus::HasShelf() {
   return GetShelf() != nullptr;
 }
 
-wm::WmGlobals* WmRootWindowControllerMus::GetGlobals() {
-  return globals_;
+WmShell* WmRootWindowControllerMus::GetShell() {
+  return shell_;
 }
 
 wm::WorkspaceWindowState WmRootWindowControllerMus::GetWorkspaceWindowState() {
@@ -100,7 +100,7 @@ wm::WmShelf* WmRootWindowControllerMus::GetShelf() {
   return root_window_controller_->wm_shelf();
 }
 
-wm::WmWindow* WmRootWindowControllerMus::GetWindow() {
+WmWindow* WmRootWindowControllerMus::GetWindow() {
   return WmWindowMus::Get(root_window_controller_->root());
 }
 
@@ -121,19 +121,19 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
       ::mus::mojom::SurfaceType::DEFAULT);
 }
 
-wm::WmWindow* WmRootWindowControllerMus::FindEventTarget(
+WmWindow* WmRootWindowControllerMus::FindEventTarget(
     const gfx::Point& location_in_screen) {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
 void WmRootWindowControllerMus::AddObserver(
-    wm::WmRootWindowControllerObserver* observer) {
+    WmRootWindowControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void WmRootWindowControllerMus::RemoveObserver(
-    wm::WmRootWindowControllerObserver* observer) {
+    WmRootWindowControllerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

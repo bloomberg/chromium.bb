@@ -12,7 +12,7 @@
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "base/auto_reset.h"
 
 namespace ash {

@@ -12,11 +12,12 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_root_window_controller_observer.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_state_delegate.h"
@@ -29,7 +30,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -191,7 +191,7 @@ class ShelfLayoutManager::UpdateShelfObserver
 // of a WmRootWindowControllerObserver instead of a ShellObserver. This gives us
 // a sane ordering (or at least ordering as we've always had it in ash).
 class ShelfLayoutManager::RootWindowControllerObserverImpl
-    : public wm::WmRootWindowControllerObserver {
+    : public WmRootWindowControllerObserver {
  public:
   explicit RootWindowControllerObserverImpl(
       ShelfLayoutManager* shelf_layout_manager)
@@ -231,7 +231,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
   if (!Shell::GetInstance()->in_mus()) {
     root_window_controller_observer_.reset(
         new RootWindowControllerObserverImpl(this));
-    wm::WmWindowAura::Get(root_window_)
+    WmWindowAura::Get(root_window_)
         ->GetRootWindowController()
         ->AddObserver(root_window_controller_observer_.get());
   }
@@ -251,7 +251,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   Shell::GetInstance()->
       session_state_delegate()->RemoveSessionStateObserver(this);
   if (root_window_controller_observer_) {
-    wm::WmWindowAura::Get(root_window_)
+    WmWindowAura::Get(root_window_)
         ->GetRootWindowController()
         ->RemoveObserver(root_window_controller_observer_.get());
   }

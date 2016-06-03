@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform_util.h"
 
-using WmWindows = std::vector<ash::wm::WmWindow*>;
+using WmWindows = std::vector<ash::WmWindow*>;
 
 namespace ash {
 
@@ -25,7 +25,7 @@ namespace {
 // The opacity level that windows will be set to when they are restored.
 const float kRestoreWindowOpacity = 1.0f;
 
-wm::WmWindow* GetTransientRoot(wm::WmWindow* window) {
+WmWindow* GetTransientRoot(WmWindow* window) {
   while (window->GetTransientParent())
     window = window->GetTransientParent();
   return window;
@@ -33,12 +33,12 @@ wm::WmWindow* GetTransientRoot(wm::WmWindow* window) {
 
 std::unique_ptr<ScopedOverviewAnimationSettings>
 CreateScopedOverviewAnimationSettings(OverviewAnimationType animation_type,
-                                      wm::WmWindow* window) {
+                                      WmWindow* window) {
   return ScopedOverviewAnimationSettingsFactory::Get()
       ->CreateOverviewAnimationSettings(animation_type, window);
 }
 
-// An iterator class that traverses a wm::WmWindow and all of its transient
+// An iterator class that traverses a WmWindow and all of its transient
 // descendants.
 class TransientDescendantIterator {
  public:
@@ -51,7 +51,7 @@ class TransientDescendantIterator {
 
   // Iterates over |root_window| and all of its transient descendants.
   // Note |root_window| must not have a transient parent.
-  explicit TransientDescendantIterator(wm::WmWindow* root_window);
+  explicit TransientDescendantIterator(WmWindow* root_window);
 
   // Prefix increment operator.  This assumes there are more items (i.e.
   // *this != TransientDescendantIterator()).
@@ -61,7 +61,7 @@ class TransientDescendantIterator {
   bool operator!=(const TransientDescendantIterator& other) const;
 
   // Dereference operator for STL-compatible iterators.
-  wm::WmWindow* operator*() const;
+  WmWindow* operator*() const;
 
  private:
   // Explicit assignment operator defined because an explicit copy constructor
@@ -71,7 +71,7 @@ class TransientDescendantIterator {
 
   // The current window that |this| refers to. A null |current_window_| denotes
   // an empty iterator and is used as the last possible value in the traversal.
-  wm::WmWindow* current_window_;
+  WmWindow* current_window_;
 };
 
 // Provides a virtual container implementing begin() and end() for a sequence of
@@ -102,8 +102,7 @@ TransientDescendantIterator::TransientDescendantIterator()
   : current_window_(nullptr) {
 }
 
-TransientDescendantIterator::TransientDescendantIterator(
-    wm::WmWindow* root_window)
+TransientDescendantIterator::TransientDescendantIterator(WmWindow* root_window)
     : current_window_(root_window) {
   DCHECK(!root_window->GetTransientParent());
 }
@@ -119,7 +118,7 @@ TransientDescendantIterator::operator++() {
     current_window_ = transient_children.front();
   } else {
     while (current_window_) {
-      wm::WmWindow* parent = current_window_->GetTransientParent();
+      WmWindow* parent = current_window_->GetTransientParent();
       if (!parent) {
         current_window_ = nullptr;
         break;
@@ -143,7 +142,7 @@ bool TransientDescendantIterator::operator!=(
   return current_window_ != other.current_window_;
 }
 
-wm::WmWindow* TransientDescendantIterator::operator*() const {
+WmWindow* TransientDescendantIterator::operator*() const {
   return current_window_;
 }
 
@@ -152,16 +151,14 @@ TransientDescendantIteratorRange::TransientDescendantIteratorRange(
     : begin_(begin) {
 }
 
-TransientDescendantIteratorRange GetTransientTreeIterator(
-    wm::WmWindow* window) {
+TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
   return TransientDescendantIteratorRange(
       TransientDescendantIterator(GetTransientRoot(window)));
 }
 
 }  // namespace
 
-ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
-    wm::WmWindow* window)
+ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
     : window_(window),
       minimized_(window->GetShowState() == ui::SHOW_STATE_MINIMIZED),
       ignored_by_shelf_(window->GetWindowState()->ignored_by_shelf()),
@@ -208,7 +205,7 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
   }
 }
 
-bool ScopedTransformOverviewWindow::Contains(const wm::WmWindow* target) const {
+bool ScopedTransformOverviewWindow::Contains(const WmWindow* target) const {
   for (const auto& window : GetTransientTreeIterator(window_)) {
     if (window->Contains(target))
       return true;
@@ -281,14 +278,14 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
 }
 
 void ScopedTransformOverviewWindow::SetTransform(
-    wm::WmWindow* root_window,
+    WmWindow* root_window,
     const gfx::Transform& transform) {
   DCHECK(overview_started_);
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
 
   for (const auto& window : GetTransientTreeIterator(window_)) {
-    wm::WmWindow* parent_window = window->GetParent();
+    WmWindow* parent_window = window->GetParent();
     gfx::Point original_origin =
         parent_window->ConvertRectToScreen(window->GetTargetBounds()).origin();
     gfx::Transform new_transform = TransformAboutPivot(

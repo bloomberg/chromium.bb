@@ -8,9 +8,11 @@
 #include "base/macros.h"
 
 namespace ash {
+
+class WmWindow;
+
 namespace wm {
 class RootWindowLayoutManager;
-class WmWindow;
 }
 
 // This will eventually become what is RootWindowController. During the
@@ -18,7 +20,7 @@ class WmWindow;
 // It should *not* contain any aura specific code.
 class RootWindowControllerCommon {
  public:
-  explicit RootWindowControllerCommon(wm::WmWindow* root);
+  explicit RootWindowControllerCommon(WmWindow* root);
   ~RootWindowControllerCommon();
 
   // Creates the containers (WmWindows) used by the shell.
@@ -32,7 +34,7 @@ class RootWindowControllerCommon {
   }
 
  private:
-  wm::WmWindow* root_;
+  WmWindow* root_;
 
   wm::RootWindowLayoutManager* root_window_layout_;
 

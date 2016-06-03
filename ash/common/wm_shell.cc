@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm_shell.h"
 
 namespace ash {
-namespace wm {
 
 // static
-WmLookup* WmLookup::instance_ = nullptr;
+WmShell* WmShell::instance_ = nullptr;
 
 // static
-void WmLookup::Set(WmLookup* lookup) {
-  instance_ = lookup;
+void WmShell::Set(WmShell* instance) {
+  instance_ = instance;
 }
 
 // static
-WmLookup* WmLookup::Get() {
+WmShell* WmShell::Get() {
   return instance_;
 }
 
-}  // namespace wm
 }  // namespace ash

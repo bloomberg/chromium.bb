@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_AURA_AURA_LAYOUT_MANAGER_ADAPTER_H_
-#define ASH_WM_AURA_AURA_LAYOUT_MANAGER_ADAPTER_H_
+#ifndef ASH_AURA_AURA_LAYOUT_MANAGER_ADAPTER_H_
+#define ASH_AURA_AURA_LAYOUT_MANAGER_ADAPTER_H_
 
 #include <memory>
 
@@ -12,7 +12,6 @@
 #include "ui/aura/layout_manager.h"
 
 namespace ash {
-namespace wm {
 
 class WmLayoutManager;
 
@@ -43,7 +42,6 @@ class ASH_EXPORT AuraLayoutManagerAdapter : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(AuraLayoutManagerAdapter);
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_AURA_AURA_LAYOUT_MANAGER_ADAPTER_H_
+#endif  // ASH_AURA_AURA_LAYOUT_MANAGER_ADAPTER_H_

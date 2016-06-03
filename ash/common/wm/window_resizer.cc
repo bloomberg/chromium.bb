@@ -8,7 +8,7 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"
@@ -185,7 +185,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // Make sure that |new_bounds| doesn't leave any of the displays.  Note that
     // the |work_area| above isn't good for this check since it is the work area
     // for the current display but the window can move to a different one.
-    wm::WmWindow* parent = GetTarget()->GetParent();
+    WmWindow* parent = GetTarget()->GetParent();
     gfx::Point passed_location_in_screen(
         parent->ConvertPointToScreen(passed_location));
     gfx::Rect near_passed_location(passed_location_in_screen, gfx::Size());

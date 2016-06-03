@@ -13,10 +13,12 @@ class Rect;
 }
 
 namespace ash {
+
+class WmWindow;
+
 namespace wm {
 
 class WmShelfObserver;
-class WmWindow;
 
 // Used for accessing global state.
 class ASH_EXPORT WmShelf {
@@ -36,8 +38,7 @@ class ASH_EXPORT WmShelf {
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
-  virtual gfx::Rect GetScreenBoundsOfItemIconForWindow(
-      wm::WmWindow* window) = 0;
+  virtual gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) = 0;
 
   virtual void AddObserver(WmShelfObserver* observer) = 0;
   virtual void RemoveObserver(WmShelfObserver* observer) = 0;

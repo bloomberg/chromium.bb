@@ -11,13 +11,13 @@
 #include "ash/ash_export.h"
 #include "ash/common/wm/shelf/wm_shelf_observer.h"
 #include "ash/common/wm/window_state_observer.h"
-#include "ash/common/wm/wm_activation_observer.h"
-#include "ash/common/wm/wm_display_observer.h"
-#include "ash/common/wm/wm_layout_manager.h"
-#include "ash/common/wm/wm_overview_mode_observer.h"
-#include "ash/common/wm/wm_root_window_controller_observer.h"
-#include "ash/common/wm/wm_window_observer.h"
-#include "ash/common/wm/wm_window_tracker.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_display_observer.h"
+#include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_overview_mode_observer.h"
+#include "ash/common/wm_root_window_controller_observer.h"
+#include "ash/common/wm_window_observer.h"
+#include "ash/common/wm_window_tracker.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -56,67 +56,66 @@ class WmShelf;
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
 class ASH_EXPORT PanelLayoutManager
-    : public wm::WmLayoutManager,
+    : public WmLayoutManager,
       public wm::WindowStateObserver,
-      public wm::WmActivationObserver,
-      public wm::WmDisplayObserver,
-      public wm::WmOverviewModeObserver,
-      public wm::WmRootWindowControllerObserver,
-      public wm::WmWindowObserver,
+      public WmActivationObserver,
+      public WmDisplayObserver,
+      public WmOverviewModeObserver,
+      public WmRootWindowControllerObserver,
+      public WmWindowObserver,
       public keyboard::KeyboardControllerObserver,
       public wm::WmShelfObserver {
  public:
-  explicit PanelLayoutManager(wm::WmWindow* panel_container);
+  explicit PanelLayoutManager(WmWindow* panel_container);
   ~PanelLayoutManager() override;
 
   // Returns the PanelLayoutManager in the specified hierarchy. This searches
   // from the root of |window|.
-  static PanelLayoutManager* Get(wm::WmWindow* window);
+  static PanelLayoutManager* Get(WmWindow* window);
 
   // Call Shutdown() before deleting children of panel_container.
   void Shutdown();
 
-  void StartDragging(wm::WmWindow* panel);
+  void StartDragging(WmWindow* panel);
   void FinishDragging();
 
-  void ToggleMinimize(wm::WmWindow* panel);
+  void ToggleMinimize(WmWindow* panel);
 
   // Hide / Show the panel callout widgets.
   void SetShowCalloutWidgets(bool show);
 
   // Returns the callout widget (arrow) for |panel|.
-  views::Widget* GetCalloutWidgetForPanel(wm::WmWindow* panel);
+  views::Widget* GetCalloutWidgetForPanel(WmWindow* panel);
 
   wm::WmShelf* shelf() { return shelf_; }
   void SetShelf(wm::WmShelf* shelf);
 
-  // Overridden from wm::WmLayoutManager
+  // Overridden from WmLayoutManager
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(wm::WmWindow* child) override;
-  void OnWillRemoveWindowFromLayout(wm::WmWindow* child) override;
-  void OnWindowRemovedFromLayout(wm::WmWindow* child) override;
-  void OnChildWindowVisibilityChanged(wm::WmWindow* child,
-                                      bool visibile) override;
-  void SetChildBounds(wm::WmWindow* child,
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
+  void OnWindowRemovedFromLayout(WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visibile) override;
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overridden from wm::WmOverviewModeObserver
+  // Overridden from WmOverviewModeObserver
   void OnOverviewModeEnded() override;
 
-  // Overridden from wm::WmRootWindowControllerObserver
+  // Overridden from WmRootWindowControllerObserver
   void OnShelfAlignmentChanged() override;
 
-  // Overridden from wm::WmWindowObserver
-  void OnWindowPropertyChanged(wm::WmWindow* window,
-                               wm::WmWindowProperty property) override;
+  // Overridden from WmWindowObserver
+  void OnWindowPropertyChanged(WmWindow* window,
+                               WmWindowProperty property) override;
 
   // Overridden from wm::WindowStateObserver
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
 
-  // Overridden from wm::WmActivationObserver
-  void OnWindowActivated(wm::WmWindow* gained_active,
-                         wm::WmWindow* lost_active) override;
+  // Overridden from WmActivationObserver
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
 
   // Overridden from WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
@@ -138,7 +137,7 @@ class ASH_EXPORT PanelLayoutManager
   struct ASH_EXPORT PanelInfo {
     PanelInfo() : window(NULL), callout_widget(NULL), slide_in(false) {}
 
-    bool operator==(const wm::WmWindow* other_window) const {
+    bool operator==(const WmWindow* other_window) const {
       return window == other_window;
     }
 
@@ -146,7 +145,7 @@ class ASH_EXPORT PanelLayoutManager
     views::Widget* CalloutWidget();
 
     // A weak pointer to the panel window.
-    wm::WmWindow* window;
+    WmWindow* window;
 
     // The callout widget for this panel. This pointer must be managed
     // manually as this structure is used in a std::list. See
@@ -161,15 +160,15 @@ class ASH_EXPORT PanelLayoutManager
 
   typedef std::list<PanelInfo> PanelList;
 
-  void MinimizePanel(wm::WmWindow* panel);
-  void RestorePanel(wm::WmWindow* panel);
+  void MinimizePanel(WmWindow* panel);
+  void RestorePanel(WmWindow* panel);
 
   // Called whenever the panel layout might change.
   void Relayout();
 
   // Called whenever the panel stacking order needs to be updated (e.g. focus
   // changes or a panel is moved).
-  void UpdateStacking(wm::WmWindow* active_panel);
+  void UpdateStacking(WmWindow* active_panel);
 
   // Update the callout arrows for all managed panels.
   void UpdateCallouts();
@@ -178,9 +177,9 @@ class ASH_EXPORT PanelLayoutManager
   void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
 
   // Parent window associated with this layout manager.
-  wm::WmWindow* panel_container_;
+  WmWindow* panel_container_;
 
-  wm::WmRootWindowController* root_window_controller_;
+  WmRootWindowController* root_window_controller_;
 
   // Protect against recursive calls to OnWindowAddedToLayout().
   bool in_add_window_;
@@ -191,18 +190,18 @@ class ASH_EXPORT PanelLayoutManager
   // Ordered list of unowned pointers to panel windows.
   PanelList panel_windows_;
   // The panel being dragged.
-  wm::WmWindow* dragged_panel_;
+  WmWindow* dragged_panel_;
   // The shelf we are observing for shelf icon changes.
   wm::WmShelf* shelf_;
 
   // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
   // set of panel windows which have been temporarily hidden and need to be
   // restored when the shelf becomes visible again.
-  std::unique_ptr<wm::WmWindowTracker> restore_windows_on_shelf_visible_;
+  std::unique_ptr<WmWindowTracker> restore_windows_on_shelf_visible_;
 
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.
-  wm::WmWindow* last_active_panel_;
+  WmWindow* last_active_panel_;
   base::WeakPtrFactory<PanelLayoutManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);

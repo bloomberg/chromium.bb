@@ -32,11 +32,10 @@ class ASH_EXPORT WorkspaceBackdropDelegate
   ~WorkspaceBackdropDelegate() override;
 
   // WorkspaceLayoutManagerBackdropDelegate overrides:
-  void OnWindowAddedToLayout(wm::WmWindow* child) override;
-  void OnWindowRemovedFromLayout(wm::WmWindow* child) override;
-  void OnChildWindowVisibilityChanged(wm::WmWindow* child,
-                                      bool visible) override;
-  void OnWindowStackingChanged(wm::WmWindow* window) override;
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWindowRemovedFromLayout(WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visible) override;
+  void OnWindowStackingChanged(WmWindow* window) override;
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
   void OnDisplayWorkAreaInsetsChanged() override;

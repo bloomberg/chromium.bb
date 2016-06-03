@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_WINDOW_OBSERVER_H_
-#define ASH_COMMON_WM_WM_WINDOW_OBSERVER_H_
+#ifndef ASH_COMMON_WM_WINDOW_OBSERVER_H_
+#define ASH_COMMON_WM_WINDOW_OBSERVER_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,6 @@ class Rect;
 }
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
 enum class WmWindowProperty;
@@ -43,15 +42,14 @@ class ASH_EXPORT WmWindowObserver {
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {}
 
-  virtual void OnWindowVisibilityChanging(wm::WmWindow* window, bool visible) {}
+  virtual void OnWindowVisibilityChanging(WmWindow* window, bool visible) {}
 
-  virtual void OnWindowTitleChanged(wm::WmWindow* window) {}
+  virtual void OnWindowTitleChanged(WmWindow* window) {}
 
  protected:
   virtual ~WmWindowObserver() {}
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_WINDOW_OBSERVER_H_
+#endif  // ASH_COMMON_WM_WINDOW_OBSERVER_H_

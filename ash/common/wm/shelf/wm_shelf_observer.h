@@ -10,9 +10,10 @@
 #include "ash/common/wm/shelf/wm_shelf_types.h"
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // Used to observe changes to the shelf.
 class ASH_EXPORT WmShelfObserver {

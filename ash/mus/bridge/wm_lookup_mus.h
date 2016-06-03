@@ -7,22 +7,22 @@
 
 #include <stdint.h>
 
-#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm_lookup.h"
 #include "base/macros.h"
 
 namespace ash {
 namespace mus {
 
 // WmLookup implementation for mus.
-class WmLookupMus : public wm::WmLookup {
+class WmLookupMus : public WmLookup {
  public:
   WmLookupMus();
   ~WmLookupMus() override;
 
-  // wm::WmLookup:
-  wm::WmRootWindowController* GetRootWindowControllerWithDisplayId(
+  // WmLookup:
+  WmRootWindowController* GetRootWindowControllerWithDisplayId(
       int64_t id) override;
-  wm::WmWindow* GetWindowForWidget(views::Widget* widget) override;
+  WmWindow* GetWindowForWidget(views::Widget* widget) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WmLookupMus);

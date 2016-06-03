@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -107,7 +107,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 50, 50);
-    wm::WmGlobals::Get()
+    WmShell::Get()
         ->GetPrimaryRootWindow()
         ->GetRootWindowController()
         ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,

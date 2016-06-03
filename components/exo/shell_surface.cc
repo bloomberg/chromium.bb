@@ -4,11 +4,11 @@
 
 #include "components/exo/shell_surface.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -829,7 +829,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
   }
 
   resizer_ = ash::CreateWindowResizer(
-      ash::wm::WmWindowAura::Get(widget_->GetNativeWindow()), drag_location,
+      ash::WmWindowAura::Get(widget_->GetNativeWindow()), drag_location,
       component, aura::client::WINDOW_MOVE_SOURCE_MOUSE);
   if (!resizer_)
     return;

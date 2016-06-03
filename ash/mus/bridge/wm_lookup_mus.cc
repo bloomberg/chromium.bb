@@ -4,8 +4,8 @@
 
 #include "ash/mus/bridge/wm_lookup_mus.h"
 
-#include "ash/mus/bridge/wm_globals_mus.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
+#include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ui/views/widget/widget.h"
 
@@ -21,12 +21,12 @@ WmLookupMus::~WmLookupMus() {
     WmLookup::Set(nullptr);
 }
 
-wm::WmRootWindowController* WmLookupMus::GetRootWindowControllerWithDisplayId(
+WmRootWindowController* WmLookupMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
-  return WmGlobalsMus::Get()->GetRootWindowControllerWithDisplayId(id);
+  return WmShellMus::Get()->GetRootWindowControllerWithDisplayId(id);
 }
 
-wm::WmWindow* WmLookupMus::GetWindowForWidget(views::Widget* widget) {
+WmWindow* WmLookupMus::GetWindowForWidget(views::Widget* widget) {
   return WmWindowMus::Get(widget);
 }
 

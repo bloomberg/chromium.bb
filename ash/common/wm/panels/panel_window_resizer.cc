@@ -9,9 +9,9 @@
 #include "ash/common/wm/shelf/wm_shelf.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"
@@ -54,8 +54,8 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     // complete it would begin positioning the panel.
     if (GetTarget()->GetParent() != panel_container_)
       PanelLayoutManager::Get(panel_container_)->FinishDragging();
-    wm::WmWindow* dst_root =
-        wm::WmLookup::Get()
+    WmWindow* dst_root =
+        WmLookup::Get()
             ->GetRootWindowControllerWithDisplayId(dst_display.id())
             ->GetWindow();
     panel_container_ =
@@ -159,9 +159,9 @@ void PanelWindowResizer::StartedDragging() {
     window_state_->set_panel_attached(true);
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
-    wm::WmWindow* target = GetTarget();
-    wm::WmWindow* target_root = target->GetRootWindow();
-    wm::WmWindow* old_parent = target->GetParent();
+    WmWindow* target = GetTarget();
+    WmWindow* target_root = target->GetRootWindow();
+    WmWindow* old_parent = target->GetParent();
     target->SetParentUsingContext(target_root,
                                   target_root->GetBoundsInScreen());
     wm::ReparentTransientChildrenOfChild(target, old_parent,
@@ -176,9 +176,9 @@ void PanelWindowResizer::FinishDragging() {
     window_state_->set_panel_attached(details().should_attach_to_shelf);
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
-    wm::WmWindow* target = GetTarget();
-    wm::WmWindow* target_root = target->GetRootWindow();
-    wm::WmWindow* old_parent = target->GetParent();
+    WmWindow* target = GetTarget();
+    WmWindow* target_root = target->GetRootWindow();
+    WmWindow* old_parent = target->GetParent();
     target->SetParentUsingContext(target_root,
                                   gfx::Rect(last_location_, gfx::Size()));
     wm::ReparentTransientChildrenOfChild(target, old_parent,

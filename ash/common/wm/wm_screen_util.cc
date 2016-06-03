@@ -4,8 +4,8 @@
 
 #include "ash/common/wm/wm_screen_util.h"
 
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ui/display/display.h"
 
 namespace ash {

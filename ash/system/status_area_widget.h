@@ -18,17 +18,15 @@ class ShellDelegate;
 class StatusAreaWidgetDelegate;
 class SystemTray;
 class WebNotificationTray;
+class WmWindow;
 #if defined(OS_CHROMEOS)
 class LogoutButtonTray;
 class VirtualKeyboardTray;
 #endif
-namespace wm {
-class WmWindow;
-}
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
-  StatusAreaWidget(wm::WmWindow* status_container, ShelfWidget* shelf_widget);
+  StatusAreaWidget(WmWindow* status_container, ShelfWidget* shelf_widget);
   ~StatusAreaWidget() override;
 
   // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.

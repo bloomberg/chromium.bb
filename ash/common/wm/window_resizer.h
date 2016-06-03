@@ -18,9 +18,8 @@ class Rect;
 }
 
 namespace ash {
-namespace wm {
+
 class WmWindow;
-}
 
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
 // or resizing a window. All coordinates passed to this are in the parent
@@ -58,7 +57,7 @@ class ASH_EXPORT WindowResizer {
   virtual void RevertDrag() = 0;
 
   // Returns the target window the resizer was created for.
-  wm::WmWindow* GetTarget() const {
+  WmWindow* GetTarget() const {
     return window_state_ ? window_state_->window() : nullptr;
   }
   // See comment for |DragDetails::initial_location_in_parent|.
@@ -101,7 +100,7 @@ class ASH_EXPORT WindowResizer {
 // Creates a WindowResizer for |window|. Returns a unique_ptr with null if
 // |window| should not be resized nor dragged.
 ASH_EXPORT std::unique_ptr<WindowResizer> CreateWindowResizer(
-    wm::WmWindow* window,
+    WmWindow* window,
     const gfx::Point& point_in_parent,
     int window_component,
     aura::client::WindowMoveSource source);

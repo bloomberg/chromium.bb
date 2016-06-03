@@ -9,10 +9,10 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
-#include "ash/common/wm/wm_window_property.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/material_design/material_design_controller.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -72,7 +72,7 @@ static const float kDimmedItemOpacity = 0.5f;
 // Calculates the |window| bounds after being transformed to the selector's
 // space. With Material Design at most |title_height| is reserved above the
 // |window|. The returned Rect is in virtual screen coordinates.
-gfx::Rect GetTransformedBounds(wm::WmWindow* window, int title_height) {
+gfx::Rect GetTransformedBounds(WmWindow* window, int title_height) {
   gfx::RectF bounds(
       window->GetRootWindow()->ConvertRectToScreen(window->GetTargetBounds()));
   gfx::Transform new_transform = TransformAboutPivot(
@@ -85,7 +85,7 @@ gfx::Rect GetTransformedBounds(wm::WmWindow* window, int title_height) {
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     gfx::RectF header_bounds(bounds);
     header_bounds.set_height(
-        std::min(window->GetIntProperty(wm::WmWindowProperty::TOP_VIEW_INSET),
+        std::min(window->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET),
                  title_height));
     new_transform.TransformRect(&header_bounds);
     bounds.Inset(0, header_bounds.height(), 0, 0);
@@ -97,7 +97,7 @@ gfx::Rect GetTransformedBounds(wm::WmWindow* window, int title_height) {
 // Note: The fade in animation will occur after a delay where the delay is how
 // long the lay out animations take.
 void SetupFadeInAfterLayout(views::Widget* widget) {
-  wm::WmWindow* window = wm::WmLookup::Get()->GetWindowForWidget(widget);
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget);
   window->SetOpacity(0.0f);
   std::unique_ptr<ScopedOverviewAnimationSettings>
       scoped_overview_animation_settings =
@@ -154,7 +154,7 @@ gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   return bounds;
 }
 
-WindowSelectorItem::WindowSelectorItem(wm::WmWindow* window,
+WindowSelectorItem::WindowSelectorItem(WmWindow* window,
                                        WindowSelector* window_selector)
     : dimmed_(false),
       root_window_(window->GetRootWindow()),
@@ -190,7 +190,7 @@ WindowSelectorItem::WindowSelectorItem(wm::WmWindow* window,
     close_button_rect.set_x(-close_button_rect.width() / 2);
     close_button_rect.set_y(-close_button_rect.height() / 2);
   }
-  wm::WmLookup::Get()
+  WmLookup::Get()
       ->GetWindowForWidget(&close_button_widget_)
       ->SetBounds(close_button_rect);
 
@@ -201,7 +201,7 @@ WindowSelectorItem::~WindowSelectorItem() {
   GetWindow()->RemoveObserver(this);
 }
 
-wm::WmWindow* WindowSelectorItem::GetWindow() {
+WmWindow* WindowSelectorItem::GetWindow() {
   return transform_window_.window();
 }
 
@@ -217,7 +217,7 @@ void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
 }
 
-bool WindowSelectorItem::Contains(const wm::WmWindow* target) const {
+bool WindowSelectorItem::Contains(const WmWindow* target) const {
   return transform_window_.Contains(target);
 }
 
@@ -275,12 +275,12 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
   window_selector_->SelectWindow(transform_window_.window());
 }
 
-void WindowSelectorItem::OnWindowDestroying(wm::WmWindow* window) {
+void WindowSelectorItem::OnWindowDestroying(WmWindow* window) {
   window->RemoveObserver(this);
   transform_window_.OnWindowDestroyed();
 }
 
-void WindowSelectorItem::OnWindowTitleChanged(wm::WmWindow* window) {
+void WindowSelectorItem::OnWindowTitleChanged(WmWindow* window) {
   // TODO(flackr): Maybe add the new title to a vector of titles so that we can
   // filter any of the titles the window had while in the overview session.
   window_label_button_view_->SetText(window->GetTitle());
@@ -301,7 +301,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   int title_height = 0;
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     top_view_inset =
-        GetWindow()->GetIntProperty(wm::WmWindowProperty::TOP_VIEW_INSET);
+        GetWindow()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
     title_height = close_button_->GetPreferredSize().height();
   }
   gfx::Rect selector_item_bounds =
@@ -337,7 +337,7 @@ void WindowSelectorItem::UpdateWindowLabel(
       ScopedOverviewAnimationSettingsFactory::Get()
           ->CreateOverviewAnimationSettings(
               animation_type,
-              wm::WmLookup::Get()->GetWindowForWidget(window_label_.get()));
+              WmLookup::Get()->GetWindowForWidget(window_label_.get()));
 
   window_label_->SetBounds(label_bounds);
 }
@@ -389,8 +389,8 @@ void WindowSelectorItem::UpdateHeaderLayout(
       close_button_->SetVisible(true);
       SetupFadeInAfterLayout(&close_button_widget_);
     }
-    wm::WmWindow* close_button_widget_window =
-        wm::WmLookup::Get()->GetWindowForWidget(&close_button_widget_);
+    WmWindow* close_button_widget_window =
+        WmLookup::Get()->GetWindowForWidget(&close_button_widget_);
     std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
         ScopedOverviewAnimationSettingsFactory::Get()
             ->CreateOverviewAnimationSettings(animation_type,
@@ -415,8 +415,8 @@ void WindowSelectorItem::UpdateHeaderLayout(
       window_label_button_view_->SetVisible(true);
       SetupFadeInAfterLayout(window_label_.get());
     }
-    wm::WmWindow* window_label_window =
-        wm::WmLookup::Get()->GetWindowForWidget(window_label_.get());
+    WmWindow* window_label_window =
+        WmLookup::Get()->GetWindowForWidget(window_label_.get());
     std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
         ScopedOverviewAnimationSettingsFactory::Get()
             ->CreateOverviewAnimationSettings(animation_type,

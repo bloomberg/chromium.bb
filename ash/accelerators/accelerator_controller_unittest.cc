@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_positioning_utils.h"
@@ -27,7 +28,6 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "ash/volume_control_delegate.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -280,7 +280,7 @@ class AcceleratorControllerTest : public test::AshTestBase {
       test::TestShelfDelegate::instance();
     shelf_delegate->AddShelfItem(window);
     PanelLayoutManager* manager =
-        PanelLayoutManager::Get(wm::WmWindowAura::Get(window));
+        PanelLayoutManager::Get(WmWindowAura::Get(window));
     manager->Relayout();
     return window;
   }
@@ -451,13 +451,13 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   {
     GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
     gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-        wm::WmWindowAura::Get(window.get()));
+        WmWindowAura::Get(window.get()));
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
     gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
-        wm::WmWindowAura::Get(window.get()));
+        WmWindowAura::Get(window.get()));
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
@@ -506,7 +506,7 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftRestore) {
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      wm::WmWindowAura::Get(window1.get()));
+      WmWindowAura::Get(window1.get()));
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
@@ -529,7 +529,7 @@ TEST_F(AcceleratorControllerTest, WindowSnapRightDockRightRestore) {
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      wm::WmWindowAura::Get(window1.get()));
+      WmWindowAura::Get(window1.get()));
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
@@ -551,9 +551,9 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
 
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      wm::WmWindowAura::Get(window1.get()));
+      WmWindowAura::Get(window1.get()));
   gfx::Rect expected_bounds2 = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      wm::WmWindowAura::Get(window1.get()));
+      WmWindowAura::Get(window1.get()));
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
@@ -623,7 +623,7 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
   gfx::Rect window_restore_bounds2 = window->bounds();
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      wm::WmWindowAura::Get(window.get()));
+      WmWindowAura::Get(window.get()));
   gfx::Rect window_restore_bounds =
       window_state->GetRestoreBoundsInScreen();
   EXPECT_NE(expected_bounds.ToString(), window->bounds().ToString());

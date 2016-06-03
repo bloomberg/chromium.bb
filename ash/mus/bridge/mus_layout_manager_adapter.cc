@@ -4,7 +4,7 @@
 
 #include "ash/mus/bridge/mus_layout_manager_adapter.h"
 
-#include "ash/common/wm/wm_layout_manager.h"
+#include "ash/common/wm_layout_manager.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "components/mus/public/cpp/window.h"
 
@@ -25,7 +25,7 @@ void MusLayoutManagerAdapter::ChildWindowObserver::OnWindowVisibilityChanged(
 
 MusLayoutManagerAdapter::MusLayoutManagerAdapter(
     ::mus::Window* window,
-    std::unique_ptr<wm::WmLayoutManager> layout_manager)
+    std::unique_ptr<WmLayoutManager> layout_manager)
     : window_(window),
       child_window_observer_(this),
       layout_manager_(std::move(layout_manager)) {

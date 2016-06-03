@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/aura/wm_lookup_aura.h"
+#include "ash/aura/wm_lookup_aura.h"
 
-#include "ash/common/wm/wm_layout_manager.h"
+#include "ash/aura/wm_root_window_controller_aura.h"
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm_layout_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_root_window_controller_aura.h"
-#include "ash/wm/aura/wm_window_aura.h"
 
 namespace ash {
-namespace wm {
 
 WmLookupAura::WmLookupAura() {
   WmLookup::Set(this);
@@ -32,5 +31,4 @@ WmWindow* WmLookupAura::GetWindowForWidget(views::Widget* widget) {
   return WmWindowAura::Get(widget->GetNativeWindow());
 }
 
-}  // namespace wm
 }  // namespace ash

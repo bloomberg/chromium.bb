@@ -12,9 +12,10 @@ class Rect;
 }
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // Returns the first ancestor of |window| that has a known type.
 ASH_EXPORT WmWindow* GetContainerForWindow(WmWindow* window);

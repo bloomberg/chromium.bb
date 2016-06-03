@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_activation_observer.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/display/display_observer.h"
@@ -34,8 +34,8 @@ class WindowGrid;
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector : public display::DisplayObserver,
-                                  public wm::WmWindowObserver,
-                                  public wm::WmActivationObserver,
+                                  public WmWindowObserver,
+                                  public WmActivationObserver,
                                   public views::TextfieldController {
  public:
   // The distance between the top edge of the screen and the bottom edge of
@@ -43,7 +43,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   static const int kTextFilterBottomEdge;
 
   // Returns true if the window can be selected in overview mode.
-  static bool IsSelectable(wm::WmWindow* window);
+  static bool IsSelectable(WmWindow* window);
 
   enum Direction {
     LEFT,
@@ -52,7 +52,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     DOWN
   };
 
-  using WindowList = std::vector<wm::WmWindow*>;
+  using WindowList = std::vector<WmWindow*>;
 
   explicit WindowSelector(WindowSelectorDelegate* delegate);
   ~WindowSelector() override;
@@ -70,7 +70,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnGridEmpty(WindowGrid* grid);
 
   // Activates |window|.
-  void SelectWindow(wm::WmWindow* window);
+  void SelectWindow(WmWindow* window);
 
   bool restoring_minimized_windows() const {
     return restoring_minimized_windows_;
@@ -82,16 +82,16 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  // wm::WmWindowObserver:
-  void OnWindowTreeChanged(wm::WmWindow* window,
+  // WmWindowObserver:
+  void OnWindowTreeChanged(WmWindow* window,
                            const TreeChangeParams& params) override;
-  void OnWindowDestroying(wm::WmWindow* window) override;
+  void OnWindowDestroying(WmWindow* window) override;
 
-  // wm::WmActivationObserver
-  void OnWindowActivated(wm::WmWindow* gained_active,
-                         wm::WmWindow* lost_active) override;
-  void OnAttemptToReactivateWindow(wm::WmWindow* request_active,
-                                   wm::WmWindow* actual_active) override;
+  // WmActivationObserver
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
+  void OnAttemptToReactivateWindow(WmWindow* request_active,
+                                   WmWindow* actual_active) override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -103,7 +103,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   friend class WindowSelectorTest;
 
   // Returns the WmWindow for |text_filter_widget_|.
-  wm::WmWindow* GetTextFilterWidgetWindow();
+  WmWindow* GetTextFilterWidgetWindow();
 
   // Position all of the windows in the overview.
   void PositionWindows(bool animate);
@@ -124,7 +124,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void RemoveAllObservers();
 
   // Tracks observed windows.
-  std::set<wm::WmWindow*> observed_windows_;
+  std::set<WmWindow*> observed_windows_;
 
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
@@ -133,7 +133,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // A weak pointer to the window which was focused on beginning window
   // selection. If window selection is canceled the focus should be restored to
   // this window.
-  wm::WmWindow* restore_focus_window_;
+  WmWindow* restore_focus_window_;
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation.

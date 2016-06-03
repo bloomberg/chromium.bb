@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "ash/mus/accelerator_registrar_impl.h"
-#include "ash/mus/bridge/wm_globals_mus.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
+#include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/root_windows_observer.h"
 #include "ash/mus/shelf_layout_impl.h"
@@ -56,13 +56,13 @@ std::set<RootWindowController*> WindowManagerApplication::GetRootControllers() {
 
 void WindowManagerApplication::OnRootWindowControllerGotRoot(
     RootWindowController* root_controller) {
-  if (globals_)
+  if (shell_)
     return;  // |root_controller| is the > 1 root, nothing to do.
 
   if (connector_)
     aura_init_.reset(new views::AuraInit(connector_, "ash_mus_resources.pak"));
 
-  globals_.reset(new WmGlobalsMus(root_controller->root()->window_tree()));
+  shell_.reset(new WmShellMus(root_controller->root()->window_tree()));
   lookup_.reset(new WmLookupMus);
 }
 

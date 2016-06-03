@@ -4,8 +4,8 @@
 
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -112,7 +112,7 @@ wm::ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
 }
 
 display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
-  return wm::WmLookup::Get()
+  return WmLookup::Get()
       ->GetWindowForWidget(shelf_->shelf_widget())
       ->GetDisplayNearestWindow();
 }

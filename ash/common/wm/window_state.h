@@ -27,12 +27,12 @@ class Rect;
 namespace ash {
 class LockWindowState;
 class MaximizeModeWindowState;
+class WmWindow;
 
 namespace wm {
 class WindowStateDelegate;
 class WindowStateObserver;
 class WMEvent;
-class WmWindow;
 
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls

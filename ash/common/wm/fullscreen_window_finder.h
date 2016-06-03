@@ -8,9 +8,10 @@
 #include "ash/ash_export.h"
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 // Returns the topmost window or one of its transient parents, if any of them
 // are in fullscreen mode. This searches for a window in the root of |context|.

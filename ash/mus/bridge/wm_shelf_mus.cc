@@ -20,7 +20,7 @@ WmShelfMus::WmShelfMus(ShelfLayoutManager* shelf_layout_manager)
 
 WmShelfMus::~WmShelfMus() {}
 
-wm::WmWindow* WmShelfMus::GetWindow() {
+WmWindow* WmShelfMus::GetWindow() {
   return WmWindowMus::Get(shelf_layout_manager_->GetShelfWindow());
 }
 
@@ -51,11 +51,11 @@ ShelfVisibilityState WmShelfMus::GetVisibilityState() const {
   return shelf_layout_manager_->GetShelfWindow() ? SHELF_VISIBLE : SHELF_HIDDEN;
 }
 
-void WmShelfMus::UpdateIconPositionForWindow(wm::WmWindow* window) {
+void WmShelfMus::UpdateIconPositionForWindow(WmWindow* window) {
   NOTIMPLEMENTED();
 }
 
-gfx::Rect WmShelfMus::GetScreenBoundsOfItemIconForWindow(wm::WmWindow* window) {
+gfx::Rect WmShelfMus::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   NOTIMPLEMENTED();
   return gfx::Rect();
 }

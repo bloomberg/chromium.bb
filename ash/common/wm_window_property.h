@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_WINDOW_PROPERTY_H_
-#define ASH_COMMON_WM_WM_WINDOW_PROPERTY_H_
+#ifndef ASH_COMMON_WM_WINDOW_PROPERTY_H_
+#define ASH_COMMON_WM_WINDOW_PROPERTY_H_
 
 namespace ash {
-namespace wm {
 
 enum class WmWindowProperty {
   // Type bool.
@@ -22,7 +21,6 @@ enum class WmWindowProperty {
   TOP_VIEW_INSET,
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_WINDOW_PROPERTY_H_
+#endif  // ASH_COMMON_WM_WINDOW_PROPERTY_H_

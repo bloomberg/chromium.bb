@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
@@ -18,7 +19,6 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -75,7 +75,7 @@ class CustomFrameViewAshWindowStateDelegate
   }
  private:
   aura::Window* GetAuraWindow() {
-    return ash::wm::WmWindowAura::GetAuraWindow(window_state_->window());
+    return ash::WmWindowAura::GetAuraWindow(window_state_->window());
   }
 
   // Overridden from ash::wm::WindowStateDelegate:

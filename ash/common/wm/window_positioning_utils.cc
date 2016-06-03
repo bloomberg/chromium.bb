@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -63,14 +63,14 @@ void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
                                        kMinimumOnScreenArea, bounds);
 }
 
-gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(wm::WmWindow* window) {
+gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(WmWindow* window) {
   gfx::Rect work_area_in_parent(GetDisplayWorkAreaBoundsInParent(window));
   return gfx::Rect(work_area_in_parent.x(), work_area_in_parent.y(),
                    GetDefaultSnappedWindowWidth(window),
                    work_area_in_parent.height());
 }
 
-gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(wm::WmWindow* window) {
+gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(WmWindow* window) {
   gfx::Rect work_area_in_parent(GetDisplayWorkAreaBoundsInParent(window));
   int width = GetDefaultSnappedWindowWidth(window);
   return gfx::Rect(work_area_in_parent.right() - width, work_area_in_parent.y(),

@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
 #include "ash/session/session_state_delegate.h"
@@ -436,7 +436,7 @@ void UserView::ToggleAddUserMenuOption() {
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.name = "AddUserMenuOption";
-  wm::WmLookup::Get()
+  WmLookup::Get()
       ->GetWindowForWidget(GetWidget())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(

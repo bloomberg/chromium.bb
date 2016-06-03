@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -23,14 +23,11 @@ class ImageButton;
 namespace ash {
 
 class WindowSelector;
-
-namespace wm {
 class WmWindow;
-}
 
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
-                                      public wm::WmWindowObserver {
+                                      public WmWindowObserver {
  public:
   class OverviewLabelButton : public views::LabelButton {
    public:
@@ -52,16 +49,16 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     DISALLOW_COPY_AND_ASSIGN(OverviewLabelButton);
   };
 
-  WindowSelectorItem(wm::WmWindow* window, WindowSelector* window_selector);
+  WindowSelectorItem(WmWindow* window, WindowSelector* window_selector);
   ~WindowSelectorItem() override;
 
-  wm::WmWindow* GetWindow();
+  WmWindow* GetWindow();
 
   // Returns the root window on which this item is shown.
-  wm::WmWindow* root_window() { return root_window_; }
+  WmWindow* root_window() { return root_window_; }
 
   // Returns true if |target| is contained in this WindowSelectorItem.
-  bool Contains(const wm::WmWindow* target) const;
+  bool Contains(const WmWindow* target) const;
 
   // Restores and animates the managed window to it's non overview mode state.
   void RestoreWindow();
@@ -99,9 +96,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // wm::WmWindowObserver:
-  void OnWindowDestroying(wm::WmWindow* window) override;
-  void OnWindowTitleChanged(wm::WmWindow* window) override;
+  // WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowTitleChanged(WmWindow* window) override;
 
  private:
   friend class WindowSelectorTest;
@@ -135,7 +132,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool dimmed_;
 
   // The root window this item is being displayed on.
-  wm::WmWindow* root_window_;
+  WmWindow* root_window_;
 
   // The contained Window's wrapper.
   ScopedTransformOverviewWindow transform_window_;

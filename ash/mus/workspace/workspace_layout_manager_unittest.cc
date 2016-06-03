@@ -10,8 +10,8 @@
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/wm_root_window_controller_observer.h"
 #include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/test/wm_test_base.h"
@@ -46,10 +46,9 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
 };
 */
 
-class FullscreenObserver : public wm::WmRootWindowControllerObserver {
+class FullscreenObserver : public WmRootWindowControllerObserver {
  public:
-  explicit FullscreenObserver(
-      wm::WmRootWindowController* root_window_controller)
+  explicit FullscreenObserver(WmRootWindowController* root_window_controller)
       : root_window_controller_(root_window_controller),
         call_count_(0),
         is_fullscreen_(false) {
@@ -70,7 +69,7 @@ class FullscreenObserver : public wm::WmRootWindowControllerObserver {
   bool is_fullscreen() const { return is_fullscreen_; }
 
  private:
-  wm::WmRootWindowController* root_window_controller_;
+  WmRootWindowController* root_window_controller_;
   int call_count_;
   bool is_fullscreen_;
 
@@ -86,7 +85,7 @@ using WorkspaceLayoutManagerTest = WmTestBase;
 // there is one).
 TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(1, 2, 3, 4));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
 
@@ -352,7 +351,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
 // Verifies when a window is maximized all descendant windows have a size.
 TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(10, 20, 30, 40));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
 
   wm::WindowState* window_state = window->GetWindowState();
   window_state->Activate();
@@ -376,7 +375,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // Normal window bounds shouldn't be changed.
   gfx::Rect window_bounds(100, 100, 200, 200);
   ::mus::Window* mus_window = CreateTestWindow(window_bounds);
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   EXPECT_EQ(window_bounds, mus_window->bounds());
 
   // If the window is out of the workspace, it would be moved on screen.
@@ -384,7 +383,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   window_bounds.Offset(root_window_bounds.width(), root_window_bounds.height());
   ASSERT_FALSE(window_bounds.Intersects(root_window_bounds));
   ::mus::Window* out_mus_window = CreateTestWindow(window_bounds);
-  wm::WmWindow* out_window = WmWindowMus::Get(out_mus_window);
+  WmWindow* out_window = WmWindowMus::Get(out_mus_window);
   EXPECT_EQ(window_bounds.size(), out_mus_window->bounds().size());
   gfx::Rect bounds = out_mus_window->bounds();
   bounds.Intersect(root_window_bounds);
@@ -498,7 +497,7 @@ using WorkspaceLayoutManagerSoloTest = WmTestBase;
 TEST_F(WorkspaceLayoutManagerSoloTest, Maximize) {
   gfx::Rect bounds(100, 100, 200, 200);
   ::mus::Window* mus_window = CreateTestWindow(bounds);
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   window->SetShowState(ui::SHOW_STATE_MAXIMIZED);
   // Maximized window fills the work area, not the whole display.
   EXPECT_EQ(wm::GetMaximizedWindowBoundsInParent(window).ToString(),
@@ -511,7 +510,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Maximize) {
 TEST_F(WorkspaceLayoutManagerSoloTest, Minimize) {
   gfx::Rect bounds(100, 100, 200, 200);
   ::mus::Window* mus_window = CreateTestWindow(bounds);
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   window->SetShowState(ui::SHOW_STATE_MINIMIZED);
   // Note: Currently minimize doesn't do anything except set the state.
   // See crbug.com/104571.
@@ -557,7 +556,7 @@ class FocusObserver : public ::mus::WindowObserver {
 // test isn't particularly useful for mash.
 TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(100, 100, 100, 100));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   FocusObserver observer(mus_window);
   window->SetShowState(ui::SHOW_STATE_MINIMIZED);
   EXPECT_FALSE(window->IsVisible());
@@ -571,7 +570,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
   ::mus::Window* mus_window = CreateTestWindow(bounds);
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   window->SetShowState(ui::SHOW_STATE_MAXIMIZED);
   gfx::Rect initial_work_area_bounds =
       wm::GetMaximizedWindowBoundsInParent(window);
@@ -589,7 +588,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
 TEST_F(WorkspaceLayoutManagerSoloTest, Fullscreen) {
   gfx::Rect bounds(100, 100, 200, 200);
   ::mus::Window* mus_window = CreateTestWindow(bounds);
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   window->SetShowState(ui::SHOW_STATE_FULLSCREEN);
   // Fullscreen window fills the whole display.
   EXPECT_EQ(window->GetDisplayNearestWindow().bounds().ToString(),
@@ -615,19 +614,19 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
   fullscreen_window->SetShowState(ui::SHOW_STATE_FULLSCREEN);
   EXPECT_FALSE(always_on_top_window1->IsAlwaysOnTop());
   EXPECT_FALSE(always_on_top_window2->IsAlwaysOnTop());
-  EXPECT_TRUE(GetWindowForFullscreenMode(fullscreen_window));
+  EXPECT_TRUE(wm::GetWindowForFullscreenMode(fullscreen_window));
   // Making fullscreen window normal restores always on top windows.
   fullscreen_window->SetShowState(ui::SHOW_STATE_NORMAL);
   EXPECT_TRUE(always_on_top_window1->IsAlwaysOnTop());
   EXPECT_TRUE(always_on_top_window2->IsAlwaysOnTop());
-  EXPECT_FALSE(GetWindowForFullscreenMode(fullscreen_window));
+  EXPECT_FALSE(wm::GetWindowForFullscreenMode(fullscreen_window));
 }
 
 // Tests fullscreen window size during root window resize.
 TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
   ::mus::Window* mus_window = CreateTestWindow(bounds);
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   // Fullscreen window fills the whole display.
   window->SetShowState(ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(window->GetDisplayNearestWindow().bounds().ToString(),
@@ -642,7 +641,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
 // the screen.
 TEST_F(WorkspaceLayoutManagerSoloTest, RootWindowResizeShrinksWindows) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(10, 20, 500, 400));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   gfx::Rect work_area = window->GetDisplayNearestWindow().work_area();
   // Invariant: Window is smaller than work area.
   EXPECT_LE(mus_window->bounds().width(), work_area.width());
@@ -671,7 +670,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, RootWindowResizeShrinksWindows) {
 // restores the bounds.
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeSetsRestoreBounds) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(10, 20, 30, 40));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   wm::WindowState* window_state = window->GetWindowState();
 
   // Maximize it, which will keep the previous restore bounds.
@@ -687,7 +686,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeSetsRestoreBounds) {
 // Verifies maximizing keeps the restore bounds if set.
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeResetsRestoreBounds) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(1, 2, 3, 4));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
 
   wm::WindowState* window_state = window->GetWindowState();
   window_state->SetRestoreBoundsInParent(gfx::Rect(10, 11, 12, 13));
@@ -702,7 +701,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeResetsRestoreBounds) {
 TEST_F(WorkspaceLayoutManagerSoloTest,
        BoundsAfterRestoringToMaximizeFromMinimize) {
   ::mus::Window* mus_window = CreateTestWindow(gfx::Rect(1, 2, 3, 4));
-  wm::WmWindow* window = WmWindowMus::Get(mus_window);
+  WmWindow* window = WmWindowMus::Get(mus_window);
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
 
@@ -769,7 +768,7 @@ namespace {
 
 WorkspaceLayoutManager* GetWorkspaceLayoutManager(aura::Window* container) {
   return static_cast<WorkspaceLayoutManager*>(
-      wm::WmWindowAura::Get(container)->GetLayoutManager());
+      WmWindowAura::Get(container)->GetLayoutManager());
 }
 
 class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {

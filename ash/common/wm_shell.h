@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_GLOBALS_H_
-#define ASH_COMMON_WM_WM_GLOBALS_H_
+#ifndef ASH_COMMON_WM_SHELL_H_
+#define ASH_COMMON_WM_SHELL_H_
 
 #include <stdint.h>
 
@@ -19,26 +19,27 @@ class Rect;
 namespace ash {
 
 class WindowResizer;
-
-namespace wm {
-
-class WindowState;
 class WmActivationObserver;
 class WmDisplayObserver;
 class WmOverviewModeObserver;
 class WmWindow;
 
-enum class WmUserMetricsAction;
+namespace wm {
 
-// Used for accessing global state.
-class ASH_EXPORT WmGlobals {
+class WindowState;
+
+enum class WmUserMetricsAction;
+}
+
+// Similar to ash::Shell. Eventually the two will be merged.
+class ASH_EXPORT WmShell {
  public:
-  virtual ~WmGlobals() {}
+  virtual ~WmShell() {}
 
   // This is necessary for a handful of places that is difficult to plumb
   // through context.
-  static void Set(WmGlobals* instance);
-  static WmGlobals* Get();
+  static void Set(WmShell* instance);
+  static WmShell* Get();
 
   // Creates a new window used as a container of other windows. No painting is
   // done to the created window.
@@ -77,7 +78,7 @@ class ASH_EXPORT WmGlobals {
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 
-  virtual void RecordUserMetricsAction(WmUserMetricsAction action) = 0;
+  virtual void RecordUserMetricsAction(wm::WmUserMetricsAction action) = 0;
 
   // Returns a WindowResizer to handle dragging. |next_window_resizer| is
   // the next WindowResizer in the WindowResizer chain. This may return
@@ -101,10 +102,9 @@ class ASH_EXPORT WmGlobals {
   virtual void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
 
  private:
-  static WmGlobals* instance_;
+  static WmShell* instance_;
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_GLOBALS_H_
+#endif  // ASH_COMMON_WM_SHELL_H_

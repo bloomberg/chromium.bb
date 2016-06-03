@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_DISPLAY_OBSERVER_H_
-#define ASH_COMMON_WM_WM_DISPLAY_OBSERVER_H_
+#ifndef ASH_COMMON_WM_DISPLAY_OBSERVER_H_
+#define ASH_COMMON_WM_DISPLAY_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
 
@@ -25,7 +24,6 @@ class ASH_EXPORT WmDisplayObserver {
   virtual ~WmDisplayObserver() {}
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_DISPLAY_OBSERVER_H_
+#endif  // ASH_COMMON_WM_DISPLAY_OBSERVER_H_

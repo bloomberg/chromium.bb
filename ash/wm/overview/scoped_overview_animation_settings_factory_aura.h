@@ -22,7 +22,7 @@ class ScopedOverviewAnimationSettingsFactoryAura
   // ScopedOverviewAnimationSettingsFactoryAura:
   std::unique_ptr<ScopedOverviewAnimationSettings>
   CreateOverviewAnimationSettings(OverviewAnimationType animation_type,
-                                  wm::WmWindow* window) override;
+                                  WmWindow* window) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedOverviewAnimationSettingsFactoryAura);

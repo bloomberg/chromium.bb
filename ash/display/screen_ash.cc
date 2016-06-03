@@ -4,6 +4,7 @@
 
 #include "ash/display/screen_ash.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -12,7 +13,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -111,7 +111,7 @@ bool ScreenAsh::IsWindowUnderCursor(gfx::NativeWindow window) {
 
 gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {
   aura::Window* root_window =
-      wm::WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(point));
+      WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(point));
   aura::client::ScreenPositionClient* position_client =
       aura::client::GetScreenPositionClient(root_window);
 

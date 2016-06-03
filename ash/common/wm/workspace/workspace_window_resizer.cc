@@ -17,14 +17,14 @@
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_root_window_controller.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm/wm_user_metrics_action.h"
-#include "ash/common/wm/wm_window.h"
 #include "ash/common/wm/workspace/phantom_window_controller.h"
 #include "ash/common/wm/workspace/two_step_edge_cycler.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/hit_test.h"
@@ -37,7 +37,7 @@
 namespace ash {
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
-    wm::WmWindow* window,
+    WmWindow* window,
     const gfx::Point& point_in_parent,
     int window_component,
     aura::client::WindowMoveSource source) {
@@ -81,12 +81,12 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
       (parent_shell_window_id == kShellWindowId_DefaultContainer ||
        parent_shell_window_id == kShellWindowId_DockedContainer ||
        parent_shell_window_id == kShellWindowId_PanelContainer)) {
-    window_resizer.reset(WorkspaceWindowResizer::Create(
-        window_state, std::vector<wm::WmWindow*>()));
+    window_resizer.reset(
+        WorkspaceWindowResizer::Create(window_state, std::vector<WmWindow*>()));
   } else {
     window_resizer.reset(DefaultWindowResizer::Create(window_state));
   }
-  window_resizer = window->GetGlobals()->CreateDragWindowResizer(
+  window_resizer = window->GetShell()->CreateDragWindowResizer(
       std::move(window_resizer), window_state);
   if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL)
     window_resizer.reset(
@@ -316,7 +316,7 @@ class WindowSize {
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (did_lock_cursor_)
-    globals_->UnlockCursor();
+    shell_->UnlockCursor();
 
   if (instance == this)
     instance = NULL;
@@ -325,7 +325,7 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
 // static
 WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
     wm::WindowState* window_state,
-    const std::vector<wm::WmWindow*>& attached_windows) {
+    const std::vector<WmWindow*>& attached_windows) {
   return new WorkspaceWindowResizer(window_state, attached_windows);
 }
 
@@ -358,13 +358,13 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   gfx::Point location_in_screen =
       GetTarget()->GetParent()->ConvertPointToScreen(location_in_parent);
 
-  wm::WmWindow* root = nullptr;
+  WmWindow* root = nullptr;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
   // Track the last screen that the pointer was on to keep the snap phantom
   // window there.
   if (display.bounds().Contains(location_in_screen)) {
-    root = wm::WmLookup::Get()
+    root = WmLookup::Get()
                ->GetRootWindowControllerWithDisplayId(display.id())
                ->GetWindow();
   }
@@ -421,7 +421,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
                                   ? wm::WM_EVENT_SNAP_LEFT
                                   : wm::WM_EVENT_SNAP_RIGHT);
       window_state()->OnWMEvent(&event);
-      globals_->RecordUserMetricsAction(
+      shell_->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT
               ? wm::WmUserMetricsAction::DRAG_MAXIMIZE_LEFT
               : wm::WmUserMetricsAction::DRAG_MAXIMIZE_RIGHT);
@@ -492,10 +492,10 @@ void WorkspaceWindowResizer::RevertDrag() {
 
 WorkspaceWindowResizer::WorkspaceWindowResizer(
     wm::WindowState* window_state,
-    const std::vector<wm::WmWindow*>& attached_windows)
+    const std::vector<WmWindow*>& attached_windows)
     : WindowResizer(window_state),
       attached_windows_(attached_windows),
-      globals_(window_state->window()->GetGlobals()),
+      shell_(window_state->window()->GetShell()),
       did_lock_cursor_(false),
       did_move_or_resize_(false),
       initial_bounds_changed_by_user_(window_state_->bounds_changed_by_user()),
@@ -510,7 +510,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   // A mousemove should still show the cursor even if the window is
   // being moved or resized with touch, so do not lock the cursor.
   if (details().source != aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
-    globals_->LockCursor();
+    shell_->LockCursor();
     did_lock_cursor_ = true;
   }
 
@@ -722,9 +722,9 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   if (!window_state()->CanResize())
     return false;
 
-  for (wm::WmWindow* root_window : globals_->GetAllRootWindows()) {
+  for (WmWindow* root_window : shell_->GetAllRootWindows()) {
     // Test all children from the desktop in each root window.
-    const std::vector<wm::WmWindow*> children =
+    const std::vector<WmWindow*> children =
         root_window->GetChildByShellWindowId(kShellWindowId_DefaultContainer)
             ->GetChildren();
     for (auto i = children.rbegin();
@@ -948,10 +948,10 @@ void WorkspaceWindowResizer::RestackWindows() {
     return;
   // Build a map from index in children to window, returning if there is a
   // window with a different parent.
-  using IndexToWindowMap = std::map<size_t, wm::WmWindow*>;
+  using IndexToWindowMap = std::map<size_t, WmWindow*>;
   IndexToWindowMap map;
-  wm::WmWindow* parent = GetTarget()->GetParent();
-  const std::vector<wm::WmWindow*> windows(parent->GetChildren());
+  WmWindow* parent = GetTarget()->GetParent();
+  const std::vector<WmWindow*> windows(parent->GetChildren());
   map[std::find(windows.begin(), windows.end(), GetTarget()) -
       windows.begin()] = GetTarget();
   for (auto i = attached_windows_.begin(); i != attached_windows_.end(); ++i) {
@@ -965,7 +965,7 @@ void WorkspaceWindowResizer::RestackWindows() {
   // Reorder the windows starting at the topmost.
   parent->StackChildAtTop(map.rbegin()->second);
   for (auto i = map.rbegin(); i != map.rend();) {
-    wm::WmWindow* window = i->second;
+    WmWindow* window = i->second;
     ++i;
     if (i != map.rend())
       parent->StackChildBelow(i->second, window);

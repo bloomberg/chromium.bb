@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/wm_globals.h"
+#include "ash/common/wm_lookup.h"
 
 namespace ash {
-namespace wm {
 
 // static
-WmGlobals* WmGlobals::instance_ = nullptr;
+WmLookup* WmLookup::instance_ = nullptr;
 
 // static
-void WmGlobals::Set(WmGlobals* instance) {
-  instance_ = instance;
+void WmLookup::Set(WmLookup* lookup) {
+  instance_ = lookup;
 }
 
 // static
-WmGlobals* WmGlobals::Get() {
+WmLookup* WmLookup::Get() {
   return instance_;
 }
 
-}  // namespace wm
 }  // namespace ash

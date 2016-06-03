@@ -6,9 +6,9 @@
 
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -46,7 +46,7 @@ static bool disable_auto_positioning = false;
 static bool maximize_first_window = false;
 
 // Check if any management should be performed (with a given |window|).
-bool UseAutoWindowManager(const wm::WmWindow* window) {
+bool UseAutoWindowManager(const WmWindow* window) {
   if (disable_auto_positioning)
     return false;
   const wm::WindowState* window_state = window->GetWindowState();
@@ -57,7 +57,7 @@ bool UseAutoWindowManager(const wm::WmWindow* window) {
 // state is not minimized/maximized/fullscreen/the user has changed
 // its size by hand already. It furthermore checks for the
 // WindowIsManaged status.
-bool WindowPositionCanBeManaged(const wm::WmWindow* window) {
+bool WindowPositionCanBeManaged(const WmWindow* window) {
   if (disable_auto_positioning)
     return false;
   const wm::WindowState* window_state = window->GetWindowState();
@@ -90,13 +90,12 @@ bool MoveRectToOneSide(const gfx::Rect& work_area,
 // Move a |window| to new |bounds|. Animate if desired by user.
 // Moves the transient children of the |window| as well by the same |offset| as
 // the parent |window|.
-void SetBoundsAndOffsetTransientChildren(wm::WmWindow* window,
+void SetBoundsAndOffsetTransientChildren(WmWindow* window,
                                          const gfx::Rect& bounds,
                                          const gfx::Rect& work_area,
                                          const gfx::Vector2d& offset) {
-  std::vector<wm::WmWindow*> transient_children =
-      window->GetTransientChildren();
-  for (wm::WmWindow* transient_child : transient_children) {
+  std::vector<WmWindow*> transient_children = window->GetTransientChildren();
+  for (WmWindow* transient_child : transient_children) {
     gfx::Rect child_bounds = transient_child->GetBounds();
     gfx::Rect new_child_bounds = child_bounds + offset;
     if ((child_bounds.x() <= work_area.x() &&
@@ -119,7 +118,7 @@ void SetBoundsAndOffsetTransientChildren(wm::WmWindow* window,
 
 // Move a |window| to new |bounds|. Animate if desired by user.
 // Note: The function will do nothing if the bounds did not change.
-void SetBoundsAnimated(wm::WmWindow* window,
+void SetBoundsAnimated(WmWindow* window,
                        const gfx::Rect& bounds,
                        const gfx::Rect& work_area) {
   gfx::Rect old_bounds = window->GetTargetBounds();
@@ -131,8 +130,8 @@ void SetBoundsAnimated(wm::WmWindow* window,
 
 // Move |window| into the center of the screen - or restore it to the previous
 // position.
-void AutoPlaceSingleWindow(wm::WmWindow* window, bool animated) {
-  gfx::Rect work_area = GetDisplayWorkAreaBoundsInParent(window);
+void AutoPlaceSingleWindow(WmWindow* window, bool animated) {
+  gfx::Rect work_area = wm::GetDisplayWorkAreaBoundsInParent(window);
   gfx::Rect bounds = window->GetBounds();
   const gfx::Rect* user_defined_area =
       window->GetWindowState()->pre_auto_manage_window_bounds();
@@ -151,19 +150,19 @@ void AutoPlaceSingleWindow(wm::WmWindow* window, bool animated) {
 }
 
 // Get the first open (non minimized) window which is on the screen defined.
-wm::WmWindow* GetReferenceWindow(const wm::WmWindow* root_window,
-                                 const wm::WmWindow* exclude,
-                                 bool* single_window) {
+WmWindow* GetReferenceWindow(const WmWindow* root_window,
+                             const WmWindow* exclude,
+                             bool* single_window) {
   if (single_window)
     *single_window = true;
   // Get the active window.
-  wm::WmWindow* active = root_window->GetGlobals()->GetActiveWindow();
+  WmWindow* active = root_window->GetShell()->GetActiveWindow();
   if (active && active->GetRootWindow() != root_window)
     active = NULL;
 
   // Get a list of all windows.
-  const std::vector<wm::WmWindow*> windows =
-      root_window->GetGlobals()->GetMruWindowListIgnoreModals();
+  const std::vector<WmWindow*> windows =
+      root_window->GetShell()->GetMruWindowListIgnoreModals();
 
   if (windows.empty())
     return nullptr;
@@ -177,9 +176,9 @@ wm::WmWindow* GetReferenceWindow(const wm::WmWindow* root_window,
   // (and so on). Note that we might cycle a few indices twice if there is no
   // suitable window. However - since the list is fairly small this should be
   // very fast anyways.
-  wm::WmWindow* found = nullptr;
+  WmWindow* found = nullptr;
   for (int i = index + windows.size(); i >= 0; i--) {
-    wm::WmWindow* window = windows[i % windows.size()];
+    WmWindow* window = windows[i % windows.size()];
     while (window->GetTransientParent())
       window = window->GetTransientParent();
     if (window != exclude && window->GetType() == ui::wm::WINDOW_TYPE_NORMAL &&
@@ -210,15 +209,15 @@ int WindowPositioner::GetForceMaximizedWidthLimit() {
 
 // static
 void WindowPositioner::GetBoundsAndShowStateForNewWindow(
-    const wm::WmWindow* new_window,
+    const WmWindow* new_window,
     bool is_saved_bounds,
     ui::WindowShowState show_state_in,
     gfx::Rect* bounds_in_out,
     ui::WindowShowState* show_state_out) {
   // Always open new window in the target display.
-  wm::WmWindow* target = wm::WmGlobals::Get()->GetRootWindowForNewWindows();
+  WmWindow* target = WmShell::Get()->GetRootWindowForNewWindows();
 
-  wm::WmWindow* top_window = GetReferenceWindow(target, nullptr, nullptr);
+  WmWindow* top_window = GetReferenceWindow(target, nullptr, nullptr);
   // Our window should not have any impact if we are already on top.
   if (top_window == new_window)
     top_window = nullptr;
@@ -235,7 +234,7 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
 
     if (show_state_in == ui::SHOW_STATE_DEFAULT) {
       const bool maximize_first_window_on_first_run =
-          target->GetGlobals()->IsForceMaximizeOnFirstRun();
+          target->GetShell()->IsForceMaximizeOnFirstRun();
       // We want to always open maximized on "small screens" or when policy
       // tells us to.
       const bool set_maximized =
@@ -285,12 +284,12 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
 
 // static
 void WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(
-    const wm::WmWindow* removed_window) {
+    const WmWindow* removed_window) {
   if (!UseAutoWindowManager(removed_window))
     return;
   // Find a single open browser window.
   bool single_window;
-  wm::WmWindow* other_shown_window = GetReferenceWindow(
+  WmWindow* other_shown_window = GetReferenceWindow(
       removed_window->GetRootWindow(), removed_window, &single_window);
   if (!other_shown_window || !single_window ||
       !WindowPositionCanBeManaged(other_shown_window))
@@ -306,8 +305,7 @@ bool WindowPositioner::DisableAutoPositioning(bool ignore) {
 }
 
 // static
-void WindowPositioner::RearrangeVisibleWindowOnShow(
-    wm::WmWindow* added_window) {
+void WindowPositioner::RearrangeVisibleWindowOnShow(WmWindow* added_window) {
   wm::WindowState* added_window_state = added_window->GetWindowState();
   if (!added_window->GetTargetVisibility())
     return;
@@ -316,7 +314,7 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
       added_window_state->bounds_changed_by_user()) {
     if (added_window_state->minimum_visibility()) {
       // Guarantee minimum visibility within the work area.
-      gfx::Rect work_area = GetDisplayWorkAreaBoundsInParent(added_window);
+      gfx::Rect work_area = wm::GetDisplayWorkAreaBoundsInParent(added_window);
       gfx::Rect bounds = added_window->GetBounds();
       gfx::Rect new_bounds = bounds;
       wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area, &new_bounds);
@@ -327,7 +325,7 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
   }
   // Find a single open managed window.
   bool single_window;
-  wm::WmWindow* other_shown_window = GetReferenceWindow(
+  WmWindow* other_shown_window = GetReferenceWindow(
       added_window->GetRootWindow(), added_window, &single_window);
 
   if (!other_shown_window) {
@@ -341,7 +339,7 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
   }
 
   gfx::Rect other_bounds = other_shown_window->GetBounds();
-  gfx::Rect work_area = GetDisplayWorkAreaBoundsInParent(added_window);
+  gfx::Rect work_area = wm::GetDisplayWorkAreaBoundsInParent(added_window);
   bool move_other_right =
       other_bounds.CenterPoint().x() > work_area.x() + work_area.width() / 2;
 
@@ -375,8 +373,8 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(
     added_window->SetBounds(added_bounds);
 }
 
-WindowPositioner::WindowPositioner(wm::WmGlobals* globals)
-    : globals_(globals),
+WindowPositioner::WindowPositioner(WmShell* shell)
+    : shell_(shell),
       pop_position_offset_increment_x(0),
       pop_position_offset_increment_y(0),
       popup_position_offset_from_screen_corner_x(0),
@@ -419,7 +417,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   pop_position_offset_increment_y = grid;
   // We handle the Multi monitor support by retrieving the active window's
   // work area.
-  wm::WmWindow* window = globals_->GetActiveWindow();
+  WmWindow* window = shell_->GetActiveWindow();
   const gfx::Rect work_area =
       window && window->IsVisible()
           ? window->GetDisplayNearestWindow().work_area()
@@ -477,8 +475,7 @@ gfx::Rect WindowPositioner::NormalPopupPosition(const gfx::Rect& old_pos,
 gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Rect& old_pos,
                                                const gfx::Rect& work_area,
                                                int grid) {
-  const std::vector<wm::WmWindow*> windows =
-      globals_->GetMruWindowListIgnoreModals();
+  const std::vector<WmWindow*> windows = shell_->GetMruWindowListIgnoreModals();
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

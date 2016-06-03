@@ -5,8 +5,8 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_lookup.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_window.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -70,8 +70,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
     views::Widget* widget)
     : widget_(widget),
-      widget_parent_(
-          wm::WmLookup::Get()->GetWindowForWidget(widget)->GetParent()) {
+      widget_parent_(WmLookup::Get()->GetWindowForWidget(widget)->GetParent()) {
   DCHECK(widget_);
   widget_->AddObserver(this);
   widget_parent_->AddObserver(this);
@@ -102,8 +101,7 @@ bool DesktopBackgroundWidgetController::Reparent(aura::Window* root_window,
     widget_parent_->RemoveObserver(this);
     views::Widget::ReparentNativeView(widget_->GetNativeView(),
         root_window->GetChildById(dest_container));
-    widget_parent_ =
-        wm::WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
+    widget_parent_ = WmLookup::Get()->GetWindowForWidget(widget_)->GetParent();
     widget_parent_->AddObserver(this);
     return true;
   }
@@ -118,7 +116,7 @@ void DesktopBackgroundWidgetController::RemoveObservers() {
 }
 
 void DesktopBackgroundWidgetController::OnWindowBoundsChanged(
-    wm::WmWindow* window,
+    WmWindow* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   SetBounds(new_bounds);

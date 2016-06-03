@@ -16,13 +16,14 @@ class Window;
 
 namespace ash {
 
-namespace wm {
 class WmWindow;
+
+namespace wm {
 class WindowState;
 }
 
 struct ASH_EXPORT DragDetails {
-  DragDetails(wm::WmWindow* window,
+  DragDetails(WmWindow* window,
               const gfx::Point& location,
               int window_component,
               // TODO(sky): make wm type.

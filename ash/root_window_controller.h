@@ -67,16 +67,13 @@ class SystemModalContainerLayoutManager;
 class SystemTray;
 class TouchHudDebug;
 class TouchHudProjection;
+class WmWindow;
 class WorkspaceController;
 
 #if defined(OS_CHROMEOS)
 class BootSplashScreen;
 class AshTouchExplorationManager;
 #endif
-
-namespace wm {
-class WmWindow;
-}
 
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be

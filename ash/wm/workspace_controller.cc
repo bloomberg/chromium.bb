@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
@@ -14,7 +15,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -50,13 +50,12 @@ WorkspaceController::WorkspaceController(
     : viewport_(viewport),
       shelf_(NULL),
       event_handler_(new WorkspaceEventHandler),
-      layout_manager_(
-          new WorkspaceLayoutManager(wm::WmWindowAura::Get(viewport),
-                                     std::move(delegate))) {
+      layout_manager_(new WorkspaceLayoutManager(WmWindowAura::Get(viewport),
+                                                 std::move(delegate))) {
   SetWindowVisibilityAnimationTransition(
       viewport_, ::wm::ANIMATE_NONE);
 
-  wm::WmWindowAura::Get(viewport_)->SetLayoutManager(
+  WmWindowAura::Get(viewport_)->SetLayoutManager(
       base::WrapUnique(layout_manager_));
   viewport_->AddPreTargetHandler(event_handler_.get());
 }

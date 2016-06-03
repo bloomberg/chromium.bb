@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_WM_LAYOUT_MANAGER_H_
-#define ASH_COMMON_WM_WM_LAYOUT_MANAGER_H_
+#ifndef ASH_COMMON_WM_LAYOUT_MANAGER_H_
+#define ASH_COMMON_WM_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
 
@@ -12,7 +12,6 @@ class Rect;
 }
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
 
@@ -51,7 +50,6 @@ class ASH_EXPORT WmLayoutManager {
                               const gfx::Rect& requested_bounds) = 0;
 };
 
-}  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_WM_LAYOUT_MANAGER_H_
+#endif  // ASH_COMMON_WM_LAYOUT_MANAGER_H_

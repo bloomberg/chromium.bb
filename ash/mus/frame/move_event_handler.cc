@@ -48,7 +48,7 @@ MoveEventHandler::MoveEventHandler(
     : wm_window_(WmWindowMus::Get(mus_window)),
       window_manager_client_(window_manager_client),
       root_window_(aura_window->GetRootWindow()),
-      toplevel_window_event_handler_(wm_window_->GetGlobals()) {
+      toplevel_window_event_handler_(wm_window_->GetShell()) {
   root_window_->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
 }

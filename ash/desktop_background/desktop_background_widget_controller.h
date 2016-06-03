@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -25,7 +25,7 @@ class RootWindowController;
 // destroyed. Exported for tests.
 class ASH_EXPORT DesktopBackgroundWidgetController
     : public views::WidgetObserver,
-      public wm::WmWindowObserver {
+      public WmWindowObserver {
  public:
   // Create
   explicit DesktopBackgroundWidgetController(views::Widget* widget);
@@ -55,15 +55,15 @@ class ASH_EXPORT DesktopBackgroundWidgetController
  private:
   void RemoveObservers();
 
-  // wm::WmWindowObserver:
-  void OnWindowBoundsChanged(wm::WmWindow* window,
+  // WmWindowObserver:
+  void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
   views::Widget* widget_;
 
   // Parent of |widget_|.
-  wm::WmWindow* widget_parent_;
+  WmWindow* widget_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundWidgetController);
 };

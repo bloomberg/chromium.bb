@@ -12,6 +12,8 @@
 #include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/focus_manager_factory.h"
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_shell_aura.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_finder.h"
@@ -63,8 +65,6 @@
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
-#include "ash/wm/aura/wm_globals_aura.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -316,7 +316,7 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
   if (session_state_delegate_->IsScreenLocked())
     return;
 
-  aura::Window* root = wm::WmWindowAura::GetAuraWindow(
+  aura::Window* root = WmWindowAura::GetAuraWindow(
       wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size())));
   GetRootWindowController(root)
       ->ShowContextMenu(location_in_screen, source_type);
@@ -823,7 +823,7 @@ Shell::~Shell() {
 
   // Needs to happen before |window_tree_host_manager_|. Calls back to Shell, so
   // also needs to be destroyed before |instance_| reset to null.
-  wm_globals_.reset();
+  wm_shell_.reset();
 
   // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_->Shutdown();
@@ -867,10 +867,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   DCHECK(in_mus_) << "linux desktop does not support ash.";
 #endif
 
-  wm_globals_.reset(new wm::WmGlobalsAura);
+  wm_shell_.reset(new WmShellAura);
   scoped_overview_animation_settings_factory_.reset(
       new ScopedOverviewAnimationSettingsFactoryAura);
-  window_positioner_.reset(new WindowPositioner(wm_globals_.get()));
+  window_positioner_.reset(new WindowPositioner(wm_shell_.get()));
 
   if (!in_mus_) {
     native_cursor_manager_ = new AshNativeCursorManager;
@@ -1010,7 +1010,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddPreTargetHandler(event_transformation_handler_.get());
 
   toplevel_window_event_handler_.reset(
-      new ToplevelWindowEventHandler(wm_globals_.get()));
+      new ToplevelWindowEventHandler(wm_shell_.get()));
 
   system_gesture_filter_.reset(new SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());

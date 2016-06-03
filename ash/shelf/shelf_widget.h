@@ -20,17 +20,15 @@ class FocusCycler;
 class Shelf;
 class ShelfLayoutManager;
 class StatusAreaWidget;
-class WorkspaceController;
-namespace wm {
 class WmWindow;
-}
+class WorkspaceController;
 
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(wm::WmWindow* wm_shelf_container,
-              wm::WmWindow* wm_status_container,
+  ShelfWidget(WmWindow* wm_shelf_container,
+              WmWindow* wm_status_container,
               WorkspaceController* workspace_controller);
   ~ShelfWidget() override;
 

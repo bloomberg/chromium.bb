@@ -12,9 +12,10 @@ class Rect;
 }
 
 namespace ash {
-namespace wm {
 
 class WmWindow;
+
+namespace wm {
 
 ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParent(WmWindow* window);
 ASH_EXPORT gfx::Rect GetDisplayWorkAreaBounds(WmWindow* window);

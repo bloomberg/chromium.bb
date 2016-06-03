@@ -5,13 +5,13 @@
 #include "ash/common/wm/default_window_resizer.h"
 
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 
 namespace ash {
 
 DefaultWindowResizer::~DefaultWindowResizer() {
-  globals_->UnlockCursor();
+  shell_->UnlockCursor();
 }
 
 // static
@@ -45,9 +45,9 @@ void DefaultWindowResizer::RevertDrag() {
 DefaultWindowResizer::DefaultWindowResizer(wm::WindowState* window_state)
     : WindowResizer(window_state),
       did_move_or_resize_(false),
-      globals_(GetTarget()->GetGlobals()) {
+      shell_(GetTarget()->GetShell()) {
   DCHECK(details().is_resizable);
-  globals_->LockCursor();
+  shell_->LockCursor();
 }
 
 }  // namespace aura
