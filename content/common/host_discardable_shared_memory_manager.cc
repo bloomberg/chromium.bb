@@ -222,6 +222,16 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 bool HostDiscardableSharedMemoryManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    base::trace_event::MemoryAllocatorDump* total_dump =
+        pmd->CreateAllocatorDump("discardable");
+    total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          GetBytesAllocated());
+    return true;
+  }
+
   base::AutoLock lock(lock_);
   for (const auto& process_entry : processes_) {
     const int child_process_id = process_entry.first;
