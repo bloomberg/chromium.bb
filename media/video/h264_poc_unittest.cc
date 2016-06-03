@@ -192,6 +192,35 @@ TEST_F(H264POCTest, PicOrderCntType1_WithMMCO5) {
   ASSERT_EQ(1, poc_);
 }
 
+// Despite being invalid, videos with duplicate non-keyframe |frame_num| values
+// are common. http://crbug.com/615289, http://crbug.com/616349.
+TEST_F(H264POCTest, PicOrderCntType1_DupFrameNum) {
+  sps_.pic_order_cnt_type = 1;
+  sps_.log2_max_frame_num_minus4 = 0;  // 16
+  sps_.num_ref_frames_in_pic_order_cnt_cycle = 2;
+  sps_.expected_delta_per_pic_order_cnt_cycle = 3;
+  sps_.offset_for_ref_frame[0] = 1;
+  sps_.offset_for_ref_frame[1] = 2;
+
+  // Initial IDR with POC 0.
+  slice_hdr_.idr_pic_flag = true;
+  slice_hdr_.frame_num = 0;
+  ASSERT_TRUE(ComputePOC());
+  ASSERT_EQ(0, poc_);
+
+  // Ref frame.
+  slice_hdr_.idr_pic_flag = false;
+  slice_hdr_.frame_num = 1;
+  ASSERT_TRUE(ComputePOC());
+  ASSERT_EQ(1, poc_);
+
+  // Duplicate |frame_num| frame.
+  slice_hdr_.frame_num = 1;
+  slice_hdr_.delta_pic_order_cnt0 = 1;
+  ASSERT_TRUE(ComputePOC());
+  ASSERT_EQ(2, poc_);
+}
+
 TEST_F(H264POCTest, PicOrderCntType2) {
   sps_.pic_order_cnt_type = 2;
 
