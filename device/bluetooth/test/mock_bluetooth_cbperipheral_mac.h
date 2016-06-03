@@ -36,7 +36,7 @@ class BluetoothTestMac;
 - (void)setState:(CBPeripheralState)state;
 - (void)removeAllServices;
 - (void)addServices:(NSArray*)services;
-- (void)didDiscoverWithError:(NSError*)error;
+- (void)didDiscoverServicesWithError:(NSError*)error;
 - (void)removeService:(CBService*)uuid;
 
 @end

@@ -45,7 +45,6 @@ using base::scoped_nsobject;
 - (instancetype)initWithIdentifier:(NSUUID*)identifier name:(NSString*)name {
   self = [super init];
   if (self) {
-    _services.reset([[NSMutableArray alloc] init]);
     _identifier.reset([identifier retain]);
     if (name) {
       _name.reset([name retain]);
@@ -76,6 +75,9 @@ using base::scoped_nsobject;
 
 - (void)setState:(CBPeripheralState)state {
   _state = state;
+  if (_state == CBPeripheralStateDisconnected) {
+    _services = nil;
+  }
 }
 
 - (void)discoverServices:(NSArray*)serviceUUIDs {
@@ -89,6 +91,9 @@ using base::scoped_nsobject;
 }
 
 - (void)addServices:(NSArray*)services {
+  if (!_services.get()) {
+    _services.reset([[NSMutableArray alloc] init]);
+  }
   for (CBUUID* uuid in services) {
     base::scoped_nsobject<MockCBService> service(
         [[MockCBService alloc] initWithCBUUID:uuid primary:YES]);
@@ -96,7 +101,7 @@ using base::scoped_nsobject;
   }
 }
 
-- (void)didDiscoverWithError:(NSError*)error {
+- (void)didDiscoverServicesWithError:(NSError*)error {
   [_delegate peripheral:self.peripheral didDiscoverServices:error];
 }
 
