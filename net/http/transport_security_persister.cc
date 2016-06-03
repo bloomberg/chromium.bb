@@ -29,7 +29,7 @@ namespace {
 base::ListValue* SPKIHashesToListValue(const HashValueVector& hashes) {
   base::ListValue* pins = new base::ListValue;
   for (size_t i = 0; i != hashes.size(); i++)
-    pins->Append(new base::StringValue(hashes[i].ToString()));
+    pins->AppendString(hashes[i].ToString());
   return pins;
 }
 

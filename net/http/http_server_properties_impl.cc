@@ -214,7 +214,7 @@ void HttpServerPropertiesImpl::GetSpdyServerList(
        it != spdy_servers_map_.end() && count < max_size; ++it) {
     const std::string spdy_server = it->first;
     if (it->second) {
-      spdy_server_list->Append(new base::StringValue(spdy_server));
+      spdy_server_list->AppendString(spdy_server);
       ++count;
     }
   }
@@ -545,8 +545,7 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue() const {
       if (IsAlternativeServiceBroken(alternative_service)) {
         alternative_service_string.append(" (broken)");
       }
-      alternative_service_list->Append(
-          new base::StringValue(alternative_service_string));
+      alternative_service_list->AppendString(alternative_service_string);
     }
     if (alternative_service_list->empty())
       continue;

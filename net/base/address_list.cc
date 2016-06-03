@@ -23,7 +23,7 @@ std::unique_ptr<base::Value> NetLogAddressListCallback(
 
   for (AddressList::const_iterator it = address_list->begin();
        it != address_list->end(); ++it) {
-    list->Append(new base::StringValue(it->ToString()));
+    list->AppendString(it->ToString());
   }
 
   dict->Set("address_list", std::move(list));

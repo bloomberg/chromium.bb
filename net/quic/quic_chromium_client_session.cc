@@ -1037,8 +1037,7 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (StreamMap::const_iterator it = dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
-    stream_list->Append(
-        new base::StringValue(base::UintToString(it->second->id())));
+    stream_list->AppendString(base::UintToString(it->second->id()));
   }
   dict->Set("active_streams", std::move(stream_list));
 
@@ -1056,7 +1055,7 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   std::unique_ptr<base::ListValue> alias_list(new base::ListValue());
   for (std::set<HostPortPair>::const_iterator it = aliases.begin();
        it != aliases.end(); it++) {
-    alias_list->Append(new base::StringValue(it->ToString()));
+    alias_list->AppendString(it->ToString());
   }
   dict->Set("aliases", std::move(alias_list));
 

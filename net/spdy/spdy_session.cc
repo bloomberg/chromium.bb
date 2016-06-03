@@ -195,11 +195,9 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
     const SpdySettingsIds id = it->first;
     const SpdySettingsFlags flags = it->second.first;
     const uint32_t value = it->second.second;
-    settings_list->Append(new base::StringValue(base::StringPrintf(
+    settings_list->AppendString(base::StringPrintf(
         "[id:%u flags:%u value:%u]",
-        SpdyConstants::SerializeSettingId(protocol_version, id),
-        flags,
-        value)));
+        SpdyConstants::SerializeSettingId(protocol_version, id), flags, value));
   }
   dict->Set("settings", std::move(settings_list));
   return std::move(dict);

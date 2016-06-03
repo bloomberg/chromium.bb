@@ -236,7 +236,7 @@ std::unique_ptr<base::Value> NetLogQuicCertificateVerifiedCallback(
   base::ListValue* subjects = new base::ListValue();
   for (std::vector<std::string>::const_iterator it = dns_names.begin();
        it != dns_names.end(); it++) {
-    subjects->Append(new base::StringValue(*it));
+    subjects->AppendString(*it);
   }
   dict->Set("subjects", subjects);
   return std::move(dict);
