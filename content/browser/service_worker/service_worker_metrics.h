@@ -167,7 +167,8 @@ class ServiceWorkerMetrics {
   // Records the time taken to successfully stop a worker.
   static void RecordStopWorkerTime(base::TimeDelta time);
 
-  static void RecordActivateEventStatus(ServiceWorkerStatusCode status);
+  static void RecordActivateEventStatus(ServiceWorkerStatusCode status,
+                                        bool is_shutdown);
   static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
 
   // Records how much of dispatched events are handled while a Service

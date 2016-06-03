@@ -69,13 +69,22 @@ ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
 
 void ServiceWorkerProcessManager::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  browser_context_ = NULL;
+  {
+    base::AutoLock lock(browser_context_lock_);
+    browser_context_ = nullptr;
+  }
+
   for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
        it != instance_info_.end();
        ++it) {
     RenderProcessHost::FromID(it->second.process_id)->DecrementWorkerRefCount();
   }
   instance_info_.clear();
+}
+
+bool ServiceWorkerProcessManager::IsShutdown() {
+  base::AutoLock lock(browser_context_lock_);
+  return !browser_context_;
 }
 
 void ServiceWorkerProcessManager::AddProcessReferenceToPattern(

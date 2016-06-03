@@ -9,10 +9,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -28,8 +30,8 @@ struct ServiceWorkerRegistrationInfo;
 // to this class. This is refcounted via ServiceWorkerRegistrationHandle to
 // facilitate multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
-    : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>),
-      public ServiceWorkerVersion::Listener {
+    : public NON_EXPORTED_BASE(base::RefCounted<ServiceWorkerRegistration>),
+      public NON_EXPORTED_BASE(ServiceWorkerVersion::Listener) {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
 
@@ -71,6 +73,12 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     resources_total_size_bytes_ = resources_total_size_bytes;
   }
 
+  // Returns the active version. This version may be in ACTIVATING or ACTIVATED
+  // state. If you require an ACTIVATED version, use
+  // ServiceWorkerContextWrapper::FindReadyRegistration* to get a registration
+  // with such a version. Alternatively, use
+  // ServiceWorkerVersion::Listener::OnVersionStateChanged to wait for the
+  // ACTIVATING version to become ACTIVATED.
   ServiceWorkerVersion* active_version() const {
     return active_version_.get();
   }
@@ -139,6 +147,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void RegisterRegistrationFinishedCallback(const base::Closure& callback);
   void NotifyRegistrationFinished();
 
+  void SetTaskRunnerForTest(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
@@ -151,13 +162,18 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // ServiceWorkerVersion::Listener override.
   void OnNoControllees(ServiceWorkerVersion* version) override;
 
-  // This method corresponds to the [[Activate]] algorithm.
-  void ActivateWaitingVersion();
+  // Promotes the waiting version to active version. If |delay| is true, waits
+  // a short time before attempting to start and dispatch the activate event
+  // to the version.
+  void ActivateWaitingVersion(bool delay);
+  void ContinueActivation(
+      scoped_refptr<ServiceWorkerVersion> activating_version);
   void DispatchActivateEvent(
-      const scoped_refptr<ServiceWorkerVersion>& activating_version);
+      scoped_refptr<ServiceWorkerVersion> activating_version);
   void OnActivateEventFinished(
-      const scoped_refptr<ServiceWorkerVersion>& activating_version,
+      scoped_refptr<ServiceWorkerVersion> activating_version,
       ServiceWorkerStatusCode status);
+
   void OnDeleteFinished(ServiceWorkerStatusCode status);
 
   // This method corresponds to the [[ClearRegistration]] algorithm.
@@ -184,6 +200,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   base::ObserverList<Listener> listeners_;
   std::vector<base::Closure> registration_finished_callbacks_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistration);
 };

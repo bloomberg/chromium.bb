@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
@@ -36,8 +37,11 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   ~ServiceWorkerProcessManager();
 
   // Synchronously prevents new processes from being allocated
-  // and drops references to RenderProcessHosts.
+  // and drops references to RenderProcessHosts. Called on the UI thread.
   void Shutdown();
+
+  // Returns true if Shutdown() has been called. May be called by any thread.
+  bool IsShutdown();
 
   // Returns a reference to a running process suitable for starting the Service
   // Worker at |script_url|. Posts |callback| to the IO thread to indicate
@@ -109,9 +113,6 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     int process_id;
   };
 
-  // Returns true if Shutdown() has been called.
-  bool IsShutdown() const { return !browser_context_; }
-
   // Maps the process ID to its reference count.
   typedef std::map<int, int> ProcessRefMap;
 
@@ -125,8 +126,15 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // ChildProcessHost::kInvalidUniqueID if there is none.
   int FindAvailableProcess(const GURL& pattern);
 
-  // These fields are only accessed on the UI thread.
+  // Guarded by |browser_context_lock_|.
+  // Written only on the UI thread, so the UI thread doesn't need to acquire the
+  // lock when reading. Can be read from other threads with the lock.
   BrowserContext* browser_context_;
+
+  // Protects |browser_context_|.
+  base::Lock browser_context_lock_;
+
+  // All fields below are only accessed on the UI thread.
 
   // Maps the ID of a running EmbeddedWorkerInstance to information about the
   // process it's running inside. Since the Instances themselves live on the IO

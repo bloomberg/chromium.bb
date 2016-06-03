@@ -49411,7 +49411,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.ActivateEventStatus"
     enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
-  <summary>The result of dispatching the activate event to the worker.</summary>
+  <summary>
+    The result of dispatching the activate event to the worker. This is recorded
+    to both ServiceWorker.ActivateEventStatus and whichever of
+    ServiceWorker.ActivateEventStatus_InShutdown
+    ServiceWorker.ActivateEventStatus_NotInShutdown is appropriate. (InShutdown
+    means the context was null or ServiceWorkerProcessManger::Shutdown was
+    called.)
+  </summary>
 </histogram>
 
 <histogram name="ServiceWorker.BackgroundSyncEvent.Time" units="ms">
@@ -96805,6 +96812,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="1" label="Failed one time."/>
   <suffix name="2" label="Failed two times."/>
   <suffix name="3" label="Failed three times."/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorker.ShutdownStatus">
+  <affected-histogram name="ServiceWorker.ActivateEventStatus"/>
+  <suffix name="InShutdown" label="Browser shutdown started."/>
+  <suffix name="NotInShutdown" label="Browser shutdown has not started."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker.StartSituation">

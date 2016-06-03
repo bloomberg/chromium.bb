@@ -8,10 +8,12 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -19,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/io_buffer.h"
@@ -1225,6 +1228,9 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(pattern, script1);
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
@@ -1258,6 +1264,10 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   EXPECT_EQ(NULL, registration->installing_version());
   EXPECT_EQ(NULL, registration->waiting_version());
   EXPECT_EQ(new_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
+
+  runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
@@ -1317,6 +1327,9 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(pattern, script1);
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
@@ -1350,6 +1363,10 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   EXPECT_EQ(NULL, registration->installing_version());
   EXPECT_EQ(NULL, registration->waiting_version());
   EXPECT_EQ(new_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
+
+  runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
@@ -1362,6 +1379,9 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(pattern, script1);
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
@@ -1399,6 +1419,10 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_EQ(NULL, registration->installing_version());
   EXPECT_EQ(NULL, registration->waiting_version());
   EXPECT_EQ(third_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, third_version->status());
+
+  runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, third_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
 }
@@ -1610,6 +1634,63 @@ TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
     EXPECT_TRUE(start_params.pause_after_download);
     sink->ClearMessages();
   }
+}
+
+// Test that activation doesn't complete if it's triggered by removing a
+// controllee and starting the worker failed due to shutdown.
+TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
+  UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
+  helper_.reset(update_helper);
+  GURL pattern("http://www.example.com/");
+  GURL script("http://www.example.com/service_worker.js");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script);
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  registration->SetTaskRunnerForTest(runner);
+
+  // Add a controllee.
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> first_version =
+      registration->active_version();
+  first_version->AddControllee(host.get());
+
+  // Update. The new version should be waiting.
+  registration->AddListener(update_helper);
+  first_version->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->waiting_version();
+  ASSERT_TRUE(new_version);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
+
+  // Stop the worker so that it must start again when activation is attempted.
+  // (This is not strictly necessary to exercise the codepath, but it makes it
+  // easy to cause a failure with set_force_start_worker_failure after
+  // shutdown is simulated. Otherwise our test helper often fails on
+  // DCHECK(context)).
+  new_version->StopWorker(base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+
+  // Remove the controllee. The new version should be activating, and delayed
+  // until the runner runs again.
+  first_version->RemoveControllee(host.get());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(new_version.get(), registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
+
+  // Shutdown.
+  update_helper->context()->wrapper()->Shutdown();
+  update_helper->set_force_start_worker_failure(true);
+
+  // Allow the activation to continue. It will fail, and the worker
+  // should not be promoted to ACTIVATED because failure occur
+  // during shutdown.
+  runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(new_version.get(), registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
+  registration->RemoveListener(update_helper);
 }
 
 }  // namespace content

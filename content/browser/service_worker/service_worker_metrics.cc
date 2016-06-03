@@ -299,9 +299,17 @@ void ServiceWorkerMetrics::RecordStopWorkerTime(base::TimeDelta time) {
 }
 
 void ServiceWorkerMetrics::RecordActivateEventStatus(
-    ServiceWorkerStatusCode status) {
+    ServiceWorkerStatusCode status,
+    bool is_shutdown) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
+  if (is_shutdown) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus_InShutdown",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus_NotInShutdown",
+                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+  }
 }
 
 void ServiceWorkerMetrics::RecordInstallEventStatus(

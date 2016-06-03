@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
@@ -37,7 +38,8 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       is_uninstalled_(false),
       should_activate_when_ready_(false),
       resources_total_size_bytes_(0),
-      context_(context) {
+      context_(context),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
   DCHECK(context_);
@@ -45,6 +47,11 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 }
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
+  // Can be false during shutdown, in which case the DCHECK_CURRENTLY_ON below
+  // would cry.
+  if (!BrowserThread::IsThreadInitialized(BrowserThread::IO))
+    return;
+
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!listeners_.might_have_observers());
   if (context_)
@@ -176,8 +183,9 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   should_activate_when_ready_ = true;
 
   if (!active_version() || !active_version()->HasControllee() ||
-      waiting_version()->skip_waiting())
-    ActivateWaitingVersion();
+      waiting_version()->skip_waiting()) {
+    ActivateWaitingVersion(false);
+  }
 }
 
 void ServiceWorkerRegistration::ClaimClients() {
@@ -243,12 +251,13 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   if (is_uninstalling_)
     Clear();
   else if (should_activate_when_ready_)
-    ActivateWaitingVersion();
+    ActivateWaitingVersion(true);
   is_uninstalling_ = false;
   should_activate_when_ready_ = false;
 }
 
-void ServiceWorkerRegistration::ActivateWaitingVersion() {
+void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
   DCHECK(waiting_version());
   DCHECK(should_activate_when_ready_);
@@ -283,6 +292,25 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
     FOR_EACH_OBSERVER(Listener, listeners_, OnSkippedWaiting(this));
 
   // "10. Queue a task to fire an event named activate..."
+  // The browser could be shutting down. To avoid spurious start worker
+  // failures, wait a bit before continuing.
+  if (delay) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&ServiceWorkerRegistration::ContinueActivation,
+                              this, activating_version),
+        base::TimeDelta::FromSeconds(1));
+  } else {
+    ContinueActivation(std::move(activating_version));
+  }
+}
+
+void ServiceWorkerRegistration::ContinueActivation(
+    scoped_refptr<ServiceWorkerVersion> activating_version) {
+  if (!context_)
+    return;
+  if (active_version() != activating_version.get())
+    return;
+  DCHECK_EQ(ServiceWorkerVersion::ACTIVATING, activating_version->status());
   activating_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::ACTIVATE,
       base::Bind(&ServiceWorkerRegistration::DispatchActivateEvent, this,
@@ -331,6 +359,11 @@ void ServiceWorkerRegistration::NotifyRegistrationFinished() {
     callback.Run();
 }
 
+void ServiceWorkerRegistration::SetTaskRunnerForTest(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  task_runner_ = task_runner;
+}
+
 void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(
     const base::Closure& callback) {
   // This should only be called if the registration is in progress.
@@ -340,7 +373,7 @@ void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(
 }
 
 void ServiceWorkerRegistration::DispatchActivateEvent(
-    const scoped_refptr<ServiceWorkerVersion>& activating_version) {
+    scoped_refptr<ServiceWorkerVersion> activating_version) {
   if (activating_version != active_version()) {
     OnActivateEventFinished(activating_version, SERVICE_WORKER_ERROR_FAILED);
     return;
@@ -359,15 +392,26 @@ void ServiceWorkerRegistration::DispatchActivateEvent(
 }
 
 void ServiceWorkerRegistration::OnActivateEventFinished(
-    const scoped_refptr<ServiceWorkerVersion>& activating_version,
+    scoped_refptr<ServiceWorkerVersion> activating_version,
     ServiceWorkerStatusCode status) {
-  if (!context_ || activating_version != active_version() ||
-      activating_version->status() != ServiceWorkerVersion::ACTIVATING)
-    return;
+  // Activate is prone to failing due to shutdown, because it's triggered when
+  // tabs close.
+  bool is_shutdown =
+      !context_ || context_->wrapper()->process_manager()->IsShutdown();
+  ServiceWorkerMetrics::RecordActivateEventStatus(status, is_shutdown);
 
-  // |status| is just for UMA. Once we've attempted to dispatch the activate
-  // event to an installed worker, it's committed to becoming active.
-  ServiceWorkerMetrics::RecordActivateEventStatus(status);
+  if (!context_ || activating_version != active_version() ||
+      activating_version->status() != ServiceWorkerVersion::ACTIVATING) {
+    return;
+  }
+
+  // Normally, the worker is committed to become activated once we get here, per
+  // spec. E.g., if the script rejected waitUntil or had an unhandled exception,
+  // it should still be activated. However, if the failure occurred during
+  // shutdown, ignore it to give the worker another chance the next time the
+  // browser starts up.
+  if (is_shutdown && status != SERVICE_WORKER_OK)
+    return;
 
   // "Run the Update State algorithm passing registration's active worker and
   // 'activated' as the arguments."
