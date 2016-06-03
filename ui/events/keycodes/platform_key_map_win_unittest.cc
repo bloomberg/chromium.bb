@@ -5,11 +5,13 @@
 #include "ui/events/keycodes/platform_key_map_win.h"
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/dom_us_layout_data.h"
 
 namespace ui {
 
@@ -244,6 +246,44 @@ TEST_F(PlatformKeyMapTest, NumPad) {
               DomKeyFromNativeImpl(keymap, dom_code, key_code,
                                    EF_ALTGR_DOWN | EF_CONTROL_DOWN))
         << key_code;
+  }
+}
+
+TEST_F(PlatformKeyMapTest, NonPrintableKey) {
+  HKL layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
+  PlatformKeyMap keymap(layout);
+
+  for (const auto& test_case : kNonPrintableCodeMap) {
+    // Not available on |LAYOUT_US|.
+    if (test_case.dom_code == DomCode::PAUSE ||
+        test_case.dom_code == DomCode::LANG2 ||
+        test_case.dom_code == DomCode::NON_CONVERT)
+      continue;
+
+    int scan_code =
+        ui::KeycodeConverter::DomCodeToNativeKeycode(test_case.dom_code);
+    // TODO(chongz): Some |scan_code| should map to different |key_code| based
+    // on modifiers.
+    KeyboardCode key_code = static_cast<KeyboardCode>(
+        ::MapVirtualKeyEx(scan_code, MAPVK_VSC_TO_VK, layout));
+
+    if (key_code == VKEY_UNKNOWN)
+      continue;
+
+    EXPECT_EQ(test_case.dom_key,
+              DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code, EF_NONE))
+        << key_code << ", " << scan_code;
+    EXPECT_EQ(test_case.dom_key, DomKeyFromNativeImpl(keymap, DomCode::NONE,
+                                                      key_code, EF_ALTGR_DOWN))
+        << key_code << ", " << scan_code;
+    EXPECT_EQ(
+        test_case.dom_key,
+        DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code, EF_CONTROL_DOWN))
+        << key_code << ", " << scan_code;
+    EXPECT_EQ(test_case.dom_key,
+              DomKeyFromNativeImpl(keymap, DomCode::NONE, key_code,
+                                   EF_ALTGR_DOWN | EF_CONTROL_DOWN))
+        << key_code << ", " << scan_code;
   }
 }
 

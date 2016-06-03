@@ -139,6 +139,135 @@ DomKey NumPadKeyCodeToDomKey(KeyboardCode key_code) {
   }
 }
 
+// This table must be sorted by |key_code| for binary search.
+const struct NonPrintableKeyEntry {
+  KeyboardCode key_code;
+  DomKey dom_key;
+} kNonPrintableKeyMap[] = {
+    {VKEY_CANCEL, DomKey::CANCEL},
+    {VKEY_BACK, DomKey::BACKSPACE},
+    {VKEY_TAB, DomKey::TAB},
+    {VKEY_CLEAR, DomKey::CLEAR},
+    {VKEY_RETURN, DomKey::ENTER},
+    {VKEY_SHIFT, DomKey::SHIFT},
+    {VKEY_CONTROL, DomKey::CONTROL},
+    {VKEY_MENU, DomKey::ALT},
+    {VKEY_PAUSE, DomKey::PAUSE},
+    {VKEY_CAPITAL, DomKey::CAPS_LOCK},
+    // VKEY_KANA == VKEY_HANGUL
+    {VKEY_JUNJA, DomKey::JUNJA_MODE},
+    {VKEY_FINAL, DomKey::FINAL_MODE},
+    // VKEY_HANJA == VKEY_KANJI
+    {VKEY_ESCAPE, DomKey::ESCAPE},
+    {VKEY_CONVERT, DomKey::CONVERT},
+    {VKEY_NONCONVERT, DomKey::NON_CONVERT},
+    {VKEY_ACCEPT, DomKey::ACCEPT},
+    {VKEY_MODECHANGE, DomKey::MODE_CHANGE},
+    // VKEY_SPACE
+    {VKEY_PRIOR, DomKey::PAGE_UP},
+    {VKEY_NEXT, DomKey::PAGE_DOWN},
+    {VKEY_END, DomKey::END},
+    {VKEY_HOME, DomKey::HOME},
+    {VKEY_LEFT, DomKey::ARROW_LEFT},
+    {VKEY_UP, DomKey::ARROW_UP},
+    {VKEY_RIGHT, DomKey::ARROW_RIGHT},
+    {VKEY_DOWN, DomKey::ARROW_DOWN},
+    {VKEY_SELECT, DomKey::SELECT},
+    {VKEY_PRINT, DomKey::PRINT},
+    {VKEY_EXECUTE, DomKey::EXECUTE},
+    {VKEY_SNAPSHOT, DomKey::PRINT_SCREEN},
+    {VKEY_INSERT, DomKey::INSERT},
+    {VKEY_DELETE, DomKey::DEL},
+    {VKEY_HELP, DomKey::HELP},
+    // VKEY_0..9
+    // VKEY_A..Z
+    {VKEY_LWIN, DomKey::META},
+    // VKEY_COMMAND == VKEY_LWIN
+    {VKEY_RWIN, DomKey::META},
+    {VKEY_APPS, DomKey::CONTEXT_MENU},
+    {VKEY_SLEEP, DomKey::STANDBY},
+    // VKEY_NUMPAD0..9
+    // VKEY_MULTIPLY, VKEY_ADD, VKEY_SEPARATOR, VKEY_SUBTRACT, VKEY_DECIMAL,
+    // VKEY_DIVIDE
+    {VKEY_F1, DomKey::F1},
+    {VKEY_F2, DomKey::F2},
+    {VKEY_F3, DomKey::F3},
+    {VKEY_F4, DomKey::F4},
+    {VKEY_F5, DomKey::F5},
+    {VKEY_F6, DomKey::F6},
+    {VKEY_F7, DomKey::F7},
+    {VKEY_F8, DomKey::F8},
+    {VKEY_F9, DomKey::F9},
+    {VKEY_F10, DomKey::F10},
+    {VKEY_F11, DomKey::F11},
+    {VKEY_F12, DomKey::F12},
+    {VKEY_F13, DomKey::F13},
+    {VKEY_F14, DomKey::F14},
+    {VKEY_F15, DomKey::F15},
+    {VKEY_F16, DomKey::F16},
+    {VKEY_F17, DomKey::F17},
+    {VKEY_F18, DomKey::F18},
+    {VKEY_F19, DomKey::F19},
+    {VKEY_F20, DomKey::F20},
+    {VKEY_F21, DomKey::F21},
+    {VKEY_F22, DomKey::F22},
+    {VKEY_F23, DomKey::F23},
+    {VKEY_F24, DomKey::F24},
+    {VKEY_NUMLOCK, DomKey::NUM_LOCK},
+    {VKEY_SCROLL, DomKey::SCROLL_LOCK},
+    {VKEY_LSHIFT, DomKey::SHIFT},
+    {VKEY_RSHIFT, DomKey::SHIFT},
+    {VKEY_LCONTROL, DomKey::CONTROL},
+    {VKEY_RCONTROL, DomKey::CONTROL},
+    {VKEY_LMENU, DomKey::ALT},
+    {VKEY_RMENU, DomKey::ALT},
+    {VKEY_BROWSER_BACK, DomKey::BROWSER_BACK},
+    {VKEY_BROWSER_FORWARD, DomKey::BROWSER_FORWARD},
+    {VKEY_BROWSER_REFRESH, DomKey::BROWSER_REFRESH},
+    {VKEY_BROWSER_STOP, DomKey::BROWSER_STOP},
+    {VKEY_BROWSER_SEARCH, DomKey::BROWSER_SEARCH},
+    {VKEY_BROWSER_FAVORITES, DomKey::BROWSER_FAVORITES},
+    {VKEY_BROWSER_HOME, DomKey::BROWSER_HOME},
+    {VKEY_VOLUME_MUTE, DomKey::AUDIO_VOLUME_MUTE},
+    {VKEY_VOLUME_DOWN, DomKey::AUDIO_VOLUME_DOWN},
+    {VKEY_VOLUME_UP, DomKey::AUDIO_VOLUME_UP},
+    {VKEY_MEDIA_NEXT_TRACK, DomKey::MEDIA_TRACK_NEXT},
+    {VKEY_MEDIA_PREV_TRACK, DomKey::MEDIA_TRACK_PREVIOUS},
+    {VKEY_MEDIA_STOP, DomKey::MEDIA_STOP},
+    {VKEY_MEDIA_PLAY_PAUSE, DomKey::MEDIA_PLAY_PAUSE},
+    {VKEY_MEDIA_LAUNCH_MAIL, DomKey::LAUNCH_MAIL},
+    {VKEY_MEDIA_LAUNCH_MEDIA_SELECT, DomKey::LAUNCH_MEDIA_PLAYER},
+    {VKEY_MEDIA_LAUNCH_APP1, DomKey::LAUNCH_MY_COMPUTER},
+    {VKEY_MEDIA_LAUNCH_APP2, DomKey::LAUNCH_CALCULATOR},
+    // VKEY_OEM_1..8, 102, PLUS, COMMA, MINUS, PERIOD
+    {VKEY_ALTGR, DomKey::ALT_GRAPH},
+    {VKEY_PROCESSKEY, DomKey::PROCESS},
+    // VKEY_PACKET - Used to pass Unicode char, considered as printable key.
+
+    // TODO(chongz): Handle Japanese keyboard layout keys 0xF0..0xF5.
+    // https://crbug.com/612694
+    {VKEY_ATTN, DomKey::ATTN},
+    {VKEY_CRSEL, DomKey::CR_SEL},
+    {VKEY_EXSEL, DomKey::EX_SEL},
+    {VKEY_EREOF, DomKey::ERASE_EOF},
+    {VKEY_PLAY, DomKey::PLAY},
+    {VKEY_ZOOM, DomKey::ZOOM_TOGGLE},
+    // TODO(chongz): Handle VKEY_NONAME, VKEY_PA1.
+    // https://crbug.com/616910
+    {VKEY_OEM_CLEAR, DomKey::CLEAR},
+};
+
+DomKey NonPrintableKeyboardCodeToDomKey(KeyboardCode key_code) {
+  const NonPrintableKeyEntry* result = std::lower_bound(
+      std::begin(kNonPrintableKeyMap), std::end(kNonPrintableKeyMap), key_code,
+      [](const NonPrintableKeyEntry& entry, KeyboardCode needle) {
+        return entry.key_code < needle;
+      });
+  if (result != std::end(kNonPrintableKeyMap) && result->key_code == key_code)
+    return result->dom_key;
+  return DomKey::NONE;
+}
+
 void CleanupKeyMapTls(void* data) {
   PlatformKeyMap* key_map = reinterpret_cast<PlatformKeyMap*>(data);
   delete key_map;
@@ -170,6 +299,14 @@ PlatformKeyMap::~PlatformKeyMap() {}
 DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
                                             KeyboardCode key_code,
                                             int flags) const {
+  DomKey key = NonPrintableKeyboardCodeToDomKey(key_code);
+  if (key != DomKey::NONE)
+    return key;
+
+  // TODO(chongz): Handle VKEY_KANA/VKEY_HANGUL, VKEY_HANJA/VKEY_KANJI based on
+  // layout.
+  // https://crbug.com/612736
+
   if (KeycodeConverter::DomCodeToLocation(code) == DomKeyLocation::NUMPAD) {
     // Derived the DOM Key value from |key_code| instead of |code|, to address
     // Windows Numlock/Shift interaction - see crbug.com/594552.
@@ -187,7 +324,6 @@ DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
       EF_NONE,
   };
 
-  DomKey key = DomKey::NONE;
   for (auto try_flags : flags_to_try) {
     const auto& it = code_to_key_.find(std::make_pair(static_cast<int>(code),
                                                       try_flags));

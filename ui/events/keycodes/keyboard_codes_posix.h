@@ -34,6 +34,7 @@
 namespace ui {
 
 enum KeyboardCode {
+  VKEY_CANCEL = 0x03,
   VKEY_BACK = 0x08,
   VKEY_TAB = 0x09,
   VKEY_BACKTAB = 0x0A,

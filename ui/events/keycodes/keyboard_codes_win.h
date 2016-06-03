@@ -11,6 +11,7 @@
 namespace ui {
 
 enum KeyboardCode {
+  VKEY_CANCEL = VK_CANCEL,
   VKEY_BACK = VK_BACK,
   VKEY_TAB = VK_TAB,
   VKEY_CLEAR = VK_CLEAR,
