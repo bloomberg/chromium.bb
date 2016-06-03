@@ -25,6 +25,10 @@ namespace ui {
 class CALayerTreeCoordinator;
 }
 
+namespace gl {
+class GLFence;
+}
+
 namespace gpu {
 
 class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
@@ -93,6 +97,12 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
 
   gfx::Size pixel_size_;
   float scale_factor_;
+
+  // A GLFence marking the end of the previous frame. Must only be accessed
+  // while in a ScopedSetGLToRealGLApi, and while the associated
+  // |previous_frame_context_| is bound.
+  std::unique_ptr<gl::GLFence> previous_frame_fence_;
+  base::ScopedTypeRef<CGLContextObj> fence_context_obj_;
 
   // The renderer ID that all contexts made current to this surface should be
   // targeting.
