@@ -375,19 +375,6 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_MIXED_PASSIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included passive resources (e.g. images) over non-secure transport.">
         Your connection to this site is private, but someone on the network might be able to change the look of the page.
       </message>
-      <if expr="is_android or is_ios">
-        <message name="IDS_WEBSITE_SETTINGS_MALWARE" desc="Text that is displayed in the header of the Website Settings popup if the SafeBrowsing reports that the website is malicious or has been compromised by attackers seeking to install malware.">
-          Attackers may have compromised this site, and might attempt to install dangerous programs on your device that steal or delete your information (examples: photos, passwords, messages, and credit cards).
-        </message>
-      </if>
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_WEBSITE_SETTINGS_MALWARE" desc="Text that is displayed in the header of the Website Settings popup if the SafeBrowsing reports that the website is malicious or has been compromised by attackers seeking to install malware.">
-          Attackers may have compromised this site, and might attempt to install dangerous programs on your computer that steal or delete your information (examples: photos, passwords, messages, and credit cards).
-        </message>
-      </if>
-      <message name="IDS_WEBSITE_SETTINGS_PHISHING" desc="Text that is displayed in the header of the Website Settings popup if the SafeBrowsing reports that the website is being used to conduct phishing attacks.">
-        This site might try to trick you to steal your information (examples: passwords, messages, or credit cards).
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked cookies and site data for the top-level origin (i.e. the origin in the Omnibox).">
         {NUM_COOKIES, plural, =1 {1 from this site} other {# from this site}}
       </message>
