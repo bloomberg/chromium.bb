@@ -976,7 +976,7 @@ configure_input_device(struct weston_compositor *compositor,
 }
 
 static int
-load_drm_backend(struct weston_compositor *c, const char *backend,
+load_drm_backend(struct weston_compositor *c,
 		 int *argc, char **argv, struct weston_config *wc)
 {
 	struct weston_drm_backend_config config = {{ 0, }};
@@ -1013,7 +1013,7 @@ load_drm_backend(struct weston_compositor *c, const char *backend,
 }
 
 static int
-load_headless_backend(struct weston_compositor *c, char const * backend,
+load_headless_backend(struct weston_compositor *c,
 		      int *argc, char **argv, struct weston_config *wc)
 {
 	struct weston_headless_backend_config config = {{ 0, }};
@@ -1067,7 +1067,7 @@ weston_rdp_backend_config_init(struct weston_rdp_backend_config *config)
 }
 
 static int
-load_rdp_backend(struct weston_compositor *c, char const * backend,
+load_rdp_backend(struct weston_compositor *c,
 		int *argc, char *argv[], struct weston_config *wc)
 {
 	struct weston_rdp_backend_config config  = {{ 0, }};
@@ -1100,7 +1100,7 @@ load_rdp_backend(struct weston_compositor *c, char const * backend,
 }
 
 static int
-load_fbdev_backend(struct weston_compositor *c, char const * backend,
+load_fbdev_backend(struct weston_compositor *c,
 		      int *argc, char **argv, struct weston_config *wc)
 {
 	struct weston_fbdev_backend_config config = {{ 0, }};
@@ -1160,7 +1160,7 @@ weston_x11_backend_config_append_output_config(struct weston_x11_backend_config 
 }
 
 static int
-load_x11_backend(struct weston_compositor *c, char const * backend,
+load_x11_backend(struct weston_compositor *c,
 		 int *argc, char **argv, struct weston_config *wc)
 {
 	struct weston_x11_backend_output_config default_output;
@@ -1475,7 +1475,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 }
 
 static int
-load_wayland_backend(struct weston_compositor *c, char const * backend,
+load_wayland_backend(struct weston_compositor *c,
 		     int *argc, char **argv, struct weston_config *wc)
 {
 	struct weston_wayland_backend_config config = {{ 0, }};
@@ -1500,17 +1500,17 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 	     int *argc, char **argv, struct weston_config *config)
 {
 	if (strstr(backend, "headless-backend.so"))
-		return load_headless_backend(compositor, backend, argc, argv, config);
+		return load_headless_backend(compositor, argc, argv, config);
 	else if (strstr(backend, "rdp-backend.so"))
-		return load_rdp_backend(compositor, backend, argc, argv, config);
+		return load_rdp_backend(compositor, argc, argv, config);
 	else if (strstr(backend, "fbdev-backend.so"))
-		return load_fbdev_backend(compositor, backend, argc, argv, config);
+		return load_fbdev_backend(compositor, argc, argv, config);
 	else if (strstr(backend, "drm-backend.so"))
-		return load_drm_backend(compositor, backend, argc, argv, config);
+		return load_drm_backend(compositor, argc, argv, config);
 	else if (strstr(backend, "x11-backend.so"))
-		return load_x11_backend(compositor, backend, argc, argv, config);
+		return load_x11_backend(compositor, argc, argv, config);
 	else if (strstr(backend, "wayland-backend.so"))
-		return load_wayland_backend(compositor, backend, argc, argv, config);
+		return load_wayland_backend(compositor, argc, argv, config);
 
 	weston_log("Error: unknown backend \"%s\"\n", backend);
 	return -1;
