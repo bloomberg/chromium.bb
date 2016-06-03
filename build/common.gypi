@@ -4133,8 +4133,12 @@
                   ['mips_arch_variant=="r6"', {
                     'conditions': [
                       ['clang==1', {
-                        'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r6', ],
-                        'ldflags': [ '-target mipsel-linux-gnu', ],
+                        'conditions': [
+                          ['OS=="android"', {
+                            'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32r6', ],
+                            'ldflags': [ '-target mipsel-linux-android', ],
+                          }],
+                        ],
                       }, { # clang==0
                         'cflags': ['-mips32r6', '-Wa,-mips32r6', ],
                       }],
@@ -4142,6 +4146,8 @@
                         'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
                       }],
                     ],
+                    'cflags': [ '-mfp64', '-mno-odd-spreg' ],
+                    'ldflags': [ '-mfp64', '-mno-odd-spreg' ],
                   }],
                   ['mips_arch_variant=="r2"', {
                     'conditions': [
@@ -4233,14 +4239,48 @@
               ['_toolset=="target"', {
                 'conditions': [
                   ['mips_arch_variant=="r6"', {
-                    'cflags': ['-mips64r6', '-Wa,-mips64r6'],
-                    'ldflags': ['-mips64r6'],
+                    'conditions': [
+                      ['clang==1', {
+                        'conditions': [
+                          ['OS=="android"', {
+                            'cflags': [ '-target mips64el-linux-android', '-march=mips64el', '-mcpu=mips64r6', ],
+                            'ldflags': [ '-target mips64el-linux-android', ],
+                          }],
+                        ],
+                      }, { # clang==0
+                        'cflags': ['-mips64r6', '-Wa,-mips64r6'],
+                        'ldflags': ['-mips64r6'],
+                      }],
+                    ],
                   }],
                   ['mips_arch_variant=="r2"', {
                     'cflags': ['-mips64r2', '-Wa,-mips64r2'],
                     'ldflags': ['-mips64r2'],
                   }],
+                  ['clang==1', {
+                    'cflags!': [
+                      # Clang does not support the following options.
+                      '-finline-limit=64',
+                    ],
+                    # TODO(gordanac) Enable integrated-as.
+                    'cflags': [ '-fno-integrated-as' ],
+                    'conditions': [
+                      ['OS=="android"', {
+                        'cflags': [
+                          # Else /usr/bin/as gets picked up.
+                          '-B<(android_toolchain)',
+                        ],
+                      }],
+                    ],
+                  }],
+                  ['clang==1 and OS=="android"', {
+                    'ldflags': [
+                      # Let clang find the ld in the NDK.
+                      '--gcc-toolchain=<(android_toolchain)/..',
+                    ],
+                  }],
                 ],
+
                 'cflags_cc': [
                   '-Wno-uninitialized',
                 ],
