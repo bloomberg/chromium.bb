@@ -82,11 +82,13 @@ http/tests/security/referrer-policy-redirect-link.html [ Timeout ]
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 http/tests/local/drag-over-remote-content.html [ Timeout ]
 
+# https://crbug.com/617288 - testRunner.setCanOpenWindows not replicated to OOPIFs
+http/tests/security/frameNavigation/not-opener.html [ Timeout ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 # Uninvestigated failures under http/tests/security:
 http/tests/security/cross-origin-shared-worker-allowed.html [ Failure Timeout ]
 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Failure Timeout ]
-http/tests/security/frameNavigation/not-opener.html [ Timeout ]
 http/tests/security/frameNavigation/xss-DENIED-targeted-link-navigation.html [ Timeout ]
 # Uninvestigated failures under http/tests (but outside of http/tests/security):
 http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
