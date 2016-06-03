@@ -158,10 +158,6 @@ public:
     static UnitCategory unitTypeToUnitCategory(UnitType);
     static float clampToCSSLengthRange(double);
 
-    static void initUnitTable();
-
-    static UnitType fromName(const String& unit);
-
     static bool isAngle(UnitType unit)
     {
         return unit == UnitType::Degrees
