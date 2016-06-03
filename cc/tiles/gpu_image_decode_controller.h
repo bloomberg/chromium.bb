@@ -111,14 +111,25 @@ class CC_EXPORT GpuImageDecodeController
     void ResetData();
     base::DiscardableMemory* data() const { return data_.get(); }
 
+    void mark_used() { usage_stats_.used = true; }
+
     // May be null if image not yet decoded.
     uint32_t ref_count = 0;
     // Set to true if the image was corrupt and could not be decoded.
     bool decode_failure = false;
 
    private:
+    struct UsageStats {
+      int lock_count = 1;
+      bool used = false;
+      bool first_lock_wasted = false;
+    };
+
+    void ReportUsageStats() const;
+
     std::unique_ptr<base::DiscardableMemory> data_;
     bool is_locked_ = false;
+    UsageStats usage_stats_;
   };
 
   // Stores the GPU-side image and supporting fields.
@@ -129,13 +140,28 @@ class CC_EXPORT GpuImageDecodeController
     void SetImage(sk_sp<SkImage> image);
     const sk_sp<SkImage>& image() const { return image_; }
 
+    void mark_used() { usage_stats_.used = true; }
+    void notify_ref_reached_zero() {
+      if (++usage_stats_.ref_reached_zero_count == 1)
+        usage_stats_.first_ref_wasted = !usage_stats_.used;
+    }
+
     // True if the image is counting against our memory limits.
     bool budgeted = false;
     uint32_t ref_count = 0;
 
    private:
+    struct UsageStats {
+      bool used = false;
+      bool first_ref_wasted = false;
+      int ref_reached_zero_count = 0;
+    };
+
+    void ReportUsageStats() const;
+
     // May be null if image not yet uploaded / prepared.
     sk_sp<SkImage> image_;
+    UsageStats usage_stats_;
   };
 
   struct ImageData {

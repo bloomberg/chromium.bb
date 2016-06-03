@@ -6,6 +6,7 @@
 
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -136,38 +137,98 @@ class ImageUploadTaskImpl : public TileTask {
 };
 
 GpuImageDecodeController::DecodedImageData::DecodedImageData() = default;
-GpuImageDecodeController::DecodedImageData::~DecodedImageData() = default;
+GpuImageDecodeController::DecodedImageData::~DecodedImageData() {
+  ResetData();
+}
 
 bool GpuImageDecodeController::DecodedImageData::Lock() {
   DCHECK(!is_locked_);
   is_locked_ = data_->Lock();
+  if (is_locked_)
+    ++usage_stats_.lock_count;
   return is_locked_;
 }
 
 void GpuImageDecodeController::DecodedImageData::Unlock() {
   DCHECK(is_locked_);
   data_->Unlock();
+  if (usage_stats_.lock_count == 1)
+    usage_stats_.first_lock_wasted = !usage_stats_.used;
   is_locked_ = false;
 }
 
 void GpuImageDecodeController::DecodedImageData::SetLockedData(
     std::unique_ptr<base::DiscardableMemory> data) {
   DCHECK(!is_locked_);
+  DCHECK(data);
+  DCHECK(!data_);
   data_ = std::move(data);
   is_locked_ = true;
 }
 
 void GpuImageDecodeController::DecodedImageData::ResetData() {
   DCHECK(!is_locked_);
+  if (data_)
+    ReportUsageStats();
   data_ = nullptr;
+  usage_stats_ = UsageStats();
+}
+
+void GpuImageDecodeController::DecodedImageData::ReportUsageStats() const {
+  // lock_count | used  | result state
+  // ===========+=======+==================
+  //  1         | false | WASTED_ONCE
+  //  1         | true  | USED_ONCE
+  //  >1        | false | WASTED_RELOCKED
+  //  >1        | true  | USED_RELOCKED
+  // Note that it's important not to reorder the following enums, since the
+  // numerical values are used in the histogram code.
+  enum State : int {
+    DECODED_IMAGE_STATE_WASTED_ONCE,
+    DECODED_IMAGE_STATE_USED_ONCE,
+    DECODED_IMAGE_STATE_WASTED_RELOCKED,
+    DECODED_IMAGE_STATE_USED_RELOCKED,
+    DECODED_IMAGE_STATE_COUNT
+  } state = DECODED_IMAGE_STATE_WASTED_ONCE;
+
+  if (usage_stats_.lock_count == 1) {
+    if (usage_stats_.used)
+      state = DECODED_IMAGE_STATE_USED_ONCE;
+    else
+      state = DECODED_IMAGE_STATE_WASTED_ONCE;
+  } else {
+    if (usage_stats_.used)
+      state = DECODED_IMAGE_STATE_USED_RELOCKED;
+    else
+      state = DECODED_IMAGE_STATE_WASTED_RELOCKED;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Renderer4.GpuImageDecodeState", state,
+                            DECODED_IMAGE_STATE_COUNT);
+  UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuImageDecodeState.FirstLockWasted",
+                        usage_stats_.first_lock_wasted);
 }
 
 GpuImageDecodeController::UploadedImageData::UploadedImageData() = default;
-GpuImageDecodeController::UploadedImageData::~UploadedImageData() = default;
+GpuImageDecodeController::UploadedImageData::~UploadedImageData() {
+  SetImage(nullptr);
+}
 
 void GpuImageDecodeController::UploadedImageData::SetImage(
     sk_sp<SkImage> image) {
+  DCHECK(!image_ || !image);
+  if (image_) {
+    ReportUsageStats();
+    usage_stats_ = UsageStats();
+  }
   image_ = std::move(image);
+}
+
+void GpuImageDecodeController::UploadedImageData::ReportUsageStats() const {
+  UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuImageUploadState.Used",
+                        usage_stats_.used);
+  UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuImageUploadState.FirstRefWasted",
+                        usage_stats_.first_ref_wasted);
 }
 
 GpuImageDecodeController::ImageData::ImageData(DecodedDataMode mode,
@@ -342,6 +403,7 @@ DecodedDrawImage GpuImageDecodeController::GetDecodedImageForDraw(
   UnrefImageDecode(draw_image);
 
   sk_sp<SkImage> image = image_data->upload.image();
+  image_data->upload.mark_used();
   DCHECK(image || image_data->decode.decode_failure);
 
   DecodedDrawImage decoded_draw_image(std::move(image),
@@ -559,6 +621,8 @@ void GpuImageDecodeController::UnrefImageInternal(const DrawImage& draw_image) {
   DCHECK(found != image_data_.end());
   DCHECK_GT(found->second->upload.ref_count, 0u);
   --found->second->upload.ref_count;
+  if (found->second->upload.ref_count == 0)
+    found->second->upload.notify_ref_reached_zero();
   RefCountChanged(found->second.get());
 }
 
@@ -826,6 +890,7 @@ void GpuImageDecodeController::UploadImageIfNecessary(
       }
     }
   }
+  image_data->decode.mark_used();
   DCHECK(uploaded_image);
 
   // At-raster may have decoded this while we were unlocked. If so, ignore our
