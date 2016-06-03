@@ -486,6 +486,7 @@ class HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks send_request_since_;
   base::Time open_entry_last_used_;
   base::TimeDelta stale_entry_freshness_;
+  base::TimeDelta stale_entry_age_;
 
   int64_t total_received_bytes_;
   int64_t total_sent_bytes_;

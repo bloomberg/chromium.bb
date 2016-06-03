@@ -17975,6 +17975,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.StaleEntry.Updated.Age" units="seconds">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    For each http cache transaction for which a validation attempt is made due
+    to a stale entry and is updated (e.g., 200), records the age of the entry in
+    seconds.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.StaleEntry.Updated.AgeInFreshnessPeriods" units="%">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    For each http cache transaction for which a validation attempt is made due
+    to a stale entry and is updated (e.g., 200), records the age of the entry as
+    percentage of freshness period.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.StaleEntry.Validated.Age" units="seconds">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    For each http cache transaction for which a validation attempt is made due
+    to a stale entry and is validated (304), records the age of the entry in
+    seconds.
+  </summary>
+</histogram>
+
+<histogram name="HttpCache.StaleEntry.Validated.AgeInFreshnessPeriods"
+    units="%">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    For each http cache transaction for which a validation attempt is made due
+    to a stale entry and is validated (304), records the age of the entry as
+    percentage of freshness period.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.ValidationCause" enum="HttpCacheValidationCause">
   <owner>jkarlin@chromium.org</owner>
   <summary>For each validation attempt, the cause for the validation.</summary>

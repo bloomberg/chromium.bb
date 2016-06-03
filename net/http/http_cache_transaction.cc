@@ -2199,6 +2199,9 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
     } else {
       validation_cause_ = VALIDATION_CAUSE_STALE;
       stale_entry_freshness_ = lifetimes.freshness;
+      stale_entry_age_ = response_.headers->GetCurrentAge(
+          response_.request_time, response_.response_time,
+          cache_->clock_->Now());
     }
   }
 
@@ -2742,6 +2745,25 @@ void HttpCache::Transaction::RecordHistograms() {
 
     UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed",
                          freshness_periods_since_last_used);
+
+    if (validation_request) {
+      int64_t age_in_freshness_periods =
+          (stale_entry_age_ * 100) / stale_entry_freshness_;
+      if (transaction_pattern_ == PATTERN_ENTRY_VALIDATED) {
+        UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.Validated.Age",
+                             stale_entry_age_.InSeconds());
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.Validated.AgeInFreshnessPeriods",
+            age_in_freshness_periods);
+
+      } else {
+        UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.Updated.Age",
+                             stale_entry_age_.InSeconds());
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.Updated.AgeInFreshnessPeriods",
+            age_in_freshness_periods);
+      }
+    }
   }
 
   std::string mime_type;
@@ -2856,8 +2878,8 @@ void HttpCache::Transaction::RecordHistograms() {
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "HttpCache.Pattern", transaction_pattern_, PATTERN_MAX);
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern", transaction_pattern_,
+                            PATTERN_MAX);
 
   if (validation_request) {
     UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
