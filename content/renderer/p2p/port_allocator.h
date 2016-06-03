@@ -38,13 +38,11 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
     bool enable_default_local_candidate = true;
   };
 
-  P2PPortAllocator(
-      const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
-      std::unique_ptr<rtc::NetworkManager> network_manager,
-      rtc::PacketSocketFactory* socket_factory,
-      const Config& config,
-      const GURL& origin,
-      const scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  P2PPortAllocator(const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
+                   std::unique_ptr<rtc::NetworkManager> network_manager,
+                   rtc::PacketSocketFactory* socket_factory,
+                   const Config& config,
+                   const GURL& origin);
   ~P2PPortAllocator() override;
 
  private:
@@ -52,11 +50,6 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
   Config config_;
   GURL origin_;
-
-  // This is the thread |network_manager_| is associated with and must be used
-  // to delete |network_manager_|.
-  const scoped_refptr<base::SingleThreadTaskRunner>
-      network_manager_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PPortAllocator);
 };

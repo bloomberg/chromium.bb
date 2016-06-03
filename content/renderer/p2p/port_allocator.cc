@@ -21,14 +21,12 @@ P2PPortAllocator::P2PPortAllocator(
     std::unique_ptr<rtc::NetworkManager> network_manager,
     rtc::PacketSocketFactory* socket_factory,
     const Config& config,
-    const GURL& origin,
-    const scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    const GURL& origin)
     : cricket::BasicPortAllocator(network_manager.get(), socket_factory),
       network_manager_(std::move(network_manager)),
       socket_dispatcher_(socket_dispatcher),
       config_(config),
-      origin_(origin),
-      network_manager_task_runner_(task_runner) {
+      origin_(origin) {
   uint32_t flags = 0;
   if (!config_.enable_multiple_routes) {
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
@@ -51,13 +49,6 @@ P2PPortAllocator::P2PPortAllocator(
   }
 }
 
-// TODO(guoweis): P2PPortAllocator is also deleted in the wrong thread
-// here. It's created in signaling thread, and held by webrtc::PeerConnection,
-// only used on worker thread. The destructor is invoked on signaling thread
-// again. crbug.com/535761. DeleteSoon can be removed once the bug is fixed.
-P2PPortAllocator::~P2PPortAllocator() {
-  network_manager_task_runner_->DeleteSoon(FROM_HERE,
-                                           network_manager_.release());
-}
+P2PPortAllocator::~P2PPortAllocator() {}
 
 }  // namespace content

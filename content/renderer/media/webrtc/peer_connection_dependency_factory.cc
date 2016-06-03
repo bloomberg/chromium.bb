@@ -399,7 +399,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   }
   std::unique_ptr<P2PPortAllocator> port_allocator(new P2PPortAllocator(
       p2p_socket_dispatcher_, std::move(network_manager), socket_factory_.get(),
-      port_config, requesting_origin, chrome_worker_thread_.task_runner()));
+      port_config, requesting_origin));
 
   return GetPcFactory()
       ->CreatePeerConnection(config, std::move(port_allocator),
