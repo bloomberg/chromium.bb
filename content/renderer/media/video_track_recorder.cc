@@ -66,6 +66,10 @@ static struct {
 // profile is found, returns VIDEO_CODEC_PROFILE_UNKNOWN.
 media::VideoCodecProfile CodecIdToVEAProfile(
     content::VideoTrackRecorder::CodecId codec) {
+  // See https://crbug.com/616659.
+#if defined(OS_CHROMEOS)
+  return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+#endif  // defined(OS_CHROMEOS)
   content::RenderThreadImpl* render_thread_impl =
       content::RenderThreadImpl::current();
   if (!render_thread_impl)
