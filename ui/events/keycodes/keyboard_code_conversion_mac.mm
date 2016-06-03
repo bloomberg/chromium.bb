@@ -206,7 +206,7 @@ const KeyCodeMap kKeyCodesMap[] = {
   { VKEY_OEM_CLEAR /* 0xFE */, kVK_ANSI_KeypadClear, kClearCharCode }
 };
 
-bool IsKeypadEvent(NSEvent* event) {
+bool IsKeypadOrNumericKeyEvent(NSEvent* event) {
   // Check that this is the type of event that has a keyCode.
   switch ([event type]) {
     case NSKeyDown:
@@ -236,6 +236,16 @@ bool IsKeypadEvent(NSEvent* event) {
     case kVK_ANSI_Keypad7:
     case kVK_ANSI_Keypad8:
     case kVK_ANSI_Keypad9:
+    case kVK_ANSI_0:
+    case kVK_ANSI_1:
+    case kVK_ANSI_2:
+    case kVK_ANSI_3:
+    case kVK_ANSI_4:
+    case kVK_ANSI_5:
+    case kVK_ANSI_6:
+    case kVK_ANSI_7:
+    case kVK_ANSI_8:
+    case kVK_ANSI_9:
       return true;
   }
 
@@ -771,8 +781,12 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
 KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {
   KeyboardCode code = VKEY_UNKNOWN;
 
-  if (!IsKeypadEvent(event) &&
+  // Numeric keys 0-9 should always return |keyCode| 0-9.
+  // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#Printable_keys_in_standard_position
+  if (!IsKeypadOrNumericKeyEvent(event) &&
       ([event type] == NSKeyDown || [event type] == NSKeyUp)) {
+    // Handles Dvorak-QWERTY Cmd case.
+    // https://github.com/WebKit/webkit/blob/4d41c98b1de467f5d2a8fcba84d7c5268f11b0cc/Source/WebCore/platform/mac/PlatformEventFactoryMac.mm#L329
     NSString* characters = [event characters];
     if ([characters length] > 0)
       code = KeyboardCodeFromCharCode([characters characterAtIndex:0]);
