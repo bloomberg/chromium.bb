@@ -268,23 +268,6 @@ static_assert(sizeof(GLfloat) == sizeof(float),  // NOLINT
 // linker on Mac OS X 10.6 when the symbol ordering file is used
 // namespace {
 
-// Returns the address of the first byte after a struct.
-template <typename T>
-const void* AddressAfterStruct(const T& pod) {
-  return reinterpret_cast<const uint8_t*>(&pod) + sizeof(pod);
-}
-
-// Returns the address of the frst byte after the struct or NULL if size >
-// immediate_data_size.
-template <typename RETURN_TYPE, typename COMMAND_TYPE>
-RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod,
-                               uint32_t size,
-                               uint32_t immediate_data_size) {
-  return (size <= immediate_data_size) ?
-      static_cast<RETURN_TYPE>(const_cast<void*>(AddressAfterStruct(pod))) :
-      NULL;
-}
-
 // Return true if a character belongs to the ASCII subset as defined in
 // GLSL ES 1.0 spec section 3.1.
 static bool CharacterIsValidForGLES(unsigned char c) {
@@ -2681,7 +2664,7 @@ GLenum BackFramebuffer::CheckStatus() {
 
 GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
   if (group->gpu_preferences().use_passthrough_cmd_decoder) {
-    return CreateGLES2DecoderPassthroughImpl(group);
+    return new GLES2DecoderPassthroughImpl(group);
   }
   return new GLES2DecoderImpl(group);
 }

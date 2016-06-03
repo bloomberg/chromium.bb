@@ -43,6 +43,20 @@ void* Buffer::GetDataAddress(uint32_t data_offset, uint32_t data_size) const {
   return static_cast<uint8_t*>(memory_) + data_offset;
 }
 
+void* Buffer::GetDataAddressAndSize(uint32_t data_offset,
+                                    uint32_t* data_size) const {
+  if (data_offset > static_cast<uint32_t>(size_))
+    return NULL;
+  *data_size = GetRemainingSize(data_offset);
+  return static_cast<uint8_t*>(memory_) + data_offset;
+}
+
+uint32_t Buffer::GetRemainingSize(uint32_t data_offset) const {
+  if (data_offset > static_cast<uint32_t>(size_))
+    return 0;
+  return static_cast<uint32_t>(size_) - data_offset;
+}
+
 base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(
     uint64_t tracing_process_id,
     int32_t buffer_id) {

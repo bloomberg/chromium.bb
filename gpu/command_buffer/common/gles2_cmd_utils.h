@@ -53,6 +53,24 @@ inline bool SafeAddInt32(int32_t a, int32_t b, int32_t* dst) {
   return checked.IsValid();
 }
 
+// Returns the address of the first byte after a struct.
+template <typename T>
+const void* AddressAfterStruct(const T& pod) {
+  return reinterpret_cast<const uint8_t*>(&pod) + sizeof(pod);
+}
+
+// Returns the address of the frst byte after the struct or NULL if size >
+// immediate_data_size.
+template <typename RETURN_TYPE, typename COMMAND_TYPE>
+RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod,
+                               uint32_t size,
+                               uint32_t immediate_data_size) {
+  return (size <= immediate_data_size)
+             ? static_cast<RETURN_TYPE>(
+                   const_cast<void*>(AddressAfterStruct(pod)))
+             : NULL;
+}
+
 struct GLES2_UTILS_EXPORT PixelStoreParams {
   PixelStoreParams()
       : alignment(4),

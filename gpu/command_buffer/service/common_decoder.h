@@ -147,6 +147,19 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     return static_cast<T>(GetAddressAndCheckSize(shm_id, offset, size));
   }
 
+  void* GetAddressAndSize(unsigned int shm_id,
+                          unsigned int offset,
+                          unsigned int* size);
+
+  template <typename T>
+  T GetSharedMemoryAndSizeAs(unsigned int shm_id,
+                             unsigned int offset,
+                             unsigned int* size) {
+    return static_cast<T>(GetAddressAndSize(shm_id, offset, size));
+  }
+
+  unsigned int GetSharedMemorySize(unsigned int shm_id, unsigned int offset);
+
   // Get the actual shared memory buffer.
   scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(unsigned int shm_id);
 

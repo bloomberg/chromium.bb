@@ -4967,11 +4967,8 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       (void)c;
       """ % {'name': func.name})
 
-  def WriteServiceImplementation(self, func, f):
-    """Writes the service implementation for a command."""
-    self.WriteServiceHandlerFunctionHeader(func, f)
-    self.WriteHandlerExtensionCheck(func, f)
-    self.WriteHandlerDeferReadWrite(func, f);
+  def WriteServiceHandlerArgGetCode(self, func, f):
+    """Writes the argument unpack code for service handlers."""
     if len(func.GetOriginalArgs()) > 0:
       last_arg = func.GetLastOriginalArg()
       all_but_last_arg = func.GetOriginalArgs()[:-1]
@@ -4979,6 +4976,25 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         arg.WriteGetCode(f)
       self.WriteGetDataSizeCode(func, f)
       last_arg.WriteGetCode(f)
+
+  def WriteImmediateServiceHandlerArgGetCode(self, func, f):
+    """Writes the argument unpack code for immediate service handlers."""
+    for arg in func.GetOriginalArgs():
+      if arg.IsPointer():
+        self.WriteGetDataSizeCode(func, f)
+      arg.WriteGetCode(f)
+
+  def WriteBucketServiceHandlerArgGetCode(self, func, f):
+    """Writes the argument unpack code for bucket service handlers."""
+    for arg in func.GetCmdArgs():
+      arg.WriteGetCode(f)
+
+  def WriteServiceImplementation(self, func, f):
+    """Writes the service implementation for a command."""
+    self.WriteServiceHandlerFunctionHeader(func, f)
+    self.WriteHandlerExtensionCheck(func, f)
+    self.WriteHandlerDeferReadWrite(func, f);
+    self.WriteServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
     func.WriteHandlerImplementation(f)
     f.write("  return error::kNoError;\n")
@@ -4990,10 +5006,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     self.WriteServiceHandlerFunctionHeader(func, f)
     self.WriteHandlerExtensionCheck(func, f)
     self.WriteHandlerDeferReadWrite(func, f);
-    for arg in func.GetOriginalArgs():
-      if arg.IsPointer():
-        self.WriteGetDataSizeCode(func, f)
-      arg.WriteGetCode(f)
+    self.WriteImmediateServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
     func.WriteHandlerImplementation(f)
     f.write("  return error::kNoError;\n")
@@ -5005,10 +5018,54 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     self.WriteServiceHandlerFunctionHeader(func, f)
     self.WriteHandlerExtensionCheck(func, f)
     self.WriteHandlerDeferReadWrite(func, f);
-    for arg in func.GetCmdArgs():
-      arg.WriteGetCode(f)
+    self.WriteBucketServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
     func.WriteHandlerImplementation(f)
+    f.write("  return error::kNoError;\n")
+    f.write("}\n")
+    f.write("\n")
+
+  def WritePassthroughServiceFunctionHeader(self, func, f):
+    """Writes function header for service passthrough handlers."""
+    f.write("""error::Error GLES2DecoderPassthroughImpl::Handle%(name)s(
+        uint32_t immediate_data_size, const void* cmd_data) {
+      """ % {'name': func.name})
+    f.write("""const gles2::cmds::%(name)s& c =
+          *static_cast<const gles2::cmds::%(name)s*>(cmd_data);
+      (void)c;
+      """ % {'name': func.name})
+
+  def WritePassthroughServiceFunctionDoerCall(self, func, f):
+    """Writes the function call to the passthrough service doer."""
+    f.write("""  error::Error error = Do%(name)s(%(args)s);
+  if (error != error::kNoError) {
+    return error;
+  }""" % {'name': func.original_name,
+          'args': func.MakePassthroughServiceDoerArgString("")})
+
+  def WritePassthroughServiceImplementation(self, func, f):
+    """Writes the service implementation for a command."""
+    self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteServiceHandlerArgGetCode(func, f)
+    self.WritePassthroughServiceFunctionDoerCall(func, f)
+    f.write("  return error::kNoError;\n")
+    f.write("}\n")
+    f.write("\n")
+
+  def WritePassthroughImmediateServiceImplementation(self, func, f):
+    """Writes the service implementation for a command."""
+    self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteImmediateServiceHandlerArgGetCode(func, f)
+    self.WritePassthroughServiceFunctionDoerCall(func, f)
+    f.write("  return error::kNoError;\n")
+    f.write("}\n")
+    f.write("\n")
+
+  def WritePassthroughBucketServiceImplementation(self, func, f):
+    """Writes the service implementation for a command."""
+    self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteBucketServiceHandlerArgGetCode(func, f)
+    self.WritePassthroughServiceFunctionDoerCall(func, f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
     f.write("\n")
@@ -5649,6 +5706,18 @@ class CustomHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     pass
 
+  def WritePassthroughServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WritePassthroughImmediateServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WritePassthroughBucketServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    pass
+
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
     pass
@@ -5891,6 +5960,11 @@ class DataHandler(TypeHandler):
         (not func.name == 'CompressedTexSubImage3DBucket')):
       TypeHandler.WriteBucketServiceImplemenation(self, func, f)
 
+  def WritePassthroughBucketServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    if ((not func.name == 'CompressedTexSubImage2DBucket') and
+        (not func.name == 'CompressedTexSubImage3DBucket')):
+      TypeHandler.WritePassthroughBucketServiceImplementation(self, func, f)
 
 class BindHandler(TypeHandler):
   """Handler for glBind___ type functions."""
@@ -6488,6 +6562,9 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     f.write("}\n")
     f.write("\n")
 
+  def WritePassthroughServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    pass
 
 class DeleteHandler(TypeHandler):
   """Handler for glDelete___ single resource type functions."""
@@ -6784,6 +6861,19 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 class GETnHandler(TypeHandler):
   """Handler for GETn for glGetBooleanv, glGetFloatv, ... type functions."""
 
+  def InitFunction(self, func):
+    """Overrriden from TypeHandler."""
+    TypeHandler.InitFunction(self, func)
+
+    if func.name == 'GetSynciv':
+      return
+
+    arg_insert_point = len(func.passthrough_service_doer_args) - 1;
+    func.passthrough_service_doer_args.insert(
+        arg_insert_point, Argument('length', 'GLsizei*'))
+    func.passthrough_service_doer_args.insert(
+        arg_insert_point, Argument('bufsize', 'GLsizei'))
+
   def NeedsDataTransferFunction(self, func):
     """Overriden from TypeHandler."""
     return False
@@ -6831,6 +6921,46 @@ class GETnHandler(TypeHandler):
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
   }
+  return error::kNoError;
+}
+
+"""
+    f.write(code % {'func_name': func.name})
+
+  def WritePassthroughServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    self.WritePassthroughServiceFunctionHeader(func, f)
+    last_arg = func.GetLastOriginalArg()
+    # All except shm_id and shm_offset.
+    all_but_last_args = func.GetCmdArgs()[:-2]
+    for arg in all_but_last_args:
+      arg.WriteGetCode(f)
+
+    code = """  unsigned int buffer_size = 0;
+  typedef cmds::%(func_name)s::Result Result;
+  Result* result = GetSharedMemoryAndSizeAs<Result*>(
+      c.%(last_arg_name)s_shm_id, c.%(last_arg_name)s_shm_offset,
+      &buffer_size);
+  %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : NULL;
+  if (%(last_arg_name)s == NULL) {
+    return error::kOutOfBounds;
+  }
+  GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
+  GLsizei written_values = 0;
+  GLsizei* length = &written_values;
+"""
+    f.write(code % {
+        'last_arg_type': last_arg.type,
+        'last_arg_name': last_arg.name,
+        'func_name': func.name,
+      })
+
+    self.WritePassthroughServiceFunctionDoerCall(func, f)
+
+    code = """  if (written_values > bufsize) {
+    return error::kOutOfBounds;
+  }
+  result->SetNumResults(written_values);
   return error::kNoError;
 }
 
@@ -8273,6 +8403,7 @@ class IsHandler(TypeHandler):
     func.AddCmdArg(Argument("result_shm_offset", 'uint32_t'))
     if func.GetInfo('result') == None:
       func.AddInfo('result', ['uint32_t'])
+    func.passthrough_service_doer_args.append(Argument('result', 'uint32_t*'))
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
@@ -8357,6 +8488,24 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     func.WriteHandlerValidation(f)
     f.write("  *result_dst = %s(%s);\n" %
             (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+    f.write("  return error::kNoError;\n")
+    f.write("}\n")
+    f.write("\n")
+
+  def WritePassthroughServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    self.WritePassthroughServiceFunctionHeader(func, f)
+    self.WriteServiceHandlerArgGetCode(func, f)
+
+    code = """  typedef cmds::%(func_name)s::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!result) {
+    return error::kOutOfBounds;
+  }
+"""
+    f.write(code % {'func_name': func.name})
+    self.WritePassthroughServiceFunctionDoerCall(func, f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
     f.write("\n")
@@ -8547,6 +8696,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
     self.WriteValidUnitTest(func, f, invalid_test, *extras)
 
   def WriteServiceImplementation(self, func, f):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WritePassthroughServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     pass
 
@@ -9385,6 +9538,8 @@ class Function(object):
     else:
       self.args_for_cmds = self.original_args[:]
 
+    self.passthrough_service_doer_args = self.original_args[:]
+
     self.return_type = info['return_type']
     if self.return_type != 'void':
       self.return_arg = CreateArg(info['return_type'] + " result")
@@ -9542,6 +9697,10 @@ class Function(object):
     """Gets the original arguments to this function."""
     return self.original_args
 
+  def GetPassthroughServiceDoerArgs(self):
+    """Gets the original arguments to this function."""
+    return self.passthrough_service_doer_args
+
   def GetLastOriginalArg(self):
     """Gets the last original argument to this function."""
     return self.original_args[len(self.original_args) - 1]
@@ -9572,6 +9731,15 @@ class Function(object):
   def MakeOriginalArgString(self, prefix, add_comma = False, separator = ", "):
     """Gets the list of arguments as they are in GL."""
     args = self.GetOriginalArgs()
+    arg_string = separator.join(
+        ["%s%s" % (prefix, arg.name) for arg in args])
+    return self._MaybePrependComma(arg_string, add_comma)
+
+  def MakePassthroughServiceDoerArgString(self, prefix, add_comma = False,
+                                          separator = ", "):
+    """Gets the list of arguments as they are in used by the passthrough
+       service doer function."""
+    args = self.GetPassthroughServiceDoerArgs()
     arg_string = separator.join(
         ["%s%s" % (prefix, arg.name) for arg in args])
     return self._MaybePrependComma(arg_string, add_comma)
@@ -9749,6 +9917,10 @@ class Function(object):
     """Writes the service implementation for a command."""
     self.type_handler.WriteServiceImplementation(self, f)
 
+  def WritePassthroughServiceImplementation(self, f):
+    """Writes the service implementation for a command."""
+    self.type_handler.WritePassthroughServiceImplementation(self, f)
+
   def WriteServiceUnitTest(self, f, *extras):
     """Writes the service implementation for a command."""
     self.type_handler.WriteServiceUnitTest(self, f, *extras)
@@ -9865,6 +10037,10 @@ class ImmediateFunction(Function):
     """Overridden from Function"""
     self.type_handler.WriteImmediateServiceImplementation(self, f)
 
+  def WritePassthroughServiceImplementation(self, f):
+    """Overridden from Function"""
+    self.type_handler.WritePassthroughImmediateServiceImplementation(self, f)
+
   def WriteHandlerImplementation(self, f):
     """Overridden from Function"""
     self.type_handler.WriteImmediateHandlerImplementation(self, f)
@@ -9939,6 +10115,10 @@ class BucketFunction(Function):
   def WriteServiceImplementation(self, f):
     """Overridden from Function"""
     self.type_handler.WriteBucketServiceImplementation(self, f)
+
+  def WritePassthroughServiceImplementation(self, f):
+    """Overridden from Function"""
+    self.type_handler.WritePassthroughBucketServiceImplementation(self, f)
 
   def WriteHandlerImplementation(self, f):
     """Overridden from Function"""
@@ -10569,6 +10749,29 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   }
 }
 """)
+    self.generated_cpp_filenames.append(filename)
+
+  def WritePassthroughServiceImplementation(self, filename):
+    """Writes the passthrough service decorder implementation."""
+    with CWriter(filename) as f:
+      header = """
+#include \"gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h\"
+
+namespace gpu {
+namespace gles2 {
+
+""";
+      f.write(header);
+
+      for func in self.functions:
+        func.WritePassthroughServiceImplementation(f)
+
+      footer = """
+}  // namespace gles2
+}  // namespace gpu
+
+""";
+      f.write(footer);
     self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUnitTests(self, filename_pattern):
@@ -11286,6 +11489,9 @@ def main(argv):
     "gpu/command_buffer/client/gles2_cmd_helper_autogen.h")
   gen.WriteServiceImplementation(
     "gpu/command_buffer/service/gles2_cmd_decoder_autogen.h")
+  gen.WritePassthroughServiceImplementation(
+    "gpu/command_buffer/service/" +
+    "gles2_cmd_decoder_passthrough_handlers_autogen.cc")
   gen.WriteServiceContextStateHeader(
     "gpu/command_buffer/service/context_state_autogen.h")
   gen.WriteServiceContextStateImpl(
