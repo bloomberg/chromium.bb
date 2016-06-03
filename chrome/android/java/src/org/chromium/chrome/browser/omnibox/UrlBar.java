@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -93,7 +92,7 @@ public class UrlBar extends VerticallyFixedEditText {
     private boolean mFocused;
     private boolean mAllowFocus = true;
 
-    private final ColorStateList mDarkHintColor;
+    private final int mDarkHintColor;
     private final int mDarkDefaultTextColor;
     private final int mDarkHighlightColor;
 
@@ -183,7 +182,8 @@ public class UrlBar extends VerticallyFixedEditText {
 
         mDarkDefaultTextColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
-        mDarkHintColor = getHintTextColors();
+        mDarkHintColor = ApiCompatibilityUtils.getColor(resources,
+                R.color.locationbar_dark_hint_text);
         mDarkHighlightColor = getHighlightColor();
 
         mLightDefaultTextColor =

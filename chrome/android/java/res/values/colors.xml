@@ -125,6 +125,7 @@
     <color name="incognito_primary_color">#505050</color>
 
     <!-- LocationBar colors -->
+    <color name="locationbar_dark_hint_text">#969696</color>
     <color name="locationbar_light_hint_text">#80ffffff</color>
     <color name="locationbar_light_selection_color">#cc5595fe</color>
     <color name="locationbar_status_color">@color/light_normal_color</color>
