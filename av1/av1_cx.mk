@@ -90,7 +90,7 @@ AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/highbd_block_error_intrin_sse2.c
 endif
 
 ifeq ($(CONFIG_USE_X86INC),yes)
-AV1_CX_SRCS-$(HAVE_MMX) += encoder/x86/dct_mmx.asm
+AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_sse2.asm
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/error_sse2.asm
 endif
 
@@ -100,7 +100,7 @@ AV1_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/quantize_ssse3_x86_64.asm
 endif
 endif
 
-AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_sse2.c
+AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_intrin_sse2.c
 AV1_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/dct_ssse3.c
 
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/error_intrin_avx2.c

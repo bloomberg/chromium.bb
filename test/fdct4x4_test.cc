@@ -453,20 +453,12 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_neon, 3, AOM_BITS_8)));
 #endif  // HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if CONFIG_USE_X86INC && HAVE_MMX && !CONFIG_AOM_HIGHBITDEPTH && \
-    !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(MMX, Trans4x4WHT,
-                        ::testing::Values(make_tuple(&av1_fwht4x4_mmx,
-                                                     &aom_iwht4x4_16_add_c, 0,
-                                                     AOM_BITS_8)));
-#endif
-
-#if CONFIG_USE_X86INC && HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && \
-    !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4WHT,
-                        ::testing::Values(make_tuple(&av1_fwht4x4_c,
-                                                     &aom_iwht4x4_16_add_sse2,
-                                                     0, AOM_BITS_8)));
+#if CONFIG_USE_X86INC && HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+INSTANTIATE_TEST_CASE_P(
+    SSE2, Trans4x4WHT,
+    ::testing::Values(
+        make_tuple(&av1_fwht4x4_sse2, &aom_iwht4x4_16_add_c, 0, AOM_BITS_8),
+        make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_sse2, 0, AOM_BITS_8)));
 #endif
 
 #if HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE

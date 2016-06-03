@@ -227,7 +227,7 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   specialize qw/av1_fht16x16 sse2/;
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-  specialize qw/av1_fwht4x4/, "$mmx_x86inc";
+  specialize qw/av1_fwht4x4/, "$sse2_x86inc";
   if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void av1_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/av1_fdct4x4/;
@@ -342,7 +342,7 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   specialize qw/av1_fht16x16 sse2 msa/;
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-  specialize qw/av1_fwht4x4 msa/, "$mmx_x86inc";
+  specialize qw/av1_fwht4x4 msa/, "$sse2_x86inc";
   if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void av1_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/av1_fdct4x4/;
