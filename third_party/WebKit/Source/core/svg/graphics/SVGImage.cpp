@@ -348,7 +348,7 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
 
     SkPictureBuilder imagePicture(dstRect);
     {
-        ClipRecorder clipRecorder(imagePicture.context(), imagePicture, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
+        ClipRecorder clipRecorder(imagePicture.context(), imagePicture, DisplayItem::ClipNodeImage, enclosingIntRect(dstRect));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.

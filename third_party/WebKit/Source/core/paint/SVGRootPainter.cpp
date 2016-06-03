@@ -70,7 +70,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     Optional<ClipRecorder> clipRecorder;
     if (m_layoutSVGRoot.shouldApplyViewportClip()) {
         // TODO(pdr): Clip the paint info cull rect here.
-        clipRecorder.emplace(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset))));
+        clipRecorder.emplace(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset)));
     }
 
     // Convert from container offsets (html layoutObjects) to a relative transform (svg layoutObjects).

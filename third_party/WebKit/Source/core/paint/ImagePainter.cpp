@@ -110,7 +110,7 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         Optional<ClipRecorder> clipRecorder;
         if (!contentRect.contains(paintRect)) {
             // TODO(fmalita): can we get rid of this clip and adjust the image src/dst rect instead?
-            clipRecorder.emplace(context, m_layoutImage, paintInfo.displayItemTypeForClipping(), contentRect);
+            clipRecorder.emplace(context, m_layoutImage, paintInfo.displayItemTypeForClipping(), pixelSnappedIntRect(contentRect));
         }
 
         if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase))

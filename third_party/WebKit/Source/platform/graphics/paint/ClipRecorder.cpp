@@ -10,12 +10,12 @@
 
 namespace blink {
 
-ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClient& client, DisplayItem::Type type, const LayoutRect& clipRect)
+ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClient& client, DisplayItem::Type type, const IntRect& clipRect)
     : m_client(client)
     , m_context(context)
     , m_type(type)
 {
-    m_context.getPaintController().createAndAppend<ClipDisplayItem>(m_client, type, pixelSnappedIntRect(clipRect));
+    m_context.getPaintController().createAndAppend<ClipDisplayItem>(m_client, type, clipRect);
 }
 
 ClipRecorder::~ClipRecorder()

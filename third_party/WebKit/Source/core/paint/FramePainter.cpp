@@ -61,7 +61,7 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         TransformRecorder transformRecorder(context, *frameView().layoutView(),
             AffineTransform::translation(frameView().x() - frameView().scrollX(), frameView().y() - frameView().scrollY()));
 
-        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(frameView().visibleContentRect()));
+        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::ClipFrameToVisibleContentRect, frameView().visibleContentRect());
 
         documentDirtyRect.moveBy(-frameView().location() + frameView().scrollPosition());
         paintContents(context, globalPaintFlags, documentDirtyRect);
@@ -85,7 +85,7 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         TransformRecorder transformRecorder(context, *frameView().layoutView(),
             AffineTransform::translation(frameView().x(), frameView().y()));
 
-        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::ClipFrameScrollbars, LayoutRect(IntPoint(), visibleAreaWithScrollbars.size()));
+        ClipRecorder recorder(context, *frameView().layoutView(), DisplayItem::ClipFrameScrollbars, IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
 
         paintScrollbars(context, scrollViewDirtyRect);
     }

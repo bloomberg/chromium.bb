@@ -86,7 +86,7 @@ void drawRect(GraphicsContext& context, const FakeDisplayItemClient& client, Dis
 
 void drawClippedRect(GraphicsContext& context, const FakeDisplayItemClient& client, DisplayItem::Type clipType, DisplayItem::Type drawingType, const FloatRect& bound)
 {
-    ClipRecorder clipRecorder(context, client, clipType, LayoutRect(1, 1, 9, 9));
+    ClipRecorder clipRecorder(context, client, clipType, IntRect(1, 1, 9, 9));
     drawRect(context, client, drawingType, bound);
 }
 
@@ -311,7 +311,7 @@ TEST_F(PaintControllerTest, UpdateClip)
     GraphicsContext context(getPaintController());
 
     {
-        ClipRecorder clipRecorder(context, first, clipType, LayoutRect(1, 1, 2, 2));
+        ClipRecorder clipRecorder(context, first, clipType, IntRect(1, 1, 2, 2));
         drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
         drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     }
@@ -335,7 +335,7 @@ TEST_F(PaintControllerTest, UpdateClip)
     second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     {
-        ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
+        ClipRecorder clipRecorder(context, second, clipType, IntRect(1, 1, 2, 2));
         drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     }
     getPaintController().commitNewDisplayItems();
@@ -719,7 +719,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
-        ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
+        ClipRecorder clipRecorder(context, second, clipType, IntRect(1, 1, 2, 2));
         // Do not draw anything for second.
     }
     drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
@@ -733,7 +733,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
-        ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
+        ClipRecorder clipRecorder(context, second, clipType, IntRect(1, 1, 2, 2));
         {
             ClipPathRecorder clipPathRecorder(context, second, Path());
             // Do not draw anything for second.

@@ -5,8 +5,6 @@
 #ifndef ClipRecorder_h
 #define ClipRecorder_h
 
-#include "SkRegion.h"
-#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -19,7 +17,7 @@ class PLATFORM_EXPORT ClipRecorder {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(ClipRecorder);
 public:
-    ClipRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const LayoutRect& clipRect);
+    ClipRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const IntRect& clipRect);
     ~ClipRecorder();
 private:
     const DisplayItemClient& m_client;

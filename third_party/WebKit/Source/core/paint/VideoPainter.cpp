@@ -33,9 +33,8 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     contentRect.moveBy(paintOffset);
 
     Optional<ClipRecorder> clipRecorder;
-    if (!contentRect.contains(rect)) {
-        clipRecorder.emplace(context, m_layoutVideo, paintInfo.displayItemTypeForClipping(), contentRect);
-    }
+    if (!contentRect.contains(rect))
+        clipRecorder.emplace(context, m_layoutVideo, paintInfo.displayItemTypeForClipping(), pixelSnappedIntRect(contentRect));
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutVideo, paintInfo.phase))
         return;

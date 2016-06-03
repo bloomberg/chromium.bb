@@ -396,7 +396,7 @@ protected:
         transform.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
         TransformRecorder transformRecorder(context, pictureBuilder, transform);
 
-        ClipRecorder clipRecorder(context, pictureBuilder, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
+        ClipRecorder clipRecorder(context, pictureBuilder, DisplayItem::ClipPrintedPage, pageRect);
 
         frame()->view()->paintContents(context, GlobalPaintNormalPhase, pageRect);
 
