@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {UL} at (0,162) size 784x36
         LayoutListItem {LI} at (40,0) size 744x36
           LayoutListMarker (anonymous) at (-1,0) size 7x18: bullet
-          LayoutText {#text} at (14,0) size 719x36
-            text run at (14,0) width 705: "The text in this item should not behave as expected; that is, it should line up with the bullet on the left margin,"
+          LayoutText {#text} at (30,0) size 735x36
+            text run at (30,0) width 705: "The text in this item should not behave as expected; that is, it should line up with the bullet on the left margin,"
             text run at (0,18) width 268: "leaving no blank space beneath the bullet."
       LayoutTable {TABLE} at (0,214) size 784x140 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x138
@@ -47,6 +47,6 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {UL} at (4,56) size 762x36
                 LayoutListItem {LI} at (40,0) size 722x36
                   LayoutListMarker (anonymous) at (-1,0) size 7x18: bullet
-                  LayoutText {#text} at (14,0) size 719x36
-                    text run at (14,0) width 705: "The text in this item should not behave as expected; that is, it should line up with the bullet on the left margin,"
-                    text run at (0,18) width 268: "leaving no blank space beneath the bullet."
+                  LayoutText {#text} at (30,0) size 682x36
+                    text run at (30,0) width 652: "The text in this item should not behave as expected; that is, it should line up with the bullet on the left"
+                    text run at (0,18) width 321: "margin, leaving no blank space beneath the bullet."
