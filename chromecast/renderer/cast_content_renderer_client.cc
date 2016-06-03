@@ -103,7 +103,7 @@ void CastContentRendererClient::RenderViewCreated(
 void CastContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
-  AddChromecastKeySystems(key_systems_properties);
+  AddChromecastKeySystems(key_systems_properties, false);
 }
 
 #if !defined(OS_ANDROID)

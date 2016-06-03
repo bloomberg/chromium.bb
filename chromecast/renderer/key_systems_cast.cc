@@ -30,6 +30,10 @@ namespace {
 #if defined(PLAYREADY_CDM_AVAILABLE)
 class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
  public:
+  explicit PlayReadyKeySystemProperties(bool persistent_license_support)
+      : persistent_license_support_(persistent_license_support) {
+  }
+
   std::string GetKeySystemName() const override {
     return media::kChromecastPlayreadyKeySystem;
   }
@@ -53,7 +57,8 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 #if defined(OS_ANDROID)
     return EmeSessionTypeSupport::NOT_SUPPORTED;
 #else
-    return EmeSessionTypeSupport::SUPPORTED;
+    return persistent_license_support_ ? EmeSessionTypeSupport::SUPPORTED
+        : EmeSessionType::NOT_SUPPORTED;
 #endif
   }
 
@@ -68,6 +73,9 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
   EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
     return EmeFeatureSupport::ALWAYS_ENABLED;
   }
+
+ private:
+  const bool persistent_license_support_;
 };
 #endif  // PLAYREADY_CDM_AVAILABLE
 
@@ -75,9 +83,11 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 
 void AddChromecastKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
-        key_systems_properties) {
+        key_systems_properties,
+    bool enable_persistent_license_support) {
 #if defined(PLAYREADY_CDM_AVAILABLE)
-  key_systems_properties->emplace_back(new PlayReadyKeySystemProperties());
+  key_systems_properties->emplace_back(
+      new PlayReadyKeySystemProperties(enable_persistent_license_support));
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
