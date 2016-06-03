@@ -79,7 +79,9 @@ class UprevChromeCommand(command.CliCommand):
     super(cls, UprevChromeCommand).AddParser(parser)
     parser.add_argument('--pfq-build', action='store', required=True,
                         metavar='PFQ_BUILD',
-                        help='The build_id of the master chrome pfq build.')
+                        help='The build_id of the master chrome pfq build.'
+                        'Note this is from the BuildStart step, not the'
+                        'build number on the waterfall.')
     parser.add_argument('--cred-dir', action='store', required=True,
                         metavar='CIDB_CREDENTIALS_DIR',
                         help=('Database credentials directory with '
