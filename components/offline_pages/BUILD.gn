@@ -11,6 +11,8 @@ static_library("offline_pages") {
   sources = [
     "archive_manager.cc",
     "archive_manager.h",
+    "client_namespace_constants.cc",
+    "client_namespace_constants.h",
     "client_policy_controller.cc",
     "client_policy_controller.h",
     "offline_page_archiver.h",

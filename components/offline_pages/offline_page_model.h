@@ -24,8 +24,6 @@ class Time;
 
 namespace offline_pages {
 
-static const char* const kBookmarkNamespace = "bookmark";
-
 struct ClientId;
 struct OfflinePageItem;
 
