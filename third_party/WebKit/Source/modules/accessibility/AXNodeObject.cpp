@@ -2009,11 +2009,10 @@ Element* AXNodeObject::actionElement() const
         break;
     }
 
-    Element* anchor = anchorElement();
-    Element* clickElement = mouseButtonListener();
-    if (!anchor || (clickElement && clickElement->isDescendantOf(anchor)))
-        return clickElement;
-    return anchor;
+    Element* elt = anchorElement();
+    if (!elt)
+        elt = mouseButtonListener();
+    return elt;
 }
 
 Element* AXNodeObject::anchorElement() const
