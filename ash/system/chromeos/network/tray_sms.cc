@@ -67,8 +67,11 @@ class TraySms::SmsDefaultView : public TrayItemMore {
 
   void Update() {
     int message_count = static_cast<TraySms*>(owner())->messages().GetSize();
-    base::string16 label = l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_SMS_MESSAGES, base::IntToString16(message_count));
+    // TODO(jshin): Currently, a tabular format is used ("SMS Messages:
+    // <count>"). Check with UX if '<count> SMS messages' with a proper plural
+    // support is desired.
+    base::string16 label = l10n_util::GetStringFUTF16Int(
+        IDS_ASH_STATUS_TRAY_SMS_MESSAGES, message_count);
     SetLabel(label);
     SetAccessibleName(label);
   }
@@ -93,6 +96,9 @@ class TraySms::SmsMessageView : public views::View,
                  const std::string& message)
       : owner_(owner),
         index_(index) {
+    // TODO(jshin): Convert ASCII digits in |number| (phone number) to native
+    // digits if necessary. |number| can contain non-digit characters and may
+    // have to be converted one-by-one or use libphonenumber's formating API.
     number_label_ = new views::Label(
         l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_SMS_NUMBER,
                                    base::UTF8ToUTF16(number)),

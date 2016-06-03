@@ -297,7 +297,9 @@ Device.prototype.createSessionContents_ = function(maxNumTabs) {
     moreLink.classList.add('device-show-more-tabs');
     moreLink.addEventListener('click', this.view_.increaseRowHeight.bind(
         this.view_, this.row_, numTabsHidden));
-    moreLink.textContent = loadTimeData.getStringF('xMore', numTabsHidden);
+    // TODO(jshin): Use plural message formatter when available in JS.
+    moreLink.textContent = loadTimeData.getStringF('xMore',
+        numTabsHidden.toLocaleString());
     var moreWrapper = createElementWithClassName('div', 'more-wrapper');
     moreWrapper.appendChild(moreLink);
     contents.appendChild(moreWrapper);

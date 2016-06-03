@@ -81,8 +81,8 @@ PopupBlockedInfoBarDelegate::PopupBlockedInfoBarDelegate(
 }
 
 base::string16 PopupBlockedInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16Int(IDS_POPUPS_BLOCKED_INFOBAR_TEXT,
-                                       num_popups_);
+  return l10n_util::GetPluralStringFUTF16(IDS_POPUPS_BLOCKED_INFOBAR_TEXT,
+                                          num_popups_);
 }
 
 int PopupBlockedInfoBarDelegate::GetButtons() const {

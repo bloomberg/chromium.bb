@@ -21,8 +21,9 @@ function requestCrashes() {
  * @param {string} os The OS name and version.
  */
 function updateCrashList(enabled, dynamicBackend, crashes, version, os) {
-  $('countBanner').textContent = loadTimeData.getStringF('crashCountFormat',
-                                                         crashes.length);
+  $('countBanner').textContent =
+      loadTimeData.getStringF('crashCountFormat',
+                              crashes.length.toLocaleString());
 
   var crashSection = $('crashList');
 

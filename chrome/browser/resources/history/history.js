@@ -1392,8 +1392,9 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
   var domainElement = document.createElement('span');
 
-  numberOfVisits.textContent = loadTimeData.getStringF('numberVisits',
-                                                       domainVisits.length);
+  numberOfVisits.textContent =
+      loadTimeData.getStringF('numberVisits',
+                              domainVisits.length.toLocaleString());
   siteDomain.appendChild(numberOfVisits);
 
   domainVisits[0].loadFavicon_(siteFavicon);

@@ -162,14 +162,31 @@ UI_BASE_EXPORT base::string16 GetStringFUTF16(int message_id,
                                               const base::string16& b,
                                               std::vector<size_t>* offsets);
 
-// Convenience functions to get a string with a single number as a parameter.
+// Convenience functions to get a string with a single integer as a parameter.
+// The result will use non-ASCII(native) digits if required by a locale
+// convention (e.g. Persian, Bengali).
+// If a message requires plural formatting (e.g. "3 tabs open"), use
+// GetPluralStringF*, instead. To format a double, integer or percentage alone
+// without any surrounding text (e.g. "3.57", "123", "45%"), use
+// base::Format{Double,Number,Percent}. With more than two numbers or
+// number + surrounding text, use base::i18n::MessageFormatter.
+// // Note that native digits have to be used in UI in general.
+// base::{Int*,Double}ToString convert a number to a string with
+// ASCII digits in non-UI strings.
 UI_BASE_EXPORT base::string16 GetStringFUTF16Int(int message_id, int a);
 base::string16 GetStringFUTF16Int(int message_id, int64_t a);
 
-// Get a resource string using |number| with a locale-specific plural rule.
-// |message_id| points to a message in the ICU syntax.
+// Convenience functions to format a string with a single number that requires
+// plural formatting. Note that a simple 2-way rule (singular vs plural)
+// breaks down for a number of languages. Instead of two separate messages
+// for singular and plural, use this method with one message in ICU syntax.
 // See http://userguide.icu-project.org/formatparse/messages and
-// go/plurals (Google internal).
+// go/plurals (Google internal) for more details and examples.
+//
+// For complex messages with input parameters of multiple types (int,
+// double, time, string; e.g. "At 3:45 on Feb 3, 2016, 5 files are downloaded
+// at 3 MB/s."), use base::i18n::MessageFormatter.
+// message_format_unittests.cc also has more examples of plural formatting.
 UI_BASE_EXPORT base::string16 GetPluralStringFUTF16(int message_id, int number);
 UI_BASE_EXPORT std::string GetPluralStringFUTF8(int message_id, int number);
 
@@ -178,7 +195,7 @@ UI_BASE_EXPORT std::string GetPluralStringFUTF8(int message_id, int number);
 // (see the references above for Plural) with 'single', 'multiple', and
 // 'other' (fallback) instead of 'male', 'female', and 'other' (fallback).
 UI_BASE_EXPORT base::string16 GetSingleOrMultipleStringUTF16(int message_id,
-                                                              bool is_multiple);
+                                                             bool is_multiple);
 
 // In place sorting of base::string16 strings using collation rules for
 // |locale|.

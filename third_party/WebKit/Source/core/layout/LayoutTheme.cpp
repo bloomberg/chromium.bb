@@ -822,8 +822,7 @@ String LayoutTheme::fileListNameForWidth(Locale& locale, const FileList* fileLis
     } else if (fileList->length() == 1) {
         string = fileList->item(0)->name();
     } else {
-        // FIXME: Localization of fileList->length().
-        return StringTruncator::rightTruncate(locale.queryString(WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);
+        return StringTruncator::rightTruncate(locale.queryString(WebLocalizedString::MultipleFileUploadText, locale.convertToLocalizedNumber(String::number(fileList->length()))), width, font);
     }
 
     return StringTruncator::centerTruncate(string, width, font);

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/string_compare.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -120,17 +121,22 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
   base::string16 name;
   for (int name_index = 1; ; ++name_index) {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-    name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
-                                         name_index);
+    // Using native digits will break IsDefaultProfileName() below because
+    // it uses sscanf.
+    // TODO(jshin): fix IsDefaultProfileName to handle native digits.
+    name = l10n_util::GetStringFUTF16(IDS_NEW_NUMBERED_PROFILE_NAME,
+                                      base::IntToString16(name_index));
 #else
     if (icon_index < profiles::GetGenericAvatarIconCount()) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else {
+      // TODO(jshin): Check with UX if appending |name_index| to the default
+      // name without a space is intended.
       name = l10n_util::GetStringUTF16(
           kDefaultNames[icon_index - profiles::GetGenericAvatarIconCount()]);
       if (name_index > 1)
-        name.append(base::UTF8ToUTF16(base::IntToString(name_index)));
+        name.append(base::FormatNumber(name_index));
     }
 #endif
 

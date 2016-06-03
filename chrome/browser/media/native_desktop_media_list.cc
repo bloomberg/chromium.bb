@@ -136,7 +136,9 @@ void NativeDesktopMediaList::Worker::Refresh(
       base::string16 title;
       for (size_t i = 0; i < screens.size(); ++i) {
         if (mutiple_screens) {
-          title = l10n_util::GetStringFUTF16Int(
+          // Just in case 'Screen' is inflected depending on the screen number,
+          // use plural formatter.
+          title = l10n_util::GetPluralStringFUTF16(
               IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME,
               static_cast<int>(i + 1));
         } else {

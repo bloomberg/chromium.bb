@@ -979,8 +979,7 @@ String LayoutThemeMac::fileListNameForWidth(Locale& locale, const FileList* file
         else
             strToTruncate = file->name();
     } else {
-        // FIXME: Localization of fileList->length().
-        return StringTruncator::rightTruncate(locale.queryString(WebLocalizedString::MultipleFileUploadText, String::number(fileList->length())), width, font);
+        return StringTruncator::rightTruncate(locale.queryString(WebLocalizedString::MultipleFileUploadText, locale.convertToLocalizedNumber(String::number(fileList->length()))), width, font);
     }
 
     return StringTruncator::centerTruncate(strToTruncate, width, font);

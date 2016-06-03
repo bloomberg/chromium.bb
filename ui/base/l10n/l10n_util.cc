@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/message_formatter.h"
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"
 #include "base/lazy_instance.h"
@@ -828,11 +829,11 @@ base::string16 GetStringFUTF16(int message_id,
 }
 
 base::string16 GetStringFUTF16Int(int message_id, int a) {
-  return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::IntToString(a)));
+  return GetStringFUTF16(message_id, base::FormatNumber(a));
 }
 
 base::string16 GetStringFUTF16Int(int message_id, int64_t a) {
-  return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::Int64ToString(a)));
+  return GetStringFUTF16(message_id, base::FormatNumber(a));
 }
 
 base::string16 GetPluralStringFUTF16(int message_id, int number) {

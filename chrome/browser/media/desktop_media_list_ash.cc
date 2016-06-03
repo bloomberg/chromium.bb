@@ -82,7 +82,12 @@ void DesktopMediaListAsh::EnumerateSources(
 
       if (screen_source.name.empty()) {
         if (root_windows.size() > 1) {
-          screen_source.name = l10n_util::GetStringFUTF16Int(
+          // 'Screen' in 'Screen 1, Screen 2, etc ' might be inflected in some
+          // languages depending on the number although rather unlikely. To be
+          // safe, use the plural format.
+          // TODO(jshin): Revert to GetStringFUTF16Int (with native digits)
+          // if none of UI languages inflects 'Screen' in this context.
+          screen_source.name = l10n_util::GetPluralStringFUTF16(
               IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME,
               static_cast<int>(i + 1));
         } else {

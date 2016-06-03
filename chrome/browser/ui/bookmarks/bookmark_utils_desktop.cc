@@ -140,8 +140,8 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
 
   return ShowQuestionMessageBox(
              parent, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-             l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-                                        base::IntToString16(child_count))) ==
+             l10n_util::GetPluralStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
+                                              child_count)) ==
          MESSAGE_BOX_RESULT_YES;
 }
 #endif
@@ -231,8 +231,9 @@ bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
   DCHECK(node && node->is_folder() && !node->empty());
   return ShowQuestionMessageBox(
              window, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-             l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
-                                           ChildURLCountTotal(node))) ==
+             l10n_util::GetPluralStringFUTF16(
+                 IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
+                 ChildURLCountTotal(node))) ==
          MESSAGE_BOX_RESULT_YES;
 }
 
