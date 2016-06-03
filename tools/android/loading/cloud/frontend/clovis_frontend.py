@@ -99,6 +99,28 @@ def Finalize(tag, email_address, status, task_url):
   deferred.defer(DeleteInstanceGroup, tag)
 
 
+def GetEstimatedTaskDurationInSeconds(task):
+  """Returns an estimation of the time required to run the task.
+
+  Args:
+    task: (ClovisTask) The task.
+
+  Returns:
+    float: Time estimation in seconds, or -1 in case of failure.
+  """
+  action_params = task.ActionParams()
+  if task.Action() == 'trace':
+    estimated_trace_time_s = 40.0
+    return (len(action_params['urls']) * action_params.get('repeat_count', 1) *
+            estimated_trace_time_s)
+  elif task.Action() == 'report':
+    estimated_report_time_s = 20.0
+    return len(action_params['traces']) * estimated_report_time_s
+  else:
+    clovis_logger.error('Unexpected action.')
+    return -1
+
+
 def CreateInstanceTemplate(task, task_dir):
   """Create the Compute Engine instance template that will be used to create the
   instances.
@@ -326,14 +348,50 @@ def StartFromJsonString(http_body_str):
   if not sub_tasks:
     return Render('Task split failed.', memory_logs)
 
+  # Compute estimates for the work duration, in order to compute the instance
+  # count and the timeout.
+  sequential_duration_s = \
+      GetEstimatedTaskDurationInSeconds(sub_tasks[0]) * len(sub_tasks)
+  if sequential_duration_s <= 0:
+    return Render('Time estimation failed.', memory_logs)
+
+  # Compute the number of required instances if not specified.
+  if not task.BackendParams().get('instance_count'):
+    target_parallel_duration_s = 1800.0 # 30 minutes.
+    task.BackendParams()['instance_count'] = int(
+        sequential_duration_s / target_parallel_duration_s + 0.5)  # Rounded up.
+
+  # Check the instance quotas.
+  clovis_logger.info(
+      'Requesting %i instances.' % task.BackendParams()['instance_count'])
+  max_instances = instance_helper.GetAvailableInstanceCount()
+  if max_instances == -1:
+    return Render('Failed to count the available instances.', memory_logs)
+  elif task.BackendParams()['instance_count'] == 0:
+    return Render('Cannot create instances, quota exceeded.', memory_logs)
+  elif max_instances < task.BackendParams()['instance_count']:
+    clovis_logger.warning(
+        'Instance count limited by quota: %i available / %i requested.' % (
+            max_instances, task.BackendParams()['instance_count']))
+    task.BackendParams()['instance_count'] = max_instances
+
+  # Compute the timeout if there is none specified.
+  expected_duration_h = sequential_duration_s / (
+      task.BackendParams()['instance_count'] * 3600.0)
+  if not task.BackendParams().get('timeout_hours'):
+    # Timeout is at least 1 hour.
+    task.BackendParams()['timeout_hours'] = max(1, 5 * expected_duration_h)
+  clovis_logger.info(
+      'Timeout delay: %i hours. ' % task.BackendParams()['timeout_hours'])
+
   if not EnqueueTasks(sub_tasks, task_tag):
     return Render('Task creation failed.', memory_logs)
 
   # Start polling the progress.
   clovis_logger.info('Creating worker polling task.')
   first_poll_delay_minutes = 10
-  timeout_hours = task.BackendParams().get('timeout_hours', 5)
-  deferred.defer(PollWorkers, task_tag, time.time(), timeout_hours, user_email,
+  deferred.defer(PollWorkers, task_tag, time.time(),
+                 task.BackendParams()['timeout_hours'], user_email,
                  task_url, _countdown=(60 * first_poll_delay_minutes))
 
   # Start the instances if required.
@@ -344,7 +402,9 @@ def StartFromJsonString(http_body_str):
 
   return Render(flask.Markup(
       'Success!<br>Your task %s has started.<br>'
-      'You will be notified at %s when completed.') % (task_tag, user_email),
+      'Expected duration: %.1f hours.<br>'
+      'You will be notified at %s when completed.') % (
+          task_tag, expected_duration_h, user_email),
       memory_logs)
 
 

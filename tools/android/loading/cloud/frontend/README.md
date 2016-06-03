@@ -16,11 +16,13 @@ following keys:
 
 ### Parameters for `backend_params`
 
--   `instance_count` (int): Number of Compute Engine instances that will be
-    started for this task.
 -   `storage_bucket` (string): Name of the storage bucket used by the backend
     instances. Backend code and data must have been previously deployed to this
     bucket using the `deploy.sh` [script][4].
+-   `instance_count` (int, optional): Number of Compute Engine instances that
+    will be started for this task. If not specified, the number of instances is
+    determined automatically depending on the size of the task and the number
+    of available instances.
 -   `task_name` (string, opitonal): Name of the task, used to build the name of
     the output directory.
 -   `tag` (string, optional): tag internally used to associate tasks to backend
@@ -29,7 +31,7 @@ following keys:
     specified, a unique tag will be generated.
 -   `timeout_hours` (int, optional): if workers are still alive after this
     delay, they will be forcibly killed, to avoid wasting Compute Engine
-    resources. Defaults to `5`.
+    resources. If not specified, the timeout is determined automatically.
 
 ### Parameters for the `trace` action
 
