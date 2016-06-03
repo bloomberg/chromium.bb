@@ -77,17 +77,26 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
 
 /**
  * Find the next node in the given direction in depth first order.
+ *
+ * Let D be the dfs linearization of |cur.root|. Then, let F be the list after
+ * applying |pred| as a filter to D. This method will return the directed next
+ * node of |cur| in F.
+ * The restrictions option will further filter F. For example,
+ * |skipInitialSubtree| will remove any |pred| matches in the subtree of |cur|
+ * from F.
  * @param {!AutomationNode} cur Node to begin the search from.
  * @param {Dir} dir
  * @param {AutomationPredicate.Unary} pred A predicate to apply
  *     to a candidate node.
  * @param {AutomationTreeWalkerRestriction=} opt_restrictions |leaf|, |root|,
- *     and |skipInitialSubtree| are valid restrictions used when finding the
- *     next node. If not supplied, the leaf predicate returns true for nodes
- *     matched by |pred| or |AutomationPredicate.container|. This is typically
- *     desirable in most situations.
- *     If not supplied, the root predicate gets set to
- *     |AutomationUtil.isTraversalRoot|.
+ *     |skipInitialAncestry|, and |skipInitialSubtree| are valid restrictions
+ *     used when finding the next node.
+ *     By default:
+ *        the root predicate ges set to |AutomationPredicate.root|.
+ *        |skipInitialSubtree| is false if |cur| is a container or matches
+ *        |pred|. This alleviates the caller from syncing forwards.
+ *        Leaves are nodes matched by |prred| which are not also containers.
+ *        This takes care of syncing backwards.
  * @return {AutomationNode}
  */
 AutomationUtil.findNextNode = function(cur, dir, pred, opt_restrictions) {
@@ -95,21 +104,19 @@ AutomationUtil.findNextNode = function(cur, dir, pred, opt_restrictions) {
   opt_restrictions = opt_restrictions || {leaf: undefined,
       root: undefined,
       visit: undefined,
-      skipInitialSubtree: !AutomationPredicate.container(cur)};
+      skipInitialSubtree: !AutomationPredicate.container(cur) && pred(cur)};
+
+  restrictions.root = opt_restrictions.root || AutomationPredicate.root;
   restrictions.leaf = opt_restrictions.leaf || function(node) {
     // Treat nodes matched by |pred| as leaves except for containers.
     return !AutomationPredicate.container(node) && pred(node);
   };
 
-  restrictions.root = opt_restrictions.root || AutomationUtil.isTraversalRoot;
   restrictions.skipInitialSubtree = opt_restrictions.skipInitialSubtree;
   restrictions.skipInitialAncestry = opt_restrictions.skipInitialAncestry;
 
   restrictions.visit = function(node) {
-    if (pred(node) && !AutomationPredicate.shouldIgnoreLeaf(node))
-      return true;
-    if (AutomationPredicate.container(node))
-      return true;
+    return pred(node) && !AutomationPredicate.shouldIgnoreNode(node);
   };
 
   var walker = new AutomationTreeWalker(cur, dir, restrictions);
@@ -223,26 +230,6 @@ AutomationUtil.isInSameTree = function(a, b) {
   // Given two non-desktop roots, consider them in the "same" tree.
   return a.root === b.root ||
       (a.root.role == b.root.role && a.root.role == RoleType.rootWebArea);
-};
-
-/**
- * Returns whether the given node should not be crossed when performing
- * traversals up the ancestry chain.
- * @param {AutomationNode} node
- * @return {boolean}
- */
-AutomationUtil.isTraversalRoot = function(node) {
-  switch (node.role) {
-    case RoleType.dialog:
-    case RoleType.window:
-      return true;
-    case RoleType.toolbar:
-      return node.root.role == RoleType.desktop;
-    case RoleType.rootWebArea:
-      return !node.parent || node.parent.root.role == RoleType.desktop;
-    default:
-      return false;
-  }
 };
 
 /**

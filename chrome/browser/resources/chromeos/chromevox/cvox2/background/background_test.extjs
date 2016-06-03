@@ -773,3 +773,33 @@ TEST_F('BackgroundTest', 'EditText', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div role="group" tabindex=0><input type="text"></input></div>
+    <ul>
+      <li tabindex=0>
+        <button>ok</button>
+      </li>
+    </ul>
+  */}, function(root) {
+    var listItem = root.find({role: RoleType.listItem});
+
+    mockFeedback.call(listItem.focus.bind(listItem))
+        .expectSpeech('List item')
+        .call(this.doCmd('nextObject'))
+        .expectSpeech('•')
+        .call(this.doCmd('previousObject'))
+        .expectSpeech('List item')
+        .call(this.doCmd('nextObject'))
+        .expectSpeech('•')
+        .call(this.doCmd('previousObject'))
+        .expectSpeech('List item')
+        .call(this.doCmd('previousObject'))
+        .expectSpeech('Edit text')
+        .call(this.doCmd('previousObject'))
+        .expectSpeech('Group')
+        .replay();
+  });
+});

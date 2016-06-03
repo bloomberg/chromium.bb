@@ -177,33 +177,15 @@ AutomationPredicate.leafDomNode = function(node) {
       node.role == RoleType.staticText;
 };
 
-
 /**
- * Matches nodes that are containers that should be ignored during
- * element navigation.
- * @param {!AutomationNode} node
- * @return {boolean}
- */
-AutomationPredicate.ignoredContainer = function(node) {
-  return (node.role == RoleType.rootWebArea ||
-          node.role == RoleType.embeddedObject ||
-          node.role == RoleType.iframe ||
-          node.role == RoleType.iframePresentational ||
-          node.role == RoleType.embeddedObject);
-};
-
-/**
- * Matches against nodes visited during element navigation. An element as
+ * Matches against nodes visited during object navigation. An object as
  * defined below, are all nodes that are focusable or static text. When used in
  * tree walking, it should visit all nodes that tab traversal would as well as
  * non-focusable static text.
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.element = function(node) {
-  if (AutomationPredicate.ignoredContainer(node))
-    return false;
-
+AutomationPredicate.object = function(node) {
   return node.state.focusable ||
       (AutomationPredicate.leafDomNode(node) &&
        (/\S+/.test(node.name) ||
@@ -226,33 +208,75 @@ AutomationPredicate.linebreak = function(first, second) {
 };
 
 /**
- * Matches against a node that should be visited but not considered a leaf.
+ * Matches against a node that contains other interesting nodes.
+ * These nodes should always have their subtrees scanned when navigating.
  * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.container = function(node) {
-  if (node.role == RoleType.rootWebArea)
-    return !node.parent || node.parent.root.role != RoleType.rootWebArea;
-
-  return node.role == RoleType.document ||
+  return AutomationPredicate.structuralContainer(node) ||
+      node.role == RoleType.div ||
+      node.role == RoleType.document ||
+      node.role == RoleType.group ||
+      node.role == RoleType.listItem ||
       node.role == RoleType.toolbar ||
       node.role == RoleType.window;
 };
 
 /**
- * Leaf nodes that should be ignored while traversing the automation tree. For
- * example, apply this predicate when moving to the next element.
+ * Matches against nodes that contain interesting nodes, but should never be
+ * visited.
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.shouldIgnoreLeaf = function(node) {
+AutomationPredicate.structuralContainer = function(node) {
+  return node.role == RoleType.rootWebArea ||
+      node.role == RoleType.embeddedObject ||
+      node.role == RoleType.iframe ||
+      node.role == RoleType.iframePresentational;
+};
+
+/**
+ * Returns whether the given node should not be crossed when performing
+ * traversals up the ancestry chain.
+ * @param {AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.root = function(node) {
+  switch (node.role) {
+    case RoleType.dialog:
+    case RoleType.window:
+      return true;
+    case RoleType.toolbar:
+      return node.root.role == RoleType.desktop;
+    case RoleType.rootWebArea:
+      return !node.parent || node.parent.root.role == RoleType.desktop;
+    default:
+      return false;
+  }
+};
+
+/**
+ * Nodes that should be ignored while traversing the automation tree. For
+ * example, apply this predicate when moving to the next object.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.shouldIgnoreNode = function(node) {
+  // Ignore invisible nodes.
   if (node.state.invisible ||
       (node.location.height == 0 && node.location.width == 0))
     return true;
 
-  if (node.name || node.value)
+  // Ignore structural containres.
+  if (AutomationPredicate.structuralContainer(node))
+    return true;
+
+  // Don't ignore nodes with names.
+  if (node.name || node.value || node.description)
     return false;
 
+  // Ignore some roles.
   return AutomationPredicate.leaf(node) &&
       (node.role == RoleType.client ||
        node.role == RoleType.div ||

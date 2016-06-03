@@ -255,7 +255,7 @@ cursors.Cursor.prototype = {
             break;
           case Movement.DIRECTIONAL:
             var pred = unit == Unit.NODE ?
-                AutomationPredicate.leaf : AutomationPredicate.element;
+                AutomationPredicate.leaf : AutomationPredicate.object;
             newNode = AutomationUtil.findNextNode(
                 newNode, dir, pred) || this.node_;
             newIndex = cursors.NODE_INDEX;
@@ -326,31 +326,42 @@ cursors.WrappingCursor.prototype = {
     var result = this;
 
     // Regular movement.
-    if (!AutomationUtil.isTraversalRoot(this.node) || dir == Dir.FORWARD)
+    if (!AutomationPredicate.root(this.node) || dir == Dir.FORWARD)
       result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
 
     // There are two cases for wrapping:
     // 1. moving forwards from the last element.
-    // 2. moving backwards from the document root.
+    // 2. moving backwards from the first element.
     // Both result in |move| returning the same cursor.
     // For 1, simply place the new cursor on the document node.
-    // For 2, try to descend to the first leaf-like object.
+    // For 2, place range on the root (if not already there). If at root,
+    // try to descend to the first leaf-like object.
     if (movement == Movement.DIRECTIONAL && result.equals(this)) {
       var pred = unit == Unit.DOM_NODE ?
-          AutomationPredicate.element : AutomationPredicate.leaf;
+          AutomationPredicate.object : AutomationPredicate.leaf;
       var endpoint = this.node;
 
       // Case 1: forwards (find the root-like node).
-      while (!AutomationUtil.isTraversalRoot(endpoint) && endpoint.parent)
+      while (!AutomationPredicate.root(endpoint) && endpoint.parent)
         endpoint = endpoint.parent;
 
-      // Case 2: backward (sync downwards to a leaf).
-      if (dir == Dir.BACKWARD)
-        endpoint = AutomationUtil.findNodePre(endpoint, dir, pred) || endpoint;
+      // Always play a wrap earcon when moving forward.
+      var playEarcon = dir == Dir.FORWARD;
 
-      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
-        return new cursors.WrappingCursor(endpoint, cursors.NODE_INDEX);
+      // Case 2: backward (sync downwards to a leaf), if already on the root.
+      if (dir == Dir.BACKWARD && endpoint == this.node_) {
+        playEarcon = true;
+        endpoint = AutomationUtil.findNodePre(endpoint,
+            dir,
+            function(n) {
+              return pred(n) && !AutomationPredicate.shouldIgnoreNode(n);
+            }) || endpoint;
+      }
 
+      if (playEarcon)
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+
+      return new cursors.WrappingCursor(endpoint, cursors.NODE_INDEX);
     }
     return new cursors.WrappingCursor(result.node, result.index);
   }
@@ -474,8 +485,8 @@ cursors.Range.prototype = {
     var newEnd;
     switch (unit) {
       case Unit.CHARACTER:
-        newStart = newStart.move(unit, Movement.BOUND, dir);
-        newEnd = newStart.move(unit, Movement.BOUND, Dir.FORWARD);
+        newStart = newStart.move(unit, Movement.DIRECTIONAL, dir);
+        newEnd = newStart.move(unit, Movement.DIRECTIONAL, Dir.FORWARD);
         // Character crossed a node; collapses to the end of the node.
         if (newStart.node !== newEnd.node)
           newEnd = new cursors.Cursor(newStart.node, newStart.index + 1);

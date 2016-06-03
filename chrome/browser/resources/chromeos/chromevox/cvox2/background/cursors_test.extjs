@@ -132,9 +132,9 @@ TEST_F('CursorsTest', 'CharacterCursor', function() {
   this.runCursorMovesOnDocument(this.simpleDoc, [
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
     [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
-    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: undefined}],
+    // Bumps up against edge.
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
 
-    [CHARACTER, DIRECTIONAL, FORWARD, {index: 0, value: 'start '}],
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 2, value: 'start '}],
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 3, value: 'start '}],
@@ -198,9 +198,9 @@ TEST_F('CursorsTest', 'LineCursor', function() {
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
     [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
-    [LINE, DIRECTIONAL, BACKWARD, {value: undefined}],
-    [LINE, BOUND, BACKWARD, {value: undefined}],
-    [LINE, DIRECTIONAL, FORWARD, {value: 'start '}]]);
+    // Bump against an edge.
+    [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
+    [LINE, BOUND, BACKWARD, {value: 'start '}]]);
 });
 
 TEST_F('CursorsTest', 'CharacterRange', function() {
@@ -272,10 +272,10 @@ TEST_F('CursorsTest', 'LineRange', function() {
           {value: 'start ', index: 0}, {value: 'same line', index: 9}],
 
       [LINE, BACKWARD,
-          {value: undefined, index: 0}, {value: undefined, index: 0}],
+          {value: 'start ', index: 0}, {value: 'same line', index: 9}]
   ], this.RANGE);
 });
-      
+
 TEST_F('CursorsTest', 'DontSplitOnNodeNavigation', function() {
   this.runWithLoadedTree(this.multiInlineDoc, function(root) {
     var para = root.firstChild;

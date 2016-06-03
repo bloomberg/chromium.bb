@@ -772,7 +772,7 @@ Background.prototype = {
 
       if (node) {
         node = AutomationUtil.findNodePre(
-            node, dir, AutomationPredicate.element) || node;
+            node, dir, AutomationPredicate.object) || node;
       }
 
       if (node) {
