@@ -3600,7 +3600,7 @@ TEST_F(PersonalDataManagerTest,
 // duplicate of it.
 TEST_F(PersonalDataManagerTest,
        DedupeCreditCardToSuggest_FullServerShadowsLocal) {
-  std::list<const CreditCard*> credit_cards;
+  std::list<CreditCard*> credit_cards;
 
   // Create 3 different local credit cards.
   CreditCard local_card("287151C8-6AB1-487C-9095-28E80BE5DA15",
@@ -3630,7 +3630,7 @@ TEST_F(PersonalDataManagerTest,
 // Tests that only the local card is kept when deduping with a masked server
 // duplicate of it.
 TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
-  std::list<const CreditCard*> credit_cards;
+  std::list<CreditCard*> credit_cards;
 
   CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
                         "https://www.example.com");
@@ -3658,7 +3658,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
 
 // Tests that identical full server and masked credit cards are not deduped.
 TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
-  std::list<const CreditCard*> credit_cards;
+  std::list<CreditCard*> credit_cards;
 
   // Create a full server card that is a duplicate of one of the local cards.
   CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "c789");
@@ -3685,7 +3685,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
 // Tests that slightly different local, full server, and masked credit cards are
 // not deduped.
 TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
-  std::list<const CreditCard*> credit_cards;
+  std::list<CreditCard*> credit_cards;
 
   CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
                           "https://www.example.com");

@@ -166,7 +166,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
                 ZIP_CODE, SORTING_CODE, COUNTRY, PHONE_NUMBER, EMAIL,
                 LANGUAGE_CODE);
         mHelper.setProfile(profile);
-        assertEquals(1, mHelper.getNumberOfProfiles());
+        assertEquals(1, mHelper.getNumberOfProfilesToSuggest());
 
         // Click the input field for the first name.
         DOMUtils.waitForNonZeroNodeBounds(webContents, "fn");

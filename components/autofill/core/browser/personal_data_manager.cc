@@ -691,6 +691,21 @@ void PersonalDataManager::Refresh() {
   LoadCreditCards();
 }
 
+const std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
+    const {
+  std::vector<AutofillProfile*> profiles = GetProfiles(true);
+
+  // Rank the suggestions by frecency (see AutofillDataModel for details).
+  base::Time comparison_time = base::Time::Now();
+  std::sort(profiles.begin(), profiles.end(),
+            [comparison_time](const AutofillDataModel* a,
+                              const AutofillDataModel* b) {
+              return a->CompareFrecency(b, comparison_time);
+            });
+
+  return profiles;
+}
+
 std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const AutofillType& type,
     const base::string16& field_contents,
@@ -702,15 +717,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   base::string16 field_contents_canon =
       AutofillProfile::CanonicalizeProfileString(field_contents);
 
-  std::vector<AutofillProfile*> profiles = GetProfiles(true);
-
-  // Rank the suggestions by frecency (see AutofillDataModel for details).
-  base::Time comparison_time = base::Time::Now();
-  std::sort(profiles.begin(), profiles.end(),
-            [comparison_time](const AutofillDataModel* a,
-                              const AutofillDataModel* b) {
-              return a->CompareFrecency(b, comparison_time);
-            });
+  // Get the profiles to suggest, which are already sorted.
+  std::vector<AutofillProfile*> profiles = GetProfilesToSuggest();
 
   std::vector<Suggestion> suggestions;
   // Match based on a prefix search.
@@ -795,31 +803,44 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   return unique_suggestions;
 }
 
+// TODO(crbug.com/613187): Investigate if it would be more efficient to dedupe
+// with a vector instead of a list.
+const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
+    const {
+  std::vector<CreditCard*> credit_cards = GetCreditCards();
+
+  std::list<CreditCard*> cards_to_dedupe(credit_cards.begin(),
+                                         credit_cards.end());
+
+  DedupeCreditCardToSuggest(&cards_to_dedupe);
+
+  std::vector<CreditCard*> cards_to_suggest(
+      std::make_move_iterator(std::begin(cards_to_dedupe)),
+      std::make_move_iterator(std::end(cards_to_dedupe)));
+
+  // Rank the cards by frecency (see AutofillDataModel for details). All expired
+  // cards should be suggested last, also by frecency.
+  base::Time comparison_time = base::Time::Now();
+  std::stable_sort(cards_to_suggest.begin(), cards_to_suggest.end(),
+                   [comparison_time](const CreditCard* a, const CreditCard* b) {
+                     bool a_is_expired = a->IsExpired(comparison_time);
+                     if (a_is_expired != b->IsExpired(comparison_time))
+                       return !a_is_expired;
+
+                     return a->CompareFrecency(b, comparison_time);
+                   });
+
+  return cards_to_suggest;
+}
+
 std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     const AutofillType& type,
     const base::string16& field_contents) {
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
 
-  const std::vector<CreditCard*> credit_cards = GetCreditCards();
-  std::list<const CreditCard*> cards_to_suggest(credit_cards.begin(),
-                                                credit_cards.end());
-
-  DedupeCreditCardToSuggest(&cards_to_suggest);
-
-  // Rank the cards by frecency (see AutofillDataModel for details). All expired
-  // cards should be suggested last, also by frecency.
-  base::Time comparison_time = base::Time::Now();
-  cards_to_suggest.sort(
-      [comparison_time](const CreditCard* a, const CreditCard* b) {
-        bool a_is_expired = a->IsExpired(comparison_time);
-        if (a_is_expired != b->IsExpired(comparison_time))
-          return !a_is_expired;
-
-        return a->CompareFrecency(b, comparison_time);
-      });
-
-  return GetSuggestionsForCards(type, field_contents, cards_to_suggest);
+  return GetSuggestionsForCards(type, field_contents,
+                                GetCreditCardsToSuggest());
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
@@ -967,7 +988,7 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
 
 // static
 void PersonalDataManager::DedupeCreditCardToSuggest(
-    std::list<const CreditCard*>* cards_to_suggest) {
+    std::list<CreditCard*>* cards_to_suggest) {
   for (auto outer_it = cards_to_suggest->begin();
        outer_it != cards_to_suggest->end(); ++outer_it) {
     // If considering a full server card, look for local cards that are
@@ -1451,9 +1472,8 @@ const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const AutofillType& type,
     const base::string16& field_contents,
-    const std::list<const CreditCard*>& cards_to_suggest) const {
+    const std::vector<CreditCard*>& cards_to_suggest) const {
   std::vector<Suggestion> suggestions;
-  std::list<const CreditCard*> substring_matched_cards;
   base::string16 field_contents_lower = base::i18n::ToLower(field_contents);
   for (const CreditCard* credit_card : cards_to_suggest) {
     // The value of the stored data for this field type in the |credit_card|.

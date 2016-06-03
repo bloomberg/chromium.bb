@@ -34,22 +34,30 @@ public class AutofillTestHelper {
         });
     }
 
-    List<AutofillProfile> getProfiles() throws ExecutionException {
+    List<AutofillProfile> getProfilesToSuggest() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile>>() {
             @Override
             public List<AutofillProfile> call() {
-                return PersonalDataManager.getInstance().getProfiles();
+                return PersonalDataManager.getInstance().getProfilesToSuggest();
             }
         });
     }
 
-    int getNumberOfProfiles() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+    List<AutofillProfile> getProfilesForSettings() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<AutofillProfile>>() {
             @Override
-            public Integer call() {
-                return PersonalDataManager.getInstance().getProfiles().size();
+            public List<AutofillProfile> call() {
+                return PersonalDataManager.getInstance().getProfilesForSettings();
             }
-        }).intValue();
+        });
+    }
+
+    int getNumberOfProfilesToSuggest() throws ExecutionException {
+        return getProfilesToSuggest().size();
+    }
+
+    int getNumberOfProfilesForSettings() throws ExecutionException {
+        return getProfilesForSettings().size();
     }
 
     public String setProfile(final AutofillProfile profile) throws InterruptedException,
@@ -83,13 +91,30 @@ public class AutofillTestHelper {
         });
     }
 
-    int getNumberOfCreditCards() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+    List<CreditCard> getCreditCardsToSuggest() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<CreditCard>>() {
             @Override
-            public Integer call() {
-                return PersonalDataManager.getInstance().getCreditCards().size();
+            public List<CreditCard> call() {
+                return PersonalDataManager.getInstance().getCreditCardsToSuggest();
             }
-        }).intValue();
+        });
+    }
+
+    List<CreditCard> getCreditCardsForSettings() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<CreditCard>>() {
+            @Override
+            public List<CreditCard> call() {
+                return PersonalDataManager.getInstance().getCreditCardsForSettings();
+            }
+        });
+    }
+
+    int getNumberOfCreditCardsToSuggest() throws ExecutionException {
+        return getCreditCardsToSuggest().size();
+    }
+
+    int getNumberOfCreditCardsForSettings() throws ExecutionException {
+        return getCreditCardsForSettings().size();
     }
 
     public String setCreditCard(final CreditCard card) throws InterruptedException,
@@ -104,11 +129,63 @@ public class AutofillTestHelper {
         return guid;
     }
 
+    public void addServerCreditCard(final CreditCard card)
+            throws InterruptedException, ExecutionException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.getInstance().addServerCreditCardForTest(card);
+            }
+        });
+        waitForDataChanged();
+    }
+
     void deleteCreditCard(final String guid) throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 PersonalDataManager.getInstance().deleteCreditCard(guid);
+            }
+        });
+        waitForDataChanged();
+    }
+
+    /**
+     * Sets the use |count| and use |date| of the test profile associated with the |guid|.
+     * @param guid The GUID of the profile to modify.
+     * @param count The use count to assign to the profile. It should be non-negative.
+     * @param date The use date to assign to the profile. It represents an absolute point in
+     *             coordinated universal time (UTC) represented as microseconds since the Windows
+     *             epoch. For more details see the comment header in time.h. It should always be a
+     *             positive number.
+     */
+    void setProfileUseStatsForTesting(final String guid, final int count, final long date)
+            throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.getInstance().setProfileUseStatsForTesting(guid, count, date);
+            }
+        });
+        waitForDataChanged();
+    }
+
+    /**
+     * Sets the use |count| and use |date| of the test credit card associated with the |guid|.
+     * @param guid The GUID of the credit card to modify.
+     * @param count The use count to assign to the credit card. It should be non-negative.
+     * @param date The use date to assign to the credit card. It represents an absolute point in
+     *             coordinated universal time (UTC) represented as microseconds since the Windows
+     *             epoch. For more details see the comment header in time.h. It should always be a
+     *             positive number.
+     */
+    void setCreditCardUseStatsForTesting(final String guid, final int count, final long date)
+            throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.getInstance().setCreditCardUseStatsForTesting(
+                        guid, count, date);
             }
         });
         waitForDataChanged();

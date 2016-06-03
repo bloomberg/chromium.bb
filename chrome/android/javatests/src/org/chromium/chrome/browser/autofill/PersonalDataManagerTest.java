@@ -42,7 +42,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "94102", "",
                 "US", "4158889999", "john@acme.inc", "");
         String profileOneGUID = mHelper.setProfile(profile);
-        assertEquals(1, mHelper.getNumberOfProfiles());
+        assertEquals(1, mHelper.getNumberOfProfilesForSettings());
 
         AutofillProfile profile2 = new AutofillProfile(
                 "" /* guid */, "http://www.example.com" /* origin */,
@@ -51,12 +51,13 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "94102", "",
                 "US", "4158889999", "john@acme.inc", "");
         String profileTwoGUID = mHelper.setProfile(profile2);
-        assertEquals(2, mHelper.getNumberOfProfiles());
+        assertEquals(2, mHelper.getNumberOfProfilesForSettings());
 
         profile.setGUID(profileOneGUID);
         profile.setCountryCode("CA");
         mHelper.setProfile(profile);
-        assertEquals("Should still have only two profiles", 2, mHelper.getNumberOfProfiles());
+        assertEquals(
+                "Should still have only two profiles", 2, mHelper.getNumberOfProfilesForSettings());
 
         AutofillProfile storedProfile = mHelper.getProfile(profileOneGUID);
         assertEquals(profileOneGUID, storedProfile.getGUID());
@@ -77,7 +78,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "US", "4158889999", "john@acme.inc", "fr");
         assertEquals("fr", profile.getLanguageCode());
         String profileOneGUID = mHelper.setProfile(profile);
-        assertEquals(1, mHelper.getNumberOfProfiles());
+        assertEquals(1, mHelper.getNumberOfProfilesForSettings());
 
         AutofillProfile storedProfile = mHelper.getProfile(profileOneGUID);
         assertEquals(profileOneGUID, storedProfile.getGUID());
@@ -106,10 +107,10 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "94102", "",
                 "US", "4158889999", "john@acme.inc", "");
         String profileOneGUID = mHelper.setProfile(profile);
-        assertEquals(1, mHelper.getNumberOfProfiles());
+        assertEquals(1, mHelper.getNumberOfProfilesForSettings());
 
         mHelper.deleteProfile(profileOneGUID);
-        assertEquals(0, mHelper.getNumberOfProfiles());
+        assertEquals(0, mHelper.getNumberOfProfilesForSettings());
     }
 
     @SmallTest
@@ -119,19 +120,20 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "" /* guid */, "https://www.example.com" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
         String cardOneGUID = mHelper.setCreditCard(card);
-        assertEquals(1, mHelper.getNumberOfCreditCards());
+        assertEquals(1, mHelper.getNumberOfCreditCardsForSettings());
 
         CreditCard card2 = new CreditCard(
                 "" /* guid */, "http://www.example.com" /* origin */,
                 "American Express", "1234123412341234", "", "8", "2020");
         String cardTwoGUID = mHelper.setCreditCard(card2);
-        assertEquals(2, mHelper.getNumberOfCreditCards());
+        assertEquals(2, mHelper.getNumberOfCreditCardsForSettings());
 
         card.setGUID(cardOneGUID);
         card.setMonth("10");
         card.setNumber("4012888888881881");
         mHelper.setCreditCard(card);
-        assertEquals("Should still have only two cards", 2, mHelper.getNumberOfCreditCards());
+        assertEquals(
+                "Should still have only two cards", 2, mHelper.getNumberOfCreditCardsForSettings());
 
         CreditCard storedCard = mHelper.getCreditCard(cardOneGUID);
         assertEquals(cardOneGUID, storedCard.getGUID());
@@ -150,10 +152,10 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "" /* guid */, "Chrome settings" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
         String cardOneGUID = mHelper.setCreditCard(card);
-        assertEquals(1, mHelper.getNumberOfCreditCards());
+        assertEquals(1, mHelper.getNumberOfCreditCardsForSettings());
 
         mHelper.deleteCreditCard(cardOneGUID);
-        assertEquals(0, mHelper.getNumberOfCreditCards());
+        assertEquals(0, mHelper.getNumberOfCreditCardsForSettings());
     }
 
     @SmallTest
@@ -177,7 +179,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "CA", "514-670-4321", "greg@ucme.inc", "");
         String profileGuid2 = mHelper.setProfile(profile2);
 
-        assertEquals(2, mHelper.getNumberOfProfiles());
+        assertEquals(2, mHelper.getNumberOfProfilesForSettings());
 
         AutofillProfile storedProfile1 = mHelper.getProfile(profileGuid1);
         assertEquals("CA", storedProfile1.getCountryCode());
@@ -203,7 +205,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
                 "98709", "CEDEX 98703",
                 "French Polynesia", "44.71.53", "john@acme.inc", "");
         String profileGuid1 = mHelper.setProfile(profile);
-        assertEquals(1, mHelper.getNumberOfProfiles());
+        assertEquals(1, mHelper.getNumberOfProfilesForSettings());
         AutofillProfile storedProfile1 = mHelper.getProfile(profileGuid1);
         assertEquals("PF", storedProfile1.getCountryCode());
         assertEquals("Monsieur Jean DELHOURME", storedProfile1.getFullName());
@@ -218,7 +220,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
 
         profile.setStreetAddress(streetAddress2);
         String profileGuid2 = mHelper.setProfile(profile);
-        assertEquals(2, mHelper.getNumberOfProfiles());
+        assertEquals(2, mHelper.getNumberOfProfilesForSettings());
         AutofillProfile storedProfile2 = mHelper.getProfile(profileGuid2);
         assertEquals(streetAddress2, storedProfile2.getStreetAddress());
     }
@@ -265,7 +267,7 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
         expectedLabels.add("1500 Second Ave, 90068");
         expectedLabels.add("Fort Worth, Texas");
 
-        List<AutofillProfile> profiles = mHelper.getProfiles();
+        List<AutofillProfile> profiles = mHelper.getProfilesForSettings();
         assertEquals(expectedLabels.size(), profiles.size());
         for (int i = 0; i < profiles.size(); ++i) {
             String label = profiles.get(i).getLabel();
@@ -273,5 +275,99 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
             assertFalse("Found unexpected label [" + label + "]", -1 == idx);
             expectedLabels.remove(idx);
         }
+    }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testProfilesFrecency() throws InterruptedException, ExecutionException {
+        // Create 3 profiles.
+        AutofillProfile profile1 =
+                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                        "John Major", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                        "90210", "", "US", "555 123-4567", "jm@example.com", "");
+        AutofillProfile profile2 =
+                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                        "John Major", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                        "90210", "", "US", "555 123-4567", "jm-work@example.com", "");
+        AutofillProfile profile3 =
+                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                        "Jasper Lundgren", "", "1500 Second Ave", "California", "Hollywood", "",
+                        "90068", "", "US", "555 123-9876", "jasperl@example.com", "");
+
+        String guid1 = mHelper.setProfile(profile1);
+        String guid2 = mHelper.setProfile(profile2);
+        String guid3 = mHelper.setProfile(profile3);
+
+        // The first profile has a lower use count than the two other profiles. It also has an older
+        // use date that the second profile and the same use date as the third. It should be last.
+        mHelper.setProfileUseStatsForTesting(guid1, 3, 5000);
+        // The second profile has the same use count as the third but a more recent use date. It
+        // also has a bigger use count that the first profile. It should be first.
+        mHelper.setProfileUseStatsForTesting(guid2, 6, 5001);
+        // The third profile has the same use count as the second but an older use date. It also has
+        // a bigger use count that the first profile. It should be second.
+        mHelper.setProfileUseStatsForTesting(guid3, 6, 5000);
+
+        List<AutofillProfile> profiles = mHelper.getProfilesToSuggest();
+        assertEquals(3, profiles.size());
+        assertTrue("Profile2 should be ranked first", guid2.equals(profiles.get(0).getGUID()));
+        assertTrue("Profile3 should be ranked second", guid3.equals(profiles.get(1).getGUID()));
+        assertTrue("Profile1 should be ranked third", guid1.equals(profiles.get(2).getGUID()));
+    }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testCreditCardsFrecency() throws InterruptedException, ExecutionException {
+        // Create 3 credit cards.
+        CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
+                "Visa", "1234123412341234", "", "5", "2020");
+
+        CreditCard card2 = new CreditCard("" /* guid */, "http://www.example.com" /* origin */,
+                "American Express", "1234123412341234", "", "8", "2020");
+
+        CreditCard card3 = new CreditCard("" /* guid */, "http://www.example.com" /* origin */,
+                "Master Card", "1234123412341234", "", "11", "2020");
+
+        String guid1 = mHelper.setCreditCard(card1);
+        String guid2 = mHelper.setCreditCard(card2);
+        String guid3 = mHelper.setCreditCard(card3);
+
+        // The first card has a lower use count than the two other cards. It also has an older
+        // use date that the second card and the same use date as the third. It should be last.
+        mHelper.setCreditCardUseStatsForTesting(guid1, 3, 5000);
+        // The second card has the same use count as the third but a more recent use date. It also
+        // has a bigger use count that the first card. It should be first.
+        mHelper.setCreditCardUseStatsForTesting(guid2, 6, 5001);
+        // The third card has the same use count as the second but an older use date. It also has a
+        // bigger use count that the first card. It should be second.
+        mHelper.setCreditCardUseStatsForTesting(guid3, 6, 5000);
+
+        List<CreditCard> cards = mHelper.getCreditCardsToSuggest();
+        assertEquals(3, cards.size());
+        assertTrue("Card2 should be ranked first", guid2.equals(cards.get(0).getGUID()));
+        assertTrue("Card3 should be ranked second", guid3.equals(cards.get(1).getGUID()));
+        assertTrue("Card1 should be ranked third", guid1.equals(cards.get(2).getGUID()));
+    }
+
+    @SmallTest
+    @Feature({"Autofill"})
+    public void testCreditCardsDeduping() throws InterruptedException, ExecutionException {
+        // Create a local card and an identical server card.
+        CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
+                true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
+                "2020", "Visa", 0 /* issuerIconDrawableId */);
+
+        CreditCard card2 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
+                false /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
+                "2020", "Visa", 0 /* issuerIconDrawableId */);
+
+        mHelper.setCreditCard(card1);
+        mHelper.addServerCreditCard(card2);
+
+        // Only one card should be suggested to the user since the two are identical.
+        assertEquals(1, mHelper.getNumberOfCreditCardsToSuggest());
+
+        // Both cards should be seen in the settings even if they are identical.
+        assertEquals(2, mHelper.getNumberOfCreditCardsForSettings());
     }
 }

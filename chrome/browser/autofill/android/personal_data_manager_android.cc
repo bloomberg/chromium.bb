@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 
 #include <stddef.h>
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -15,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -288,21 +290,18 @@ PersonalDataManagerAndroid::~PersonalDataManagerAndroid() {
   personal_data_manager_->RemoveObserver(this);
 }
 
-jint PersonalDataManagerAndroid::GetProfileCount(
-    JNIEnv* unused_env,
+ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetProfileGUIDsForSettings(
+    JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj) {
-  return personal_data_manager_->GetProfiles().size();
+  return GetProfileGUIDs(env, personal_data_manager_->GetProfiles());
 }
 
-ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
+ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetProfileGUIDsToSuggest(
     JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    jint index) {
-  const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager_->GetProfiles();
-  size_t index_size_t = static_cast<size_t>(index);
-  DCHECK_LT(index_size_t, profiles.size());
-  return CreateJavaProfileFromNative(env, *profiles[index_size_t]);
+    const JavaParamRef<jobject>& unused_obj) {
+  return GetProfileGUIDs(env, personal_data_manager_->GetProfilesToSuggest());
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByGUID(
@@ -338,49 +337,34 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
   return ConvertUTF8ToJavaString(env, profile.guid());
 }
 
-ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
+ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetProfileLabelsForSettings(
     JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    bool address_only) {
-  std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
-  size_t minimal_fields_shown = 2;
-  if (address_only) {
-    suggested_fields.reset(new std::vector<ServerFieldType>);
-    suggested_fields->push_back(COMPANY_NAME);
-    suggested_fields->push_back(ADDRESS_HOME_LINE1);
-    suggested_fields->push_back(ADDRESS_HOME_LINE2);
-    suggested_fields->push_back(ADDRESS_HOME_DEPENDENT_LOCALITY);
-    suggested_fields->push_back(ADDRESS_HOME_CITY);
-    suggested_fields->push_back(ADDRESS_HOME_STATE);
-    suggested_fields->push_back(ADDRESS_HOME_ZIP);
-    suggested_fields->push_back(ADDRESS_HOME_SORTING_CODE);
-    suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
-    minimal_fields_shown = suggested_fields->size();
-  }
-
-  std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(
-      personal_data_manager_->GetProfiles(), suggested_fields.get(), NAME_FULL,
-      minimal_fields_shown, g_browser_process->GetApplicationLocale(), &labels);
-
-  return base::android::ToJavaArrayOfStrings(env, labels);
-}
-
-jint PersonalDataManagerAndroid::GetCreditCardCount(
-    JNIEnv* unused_env,
     const JavaParamRef<jobject>& unused_obj) {
-  return personal_data_manager_->GetCreditCards().size();
+  return GetProfileLabels(env, false, personal_data_manager_->GetProfiles());
 }
 
-ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
+ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetProfileLabelsToSuggest(
     JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    jint index) {
-  const std::vector<CreditCard*>& credit_cards =
-      personal_data_manager_->GetCreditCards();
-  size_t index_size_t = static_cast<size_t>(index);
-  DCHECK_LT(index_size_t, credit_cards.size());
-  return CreateJavaCreditCardFromNative(env, *credit_cards[index_size_t]);
+    const JavaParamRef<jobject>& unused_obj) {
+  return GetProfileLabels(env, true,
+                          personal_data_manager_->GetProfilesToSuggest());
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetCreditCardGUIDsForSettings(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  return GetCreditCardGUIDs(env, personal_data_manager_->GetCreditCards());
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray>
+PersonalDataManagerAndroid::GetCreditCardGUIDsToSuggest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  return GetCreditCardGUIDs(env,
+                            personal_data_manager_->GetCreditCardsToSuggest());
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(
@@ -465,6 +449,88 @@ void PersonalDataManagerAndroid::OnPersonalDataChanged() {
 // static
 bool PersonalDataManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid,
+    jint count,
+    jint date) {
+  DCHECK(count >= 0 && date >= 0);
+
+  AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  if (!profile)
+    return;
+
+  profile->set_use_count(static_cast<size_t>(count));
+  profile->set_use_date(base::Time::FromTimeT(date));
+}
+
+void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid,
+    jint count,
+    jint date) {
+  DCHECK(count >= 0 && date >= 0);
+
+  CreditCard* card = personal_data_manager_->GetCreditCardByGUID(
+      ConvertJavaStringToUTF8(env, jguid));
+  if (!card)
+    return;
+
+  card->set_use_count(static_cast<size_t>(count));
+  card->set_use_date(base::Time::FromTimeT(date));
+}
+
+ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
+    JNIEnv* env,
+    const std::vector<AutofillProfile*>& profiles) {
+  std::vector<base::string16> guids;
+  for (AutofillProfile* profile : profiles)
+    guids.push_back(base::UTF8ToUTF16(profile->guid()));
+
+  return base::android::ToJavaArrayOfStrings(env, guids);
+}
+
+ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetCreditCardGUIDs(
+    JNIEnv* env,
+    const std::vector<CreditCard*>& credit_cards) {
+  std::vector<base::string16> guids;
+  for (CreditCard* credit_card : credit_cards)
+    guids.push_back(base::UTF8ToUTF16(credit_card->guid()));
+
+  return base::android::ToJavaArrayOfStrings(env, guids);
+}
+
+ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
+    JNIEnv* env,
+    bool address_only,
+    std::vector<AutofillProfile*> profiles) {
+  std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
+  size_t minimal_fields_shown = 2;
+  if (address_only) {
+    suggested_fields.reset(new std::vector<ServerFieldType>);
+    suggested_fields->push_back(COMPANY_NAME);
+    suggested_fields->push_back(ADDRESS_HOME_LINE1);
+    suggested_fields->push_back(ADDRESS_HOME_LINE2);
+    suggested_fields->push_back(ADDRESS_HOME_DEPENDENT_LOCALITY);
+    suggested_fields->push_back(ADDRESS_HOME_CITY);
+    suggested_fields->push_back(ADDRESS_HOME_STATE);
+    suggested_fields->push_back(ADDRESS_HOME_ZIP);
+    suggested_fields->push_back(ADDRESS_HOME_SORTING_CODE);
+    suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
+    minimal_fields_shown = suggested_fields->size();
+  }
+
+  std::vector<base::string16> labels;
+  AutofillProfile::CreateInferredLabels(
+      profiles, suggested_fields.get(), NAME_FULL, minimal_fields_shown,
+      g_browser_process->GetApplicationLocale(), &labels);
+
+  return base::android::ToJavaArrayOfStrings(env, labels);
 }
 
 // Returns whether the Autofill feature is enabled.
