@@ -17,6 +17,7 @@
 #include "base/threading/thread_local.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "components/metrics/leak_detector/leak_detector_impl.h"
+#include "components/metrics/proto/memory_leak_report.pb.h"
 
 #if defined(OS_CHROMEOS)
 #include <link.h>  // for dl_iterate_phdr
@@ -158,6 +159,11 @@ inline void StoreHookDataToTLS(HookData hook_data) {
 // static
 LeakDetector* LeakDetector::GetInstance() {
   return g_instance.Pointer();
+}
+
+// static
+void LeakDetector::InitTLSSlot() {
+  ignore_result(g_hook_data_tls.Get());
 }
 
 void LeakDetector::Init(const MemoryLeakReportProto::Params& params,

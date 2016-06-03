@@ -575,7 +575,7 @@ source_set("browser") {
       "metrics/leak_detector_controller.cc",
       "metrics/leak_detector_controller.h",
     ]
-    deps += [ "//components/metrics:leak_detector" ]
+    public_deps += [ "//components/metrics:leak_detector" ]
   }
 
   if (use_cups) {

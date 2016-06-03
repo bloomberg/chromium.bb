@@ -20,7 +20,6 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "components/metrics/proto/memory_leak_report.pb.h"
 
 namespace base {
 template <typename T>
@@ -28,6 +27,9 @@ struct DefaultLazyInstanceTraits;
 }
 
 namespace metrics {
+
+class MemoryLeakReportProto;
+class MemoryLeakReportProto_Params;
 
 namespace leak_detector {
 class LeakDetectorImpl;
@@ -66,12 +68,15 @@ class LeakDetector {
 
   // Initializes leak detector. Args:
   // - |params| is a set of parameters used by the leak detector. See definition
-  //   of MemoryLeakReportProto::Params for info about individual parameters.
+  //   of MemoryLeakReportProto_Params for info about individual parameters.
   // - |task_runner| is a TaskRunner to which NotifyObservers() should be
   //   posted, if it is initally called from a different thread than the one on
   //   which |task_runner| runs.
-  void Init(const MemoryLeakReportProto::Params& params,
+  void Init(const MemoryLeakReportProto_Params& params,
             scoped_refptr<base::TaskRunner> task_runner);
+
+  // Initializes the thread-local storage slot to be used by LeakDetector.
+  static void InitTLSSlot();
 
   // Add |observer| to the list of stored Observers, i.e. |observers_|, to which
   // the leak detector will report leaks.

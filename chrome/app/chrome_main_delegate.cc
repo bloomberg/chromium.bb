@@ -126,6 +126,10 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "components/metrics/leak_detector/leak_detector.h"
+#endif
+
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
@@ -638,6 +642,15 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   content::SetContentClient(&chrome_content_client_);
+
+#if defined (OS_CHROMEOS)
+  // The TLS slot used by metrics::LeakDetector needs to be initialized early to
+  // ensure that it gets assigned a low slow number. If it gets initialized too
+  // late, the glibc TLS system will require a malloc call in order to allocate
+  // storage for a higher slot number. Normally that's not a problem, but in
+  // LeakDetector it will result in recursive alloc hook function calls.
+  metrics::LeakDetector::InitTLSSlot();
+#endif
 
   return false;
 }
