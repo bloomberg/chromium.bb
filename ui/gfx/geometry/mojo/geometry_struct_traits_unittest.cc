@@ -59,6 +59,16 @@ class GeometryStructTraitsTest : public testing::Test,
     callback.Run(i);
   }
 
+  void EchoVector2d(const Vector2d& v,
+                    const EchoVector2dCallback& callback) override {
+    callback.Run(v);
+  }
+
+  void EchoVector2dF(const Vector2dF& v,
+                     const EchoVector2dFCallback& callback) override {
+    callback.Run(v);
+  }
+
   base::MessageLoop loop_;
   mojo::BindingSet<GeometryTraitsTestService> traits_test_bindings_;
 
@@ -169,6 +179,28 @@ TEST_F(GeometryStructTraitsTest, InsetsF) {
   EXPECT_EQ(left, output.left());
   EXPECT_EQ(bottom, output.bottom());
   EXPECT_EQ(right, output.right());
+}
+
+TEST_F(GeometryStructTraitsTest, Vector2d) {
+  const int32_t x = 1234;
+  const int32_t y = -5678;
+  gfx::Vector2d input(x, y);
+  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::Vector2d output;
+  proxy->EchoVector2d(input, &output);
+  EXPECT_EQ(x, output.x());
+  EXPECT_EQ(y, output.y());
+}
+
+TEST_F(GeometryStructTraitsTest, Vector2dF) {
+  const float x = 1234.5f;
+  const float y = 6789.6f;
+  gfx::Vector2dF input(x, y);
+  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::Vector2dF output;
+  proxy->EchoVector2dF(input, &output);
+  EXPECT_EQ(x, output.x());
+  EXPECT_EQ(y, output.y());
 }
 
 }  // namespace gfx

@@ -32,4 +32,10 @@ interface GeometryTraitsTestService {
 
   [Sync]
   EchoInsetsF(InsetsF i) => (InsetsF pass);
+
+  [Sync]
+  EchoVector2d(Vector2d v) => (Vector2d pass);
+
+  [Sync]
+  EchoVector2dF(Vector2dF v) => (Vector2dF pass);
 };

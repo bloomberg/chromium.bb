@@ -14,6 +14,8 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace mojo {
 
@@ -101,6 +103,28 @@ struct StructTraits<gfx::mojom::SizeF, gfx::SizeF> {
   static float height(const gfx::SizeF& p) { return p.height(); }
   static bool Read(gfx::mojom::SizeFDataView data, gfx::SizeF* out) {
     out->SetSize(data.width(), data.height());
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::Vector2d, gfx::Vector2d> {
+  static int x(const gfx::Vector2d& v) { return v.x(); }
+  static int y(const gfx::Vector2d& v) { return v.y(); }
+  static bool Read(gfx::mojom::Vector2dDataView data, gfx::Vector2d* out) {
+    out->set_x(data.x());
+    out->set_y(data.y());
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::Vector2dF, gfx::Vector2dF> {
+  static float x(const gfx::Vector2dF& v) { return v.x(); }
+  static float y(const gfx::Vector2dF& v) { return v.y(); }
+  static bool Read(gfx::mojom::Vector2dFDataView data, gfx::Vector2dF* out) {
+    out->set_x(data.x());
+    out->set_y(data.y());
     return true;
   }
 };

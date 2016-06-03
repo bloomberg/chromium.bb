@@ -51,3 +51,13 @@ struct InsetsF {
   float bottom;
   float right;
 };
+
+struct Vector2d {
+  int32 x;
+  int32 y;
+};
+
+struct Vector2dF {
+  float x;
+  float y;
+};
