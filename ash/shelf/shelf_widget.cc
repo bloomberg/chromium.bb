@@ -635,7 +635,6 @@ void ShelfWidget::SetPaintsBackground(
   // See also DockedBackgroundWidget::SetPaintsBackground.
   background_animator_.SetPaintsBackground(
       background_type != wm::SHELF_BACKGROUND_DEFAULT, change_type);
-  delegate_view_->SchedulePaint();
 }
 
 wm::ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
