@@ -55,6 +55,15 @@ class InterfaceRequest {
   // Removes the message pipe from the request and returns it.
   ScopedMessagePipeHandle PassMessagePipe() { return std::move(handle_); }
 
+  bool Equals(const InterfaceRequest& other) const {
+    if (this == &other)
+      return true;
+
+    // Now that the two refer to different objects, they are equivalent if
+    // and only if they are both invalid.
+    return !is_pending() && !other.is_pending();
+  }
+
  private:
   ScopedMessagePipeHandle handle_;
 };

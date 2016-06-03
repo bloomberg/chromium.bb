@@ -38,6 +38,8 @@ union ObjectUnion {
   array<int8> f_array_int8;
   map<string, int8> f_map_int8;
   PodUnion f_pod_union;
+  // Test that Clone() is defined after SmallStruct is declared.
+  array<SmallStruct> f_small_structs;
 };
 
 union HandleUnion {

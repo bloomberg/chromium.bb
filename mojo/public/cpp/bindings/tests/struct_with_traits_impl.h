@@ -36,6 +36,8 @@ class StructWithTraitsImpl {
   StructWithTraitsImpl();
   ~StructWithTraitsImpl();
 
+  StructWithTraitsImpl(const StructWithTraitsImpl& other);
+
   void set_bool(bool value) { bool_ = value; }
   bool get_bool() const { return bool_; }
 
@@ -95,6 +97,7 @@ class PassByValueStructWithTraitsImpl {
 
  private:
   ScopedHandle handle_;
+  DISALLOW_COPY_AND_ASSIGN(PassByValueStructWithTraitsImpl);
 };
 
 }  // namespace test

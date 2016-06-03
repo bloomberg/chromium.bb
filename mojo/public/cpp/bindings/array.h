@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -27,6 +26,7 @@ namespace mojo {
 template <typename T>
 class Array {
   MOVE_ONLY_TYPE_FOR_CPP_03(Array);
+
  public:
   using ConstRefType = typename std::vector<T>::const_reference;
   using RefType = typename std::vector<T>::reference;
@@ -163,33 +163,32 @@ class Array {
   }
 
   // Returns a copy of the array where each value of the new array has been
-  // "cloned" from the corresponding value of this array. If this array contains
-  // primitive data types, this is equivalent to simply copying the contents.
-  // However, if the array contains objects, then each new element is created by
-  // calling the |Clone| method of the source element, which should make a copy
-  // of the element.
+  // "cloned" from the corresponding value of this array. If the element type
+  // defines a Clone() method, it will be used; otherwise copy
+  // constructor/assignment will be used.
   //
   // Please note that calling this method will fail compilation if the element
   // type cannot be cloned (which usually means that it is a Mojo handle type or
-  // a type contains Mojo handles).
+  // a type containing Mojo handles).
   Array Clone() const {
     Array result;
     result.is_null_ = is_null_;
-    CloneTraits<T>::Clone(vec_, &result.vec_);
+    result.vec_.reserve(vec_.size());
+    for (const auto& element : vec_)
+      result.vec_.push_back(internal::Clone(element));
     return std::move(result);
   }
 
   // Indicates whether the contents of this array are equal to |other|. A null
-  // array is only equal to another null array. Elements are compared using the
-  // |ValueTraits::Equals| method, which in most cases calls the |Equals| method
-  // of the element.
+  // array is only equal to another null array. If the element type defines an
+  // Equals() method, it will be used; otherwise == operator will be used.
   bool Equals(const Array& other) const {
     if (is_null() != other.is_null())
       return false;
     if (size() != other.size())
       return false;
     for (size_t i = 0; i < size(); ++i) {
-      if (!internal::ValueTraits<T>::Equals(at(i), other.at(i)))
+      if (!internal::Equals(at(i), other.at(i)))
         return false;
     }
     return true;
@@ -208,29 +207,6 @@ class Array {
   bool operator==(const Array<U>& other) const = delete;
   template <typename U>
   bool operator!=(const Array<U>& other) const = delete;
-
-  template <typename U,
-            bool is_move_only_type = internal::IsMoveOnlyType<U>::value>
-  struct CloneTraits {};
-
-  template <typename U>
-  struct CloneTraits<U, false> {
-    static inline void Clone(const std::vector<T>& src_vec,
-                             std::vector<T>* dest_vec) {
-      dest_vec->assign(src_vec.begin(), src_vec.end());
-    }
-  };
-
-  template <typename U>
-  struct CloneTraits<U, true> {
-    static inline void Clone(const std::vector<T>& src_vec,
-                             std::vector<T>* dest_vec) {
-      DCHECK(dest_vec->empty());
-      dest_vec->reserve(src_vec.size());
-      for (const auto& element : src_vec)
-        dest_vec->push_back(element.Clone());
-    }
-  };
 
   void Take(Array* other) {
     operator=(nullptr);

@@ -18,10 +18,19 @@ class {{union.name}} {
   {{union.name}}();
   ~{{union.name}}();
 
-{%  if union|is_cloneable_kind %}
+  // Clone() is a template so it is only instantiated if it is used. Thus, the
+  // bindings generator does not need to know whether Clone() or copy
+  // constructor/assignment are available for members.
+  template <typename UnionPtrType = {{union.name}}Ptr>
   {{union.name}}Ptr Clone() const;
-{%- endif %}
-  bool Equals(const {{union.name}}& other) const;
+
+  // Equals() is a template so it is only instantiated if it is used. Thus, the
+  // bindings generator does not need to know whether Equals() or == operator
+  // are available for members.
+  template <typename T,
+            typename std::enable_if<std::is_same<
+                T, {{union.name}}>::value>::type* = nullptr>
+  bool Equals(const T& other) const;
 
   Tag which() const {
     return tag_;

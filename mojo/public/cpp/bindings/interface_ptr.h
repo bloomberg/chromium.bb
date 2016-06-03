@@ -183,6 +183,15 @@ class InterfacePtr {
     return internal_state_.associated_group();
   }
 
+  bool Equals(const InterfacePtr& other) const {
+    if (this == &other)
+      return true;
+
+    // Now that the two refer to different objects, they are equivalent if
+    // and only if they are both null.
+    return !(*this) && !other;
+  }
+
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::InterfacePtrState<Interface, Interface::PassesAssociatedKinds_>*
   internal_state() {

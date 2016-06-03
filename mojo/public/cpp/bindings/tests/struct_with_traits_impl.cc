@@ -15,6 +15,9 @@ StructWithTraitsImpl::StructWithTraitsImpl() {}
 
 StructWithTraitsImpl::~StructWithTraitsImpl() {}
 
+StructWithTraitsImpl::StructWithTraitsImpl(const StructWithTraitsImpl& other) =
+    default;
+
 PassByValueStructWithTraitsImpl::PassByValueStructWithTraitsImpl() {}
 
 PassByValueStructWithTraitsImpl::PassByValueStructWithTraitsImpl(

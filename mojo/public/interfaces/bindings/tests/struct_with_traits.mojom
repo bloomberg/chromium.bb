@@ -20,12 +20,19 @@ struct StructWithTraits {
   map<string, NestedStructWithTraits> f_struct_map;
 };
 
+// Test that this container can be cloned.
 struct StructWithTraitsContainer {
   StructWithTraits f_struct;
 };
 
 struct PassByValueStructWithTraits {
   handle f_handle;
+};
+
+// The custom type for PassByValueStructWithTraits is not clonable. Test that
+// this container can compile as long as Clone() is not used.
+struct PassByValueStructWithTraitsContainer {
+  PassByValueStructWithTraits f_struct;
 };
 
 interface TraitsTestService {

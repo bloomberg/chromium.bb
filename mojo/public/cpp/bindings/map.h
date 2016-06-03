@@ -10,8 +10,11 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "mojo/public/cpp/bindings/lib/map_internal.h"
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
+#include "base/move.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/lib/map_data_internal.h"
+#include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 
@@ -184,25 +187,26 @@ class Map {
     values->Swap(&value_vector);
   }
 
-  // Returns a new Map that contains a copy of the contents of this map.  If the
-  // values are of a type that is designated move-only, they will be cloned
-  // using the Clone() method of the type. Please note that calling this method
-  // will fail compilation if the value type cannot be cloned (which usually
-  // means that it is a Mojo handle type or a type that contains Mojo handles).
+  // Returns a new Map that contains a copy of the contents of this map. If the
+  // key/value type defines a Clone() method, it will be used; otherwise copy
+  // constructor/assignment will be used.
+  //
+  // Please note that calling this method will fail compilation if the key/value
+  // type cannot be cloned (which usually means that it is a Mojo handle type or
+  // a type containing Mojo handles).
   Map Clone() const {
     Map result;
     result.is_null_ = is_null_;
-    Traits::Clone(map_, &result.map_);
+    for (auto it = map_.begin(); it != map_.end(); ++it) {
+      result.map_.insert(std::make_pair(internal::Clone(it->first),
+                                        internal::Clone(it->second)));
+    }
     return result;
   }
 
   // Indicates whether the contents of this map are equal to those of another
-  // Map (including nullness). Keys are compared by the != operator. Values are
-  // compared as follows:
-  //   - Map, Array, Struct, or StructPtr values are compared by their Equals()
-  //     method.
-  //   - ScopedHandleBase-derived types are compared by their handles.
-  //   - Values of other types are compared by their "==" operator.
+  // Map (including nullness). If the key/value type defines an Equals() method,
+  // it will be used; otherwise == operator will be used.
   bool Equals(const Map& other) const {
     if (is_null() != other.is_null())
       return false;
@@ -211,9 +215,9 @@ class Map {
     auto i = begin();
     auto j = other.begin();
     while (i != end()) {
-      if (i->first != j->first)
+      if (!internal::Equals(i->first, j->first))
         return false;
-      if (!internal::ValueTraits<Value>::Equals(i->second, j->second))
+      if (!internal::Equals(i->second, j->second))
         return false;
       ++i;
       ++j;
@@ -244,11 +248,6 @@ class Map {
   operator Testable() const { return is_null_ ? 0 : &Map::map_; }
 
  private:
-  using Traits =
-      internal::MapCloneTraits<Key,
-                               Value,
-                               internal::IsMoveOnlyType<Value>::value>;
-
   // Forbid the == and != operators explicitly, otherwise Map will be converted
   // to Testable to do == or != comparison.
   template <typename T, typename U>

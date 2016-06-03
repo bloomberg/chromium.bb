@@ -57,6 +57,15 @@ class AssociatedInterfaceRequest {
 
   const ScopedInterfaceEndpointHandle& handle() const { return handle_; }
 
+  bool Equals(const AssociatedInterfaceRequest& other) const {
+    if (this == &other)
+      return true;
+
+    // Now that the two refer to different objects, they are equivalent if
+    // and only if they are both invalid.
+    return !is_pending() && !other.is_pending();
+  }
+
  private:
   ScopedInterfaceEndpointHandle handle_;
 };

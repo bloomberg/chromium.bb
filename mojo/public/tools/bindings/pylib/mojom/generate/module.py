@@ -791,31 +791,6 @@ def IsMoveOnlyKind(kind):
       IsAnyHandleKind(kind) or IsInterfaceKind(kind) or IsAssociatedKind(kind)
 
 
-def IsCloneableKind(kind, filter):
-  def _IsCloneable(kind, visited_kinds):
-    if kind in visited_kinds:
-      # No need to examine the kind again.
-      return True
-    visited_kinds.add(kind)
-    if IsAnyHandleKind(kind) or IsInterfaceKind(kind) or IsAssociatedKind(kind):
-      return False
-    if IsArrayKind(kind):
-      return _IsCloneable(kind.kind, visited_kinds)
-    if IsStructKind(kind) or IsUnionKind(kind):
-      if IsStructKind(kind) and filter(kind):
-        return False
-      for field in kind.fields:
-        if not _IsCloneable(field.kind, visited_kinds):
-          return False
-    if IsMapKind(kind):
-      # No need to examine the key kind, only primitive kinds and non-nullable
-      # string are allowed to be key kinds.
-      return _IsCloneable(kind.value_kind, visited_kinds)
-    return True
-
-  return _IsCloneable(kind, set())
-
-
 def HasCallbacks(interface):
   for method in interface.methods:
     if method.response_parameters != None:

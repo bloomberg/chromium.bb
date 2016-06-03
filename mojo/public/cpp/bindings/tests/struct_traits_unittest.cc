@@ -252,7 +252,6 @@ TEST_F(StructTraitsTest, CloneStructWithTraitsContainer) {
   StructWithTraitsContainerPtr cloned_container = container.Clone();
   EXPECT_EQ(7u, cloned_container->f_struct.get_uint32());
   EXPECT_EQ(42u, cloned_container->f_struct.get_uint64());
-
 }
 
 TEST_F(StructTraitsTest, EchoPassByValueStructWithTraits) {

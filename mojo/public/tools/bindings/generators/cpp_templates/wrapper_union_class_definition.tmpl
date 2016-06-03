@@ -15,46 +15,6 @@
   DestroyActive();
 }
 
-{%  if union|is_cloneable_kind %}
-{{union.name}}Ptr {{union.name}}::Clone() const {
-  {{union.name}}Ptr rv(New());
-  switch (tag_) {
-{%    for field in union.fields %}
-    case Tag::{{field.name|upper}}:
-{%    if field.kind|is_string_kind %}
-      rv->set_{{field.name}}(*(data_.{{field.name}}));
-{%    elif field.kind|is_object_kind %}
-      rv->set_{{field.name}}(data_.{{field.name}}->Clone());
-{%-   else %}
-      rv->set_{{field.name}}(data_.{{field.name}});
-{%-   endif %}
-      break;
-{%-   endfor %}
-  };
-  return rv;
-}
-{%- endif %}
-
-bool {{union.name}}::Equals(const {{union.name}}& other) const {
-  if (tag_ != other.which()) {
-    return false;
-  }
-
-  switch (tag_) {
-{%  for field in union.fields %}
-    case Tag::{{field.name|upper}}:
-{%    if field.kind|is_object_kind or field.kind|is_any_handle_kind or
-         field.kind|is_interface_kind or field.kind|is_associated_kind %}
-      return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(*(data_.{{field.name}}), *(other.data_.{{field.name}}));
-{%-   else %}
-      return mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(data_.{{field.name}}, other.data_.{{field.name}});
-{%-   endif %}
-{%- endfor %}
-  };
-
-  return false;
-}
-
 {%  for field in union.fields %}
 bool {{union.name}}::is_{{field.name}}() const {
   return tag_ == Tag::{{field.name|upper}};

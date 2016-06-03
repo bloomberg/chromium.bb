@@ -122,6 +122,10 @@ class ScopedHandleBase {
 
   bool is_valid() const { return handle_.is_valid(); }
 
+  bool operator==(const ScopedHandleBase& other) const {
+    return handle_.value() == other.get().value();
+  }
+
  private:
   void CloseIfNecessary() {
     if (handle_.is_valid())

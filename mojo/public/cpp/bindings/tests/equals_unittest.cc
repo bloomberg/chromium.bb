@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,50 +114,45 @@ TEST_F(EqualsTest, Map) {
 }
 
 TEST_F(EqualsTest, InterfacePtr) {
-  using InterfaceValueTraits = mojo::internal::ValueTraits<SomeInterfacePtr>;
-
   base::MessageLoop message_loop;
 
   SomeInterfacePtr inf1;
   SomeInterfacePtr inf2;
 
-  EXPECT_TRUE(InterfaceValueTraits::Equals(inf1, inf1));
-  EXPECT_TRUE(InterfaceValueTraits::Equals(inf1, inf2));
+  EXPECT_TRUE(inf1.Equals(inf1));
+  EXPECT_TRUE(inf1.Equals(inf2));
 
   auto inf1_request = GetProxy(&inf1);
   ALLOW_UNUSED_LOCAL(inf1_request);
 
-  EXPECT_TRUE(InterfaceValueTraits::Equals(inf1, inf1));
-  EXPECT_FALSE(InterfaceValueTraits::Equals(inf1, inf2));
+  EXPECT_TRUE(inf1.Equals(inf1));
+  EXPECT_FALSE(inf1.Equals(inf2));
 
   auto inf2_request = GetProxy(&inf2);
   ALLOW_UNUSED_LOCAL(inf2_request);
 
-  EXPECT_FALSE(InterfaceValueTraits::Equals(inf1, inf2));
+  EXPECT_FALSE(inf1.Equals(inf2));
 }
 
 TEST_F(EqualsTest, InterfaceRequest) {
-  using RequestValueTraits =
-      mojo::internal::ValueTraits<InterfaceRequest<SomeInterface>>;
-
   base::MessageLoop message_loop;
 
   InterfaceRequest<SomeInterface> req1;
   InterfaceRequest<SomeInterface> req2;
 
-  EXPECT_TRUE(RequestValueTraits::Equals(req1, req1));
-  EXPECT_TRUE(RequestValueTraits::Equals(req1, req2));
+  EXPECT_TRUE(req1.Equals(req1));
+  EXPECT_TRUE(req1.Equals(req2));
 
   SomeInterfacePtr inf1;
   req1 = GetProxy(&inf1);
 
-  EXPECT_TRUE(RequestValueTraits::Equals(req1, req1));
-  EXPECT_FALSE(RequestValueTraits::Equals(req1, req2));
+  EXPECT_TRUE(req1.Equals(req1));
+  EXPECT_FALSE(req1.Equals(req2));
 
   SomeInterfacePtr inf2;
   req2 = GetProxy(&inf2);
 
-  EXPECT_FALSE(RequestValueTraits::Equals(req1, req2));
+  EXPECT_FALSE(req1.Equals(req2));
 }
 
 }  // test

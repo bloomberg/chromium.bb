@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
-#include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/Source/wtf/Vector.h"
 
@@ -144,33 +143,32 @@ class WTFArray {
   }
 
   // Returns a copy of the array where each value of the new array has been
-  // "cloned" from the corresponding value of this array. If this array contains
-  // primitive data types, this is equivalent to simply copying the contents.
-  // However, if the array contains objects, then each new element is created by
-  // calling the |Clone| method of the source element, which should make a copy
-  // of the element.
+  // "cloned" from the corresponding value of this array. If the element type
+  // defines a Clone() method, it will be used; otherwise copy
+  // constructor/assignment will be used.
   //
   // Please note that calling this method will fail compilation if the element
   // type cannot be cloned (which usually means that it is a Mojo handle type or
-  // a type contains Mojo handles).
+  // a type containing Mojo handles).
   WTFArray Clone() const {
     WTFArray result;
     result.is_null_ = is_null_;
-    CloneTraits<T>::Clone(vec_, &result.vec_);
-    return std::move(result);
+    result.vec_.reserveCapacity(vec_.size());
+    for (const auto& element : vec_)
+      result.vec_.append(internal::Clone(element));
+    return result;
   }
 
   // Indicates whether the contents of this array are equal to |other|. A null
-  // array is only equal to another null array. Elements are compared using the
-  // |ValueTraits::Equals| method, which in most cases calls the |Equals| method
-  // of the element.
+  // array is only equal to another null array. If the element type defines an
+  // Equals() method, it will be used; otherwise == operator will be used.
   bool Equals(const WTFArray& other) const {
     if (is_null() != other.is_null())
       return false;
     if (size() != other.size())
       return false;
     for (size_t i = 0; i < size(); ++i) {
-      if (!internal::ValueTraits<T>::Equals(at(i), other.at(i)))
+      if (!internal::Equals(at(i), other.at(i)))
         return false;
     }
     return true;
@@ -194,32 +192,6 @@ class WTFArray {
   bool operator==(const WTFArray<U>& other) const = delete;
   template <typename U>
   bool operator!=(const WTFArray<U>& other) const = delete;
-
-  template <typename U,
-            bool is_move_only_type = internal::IsMoveOnlyType<U>::value>
-  struct CloneTraits {};
-
-  template <typename U>
-  struct CloneTraits<U, false> {
-    static inline void Clone(const WTF::Vector<T>& src_vec,
-                             WTF::Vector<T>* dest_vec) {
-      DCHECK(dest_vec->isEmpty());
-      dest_vec->reserveCapacity(src_vec.size());
-      for (const auto& element : src_vec)
-        dest_vec->append(element);
-    }
-  };
-
-  template <typename U>
-  struct CloneTraits<U, true> {
-    static inline void Clone(const WTF::Vector<T>& src_vec,
-                             WTF::Vector<T>* dest_vec) {
-      DCHECK(dest_vec->isEmpty());
-      dest_vec->reserveCapacity(src_vec.size());
-      for (const auto& element : src_vec)
-        dest_vec->append(element.Clone());
-    }
-  };
 
   void Take(WTFArray* other) {
     operator=(nullptr);

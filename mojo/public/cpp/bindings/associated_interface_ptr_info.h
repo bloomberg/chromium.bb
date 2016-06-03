@@ -57,6 +57,15 @@ class AssociatedInterfacePtrInfo {
   uint32_t version() const { return version_; }
   void set_version(uint32_t version) { version_ = version; }
 
+  bool Equals(const AssociatedInterfacePtrInfo& other) const {
+    if (this == &other)
+      return true;
+
+    // Now that the two refer to different objects, they are equivalent if
+    // and only if they are both invalid.
+    return !is_valid() && !other.is_valid();
+  }
+
  private:
   ScopedInterfaceEndpointHandle handle_;
   uint32_t version_;

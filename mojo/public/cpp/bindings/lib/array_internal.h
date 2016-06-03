@@ -16,11 +16,11 @@
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
-#include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "mojo/public/cpp/bindings/lib/validation_util.h"
 
 namespace mojo {
 namespace internal {
@@ -28,6 +28,9 @@ namespace internal {
 // std::numeric_limits<uint32_t>::max() is not a compile-time constant (until
 // C++11).
 const uint32_t kMaxUint32 = 0xFFFFFFFF;
+
+template <typename K, typename V>
+class Map_Data;
 
 std::string MakeMessageWithArrayIndex(const char* message,
                                       size_t size,
