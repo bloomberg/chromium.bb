@@ -9,8 +9,13 @@ import("//build/config/mac/base_rules.gni")
 # Arguments
 #
 #     info_plist:
-#         string, the path to an plist file that will be included in the final
-#         Info.plist generated.
+#         (optional) string, path to the Info.plist file that will be used for
+#         the bundle.
+#
+#     info_plist_target:
+#         (optional) string, if the info_plist is generated from an action,
+#         rather than a regular source file, specify the target name in lieu
+#         of info_plist. The two arguments are mutually exclusive.
 #
 #     executable_name:
 #         string, name of the generated target used for the product

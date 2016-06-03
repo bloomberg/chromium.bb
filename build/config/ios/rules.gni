@@ -9,8 +9,13 @@ import("//build/config/mac/base_rules.gni")
 # Arguments
 #
 #     info_plist:
-#         string, the path to an plist file that will be included in the final
-#         Info.plist generated.
+#         (optional) string, path to the Info.plist file that will be used for
+#         the bundle.
+#
+#     info_plist_target:
+#         (optional) string, if the info_plist is generated from an action,
+#         rather than a regular source file, specify the target name in lieu
+#         of info_plist. The two arguments are mutually exclusive.
 #
 #     executable_name:
 #         string, name of the generated target used for the product
@@ -20,6 +25,17 @@ import("//build/config/mac/base_rules.gni")
 #         (optional) string array, 'key=value' pairs for extra fields which are
 #         specified in a source Info.plist template.
 template("ios_info_plist") {
+  assert(defined(invoker.info_plist) != defined(invoker.info_plist_target),
+         "Only one of info_plist or info_plist_target may be specified in " +
+             target_name)
+
+  if (defined(invoker.info_plist)) {
+    _info_plist = invoker.info_plist
+  } else {
+    _info_plist_target_output = get_target_outputs(invoker.info_plist_target)
+    _info_plist = _info_plist_target_output[0]
+  }
+
   info_plist(target_name) {
     format = "binary1"
     extra_substitutions = []
@@ -37,8 +53,13 @@ template("ios_info_plist") {
     ]
     plist_templates = [
       "//build/config/ios/BuildInfo.plist",
-      invoker.info_plist,
+      _info_plist,
     ]
+    if (defined(invoker.info_plist_target)) {
+      deps = [
+        invoker.info_plist_target,
+      ]
+    }
     forward_variables_from(invoker,
                            [
                              "executable_name",
@@ -71,8 +92,13 @@ template("ios_info_plist") {
 #       the application Info.plist
 #
 #   info_plist:
-#       path to the template to use to generate the application Info.plist
-#       by performing variable substitutions.
+#       (optional) string, path to the Info.plist file that will be used for
+#       the bundle.
+#
+#   info_plist_target:
+#       (optional) string, if the info_plist is generated from an action,
+#       rather than a regular source file, specify the target name in lieu
+#       of info_plist. The two arguments are mutually exclusive.
 #
 #   bundle_extension:
 #       (optional) bundle extension including the dot, default to ".app".
@@ -84,9 +110,6 @@ template("ios_info_plist") {
 #
 # For more information, see "gn help executable".
 template("ios_app_bundle") {
-  assert(defined(invoker.info_plist),
-         "info_plist must be specified for target $target_name")
-
   _output_name = target_name
   _target_name = target_name
   if (defined(invoker.output_name)) {
@@ -102,6 +125,7 @@ template("ios_app_bundle") {
                            [
                              "extra_substitutions",
                              "info_plist",
+                             "info_plist_target",
                            ])
   }
 
@@ -131,6 +155,7 @@ template("ios_app_bundle") {
                              "data_deps",
                              "entitlements_path",
                              "info_plist",
+                             "info_plist_target",
                              "output_name",
                              "product_type",
                              "visibility",
@@ -230,8 +255,13 @@ template("ios_app_bundle") {
 #       the application Info.plist
 #
 #   info_plist:
-#       path to the template to use to generate the application Info.plist
-#       by performing variable substitutions.
+#       (optional) string, path to the Info.plist file that will be used for
+#       the bundle.
+#
+#   info_plist_target:
+#       (optional) string, if the info_plist is generated from an action,
+#       rather than a regular source file, specify the target name in lieu
+#       of info_plist. The two arguments are mutually exclusive.
 #
 # For more information, see "gn help executable".
 template("ios_appex_bundle") {
