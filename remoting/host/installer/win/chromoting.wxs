@@ -153,13 +153,6 @@
     </Directory>
 
     <DirectoryRef Id="binaries">
-      <Component Id="sas" Guid="*">
-        <File Id="sas.dll"
-              DiskId="1"
-              Name="sas.dll"
-              Vital="yes"/>
-      </Component>
-
       <Component Id="credits" Guid="*">
         <File Id="CREDITS.txt"
               DiskId="1"
@@ -636,7 +629,6 @@
       <ComponentRef Id="remoting_lib"/>
       <ComponentRef Id="remoting_pairing_registry"/>
       <ComponentRef Id="remoting_start_host"/>
-      <ComponentRef Id="sas"/>
       <ComponentRef Id="sawbuck_provider"/>
     </Feature>
 

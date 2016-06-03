@@ -258,6 +258,7 @@
             'comctl32.lib',
             'rpcns4.lib',
             'rpcrt4.lib',
+            'sas.lib',
             'uuid.lib',
             'wtsapi32.lib',
           ],
@@ -535,7 +536,7 @@
     # component build is used the produced installation will not work due to
     # missing DLLs. We build it anyway to make sure the GYP scripts are executed
     # by the bots.
-    ['wix_exists == "True" and sas_dll_exists == "True"', {
+    ['wix_exists == "True"', {
       'targets': [
         {
           'target_name': 'remoting_host_installation',
@@ -623,7 +624,6 @@
           ],
           'generated_files': [
             '<@(_compiled_inputs)',
-            '<(sas_dll_path)/sas.dll',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/CREDITS.txt',
             '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_assistance.json',
             '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
@@ -632,7 +632,6 @@
           ],
           'generated_files_dst': [
             '<@(_compiled_inputs_dst)',
-            'files/sas.dll',
             'files/CREDITS.txt',
             'files/com.google.chrome.remote_assistance.json',
             'files/com.google.chrome.remote_desktop.json',
@@ -652,7 +651,6 @@
               ],
               'inputs': [
                 '<@(_compiled_inputs)',
-                '<(sas_dll_path)/sas.dll',
                 '<@(_source_files)',
                 'host/installer/build-installer-archive.py',
                 'resources/chromoting.ico',
@@ -687,7 +685,7 @@
           'type': 'none',
         },
       ],  # end of 'targets'
-    }],  # 'wix_exists == "True" and sas_dll_exists == "True"'
+    }],  # 'wix_exists == "True"
 
   ],  # end of 'conditions'
 }

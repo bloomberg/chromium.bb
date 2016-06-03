@@ -5,31 +5,16 @@
 #include "remoting/host/sas_injector.h"
 
 #include <windows.h>
+#include <sas.h>
 
-#include <string>
-
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/path_service.h"
-#include "base/scoped_native_library.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
-#include "third_party/webrtc/modules/desktop_capture/win/desktop.h"
-#include "third_party/webrtc/modules/desktop_capture/win/scoped_thread_desktop.h"
 
 namespace remoting {
 
 namespace {
-
-// Names of the API and library implementing software SAS generation.
-const base::FilePath::CharType kSasDllFileName[] = FILE_PATH_LITERAL("sas.dll");
-const char kSendSasName[] = "SendSAS";
-
-// The prototype of SendSAS().
-typedef VOID (WINAPI *SendSasFunc)(BOOL);
 
 // The registry key and value holding the policy controlling software SAS
 // generation.
@@ -105,10 +90,7 @@ bool ScopedSoftwareSasPolicy::Apply() {
 
 } // namespace
 
-// Sends Secure Attention Sequence using the SendSAS() function from sas.dll.
-// This library is shipped starting from Win7/W2K8 R2 only. However Win7 SDK
-// includes a redistributable verion of the same library that works on
-// Vista/W2K8. We install the latter along with our binaries.
+// Sends Secure Attention Sequence.  Checks the current policy before sending.
 class SasInjectorWin : public SasInjector {
  public:
   SasInjectorWin();
@@ -118,115 +100,28 @@ class SasInjectorWin : public SasInjector {
   bool InjectSas() override;
 
  private:
-  base::ScopedNativeLibrary sas_dll_;
-  SendSasFunc send_sas_;
+  DISALLOW_COPY_AND_ASSIGN(SasInjectorWin);
 };
 
-// Emulates Secure Attention Sequence (Ctrl+Alt+Del) by switching to
-// the Winlogon desktop and injecting Ctrl+Alt+Del as a hot key.
-// N.B. Windows XP/W2K3 only.
-class SasInjectorXp : public SasInjector {
- public:
-  SasInjectorXp();
-  ~SasInjectorXp() override;
-
-  // SasInjector implementation.
-  bool InjectSas() override;
-};
-
-SasInjectorWin::SasInjectorWin() : send_sas_(nullptr) {
-}
+SasInjectorWin::SasInjectorWin() {}
 
 SasInjectorWin::~SasInjectorWin() {
 }
 
 bool SasInjectorWin::InjectSas() {
-  // Load sas.dll. The library is expected to be in the same folder as this
-  // binary.
-  if (!sas_dll_.is_valid()) {
-    base::FilePath dir_path;
-    if (!PathService::Get(base::DIR_EXE, &dir_path)) {
-      LOG(ERROR) << "Failed to get the executable file name.";
-      return false;
-    }
-
-    sas_dll_.Reset(base::LoadNativeLibrary(dir_path.Append(kSasDllFileName),
-                                           nullptr));
-  }
-  if (!sas_dll_.is_valid()) {
-    LOG(ERROR) << "Failed to load '" << kSasDllFileName << "'";
-    return false;
-  }
-
-  // Get the pointer to sas!SendSAS().
-  if (send_sas_ == nullptr) {
-    send_sas_ = reinterpret_cast<SendSasFunc>(
-        sas_dll_.GetFunctionPointer(kSendSasName));
-  }
-  if (send_sas_ == nullptr) {
-    LOG(ERROR) << "Failed to retrieve the address of '" << kSendSasName
-               << "()'";
-    return false;
-  }
-
   // Enable software SAS generation by services and send SAS. SAS can still fail
   // if the policy does not allow services to generate software SAS.
   ScopedSoftwareSasPolicy enable_sas;
-  if (!enable_sas.Apply())
-    return false;
-
-  (*send_sas_)(FALSE);
-  return true;
-}
-
-SasInjectorXp::SasInjectorXp() {
-}
-
-SasInjectorXp::~SasInjectorXp() {
-}
-
-bool SasInjectorXp::InjectSas() {
-  const wchar_t kWinlogonDesktopName[] = L"Winlogon";
-  const wchar_t kSasWindowClassName[] = L"SAS window class";
-  const wchar_t kSasWindowTitle[] = L"SAS window";
-
-  std::unique_ptr<webrtc::Desktop> winlogon_desktop(
-      webrtc::Desktop::GetDesktop(kWinlogonDesktopName));
-  if (!winlogon_desktop.get()) {
-    PLOG(ERROR) << "Failed to open '" << kWinlogonDesktopName << "' desktop";
+  if (!enable_sas.Apply()) {
     return false;
   }
 
-  webrtc::ScopedThreadDesktop desktop;
-  if (!desktop.SetThreadDesktop(winlogon_desktop.release())) {
-    PLOG(ERROR) << "Failed to switch to '" << kWinlogonDesktopName
-                << "' desktop";
-    return false;
-  }
-
-  HWND window = FindWindow(kSasWindowClassName, kSasWindowTitle);
-  if (!window) {
-    PLOG(ERROR) << "Failed to find '" << kSasWindowTitle << "' window";
-    return false;
-  }
-
-  if (PostMessage(window,
-                  WM_HOTKEY,
-                  0,
-                  MAKELONG(MOD_ALT | MOD_CONTROL, VK_DELETE)) == 0) {
-    PLOG(ERROR) << "Failed to post WM_HOTKEY message";
-    return false;
-  }
-
+  SendSAS(/*AsUser=*/FALSE);
   return true;
 }
 
 std::unique_ptr<SasInjector> SasInjector::Create() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return base::WrapUnique(new SasInjectorXp());
-  } else {
-    return base::WrapUnique(new SasInjectorWin());
-  }
+  return base::WrapUnique(new SasInjectorWin());
 }
 
 } // namespace remoting

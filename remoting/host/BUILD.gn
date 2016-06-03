@@ -611,6 +611,7 @@ if (is_mac) {
         "comctl32.lib",
         "rpcns4.lib",
         "rpcrt4.lib",
+        "sas.lib",
         "uuid.lib",
         "wtsapi32.lib",
       ]
@@ -1086,18 +1087,6 @@ if (is_mac) {
                 ],
                 root_build_dir)
         _extra_files = []
-        if (is_chrome_branded) {
-          if (target_cpu == "x64") {
-            _redist_cpu_path = "amd64"
-          } else {
-            _redist_cpu_path = "x86"
-          }
-          _generated_files +=
-              [ rebase_path("//third_party/platformsdk_win7/files/Redist/" +
-                                "$_redist_cpu_path/sas.dll",
-                            root_build_dir) ]
-          _extra_files += [ "files/sas.dll" ]
-        }
 
         args = [
                  rebase_path("$root_gen_dir/installation", root_build_dir),
