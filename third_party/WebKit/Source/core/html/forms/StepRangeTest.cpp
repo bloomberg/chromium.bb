@@ -11,7 +11,7 @@ namespace blink {
 TEST(StepRangeTest, ClampValueWithOutStepMatchedValue)
 {
     // <input type=range value=200 min=0 max=100 step=1000>
-    StepRange stepRange(Decimal(200), Decimal(0), Decimal(100), Decimal(1000), StepRange::StepDescription());
+    StepRange stepRange(Decimal(200), Decimal(0), Decimal(100), true, Decimal(1000), StepRange::StepDescription());
 
     EXPECT_EQ(Decimal(100), stepRange.clampValue(Decimal(200)));
     EXPECT_EQ(Decimal(0), stepRange.clampValue(Decimal(-100)));

@@ -292,7 +292,7 @@ bool InputType::isInRange(const String& value) const
         return true;
 
     StepRange stepRange(createStepRange(RejectAny));
-    return numericValue >= stepRange.minimum() && numericValue <= stepRange.maximum();
+    return stepRange.hasRangeLimitations() && numericValue >= stepRange.minimum() && numericValue <= stepRange.maximum();
 }
 
 bool InputType::isOutOfRange(const String& value) const
@@ -308,7 +308,7 @@ bool InputType::isOutOfRange(const String& value) const
         return false;
 
     StepRange stepRange(createStepRange(RejectAny));
-    return numericValue < stepRange.minimum() || numericValue > stepRange.maximum();
+    return stepRange.hasRangeLimitations() && (numericValue < stepRange.minimum() || numericValue > stepRange.maximum());
 }
 
 bool InputType::stepMismatch(const String& value) const
@@ -921,11 +921,20 @@ Decimal InputType::findStepBase(const Decimal& defaultValue) const
 
 StepRange InputType::createStepRange(AnyStepHandling anyStepHandling, const Decimal& stepBaseDefault, const Decimal& minimumDefault, const Decimal& maximumDefault, const StepRange::StepDescription& stepDescription) const
 {
+    bool hasRangeLimitations = false;
     const Decimal stepBase = findStepBase(stepBaseDefault);
-    const Decimal minimum = parseToNumber(element().fastGetAttribute(minAttr), minimumDefault);
-    const Decimal maximum = parseToNumber(element().fastGetAttribute(maxAttr), maximumDefault);
+    Decimal minimum = parseToNumberOrNaN(element().fastGetAttribute(minAttr));
+    if (minimum.isFinite())
+        hasRangeLimitations = true;
+    else
+        minimum = minimumDefault;
+    Decimal maximum = parseToNumberOrNaN(element().fastGetAttribute(maxAttr));
+    if (maximum.isFinite())
+        hasRangeLimitations = true;
+    else
+        maximum = maximumDefault;
     const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
-    return StepRange(stepBase, minimum, maximum, step, stepDescription);
+    return StepRange(stepBase, minimum, maximum, hasRangeLimitations, step, stepDescription);
 }
 
 void InputType::addWarningToConsole(const char* messageFormat, const String& value) const

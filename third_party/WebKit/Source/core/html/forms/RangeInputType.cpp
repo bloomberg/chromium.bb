@@ -140,7 +140,11 @@ StepRange RangeInputType::createStepRange(AnyStepHandling anyStepHandling) const
     const Decimal maximum = ensureMaximum(parseToNumber(element().fastGetAttribute(maxAttr), rangeDefaultMaximum), minimum, rangeDefaultMaximum);
 
     const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
-    return StepRange(stepBase, minimum, maximum, step, stepDescription);
+    // Range type always has range limitations because it has default
+    // minimum/maximum.
+    // https://html.spec.whatwg.org/multipage/forms.html#range-state-(type=range):concept-input-min-default
+    const bool hasRangeLimitations = true;
+    return StepRange(stepBase, minimum, maximum, hasRangeLimitations, step, stepDescription);
 }
 
 bool RangeInputType::isSteppable() const

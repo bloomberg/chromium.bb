@@ -71,12 +71,15 @@ public:
 
     StepRange();
     StepRange(const StepRange&);
-    StepRange(const Decimal& stepBase, const Decimal& minimum, const Decimal& maximum, const Decimal& step, const StepDescription&);
+    StepRange(const Decimal& stepBase, const Decimal& minimum, const Decimal& maximum, bool hasRangeLimitations, const Decimal& step, const StepDescription&);
+
     Decimal alignValueForStep(const Decimal& currentValue, const Decimal& newValue) const;
     Decimal clampValue(const Decimal& value) const;
     bool hasStep() const { return m_hasStep; }
     Decimal maximum() const { return m_maximum; }
     Decimal minimum() const { return m_minimum; }
+    // https://html.spec.whatwg.org/multipage/forms.html#have-range-limitations
+    bool hasRangeLimitations() const { return m_hasRangeLimitations; }
     static Decimal parseStep(AnyStepHandling, const StepDescription&, const String&);
     Decimal step() const { return m_step; }
     Decimal stepBase() const { return m_stepBase; }
@@ -114,6 +117,7 @@ private:
     const Decimal m_stepBase;
     const StepDescription m_stepDescription;
     const bool m_hasStep;
+    const bool m_hasRangeLimitations;
 };
 
 } // namespace blink
