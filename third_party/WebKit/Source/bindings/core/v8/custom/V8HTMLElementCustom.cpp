@@ -12,7 +12,6 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -29,73 +28,48 @@ void V8HTMLElement::constructorCustom(
 
     if (!RuntimeEnabledFeatures::customElementsV1Enabled()
         || !scriptState->world().isMainWorld()) {
-        V8ThrowException::throwTypeError(
-            info.GetIsolate(),
-            "Illegal constructor");
+        V8ThrowException::throwTypeError(info.GetIsolate(), "Illegal constructor");
         return;
     }
 
     LocalDOMWindow* window = scriptState->domWindow();
-    ScriptCustomElementDefinition* definition =
+    ScriptCustomElementDefinition* def =
         ScriptCustomElementDefinition::forConstructor(
             scriptState,
             window->customElements(),
             info.NewTarget());
-    if (!definition) {
+    if (!def) {
         V8ThrowException::throwTypeError(isolate, "Illegal constructor");
         return;
     }
+
+    // TODO(dominicc): Implement cases where the definition's
+    // construction stack is not empty when parser-creation is
+    // implemented.
 
     ExceptionState exceptionState(
         ExceptionState::ConstructionContext,
         "HTMLElement",
         info.Holder(),
         isolate);
-
-    Element* element;
-    if (definition->constructionStack().isEmpty()) {
-        // This is an element being created with 'new' from script
-        element = window->document()->createElement(
-            definition->descriptor().localName(),
-            AtomicString(),
-            exceptionState);
-        if (exceptionState.throwIfNeeded())
-            return;
-    } else if ((element = definition->constructionStack().last())) {
-        // This is an element being upgraded that has called super
-        definition->constructionStack().last().clear();
-    } else {
-        // During upgrade an element has invoked the same constructor
-        // before calling 'super' and that invocation has poached the
-        // element.
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "this instance is already constructed");
-        exceptionState.throwIfNeeded();
+    Element* element = window->document()->createElement(
+        def->descriptor().localName(),
+        AtomicString(),
+        exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
-    }
     const WrapperTypeInfo* wrapperType = element->wrapperTypeInfo();
     v8::Local<v8::Object> wrapper = V8DOMWrapper::associateObjectWithWrapper(
         isolate,
         element,
         wrapperType,
         info.This());
-    // If the element had a wrapper, we now update and return that
-    // instead.
-    v8SetReturnValue(info, wrapper);
 
-    v8CallOrCrash(wrapper->SetPrototype(
+    if (!v8CallBoolean(wrapper->SetPrototype(
         scriptState->context(),
-        definition->prototype()));
-
-    // TODO(dominicc): These elements should be 'undefined', not
-    // 'uncustomized', on creation. Investigate why some elements are
-    // running around uncustomized.
-    if (element->getCustomElementState() == CustomElementState::Uncustomized)
-        element->setCustomElementState(CustomElementState::Undefined);
-    // TODO(dominicc): Move this to the exactly correct place when
-    // https://github.com/whatwg/html/issues/1297 is closed.
-    element->setCustomElementState(CustomElementState::Custom);
+        def->prototype()))) {
+        return;
+    }
 }
 
 } // namespace blink

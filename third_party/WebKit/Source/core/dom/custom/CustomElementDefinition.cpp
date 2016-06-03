@@ -24,11 +24,6 @@ DEFINE_TRACE(CustomElementDefinition)
 // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
 void CustomElementDefinition::upgrade(Element* element)
 {
-    // TODO(dominicc): When the attributeChangedCallback is implemented,
-    // enqueue reactions for attributes here.
-    // TODO(dominicc): When the connectedCallback is implemented, enqueue
-    // reactions here, if applicable.
-
     m_constructionStack.append(element);
     size_t depth = m_constructionStack.size();
 
@@ -43,7 +38,20 @@ void CustomElementDefinition::upgrade(Element* element)
     if (!succeeded)
         return;
 
-    CHECK(element->getCustomElementState() == CustomElementState::Custom);
+    // TODO(dominicc): Turn this into an assertion when setting
+    // 'custom' moves to the HTMLElement constructor. We will need to
+    // add a bit for MARQUEE to be custom-gets-callbacks-yet-not-custom.
+    element->setCustomElementState(CustomElementState::Custom);
+
+    // TODO(dominicc): When the attributeChangedCallback is implemented,
+    // enqueue reactions for attributes here.
+    // TODO(dominicc): When the connectedCallback is implemented, enqueue
+    // reactions here, if applicable.
+}
+
+bool CustomElementDefinition::runConstructor(Element*)
+{
+    return true;
 }
 
 } // namespace blink
