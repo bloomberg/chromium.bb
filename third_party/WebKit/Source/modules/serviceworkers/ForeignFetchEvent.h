@@ -26,8 +26,8 @@ class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ForeignFetchEvent* create();
-    static ForeignFetchEvent* create(const AtomicString& type, const ForeignFetchEventInit&);
-    static ForeignFetchEvent* create(const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
+    static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&);
+    static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
 
     Request* request() const;
     String origin() const;
@@ -40,7 +40,7 @@ public:
 
 protected:
     ForeignFetchEvent();
-    ForeignFetchEvent(const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
+    ForeignFetchEvent(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
 
 private:
     Member<ForeignFetchRespondWithObserver> m_observer;

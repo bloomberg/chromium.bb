@@ -27,8 +27,8 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static FetchEvent* create();
-    static FetchEvent* create(const AtomicString& type, const FetchEventInit&);
-    static FetchEvent* create(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
+    static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&);
+    static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
     Request* request() const;
     String clientId() const;
@@ -42,7 +42,7 @@ public:
 
 protected:
     FetchEvent();
-    FetchEvent(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
+    FetchEvent(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
 private:
     Member<RespondWithObserver> m_observer;

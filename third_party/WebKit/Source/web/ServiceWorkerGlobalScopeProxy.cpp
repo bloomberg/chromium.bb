@@ -141,7 +141,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
     eventInit.setRequest(request);
     eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
     eventInit.setIsReload(webRequest.isReload());
-    FetchEvent* fetchEvent = FetchEvent::create(EventTypeNames::fetch, eventInit, observer);
+    FetchEvent* fetchEvent = FetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::fetch, eventInit, observer);
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
     observer->didDispatchEvent(dispatchResult);
 }
@@ -156,7 +156,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const
     eventInit.setCancelable(true);
     eventInit.setRequest(request);
     eventInit.setOrigin(origin->toString());
-    ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(EventTypeNames::foreignfetch, eventInit, observer);
+    ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::foreignfetch, eventInit, observer);
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
     observer->didDispatchEvent(dispatchResult);
 }
