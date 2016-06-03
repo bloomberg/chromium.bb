@@ -95,8 +95,6 @@ void NotificationMessageFilter::OnDestruct() const {
 bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationMessageFilter, message)
-    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_CheckPermission,
-                        OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_Show,
                         OnShowPlatformNotification)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_ShowPersistent,
@@ -119,14 +117,6 @@ void NotificationMessageFilter::OverrideThreadForMessage(
   if (message.type() == PlatformNotificationHostMsg_Show::ID ||
       message.type() == PlatformNotificationHostMsg_Close::ID)
     *thread = BrowserThread::UI;
-}
-
-void NotificationMessageFilter::OnCheckNotificationPermission(
-    const GURL& origin,
-    blink::mojom::PermissionStatus* permission_status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  *permission_status = GetPermissionForOriginOnIO(origin);
 }
 
 void NotificationMessageFilter::OnShowPlatformNotification(

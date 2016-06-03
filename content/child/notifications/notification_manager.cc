@@ -209,20 +209,6 @@ void NotificationManager::notifyDelegateDestroyed(
   }
 }
 
-blink::mojom::blink::PermissionStatus NotificationManager::checkPermission(
-    const blink::WebSecurityOrigin& origin) {
-  blink::mojom::PermissionStatus permission_status =
-      blink::mojom::PermissionStatus::DENIED;
-
-  // TODO(mkwst): This is potentially doing the wrong thing with unique
-  // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
-  // https://crbug.com/490074 for detail.
-  thread_safe_sender_->Send(new PlatformNotificationHostMsg_CheckPermission(
-      blink::WebStringToGURL(origin.toString()), &permission_status));
-
-  return static_cast<blink::mojom::blink::PermissionStatus>(permission_status);
-}
-
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationManager, message)

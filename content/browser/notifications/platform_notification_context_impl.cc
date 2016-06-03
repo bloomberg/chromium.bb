@@ -6,10 +6,13 @@
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/notifications/blink_notification_service_impl.h"
 #include "content/browser/notifications/notification_database.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
@@ -94,9 +97,43 @@ void PlatformNotificationContextImpl::Shutdown() {
 void PlatformNotificationContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  services_.clear();
+
   // |service_worker_context_| may be NULL in tests.
   if (service_worker_context_)
     service_worker_context_->RemoveObserver(this);
+}
+
+void PlatformNotificationContextImpl::CreateService(
+    int render_process_id,
+    mojo::InterfaceRequest<blink::mojom::NotificationService> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PlatformNotificationContextImpl::CreateServiceOnIO, this,
+                 render_process_id, browser_context_->GetResourceContext(),
+                 base::Passed(&request)));
+}
+
+void PlatformNotificationContextImpl::CreateServiceOnIO(
+    int render_process_id,
+    ResourceContext* resource_context,
+    mojo::InterfaceRequest<blink::mojom::NotificationService> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  services_.push_back(base::WrapUnique(new BlinkNotificationServiceImpl(
+      this, resource_context, render_process_id, std::move(request))));
+}
+
+void PlatformNotificationContextImpl::RemoveService(
+    BlinkNotificationServiceImpl* service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto services_to_remove = std::remove_if(
+      services_.begin(), services_.end(),
+      [service](const std::unique_ptr<BlinkNotificationServiceImpl>& ptr) {
+        return ptr.get() == service;
+      });
+
+  services_.erase(services_to_remove, services_.end());
 }
 
 void PlatformNotificationContextImpl::ReadNotificationData(

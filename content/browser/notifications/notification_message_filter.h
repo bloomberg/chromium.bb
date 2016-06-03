@@ -53,9 +53,6 @@ class NotificationMessageFilter : public BrowserMessageFilter {
   friend class base::DeleteHelper<NotificationMessageFilter>;
   friend class BrowserThread;
 
-  void OnCheckNotificationPermission(
-      const GURL& origin,
-      blink::mojom::PermissionStatus* permission_status);
   void OnShowPlatformNotification(
       int notification_id,
       const GURL& origin,

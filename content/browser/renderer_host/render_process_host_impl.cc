@@ -87,6 +87,7 @@
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/notifications/notification_message_filter.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
@@ -1075,6 +1076,11 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(base::Bind(
       &BackgroundSyncContext::CreateService,
       base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
+
+  mojo_application_host_->service_registry()->AddService(base::Bind(
+      &PlatformNotificationContextImpl::CreateService,
+      base::Unretained(
+          storage_partition_impl_->GetPlatformNotificationContext()), GetID()));
 
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
