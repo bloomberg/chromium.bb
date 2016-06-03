@@ -851,7 +851,7 @@ PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element
 PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleResolverState& state, CSSPropertyID property, CSSValue* value)
 {
     if (value) {
-        StyleBuilder::applyProperty(property, state, value);
+        StyleBuilder::applyProperty(property, state, *value);
         state.fontBuilder().createFont(state.document().styleEngine().fontSelector(), state.mutableStyleRef());
     }
     return CSSAnimatableValueFactory::create(property, *state.style());
@@ -1418,7 +1418,7 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         if (inheritedOnly && !CSSPropertyMetadata::isInheritedProperty(propertyId))
             continue;
 
-        StyleBuilder::applyProperty(propertyId, state, allValue);
+        StyleBuilder::applyProperty(propertyId, state, *allValue);
     }
 }
 
@@ -1468,7 +1468,7 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
 
-        StyleBuilder::applyProperty(current.id(), state, current.value());
+        StyleBuilder::applyProperty(current.id(), state, *current.value());
     }
 }
 
@@ -1689,7 +1689,7 @@ void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& pr
     for (CSSPropertyID property : properties) {
         if (property == CSSPropertyLineHeight)
             updateFont(state);
-        StyleBuilder::applyProperty(property, state, propertySet.getPropertyCSSValue(property));
+        StyleBuilder::applyProperty(property, state, *propertySet.getPropertyCSSValue(property));
     }
 }
 

@@ -19,7 +19,7 @@ public:
         return adoptRef(new CSSValueNonInterpolableValue(cssValue));
     }
 
-    CSSValue* cssValue() const { return m_cssValue.get(); }
+    const CSSValue& cssValue() const { return *m_cssValue; }
 
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 

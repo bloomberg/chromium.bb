@@ -157,7 +157,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
         if (CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style)) {
             unsigned parsedPropertiesCount = parsedProperties.size();
             for (unsigned i = 0; i < parsedPropertiesCount; ++i)
-                StyleBuilder::applyProperty(parsedProperties[i].id(), state, parsedProperties[i].value());
+                StyleBuilder::applyProperty(parsedProperties[i].id(), state, *parsedProperties[i].value());
             return;
         }
     }
@@ -166,11 +166,11 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
     if (isShorthandProperty(id)) {
         StylePropertyShorthand shorthand = shorthandForProperty(id);
         for (unsigned i = 0; i < shorthand.length(); i++)
-            StyleBuilder::applyProperty(shorthand.properties()[i], state, unset);
+            StyleBuilder::applyProperty(shorthand.properties()[i], state, *unset);
         return;
     }
 
-    StyleBuilder::applyProperty(id, state, unset);
+    StyleBuilder::applyProperty(id, state, *unset);
 }
 
 void CSSVariableResolver::resolveVariableDefinitions(StyleVariableData* variables)

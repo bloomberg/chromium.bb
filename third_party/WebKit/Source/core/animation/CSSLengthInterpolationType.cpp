@@ -328,14 +328,14 @@ void CSSLengthInterpolationType::apply(const InterpolableValue& interpolableValu
 #if ENABLE(ASSERT)
             // Assert that setting the length on ComputedStyle directly is identical to the AnimatableValue code path.
             RefPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(cssProperty(), *state.style());
-            StyleBuilder::applyProperty(cssProperty(), state, createCSSValue(values, hasPercentage, m_valueRange));
+            StyleBuilder::applyProperty(cssProperty(), state, *createCSSValue(values, hasPercentage, m_valueRange));
             RefPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(cssProperty(), *state.style());
             ASSERT(before->equals(*after));
 #endif
             return;
         }
     }
-    StyleBuilder::applyProperty(cssProperty(), state, createCSSValue(values, hasPercentage, m_valueRange));
+    StyleBuilder::applyProperty(cssProperty(), state, *createCSSValue(values, hasPercentage, m_valueRange));
 }
 
 } // namespace blink

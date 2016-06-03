@@ -108,10 +108,10 @@ static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
 
 } // namespace
 
-void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CSSValue* value)
+void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, const CSSValue& value)
 {
-    if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable && value->isVariableReferenceValue()) {
-        CSSVariableResolver::resolveAndApplyVariableReferences(state, id, *toCSSVariableReferenceValue(value));
+    if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable && value.isVariableReferenceValue()) {
+        CSSVariableResolver::resolveAndApplyVariableReferences(state, id, toCSSVariableReferenceValue(value));
         if (!state.style()->hasVariableReferenceFromNonInheritedProperty() && !CSSPropertyMetadata::isInheritedProperty(id))
             state.style()->setHasVariableReferenceFromNonInheritedProperty();
         return;
@@ -119,8 +119,8 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
 
     DCHECK(!isShorthandProperty(id)) << "Shorthand property id = " << id << " wasn't expanded at parsing time";
 
-    bool isInherit = state.parentNode() && value->isInheritedValue();
-    bool isInitial = value->isInitialValue() || (!state.parentNode() && value->isInheritedValue());
+    bool isInherit = state.parentNode() && value.isInheritedValue();
+    bool isInitial = value.isInitialValue() || (!state.parentNode() && value.isInheritedValue());
 
     DCHECK(!isInherit || !isInitial); // isInherit -> !isInitial && isInitial -> !isInherit
     DCHECK(!isInherit || (state.parentNode() && state.parentStyle())); // isInherit -> (state.parentNode() && state.parentStyle())
@@ -132,7 +132,7 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
 
     if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSPropertyMetadata::isInheritedProperty(id)) {
         state.parentStyle()->setHasExplicitlyInheritedProperties();
-    } else if (value->isUnsetValue()) {
+    } else if (value.isUnsetValue()) {
         DCHECK(!isInherit && !isInitial);
         if (CSSPropertyMetadata::isInheritedProperty(id))
             isInherit = true;

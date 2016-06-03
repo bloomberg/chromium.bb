@@ -305,7 +305,7 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         StyleResolverState resolverState(styleResolutionHost->document(), styleResolutionHost, filterStyle.get());
         resolverState.setStyle(filterStyle);
 
-        StyleBuilder::applyProperty(CSSPropertyWebkitFilter, resolverState, m_filterValue.get());
+        StyleBuilder::applyProperty(CSSPropertyWebkitFilter, resolverState, *m_filterValue);
         resolverState.loadPendingResources();
         FilterEffectBuilder* filterEffectBuilder = FilterEffectBuilder::create();
 

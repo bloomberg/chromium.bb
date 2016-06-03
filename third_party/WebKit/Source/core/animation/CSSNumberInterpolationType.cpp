@@ -83,7 +83,7 @@ void CSSNumberInterpolationType::apply(const InterpolableValue& interpolableValu
 {
     double clampedNumber = NumberPropertyFunctions::clampNumber(cssProperty(), toInterpolableNumber(interpolableValue).value());
     if (!NumberPropertyFunctions::setNumber(cssProperty(), *environment.state().style(), clampedNumber))
-        StyleBuilder::applyProperty(cssProperty(), environment.state(), CSSPrimitiveValue::create(clampedNumber, CSSPrimitiveValue::UnitType::Number));
+        StyleBuilder::applyProperty(cssProperty(), environment.state(), *CSSPrimitiveValue::create(clampedNumber, CSSPrimitiveValue::UnitType::Number));
 }
 
 } // namespace blink
