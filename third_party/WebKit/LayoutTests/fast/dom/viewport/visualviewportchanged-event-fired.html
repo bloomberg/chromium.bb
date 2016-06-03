@@ -16,10 +16,10 @@
 
     function verifySetViewportOffsets() {
         // Set viewport offset. Listener called twice.
-        document.visualViewport.scrollTop = 20;
+        window.visualViewport.scrollTop = 20;
         requestAnimationFrame(function() {
             shouldBe("numCalls", "3");
-            document.visualViewport.scrollLeft = 0;
+            window.visualViewport.scrollLeft = 0;
             requestAnimationFrame(function() {
                 shouldBe("numCalls", "4");
                 finishJSTest();

@@ -1252,7 +1252,6 @@ interface Document : Node
     getter timeline
     getter title
     getter visibilityState
-    getter visualViewport
     getter webkitCurrentFullScreenElement
     getter webkitFullscreenElement
     getter webkitFullscreenEnabled
@@ -7651,6 +7650,7 @@ interface webkitURL
     attribute textInputController
     attribute toolbar
     attribute top
+    attribute visualViewport
     attribute webkitIndexedDB
     attribute webkitStorageInfo
     attribute window

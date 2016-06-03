@@ -56,6 +56,7 @@ class Page;
 class PostMessageTimer;
 class SecurityOrigin;
 class SourceLocation;
+class VisualViewport;
 
 enum PageshowEventPersistence {
     PageshowEventNotPersisted = 0,
@@ -105,6 +106,7 @@ public:
     int screenY() const override;
     double scrollX() const override;
     double scrollY() const override;
+    VisualViewport* visualViewport() override;
     const AtomicString& name() const override;
     void setName(const AtomicString&) override;
     String status() const override;

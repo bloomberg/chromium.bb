@@ -37,6 +37,12 @@ function emitExpectedResult(path, expected)
     if (path.length >= 2 && (path[0] == 'console' || path[0] == 'performance') && path[1] == 'memory')
         return;
 
+    // TODO(bokan): Skip visualViewport for now since it returns the page-global VisualViewport
+    // object and we have no way of creating a VisualViewport yet. This should be fixed with
+    // crbug.com/604928.
+    if (path[0] == 'visualViewport')
+        return;
+
     // Skip things that are assumed to be constants.
     if (path[path.length - 1].toUpperCase() == path[path.length - 1])
         return;

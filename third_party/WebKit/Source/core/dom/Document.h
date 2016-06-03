@@ -314,7 +314,6 @@ public:
     HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
     Range* caretRangeFromPoint(int x, int y);
     Element* scrollingElement();
-    VisualViewport* visualViewport();
 
     String readyState() const;
 

@@ -154,10 +154,6 @@ interface Document : Node {
 
     readonly attribute Element? scrollingElement;
 
-    // Visual Viewport API
-    // https://github.com/WICG/ViewportAPI
-    [RuntimeEnabled=VisualViewportAPI] readonly attribute VisualViewport? visualViewport;
-
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-document-interface
     attribute EventHandler onpointerlockchange;

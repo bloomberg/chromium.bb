@@ -1031,6 +1031,18 @@ double LocalDOMWindow::scrollY() const
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
+VisualViewport* LocalDOMWindow::visualViewport()
+{
+    if (!frame())
+        return nullptr;
+
+    FrameHost* host = frame()->host();
+    if (!host)
+        return nullptr;
+
+    return &host->visualViewport();
+}
+
 const AtomicString& LocalDOMWindow::name() const
 {
     if (!isCurrentlyDisplayedInFrame())

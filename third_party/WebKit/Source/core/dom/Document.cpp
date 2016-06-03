@@ -1161,13 +1161,6 @@ Element* Document::scrollingElement()
     return body();
 }
 
-VisualViewport* Document::visualViewport()
-{
-    if (FrameHost* host = frameHost())
-        return &host->visualViewport();
-    return nullptr;
-}
-
 /*
  * Performs three operations:
  *  1. Convert control characters to spaces

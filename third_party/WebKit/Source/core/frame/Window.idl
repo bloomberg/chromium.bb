@@ -127,6 +127,10 @@
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions options);
     void scrollBy(unrestricted double x, unrestricted double y);
 
+    // Visual Viewport API
+    // https://github.com/WICG/ViewportAPI
+    [RuntimeEnabled=VisualViewportAPI] readonly attribute VisualViewport? visualViewport;
+
     // client
     [Replaceable] readonly attribute long screenX;
     [Replaceable] readonly attribute long screenY;

@@ -41,6 +41,7 @@ class ScrollToOptions;
 class SerializedScriptValue;
 class Storage;
 class StyleMedia;
+class VisualViewport;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
@@ -90,6 +91,8 @@ public:
     virtual double scrollY() const = 0;
     double pageXOffset() const { return scrollX(); }
     double pageYOffset() const { return scrollY(); }
+
+    virtual VisualViewport* visualViewport() { return nullptr; }
 
     bool closed() const;
 
