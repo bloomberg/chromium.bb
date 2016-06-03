@@ -12,14 +12,12 @@
 namespace ash {
 
 struct ASH_EXPORT ToastData {
-  ToastData(const std::string& id,
-            const std::string& text,
-            uint64_t duration_ms)
+  ToastData(const std::string& id, const std::string& text, int32_t duration_ms)
       : id(id), text(text), duration_ms(duration_ms) {}
 
   std::string id;
   std::string text;
-  uint64_t duration_ms;
+  int32_t duration_ms;
 };
 
 }  // namespace ash

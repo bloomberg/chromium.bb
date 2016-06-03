@@ -13,7 +13,7 @@ namespace ash {
 namespace {
 
 // Minimum duration for a toast to be visible (in millisecond).
-uint64_t kMinimumDurationMs = 200;
+int32_t kMinimumDurationMs = 200;
 
 }  // anonymous namespace
 
@@ -72,7 +72,7 @@ void ToastManager::ShowLatest() {
   const ToastData data = std::move(queue_.front());
   queue_.pop_front();
 
-  uint64_t duration_ms = std::max(data.duration_ms, kMinimumDurationMs);
+  int32_t duration_ms = std::max(data.duration_ms, kMinimumDurationMs);
 
   current_toast_id_ = data.id;
   serial_++;

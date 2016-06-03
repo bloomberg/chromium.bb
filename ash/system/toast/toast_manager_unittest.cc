@@ -16,7 +16,7 @@
 namespace ash {
 
 // Long duration so the timeout doesn't occur.
-const int64_t kLongLongDuration = INT64_MAX;
+const int32_t kLongLongDuration = INT32_MAX;
 
 class DummyEvent : public ui::Event {
  public:
@@ -76,7 +76,7 @@ class ToastManagerTest : public test::AshTestBase {
     Shelf::ForPrimaryDisplay()->SetAutoHideBehavior(behavior);
   }
 
-  std::string ShowToast(const std::string& text, uint64_t duration) {
+  std::string ShowToast(const std::string& text, int32_t duration) {
     std::string id = "TOAST_ID_" + base::UintToString(serial_++);
     manager()->Show(ToastData(id, text, duration));
     return id;
