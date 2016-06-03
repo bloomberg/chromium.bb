@@ -172,6 +172,7 @@
         '../base/base.gyp:base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'autofill_server_proto',
       ],
       'export_dependent_settings': [
         '../testing/gmock.gyp:gmock',

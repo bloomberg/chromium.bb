@@ -79,6 +79,7 @@ message AutofillUploadContents {
       AUTOMATICALLY_TRIGGERED_GENERATION_ON_CHANGE_PASSWORD_FORM = 2;
       MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM = 3;
       MANUALLY_TRIGGERED_GENERATION_ON_CHANGE_PASSWORD_FORM = 4;
+      IGNORED_GENERATION_POPUP = 5;
     }
     // The type of password generation, if it happened.
     optional PasswordGenerationType generation_type = 17;

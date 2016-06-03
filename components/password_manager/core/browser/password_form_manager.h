@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -186,6 +187,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
   const base::string16& generation_element() { return generation_element_; }
   void set_generation_element(const base::string16& generation_element) {
     generation_element_ = generation_element;
+  }
+
+  bool get_generation_popup_was_shown() const {
+    return generation_popup_was_shown_;
+  }
+  void set_generation_popup_was_shown(bool generation_popup_was_shown) {
+    generation_popup_was_shown_ = generation_popup_was_shown;
   }
 
   bool password_overridden() const { return password_overridden_; }
@@ -421,11 +429,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool UploadChangePasswordForm(const autofill::ServerFieldType& password_type,
                                 const std::string& login_form_signature);
 
-  // Try to label a password field that was used for generation with information
-  // that the password was generated and upload |form_data|. For labelling
-  // |generation_element_| and |is_manual_generation_| fields are used. Returns
-  // true on success.
-  bool UploadGeneratedVote();
+  // Adds a vote on password generation usage to |form_structure|.
+  void AddGeneratedVote(autofill::FormStructure* form_structure);
 
   // Create pending credentials from provisionally saved form and forms received
   // from password store.
@@ -518,6 +523,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // A password field name that is used for generation.
   base::string16 generation_element_;
+
+  // Whether generation popup was shown at least once.
+  bool generation_popup_was_shown_;
 
   // Whether the saved password was overridden.
   bool password_overridden_;
