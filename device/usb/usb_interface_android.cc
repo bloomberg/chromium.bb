@@ -4,6 +4,7 @@
 
 #include "device/usb/usb_interface_android.h"
 
+#include "base/android/build_info.h"
 #include "device/usb/usb_endpoint_android.h"
 #include "jni/ChromeUsbInterface_jni.h"
 
@@ -23,9 +24,15 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbInterface_create(env, usb_interface.obj());
 
+  uint8_t alternate_setting = 0;
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
+    alternate_setting =
+        Java_ChromeUsbInterface_getAlternateSetting(env, wrapper.obj());
+  }
+
   UsbInterfaceDescriptor interface(
       Java_ChromeUsbInterface_getInterfaceNumber(env, wrapper.obj()),
-      Java_ChromeUsbInterface_getAlternateSetting(env, wrapper.obj()),
+      alternate_setting,
       Java_ChromeUsbInterface_getInterfaceClass(env, wrapper.obj()),
       Java_ChromeUsbInterface_getInterfaceSubclass(env, wrapper.obj()),
       Java_ChromeUsbInterface_getInterfaceProtocol(env, wrapper.obj()));
