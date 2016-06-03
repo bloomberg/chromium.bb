@@ -44,6 +44,43 @@ bool V8IsolateMemoryDumpProvider::OnMemoryDump(
   return true;
 }
 
+namespace {
+
+// Dump statistics related to code/bytecode when memory-infra.v8.code_stats is
+// enabled.
+void DumpCodeStatistics(
+    base::trace_event::MemoryAllocatorDump* heap_spaces_dump,
+    IsolateHolder* isolate_holder) {
+  // Collecting code statistics is an expensive operation (~10 ms) when
+  // compared to other v8 metrics (< 1 ms). So, dump them only when
+  // memory-infra.v8.code_stats is enabled.
+  // TODO(primiano): This information should be plumbed through TraceConfig.
+  // See crbug.com/616441.
+  bool dump_code_stats = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("memory-infra.v8.code_stats"),
+      &dump_code_stats);
+  if (!dump_code_stats)
+    return;
+
+  v8::HeapCodeStatistics code_statistics;
+  if (!isolate_holder->isolate()->GetHeapCodeAndMetadataStatistics(
+          &code_statistics)) {
+    return;
+  }
+
+  heap_spaces_dump->AddScalar(
+      "code_and_metadata_size",
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+      code_statistics.code_and_metadata_size());
+  heap_spaces_dump->AddScalar(
+      "bytecode_and_metadata_size",
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+      code_statistics.bytecode_and_metadata_size());
+}
+
+}  // namespace anonymous
+
 void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* process_memory_dump) {
@@ -131,6 +168,11 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                                           system_allocator_name);
   }
 
+  // Add an empty row for the heap_spaces. This is to keep the shape of the
+  // dump stable, whether code stats are enabled or not.
+  auto heap_spaces_dump =
+      process_memory_dump->CreateAllocatorDump(space_name_prefix);
+
   // Dump object statistics only for detailed dumps.
   if (args.level_of_detail !=
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
@@ -179,8 +221,11 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   if (did_dump_object_stats) {
     process_memory_dump->AddOwnershipEdge(
         process_memory_dump->CreateAllocatorDump(object_name_prefix)->guid(),
-        process_memory_dump->CreateAllocatorDump(space_name_prefix)->guid());
+        heap_spaces_dump->guid());
   }
+
+  // Dump statistics related to code and bytecode if requested.
+  DumpCodeStatistics(heap_spaces_dump, isolate_holder_);
 }
 
 }  // namespace gin
