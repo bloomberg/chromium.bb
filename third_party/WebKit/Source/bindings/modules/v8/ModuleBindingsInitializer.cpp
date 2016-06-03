@@ -4,7 +4,6 @@
 
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 
-#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/modules/v8/SerializedScriptValueForModulesFactory.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
@@ -17,7 +16,6 @@ void initPartialInterfacesInModules();
 
 void ModuleBindingsInitializer::init()
 {
-    registerToExecutionContextForModules(toExecutionContextForModules);
     registerInstallOriginTrialsForModules();
     initPartialInterfacesInModules();
     SerializedScriptValueFactory::initialize(new SerializedScriptValueForModulesFactory);

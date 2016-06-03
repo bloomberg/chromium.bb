@@ -6,22 +6,20 @@
 #define WorkletGlobalScope_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SecurityContext.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class EventQueue;
-class LocalFrame;
 class WorkerOrWorkletScriptController;
 
-class MODULES_EXPORT WorkletGlobalScope : public GarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public MainThreadWorkletGlobalScope, public ScriptWrappable {
+class CORE_EXPORT WorkletGlobalScope : public GarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public WorkerOrWorkletGlobalScope, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:
@@ -42,21 +40,20 @@ public:
     void disableEval(const String& errorMessage) final;
     String userAgent() const final { return m_userAgent; }
     SecurityContext& securityContext() final { return *this; }
-    EventQueue* getEventQueue() const final { ASSERT_NOT_REACHED(); return nullptr; } // WorkletGlobalScopes don't have an event queue.
+    EventQueue* getEventQueue() const final { NOTREACHED(); return nullptr; } // WorkletGlobalScopes don't have an event queue.
     bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const final;
 
     using SecurityContext::getSecurityOrigin;
     using SecurityContext::contentSecurityPolicy;
 
-    DOMTimerCoordinator* timers() final { ASSERT_NOT_REACHED(); return nullptr; } // WorkletGlobalScopes don't have timers.
+    DOMTimerCoordinator* timers() final { NOTREACHED(); return nullptr; } // WorkletGlobalScopes don't have timers.
     void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
     {
         // TODO(ikilpatrick): implement.
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-    void addConsoleMessage(ConsoleMessage*) final;
     void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) final;
 
     DECLARE_VIRTUAL_TRACE();
@@ -64,7 +61,7 @@ public:
 protected:
     // The url, userAgent and securityOrigin arguments are inherited from the
     // parent ExecutionContext for Worklets.
-    WorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+    WorkletGlobalScope(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
 
 private:
     const KURL& virtualURL() const final { return m_url; }

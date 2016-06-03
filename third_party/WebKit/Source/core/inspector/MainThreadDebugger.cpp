@@ -187,7 +187,7 @@ bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> c
     ExecutionContext* executionContext = toExecutionContext(target);
     ASSERT(executionContext);
 
-    if (executionContext->isWorkletGlobalScope()) {
+    if (executionContext->isMainThreadWorkletGlobalScope()) {
         MainThreadWorkletGlobalScope* globalScope = toMainThreadWorkletGlobalScope(executionContext);
         return globalScope && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), globalScope, DoNotReportSecurityError);
     }

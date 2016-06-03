@@ -44,7 +44,7 @@ protected:
 
 TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition)
 {
-    PaintWorkletGlobalScope* globalScope = toPaintWorkletGlobalScope(paintWorklet()->workletGlobalScope());
+    PaintWorkletGlobalScope* globalScope = paintWorklet()->workletGlobalScopeProxy();
     globalScope->scriptController()->evaluate(ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
 
     CSSPaintDefinition* definition = globalScope->findDefinition("foo");

@@ -196,7 +196,7 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* 
 {
     if (context->isWorkerGlobalScope())
         return instrumentingAgentsFor(toWorkerGlobalScope(context));
-    if (context->isWorkletGlobalScope())
+    if (context->isMainThreadWorkletGlobalScope())
         return instrumentingAgentsFor(toMainThreadWorkletGlobalScope(context)->frame());
     return nullptr;
 }

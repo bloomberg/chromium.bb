@@ -73,6 +73,7 @@ public:
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }
     virtual bool isWorkletGlobalScope() const { return false; }
+    virtual bool isMainThreadWorkletGlobalScope() const { return false; }
     virtual bool isDedicatedWorkerGlobalScope() const { return false; }
     virtual bool isSharedWorkerGlobalScope() const { return false; }
     virtual bool isServiceWorkerGlobalScope() const { return false; }

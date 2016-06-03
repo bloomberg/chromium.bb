@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "modules/ModulesExport.h"
-#include "modules/worklet/WorkletGlobalScope.h"
 #include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
@@ -17,12 +17,13 @@ class CSSPaintDefinition;
 class CSSPaintImageGeneratorImpl;
 class ExceptionState;
 
-class MODULES_EXPORT PaintWorkletGlobalScope : public WorkletGlobalScope {
+class MODULES_EXPORT PaintWorkletGlobalScope final : public MainThreadWorkletGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 public:
     static PaintWorkletGlobalScope* create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~PaintWorkletGlobalScope() override;
-    void dispose() override;
+    void dispose() final;
 
     bool isPaintWorkletGlobalScope() const final { return true; }
     void registerPaint(const String& name, const ScriptValue& ctor, ExceptionState&);

@@ -28,7 +28,7 @@ PaintWorklet::~PaintWorklet()
 {
 }
 
-WorkletGlobalScope* PaintWorklet::workletGlobalScope() const
+PaintWorkletGlobalScope* PaintWorklet::workletGlobalScopeProxy() const
 {
     return m_paintWorkletGlobalScope.get();
 }

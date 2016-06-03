@@ -25,7 +25,7 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::create(LocalFrame* frame, cons
 }
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-    : WorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate)
+    : MainThreadWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate)
 {
 }
 
@@ -153,7 +153,7 @@ DEFINE_TRACE(PaintWorkletGlobalScope)
 {
     visitor->trace(m_paintDefinitions);
     visitor->trace(m_pendingGenerators);
-    WorkletGlobalScope::trace(visitor);
+    MainThreadWorkletGlobalScope::trace(visitor);
 }
 
 } // namespace blink

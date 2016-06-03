@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/worklet/WorkletGlobalScope.h"
+#include "core/workers/WorkletGlobalScope.h"
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/frame/FrameConsole.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/MainThreadDebugger.h"
 
 namespace blink {
 
-WorkletGlobalScope::WorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-    : MainThreadWorkletGlobalScope(frame)
-    , m_url(url)
+WorkletGlobalScope::WorkletGlobalScope(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
+    : m_url(url)
     , m_userAgent(userAgent)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, isolate))
 {
@@ -29,7 +27,7 @@ void WorkletGlobalScope::dispose()
 {
     stopActiveDOMObjects();
 
-    ASSERT(m_scriptController);
+    DCHECK(m_scriptController);
     m_scriptController->willScheduleExecutionTermination();
     m_scriptController->dispose();
     m_scriptController.clear();
@@ -70,11 +68,6 @@ void WorkletGlobalScope::reportBlockedScriptExecutionToInspector(const String& d
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkletGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
-{
-    frame()->console().addMessage(consoleMessage);
-}
-
 void WorkletGlobalScope::logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
     ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
@@ -97,7 +90,7 @@ DEFINE_TRACE(WorkletGlobalScope)
     visitor->trace(m_scriptController);
     ExecutionContext::trace(visitor);
     SecurityContext::trace(visitor);
-    MainThreadWorkletGlobalScope::trace(visitor);
+    WorkerOrWorkletGlobalScope::trace(visitor);
 }
 
 } // namespace blink
