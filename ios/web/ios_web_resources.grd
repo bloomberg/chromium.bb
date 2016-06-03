@@ -21,7 +21,7 @@
       <include name="IDR_IOS_MOJO_SYNC_MESSAGE_CHANNEL_JS" file="webui/resources/sync_message_channel.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_IOS_MOJO_HANDLE_UTIL_JS" file="webui/resources/handle_util.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_IOS_MOJO_CORE_JS" file="webui/resources/core.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_IOS_MOJO_SERVICE_PROVIDER_JS" file="webui/resources/service_provider.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_IOS_MOJO_SERVICE_REGISTRY_JS" file="webui/resources/service_registry.js" flattenhtml="true" type="BINDATA" />
     </includes>
   </release>
 </grit>

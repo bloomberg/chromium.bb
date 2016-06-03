@@ -13,8 +13,8 @@ define('main', [
   'mojo/public/js/core',
   'mojo/public/js/connection',
   'ios/web/test/mojo_test.mojom',
-  'content/public/renderer/service_provider',
-], function(bindings, core, connection, browser, serviceProvider) {
+  'content/public/renderer/frame_service_registry',
+], function(bindings, core, connection, browser, serviceRegistry) {
 
   var page;
 
@@ -52,7 +52,7 @@ define('main', [
 
   return function() {
     var browserProxy = connection.bindHandleToProxy(
-        serviceProvider.connectToService(browser.TestUIHandlerMojo.name),
+        serviceRegistry.connectToService(browser.TestUIHandlerMojo.name),
         browser.TestUIHandlerMojo);
 
     page = new TestPageImpl(browserProxy);

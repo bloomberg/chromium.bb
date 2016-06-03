@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Module "content/public/renderer/service_provider"
+// Module "content/public/renderer/frame_service_registry"
 //
 // This module provides the JavaScript bindings for
 // services/shell/public/cpp/connection.h.
 // Refer to that file for more detailed documentation for equivalent methods.
 
-define("content/public/renderer/service_provider", [
+define("content/public/renderer/frame_service_registry", [
   "ios/mojo/public/js/sync_message_channel",
   "ios/mojo/public/js/handle_util",
 ], function(syncMessageChannel, handleUtil) {

@@ -11,7 +11,7 @@ const char kSyncMessageChannelModuleName[] =
 const char kHandleUtilModuleName[] = "ios/mojo/public/js/handle_util";
 const char kSupportModuleName[] = "mojo/public/js/support";
 const char kCoreModuleName[] = "mojo/public/js/core";
-const char kServiceProviderModuleName[] =
-    "content/public/renderer/service_provider";
+const char kServiceRegistryModuleName[] =
+    "content/public/renderer/frame_service_registry";
 
 }  // namespace web

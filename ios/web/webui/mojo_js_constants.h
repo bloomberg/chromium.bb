@@ -11,7 +11,7 @@ extern const char kSyncMessageChannelModuleName[];
 extern const char kHandleUtilModuleName[];
 extern const char kSupportModuleName[];
 extern const char kCoreModuleName[];
-extern const char kServiceProviderModuleName[];
+extern const char kServiceRegistryModuleName[];
 
 }  // namespace web
 
