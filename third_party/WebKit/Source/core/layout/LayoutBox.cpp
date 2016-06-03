@@ -2733,6 +2733,15 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
         availableHeight = stretchedFlexHeight;
     } else if (hasOverrideContainingBlockLogicalHeight()) {
         availableHeight = overrideContainingBlockContentLogicalHeight();
+    } else if (cbstyle.logicalHeight().isFixed()) {
+        LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
+        availableHeight = cb->constrainContentBoxLogicalHeightByMinMax(
+            contentBoxHeight - cb->scrollbarLogicalHeight(), LayoutUnit(-1)).clampNegativeToZero();
+        if (cb->isTableCell()) {
+            includeBorderPadding = true;
+            // We're sizing content to the height from the cell's style so don't involve the intrinsic padding used to align the content.
+            availableHeight -= cb->computedCSSPaddingBefore() + cb->computedCSSPaddingAfter() + cb->borderBefore() + cb->borderAfter();
+        }
     } else if (cb->isTableCell()) {
         if (!skippedAutoHeightContainingBlock) {
             // Table cells violate what the CSS spec says to do with heights. Basically we
@@ -2754,9 +2763,6 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
             availableHeight = cb->overrideLogicalContentHeight();
             includeBorderPadding = true;
         }
-    } else if (cbstyle.logicalHeight().isFixed()) {
-        LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit(cbstyle.logicalHeight().value()));
-        availableHeight = std::max(LayoutUnit(), cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), LayoutUnit(-1)));
     } else if (cbstyle.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         // We need to recur and compute the percentage height for our containing block.
         LayoutUnit heightWithScrollbar = cb->computePercentageLogicalHeight(cbstyle.logicalHeight());
@@ -2789,10 +2795,8 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
 
     LayoutUnit result = valueForLength(height, availableHeight);
     if (includeBorderPadding) {
-        // FIXME: Table cells should default to box-sizing: border-box so we can avoid this hack.
-        // It is necessary to use the border-box to match WinIE's broken
-        // box model. This is essential for sizing inside
-        // table cells using percentage heights.
+        // TODO(rhogan) crbug.com/467378: Doing this for content inside tables cells is wrong, it should fill
+        // whatever height the cell makes available.
         result -= borderAndPaddingLogicalHeight();
         return std::max(LayoutUnit(), result);
     }

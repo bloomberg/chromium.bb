@@ -1180,6 +1180,13 @@ crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/iframe-object-on
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 
+crbug.com/465096 fast/block/basic/quirk-percent-height-table-cell.html [ NeedsRebaseline ]
+crbug.com/465096 fast/table/colspan-with-all-percent-cells.html [ NeedsRebaseline ]
+crbug.com/465096 fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/465096 fast/html/details-writing-mode-align-center.html [ NeedsRebaseline ]
+crbug.com/465096 fast/html/details-writing-mode-align-left.html [ NeedsRebaseline ]
+crbug.com/465096 fast/html/details-writing-mode-align-right.html [ NeedsRebaseline ]
+
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
