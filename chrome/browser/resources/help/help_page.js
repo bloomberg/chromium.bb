@@ -318,6 +318,8 @@ cr.define('help', function() {
         $('current-channel').textContent = loadTimeData.getStringF(
             'currentChannel', this.channelTable_[channel].label);
         this.updateChannelChangePageContainerVisibility_();
+        if (cr.isChromeOS)
+          $('dev-channel-disclaimer').hidden = (channel != 'dev-channel');
       }
 
       if (status == null)

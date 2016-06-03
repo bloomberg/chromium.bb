@@ -262,6 +262,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
     {"stable", IDS_ABOUT_PAGE_CHANNEL_STABLE},
     {"beta", IDS_ABOUT_PAGE_CHANNEL_BETA},
     {"dev", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT},
+    {"devChannelDisclaimer", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT_DISCLAIMER},
     {"channel-changed", IDS_ABOUT_PAGE_CHANNEL_CHANGED},
     {"currentChannelStable", IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
     {"currentChannelBeta", IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},

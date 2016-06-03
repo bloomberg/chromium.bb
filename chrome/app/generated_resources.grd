@@ -9309,6 +9309,9 @@ I don't think this site should be blocked!
         <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
           Developer - unstable
         </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT_DISCLAIMER" desc="The disclaimer shown to warn the user when the development channel is used.">
+          This channel is not suitable for use on your primary device and certain features and apps might break.
+        </message>
         <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGED" desc="The message to confirm that channel has changed.">
           You have switched to the <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
         </message>
