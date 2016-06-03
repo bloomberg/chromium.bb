@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_IPC_TRANSFORM_STRUCT_TRAITS_H_
-#define UI_GFX_IPC_TRANSFORM_STRUCT_TRAITS_H_
+#ifndef UI_GFX_MOJO_TRANSFORM_STRUCT_TRAITS_H_
+#define UI_GFX_MOJO_TRANSFORM_STRUCT_TRAITS_H_
 
 #include "ui/gfx/mojo/transform.mojom.h"
 #include "ui/gfx/transform.h"
@@ -31,4 +31,4 @@ struct StructTraits<gfx::mojom::Transform, gfx::Transform> {
 
 }  // namespace mojo
 
-#endif  // UI_GFX_IPC_TRANSFORM_STRUCT_TRAITS_H_
+#endif  // UI_GFX_MOJO_TRANSFORM_STRUCT_TRAITS_H_

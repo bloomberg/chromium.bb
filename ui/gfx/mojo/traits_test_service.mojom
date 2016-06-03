@@ -4,11 +4,15 @@
 
 module gfx.mojom;
 
+import "ui/gfx/mojo/selection_bound.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.
 interface TraitsTestService {
+  [Sync]
+  EchoSelectionBound(SelectionBound s) => (SelectionBound pass);
+
   [Sync]
   EchoTransform(Transform t) => (Transform pass);
 };

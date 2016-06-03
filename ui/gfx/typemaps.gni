@@ -4,5 +4,6 @@
 
 typemaps = [
   "//ui/gfx/geometry/mojo/geometry.typemap",
+  "//ui/gfx/mojo/selection_bound.typemap",
   "//ui/gfx/mojo/transform.typemap",
 ]

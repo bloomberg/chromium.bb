@@ -6,6 +6,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/mojo/traits_test_service.mojom.h"
+#include "ui/gfx/selection_bound.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -23,6 +24,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
+  void EchoSelectionBound(const SelectionBound& s,
+                          const EchoSelectionBoundCallback& callback) override {
+    callback.Run(s);
+  }
+
   void EchoTransform(const Transform& t,
                      const EchoTransformCallback& callback) override {
     callback.Run(t);
@@ -35,6 +41,26 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 }  // namespace
+
+TEST_F(StructTraitsTest, SelectionBound) {
+  const gfx::SelectionBound::Type type = gfx::SelectionBound::CENTER;
+  const gfx::PointF edge_top(1234.5f, 5678.6f);
+  const gfx::PointF edge_bottom(910112.5f, 13141516.6f);
+  const bool visible = true;
+  gfx::SelectionBound input;
+  input.set_type(type);
+  input.SetEdge(edge_top, edge_bottom);
+  input.set_visible(visible);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::SelectionBound output;
+  proxy->EchoSelectionBound(input, &output);
+  EXPECT_EQ(type, output.type());
+  EXPECT_EQ(edge_top, output.edge_top());
+  EXPECT_EQ(edge_bottom, output.edge_bottom());
+  EXPECT_EQ(input.edge_top_rounded(), output.edge_top_rounded());
+  EXPECT_EQ(input.edge_bottom_rounded(), output.edge_bottom_rounded());
+  EXPECT_EQ(visible, output.visible());
+}
 
 TEST_F(StructTraitsTest, Transform) {
   const float col1row1 = 1.f;
