@@ -909,23 +909,6 @@ handle_exit(struct weston_compositor *c)
 	wl_display_terminate(c->wl_display);
 }
 
-/* Temporary function to be removed when all backends are converted. */
-static int
-load_backend_old(struct weston_compositor *compositor, const char *backend,
-		 int *argc, char **argv, struct weston_config *wc)
-{
-	int (*backend_init)(struct weston_compositor *c,
-			    int *argc, char *argv[],
-			    struct weston_config *config,
-			    struct weston_backend_config *config_base);
-
-	backend_init = weston_load_module(backend, "backend_init");
-	if (!backend_init)
-		return -1;
-
-	return backend_init(compositor, argc, argv, wc, NULL);
-}
-
 /** Main module call-point for backends.
  *
  * All backends should use this routine to access their init routine.
@@ -1553,7 +1536,8 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 	else if (strstr(backend, "wayland-backend.so"))
 		return load_wayland_backend(compositor, backend, argc, argv, config);
 
-	return load_backend_old(compositor, backend, argc, argv, config);
+	weston_log("Error: unknown backend \"%s\"\n", backend);
+	return -1;
 }
 
 int main(int argc, char *argv[])
