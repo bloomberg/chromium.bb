@@ -16,6 +16,7 @@ ozone_platform = "headless"
 ozone_platform_headless = true
 metrics_use_blimp = true
 use_low_quality_image_interpolation = true
+use_external_popup_menu = true
 
 # Not available within docker container.
 use_alsa = false

@@ -54,7 +54,7 @@ struct AccessibilityHostMsg_LocationChangeParams;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(USE_EXTERNAL_POPUP_MENU)
 struct FrameHostMsg_ShowPopup_Params;
 #endif
 
@@ -496,13 +496,15 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
     no_create_browser_accessibility_manager_for_testing_ = flag;
   }
 
+#if defined(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
   // Select popup menu related methods (for external popup menus).
   void DidSelectPopupMenuItem(int selected_index);
   void DidCancelPopupMenu();
-#elif defined(OS_ANDROID)
+#else
   void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
   void DidCancelPopupMenu();
+#endif
 #endif
 
   // PlzNavigate: Indicates that a navigation is ready to commit and can be
@@ -690,7 +692,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
       bool success,
       const std::set<std::string>& digests_of_uris_of_serialized_resources);
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
   void OnHidePopup();
 #endif

@@ -100,23 +100,21 @@ source_set("renderer") {
     allow_circular_includes_from += [ "//content/renderer/mus" ]
   }
 
-  if (is_mac) {
-    sources -= [
-      "webscrollbarbehavior_impl_gtkoraura.cc",
-      "webscrollbarbehavior_impl_gtkoraura.h",
-    ]
+  if (use_external_popup_menu) {
     sources += [
       "external_popup_menu.cc",
       "external_popup_menu.h",
     ]
   }
 
-  if (is_android) {
-    sources += [
-      "external_popup_menu.cc",
-      "external_popup_menu.h",
+  if (is_mac) {
+    sources -= [
+      "webscrollbarbehavior_impl_gtkoraura.cc",
+      "webscrollbarbehavior_impl_gtkoraura.h",
     ]
+  }
 
+  if (is_android) {
     # Add back the Linux file which Android shares.
     set_sources_assignment_filter([])
     sources += [ "render_view_linux.cc" ]

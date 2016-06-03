@@ -70,6 +70,9 @@
           # certificate verification, but this configuration is unsupported.
           'use_openssl_certs%': 0,
 
+          # Whether or not we use external popup menu.
+          'use_external_popup_menu%': 0,
+
           # Disable viewport meta tag by default.
           'enable_viewport%': 0,
 
@@ -140,6 +143,11 @@
               'use_ozone%': 1,
             }],
 
+            # Mac and Android use external popup menu.
+            ['OS=="mac" or OS=="android"', {
+              'use_external_popup_menu%': 1,
+            }],
+
             ['OS=="android"', {
               'target_arch%': 'arm',
             }, {
@@ -160,6 +168,7 @@
         'embedded%': '<(embedded)',
         'use_libpci%': '<(use_libpci)',
         'use_openssl_certs%': '<(use_openssl_certs)',
+        'use_external_popup_menu%': '<(use_external_popup_menu)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_wayland_server%': '<(enable_wayland_server)',
@@ -339,6 +348,7 @@
       'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
       'embedded%': '<(embedded)',
       'use_openssl_certs%': '<(use_openssl_certs)',
+      'use_external_popup_menu%': '<(use_external_popup_menu)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_wayland_server%': '<(enable_wayland_server)',
@@ -1134,6 +1144,7 @@
     'use_cras%': '<(use_cras)',
     'use_libpci%': '<(use_libpci)',
     'use_openssl_certs%': '<(use_openssl_certs)',
+    'use_external_popup_menu%': '<(use_external_popup_menu)',
     'use_nss_certs%': '<(use_nss_certs)',
     'use_udev%': '<(use_udev)',
     'os_bsd%': '<(os_bsd)',
@@ -2762,6 +2773,9 @@
       }],
       ['use_udev==1', {
         'defines': ['USE_UDEV'],
+      }],
+      ['use_external_popup_menu==1', {
+        'defines': ['USE_EXTERNAL_POPUP_MENU'],
       }],
       ['fastbuild!=0', {
         'xcode_settings': {

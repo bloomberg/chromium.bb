@@ -122,6 +122,18 @@ class CONTENT_EXPORT WebContentsViewAura
   void UpdateDragCursor(blink::WebDragOperation operation) override;
   void GotFocus() override;
   void TakeFocus(bool reverse) override;
+#if defined(USE_EXTERNAL_POPUP_MENU)
+  void ShowPopupMenu(RenderFrameHost* render_frame_host,
+                     const gfx::Rect& bounds,
+                     int item_height,
+                     double item_font_size,
+                     int selected_item,
+                     const std::vector<MenuItem>& items,
+                     bool right_aligned,
+                     bool allow_multiple_selection) override;
+
+  void HidePopupMenu() override;
+#endif
 
   // Overridden from OverscrollControllerDelegate:
   gfx::Rect GetVisibleBounds() const override;

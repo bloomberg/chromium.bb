@@ -554,7 +554,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(source)
 IPC_STRUCT_TRAITS_END()
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(USE_EXTERNAL_POPUP_MENU)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
 IPC_STRUCT_BEGIN(FrameHostMsg_ShowPopup_Params)
@@ -833,18 +833,17 @@ IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 // this immediately after a FrameHostMsg_Find_Reply message arrives with
 // final_update set to true).
 IPC_MESSAGE_ROUTED1(FrameMsg_FindMatchRects, int /* current_version */)
+#endif
 
-// External popup menus.
+#if defined(USE_EXTERNAL_POPUP_MENU)
+#if defined(OS_MACOSX)
+IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
+                    int /* selected index, -1 means no selection */)
+#else
 IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
                     bool /* user canceled the popup */,
                     std::vector<int> /* selected indices */)
-
-#elif defined(OS_MACOSX)
-
-// External popup menus.
-IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
-                    int /* selected index, -1 means no selection */)
-
+#endif
 #endif
 
 // PlzNavigate
@@ -1450,7 +1449,7 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_Find_Reply,
 // Sends hittesting data needed to perform hittesting on the browser process.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(USE_EXTERNAL_POPUP_MENU)
 
 // Message to show/hide a popup menu using native controls.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ShowPopup,

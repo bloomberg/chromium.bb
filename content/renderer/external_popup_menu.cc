@@ -63,6 +63,7 @@ void ExternalPopupMenu::close()  {
   // |this| was deleted.
 }
 
+#if defined(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 void ExternalPopupMenu::DidSelectItem(int index) {
   if (!popup_menu_client_)
@@ -72,9 +73,7 @@ void ExternalPopupMenu::DidSelectItem(int index) {
   else
     popup_menu_client_->didAcceptIndex(index);
 }
-#endif
-
-#if defined(OS_ANDROID)
+#else
 void ExternalPopupMenu::DidSelectItems(bool canceled,
                                        const std::vector<int>& indices) {
   if (!popup_menu_client_)
@@ -84,6 +83,7 @@ void ExternalPopupMenu::DidSelectItems(bool canceled,
   else
     popup_menu_client_->didAcceptIndices(indices);
 }
+#endif
 #endif
 
 }  // namespace content
