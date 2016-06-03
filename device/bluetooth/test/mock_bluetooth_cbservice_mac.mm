@@ -12,7 +12,7 @@ using base::mac::ObjCCast;
 using base::scoped_nsobject;
 
 @interface MockCBService () {
-  CBUUID* _UUID;
+  scoped_nsobject<CBUUID> _UUID;
   BOOL _primary;
 }
 
@@ -20,21 +20,15 @@ using base::scoped_nsobject;
 
 @implementation MockCBService
 
-@synthesize UUID = _UUID;
 @synthesize isPrimary = _primary;
 
 - (instancetype)initWithCBUUID:(CBUUID*)uuid primary:(BOOL)isPrimary {
   self = [super init];
   if (self) {
-    _UUID = [uuid retain];
+    _UUID.reset([uuid retain]);
     _primary = isPrimary;
   }
   return self;
-}
-
-- (void)dealloc {
-  [_UUID release];
-  [super dealloc];
 }
 
 - (BOOL)isKindOfClass:(Class)aClass {
@@ -51,6 +45,10 @@ using base::scoped_nsobject;
     return YES;
   }
   return [super isKindOfClass:aClass];
+}
+
+- (CBUUID*)UUID {
+  return _UUID.get();
 }
 
 - (CBService*)service {
