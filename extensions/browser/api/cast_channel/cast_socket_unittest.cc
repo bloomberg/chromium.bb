@@ -185,19 +185,33 @@ class TestCastSocket : public CastSocketImpl {
         kDistantTimeoutMillis, logger, device_capabilities));
   }
 
-  explicit TestCastSocket(const net::IPEndPoint& ip_endpoint,
-                          ChannelAuthType channel_auth,
-                          int64_t timeout_ms,
-                          Logger* logger,
-                          uint64_t device_capabilities)
+  TestCastSocket(const net::IPEndPoint& ip_endpoint,
+                 ChannelAuthType channel_auth,
+                 int64_t timeout_ms,
+                 Logger* logger,
+                 uint64_t device_capabilities)
+      : TestCastSocket(ip_endpoint,
+                       channel_auth,
+                       timeout_ms,
+                       logger,
+                       new net::TestNetLog(),
+                       device_capabilities) {}
+
+  TestCastSocket(const net::IPEndPoint& ip_endpoint,
+                 ChannelAuthType channel_auth,
+                 int64_t timeout_ms,
+                 Logger* logger,
+                 net::TestNetLog* capturing_net_log,
+                 uint64_t device_capabilities)
       : CastSocketImpl("some_extension_id",
                        ip_endpoint,
                        channel_auth,
-                       &capturing_net_log_,
+                       capturing_net_log,
                        base::TimeDelta::FromMilliseconds(timeout_ms),
                        false,
                        logger,
                        device_capabilities),
+        capturing_net_log_(capturing_net_log),
         ip_(ip_endpoint),
         extract_cert_result_(true),
         verify_challenge_result_(true),
@@ -296,7 +310,7 @@ class TestCastSocket : public CastSocketImpl {
     ssl_data_->set_connect_data(*connect_data);
     // NOTE: net::MockTCPClientSocket inherits from net::SSLClientSocket !!
     return std::unique_ptr<net::SSLClientSocket>(new net::MockTCPClientSocket(
-        net::AddressList(), &capturing_net_log_, ssl_data_.get()));
+        net::AddressList(), capturing_net_log_.get(), ssl_data_.get()));
   }
 
   scoped_refptr<net::X509Certificate> ExtractPeerCert() override {
@@ -313,7 +327,7 @@ class TestCastSocket : public CastSocketImpl {
 
   base::Timer* GetTimer() override { return mock_timer_.get(); }
 
-  net::TestNetLog capturing_net_log_;
+  std::unique_ptr<net::TestNetLog> capturing_net_log_;
   net::IPEndPoint ip_;
   // Simulated connect data
   std::unique_ptr<net::MockConnect> tcp_connect_data_;
