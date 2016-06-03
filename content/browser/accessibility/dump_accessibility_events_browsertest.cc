@@ -150,7 +150,8 @@ void DumpAccessibilityEventsTest::RunEventTest(
 }
 
 // TODO(dmazzoni): port these tests to run on all platforms.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// TODO(crbug.com/617146): All tests flaky on Windows 8.
+#if /*defined(OS_WIN) ||*/ defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaComboBoxCollapse) {
