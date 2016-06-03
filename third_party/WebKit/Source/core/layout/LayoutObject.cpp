@@ -3656,11 +3656,12 @@ ObjectPaintProperties* LayoutObject::objectPaintProperties() const
 
 ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    if (ObjectPaintProperties* properties = objectPaintPropertiesMap().get(this))
-        return *properties;
-    objectPaintPropertiesMap().set(this, ObjectPaintProperties::create());
-    return *objectPaintPropertiesMap().get(this);
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    auto addResult = objectPaintPropertiesMap().add(this, nullptr);
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = ObjectPaintProperties::create();
+
+    return *addResult.storedValue->value;
 }
 
 void LayoutObject::clearObjectPaintProperties()
