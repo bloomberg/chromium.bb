@@ -358,6 +358,14 @@ ResumableTCPSocket::ResumableTCPSocket(
       buffer_size_(0),
       paused_(false) {}
 
+ResumableTCPSocket::~ResumableTCPSocket() {
+  // Despite ~TCPSocket doing basically the same, we need to disconnect
+  // before ResumableTCPSocket is destroyed, because we have some extra
+  // state that relies on the socket being ResumableTCPSocket, like
+  // read_callback_.
+  Disconnect();
+}
+
 bool ResumableTCPSocket::IsPersistent() const { return persistent(); }
 
 ResumableTCPServerSocket::ResumableTCPServerSocket(

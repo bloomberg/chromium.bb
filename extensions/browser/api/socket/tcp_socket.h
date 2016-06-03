@@ -115,6 +115,8 @@ class ResumableTCPSocket : public TCPSocket {
       const std::string& owner_extension_id,
       bool is_connected);
 
+  ~ResumableTCPSocket() override;
+
   // Overriden from ApiResource
   bool IsPersistent() const override;
 
