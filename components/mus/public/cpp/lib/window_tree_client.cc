@@ -401,15 +401,13 @@ void WindowTreeClient::AddWindow(Window* window) {
 }
 
 void WindowTreeClient::OnWindowDestroying(Window* window) {
-  // TODO(jonross): Also clear the focused window (crbug.com/611983)
   if (window == capture_window_) {
-    InFlightCaptureChange reset_change(this, nullptr);
-    ApplyServerChangeToExistingInFlightChange(reset_change);
-    // Normally just updating the queued changes is sufficient. However since
+    // Normally the queue updates itself upon window destruction. However since
     // |window| is being destroyed, it will not be possible to notify its
     // observers of the lost capture. Update local state now.
     LocalSetCapture(nullptr);
   }
+  // For |focused_window_| window destruction clears the entire focus state.
 }
 
 void WindowTreeClient::OnWindowDestroyed(Window* window) {
