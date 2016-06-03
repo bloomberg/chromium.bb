@@ -4,6 +4,7 @@
   "Android Debug (Nexus 5)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17,6 +18,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -30,6 +32,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -299,6 +302,7 @@
   "Android Debug (Nexus 5X)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -312,6 +316,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -325,6 +330,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -594,6 +600,7 @@
   "Android Debug (Nexus 6)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -607,6 +614,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -620,6 +628,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -889,6 +898,7 @@
   "Android Debug (Nexus 9)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -902,6 +912,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -915,6 +926,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1184,6 +1196,7 @@
   "Android Swarmed Debug (Nexus 5X)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1198,6 +1211,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1212,6 +1226,7 @@
         "use_xvfb": false
       },
       {
+        "override_isolate_target": "gl_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

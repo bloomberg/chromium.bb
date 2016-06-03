@@ -1040,6 +1040,10 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
         tester_config['swarming_dimensions']
       ],
     })
+    if is_android(tester_config):
+      # Override the isolate target to get rid of any "_apk" suffix
+      # that would be added by the recipes.
+      result['override_isolate_target'] = test
   if 'desktop_args' in result:
     if not is_android(tester_config):
       if not 'args' in result:
