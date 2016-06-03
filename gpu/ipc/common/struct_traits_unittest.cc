@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "gpu/ipc/common/traits_test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +39,8 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
   base::MessageLoop loop_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
 
 }  // namespace
@@ -51,15 +52,12 @@ TEST_F(StructTraitsTest, Mailbox) {
       6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7};
   gpu::Mailbox input;
   input.SetName(mailbox_name);
-  base::RunLoop loop;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  proxy->EchoMailbox(input, [&mailbox_name, &loop](const Mailbox& pass) {
-    gpu::Mailbox test_mailbox;
-    test_mailbox.SetName(mailbox_name);
-    EXPECT_EQ(test_mailbox, pass);
-    loop.Quit();
-  });
-  loop.Run();
+  gpu::Mailbox output;
+  proxy->EchoMailbox(input, &output);
+  gpu::Mailbox test_mailbox;
+  test_mailbox.SetName(mailbox_name);
+  EXPECT_EQ(test_mailbox, output);
 }
 
 TEST_F(StructTraitsTest, MailboxHolder) {
@@ -82,15 +80,12 @@ TEST_F(StructTraitsTest, MailboxHolder) {
   input.sync_token = sync_token;
   input.texture_target = texture_target;
 
-  base::RunLoop loop;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  proxy->EchoMailboxHolder(input, [mailbox, sync_token, texture_target,
-                                   &loop](const MailboxHolder& pass) {
-    EXPECT_EQ(mailbox, pass.mailbox);
-    EXPECT_EQ(sync_token, pass.sync_token);
-    EXPECT_EQ(texture_target, pass.texture_target);
-    loop.Quit();
-  });
+  gpu::MailboxHolder output;
+  proxy->EchoMailboxHolder(input, &output);
+  EXPECT_EQ(mailbox, output.mailbox);
+  EXPECT_EQ(sync_token, output.sync_token);
+  EXPECT_EQ(texture_target, output.texture_target);
 }
 
 TEST_F(StructTraitsTest, SyncToken) {
@@ -102,19 +97,14 @@ TEST_F(StructTraitsTest, SyncToken) {
   const bool verified_flush = false;
   gpu::SyncToken input(namespace_id, extra_data_field, command_buffer_id,
                        release_count);
-  base::RunLoop loop;
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  proxy->EchoSyncToken(
-      input, [namespace_id, extra_data_field, command_buffer_id, release_count,
-              verified_flush, &loop](const SyncToken& pass) {
-        EXPECT_EQ(namespace_id, pass.namespace_id());
-        EXPECT_EQ(extra_data_field, pass.extra_data_field());
-        EXPECT_EQ(command_buffer_id, pass.command_buffer_id());
-        EXPECT_EQ(release_count, pass.release_count());
-        EXPECT_EQ(verified_flush, pass.verified_flush());
-        loop.Quit();
-      });
-  loop.Run();
+  gpu::SyncToken output;
+  proxy->EchoSyncToken(input, &output);
+  EXPECT_EQ(namespace_id, output.namespace_id());
+  EXPECT_EQ(extra_data_field, output.extra_data_field());
+  EXPECT_EQ(command_buffer_id, output.command_buffer_id());
+  EXPECT_EQ(release_count, output.release_count());
+  EXPECT_EQ(verified_flush, output.verified_flush());
 }
 
 }  // namespace gpu

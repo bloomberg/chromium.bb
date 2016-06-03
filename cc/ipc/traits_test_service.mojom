@@ -10,11 +10,22 @@ import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/transferable_resource.mojom";
 
+// All functions on this interface echo their arguments to test StructTraits
+// serialization and deserialization.
 interface TraitsTestService {
+  [Sync]
   EchoBeginFrameArgs(BeginFrameArgs b) => (BeginFrameArgs pass);
+
+  [Sync]
   EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
-  EchoReturnedResource(ReturnedResource r) => (ReturnedResource r);
+
+  [Sync]
+  EchoReturnedResource(ReturnedResource r) => (ReturnedResource pass);
+
+  [Sync]
   EchoSurfaceId(SurfaceId s) => (SurfaceId pass);
+
+  [Sync]
   EchoTransferableResource(TransferableResource t) =>
       (TransferableResource pass);
 };
