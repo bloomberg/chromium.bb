@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_SHELF_H_
 #define ASH_SHELF_SHELF_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "ash/ash_export.h"
@@ -65,6 +67,10 @@ class ASH_EXPORT Shelf {
   // on primary display if the shelf per display feature is disabled. NULL if no
   // user is logged in yet.
   static Shelf* ForWindow(const aura::Window* window);
+
+  // Returns the shelf for the display with |display_id| or null if that display
+  // does not exist or does not have a shelf.
+  static Shelf* ForDisplayId(int64_t display_id);
 
   void SetAlignment(wm::ShelfAlignment alignment);
   wm::ShelfAlignment alignment() const { return alignment_; }

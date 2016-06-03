@@ -7,7 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_globals.h"
+#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -20,11 +25,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/window_state_aura.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -144,6 +146,21 @@ class WebNotificationTrayTest : public test::AshTestBase {
 
   bool IsPopupVisible() {
     return GetTray()->IsPopupVisible();
+  }
+
+  std::unique_ptr<views::Widget> CreateTestWidget() {
+    std::unique_ptr<views::Widget> widget(new views::Widget);
+    views::Widget::InitParams params;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(1, 2, 3, 4);
+    wm::WmGlobals::Get()
+        ->GetPrimaryRootWindow()
+        ->GetRootWindowController()
+        ->ConfigureWidgetInitParamsForContainer(
+            widget.get(), kShellWindowId_DefaultContainer, &params);
+    widget->Init(params);
+    widget->Show();
+    return widget;
   }
 
  private:
@@ -355,8 +372,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   int bottom = GetPopupWorkAreaBottom();
 
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
@@ -365,13 +381,13 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   EXPECT_LT(bottom, bottom_auto_hidden);
 
   // Close the window, which shows the shelf.
-  window.reset();
+  widget.reset();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   int bottom_auto_shown = GetPopupWorkAreaBottom();
   EXPECT_EQ(bottom, bottom_auto_shown);
 
   // Create the system tray during auto-hide.
-  window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
+  widget = CreateTestWidget();
   TestItem* test_item = new TestItem;
   GetSystemTray()->AddTrayItem(test_item);
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -398,7 +414,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   EXPECT_GT(bottom_auto_hidden, bottom_hidden_with_tray_notification);
 
   // Close the window again, which shows the shelf.
-  window.reset();
+  widget.reset();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   int bottom_shown_with_tray_notification = GetPopupWorkAreaBottom();
   EXPECT_GT(bottom_hidden_with_tray_notification,
@@ -412,19 +428,21 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   int bottom = GetPopupWorkAreaBottom();
 
   // Checks the work area for normal auto-hidden state.
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_auto_hidden = GetPopupWorkAreaBottom();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
-  // Put |window| into fullscreen without forcing the shelf to hide. Currently,
+  // Put |widget| into fullscreen without forcing the shelf to hide. Currently,
   // this is used by immersive fullscreen and forces the shelf to be auto
   // hidden.
-  wm::GetWindowState(window.get())->set_hide_shelf_when_fullscreen(false);
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  wm::WmLookup::Get()
+      ->GetWindowForWidget(widget.get())
+      ->GetWindowState()
+      ->set_hide_shelf_when_fullscreen(false);
+  widget->SetFullscreen(true);
   RunAllPendingInMessageLoop();
 
   // The work area for auto-hidden status of fullscreen is a bit larger

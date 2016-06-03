@@ -7,6 +7,9 @@
 #include "ash/ash_switches.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -26,8 +29,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -210,6 +211,8 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
       message_center::MessageCenter::Get()));
   popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(
       status_area_widget->shelf_widget()->shelf_layout_manager()));
+  // TODO(jamescook): Either MessagePopupCollection needs to become aware of
+  // mus or we need some sort of parent/container provider.
   popup_collection_.reset(new message_center::MessagePopupCollection(
       ash::Shell::GetContainer(
           status_area_widget->GetNativeView()->GetRootWindow(),
@@ -217,9 +220,9 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
       message_center(),
       message_center_tray_.get(),
       popup_alignment_delegate_.get()));
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          status_area_widget->GetNativeView());
+  const display::Display& display = wm::WmLookup::Get()
+                                        ->GetWindowForWidget(status_area_widget)
+                                        ->GetDisplayNearestWindow();
   popup_alignment_delegate_->StartObserving(display::Screen::GetScreen(),
                                             display);
   OnMessageCenterTrayChanged();
@@ -245,13 +248,18 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
           message_center_tray_.get(),
           true);
 
-  // Assume the status area and bubble bottoms are aligned when vertical.
-  aura::Window* status_area_window = status_area_widget()->GetNativeView();
-  const int max_height =
-      wm::IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())
-          ? GetShelfLayoutManager()->GetIdealBounds().y()
-          : status_area_window->GetBoundsInRootWindow().bottom();
-
+  int max_height;
+  if (wm::IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())) {
+    max_height = GetShelfLayoutManager()->GetIdealBounds().y();
+  } else {
+    // Assume the status area and bubble bottoms are aligned when vertical.
+    wm::WmWindow* status_area_window =
+        wm::WmLookup::Get()->GetWindowForWidget(status_area_widget());
+    gfx::Rect bounds_in_root =
+        status_area_window->GetRootWindow()->ConvertRectFromScreen(
+            status_area_window->GetBoundsInScreen());
+    max_height = bounds_in_root.bottom();
+  }
   message_center_bubble->SetMaxHeight(std::max(0, max_height - kTraySpacing));
   if (show_settings)
     message_center_bubble->SetSettingsVisible();

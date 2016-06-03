@@ -11,6 +11,7 @@
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
+#include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
@@ -70,6 +71,18 @@ Shelf* Shelf::ForWindow(const aura::Window* window) {
   ShelfWidget* shelf_widget =
       RootWindowController::ForWindow(window)->shelf_widget();
   return shelf_widget ? shelf_widget->shelf() : nullptr;
+}
+
+// static
+Shelf* Shelf::ForDisplayId(int64_t display_id) {
+  for (aura::Window* window : Shell::GetInstance()->GetAllRootWindows()) {
+    RootWindowSettings* settings = GetRootWindowSettings(window);
+    if (settings->display_id == display_id && settings->controller) {
+      ShelfWidget* shelf_widget = settings->controller->shelf_widget();
+      return shelf_widget ? shelf_widget->shelf() : nullptr;
+    }
+  }
+  return nullptr;
 }
 
 void Shelf::SetAlignment(wm::ShelfAlignment alignment) {

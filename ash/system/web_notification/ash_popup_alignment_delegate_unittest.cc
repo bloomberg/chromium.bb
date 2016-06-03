@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/wm_globals.h"
+#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/display/display_manager.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -100,6 +102,21 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     return alignment_delegate_->work_area_;
   }
 
+  std::unique_ptr<views::Widget> CreateTestWidget(int container_id) {
+    std::unique_ptr<views::Widget> widget(new views::Widget);
+    views::Widget::InitParams params;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 50, 50);
+    wm::WmGlobals::Get()
+        ->GetPrimaryRootWindow()
+        ->GetRootWindowController()
+        ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
+                                                &params);
+    widget->Init(params);
+    widget->Show();
+    return widget;
+  }
+
  private:
   std::unique_ptr<AshPopupAlignmentDelegate> alignment_delegate_;
 };
@@ -164,7 +181,8 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   int baseline = alignment_delegate()->GetBaseLine();
 
   // Create a window, otherwise autohide doesn't work.
-  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(kShellWindowId_DefaultContainer);
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
@@ -179,12 +197,8 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
   int baseline = alignment_delegate()->GetBaseLine();
 
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 50, 50)));
-  aura::Window* docked_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      kShellWindowId_DockedContainer);
-  docked_container->AddChild(window.get());
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(kShellWindowId_DockedContainer);
 
   // Left-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
@@ -269,12 +283,8 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
       Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
 
   display::Display second_display = ScreenUtil::GetSecondaryDisplay();
-  aura::Window* second_root =
-      Shell::GetInstance()
-          ->window_tree_host_manager()
-          ->GetRootWindowForDisplayId(second_display.id());
   AshPopupAlignmentDelegate for_2nd_display(
-      Shelf::ForWindow(second_root)->shelf_layout_manager());
+      Shelf::ForDisplayId(second_display.id())->shelf_layout_manager());
   UpdateWorkArea(&for_2nd_display, second_display);
   // Make sure that the toast position on the secondary display is
   // positioned correctly.

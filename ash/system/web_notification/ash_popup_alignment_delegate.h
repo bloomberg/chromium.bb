@@ -16,10 +16,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/popup_alignment_delegate.h"
 
-namespace aura {
-class Window;
-}
-
 namespace display {
 class Screen;
 }
