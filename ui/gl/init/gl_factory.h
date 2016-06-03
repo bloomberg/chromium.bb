@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/init/gl_init_export.h"
 
@@ -21,6 +22,13 @@ namespace init {
 
 // Initialize GL bindings.
 GL_INIT_EXPORT bool InitializeGLOneOff();
+
+// Initialize GL bindings using the provided parameters. This might be required
+// for use in tests, otherwise use InitializeGLOneOff() instead.
+GL_INIT_EXPORT bool InitializeGLOneOffImplementation(GLImplementation impl,
+                                                     bool fallback_to_osmesa,
+                                                     bool gpu_service_logging,
+                                                     bool disable_gl_drawing);
 
 // Create a GL context that is compatible with the given surface. |share_group|,
 // if non-NULL, is a group of contexts which the internally created OpenGL

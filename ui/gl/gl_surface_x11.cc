@@ -22,37 +22,6 @@
 
 namespace gl {
 
-namespace {
-
-}  // namespace
-
-bool GLSurface::InitializeOneOffInternal() {
-  switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGL:
-      if (!GLSurfaceGLX::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationOSMesaGL:
-      if (!GLSurfaceOSMesaX11::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceOSMesaX11::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    default:
-      break;
-  }
-
-  return true;
-}
-
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     gfx::AcceleratedWidget window) {
   TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");

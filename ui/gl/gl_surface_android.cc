@@ -16,20 +16,6 @@
 namespace gl {
 
 // static
-bool GLSurface::InitializeOneOffInternal() {
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
-      }
-    default:
-      break;
-  }
-  return true;
-}
-
-// static
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     gfx::AcceleratedWidget window) {
   CHECK_NE(kGLImplementationNone, GetGLImplementation());

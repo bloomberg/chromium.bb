@@ -53,35 +53,6 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
 };
 
-// Helper routine that does one-off initialization like determining the
-// pixel format.
-bool GLSurface::InitializeOneOffInternal() {
-  VSyncProviderWin::InitializeOneOff();
-
-  switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGL:
-      if (!GLSurfaceWGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceWGL::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationNone:
-    case kGLImplementationDesktopGLCoreProfile:
-    case kGLImplementationAppleGL:
-      NOTREACHED();
-    case kGLImplementationOSMesaGL:
-    case kGLImplementationMockGL:
-      break;
-  }
-  return true;
-}
-
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::AcceleratedWidget window)
     : GLSurfaceOSMesa(SURFACE_OSMESA_RGBA, gfx::Size(1, 1)),

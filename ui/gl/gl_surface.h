@@ -128,10 +128,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // the calling thread (i.e. same thread CommitOverlayPlanesAsync is called).
   virtual void CommitOverlayPlanesAsync(const SwapCompletionCallback& callback);
 
-  // Initialize GL bindings.
-  // DEPRECATED(kylechar): Use gl::init::InitializeGLOneOff from gl_factory.h.
-  static bool InitializeOneOff();
-
   // Called after a context is made current with this surface. Returns false
   // on error.
   virtual bool OnMakeCurrent(GLContext* context);
@@ -226,11 +222,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
  protected:
   virtual ~GLSurface();
-  static bool InitializeOneOffImplementation(GLImplementation impl,
-                                             bool fallback_to_osmesa,
-                                             bool gpu_service_logging,
-                                             bool disable_gl_drawing);
-  static bool InitializeOneOffInternal();
+
   static void SetCurrent(GLSurface* surface);
 
   static bool ExtensionsContain(const char* extensions, const char* name);
@@ -238,7 +230,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
  private:
   friend class base::RefCounted<GLSurface>;
   friend class GLContext;
-  friend class GLSurfaceTestSupport;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurface);
 };

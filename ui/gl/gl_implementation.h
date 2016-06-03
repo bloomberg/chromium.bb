@@ -37,8 +37,8 @@ struct GL_EXPORT GLWindowSystemBindingInfo {
   bool direct_rendering;
 };
 
-void GL_EXPORT
-GetAllowedGLImplementations(std::vector<GLImplementation>* impls);
+GL_EXPORT void GetAllowedGLImplementations(
+    std::vector<GLImplementation>* impls);
 
 #if defined(OS_WIN)
 typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);
@@ -55,11 +55,11 @@ GL_EXPORT bool InitializeDynamicGLBindings(GLImplementation implementation,
                                            GLContext* context);
 
 // Initialize Debug logging wrappers for GL bindings.
-void InitializeDebugGLBindings();
+GL_EXPORT void InitializeDebugGLBindings();
 
 // Initialize stub methods for drawing operations in the GL bindings. The
 // null draw bindings default to enabled, so that draw operations do nothing.
-void InitializeNullDrawGLBindings();
+GL_EXPORT void InitializeNullDrawGLBindings();
 
 // TODO(danakj): Remove this when all test suites are using null-draw.
 GL_EXPORT bool HasInitializedNullDrawGLBindings();
@@ -95,10 +95,10 @@ GL_EXPORT GLImplementation GetGLImplementation();
 GL_EXPORT bool HasDesktopGLFeatures();
 
 // Get the GL implementation with a given name.
-GLImplementation GetNamedGLImplementation(const std::string& name);
+GL_EXPORT GLImplementation GetNamedGLImplementation(const std::string& name);
 
 // Get the name of a GL implementation.
-const char* GetGLImplementationName(GLImplementation implementation);
+GL_EXPORT const char* GetGLImplementationName(GLImplementation implementation);
 
 // Add a native library to those searched for GL entry points.
 void AddGLNativeLibrary(base::NativeLibrary library);

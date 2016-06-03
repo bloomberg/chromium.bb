@@ -4,13 +4,15 @@
 
 #include "ui/gl/test/gl_surface_test_support.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -57,7 +59,7 @@ void GLSurfaceTestSupport::InitializeOneOff() {
   bool gpu_service_logging = false;
   bool disable_gl_drawing = true;
 
-  CHECK(GLSurface::InitializeOneOffImplementation(
+  CHECK(init::InitializeGLOneOffImplementation(
       impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing));
 }
 
@@ -75,7 +77,7 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
   bool gpu_service_logging = false;
   bool disable_gl_drawing = false;
 
-  CHECK(GLSurface::InitializeOneOffImplementation(
+  CHECK(init::InitializeGLOneOffImplementation(
       impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing));
 }
 

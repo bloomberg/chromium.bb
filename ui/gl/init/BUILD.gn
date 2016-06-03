@@ -2,13 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 component("init") {
   output_name = "gl_init"
 
+  public = [
+    "gl_factory.h",
+  ]
+
   sources = [
     "gl_factory.cc",
-    "gl_factory.h",
     "gl_init_export.h",
+    "gl_initializer.h",
   ]
   defines = [ "GL_INIT_IMPLEMENTATION" ]
 
@@ -20,4 +26,18 @@ component("init") {
   public_deps = [
     "//ui/gl",
   ]
+
+  if (is_android) {
+    sources += [ "gl_initializer_android.cc" ]
+  } else if (is_win) {
+    sources += [ "gl_initializer_win.cc" ]
+  } else if (is_mac) {
+    sources += [ "gl_initializer_mac.cc" ]
+
+    libs = [ "OpenGL.framework" ]
+  } else if (use_x11) {
+    sources += [ "gl_initializer_x11.cc" ]
+  } else if (use_ozone) {
+    sources += [ "gl_initializer_ozone.cc" ]
+  }
 }
