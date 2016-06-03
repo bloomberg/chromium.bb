@@ -2169,8 +2169,7 @@ fullscreen_binding(struct weston_keyboard *keyboard, uint32_t time,
 
 static struct wayland_backend *
 wayland_backend_create(struct weston_compositor *compositor,
-		       struct weston_wayland_backend_config *new_config,
-		       int *argc, char *argv[], struct weston_config *config)
+		       struct weston_wayland_backend_config *new_config)
 {
 	struct wayland_backend *b;
 	struct wl_event_loop *loop;
@@ -2278,8 +2277,7 @@ config_init_to_defaults(struct weston_wayland_backend_config *config)
 }
 
 WL_EXPORT int
-backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *config,
+backend_init(struct weston_compositor *compositor,
 	     struct weston_backend_config *config_base)
 {
 	struct wayland_backend *b;
@@ -2298,7 +2296,7 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	config_init_to_defaults(&new_config);
 	memcpy(&new_config, config_base, config_base->struct_size);
 
-	b = wayland_backend_create(compositor, &new_config, argc, argv, config);
+	b = wayland_backend_create(compositor, &new_config);
 
 	if (!b)
 		return -1;

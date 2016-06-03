@@ -729,8 +729,7 @@ fbdev_restore(struct weston_compositor *compositor)
 }
 
 static struct fbdev_backend *
-fbdev_backend_create(struct weston_compositor *compositor, int *argc, char *argv[],
-                     struct weston_config *config,
+fbdev_backend_create(struct weston_compositor *compositor,
                      struct weston_fbdev_backend_config *param)
 {
 	struct fbdev_backend *backend;
@@ -828,8 +827,7 @@ config_init_to_defaults(struct weston_fbdev_backend_config *config)
 }
 
 WL_EXPORT int
-backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *wc,
+backend_init(struct weston_compositor *compositor,
 	     struct weston_backend_config *config_base)
 {
 	struct fbdev_backend *b;
@@ -845,7 +843,7 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	config_init_to_defaults(&config);
 	memcpy(&config, config_base, config_base->struct_size);
 
-	b = fbdev_backend_create(compositor, argc, argv, wc, &config);
+	b = fbdev_backend_create(compositor, &config);
 	if (b == NULL)
 		return -1;
 	return 0;

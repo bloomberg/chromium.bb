@@ -4885,13 +4885,11 @@ weston_compositor_load_backend(struct weston_compositor *compositor,
 			       struct weston_backend_config *config_base)
 {
 	int (*backend_init)(struct weston_compositor *c,
-			    int *argc, char *argv[],
-			    struct weston_config *config,
 			    struct weston_backend_config *config_base);
 
 	backend_init = weston_load_module(backend, "backend_init");
 	if (!backend_init)
 		return -1;
 
-	return backend_init(compositor, NULL, NULL, NULL, config_base);
+	return backend_init(compositor, config_base);
 }
