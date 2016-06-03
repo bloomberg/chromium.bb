@@ -47,7 +47,10 @@ class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
   // webrtc::DesktopCapturer::Callback interface.
   void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
-  // Callback for CaptureScheduler.
+  // Starts |capture_timer_|.
+  void StartCaptureTimer();
+
+  // Called by |capture_timer_|.
   void CaptureNextFrame();
 
   // Task running on the encoder thread to encode the |frame|.
@@ -69,6 +72,8 @@ class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
   uint32_t target_bitrate_kbps_;
   int last_quantizer_;
 
+  bool received_first_frame_request_ = false;
+
   bool capture_pending_ = false;
   bool encode_pending_ = false;
 
@@ -80,6 +85,9 @@ class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
   VideoStream::SizeCallback size_callback_;
+
+  // Main task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // Task runner used to run |encoder_|.
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;

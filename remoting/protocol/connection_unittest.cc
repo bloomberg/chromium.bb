@@ -71,17 +71,25 @@ class TestScreenCapturer : public webrtc::DesktopCapturer {
     callback_ = callback;
   }
   void Capture(const webrtc::DesktopRegion& region) override {
-    // Return black 10x10 frame.
+    // Return black 100x100 frame.
     std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(100, 100)));
     memset(frame->data(), 0, frame->stride() * frame->size().height());
-    frame->mutable_updated_region()->SetRect(
-        webrtc::DesktopRect::MakeSize(frame->size()));
+
+    // Set updated_region only for the first frame, as the frame content
+    // doesn't change.
+    if (!first_frame_sent_) {
+      first_frame_sent_ = true;
+      frame->mutable_updated_region()->SetRect(
+          webrtc::DesktopRect::MakeSize(frame->size()));
+    }
+
     callback_->OnCaptureCompleted(frame.release());
   }
 
  private:
   Callback* callback_ = nullptr;
+  bool first_frame_sent_ = false;
 };
 
 }  // namespace
@@ -188,6 +196,36 @@ class ConnectionTest : public testing::Test,
       run_loop_->Quit();
   }
 
+  void WaitFirstVideoFrame() {
+    base::RunLoop run_loop;
+
+    // Expect frames to be passed to FrameConsumer when WebRTC is used, or to
+    // VideoStub otherwise.
+    if (is_using_webrtc()) {
+      client_video_renderer_.GetFrameConsumer()->set_on_frame_callback(
+          base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+    } else {
+      client_video_renderer_.GetVideoStub()->set_on_frame_callback(
+          base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+    }
+
+    run_loop.Run();
+
+    if (is_using_webrtc()) {
+      EXPECT_EQ(
+          client_video_renderer_.GetFrameConsumer()->received_frames().size(),
+          1U);
+      EXPECT_EQ(
+          client_video_renderer_.GetVideoStub()->received_packets().size(), 0U);
+    } else {
+      EXPECT_EQ(
+          client_video_renderer_.GetFrameConsumer()->received_frames().size(),
+          0U);
+      EXPECT_EQ(
+          client_video_renderer_.GetVideoStub()->received_packets().size(), 1U);
+    }
+  }
+
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -285,34 +323,23 @@ TEST_P(ConnectionTest, Video) {
       host_connection_->StartVideoStream(
           base::WrapUnique(new TestScreenCapturer()));
 
-  base::RunLoop run_loop;
+  WaitFirstVideoFrame();
+}
 
-  // Expect frames to be passed to FrameConsumer when WebRTC is used, or to
-  // VideoStub otherwise.
-  if (is_using_webrtc()) {
-    client_video_renderer_.GetFrameConsumer()->set_on_frame_callback(
-        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
-  } else {
-    client_video_renderer_.GetVideoStub()->set_on_frame_callback(
-        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
-  }
+// Verifies that the VideoStream doesn't loose any video frames while the
+// connection is being established.
+TEST_P(ConnectionTest, VideoWithSlowSignaling) {
+  // Add signaling delay to slow down connection handshake.
+  host_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
+  client_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
 
-  run_loop.Run();
+  Connect();
 
-  if (is_using_webrtc()) {
-    EXPECT_EQ(
-        client_video_renderer_.GetFrameConsumer()->received_frames().size(),
-        1U);
-    EXPECT_EQ(client_video_renderer_.GetVideoStub()->received_packets().size(),
-              0U);
-  } else {
-    EXPECT_EQ(
-        client_video_renderer_.GetFrameConsumer()->received_frames().size(),
-        0U);
-    EXPECT_EQ(client_video_renderer_.GetVideoStub()->received_packets().size(),
-              1U);
-  }
+  std::unique_ptr<VideoStream> video_stream =
+      host_connection_->StartVideoStream(
+          base::WrapUnique(new TestScreenCapturer()));
 
+  WaitFirstVideoFrame();
 }
 
 }  // namespace protocol

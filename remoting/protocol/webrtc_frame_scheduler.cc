@@ -7,7 +7,10 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
 
@@ -38,6 +41,7 @@ WebRtcFrameScheduler::WebRtcFrameScheduler(
     std::unique_ptr<VideoEncoder> encoder)
     : target_bitrate_kbps_(kDefaultTargetBitrateKbps),
       last_quantizer_(kMaxQuantizer),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encode_task_runner_(encode_task_runner),
       capturer_(std::move(capturer)),
       webrtc_transport_(webrtc_transport),
@@ -65,8 +69,6 @@ void WebRtcFrameScheduler::Start() {
   webrtc_transport_->video_encoder_factory()->SetTargetBitrateCallback(
       base::Bind(&WebRtcFrameScheduler::SetTargetBitrate,
                  base::Unretained(this)));
-  capture_timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1) / 30, this,
-                        &WebRtcFrameScheduler::CaptureNextFrame);
 }
 
 void WebRtcFrameScheduler::Stop() {
@@ -97,6 +99,17 @@ void WebRtcFrameScheduler::SetKeyFrameRequest() {
   VLOG(1) << "Request key frame";
   base::AutoLock lock(lock_);
   key_frame_request_ = true;
+  if (!received_first_frame_request_) {
+    received_first_frame_request_ = true;
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&WebRtcFrameScheduler::StartCaptureTimer,
+                              weak_factory_.GetWeakPtr()));
+  }
+}
+
+void WebRtcFrameScheduler::StartCaptureTimer() {
+  capture_timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1) / 30, this,
+                        &WebRtcFrameScheduler::CaptureNextFrame);
 }
 
 void WebRtcFrameScheduler::SetTargetBitrate(int target_bitrate_kbps) {
@@ -130,8 +143,9 @@ void WebRtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
   // If unchanged and does not need top-off, return.
   if (!frame || (frame->updated_region().is_empty() &&
-                 last_quantizer_ <= kTargetQuantizerForTopOff))
+                 last_quantizer_ <= kTargetQuantizerForTopOff)) {
     return;
+  }
 
   last_capture_completed_ticks_ = captured_ticks;
 
@@ -162,6 +176,7 @@ void WebRtcFrameScheduler::CaptureNextFrame() {
     VLOG(1) << "Capture/encode still pending..";
     return;
   }
+
   capture_pending_ = true;
   VLOG(1) << "Capture next frame after "
           << (base::TimeTicks::Now() - last_capture_started_ticks_)
@@ -210,8 +225,6 @@ void WebRtcFrameScheduler::OnFrameEncoded(std::unique_ptr<VideoPacket> packet) {
   // Simplistic adaptation of frame polling in the range 5 FPS to 30 FPS.
   uint32_t next_sched_ms = std::max(
       33, std::min(static_cast<int>(encoded_bits / target_bitrate_kbps_), 200));
-  // TODO(isheriff): Investigate why first frame fails to send at times.
-  // This gets resolved through a PLI request.
   if (webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
           std::move(packet)) >= 0) {
     VLOG(1) << " Send duration "
