@@ -69,7 +69,7 @@ Inspect Me
 
 ======== wheel ========
 == normal
-[expanded] bodyRemoveevent-listener-sidebar.html:10
+[expanded] bodyRemoveToggle Passiveevent-listener-sidebar.html:10
     useCapture: false
     passive: true
     handler: function f() {}

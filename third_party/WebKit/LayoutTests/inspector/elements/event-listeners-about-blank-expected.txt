@@ -18,7 +18,7 @@ Tests event listeners output in the Elements sidebar panel when the listeners ar
 
 ======== wheel ========
 == normal
-[expanded] bodyRemoveevent-listeners-about-blank.html:9
+[expanded] bodyRemoveToggle Passiveevent-listeners-about-blank.html:9
     useCapture: false
     passive: true
     handler: function f() {}
