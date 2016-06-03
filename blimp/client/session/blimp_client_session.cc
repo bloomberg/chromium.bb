@@ -214,7 +214,7 @@ void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
   OnAssignmentConnectionAttempted(result, assignment);
 
   if (result != AssignmentSource::Result::RESULT_OK) {
-    LOG(FATAL) << "Assignment failed, reason: " << result;
+    LOG(ERROR) << "Assignment failed, reason: " << result;
     return;
   }
 
