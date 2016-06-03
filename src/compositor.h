@@ -1466,9 +1466,19 @@ void
 weston_compositor_destroy(struct weston_compositor *ec);
 struct weston_compositor *
 weston_compositor_create(struct wl_display *display, void *user_data);
+
+enum weston_compositor_backend {
+	WESTON_BACKEND_DRM,
+	WESTON_BACKEND_FBDEV,
+	WESTON_BACKEND_HEADLESS,
+	WESTON_BACKEND_RDP,
+	WESTON_BACKEND_WAYLAND,
+	WESTON_BACKEND_X11,
+};
+
 int
 weston_compositor_load_backend(struct weston_compositor *compositor,
-			       const char *backend,
+			       enum weston_compositor_backend backend,
 			       struct weston_backend_config *config_base);
 void
 weston_compositor_exit(struct weston_compositor *ec);

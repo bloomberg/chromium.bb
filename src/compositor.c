@@ -4867,6 +4867,15 @@ weston_compositor_get_user_data(struct weston_compositor *compositor)
 	return compositor->user_data;
 }
 
+static const char * const backend_map[] = {
+	[WESTON_BACKEND_DRM] =		"drm-backend.so",
+	[WESTON_BACKEND_FBDEV] =	"fbdev-backend.so",
+	[WESTON_BACKEND_HEADLESS] =	"headless-backend.so",
+	[WESTON_BACKEND_RDP] =		"rdp-backend.so",
+	[WESTON_BACKEND_WAYLAND] =	"wayland-backend.so",
+	[WESTON_BACKEND_X11] =		"x11-backend.so",
+};
+
 /** Load a backend into a weston_compositor
  *
  * A backend must be loaded to make a weston_compositor work. A backend
@@ -4881,13 +4890,16 @@ weston_compositor_get_user_data(struct weston_compositor *compositor)
  */
 WL_EXPORT int
 weston_compositor_load_backend(struct weston_compositor *compositor,
-			       const char *backend,
+			       enum weston_compositor_backend backend,
 			       struct weston_backend_config *config_base)
 {
 	int (*backend_init)(struct weston_compositor *c,
 			    struct weston_backend_config *config_base);
 
-	backend_init = weston_load_module(backend, "backend_init");
+	if (backend < 0 || backend >= ARRAY_LENGTH(backend_map))
+		return -1;
+
+	backend_init = weston_load_module(backend_map[backend], "backend_init");
 	if (!backend_init)
 		return -1;
 

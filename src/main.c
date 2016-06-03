@@ -1003,7 +1003,8 @@ load_drm_backend(struct weston_compositor *c, const char *backend,
 	config.configure_output = drm_configure_output;
 	config.configure_device = configure_input_device;
 
-	ret = weston_compositor_load_backend(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, WESTON_BACKEND_DRM,
+					     &config.base);
 
 	free(config.gbm_format);
 	free(config.seat_id);
@@ -1042,7 +1043,8 @@ load_headless_backend(struct weston_compositor *c, char const * backend,
 	config.base.struct_size = sizeof(struct weston_headless_backend_config);
 
 	/* load the actual wayland backend and configure it */
-	ret = weston_compositor_load_backend(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, WESTON_BACKEND_HEADLESS,
+					     &config.base);
 
 	return ret;
 }
@@ -1087,7 +1089,8 @@ load_rdp_backend(struct weston_compositor *c, char const * backend,
 
 	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
 
-	ret = weston_compositor_load_backend(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, WESTON_BACKEND_RDP,
+					     &config.base);
 
 	free(config.bind_address);
 	free(config.rdp_key);
@@ -1127,7 +1130,8 @@ load_fbdev_backend(struct weston_compositor *c, char const * backend,
 	config.configure_device = configure_input_device;
 
 	/* load the actual wayland backend and configure it */
-	ret = weston_compositor_load_backend(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, WESTON_BACKEND_FBDEV,
+					     &config.base);
 
 	free(config.device);
 
@@ -1263,7 +1267,8 @@ load_x11_backend(struct weston_compositor *c, char const * backend,
 	config.base.struct_size = sizeof(struct weston_x11_backend_config);
 
 	/* load the actual backend and configure it */
-	ret = weston_compositor_load_backend(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, WESTON_BACKEND_X11,
+					     &config.base);
 
 out:
 	for (j = 0; j < config.num_outputs; ++j)
@@ -1483,7 +1488,8 @@ load_wayland_backend(struct weston_compositor *c, char const * backend,
 	}
 
 	/* load the actual wayland backend and configure it */
-	ret = weston_compositor_load_backend(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, WESTON_BACKEND_WAYLAND,
+					     &config.base);
 	weston_wayland_backend_config_release(&config);
 	return ret;
 }
