@@ -13,7 +13,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
@@ -146,10 +146,10 @@ void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer(false);
 }
 
-std::unique_ptr<views::InkDropHover> BubbleIconView::CreateInkDropHover()
-    const {
+std::unique_ptr<views::InkDropHighlight>
+BubbleIconView::CreateInkDropHighlight() const {
   // BubbleIconView views don't show hover effect.
-  return HasFocus() ? InkDropHostView::CreateInkDropHover() : nullptr;
+  return HasFocus() ? InkDropHostView::CreateInkDropHighlight() : nullptr;
 }
 
 SkColor BubbleIconView::GetInkDropBaseColor() const {

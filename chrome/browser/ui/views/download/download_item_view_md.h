@@ -107,7 +107,8 @@ class DownloadItemViewMd : public views::InkDropHostView,
   // Overridden from view::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

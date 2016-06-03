@@ -17,7 +17,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
-#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"

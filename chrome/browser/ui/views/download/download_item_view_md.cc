@@ -60,7 +60,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_delegate.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -481,13 +481,13 @@ std::unique_ptr<views::InkDropRipple> DownloadItemViewMd::CreateInkDropRipple()
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 
-std::unique_ptr<views::InkDropHover> DownloadItemViewMd::CreateInkDropHover()
-    const {
+std::unique_ptr<views::InkDropHighlight>
+DownloadItemViewMd::CreateInkDropHighlight() const {
   if (IsShowingWarningDialog())
     return nullptr;
 
   gfx::Size size = GetPreferredSize();
-  return base::WrapUnique(new views::InkDropHover(
+  return base::WrapUnique(new views::InkDropHighlight(
       size, kInkDropSmallCornerRadius, gfx::Rect(size).CenterPoint(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }

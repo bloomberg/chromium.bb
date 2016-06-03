@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/test/test_ink_drop_hover_observer.h"
+#include "ui/views/animation/test/test_ink_drop_highlight_observer.h"
 
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 
 namespace views {
 namespace test {
 
-TestInkDropHoverObserver::TestInkDropHoverObserver() {}
+TestInkDropHighlightObserver::TestInkDropHighlightObserver() {}
 
-void TestInkDropHoverObserver::AnimationStarted(
-    InkDropHover::AnimationType animation_type) {
+void TestInkDropHighlightObserver::AnimationStarted(
+    InkDropHighlight::AnimationType animation_type) {
   ObserverHelper::OnAnimationStarted(animation_type);
 }
 
-void TestInkDropHoverObserver::AnimationEnded(
-    InkDropHover::AnimationType animation_type,
+void TestInkDropHighlightObserver::AnimationEnded(
+    InkDropHighlight::AnimationType animation_type,
     InkDropAnimationEndedReason reason) {
   ObserverHelper::OnAnimationEnded(animation_type, reason);
 }

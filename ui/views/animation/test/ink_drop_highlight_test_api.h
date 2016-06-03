@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_HOVER_TEST_API_H_
-#define UI_VIEWS_ANIMATION_TEST_INK_DROP_HOVER_TEST_API_H_
+#ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_HIGHLIGHT_TEST_API_H_
+#define UI_VIEWS_ANIMATION_TEST_INK_DROP_HIGHLIGHT_TEST_API_H_
 
 #include <vector>
 
@@ -16,38 +16,39 @@ class LayerAnimator;
 }  // namespace ui
 
 namespace views {
-class InkDropHover;
+class InkDropHighlight;
 
 namespace test {
 
-// Test API to provide internal access to an InkDropHover instance. This can
+// Test API to provide internal access to an InkDropHighlight instance. This can
 // also be used to control the animations via the
 // ui::test::MultiLayerAnimatorTestController API.
-class InkDropHoverTestApi
+class InkDropHighlightTestApi
     : public ui::test::MultiLayerAnimatorTestController,
       public ui::test::MultiLayerAnimatorTestControllerDelegate {
  public:
-  explicit InkDropHoverTestApi(InkDropHover* ink_drop_hover);
-  ~InkDropHoverTestApi() override;
+  explicit InkDropHighlightTestApi(InkDropHighlight* ink_drop_highlight);
+  ~InkDropHighlightTestApi() override;
 
   // MultiLayerAnimatorTestControllerDelegate:
   std::vector<ui::LayerAnimator*> GetLayerAnimators() override;
 
  protected:
-  InkDropHover* ink_drop_hover() {
-    return static_cast<const InkDropHoverTestApi*>(this)->ink_drop_hover();
+  InkDropHighlight* ink_drop_highlight() {
+    return static_cast<const InkDropHighlightTestApi*>(this)
+        ->ink_drop_highlight();
   }
 
-  InkDropHover* ink_drop_hover() const { return ink_drop_hover_; }
+  InkDropHighlight* ink_drop_highlight() const { return ink_drop_highlight_; }
 
  private:
-  // The InkDropHover to provide internal access to.
-  InkDropHover* ink_drop_hover_;
+  // The InkDropHighlight to provide internal access to.
+  InkDropHighlight* ink_drop_highlight_;
 
-  DISALLOW_COPY_AND_ASSIGN(InkDropHoverTestApi);
+  DISALLOW_COPY_AND_ASSIGN(InkDropHighlightTestApi);
 };
 
 }  // namespace test
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_TEST_INK_DROP_HOVER_TEST_API_H_
+#endif  // UI_VIEWS_ANIMATION_TEST_INK_DROP_HIGHLIGHT_TEST_API_H_

@@ -19,8 +19,8 @@ class TestInkDropHost : public InkDropHost {
 
   int num_ink_drop_layers() const { return num_ink_drop_layers_; }
 
-  void set_should_show_hover(bool should_show_hover) {
-    should_show_hover_ = should_show_hover;
+  void set_should_show_highlight(bool should_show_highlight) {
+    should_show_highlight_ = should_show_highlight;
   }
 
   void set_disable_timers_for_test(bool disable_timers_for_test) {
@@ -31,14 +31,14 @@ class TestInkDropHost : public InkDropHost {
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 
  private:
   int num_ink_drop_layers_;
 
-  bool should_show_hover_;
+  bool should_show_highlight_;
 
-  // When true, the InkDropRipple/InkDropHover instances will have their
+  // When true, the InkDropRipple/InkDropHighlight instances will have their
   // timers disabled after creation.
   bool disable_timers_for_test_;
 

@@ -17,12 +17,12 @@ class LayerAnimator;
 
 namespace views {
 class InkDropImpl;
-class InkDropHover;
+class InkDropHighlight;
 
 namespace test {
 
 // Test API to provide internal access to an InkDropImpl instance. This can also
-// be used to control the InkDropRipple and InkDropHover animations via the
+// be used to control the InkDropRipple and InkDropHighlight animations via the
 // ui::test::MultiLayerAnimatorTestController API.
 class InkDropImplTestApi
     : public ui::test::MultiLayerAnimatorTestController,
@@ -32,8 +32,8 @@ class InkDropImplTestApi
   ~InkDropImplTestApi() override;
 
   // Wrappers to InkDropImpl internals:
-  const InkDropHover* hover() const;
-  bool IsHoverFadingInOrVisible() const;
+  const InkDropHighlight* highlight() const;
+  bool IsHighlightFadingInOrVisible() const;
 
  protected:
   // MultiLayerAnimatorTestControllerDelegate:

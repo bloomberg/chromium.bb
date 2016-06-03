@@ -26,7 +26,7 @@ class InkDropImplTest : public testing::Test {
   // The test target.
   InkDropImpl ink_drop_;
 
-  // Allows privileged access to the the |ink_drop_hover_|.
+  // Allows privileged access to the the |ink_drop_highlight_|.
   test::InkDropImplTestApi test_api_;
 
   // Used to control the tasks scheduled by the InkDropImpl's Timer.
@@ -50,54 +50,54 @@ InkDropImplTest::InkDropImplTest()
 
 InkDropImplTest::~InkDropImplTest() {}
 
-TEST_F(InkDropImplTest, SetHoveredIsFadingInOrVisible) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, SetHoveredHighlightIsFadingInOrVisible) {
+  ink_drop_host_.set_should_show_highlight(true);
 
   ink_drop_.SetHovered(true);
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   test_api_.CompleteAnimations();
 
   ink_drop_.SetHovered(false);
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 }
 
 TEST_F(InkDropImplTest, FocusAndHoverAtSameTime) {
-  ink_drop_host_.set_should_show_hover(true);
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  ink_drop_host_.set_should_show_highlight(true);
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 
   ink_drop_.SetFocused(true);
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   test_api_.CompleteAnimations();
   ink_drop_.SetHovered(false);
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   test_api_.CompleteAnimations();
   ink_drop_.SetHovered(true);
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   test_api_.CompleteAnimations();
   ink_drop_.SetFocused(false);
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   test_api_.CompleteAnimations();
   ink_drop_.SetHovered(false);
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 }
 
-TEST_F(InkDropImplTest, HoverDoesntFadeInAfterAnimationIfHoverNotSet) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, HighlightDoesntFadeInAfterAnimationIfHighlightNotSet) {
+  ink_drop_host_.set_should_show_highlight(true);
   ink_drop_.SetHovered(false);
   ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
   test_api_.CompleteAnimations();
 
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 }
 
-TEST_F(InkDropImplTest, HoverFadesInAfterAnimationWhenHostIsHovered) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, HighlightFadesInAfterAnimationWhenHostIsHovered) {
+  ink_drop_host_.set_should_show_highlight(true);
   ink_drop_.SetHovered(true);
   ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
   test_api_.CompleteAnimations();
@@ -106,11 +106,12 @@ TEST_F(InkDropImplTest, HoverFadesInAfterAnimationWhenHostIsHovered) {
 
   task_runner_->RunPendingTasks();
 
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 }
 
-TEST_F(InkDropImplTest, HoverDoesntFadeInAfterAnimationWhenHostIsNotHovered) {
-  ink_drop_host_.set_should_show_hover(false);
+TEST_F(InkDropImplTest,
+       HighlightDoesntFadeInAfterAnimationWhenHostIsNotHovered) {
+  ink_drop_host_.set_should_show_highlight(false);
   ink_drop_.SetHovered(true);
   ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
   test_api_.CompleteAnimations();
@@ -119,44 +120,44 @@ TEST_F(InkDropImplTest, HoverDoesntFadeInAfterAnimationWhenHostIsNotHovered) {
 
   task_runner_->RunPendingTasks();
 
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 }
 
 TEST_F(InkDropImplTest, HoveredStateNotVisibleOrFadingInAfterAnimateToState) {
-  ink_drop_host_.set_should_show_hover(true);
+  ink_drop_host_.set_should_show_highlight(true);
 
   ink_drop_.SetHovered(true);
   test_api_.CompleteAnimations();
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   ink_drop_.AnimateToState(InkDropState::ACTION_TRIGGERED);
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 }
 
 // Verifies that there is not a crash when setting hovered state and the host
-// returns null for the hover.
-TEST_F(InkDropImplTest, SetHoveredFalseWorksWhenNoInkDropHoverExists) {
-  ink_drop_host_.set_should_show_hover(false);
+// returns null for the highlight.
+TEST_F(InkDropImplTest, SetHoveredFalseWorksWhenNoInkDropHighlightExists) {
+  ink_drop_host_.set_should_show_highlight(false);
   ink_drop_.SetHovered(true);
-  EXPECT_FALSE(test_api_.hover());
+  EXPECT_FALSE(test_api_.highlight());
   ink_drop_.SetHovered(false);
-  EXPECT_FALSE(test_api_.hover());
+  EXPECT_FALSE(test_api_.highlight());
 }
 
-TEST_F(InkDropImplTest, HoverFadesOutOnSnapToActivated) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, HighlightFadesOutOnSnapToActivated) {
+  ink_drop_host_.set_should_show_highlight(true);
   ink_drop_.SetHovered(true);
   test_api_.CompleteAnimations();
 
-  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 
   ink_drop_.SnapToActivated();
 
-  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+  EXPECT_FALSE(test_api_.IsHighlightFadingInOrVisible());
 }
 
-TEST_F(InkDropImplTest, LayersRemovedFromHostAfterHover) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, LayersRemovedFromHostAfterHighlight) {
+  ink_drop_host_.set_should_show_highlight(true);
 
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 
@@ -173,7 +174,7 @@ TEST_F(InkDropImplTest, LayersRemovedFromHostAfterHover) {
 }
 
 TEST_F(InkDropImplTest, LayersRemovedFromHostAfterInkDrop) {
-  ink_drop_host_.set_should_show_hover(true);
+  ink_drop_host_.set_should_show_highlight(true);
 
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 
@@ -187,8 +188,8 @@ TEST_F(InkDropImplTest, LayersRemovedFromHostAfterInkDrop) {
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 }
 
-TEST_F(InkDropImplTest, LayersAddedToHostWhenHoverOrInkDropVisible) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, LayersAddedToHostWhenHighlightOrInkDropVisible) {
+  ink_drop_host_.set_should_show_highlight(true);
 
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 
@@ -207,13 +208,13 @@ TEST_F(InkDropImplTest, LayersAddedToHostWhenHoverOrInkDropVisible) {
   EXPECT_TRUE(task_runner_->HasPendingTask());
   task_runner_->RunPendingTasks();
 
-  // Hover should be fading back in.
+  // Highlight should be fading back in.
   EXPECT_TRUE(test_api_.HasActiveAnimations());
   EXPECT_EQ(1, ink_drop_host_.num_ink_drop_layers());
 }
 
-TEST_F(InkDropImplTest, LayersNotAddedToHostWhenHoverTimeFires) {
-  ink_drop_host_.set_should_show_hover(true);
+TEST_F(InkDropImplTest, LayersNotAddedToHostWhenHighlightTimeFires) {
+  ink_drop_host_.set_should_show_highlight(true);
 
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 
@@ -227,7 +228,7 @@ TEST_F(InkDropImplTest, LayersNotAddedToHostWhenHoverTimeFires) {
   test_api_.CompleteAnimations();
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 
-  ink_drop_host_.set_should_show_hover(false);
+  ink_drop_host_.set_should_show_highlight(false);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
   task_runner_->RunPendingTasks();
@@ -236,7 +237,7 @@ TEST_F(InkDropImplTest, LayersNotAddedToHostWhenHoverTimeFires) {
 }
 
 TEST_F(InkDropImplTest, LayersArentRemovedWhenPreemptingFadeOut) {
-  ink_drop_host_.set_should_show_hover(true);
+  ink_drop_host_.set_should_show_highlight(true);
 
   EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers());
 

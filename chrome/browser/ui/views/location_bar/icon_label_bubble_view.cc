@@ -14,7 +14,7 @@
 #include "ui/gfx/image/image_util.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -204,8 +204,8 @@ void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer(false);
 }
 
-std::unique_ptr<views::InkDropHover> IconLabelBubbleView::CreateInkDropHover()
-    const {
+std::unique_ptr<views::InkDropHighlight>
+IconLabelBubbleView::CreateInkDropHighlight() const {
   // Location bar views don't show hover effect.
   return nullptr;
 }

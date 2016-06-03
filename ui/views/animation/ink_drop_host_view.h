@@ -16,7 +16,7 @@
 namespace views {
 
 class InkDropRipple;
-class InkDropHover;
+class InkDropHighlight;
 
 // A view that provides InkDropHost functionality.
 class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
@@ -25,7 +25,7 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
 

@@ -74,7 +74,7 @@ class ToolbarActionView : public views::MenuButton,
       const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   SkColor GetInkDropBaseColor() const override;
-  bool ShouldShowInkDropHover() const override;
+  bool ShouldShowInkDropHighlight() const override;
 
   // ToolbarActionViewDelegateViews:
   content::WebContents* GetCurrentWebContents() const override;

@@ -7,7 +7,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
 namespace views {
@@ -64,12 +64,13 @@ std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
   return ripple;
 }
 
-std::unique_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
-  std::unique_ptr<InkDropHover> hover(
-      new InkDropHover(ink_drop_size_, kInkDropSmallCornerRadius,
-                       GetInkDropCenter(), GetInkDropBaseColor()));
-  hover->set_explode_size(CalculateLargeInkDropSize(ink_drop_size_));
-  return hover;
+std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
+    const {
+  std::unique_ptr<InkDropHighlight> highlight(
+      new InkDropHighlight(ink_drop_size_, kInkDropSmallCornerRadius,
+                           GetInkDropCenter(), GetInkDropBaseColor()));
+  highlight->set_explode_size(CalculateLargeInkDropSize(ink_drop_size_));
+  return highlight;
 }
 
 void InkDropHostView::OnFocus() {

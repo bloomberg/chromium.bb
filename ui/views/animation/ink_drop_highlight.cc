@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/views/animation/ink_drop_hover_observer.h"
+#include "ui/views/animation/ink_drop_highlight_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
 namespace views {
 
 namespace {
 
-// The opacity of the hover when it is visible.
-const float kHoverVisibleOpacity = 0.128f;
+// The opacity of the highlight when it is visible.
+const float kHighlightVisibleOpacity = 0.128f;
 
-// The opacity of the hover when it is not visible.
+// The opacity of the highlight when it is not visible.
 const float kHiddenOpacity = 0.0f;
 
 }  // namespace
 
-std::string ToString(InkDropHover::AnimationType animation_type) {
+std::string ToString(InkDropHighlight::AnimationType animation_type) {
   switch (animation_type) {
-    case InkDropHover::FADE_IN:
+    case InkDropHighlight::FADE_IN:
       return std::string("FADE_IN");
-    case InkDropHover::FADE_OUT:
+    case InkDropHighlight::FADE_OUT:
       return std::string("FADE_OUT");
   }
   NOTREACHED()
@@ -36,10 +36,10 @@ std::string ToString(InkDropHover::AnimationType animation_type) {
   return std::string("UNKNOWN");
 }
 
-InkDropHover::InkDropHover(const gfx::Size& size,
-                           int corner_radius,
-                           const gfx::Point& center_point,
-                           SkColor color)
+InkDropHighlight::InkDropHighlight(const gfx::Size& size,
+                                   int corner_radius,
+                                   const gfx::Point& center_point,
+                                   SkColor color)
     : size_(size),
       explode_size_(size),
       center_point_(center_point),
@@ -52,35 +52,35 @@ InkDropHover::InkDropHover(const gfx::Size& size,
   layer_->SetFillsBoundsOpaquely(false);
   layer_->set_delegate(layer_delegate_.get());
   layer_->SetVisible(false);
-  layer_->SetOpacity(kHoverVisibleOpacity);
+  layer_->SetOpacity(kHighlightVisibleOpacity);
   layer_->SetMasksToBounds(false);
-  layer_->set_name("InkDropHover:layer");
+  layer_->set_name("InkDropHighlight:layer");
 }
 
-InkDropHover::~InkDropHover() {}
+InkDropHighlight::~InkDropHighlight() {}
 
-bool InkDropHover::IsFadingInOrVisible() const {
+bool InkDropHighlight::IsFadingInOrVisible() const {
   return last_animation_initiated_was_fade_in_;
 }
 
-void InkDropHover::FadeIn(const base::TimeDelta& duration) {
+void InkDropHighlight::FadeIn(const base::TimeDelta& duration) {
   layer_->SetOpacity(kHiddenOpacity);
   layer_->SetVisible(true);
   AnimateFade(FADE_IN, duration, size_, size_);
 }
 
-void InkDropHover::FadeOut(const base::TimeDelta& duration, bool explode) {
+void InkDropHighlight::FadeOut(const base::TimeDelta& duration, bool explode) {
   AnimateFade(FADE_OUT, duration, size_, explode ? explode_size_ : size_);
 }
 
-test::InkDropHoverTestApi* InkDropHover::GetTestApi() {
+test::InkDropHighlightTestApi* InkDropHighlight::GetTestApi() {
   return nullptr;
 }
 
-void InkDropHover::AnimateFade(AnimationType animation_type,
-                               const base::TimeDelta& duration,
-                               const gfx::Size& initial_size,
-                               const gfx::Size& target_size) {
+void InkDropHighlight::AnimateFade(AnimationType animation_type,
+                                   const base::TimeDelta& duration,
+                                   const gfx::Size& initial_size,
+                                   const gfx::Size& target_size) {
   last_animation_initiated_was_fade_in_ = animation_type == FADE_IN;
 
   layer_->SetTransform(CalculateTransform(initial_size));
@@ -89,9 +89,9 @@ void InkDropHover::AnimateFade(AnimationType animation_type,
   // AnimationStartedCallback() returns true.
   ui::CallbackLayerAnimationObserver* animation_observer =
       new ui::CallbackLayerAnimationObserver(
-          base::Bind(&InkDropHover::AnimationStartedCallback,
+          base::Bind(&InkDropHighlight::AnimationStartedCallback,
                      base::Unretained(this), animation_type),
-          base::Bind(&InkDropHover::AnimationEndedCallback,
+          base::Bind(&InkDropHighlight::AnimationEndedCallback,
                      base::Unretained(this), animation_type));
 
   ui::LayerAnimator* animator = layer_->GetAnimator();
@@ -102,7 +102,7 @@ void InkDropHover::AnimateFade(AnimationType animation_type,
 
   ui::LayerAnimationElement* opacity_element =
       ui::LayerAnimationElement::CreateOpacityElement(
-          animation_type == FADE_IN ? kHoverVisibleOpacity : kHiddenOpacity,
+          animation_type == FADE_IN ? kHighlightVisibleOpacity : kHiddenOpacity,
           duration);
   ui::LayerAnimationSequence* opacity_sequence =
       new ui::LayerAnimationSequence(opacity_element);
@@ -122,7 +122,8 @@ void InkDropHover::AnimateFade(AnimationType animation_type,
   animation_observer->SetActive();
 }
 
-gfx::Transform InkDropHover::CalculateTransform(const gfx::Size& size) const {
+gfx::Transform InkDropHighlight::CalculateTransform(
+    const gfx::Size& size) const {
   gfx::Transform transform;
   transform.Translate(center_point_.x(), center_point_.y());
   transform.Scale(size.width() / size_.width(), size.height() / size_.height());
@@ -131,14 +132,14 @@ gfx::Transform InkDropHover::CalculateTransform(const gfx::Size& size) const {
   return transform;
 }
 
-void InkDropHover::AnimationStartedCallback(
+void InkDropHighlight::AnimationStartedCallback(
     AnimationType animation_type,
     const ui::CallbackLayerAnimationObserver& observer) {
   if (observer_)
     observer_->AnimationStarted(animation_type);
 }
 
-bool InkDropHover::AnimationEndedCallback(
+bool InkDropHighlight::AnimationEndedCallback(
     AnimationType animation_type,
     const ui::CallbackLayerAnimationObserver& observer) {
   // AnimationEndedCallback() may be invoked when this is being destroyed and

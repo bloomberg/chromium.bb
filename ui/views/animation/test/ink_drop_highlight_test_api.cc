@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/test/ink_drop_hover_test_api.h"
+#include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 
 #include "base/time/time.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 
 namespace views {
 namespace test {
 
-InkDropHoverTestApi::InkDropHoverTestApi(InkDropHover* ink_drop_hover)
+InkDropHighlightTestApi::InkDropHighlightTestApi(
+    InkDropHighlight* ink_drop_highlight)
     : ui::test::MultiLayerAnimatorTestController(this),
-      ink_drop_hover_(ink_drop_hover) {}
+      ink_drop_highlight_(ink_drop_highlight) {}
 
-InkDropHoverTestApi::~InkDropHoverTestApi() {}
+InkDropHighlightTestApi::~InkDropHighlightTestApi() {}
 
-std::vector<ui::LayerAnimator*> InkDropHoverTestApi::GetLayerAnimators() {
+std::vector<ui::LayerAnimator*> InkDropHighlightTestApi::GetLayerAnimators() {
   std::vector<ui::LayerAnimator*> animators;
-  animators.push_back(ink_drop_hover()->layer_->GetAnimator());
+  animators.push_back(ink_drop_highlight()->layer_->GetAnimator());
   return animators;
 }
 

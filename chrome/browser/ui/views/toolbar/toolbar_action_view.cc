@@ -117,9 +117,9 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }
 
-bool ToolbarActionView::ShouldShowInkDropHover() const {
+bool ToolbarActionView::ShouldShowInkDropHighlight() const {
   return !delegate_->ShownInsideMenu() &&
-         views::MenuButton::ShouldShowInkDropHover();
+         views::MenuButton::ShouldShowInkDropHighlight();
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {

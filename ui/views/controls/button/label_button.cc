@@ -20,7 +20,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -445,11 +445,12 @@ std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
                                  GetInkDropBaseColor()));
 }
 
-std::unique_ptr<views::InkDropHover> LabelButton::CreateInkDropHover() const {
-  if (!ShouldShowInkDropHover())
+std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
+    const {
+  if (!ShouldShowInkDropHighlight())
     return nullptr;
-  return GetText().empty() ? CustomButton::CreateInkDropHover()
-                           : base::WrapUnique(new views::InkDropHover(
+  return GetText().empty() ? CustomButton::CreateInkDropHighlight()
+                           : base::WrapUnique(new views::InkDropHighlight(
                                  size(), kInkDropSmallCornerRadius,
                                  GetInkDropCenter(), GetInkDropBaseColor()));
 }

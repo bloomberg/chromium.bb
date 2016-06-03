@@ -13,7 +13,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_delegate.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -136,7 +136,7 @@ void CustomButton::OnEnabledChanged() {
     SetState(STATE_DISABLED);
 
   if (ink_drop_delegate())
-    ink_drop_delegate()->SetHovered(ShouldShowInkDropHover());
+    ink_drop_delegate()->SetHovered(ShouldShowInkDropHighlight());
 }
 
 const char* CustomButton::GetClassName() const {
@@ -354,8 +354,9 @@ void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
 }
 
-std::unique_ptr<InkDropHover> CustomButton::CreateInkDropHover() const {
-  return ShouldShowInkDropHover() ? Button::CreateInkDropHover() : nullptr;
+std::unique_ptr<InkDropHighlight> CustomButton::CreateInkDropHighlight() const {
+  return ShouldShowInkDropHighlight() ? Button::CreateInkDropHighlight()
+                                      : nullptr;
 }
 
 SkColor CustomButton::GetInkDropBaseColor() const {
@@ -430,7 +431,7 @@ bool CustomButton::ShouldEnterPushedState(const ui::Event& event) {
   return IsTriggerableEvent(event);
 }
 
-bool CustomButton::ShouldShowInkDropHover() const {
+bool CustomButton::ShouldShowInkDropHighlight() const {
   return enabled() && !InDrag() &&
          (IsMouseHovered() || (ShouldShowInkDropForFocus() && HasFocus()));
 }

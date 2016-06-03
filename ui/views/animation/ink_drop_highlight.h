@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_INK_DROP_HOVER_H_
-#define UI_VIEWS_ANIMATION_INK_DROP_HOVER_H_
+#ifndef UI_VIEWS_ANIMATION_INK_DROP_HIGHLIGHT_H_
+#define UI_VIEWS_ANIMATION_INK_DROP_HIGHLIGHT_H_
 
 #include <iosfwd>
 #include <memory>
@@ -24,37 +24,41 @@ class CallbackLayerAnimationObserver;
 
 namespace views {
 namespace test {
-class InkDropHoverTestApi;
+class InkDropHighlightTestApi;
 }  // namespace test
 
 class RoundedRectangleLayerDelegate;
-class InkDropHoverObserver;
+class InkDropHighlightObserver;
 
 // Manages fade in/out animations for a painted Layer that is used to provide
-// visual feedback on ui::Views for mouse hover states.
-class VIEWS_EXPORT InkDropHover {
+// visual feedback on ui::Views for highlight states (e.g. mouse hover, keyboard
+// focus).
+class VIEWS_EXPORT InkDropHighlight {
  public:
   enum AnimationType { FADE_IN, FADE_OUT };
 
-  InkDropHover(const gfx::Size& size,
-               int corner_radius,
-               const gfx::Point& center_point,
-               SkColor color);
-  virtual ~InkDropHover();
+  InkDropHighlight(const gfx::Size& size,
+                   int corner_radius,
+                   const gfx::Point& center_point,
+                   SkColor color);
+  virtual ~InkDropHighlight();
 
-  void set_observer(InkDropHoverObserver* observer) { observer_ = observer; }
+  void set_observer(InkDropHighlightObserver* observer) {
+    observer_ = observer;
+  }
 
   void set_explode_size(const gfx::Size& size) { explode_size_ = size; }
 
-  // Returns true if the hover animation is either in the process of fading
+  // Returns true if the highlight animation is either in the process of fading
   // in or is fully visible.
   bool IsFadingInOrVisible() const;
 
-  // Fades in the hover visual over the given |duration|.
+  // Fades in the highlight visual over the given |duration|.
   void FadeIn(const base::TimeDelta& duration);
 
-  // Fades out the hover visual over the given |duration|. If |explode| is true
-  // then the hover will animate a size increase in addition to the fade out.
+  // Fades out the highlight visual over the given |duration|. If |explode| is
+  // true then the highlight will animate a size increase in addition to the
+  // fade out.
   void FadeOut(const base::TimeDelta& duration, bool explode);
 
   // The root Layer that can be added in to a Layer tree.
@@ -63,10 +67,10 @@ class VIEWS_EXPORT InkDropHover {
   // Returns a test api to access internals of this. Default implmentations
   // should return nullptr and test specific subclasses can override to return
   // an instance.
-  virtual test::InkDropHoverTestApi* GetTestApi();
+  virtual test::InkDropHighlightTestApi* GetTestApi();
 
  private:
-  friend class test::InkDropHoverTestApi;
+  friend class test::InkDropHighlightTestApi;
 
   // Animates a fade in/out as specified by |animation_type| combined with a
   // transformation from the |initial_size| to the |target_size| over the given
@@ -89,39 +93,42 @@ class VIEWS_EXPORT InkDropHover {
       AnimationType animation_type,
       const ui::CallbackLayerAnimationObserver& observer);
 
-  // The size of the hover shape when fully faded in.
+  // The size of the highlight shape when fully faded in.
   gfx::Size size_;
 
-  // The target size of the hover shape when it expands during a fade out
+  // The target size of the highlight shape when it expands during a fade out
   // animation.
   gfx::Size explode_size_;
 
-  // The center point of the hover shape in the parent Layer's coordinate space.
+  // The center point of the highlight shape in the parent Layer's coordinate
+  // space.
   gfx::PointF center_point_;
 
   // True if the last animation to be initiated was a FADE_IN, and false
   // otherwise.
   bool last_animation_initiated_was_fade_in_;
 
-  // The LayerDelegate that paints the hover |layer_|.
+  // The LayerDelegate that paints the highlight |layer_|.
   std::unique_ptr<RoundedRectangleLayerDelegate> layer_delegate_;
 
-  // The visual hover layer that is painted by |layer_delegate_|.
+  // The visual highlight layer that is painted by |layer_delegate_|.
   std::unique_ptr<ui::Layer> layer_;
 
-  InkDropHoverObserver* observer_;
+  InkDropHighlightObserver* observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(InkDropHover);
+  DISALLOW_COPY_AND_ASSIGN(InkDropHighlight);
 };
 
 // Returns a human readable string for |animation_type|.  Useful for logging.
-VIEWS_EXPORT std::string ToString(InkDropHover::AnimationType animation_type);
+VIEWS_EXPORT std::string ToString(
+    InkDropHighlight::AnimationType animation_type);
 
 // This is declared here for use in gtest-based unit tests but is defined in
 // the views_test_support target. Depend on that to use this in your unit test.
 // This should not be used in production code - call ToString() instead.
-void PrintTo(InkDropHover::AnimationType animation_type, ::std::ostream* os);
+void PrintTo(InkDropHighlight::AnimationType animation_type,
+             ::std::ostream* os);
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_INK_DROP_HOVER_H_
+#endif  // UI_VIEWS_ANIMATION_INK_DROP_HIGHLIGHT_H_

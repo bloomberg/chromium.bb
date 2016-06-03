@@ -5,7 +5,7 @@
 #include <ostream>
 
 #include "ui/views/animation/ink_drop_animation_ended_reason.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_state.h"
 
 namespace views {
@@ -14,7 +14,8 @@ void PrintTo(InkDropState ink_drop_state, ::std::ostream* os) {
   *os << ToString(ink_drop_state);
 }
 
-void PrintTo(InkDropHover::AnimationType animation_type, ::std::ostream* os) {
+void PrintTo(InkDropHighlight::AnimationType animation_type,
+             ::std::ostream* os) {
   *os << ToString(animation_type);
 }
 

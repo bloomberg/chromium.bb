@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
-#include "ui/views/animation/test/ink_drop_hover_test_api.h"
+#include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 #include "ui/views/animation/test/square_ink_drop_ripple_test_api.h"
 
 namespace views {
@@ -46,35 +46,35 @@ class TestInkDropRipple : public SquareInkDropRipple {
   DISALLOW_COPY_AND_ASSIGN(TestInkDropRipple);
 };
 
-// Test specific subclass of InkDropHover that returns a test api from
+// Test specific subclass of InkDropHighlight that returns a test api from
 // GetTestApi().
-class TestInkDropHover : public InkDropHover {
+class TestInkDropHighlight : public InkDropHighlight {
  public:
-  TestInkDropHover(const gfx::Size& size,
-                   int corner_radius,
-                   const gfx::Point& center_point,
-                   SkColor color)
-      : InkDropHover(size, corner_radius, center_point, color) {}
+  TestInkDropHighlight(const gfx::Size& size,
+                       int corner_radius,
+                       const gfx::Point& center_point,
+                       SkColor color)
+      : InkDropHighlight(size, corner_radius, center_point, color) {}
 
-  ~TestInkDropHover() override {}
+  ~TestInkDropHighlight() override {}
 
-  test::InkDropHoverTestApi* GetTestApi() override {
+  test::InkDropHighlightTestApi* GetTestApi() override {
     if (!test_api_)
-      test_api_.reset(new test::InkDropHoverTestApi(this));
+      test_api_.reset(new test::InkDropHighlightTestApi(this));
     return test_api_.get();
   }
 
  private:
-  std::unique_ptr<test::InkDropHoverTestApi> test_api_;
+  std::unique_ptr<test::InkDropHighlightTestApi> test_api_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestInkDropHover);
+  DISALLOW_COPY_AND_ASSIGN(TestInkDropHighlight);
 };
 
 }  // namespace
 
 TestInkDropHost::TestInkDropHost()
     : num_ink_drop_layers_(0),
-      should_show_hover_(false),
+      should_show_highlight_(false),
       disable_timers_for_test_(false) {}
 
 TestInkDropHost::~TestInkDropHost() {}
@@ -96,15 +96,16 @@ std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {
   return ripple;
 }
 
-std::unique_ptr<InkDropHover> TestInkDropHost::CreateInkDropHover() const {
-  std::unique_ptr<InkDropHover> hover;
-  if (should_show_hover_) {
-    hover.reset(new TestInkDropHover(gfx::Size(10, 10), 4, gfx::Point(),
-                                     SK_ColorBLACK));
+std::unique_ptr<InkDropHighlight> TestInkDropHost::CreateInkDropHighlight()
+    const {
+  std::unique_ptr<InkDropHighlight> highlight;
+  if (should_show_highlight_) {
+    highlight.reset(new TestInkDropHighlight(gfx::Size(10, 10), 4, gfx::Point(),
+                                             SK_ColorBLACK));
     if (disable_timers_for_test_)
-      hover->GetTestApi()->SetDisableAnimationTimers(true);
+      highlight->GetTestApi()->SetDisableAnimationTimers(true);
   }
-  return hover;
+  return highlight;
 }
 
 }  // namespace views

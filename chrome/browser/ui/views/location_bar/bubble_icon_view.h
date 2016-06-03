@@ -72,7 +72,8 @@ class BubbleIconView : public views::InkDropHostView,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropForFocus() const override;
 
