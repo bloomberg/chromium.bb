@@ -168,10 +168,30 @@ void ShowCertificateViewer(content::WebContents* web_contents,
 
   oldResizesSubviews_ = [[sheetWindow contentView] autoresizesSubviews];
   [[sheetWindow contentView] setAutoresizesSubviews:NO];
+
+  oldSheetFrame_ = [sheetWindow frame];
+  NSRect overlayFrame = [overlayWindow_ frame];
+  oldSheetFrame_.origin.x -= NSMinX(overlayFrame);
+  oldSheetFrame_.origin.y -= NSMinY(overlayFrame);
+  oldOverlaySize_ = [overlayWindow_ frame].size;
+  [sheetWindow setFrame:ui::kWindowSizeDeterminedLater display:NO];
 }
 
 - (void)unhideSheet {
   NSWindow* sheetWindow = [overlayWindow_ attachedSheet];
+  NSRect overlayFrame = [overlayWindow_ frame];
+
+  // If the overlay frame's size has changed, the position offsets need to be
+  // calculated. Since the certificate is horizontally centered, so the x
+  // offset is calculated by halving the width difference. In addition,
+  // because the certificate is located directly below the toolbar, the y
+  // offset is just the difference in height.
+  CGFloat yOffset = (NSHeight(overlayFrame) - oldOverlaySize_.height);
+  CGFloat xOffset = (NSWidth(overlayFrame) - oldOverlaySize_.width) / 2;
+
+  oldSheetFrame_.origin.x += NSMinX(overlayFrame) + xOffset;
+  oldSheetFrame_.origin.y += NSMinY(overlayFrame) + yOffset;
+  [sheetWindow setFrame:oldSheetFrame_ display:NO];
 
   [[sheetWindow contentView] setAutoresizesSubviews:oldResizesSubviews_];
   [[overlayWindow_ attachedSheet] setAlphaValue:1.0];

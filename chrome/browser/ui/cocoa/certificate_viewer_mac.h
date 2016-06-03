@@ -30,6 +30,8 @@ namespace net {
   BOOL closePending_;
   // A copy of the sheet's frame used to restore on show.
   NSRect oldSheetFrame_;
+  // A copy of the overlay window's size used to restore on show.
+  NSSize oldOverlaySize_;
   // A copy of the sheet's |autoresizesSubviews| flag to restore on show.
   BOOL oldResizesSubviews_;
 }

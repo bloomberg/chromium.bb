@@ -749,8 +749,6 @@ willPositionSheet:(NSWindow*)sheet
     base::MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
-  [self setSheetHiddenForFullscreenTransition:NO];
-
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
 
