@@ -371,6 +371,17 @@ const int kDefaultFontSize = 12;
   return kIconLeftPadding + [[self image] size].width + kIconTextSpacer;
 }
 
+- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
+                            inView:(NSView*)controlView {
+  // In Material Design we have to move the focus ring over by 2 pts to get it
+  // to line up with the image.
+  if (ui::MaterialDesignController::IsModeMaterial() &&
+      [self visibleTitle].length > 0) {
+    cellFrame.origin.x += 2;
+  }
+  [super drawFocusRingMaskWithFrame:cellFrame inView:controlView];
+}
+
 // Override cell drawing to add a submenu arrow like a real menu.
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // First draw "everything else".
