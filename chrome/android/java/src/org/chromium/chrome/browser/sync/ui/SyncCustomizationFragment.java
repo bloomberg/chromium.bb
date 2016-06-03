@@ -567,7 +567,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
         for (CheckBoxPreference pref : mAllTypes) {
             boolean canSyncType = true;
             if (pref == mSyncPasswords) canSyncType = passwordSyncConfigurable;
-            if (pref == mPaymentsIntegration) canSyncType = syncAutofill;
+            if (pref == mPaymentsIntegration) {
+                canSyncType = syncAutofill || syncEverything;
+            }
 
             if (!isSyncEnabled) {
                 pref.setChecked(true);

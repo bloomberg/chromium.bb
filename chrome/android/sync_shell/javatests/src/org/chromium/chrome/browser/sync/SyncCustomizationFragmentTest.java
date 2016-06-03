@@ -407,6 +407,42 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         closeFragment(fragment);
         assertPaymentsIntegrationEnabled(true);
     }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationEnabledBySyncEverything() throws Exception {
+        setUpTestAccountAndSignIn();
+        setPaymentsIntegrationEnabled(false);
+        disableDataType(ModelType.AUTOFILL);
+
+        // Get the UI elements.
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_SYNC_AUTOFILL);
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+
+        // All three are unchecked and payments is disabled.
+        assertFalse(syncEverything.isChecked());
+        assertFalse(syncAutofill.isChecked());
+        assertTrue(syncAutofill.isEnabled());
+        assertFalse(paymentsIntegration.isChecked());
+        assertFalse(paymentsIntegration.isEnabled());
+
+        // All three are checked after toggling sync everything.
+        togglePreference(syncEverything);
+        assertTrue(syncEverything.isChecked());
+        assertTrue(syncAutofill.isChecked());
+        assertFalse(syncAutofill.isEnabled());
+        assertTrue(paymentsIntegration.isChecked());
+        assertFalse(paymentsIntegration.isEnabled());
+
+        // Closing the fragment enabled payments integration.
+        closeFragment(fragment);
+        assertPaymentsIntegrationEnabled(true);
+    }
+
     /**
      * Test that choosing a passphrase type while sync is off doesn't crash.
      *
