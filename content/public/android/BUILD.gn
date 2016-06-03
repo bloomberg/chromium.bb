@@ -197,6 +197,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotNode.java",
     "java/src/org/chromium/content_public/browser/ContentBitmapCallback.java",
     "java/src/org/chromium/content_public/browser/GestureStateListener.java",
+    "java/src/org/chromium/content_public/browser/ImageDownloadCallback.java",
     "java/src/org/chromium/content_public/browser/JavaScriptCallback.java",
     "java/src/org/chromium/content_public/browser/LoadUrlParams.java",
     "java/src/org/chromium/content_public/browser/NavigationController.java",

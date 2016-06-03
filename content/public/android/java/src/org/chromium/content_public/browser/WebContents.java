@@ -361,4 +361,24 @@ public interface WebContents extends Parcelable {
      * Reloads all the Lo-Fi images in this WebContents.
      */
     public void reloadLoFiImages();
+
+    /**
+     * Sends a request to download the given image {@link url}.
+     * This method delegates the call to the downloadImage() method of native WebContents.
+     * @param url The URL of the image to download.
+     * @param isFavicon Whether the image is a favicon. If true, the cookies are not sent and not
+     *                 accepted during download.
+     * @param maxBitmapSize The maximum bitmap size. Bitmaps with pixel sizes larger than {@link
+     *                 max_bitmap_size} are filtered out from the bitmap results. If there are no
+     *                 bitmap results <= {@link max_bitmap_size}, the smallest bitmap is resized to
+     *                 {@link max_bitmap_size} and is the only result. A {@link max_bitmap_size} of
+     *                 0 means unlimited.
+     * @param bypassCache If true, {@link url} is requested from the server even if it is present in
+     *                 the browser cache.
+     * @param callback The callback which will be called when the bitmaps are received from the
+     *                 renderer.
+     * @return The unique id of the download request
+     */
+    public int downloadImage(String url, boolean isFavicon, int maxBitmapSize,
+            boolean bypassCache, ImageDownloadCallback callback);
 }

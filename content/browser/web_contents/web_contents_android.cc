@@ -673,6 +673,25 @@ void WebContentsAndroid::ReloadLoFiImages(JNIEnv* env,
   static_cast<WebContentsImpl*>(web_contents_)->ReloadLoFiImages();
 }
 
+int WebContentsAndroid::DownloadImage(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jurl,
+    jboolean is_fav_icon,
+    jint max_bitmap_size,
+    jboolean bypass_cache,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  return web_contents_->DownloadImage(
+      url, is_fav_icon, max_bitmap_size, bypass_cache,
+      base::Bind(&WebContentsAndroid::OnFinishDownloadImage,
+                 weak_factory_.GetWeakPtr(),
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(
+                     env, obj)),
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(
+                     env, jcallback))));
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     ScopedJavaGlobalRef<jobject>* obj,
     ScopedJavaGlobalRef<jobject>* callback,
@@ -689,4 +708,35 @@ void WebContentsAndroid::OnFinishGetContentBitmap(
                                                   response);
 }
 
+void WebContentsAndroid::OnFinishDownloadImage(
+    base::android::ScopedJavaGlobalRef<jobject>* obj,
+    base::android::ScopedJavaGlobalRef<jobject>* callback,
+    int id,
+    int http_status_code,
+    const GURL& url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& sizes) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jbitmaps =
+      Java_WebContentsImpl_createBitmapList(env);
+  ScopedJavaLocalRef<jobject> jsizes =
+      Java_WebContentsImpl_createSizeList(env);
+  ScopedJavaLocalRef<jstring> jurl =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+
+  for (const SkBitmap& bitmap : bitmaps) {
+    // WARNING: convering to java bitmaps results in duplicate memory
+    // allocations, which increases the chance of OOMs if DownloadImage() is
+    // misused.
+    ScopedJavaLocalRef<jobject> jbitmap = gfx::ConvertToJavaBitmap(&bitmap);
+    Java_WebContentsImpl_addToBitmapList(env, jbitmaps.obj(), jbitmap.obj());
+  }
+  for (const gfx::Size& size : sizes) {
+    Java_WebContentsImpl_createSizeAndAddToList(
+        env, jsizes.obj(), size.width(), size.height());
+  }
+  Java_WebContentsImpl_onDownloadImageFinished(
+      env, obj->obj(), callback->obj(), id,
+      http_status_code, jurl.obj(), jbitmaps.obj(), jsizes.obj());
+}
 }  // namespace content

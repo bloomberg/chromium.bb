@@ -18,12 +18,15 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ContentBitmapCallback;
+import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.accessibility.AXTextStyle;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -469,6 +472,39 @@ import java.util.UUID;
         nativeReloadLoFiImages(mNativeWebContentsAndroid);
     }
 
+    @Override
+    public int downloadImage(String url, boolean isFavicon, int maxBitmapSize,
+            boolean bypassCache, ImageDownloadCallback callback) {
+        return nativeDownloadImage(mNativeWebContentsAndroid,
+                url, isFavicon, maxBitmapSize, bypassCache, callback);
+    }
+
+    @CalledByNative
+    private void onDownloadImageFinished(ImageDownloadCallback callback, int id, int httpStatusCode,
+            String imageUrl, List<Bitmap> bitmaps, List<Rect> sizes) {
+        callback.onFinishDownloadImage(id, httpStatusCode, imageUrl, bitmaps, sizes);
+    }
+
+    @CalledByNative
+    private static List<Bitmap> createBitmapList() {
+        return new ArrayList<Bitmap>();
+    }
+
+    @CalledByNative
+    private static void addToBitmapList(List<Bitmap> bitmaps, Bitmap bitmap) {
+        bitmaps.add(bitmap);
+    }
+
+    @CalledByNative
+    private static List<Rect> createSizeList() {
+        return new ArrayList<Rect>();
+    }
+
+    @CalledByNative
+    private static void createSizeAndAddToList(List<Rect> sizes, int width, int height) {
+        sizes.add(new Rect(0, 0, width, height));
+    }
+
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
@@ -530,4 +566,7 @@ import java.util.UUID;
             float x, float y, float width, float height);
     private native void nativeOnContextMenuClosed(long nativeWebContentsAndroid);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);
+    private native int nativeDownloadImage(long nativeWebContentsAndroid,
+            String url, boolean isFavicon, int maxBitmapSize,
+            boolean bypassCache, ImageDownloadCallback callback);
 }
