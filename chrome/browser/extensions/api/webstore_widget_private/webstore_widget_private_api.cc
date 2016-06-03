@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/webstore_widget_private/webstore_widget_private_api.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -40,25 +41,25 @@ WebstoreWidgetPrivateGetStringsFunction::
 
 ExtensionFunction::ResponseAction
 WebstoreWidgetPrivateGetStringsFunction::Run() {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  SetL10nString(dict, "TITLE_PRINTER_PROVIDERS",
+  SetL10nString(dict.get(), "TITLE_PRINTER_PROVIDERS",
                 IDS_WEBSTORE_WIDGET_TITLE_PRINTER_PROVIDERS);
-  SetL10nString(dict, "DEFAULT_ERROR_MESSAGE",
+  SetL10nString(dict.get(), "DEFAULT_ERROR_MESSAGE",
                 IDS_WEBSTORE_WIDGET_DEFAULT_ERROR);
-  SetL10nString(dict, "OK_BUTTON", IDS_FILE_BROWSER_OK_LABEL);
-  SetL10nString(dict, "INSTALLATION_FAILED_MESSAGE",
+  SetL10nString(dict.get(), "OK_BUTTON", IDS_FILE_BROWSER_OK_LABEL);
+  SetL10nString(dict.get(), "INSTALLATION_FAILED_MESSAGE",
                 IDS_FILE_BROWSER_SUGGEST_DIALOG_INSTALLATION_FAILED);
-  SetL10nString(dict, "LINK_TO_WEBSTORE",
+  SetL10nString(dict.get(), "LINK_TO_WEBSTORE",
                 IDS_FILE_BROWSER_SUGGEST_DIALOG_LINK_TO_WEBSTORE);
-  SetL10nString(dict, "LOADING_SPINNER_ALT",
+  SetL10nString(dict.get(), "LOADING_SPINNER_ALT",
                 IDS_WEBSTORE_WIDGET_LOADING_SPINNER_ALT);
-  SetL10nString(dict, "INSTALLING_SPINNER_ALT",
+  SetL10nString(dict.get(), "INSTALLING_SPINNER_ALT",
                 IDS_WEBSTORE_WIDGET_INSTALLING_SPINNER_ALT);
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict);
-  return RespondNow(OneArgument(dict));
+  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
 WebstoreWidgetPrivateInstallWebstoreItemFunction::

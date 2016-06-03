@@ -1142,7 +1142,8 @@ ExtensionFunction::ResponseAction DeveloperPrivateChoosePathFunction::Run() {
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  Respond(OneArgument(new base::StringValue(path.LossyDisplayName())));
+  Respond(OneArgument(
+      base::MakeUnique<base::StringValue>(path.LossyDisplayName())));
   Release();
 }
 
