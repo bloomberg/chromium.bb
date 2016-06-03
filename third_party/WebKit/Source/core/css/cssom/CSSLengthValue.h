@@ -5,6 +5,7 @@
 #ifndef CSSLengthValue_h
 #define CSSLengthValue_h
 
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/StyleValue.h"
 
 namespace blink {

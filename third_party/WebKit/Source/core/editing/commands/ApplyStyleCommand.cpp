@@ -29,7 +29,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeList.h"
@@ -435,7 +435,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
             currentFontSize = computedFontSize(node);
         }
         if (currentFontSize != desiredFontSize) {
-            inlineStyle->setProperty(CSSPropertyFontSize, cssValuePool().createValue(desiredFontSize, CSSPrimitiveValue::UnitType::Pixels), false);
+            inlineStyle->setProperty(CSSPropertyFontSize, CSSPrimitiveValue::create(desiredFontSize, CSSPrimitiveValue::UnitType::Pixels), false);
             setNodeAttribute(element, styleAttr, AtomicString(inlineStyle->asText()));
         }
         if (inlineStyle->isEmpty()) {

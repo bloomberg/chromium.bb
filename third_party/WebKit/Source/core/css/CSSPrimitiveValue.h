@@ -208,14 +208,11 @@ public:
     bool isValueID() const { return type() == UnitType::ValueID; }
     bool colorIsDerivedFromElement() const;
 
-    static CSSPrimitiveValue* createIdentifier(CSSValueID valueID)
-    {
-        return new CSSPrimitiveValue(valueID);
-    }
-    static CSSPrimitiveValue* create(double value, UnitType type)
-    {
-        return new CSSPrimitiveValue(value, type);
-    }
+    static CSSPrimitiveValue* createIdentifier(CSSValueID);
+    static CSSPrimitiveValue* create(double value, UnitType);
+    // TODO(sashab): Remove this create() method, CSSPrimitiveValue should not
+    // reference ComputedStyle.
+    static CSSPrimitiveValue* create(const Length& value, const ComputedStyle&);
     static CSSPrimitiveValue* create(const Length& value, float zoom)
     {
         return new CSSPrimitiveValue(value, zoom);

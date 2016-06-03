@@ -56,7 +56,7 @@ double CSSAngleValue::turns() const
 
 CSSValue* CSSAngleValue::toCSSValue() const
 {
-    return cssValuePool().createValue(m_value, m_unit);
+    return CSSPrimitiveValue::create(m_value, m_unit);
 }
 
 } // namespace blink

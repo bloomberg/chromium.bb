@@ -30,8 +30,8 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/XMLNames.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSMarkup.h"
-#include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementTraversal.h"
@@ -949,7 +949,7 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
     if (!parseColorWithLegacyRules(attributeValue, parsedColor))
         return;
 
-    style->setProperty(propertyID, cssValuePool().createColorValue(parsedColor.rgb()));
+    style->setProperty(propertyID, CSSColorValue::create(parsedColor.rgb()));
 }
 
 bool HTMLElement::isInteractiveContent() const

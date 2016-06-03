@@ -12,10 +12,7 @@ namespace blink {
 
 class CSSUnsetValue : public CSSValue {
 public:
-    static CSSUnsetValue* create()
-    {
-        return new CSSUnsetValue;
-    }
+    static CSSUnsetValue* create();
 
     String customCSSText() const;
 
@@ -24,6 +21,8 @@ public:
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
+    friend class CSSValuePool;
+
     CSSUnsetValue()
         : CSSValue(UnsetClass)
     {

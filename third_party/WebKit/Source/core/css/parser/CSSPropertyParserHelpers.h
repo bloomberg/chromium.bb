@@ -5,7 +5,8 @@
 #ifndef CSSPropertyParserHelpers_h
 #define CSSPropertyParserHelpers_h
 
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSCustomIdentValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/Length.h" // For ValueRange
@@ -72,7 +73,7 @@ template<CSSValueID... names> CSSPrimitiveValue* consumeIdent(CSSParserTokenRang
 {
     if (range.peek().type() != IdentToken || !identMatches<names...>(range.peek().id()))
         return nullptr;
-    return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
+    return CSSPrimitiveValue::createIdentifier(range.consumeIncludingWhitespace().id());
 }
 
 static inline bool isCSSWideKeyword(const CSSValueID& id)

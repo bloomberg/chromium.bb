@@ -25,11 +25,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyIDTemplates.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSelector.h"
-#include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/parser/CSSParser.h"
@@ -398,7 +398,7 @@ static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
 
 inline static CSSPrimitiveValue* zoomAdjustedPixelValue(double value, const ComputedStyle& style)
 {
-    return cssValuePool().createValue(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::UnitType::Pixels);
+    return CSSPrimitiveValue::create(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::UnitType::Pixels);
 }
 
 CSSValue* CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
@@ -413,7 +413,7 @@ CSSValue* CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() co
         return nullptr;
 
     if (int keywordSize = style->getFontDescription().keywordSize())
-        return cssValuePool().createIdentifierValue(cssIdentifierForFontSizeKeyword(keywordSize));
+        return CSSPrimitiveValue::createIdentifier(cssIdentifierForFontSizeKeyword(keywordSize));
 
 
     return zoomAdjustedPixelValue(style->getFontDescription().computedPixelSize(), *style);

@@ -25,7 +25,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/StylePropertySet.h"
 
 namespace blink {
@@ -74,7 +74,7 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
         if (!hasAttribute(colorAttr)) {
             addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle, CSSValueSolid);
 
-            CSSColorValue* darkGrayValue = cssValuePool().createColorValue(Color::darkGray);
+            CSSColorValue* darkGrayValue = CSSColorValue::create(Color::darkGray);
             style->setProperty(CSSPropertyBorderColor, darkGrayValue);
             style->setProperty(CSSPropertyBackgroundColor, darkGrayValue);
         }

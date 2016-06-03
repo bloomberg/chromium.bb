@@ -26,7 +26,7 @@ public:
 
     CSSValue* toCSSValue() const override
     {
-        return cssValuePool().createValue(m_value, CSSPrimitiveValue::UnitType::
+        return CSSPrimitiveValue::create(m_value, CSSPrimitiveValue::UnitType::
 Number);
     }
 

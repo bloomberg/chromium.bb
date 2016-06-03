@@ -5,8 +5,11 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 
 #include "core/StylePropertyShorthand.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSInheritedValue.h"
+#include "core/css/CSSInitialValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -118,7 +121,7 @@ static CSSValue* parseSimpleLengthValue(CSSPropertyID propertyId, const String& 
     if (number < 0 && !acceptsNegativeNumbers)
         return nullptr;
 
-    return cssValuePool().createValue(number, unit);
+    return CSSPrimitiveValue::create(number, unit);
 }
 
 static inline bool isColorPropertyID(CSSPropertyID propertyId)
@@ -443,7 +446,7 @@ CSSValue* CSSParserFastPaths::parseColor(const String& string, CSSParserMode par
     if (CSSPropertyParser::isColorKeyword(valueID)) {
         if (!isValueAllowedInMode(valueID, parserMode))
             return nullptr;
-        return cssValuePool().createIdentifierValue(valueID);
+        return CSSPrimitiveValue::createIdentifier(valueID);
     }
 
     RGBA32 color;
@@ -457,7 +460,7 @@ CSSValue* CSSParserFastPaths::parseColor(const String& string, CSSParserMode par
         parseResult = fastParseColorInternal(color, string.characters16(), string.length(), quirksMode);
     if (!parseResult)
         return nullptr;
-    return cssValuePool().createColorValue(color);
+    return CSSColorValue::create(color);
 }
 
 bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID, CSSParserMode parserMode)
@@ -849,11 +852,11 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& strin
         return nullptr;
 
     if (valueID == CSSValueInherit)
-        return cssValuePool().createInheritedValue();
+        return CSSInheritedValue::create();
     if (valueID == CSSValueInitial)
-        return cssValuePool().createExplicitInitialValue();
+        return CSSInitialValue::create();
     if (CSSParserFastPaths::isValidKeywordPropertyAndValue(propertyId, valueID, parserMode))
-        return cssValuePool().createIdentifierValue(valueID);
+        return CSSPrimitiveValue::createIdentifier(valueID);
     return nullptr;
 }
 
@@ -871,7 +874,7 @@ static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsi
             return false;
         if (unit != CSSPrimitiveValue::UnitType::Pixels && (number || unit != CSSPrimitiveValue::UnitType::Number))
             return false;
-        transformValue->append(cssValuePool().createValue(number, CSSPrimitiveValue::UnitType::Pixels));
+        transformValue->append(CSSPrimitiveValue::create(number, CSSPrimitiveValue::UnitType::Pixels));
         pos += argumentLength + 1;
         --expectedCount;
     }
@@ -890,7 +893,7 @@ static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigne
         double number = charactersToDouble(pos, argumentLength, &ok);
         if (!ok)
             return false;
-        transformValue->append(cssValuePool().createValue(number, CSSPrimitiveValue::UnitType::Number));
+        transformValue->append(CSSPrimitiveValue::create(number, CSSPrimitiveValue::UnitType::Number));
         pos += argumentLength + 1;
         --expectedCount;
     }

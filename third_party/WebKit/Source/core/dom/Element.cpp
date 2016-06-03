@@ -39,8 +39,8 @@
 #include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSImageValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStyleSheet.h"
-#include "core/css/CSSValuePool.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
@@ -3539,12 +3539,12 @@ void Element::inlineStyleChanged()
 
 void Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)
 {
-    setInlineStyleProperty(propertyID, cssValuePool().createIdentifierValue(identifier), important);
+    setInlineStyleProperty(propertyID, CSSPrimitiveValue::createIdentifier(identifier), important);
 }
 
 void Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit, bool important)
 {
-    setInlineStyleProperty(propertyID, cssValuePool().createValue(value, unit), important);
+    setInlineStyleProperty(propertyID, CSSPrimitiveValue::create(value, unit), important);
 }
 
 void Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValue* value, bool important)
@@ -3595,13 +3595,13 @@ void Element::updatePresentationAttributeStyle()
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, CSSValueID identifier)
 {
     DCHECK(isStyledElement());
-    style->setProperty(propertyID, cssValuePool().createIdentifierValue(identifier));
+    style->setProperty(propertyID, CSSPrimitiveValue::createIdentifier(identifier));
 }
 
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit)
 {
     DCHECK(isStyledElement());
-    style->setProperty(propertyID, cssValuePool().createValue(value, unit));
+    style->setProperty(propertyID, CSSPrimitiveValue::create(value, unit));
 }
 
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, const String& value)

@@ -8,7 +8,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/parser/CSSParserToken.h"
@@ -136,10 +136,10 @@ CSSValue* CSSVariableResolver::resolveVariableReferences(StyleVariableData* styl
     CSSVariableResolver resolver(styleVariableData);
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
-        return cssValuePool().createUnsetValue();
+        return CSSUnsetValue::create();
     CSSValue* result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
     if (!result)
-        return cssValuePool().createUnsetValue();
+        return CSSUnsetValue::create();
     return result;
 }
 
@@ -162,7 +162,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
         }
     }
 
-    CSSUnsetValue* unset = cssValuePool().createUnsetValue();
+    CSSUnsetValue* unset = CSSUnsetValue::create();
     if (isShorthandProperty(id)) {
         StylePropertyShorthand shorthand = shorthandForProperty(id);
         for (unsigned i = 0; i < shorthand.length(); i++)

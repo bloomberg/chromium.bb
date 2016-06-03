@@ -28,14 +28,8 @@ namespace blink {
 
 class CSSInitialValue : public CSSValue {
 public:
-    static CSSInitialValue* createExplicit()
-    {
-        return new CSSInitialValue(/* implicit */ false);
-    }
-    static CSSInitialValue* createImplicit()
-    {
-        return new CSSInitialValue(/* implicit */ true);
-    }
+    static CSSInitialValue* create();
+    static CSSInitialValue* createLegacyImplicit(); // crbug.com/471917
 
     String customCSSText() const;
 
@@ -46,6 +40,8 @@ public:
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
+    friend class CSSValuePool;
+
     explicit CSSInitialValue(bool implicit)
         : CSSValue(InitialClass)
         , m_isImplicit(implicit)

@@ -20,7 +20,7 @@
 
 #include "core/svg/SVGPathElement.h"
 
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGMPathElement.h"
@@ -173,7 +173,7 @@ void SVGPathElement::collectStyleForPresentationAttribute(const QualifiedName& n
 
         CSSPathValue* pathValue = path->currentValue()->pathValue();
         if (pathValue->stylePath()->byteStream().isEmpty()) {
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyD, cssValuePool().createIdentifierValue(CSSValueNone));
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyD, CSSPrimitiveValue::createIdentifier(CSSValueNone));
             return;
         }
         addPropertyToPresentationAttributeStyle(style, CSSPropertyD, pathValue);

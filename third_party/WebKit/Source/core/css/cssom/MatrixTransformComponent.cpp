@@ -5,7 +5,6 @@
 #include "core/css/cssom/MatrixTransformComponent.h"
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValuePool.h"
 #include "wtf/MathExtras.h"
 #include <cmath>
 
@@ -18,13 +17,13 @@ CSSFunctionValue* MatrixTransformComponent::toCSSValue() const
     if (m_is2D) {
         double values[6] = {a(), b(), c(), d(), e(), f()};
         for (double value : values) {
-            result->append(cssValuePool().createValue(value, CSSPrimitiveValue::UnitType::Number));
+            result->append(CSSPrimitiveValue::create(value, CSSPrimitiveValue::UnitType::Number));
         }
     } else {
         double values[16] = {m11(), m12(), m13(), m14(), m21(), m22(), m23(), m24(),
             m31(), m32(), m33(), m34(), m41(), m42(), m43(), m44()};
         for (double value : values) {
-            result->append(cssValuePool().createValue(value, CSSPrimitiveValue::UnitType::Number));
+            result->append(CSSPrimitiveValue::create(value, CSSPrimitiveValue::UnitType::Number));
         }
     }
 

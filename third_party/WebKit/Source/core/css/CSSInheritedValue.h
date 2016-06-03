@@ -28,10 +28,7 @@ namespace blink {
 
 class CSSInheritedValue : public CSSValue {
 public:
-    static CSSInheritedValue* create()
-    {
-        return new CSSInheritedValue;
-    }
+    static CSSInheritedValue* create();
 
     String customCSSText() const;
 
@@ -40,6 +37,8 @@ public:
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
+    friend class CSSValuePool;
+
     CSSInheritedValue()
         : CSSValue(InheritedClass)
     {

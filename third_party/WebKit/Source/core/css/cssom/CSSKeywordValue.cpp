@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSCustomIdentValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSPropertyParser.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ CSSValue* CSSKeywordValue::toCSSValue() const
     if (keywordID == CSSValueID::CSSValueInvalid) {
         return CSSCustomIdentValue::create(m_keywordValue);
     }
-    return cssValuePool().createIdentifierValue(keywordID);
+    return CSSPrimitiveValue::createIdentifier(keywordID);
 }
 
 } // namespace blink

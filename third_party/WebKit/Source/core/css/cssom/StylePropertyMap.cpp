@@ -5,6 +5,7 @@
 #include "core/css/cssom/StylePropertyMap.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/StyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"

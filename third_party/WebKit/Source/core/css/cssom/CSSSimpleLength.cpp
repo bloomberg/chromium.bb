@@ -12,7 +12,7 @@ namespace blink {
 
 CSSValue* CSSSimpleLength::toCSSValue() const
 {
-    return cssValuePool().createValue(m_value, m_unit);
+    return CSSPrimitiveValue::create(m_value, m_unit);
 }
 
 bool CSSSimpleLength::containsPercent() const

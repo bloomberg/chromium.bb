@@ -24,7 +24,6 @@
 #include "core/SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
-#include "core/css/CSSValuePool.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "wtf/MathExtras.h"
@@ -33,7 +32,7 @@
 namespace blink {
 
 SVGLength::SVGLength(SVGLengthMode mode)
-    : m_value(cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits))
+    : m_value(CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits))
     , m_unitMode(static_cast<unsigned>(mode))
 {
     ASSERT(unitMode() == mode);
@@ -62,7 +61,7 @@ SVGPropertyBase* SVGLength::cloneForAnimation(const String& value) const
     length->m_unitMode = m_unitMode;
 
     if (length->setValueAsString(value) != SVGParseStatus::NoError)
-        length->m_value = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits);
+        length->m_value = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits);
 
     return length;
 }
@@ -130,7 +129,7 @@ float SVGLength::scaleByPercentage(float input) const
 SVGParsingError SVGLength::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
-        m_value = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits);
+        m_value = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits);
         return SVGParseStatus::NoError;
     }
 

@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
-#include "core/css/CSSValuePool.h"
 
 namespace blink {
 

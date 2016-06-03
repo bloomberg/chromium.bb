@@ -240,6 +240,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     switch (fromUnit) {
     case CSSPrimitiveValue::UnitType::Pixels:
     case CSSPrimitiveValue::UnitType::Number:
+    case CSSPrimitiveValue::UnitType::Integer:
     case CSSPrimitiveValue::UnitType::UserUnits:
         userUnits = value;
         break;
@@ -299,6 +300,7 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
     switch (toUnit) {
     case CSSPrimitiveValue::UnitType::Pixels:
     case CSSPrimitiveValue::UnitType::Number:
+    case CSSPrimitiveValue::UnitType::Integer:
     case CSSPrimitiveValue::UnitType::UserUnits:
         return value;
     case CSSPrimitiveValue::UnitType::Percentage: {

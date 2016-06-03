@@ -5,9 +5,20 @@
 #include "core/css/CSSFontFamilyValue.h"
 
 #include "core/css/CSSMarkup.h"
+#include "core/css/CSSValuePool.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+CSSFontFamilyValue* CSSFontFamilyValue::create(const String& familyName)
+{
+    if (familyName.isNull())
+        return new CSSFontFamilyValue(familyName);
+    CSSValuePool::FontFamilyValueCache::AddResult entry = cssValuePool().getFontFamilyCacheEntry(familyName);
+    if (!entry.storedValue->value)
+        entry.storedValue->value = new CSSFontFamilyValue(familyName);
+    return entry.storedValue->value;
+}
 
 CSSFontFamilyValue::CSSFontFamilyValue(const String& str)
     : CSSValue(FontFamilyClass)

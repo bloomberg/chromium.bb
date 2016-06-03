@@ -31,7 +31,7 @@
 #include "core/animation/animatable/AnimatableUnknown.h"
 
 #include "core/animation/animatable/AnimatableNeutral.h"
-#include "core/css/CSSValuePool.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -40,10 +40,10 @@ class AnimationAnimatableUnknownTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        cssValue = cssValuePool().createIdentifierValue(CSSValueYellow);
+        cssValue = CSSPrimitiveValue::createIdentifier(CSSValueYellow);
         animatableUnknown = AnimatableUnknown::create(cssValue);
 
-        otherCSSValue = cssValuePool().createIdentifierValue(CSSValueOrange);
+        otherCSSValue = CSSPrimitiveValue::createIdentifier(CSSValueOrange);
         otherAnimatableUnknown = AnimatableUnknown::create(otherCSSValue);
     }
 

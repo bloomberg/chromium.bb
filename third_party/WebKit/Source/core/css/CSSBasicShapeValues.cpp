@@ -29,8 +29,8 @@
 
 #include "core/css/CSSBasicShapeValues.h"
 
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePair.h"
-#include "core/css/CSSValuePool.h"
 #include "platform/Length.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -82,7 +82,7 @@ static CSSValuePair* buildSerializablePositionOffset(CSSValue* offset, CSSValueI
         amount = &toCSSPrimitiveValue(toCSSValuePair(*offset).second());
         if ((side == CSSValueRight || side == CSSValueBottom) && amount->isPercentage()) {
             side = defaultSide;
-            amount = cssValuePool().createValue(100 - amount->getFloatValue(), CSSPrimitiveValue::UnitType::Percentage);
+            amount = CSSPrimitiveValue::create(100 - amount->getFloatValue(), CSSPrimitiveValue::UnitType::Percentage);
         }
     } else {
         amount = toCSSPrimitiveValue(offset);
@@ -90,16 +90,16 @@ static CSSValuePair* buildSerializablePositionOffset(CSSValue* offset, CSSValueI
 
     if (side == CSSValueCenter) {
         side = defaultSide;
-        amount = cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage);
+        amount = CSSPrimitiveValue::create(50, CSSPrimitiveValue::UnitType::Percentage);
     } else if (!amount || (amount->isLength() && !amount->getFloatValue())) {
         if (side == CSSValueRight || side == CSSValueBottom)
-            amount = cssValuePool().createValue(100, CSSPrimitiveValue::UnitType::Percentage);
+            amount = CSSPrimitiveValue::create(100, CSSPrimitiveValue::UnitType::Percentage);
         else
-            amount = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
+            amount = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Percentage);
         side = defaultSide;
     }
 
-    return CSSValuePair::create(cssValuePool().createIdentifierValue(side), amount, CSSValuePair::KeepIdenticalValues);
+    return CSSValuePair::create(CSSPrimitiveValue::createIdentifier(side), amount, CSSValuePair::KeepIdenticalValues);
 }
 
 String CSSBasicShapeCircleValue::customCSSText() const

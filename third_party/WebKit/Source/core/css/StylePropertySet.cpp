@@ -24,8 +24,8 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyMetadata.h"
-#include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySerializer.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
@@ -340,7 +340,7 @@ bool MutableStylePropertySet::setProperty(const CSSProperty& property, CSSProper
 
 bool MutableStylePropertySet::setProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)
 {
-    setProperty(CSSProperty(propertyID, cssValuePool().createIdentifierValue(identifier), important));
+    setProperty(CSSProperty(propertyID, CSSPrimitiveValue::createIdentifier(identifier), important));
     return true;
 }
 

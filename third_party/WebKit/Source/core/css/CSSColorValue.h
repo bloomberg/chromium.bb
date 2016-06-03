@@ -14,10 +14,8 @@ namespace blink {
 // Represents the non-keyword subset of <color>.
 class CSSColorValue : public CSSValue {
 public:
-    static CSSColorValue* create(Color color)
-    {
-        return new CSSColorValue(color);
-    }
+    // TODO(sashab): Make this create() method take a Color instead.
+    static CSSColorValue* create(RGBA32 color);
 
     String customCSSText() const
     {
@@ -37,6 +35,8 @@ public:
     }
 
 private:
+    friend class CSSValuePool;
+
     CSSColorValue(Color color)
         : CSSValue(ColorClass)
         , m_color(color) { }

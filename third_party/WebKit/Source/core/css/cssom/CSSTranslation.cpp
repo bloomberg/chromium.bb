@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValuePool.h"
 
 namespace blink {
 

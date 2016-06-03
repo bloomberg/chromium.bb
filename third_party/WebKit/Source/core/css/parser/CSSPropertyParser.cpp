@@ -13,6 +13,7 @@
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
@@ -20,6 +21,8 @@
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSImageSetValue.h"
+#include "core/css/CSSInheritedValue.h"
+#include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -31,8 +34,8 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
+#include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValuePair.h"
-#include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/FontFace.h"
 #include "core/css/HashTools.h"
@@ -295,11 +298,11 @@ bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, 
 
     CSSValue* value = nullptr;
     if (id == CSSValueInitial)
-        value = cssValuePool().createExplicitInitialValue();
+        value = CSSInitialValue::create();
     else if (id == CSSValueInherit)
-        value = cssValuePool().createInheritedValue();
+        value = CSSInheritedValue::create();
     else if (id == CSSValueUnset)
-        value = cssValuePool().createUnsetValue();
+        value = CSSUnsetValue::create();
     else
         return false;
 
@@ -326,7 +329,7 @@ static CSSValueList* consumeTransformOrigin(CSSParserTokenRange& range, CSSParse
         list->append(resultY);
         CSSValue* resultZ = consumeLength(range, cssParserMode, ValueRangeAll);
         if (!resultZ)
-            resultZ = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+            resultZ = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
         list->append(resultZ);
         return list;
     }
@@ -352,7 +355,7 @@ static CSSValue* consumeWillChange(CSSParserTokenRange& range)
             // Need to return nullptr when currentValue is CSSPropertyAll.
             if (unresolvedProperty == CSSPropertyWillChange || unresolvedProperty == CSSPropertyAll)
                 return nullptr;
-            values->append(cssValuePool().createIdentifierValue(unresolvedProperty));
+            values->append(CSSCustomIdentValue::create(unresolvedProperty));
             range.consumeIncludingWhitespace();
         } else {
             switch (range.peek().id()) {
@@ -514,7 +517,7 @@ public:
     CSSValue* finalizeValue()
     {
         if (!m_result->length())
-            return cssValuePool().createIdentifierValue(CSSValueNormal);
+            return CSSPrimitiveValue::createIdentifier(CSSValueNormal);
         return m_result.release();
     }
 
@@ -610,7 +613,7 @@ public:
     CSSValue* finalizeValue()
     {
         if (!m_result->length())
-            return cssValuePool().createIdentifierValue(CSSValueNormal);
+            return CSSPrimitiveValue::createIdentifier(CSSValueNormal);
         return m_result.release();
     }
 
@@ -679,7 +682,7 @@ static CSSPrimitiveValue* consumeFontWeight(CSSParserTokenRange& range)
     if ((weight % 100) || weight < 100 || weight > 900)
         return nullptr;
     range.consumeIncludingWhitespace();
-    return cssValuePool().createIdentifierValue(static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1));
+    return CSSPrimitiveValue::createIdentifier(static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1));
 }
 
 static String concatenateFamilyName(CSSParserTokenRange& range)
@@ -702,13 +705,13 @@ static String concatenateFamilyName(CSSParserTokenRange& range)
 static CSSValue* consumeFamilyName(CSSParserTokenRange& range)
 {
     if (range.peek().type() == StringToken)
-        return cssValuePool().createFontFamilyValue(range.consumeIncludingWhitespace().value().toString());
+        return CSSFontFamilyValue::create(range.consumeIncludingWhitespace().value().toString());
     if (range.peek().type() != IdentToken)
         return nullptr;
     String familyName = concatenateFamilyName(range);
     if (familyName.isNull())
         return nullptr;
-    return cssValuePool().createFontFamilyValue(familyName);
+    return CSSFontFamilyValue::create(familyName);
 }
 
 static CSSValue* consumeGenericFamily(CSSParserTokenRange& range)
@@ -845,7 +848,7 @@ static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue)
         if (CSSPrimitiveValue* counterValue = consumeInteger(range))
             i = clampTo<int>(counterValue->getDoubleValue());
         list->append(CSSValuePair::create(counterName,
-            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Integer),
+            CSSPrimitiveValue::create(i, CSSPrimitiveValue::UnitType::Integer),
             CSSValuePair::DropIdenticalValues));
     } while (!range.atEnd());
     return list;
@@ -1153,7 +1156,7 @@ static CSSValue* consumeAnimationName(CSSParserTokenRange& range, const CSSParse
 
         const CSSParserToken& token = range.consumeIncludingWhitespace();
         if (token.valueEqualsIgnoringASCIICase("none"))
-            return cssValuePool().createIdentifierValue(CSSValueNone);
+            return CSSPrimitiveValue::createIdentifier(CSSValueNone);
         return CSSCustomIdentValue::create(token.value().toString());
     }
 
@@ -1171,7 +1174,7 @@ static CSSValue* consumeTransitionProperty(CSSParserTokenRange& range)
     if (CSSPropertyID property = token.parseAsUnresolvedCSSPropertyID()) {
         ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
         range.consumeIncludingWhitespace();
-        return cssValuePool().createIdentifierValue(property);
+        return CSSCustomIdentValue::create(property);
     }
     return consumeCustomIdent(range);
 }
@@ -1339,7 +1342,7 @@ bool CSSPropertyParser::consumeAnimationShorthand(const StylePropertyShorthand& 
         // TODO(timloh): This will make invalid longhands, see crbug.com/386459
         for (size_t i = 0; i < longhandCount; ++i) {
             if (!parsedLonghand[i])
-                longhands[i]->append(cssValuePool().createImplicitInitialValue());
+                longhands[i]->append(CSSInitialValue::createLegacyImplicit());
             parsedLonghand[i] = false;
         }
     } while (consumeCommaIncludingWhitespace(m_range));
@@ -1553,7 +1556,7 @@ static CSSValue* consumePath(CSSParserTokenRange& range)
 
     range = functionRange;
     if (byteStream->isEmpty())
-        return cssValuePool().createIdentifierValue(CSSValueNone);
+        return CSSPrimitiveValue::createIdentifier(CSSValueNone);
     return CSSPathValue::create(std::move(byteStream));
 }
 
@@ -1681,7 +1684,7 @@ static bool consumePerspective(CSSParserTokenRange& args, CSSParserMode cssParse
         double perspective;
         if (!consumeNumberRaw(args, perspective) || perspective < 0)
             return false;
-        parsedValue = cssValuePool().createValue(perspective, CSSPrimitiveValue::UnitType::Pixels);
+        parsedValue = CSSPrimitiveValue::create(perspective, CSSPrimitiveValue::UnitType::Pixels);
     }
     if (!parsedValue)
         return false;
@@ -1812,7 +1815,7 @@ static CSSValue* consumePositionLonghand(CSSParserTokenRange& range, CSSParserMo
         else
             return nullptr;
         range.consumeIncludingWhitespace();
-        return cssValuePool().createValue(percent, CSSPrimitiveValue::UnitType::Percentage);
+        return CSSPrimitiveValue::create(percent, CSSPrimitiveValue::UnitType::Percentage);
     }
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
 }
@@ -1978,7 +1981,7 @@ static CSSValue* consumeImageSet(CSSParserTokenRange& range, const CSSParserCont
         double imageScaleFactor = token.numericValue();
         if (imageScaleFactor <= 0)
             return nullptr;
-        imageSet->append(cssValuePool().createValue(imageScaleFactor, CSSPrimitiveValue::UnitType::Number));
+        imageSet->append(CSSPrimitiveValue::create(imageScaleFactor, CSSPrimitiveValue::UnitType::Number));
     } while (consumeCommaIncludingWhitespace(args));
     if (!args.atEnd())
         return nullptr;
@@ -2032,7 +2035,7 @@ static CSSValue* consumeCursor(CSSParserTokenRange& range, const CSSParserContex
     if (id == CSSValueHand) {
         if (!inQuirksMode) // Non-standard behavior
             return nullptr;
-        cursorType = cssValuePool().createIdentifierValue(CSSValuePointer);
+        cursorType = CSSPrimitiveValue::createIdentifier(CSSValuePointer);
         range.consumeIncludingWhitespace();
     } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) || id == CSSValueCopy || id == CSSValueNone) {
         cursorType = consumeIdent(range);
@@ -2051,11 +2054,11 @@ static CSSPrimitiveValue* consumeDeprecatedGradientPoint(CSSParserTokenRange& ar
 {
     if (args.peek().type() == IdentToken) {
         if ((horizontal && consumeIdent<CSSValueLeft>(args)) || (!horizontal && consumeIdent<CSSValueTop>(args)))
-            return cssValuePool().createValue(0., CSSPrimitiveValue::UnitType::Percentage);
+            return CSSPrimitiveValue::create(0., CSSPrimitiveValue::UnitType::Percentage);
         if ((horizontal && consumeIdent<CSSValueRight>(args)) || (!horizontal && consumeIdent<CSSValueBottom>(args)))
-            return cssValuePool().createValue(100., CSSPrimitiveValue::UnitType::Percentage);
+            return CSSPrimitiveValue::create(100., CSSPrimitiveValue::UnitType::Percentage);
         if (consumeIdent<CSSValueCenter>(args))
-            return cssValuePool().createValue(50., CSSPrimitiveValue::UnitType::Percentage);
+            return CSSPrimitiveValue::create(50., CSSPrimitiveValue::UnitType::Percentage);
         return nullptr;
     }
     CSSPrimitiveValue* result = consumePercent(args, ValueRangeAll);
@@ -2096,7 +2099,7 @@ static bool consumeDeprecatedGradientColorStop(CSSParserTokenRange& range, CSSGr
             return false;
     }
 
-    stop.m_position = cssValuePool().createValue(position, CSSPrimitiveValue::UnitType::Number);
+    stop.m_position = CSSPrimitiveValue::create(position, CSSPrimitiveValue::UnitType::Number);
     stop.m_color = consumeDeprecatedGradientStopColor(args, cssParserMode);
     return stop.m_color && args.atEnd();
 }
@@ -2327,7 +2330,7 @@ static CSSValue* consumeLinearGradient(CSSParserTokenRange& args, CSSParserMode 
         if (!endX && !endY) {
             if (gradientType == CSSLinearGradient)
                 return nullptr;
-            endY = cssValuePool().createIdentifierValue(CSSValueTop);
+            endY = CSSPrimitiveValue::createIdentifier(CSSValueTop);
             expectComma = false;
         } else if (!endX) {
             endX = consumeIdent<CSSValueLeft, CSSValueRight>(args);
@@ -2360,9 +2363,9 @@ static CSSValue* consumeCrossFade(CSSParserTokenRange& args, CSSParserContext co
     CSSPrimitiveValue* percentage = nullptr;
     const CSSParserToken& percentageArg = args.consumeIncludingWhitespace();
     if (percentageArg.type() == PercentageToken)
-        percentage = cssValuePool().createValue(clampTo<double>(percentageArg.numericValue() / 100, 0, 1), CSSPrimitiveValue::UnitType::Number);
+        percentage = CSSPrimitiveValue::create(clampTo<double>(percentageArg.numericValue() / 100, 0, 1), CSSPrimitiveValue::UnitType::Number);
     else if (percentageArg.type() == NumberToken)
-        percentage = cssValuePool().createValue(clampTo<double>(percentageArg.numericValue(), 0, 1), CSSPrimitiveValue::UnitType::Number);
+        percentage = CSSPrimitiveValue::create(clampTo<double>(percentageArg.numericValue(), 0, 1), CSSPrimitiveValue::UnitType::Number);
 
     if (!percentage)
         return nullptr;
@@ -2499,7 +2502,7 @@ static CSSValue* consumeCounterContent(CSSParserTokenRange args, bool counters)
             return nullptr;
         listStyle = consumeIdent(args);
     } else {
-        listStyle = cssValuePool().createIdentifierValue(CSSValueDecimal);
+        listStyle = CSSPrimitiveValue::createIdentifier(CSSValueDecimal);
     }
 
     if (!args.atEnd())
@@ -2545,7 +2548,7 @@ static CSSPrimitiveValue* consumePerspective(CSSParserTokenRange& range, CSSPars
         double perspective;
         if (!consumeNumberRaw(range, perspective))
             return nullptr;
-        parsedValue = cssValuePool().createValue(perspective, CSSPrimitiveValue::UnitType::Pixels);
+        parsedValue = CSSPrimitiveValue::create(perspective, CSSPrimitiveValue::UnitType::Pixels);
     }
     if (parsedValue && (parsedValue->isCalculated() || parsedValue->getDoubleValue() > 0))
         return parsedValue;
@@ -2990,7 +2993,7 @@ static CSSValue* consumeReflect(CSSParserTokenRange& range, const CSSParserConte
 
     CSSPrimitiveValue* offset = nullptr;
     if (range.atEnd()) {
-        offset = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+        offset = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
     } else {
         offset = consumeLengthOrPercent(range, context.mode(), ValueRangeAll, UnitlessQuirk::Forbid);
         if (!offset)
@@ -3390,7 +3393,7 @@ static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSPars
     if (token.type() == DimensionToken && token.unitType() == CSSPrimitiveValue::UnitType::Fraction) {
         if (range.peek().numericValue() < 0)
             return nullptr;
-        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Fraction);
+        return CSSPrimitiveValue::create(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Fraction);
     }
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
 }
@@ -4086,7 +4089,7 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
         CSSValueID id = m_range.consumeIncludingWhitespace().id();
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id, m_context.mode()))
             return false;
-        parsedValue = cssValuePool().createIdentifierValue(id);
+        parsedValue = CSSPrimitiveValue::createIdentifier(id);
         break;
     }
     case CSSPropertyFontVariant:
@@ -4122,18 +4125,18 @@ bool CSSPropertyParser::consumeSystemFont(bool important)
     AtomicString fontFamily;
     LayoutTheme::theme().systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
 
-    addProperty(CSSPropertyFontStyle, CSSPropertyFont, cssValuePool().createIdentifierValue(fontStyle == FontStyleItalic ? CSSValueItalic : CSSValueNormal), important);
-    addProperty(CSSPropertyFontWeight, CSSPropertyFont, cssValuePool().createValue(fontWeight), important);
-    addProperty(CSSPropertyFontSize, CSSPropertyFont, cssValuePool().createValue(fontSize, CSSPrimitiveValue::UnitType::Pixels), important);
+    addProperty(CSSPropertyFontStyle, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(fontStyle == FontStyleItalic ? CSSValueItalic : CSSValueNormal), important);
+    addProperty(CSSPropertyFontWeight, CSSPropertyFont, CSSPrimitiveValue::create(fontWeight), important);
+    addProperty(CSSPropertyFontSize, CSSPropertyFont, CSSPrimitiveValue::create(fontSize, CSSPrimitiveValue::UnitType::Pixels), important);
     CSSValueList* fontFamilyList = CSSValueList::createCommaSeparated();
-    fontFamilyList->append(cssValuePool().createFontFamilyValue(fontFamily));
+    fontFamilyList->append(CSSFontFamilyValue::create(fontFamily));
     addProperty(CSSPropertyFontFamily, CSSPropertyFont, fontFamilyList, important);
 
-    addProperty(CSSPropertyFontStretch, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyLineHeight, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontStretch, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyLineHeight, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
     return true;
 }
 
@@ -4178,13 +4181,13 @@ bool CSSPropertyParser::consumeFont(bool important)
     if (m_range.atEnd())
         return false;
 
-    addProperty(CSSPropertyFontStyle, CSSPropertyFont, fontStyle ? fontStyle : cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, fontVariantCaps ? fontVariantCaps : cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontStyle, CSSPropertyFont, fontStyle ? fontStyle : CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, fontVariantCaps ? fontVariantCaps : CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
 
-    addProperty(CSSPropertyFontWeight, CSSPropertyFont, fontWeight ? fontWeight : cssValuePool().createIdentifierValue(CSSValueNormal), important);
-    addProperty(CSSPropertyFontStretch, CSSPropertyFont, fontStretch ? fontStretch : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontWeight, CSSPropertyFont, fontWeight ? fontWeight : CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
+    addProperty(CSSPropertyFontStretch, CSSPropertyFont, fontStretch ? fontStretch : CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
 
     // Now a font size _must_ come.
     CSSValue* fontSize = consumeFontSize(m_range, m_context.mode());
@@ -4199,7 +4202,7 @@ bool CSSPropertyParser::consumeFont(bool important)
             return false;
         addProperty(CSSPropertyLineHeight, CSSPropertyFont, lineHeight, important);
     } else {
-        addProperty(CSSPropertyLineHeight, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+        addProperty(CSSPropertyLineHeight, CSSPropertyFont, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
     }
 
     // Font family must come now.
@@ -4219,7 +4222,7 @@ bool CSSPropertyParser::consumeFontVariantShorthand(bool important)
 {
     if (identMatches<CSSValueNormal, CSSValueNone>(m_range.peek().id())) {
         addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant, consumeIdent(m_range), important);
-        addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+        addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
         return m_range.atEnd();
     }
 
@@ -4257,7 +4260,7 @@ bool CSSPropertyParser::consumeFontVariantShorthand(bool important)
 
     addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant, ligaturesParser.finalizeValue(), important);
     addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFontVariant, numericParser.finalizeValue(), important);
-    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, capsValue ? capsValue : cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, capsValue ? capsValue : CSSPrimitiveValue::createIdentifier(CSSValueNormal), important);
     return true;
 }
 
@@ -4387,9 +4390,9 @@ bool CSSPropertyParser::consumeColumns(bool important)
     if (!m_range.atEnd())
         return false;
     if (!columnWidth)
-        columnWidth = cssValuePool().createIdentifierValue(CSSValueAuto);
+        columnWidth = CSSPrimitiveValue::createIdentifier(CSSValueAuto);
     if (!columnCount)
-        columnCount = cssValuePool().createIdentifierValue(CSSValueAuto);
+        columnCount = CSSPrimitiveValue::createIdentifier(CSSValueAuto);
     addProperty(CSSPropertyColumnWidth, CSSPropertyInvalid, columnWidth, important);
     addProperty(CSSPropertyColumnCount, CSSPropertyInvalid, columnCount, important);
     return true;
@@ -4417,7 +4420,7 @@ bool CSSPropertyParser::consumeShorthandGreedily(const StylePropertyShorthand& s
         if (longhands[i])
             addProperty(shorthandProperties[i], shorthand.id(), longhands[i], important);
         else
-            addProperty(shorthandProperties[i], shorthand.id(), cssValuePool().createImplicitInitialValue(), important);
+            addProperty(shorthandProperties[i], shorthand.id(), CSSInitialValue::createLegacyImplicit(), important);
     }
     return true;
 }
@@ -4432,7 +4435,7 @@ bool CSSPropertyParser::consumeFlex(bool important)
     if (m_range.peek().id() == CSSValueNone) {
         flexGrow = 0;
         flexShrink = 0;
-        flexBasis = cssValuePool().createIdentifierValue(CSSValueAuto);
+        flexBasis = CSSPrimitiveValue::createIdentifier(CSSValueAuto);
         m_range.consumeIncludingWhitespace();
     } else {
         unsigned index = 0;
@@ -4446,7 +4449,7 @@ bool CSSPropertyParser::consumeFlex(bool important)
                 else if (flexShrink == unsetValue)
                     flexShrink = num;
                 else if (!num) // flex only allows a basis of 0 (sans units) if flex-grow and flex-shrink values have already been set.
-                    flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+                    flexBasis = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
                 else
                     return false;
             } else if (!flexBasis) {
@@ -4465,13 +4468,13 @@ bool CSSPropertyParser::consumeFlex(bool important)
         if (flexShrink == unsetValue)
             flexShrink = 1;
         if (!flexBasis)
-            flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
+            flexBasis = CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Percentage);
     }
 
     if (!m_range.atEnd())
         return false;
-    addProperty(CSSPropertyFlexGrow, CSSPropertyFlex, cssValuePool().createValue(clampTo<float>(flexGrow), CSSPrimitiveValue::UnitType::Number), important);
-    addProperty(CSSPropertyFlexShrink, CSSPropertyFlex, cssValuePool().createValue(clampTo<float>(flexShrink), CSSPrimitiveValue::UnitType::Number), important);
+    addProperty(CSSPropertyFlexGrow, CSSPropertyFlex, CSSPrimitiveValue::create(clampTo<float>(flexGrow), CSSPrimitiveValue::UnitType::Number), important);
+    addProperty(CSSPropertyFlexShrink, CSSPropertyFlex, CSSPrimitiveValue::create(clampTo<float>(flexShrink), CSSPrimitiveValue::UnitType::Number), important);
     addProperty(CSSPropertyFlexBasis, CSSPropertyFlex, flexBasis, important);
     return true;
 }
@@ -4505,16 +4508,16 @@ bool CSSPropertyParser::consumeBorder(bool important)
         return false;
 
     if (!width)
-        width = cssValuePool().createImplicitInitialValue();
+        width = CSSInitialValue::createLegacyImplicit();
     if (!style)
-        style = cssValuePool().createImplicitInitialValue();
+        style = CSSInitialValue::createLegacyImplicit();
     if (!color)
-        color = cssValuePool().createImplicitInitialValue();
+        color = CSSInitialValue::createLegacyImplicit();
 
     addExpandedPropertyForValue(CSSPropertyBorderWidth, width, important);
     addExpandedPropertyForValue(CSSPropertyBorderStyle, style, important);
     addExpandedPropertyForValue(CSSPropertyBorderColor, color, important);
-    addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
+    addExpandedPropertyForValue(CSSPropertyBorderImage, CSSInitialValue::createLegacyImplicit(), important);
 
     return m_range.atEnd();
 }
@@ -4561,18 +4564,18 @@ bool CSSPropertyParser::consumeBorderImage(CSSPropertyID property, bool importan
     if (consumeBorderImageComponents(property, m_range, m_context, source, slice, width, outset, repeat)) {
         switch (property) {
         case CSSPropertyWebkitMaskBoxImage:
-            addProperty(CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage, source ? source : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage, slice ? slice : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage, width ? width : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage, outset ? outset : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage, repeat ? repeat : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage, source ? source : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage, slice ? slice : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage, width ? width : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage, outset ? outset : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage, repeat ? repeat : CSSInitialValue::createLegacyImplicit(), important);
             return true;
         case CSSPropertyBorderImage:
-            addProperty(CSSPropertyBorderImageSource, CSSPropertyBorderImage, source ? source : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyBorderImageSlice, CSSPropertyBorderImage, slice ? slice : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyBorderImageWidth, CSSPropertyBorderImage, width ? width : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyBorderImageOutset, CSSPropertyBorderImage, outset ? outset : cssValuePool().createImplicitInitialValue(), important);
-            addProperty(CSSPropertyBorderImageRepeat, CSSPropertyBorderImage, repeat ? repeat : cssValuePool().createImplicitInitialValue(), important);
+            addProperty(CSSPropertyBorderImageSource, CSSPropertyBorderImage, source ? source : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyBorderImageSlice, CSSPropertyBorderImage, slice ? slice : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyBorderImageWidth, CSSPropertyBorderImage, width ? width : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyBorderImageOutset, CSSPropertyBorderImage, outset ? outset : CSSInitialValue::createLegacyImplicit(), important);
+            addProperty(CSSPropertyBorderImageRepeat, CSSPropertyBorderImage, repeat ? repeat : CSSInitialValue::createLegacyImplicit(), important);
             return true;
         default:
             ASSERT_NOT_REACHED();
@@ -4648,7 +4651,7 @@ bool CSSPropertyParser::consumeLegacyBreakProperty(CSSPropertyID property, bool 
         return false;
 
     CSSPropertyID genericBreakProperty = mapFromLegacyBreakProperty(property);
-    addProperty(genericBreakProperty, property, cssValuePool().createIdentifierValue(value), important);
+    addProperty(genericBreakProperty, property, CSSPrimitiveValue::createIdentifier(value), important);
     return true;
 }
 
@@ -4668,14 +4671,14 @@ static bool consumeBackgroundPosition(CSSParserTokenRange& range, const CSSParse
 static bool consumeRepeatStyleComponent(CSSParserTokenRange& range, CSSValue*& value1, CSSValue*& value2, bool& implicit)
 {
     if (consumeIdent<CSSValueRepeatX>(range)) {
-        value1 = cssValuePool().createIdentifierValue(CSSValueRepeat);
-        value2 = cssValuePool().createIdentifierValue(CSSValueNoRepeat);
+        value1 = CSSPrimitiveValue::createIdentifier(CSSValueRepeat);
+        value2 = CSSPrimitiveValue::createIdentifier(CSSValueNoRepeat);
         implicit = true;
         return true;
     }
     if (consumeIdent<CSSValueRepeatY>(range)) {
-        value1 = cssValuePool().createIdentifierValue(CSSValueNoRepeat);
-        value2 = cssValuePool().createIdentifierValue(CSSValueRepeat);
+        value1 = CSSPrimitiveValue::createIdentifier(CSSValueNoRepeat);
+        value2 = CSSPrimitiveValue::createIdentifier(CSSValueRepeat);
         implicit = true;
         return true;
     }
@@ -4773,7 +4776,7 @@ bool CSSPropertyParser::consumeBackgroundShorthand(const StylePropertyShorthand&
                 continue;
             }
             if (!parsedLonghand[i])
-                addBackgroundValue(longhands[i], cssValuePool().createImplicitInitialValue());
+                addBackgroundValue(longhands[i], CSSInitialValue::createLegacyImplicit());
         }
     } while (consumeCommaIncludingWhitespace(m_range));
     if (!m_range.atEnd())
@@ -4803,7 +4806,7 @@ bool CSSPropertyParser::consumeGridItemPositionShorthand(CSSPropertyID shorthand
         if (!endValue)
             return false;
     } else {
-        endValue = startValue->isCustomIdentValue() ? startValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+        endValue = startValue->isCustomIdentValue() ? startValue : CSSPrimitiveValue::createIdentifier(CSSValueAuto);
     }
     if (!m_range.atEnd())
         return false;
@@ -4840,11 +4843,11 @@ bool CSSPropertyParser::consumeGridAreaShorthand(bool important)
     if (!m_range.atEnd())
         return false;
     if (!columnStartValue)
-        columnStartValue = rowStartValue->isCustomIdentValue() ? rowStartValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+        columnStartValue = rowStartValue->isCustomIdentValue() ? rowStartValue : CSSPrimitiveValue::createIdentifier(CSSValueAuto);
     if (!rowEndValue)
-        rowEndValue = rowStartValue->isCustomIdentValue() ? rowStartValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+        rowEndValue = rowStartValue->isCustomIdentValue() ? rowStartValue : CSSPrimitiveValue::createIdentifier(CSSValueAuto);
     if (!columnEndValue)
-        columnEndValue = columnStartValue->isCustomIdentValue() ? columnStartValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+        columnEndValue = columnStartValue->isCustomIdentValue() ? columnStartValue : CSSPrimitiveValue::createIdentifier(CSSValueAuto);
 
     addProperty(CSSPropertyGridRowStart, CSSPropertyGridArea, rowStartValue, important);
     addProperty(CSSPropertyGridColumnStart, CSSPropertyGridArea, columnStartValue, important);
@@ -4879,7 +4882,7 @@ bool CSSPropertyParser::consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID 
         // Handle template-rows's track-size.
         CSSValue* value = consumeGridTrackSize(m_range, m_context.mode());
         if (!value)
-            value = cssValuePool().createIdentifierValue(CSSValueAuto);
+            value = CSSPrimitiveValue::createIdentifier(CSSValueAuto);
         templateRows->append(value);
 
         // This will handle the trailing/leading <custom-ident>* in the grammar.
@@ -4896,7 +4899,7 @@ bool CSSPropertyParser::consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID 
         if (!columnsValue || !m_range.atEnd())
             return false;
     } else {
-        columnsValue = cssValuePool().createIdentifierValue(CSSValueNone);
+        columnsValue = CSSPrimitiveValue::createIdentifier(CSSValueNone);
     }
     addProperty(CSSPropertyGridTemplateRows, shorthandId, templateRows, important);
     addProperty(CSSPropertyGridTemplateColumns, shorthandId, columnsValue, important);
@@ -4914,9 +4917,9 @@ bool CSSPropertyParser::consumeGridTemplateShorthand(CSSPropertyID shorthandId, 
 
     // 1- 'none' case.
     if (rowsValue && m_range.atEnd()) {
-        addProperty(CSSPropertyGridTemplateRows, shorthandId, cssValuePool().createIdentifierValue(CSSValueNone), important);
-        addProperty(CSSPropertyGridTemplateColumns, shorthandId, cssValuePool().createIdentifierValue(CSSValueNone), important);
-        addProperty(CSSPropertyGridTemplateAreas, shorthandId, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        addProperty(CSSPropertyGridTemplateRows, shorthandId, CSSPrimitiveValue::createIdentifier(CSSValueNone), important);
+        addProperty(CSSPropertyGridTemplateColumns, shorthandId, CSSPrimitiveValue::createIdentifier(CSSValueNone), important);
+        addProperty(CSSPropertyGridTemplateAreas, shorthandId, CSSPrimitiveValue::createIdentifier(CSSValueNone), important);
         return true;
     }
 
@@ -4933,7 +4936,7 @@ bool CSSPropertyParser::consumeGridTemplateShorthand(CSSPropertyID shorthandId, 
 
         addProperty(CSSPropertyGridTemplateRows, shorthandId, rowsValue, important);
         addProperty(CSSPropertyGridTemplateColumns, shorthandId, columnsValue, important);
-        addProperty(CSSPropertyGridTemplateAreas, shorthandId, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        addProperty(CSSPropertyGridTemplateAreas, shorthandId, CSSPrimitiveValue::createIdentifier(CSSValueNone), important);
         return true;
     }
 
@@ -4953,11 +4956,11 @@ bool CSSPropertyParser::consumeGridShorthand(bool important)
     if (consumeGridTemplateShorthand(CSSPropertyGrid, important)) {
         // It can only be specified the explicit or the implicit grid properties in a single grid declaration.
         // The sub-properties not specified are set to their initial value, as normal for shorthands.
-        addProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-        addProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-        addProperty(CSSPropertyGridAutoRows, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-        addProperty(CSSPropertyGridColumnGap, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-        addProperty(CSSPropertyGridRowGap, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
+        addProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+        addProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+        addProperty(CSSPropertyGridAutoRows, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+        addProperty(CSSPropertyGridColumnGap, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+        addProperty(CSSPropertyGridRowGap, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
         return true;
     }
 
@@ -4984,8 +4987,8 @@ bool CSSPropertyParser::consumeGridShorthand(bool important)
             return false;
     } else {
         // Other omitted values are set to their initial values.
-        autoColumnsValue = cssValuePool().createImplicitInitialValue();
-        autoRowsValue = cssValuePool().createImplicitInitialValue();
+        autoColumnsValue = CSSInitialValue::createLegacyImplicit();
+        autoRowsValue = CSSInitialValue::createLegacyImplicit();
     }
 
     // if <grid-auto-columns> value is omitted, it is set to the value specified for grid-auto-rows.
@@ -4994,14 +4997,14 @@ bool CSSPropertyParser::consumeGridShorthand(bool important)
 
     // It can only be specified the explicit or the implicit grid properties in a single grid declaration.
     // The sub-properties not specified are set to their initial value, as normal for shorthands.
-    addProperty(CSSPropertyGridTemplateColumns, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-    addProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-    addProperty(CSSPropertyGridTemplateAreas, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
+    addProperty(CSSPropertyGridTemplateColumns, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+    addProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+    addProperty(CSSPropertyGridTemplateAreas, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
     addProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, gridAutoFlow, important);
     addProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid, autoColumnsValue, important);
     addProperty(CSSPropertyGridAutoRows, CSSPropertyGrid, autoRowsValue, important);
-    addProperty(CSSPropertyGridColumnGap, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
-    addProperty(CSSPropertyGridRowGap, CSSPropertyGrid, cssValuePool().createImplicitInitialValue(), important);
+    addProperty(CSSPropertyGridColumnGap, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
+    addProperty(CSSPropertyGridRowGap, CSSPropertyGrid, CSSInitialValue::createLegacyImplicit(), important);
     return true;
 }
 
@@ -5014,7 +5017,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         CSSValueID id = m_range.consumeIncludingWhitespace().id();
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyWebkitMarginBeforeCollapse, id, m_context.mode()))
             return false;
-        CSSValue* beforeCollapse = cssValuePool().createIdentifierValue(id);
+        CSSValue* beforeCollapse = CSSPrimitiveValue::createIdentifier(id);
         addProperty(CSSPropertyWebkitMarginBeforeCollapse, CSSPropertyWebkitMarginCollapse, beforeCollapse, important);
         if (m_range.atEnd()) {
             addProperty(CSSPropertyWebkitMarginAfterCollapse, CSSPropertyWebkitMarginCollapse, beforeCollapse, important);
@@ -5023,7 +5026,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         id = m_range.consumeIncludingWhitespace().id();
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyWebkitMarginAfterCollapse, id, m_context.mode()))
             return false;
-        addProperty(CSSPropertyWebkitMarginAfterCollapse, CSSPropertyWebkitMarginCollapse, cssValuePool().createIdentifierValue(id), important);
+        addProperty(CSSPropertyWebkitMarginAfterCollapse, CSSPropertyWebkitMarginCollapse, CSSPrimitiveValue::createIdentifier(id), important);
         return true;
     }
     case CSSPropertyOverflow: {
@@ -5032,7 +5035,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
             return false;
         if (!m_range.atEnd())
             return false;
-        CSSValue* overflowYValue = cssValuePool().createIdentifierValue(id);
+        CSSValue* overflowYValue = CSSPrimitiveValue::createIdentifier(id);
 
         CSSValue* overflowXValue = nullptr;
 
@@ -5041,7 +5044,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         // pagination controls, it should default to hidden. If the overflow-y value is anything but
         // paged-x or paged-y, then overflow-x and overflow-y should have the same value.
         if (id == CSSValueWebkitPagedX || id == CSSValueWebkitPagedY)
-            overflowXValue = cssValuePool().createIdentifierValue(CSSValueAuto);
+            overflowXValue = CSSPrimitiveValue::createIdentifier(CSSValueAuto);
         else
             overflowXValue = overflowYValue;
         addProperty(CSSPropertyOverflowX, CSSPropertyOverflow, overflowXValue, important);

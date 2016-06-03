@@ -1120,6 +1120,7 @@
             'css/CSSBorderImageSliceValue.h',
             'css/CSSCalculationValue.cpp',
             'css/CSSCalculationValue.h',
+            'css/CSSColorValue.cpp',
             'css/CSSColorValue.h',
             'css/CSSComputedStyleDeclaration.cpp',
             'css/CSSContentDistributionValue.cpp',

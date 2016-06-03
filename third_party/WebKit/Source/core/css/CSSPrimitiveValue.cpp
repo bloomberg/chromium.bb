@@ -24,6 +24,7 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/CSSValuePool.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Node.h"
 #include "core/style/ComputedStyle.h"
@@ -100,6 +101,56 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
     }
 }
 
+CSSPrimitiveValue* CSSPrimitiveValue::createIdentifier(CSSValueID valueID)
+{
+    CSSPrimitiveValue* cssValue = cssValuePool().identifierCacheValue(valueID);
+    if (!cssValue)
+        cssValue = cssValuePool().setIdentifierCacheValue(valueID, new CSSPrimitiveValue(valueID));
+    return cssValue;
+}
+
+CSSPrimitiveValue* CSSPrimitiveValue::create(double value, UnitType type)
+{
+    // TODO(timloh): This looks wrong.
+    if (std::isinf(value))
+        value = 0;
+
+    if (value < 0 || value > CSSValuePool::maximumCacheableIntegerValue)
+        return new CSSPrimitiveValue(value, type);
+
+    int intValue = static_cast<int>(value);
+    if (value != intValue)
+        return new CSSPrimitiveValue(value, type);
+
+    CSSValuePool& pool = cssValuePool();
+    CSSPrimitiveValue* result = nullptr;
+    switch (type) {
+    case CSSPrimitiveValue::UnitType::Pixels:
+        result = pool.pixelCacheValue(intValue);
+        if (!result)
+            result = pool.setPixelCacheValue(intValue, new CSSPrimitiveValue(value, type));
+        return result;
+    case CSSPrimitiveValue::UnitType::Percentage:
+        result = pool.percentCacheValue(intValue);
+        if (!result)
+            result = pool.setPercentCacheValue(intValue, new CSSPrimitiveValue(value, type));
+        return result;
+    case CSSPrimitiveValue::UnitType::Number:
+    case CSSPrimitiveValue::UnitType::Integer:
+        result = pool.numberCacheValue(intValue);
+        if (!result)
+            result = pool.setNumberCacheValue(intValue, new CSSPrimitiveValue(value, CSSPrimitiveValue::UnitType::Integer));
+        return result;
+    default:
+        return new CSSPrimitiveValue(value, type);
+    }
+}
+
+CSSPrimitiveValue* CSSPrimitiveValue::create(const Length& value, const ComputedStyle& style)
+{
+    return CSSPrimitiveValue::create(value, style.effectiveZoom());
+}
+
 using CSSTextCache = PersistentHeapHashMap<WeakMember<const CSSPrimitiveValue>, String>;
 
 static CSSTextCache& cssTextCache()
@@ -155,6 +206,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(CSSValueID valueID)
     : CSSValue(PrimitiveClass)
 {
     init(UnitType::ValueID);
+    // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueInvalid).
     m_value.valueID = valueID;
 }
 

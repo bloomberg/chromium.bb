@@ -5,6 +5,7 @@
 #ifndef CSSKeywordValue_h
 #define CSSKeywordValue_h
 
+#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/StyleValue.h"
 
