@@ -25,6 +25,7 @@ if (is_android) {
   import("//build/util/branding.gni")
   import("//build/util/version.gni")
   import("//build_overrides/v8.gni")
+  import("//media/cdm/ppapi/cdm_paths.gni")
 }
 
 if (is_win) {
@@ -709,17 +710,50 @@ if (is_win) {
       sources = [
         "$root_out_dir/PepperFlash/PepperFlashPlayer.plugin",
       ]
-
       outputs = [
         "{{bundle_root_dir}}/Internet Plug-Ins/PepperFlash/{{source_file_part}}",
       ]
-
       public_deps = [
         "//third_party/adobe/flash:flapper_binaries",
       ]
     }
+
+    bundle_data("widevine_cdm_library_binaries") {
+      sources = [
+        "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
+        "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin",
+      ]
+      outputs = [
+        "{{bundle_root_dir}}/Libraries/$widevine_cdm_path/{{source_file_part}}",
+      ]
+      public_deps = [
+        "//third_party/widevine/cdm:widevinecdm",
+        "//third_party/widevine/cdm:widevinecdmadapter",
+      ]
+    }
+
+    bundle_data("widevine_cdm_library_manifest") {
+      sources = [
+        "$root_out_dir/WidevineCdm/manifest.json",
+      ]
+      outputs = [
+        "{{bundle_root_dir}}/Libraries/WidevineCdm/{{source_file_part}}",
+      ]
+      public_deps = [
+        "//third_party/widevine/cdm:widevine_cdm_manifest",
+      ]
+    }
   } else {
     group("flash_player_plugin") {
+    }
+  }
+
+  group("widevine_cdm_library") {
+    if (is_chrome_branded) {
+      deps = [
+        ":widevine_cdm_library_binaries",
+        ":widevine_cdm_library_manifest",
+      ]
     }
   }
 
@@ -843,6 +877,7 @@ if (is_win) {
       ":chrome_framework_plugins",
       ":chrome_framework_resources",
       ":flash_player_plugin",
+      ":widevine_cdm_library",
       "//build/config/sanitizers:deps",
       "//chrome/app/nibs:chrome_xibs",
     ]
