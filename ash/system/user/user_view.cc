@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
 #include "ash/session/session_state_delegate.h"
@@ -27,7 +31,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
-#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 namespace tray {
@@ -428,14 +431,19 @@ void UserView::ToggleAddUserMenuOption() {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_TOOLTIP;
   params.keep_on_top = true;
-  params.context = this->GetWidget()->GetNativeWindow();
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.name = "AddUserMenuOption";
+  wm::WmLookup::Get()
+      ->GetWindowForWidget(GetWidget())
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          add_menu_option_.get(), kShellWindowId_DragImageAndTooltipContainer,
+          &params);
   add_menu_option_->Init(params);
   add_menu_option_->SetOpacity(1.f);
-  add_menu_option_->GetNativeWindow()->set_owned_by_parent(false);
-  SetShadowType(add_menu_option_->GetNativeView(), ::wm::SHADOW_TYPE_NONE);
 
   // Position it below our user card.
   gfx::Rect bounds = user_card_view_->GetBoundsInScreen();

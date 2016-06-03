@@ -1,0 +1,4 @@
+include_rules = [
+  # This directory is being migrated to //ash/common types.
+  "-ui/aura",
+]
