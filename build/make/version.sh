@@ -25,12 +25,7 @@ git_version_id=""
 if [ -d "${source_path}/.git" ]; then
     # Source Path is a git working copy. Check for local modifications.
     export GIT_DIR="${source_path}/.git"
-    git_tags=`git tag -l 'v[0-9]*'`
-    if [ -n "${git_tags}" ]; then
-      git_version_id=`git describe --match=v[0-9]* 2>/dev/null`
-    else
-      git_version_id=`git rev-parse --short HEAD`
-    fi
+    git_version_id=`git describe --match=v[0-9]* 2>/dev/null`
 fi
 
 changelog_version=""
