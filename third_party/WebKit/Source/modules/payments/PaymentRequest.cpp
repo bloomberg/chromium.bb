@@ -15,11 +15,11 @@
 #include "core/events/Event.h"
 #include "core/events/EventQueue.h"
 #include "modules/EventTargetModulesNames.h"
+#include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentRequestUpdateEvent.h"
 #include "modules/payments/PaymentResponse.h"
 #include "modules/payments/PaymentsValidators.h"
-#include "modules/payments/ShippingAddress.h"
 #include "modules/payments/ShippingOption.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
@@ -365,7 +365,7 @@ bool PaymentRequest::hasPendingActivity() const
     return m_showResolver || m_completeResolver;
 }
 
-void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr address)
+void PaymentRequest::OnShippingAddressChange(mojom::blink::PaymentAddressPtr address)
 {
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
@@ -377,7 +377,7 @@ void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr ad
         return;
     }
 
-    m_shippingAddress = new ShippingAddress(std::move(address));
+    m_shippingAddress = new PaymentAddress(std::move(address));
     PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
     event->setTarget(this);
     event->setPaymentDetailsUpdater(this);
@@ -412,7 +412,7 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
             return;
         }
 
-        m_shippingAddress = new ShippingAddress(std::move(response->shipping_address));
+        m_shippingAddress = new PaymentAddress(std::move(response->shipping_address));
         m_shippingOption = response->shipping_option_id;
     }
 

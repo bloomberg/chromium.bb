@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/ShippingAddress.h"
+#include "modules/payments/PaymentAddress.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include <utility>
@@ -10,9 +10,9 @@
 namespace blink {
 namespace {
 
-TEST(ShippingAddressTest, ValuesAreCopiedOver)
+TEST(PaymentAddressTest, ValuesAreCopiedOver)
 {
-    mojom::blink::ShippingAddressPtr input = mojom::blink::ShippingAddress::New();
+    mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
     input->region_code = "US";
     input->address_line = mojo::WTFArray<WTF::String>::New(3);
     input->address_line[0] = "340 Main St";
@@ -28,7 +28,7 @@ TEST(ShippingAddressTest, ValuesAreCopiedOver)
     input->organization = "Google";
     input->recipient = "Jon Doe";
 
-    ShippingAddress output(std::move(input));
+    PaymentAddress output(std::move(input));
 
     EXPECT_EQ("US", output.regionCode());
     EXPECT_EQ(3U, output.addressLine().size());
@@ -45,22 +45,22 @@ TEST(ShippingAddressTest, ValuesAreCopiedOver)
     EXPECT_EQ("Jon Doe", output.recipient());
 }
 
-TEST(ShippingAddressTest, IgnoreScriptCodeWithEmptyLanguageCode)
+TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode)
 {
-    mojom::blink::ShippingAddressPtr input = mojom::blink::ShippingAddress::New();
+    mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
     input->script_code = "Latn";
 
-    ShippingAddress output(std::move(input));
+    PaymentAddress output(std::move(input));
 
     EXPECT_TRUE(output.languageCode().isEmpty());
 }
 
-TEST(ShippingAddressTest, NoHyphenWithEmptyScriptCode)
+TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode)
 {
-    mojom::blink::ShippingAddressPtr input = mojom::blink::ShippingAddress::New();
+    mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
     input->language_code = "en";
 
-    ShippingAddress output(std::move(input));
+    PaymentAddress output(std::move(input));
 
     EXPECT_EQ("en", output.languageCode());
 }

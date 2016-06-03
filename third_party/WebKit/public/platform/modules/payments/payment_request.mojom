@@ -7,7 +7,7 @@ module blink.mojom;
 
 // The shipping address that the browser process provides to the renderer
 // process. Built either by the browser or a payment app.
-struct ShippingAddress {
+struct PaymentAddress {
   // ISO 3166 country code. Two upper case ASCII letters.
   string region_code;
 
@@ -43,12 +43,12 @@ struct PaymentResponse {
   // {"nameOnCard": "Jon Doe", "pan": "4111 1111 1111 1111"}
   string stringified_details;
 
-  ShippingAddress? shipping_address;
+  PaymentAddress? shipping_address;
   string? shipping_option_id;
 };
 
 interface PaymentRequestClient {
-  OnShippingAddressChange(ShippingAddress address);
+  OnShippingAddressChange(PaymentAddress address);
   OnShippingOptionChange(string shipping_option_id);
   OnPaymentResponse(PaymentResponse response);
   OnError();

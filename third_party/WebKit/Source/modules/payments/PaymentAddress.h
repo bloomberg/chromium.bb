@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShippingAddress_h
-#define ShippingAddress_h
+#ifndef PaymentAddress_h
+#define PaymentAddress_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
@@ -15,13 +15,13 @@
 
 namespace blink {
 
-class MODULES_EXPORT ShippingAddress final : public GarbageCollectedFinalized<ShippingAddress>, public ScriptWrappable {
+class MODULES_EXPORT PaymentAddress final : public GarbageCollectedFinalized<PaymentAddress>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(ShippingAddress);
+    WTF_MAKE_NONCOPYABLE(PaymentAddress);
 
 public:
-    explicit ShippingAddress(mojom::blink::ShippingAddressPtr);
-    virtual ~ShippingAddress();
+    explicit PaymentAddress(mojom::blink::PaymentAddressPtr);
+    virtual ~PaymentAddress();
 
     const String& regionCode() const { return m_regionCode; }
     const Vector<String>& addressLine() const { return m_addressLine; }
@@ -51,4 +51,4 @@ private:
 
 } // namespace blink
 
-#endif // ShippingAddress_h
+#endif // PaymentAddress_h

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
-import org.chromium.mojom.payments.ShippingAddress;
+import org.chromium.mojom.payments.PaymentAddress;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,8 +54,8 @@ public class AutofillAddress extends PaymentOption {
     /**
      * Returns the shipping address for mojo.
      */
-    public ShippingAddress toShippingAddress() {
-        ShippingAddress result = new ShippingAddress();
+    public PaymentAddress toPaymentAddress() {
+        PaymentAddress result = new PaymentAddress();
 
         result.regionCode = mProfile.getCountryCode();
         result.addressLine = mProfile.getStreetAddress().split("\n");

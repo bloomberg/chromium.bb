@@ -223,7 +223,7 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
 
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
 
-    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(mojom::blink::ShippingAddress::New());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(mojom::blink::PaymentAddress::New());
 }
 
 TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddressInResponse)
@@ -232,7 +232,7 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddressInResponse)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->shipping_address = mojom::blink::ShippingAddress::New();
+    response->shipping_address = mojom::blink::PaymentAddress::New();
 
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
 
@@ -244,7 +244,7 @@ TEST_F(PaymentRequestTest, DontRejectShowPromiseForValidShippingAddress)
     ScriptState::Scope scope(getScriptState());
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
-    mojom::blink::ShippingAddressPtr shippingAddress = mojom::blink::ShippingAddress::New();
+    mojom::blink::PaymentAddressPtr shippingAddress = mojom::blink::PaymentAddress::New();
     shippingAddress->region_code = "US";
     shippingAddress->language_code = "en";
     shippingAddress->script_code = "Latn";
@@ -260,7 +260,7 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithValidShippingAddressInResponse)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
-    response->shipping_address = mojom::blink::ShippingAddress::New();
+    response->shipping_address = mojom::blink::PaymentAddress::New();
     response->shipping_address->region_code = "US";
     response->shipping_address->language_code = "en";
     response->shipping_address->script_code = "Latn";

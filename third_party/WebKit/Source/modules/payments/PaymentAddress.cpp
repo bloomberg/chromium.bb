@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/ShippingAddress.h"
+#include "modules/payments/PaymentAddress.h"
 
 namespace blink {
 
-ShippingAddress::ShippingAddress(mojom::blink::ShippingAddressPtr address)
+PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
     : m_regionCode(address->region_code)
     , m_addressLine(address->address_line.PassStorage())
     , m_administrativeArea(address->administrative_area)
@@ -24,6 +24,6 @@ ShippingAddress::ShippingAddress(mojom::blink::ShippingAddressPtr address)
     }
 }
 
-ShippingAddress::~ShippingAddress() {}
+PaymentAddress::~PaymentAddress() {}
 
 } // namespace blink

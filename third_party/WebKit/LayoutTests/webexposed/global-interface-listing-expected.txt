@@ -4177,6 +4177,19 @@ interface Path2D
     method moveTo
     method quadraticCurveTo
     method rect
+interface PaymentAddress
+    attribute @@toStringTag
+    getter addressLine
+    getter administrativeArea
+    getter dependentLocality
+    getter languageCode
+    getter locality
+    getter organization
+    getter postalCode
+    getter recipient
+    getter regionCode
+    getter sortingCode
+    method constructor
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter onshippingaddresschange
@@ -5818,19 +5831,6 @@ interface SharedWorker : EventTarget
     getter workerStart
     method constructor
     setter onerror
-interface ShippingAddress
-    attribute @@toStringTag
-    getter addressLine
-    getter administrativeArea
-    getter dependentLocality
-    getter languageCode
-    getter locality
-    getter organization
-    getter postalCode
-    getter recipient
-    getter regionCode
-    getter sortingCode
-    method constructor
 interface SiteBoundCredential : Credential
     attribute @@toStringTag
     getter iconURL

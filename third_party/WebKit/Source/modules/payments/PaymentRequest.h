@@ -27,9 +27,9 @@
 namespace blink {
 
 class ExceptionState;
+class PaymentAddress;
 class ScriptPromiseResolver;
 class ScriptState;
-class ShippingAddress;
 
 class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::blink::PaymentRequestClient), public PaymentCompleter, public PaymentUpdater, public ContextLifecycleObserver, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -46,7 +46,7 @@ public:
     ScriptPromise show(ScriptState*);
     void abort(ExceptionState&);
 
-    ShippingAddress* getShippingAddress() const { return m_shippingAddress.get(); }
+    PaymentAddress* getShippingAddress() const { return m_shippingAddress.get(); }
     const String& shippingOption() const { return m_shippingOption; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange);
@@ -75,7 +75,7 @@ private:
     bool hasPendingActivity() const override;
 
     // mojom::blink::PaymentRequestClient:
-    void OnShippingAddressChange(mojom::blink::ShippingAddressPtr) override;
+    void OnShippingAddressChange(mojom::blink::PaymentAddressPtr) override;
     void OnShippingOptionChange(const String& shippingOptionId) override;
     void OnPaymentResponse(mojom::blink::PaymentResponsePtr) override;
     void OnError() override;
@@ -88,7 +88,7 @@ private:
     PaymentDetails m_details;
     PaymentOptions m_options;
     String m_stringifiedData;
-    Member<ShippingAddress> m_shippingAddress;
+    Member<PaymentAddress> m_shippingAddress;
     String m_shippingOption;
     Member<ScriptPromiseResolver> m_showResolver;
     Member<ScriptPromiseResolver> m_completeResolver;

@@ -461,7 +461,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             assert option instanceof AutofillAddress;
             mShippingAddressesSection.setSelectedItem(option);
             if (mMerchantNeedsShippingAddress) {
-                mClient.onShippingAddressChange(((AutofillAddress) option).toShippingAddress());
+                mClient.onShippingAddressChange(((AutofillAddress) option).toPaymentAddress());
             }
         } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
             // This may update the line items.
@@ -577,7 +577,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // AutofillAddress.
             assert selectedShippingAddress instanceof AutofillAddress;
             response.shippingAddress =
-                    ((AutofillAddress) selectedShippingAddress).toShippingAddress();
+                    ((AutofillAddress) selectedShippingAddress).toPaymentAddress();
         }
 
         PaymentOption selectedShippingOption = mShippingOptionsSection.getSelectedItem();
