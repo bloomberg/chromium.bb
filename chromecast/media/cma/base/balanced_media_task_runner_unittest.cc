@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -122,10 +124,9 @@ void BalancedMediaTaskRunnerTest::SetupTest(
 }
 
 void BalancedMediaTaskRunnerTest::ProcessAllTasks() {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&BalancedMediaTaskRunnerTest::OnTestTimeout,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&BalancedMediaTaskRunnerTest::OnTestTimeout,
+                            base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
   ScheduleTask();
 }

@@ -5,9 +5,11 @@
 #include "chromecast/net/connectivity_checker_impl.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/net/net_switches.h"
@@ -129,10 +131,8 @@ void ConnectivityCheckerImpl::Check() {
   // Exponential backoff for timeout in 3, 6 and 12 sec.
   const int timeout = kRequestTimeoutInSeconds
                       << (check_errors_ > 2 ? 2 : check_errors_);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      timeout_.callback(),
-      base::TimeDelta::FromSeconds(timeout));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, timeout_.callback(), base::TimeDelta::FromSeconds(timeout));
 }
 
 void ConnectivityCheckerImpl::OnNetworkChanged(
@@ -143,7 +143,7 @@ void ConnectivityCheckerImpl::OnNetworkChanged(
   if (network_changed_pending_)
     return;
   network_changed_pending_ = true;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ConnectivityCheckerImpl::OnNetworkChangedInternal, this),
       base::TimeDelta::FromSeconds(kNetworkChangedDelayInSeconds));

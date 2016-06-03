@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -85,10 +87,9 @@ void DemuxerStreamAdapterTest::Start() {
   // TODO(damienv): currently, test assertions which fail do not trigger the
   // exit of the unit test, the message loop is still running. Find a different
   // way to exit the unit test.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DemuxerStreamAdapterTest::OnTestTimeout,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DemuxerStreamAdapterTest::OnTestTimeout,
+                            base::Unretained(this)),
       base::TimeDelta::FromSeconds(5));
 
   coded_frame_provider_->Read(base::Bind(&DemuxerStreamAdapterTest::OnNewFrame,
@@ -130,11 +131,10 @@ void DemuxerStreamAdapterTest::OnNewFrame(
     base::Closure flush_cb = base::Bind(
         &DemuxerStreamAdapterTest::OnFlushCompleted, base::Unretained(this));
     if (use_post_task_for_flush_) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&CodedFrameProvider::Flush,
-                     base::Unretained(coded_frame_provider_.get()),
-                     flush_cb));
+                     base::Unretained(coded_frame_provider_.get()), flush_cb));
     } else {
       coded_frame_provider_->Flush(flush_cb);
     }
