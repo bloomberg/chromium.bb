@@ -363,10 +363,6 @@ component("media") {
 
   if (is_mac) {
     public_deps += [ "//media/base/mac" ]
-    libs += [
-      "CoreVideo.framework",
-      "OpenGL.framework",
-    ]
   }
 
   if (is_ios) {
@@ -628,6 +624,9 @@ test("media_unittests") {
       "//media/capture/video/android:capture_java",
       "//ui/android:ui_java",
     ]
+  }
+  if (is_mac || is_ios) {
+    deps += [ "//media/base/mac:unittests" ]
   }
 
   # If ExternalClearKey is built, we can test CdmAdapter.

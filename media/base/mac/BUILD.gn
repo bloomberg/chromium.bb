@@ -45,6 +45,7 @@ source_set("unittests") {
   sources = [
     "video_frame_mac_unittests.cc",
   ]
+  libs = [ "CoreVideo.framework" ]
   configs += [ "//media:media_config" ]
   deps = [
     "//testing/gtest",
