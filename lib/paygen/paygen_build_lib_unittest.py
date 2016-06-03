@@ -128,8 +128,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
   """Test PaygenBuildLib class."""
 
   def setUp(self):
-    self.maxDiff = None
-
     self.prev_image = gspaths.Image(channel='foo-channel',
                                     board='foo-board',
                                     version='1.0.0',
@@ -249,6 +247,13 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     # NPO image only isn't valid.
     with self.assertRaises(paygen_build_lib.ImageMissing):
       paygen._ValidateExpectedBuildImages(self.foo_build, (self.npo_image,))
+
+    # NPO without matching basic isn't valid.
+    with self.assertRaises(paygen_build_lib.ImageMissing):
+      paygen._ValidateExpectedBuildImages(self.foo_build,
+                                          (self.premp_image,
+                                           self.npo_image,
+                                           self.premp_npo_image))
 
     # More than one of the same type of image should trigger BuildCorrupt
     with self.assertRaises(paygen_build_lib.BuildCorrupt):
@@ -537,6 +542,42 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
          gspaths.Payload(tgt_image=self.premp_npo_image),
          gspaths.Payload(tgt_image=self.test_image)])
 
+  def testDiscoverRequiredNpoDeltas(self):
+    """Test _DiscoverRequiredNpoDeltas."""
+    paygen = self._GetPaygenBuildInstance()
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([]), [])
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.basic_image]), [])
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.npo_image]), [])
+
+    expected = [gspaths.Payload(tgt_image=self.npo_image,
+                                src_image=self.basic_image)]
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.basic_image,
+                                                        self.npo_image]),
+                     expected)
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.npo_image,
+                                                        self.basic_image]),
+                     expected)
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.premp_image,
+                                                        self.premp_npo_image]),
+                     [gspaths.Payload(tgt_image=self.premp_npo_image,
+                                      src_image=self.premp_image)])
+
+  def testDiscoverRequiredTestNpoDeltas(self):
+    """Test _DiscoverRequiredTestNpoDeltas."""
+    paygen = self._GetPaygenBuildInstance()
+
+    self.assertEqual(
+        paygen._DiscoverRequiredTestNpoDeltas([]), [])
+    self.assertItemsEqual(
+        paygen._DiscoverRequiredTestNpoDeltas([self.test_image]),
+        [gspaths.Payload(tgt_image=self.test_image,
+                         src_image=self.test_image)])
+
   def testDiscoverRequiredFromPreviousDeltas(self):
     """Test _DiscoverRequiredFromPreviousDeltas."""
     paygen = self._GetPaygenBuildInstance()
@@ -669,6 +710,15 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                 labels=['full', 'previous']),
                 gspaths.Payload(tgt_image=nmo_images[1], uri=output_uri,
                                 labels=['full', 'previous']),
+                # NPO Deltas
+                gspaths.Payload(tgt_image=self.npo_image,
+                                src_image=self.basic_image,
+                                uri=output_uri,
+                                labels=['delta', 'npo']),
+                gspaths.Payload(tgt_image=self.premp_npo_image,
+                                src_image=self.premp_image,
+                                uri=output_uri,
+                                labels=['delta', 'npo']),
                 # NMO Delta
                 gspaths.Payload(tgt_image=self.basic_image,
                                 src_image=nmo_images[0],
@@ -704,11 +754,11 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                 uri=output_uri,
                                 labels=['test', 'full', 'previous']),
 
-                # Test N to N delta.
+                # Test NPO delta.
                 gspaths.Payload(tgt_image=self.test_image,
                                 src_image=self.test_image,
                                 uri=output_uri,
-                                labels=['test', 'delta', 'n2n']),
+                                labels=['test', 'delta', 'npo']),
 
                 # Test NMO delta.
                 gspaths.Payload(tgt_image=self.test_image,
@@ -787,51 +837,61 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     # IMPORTANT: we intentionally omit the NMO payload from the expected list
     # of payloads as it is a duplicate of one of the FSIs.
-    expected = [
-        gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
-                        labels=['full']),
-        # FSI Deltas
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi1_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi1_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi2_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi2_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        # Test full payload.
-        gspaths.Payload(tgt_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'full']),
-        # Test FSI deltas.
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi1_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi2_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        # Test Loopback Delta
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'n2n']),
-    ]
+    expected = [gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
+                                labels=['full']),
+                gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
+                                labels=['full']),
+                gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
+                                labels=['full']),
+                gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
+                                labels=['full']),
+                # NPO Deltas
+                gspaths.Payload(tgt_image=self.npo_image,
+                                src_image=self.basic_image,
+                                uri=output_uri,
+                                labels=['delta', 'npo']),
+                gspaths.Payload(tgt_image=self.premp_npo_image,
+                                src_image=self.premp_image,
+                                uri=output_uri,
+                                labels=['delta', 'npo']),
+                # FSI Deltas
+                gspaths.Payload(tgt_image=self.basic_image,
+                                src_image=fsi1_images[0],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.premp_image,
+                                src_image=fsi1_images[1],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.basic_image,
+                                src_image=fsi2_images[0],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.premp_image,
+                                src_image=fsi2_images[1],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+
+                # Test full payload.
+                gspaths.Payload(tgt_image=self.test_image,
+                                uri=output_uri,
+                                labels=['test', 'full']),
+
+                # Test NPO delta.
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=self.test_image,
+                                uri=output_uri,
+                                labels=['test', 'delta', 'npo']),
+
+                # Test FSI deltas.
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=fsi1_test_image,
+                                uri=output_uri,
+                                labels=['test', 'delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=fsi2_test_image,
+                                uri=output_uri,
+                                labels=['test', 'delta', 'fsi'])]
     results = payload_manager.Get([])
     self.assertItemsEqual(sorted(results), sorted(expected))
 
@@ -885,51 +945,61 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     payload_manager = paygen._DiscoverRequiredPayloads()
 
-    expected = [
-        gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
-                        labels=['full']),
-        # FSI Deltas
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi1_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi1_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.basic_image,
-                        src_image=fsi2_images[0],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.premp_image,
-                        src_image=fsi2_images[1],
-                        uri=output_uri,
-                        labels=['delta', 'fsi']),
-        # Test full payload.
-        gspaths.Payload(tgt_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'full']),
-        # Test FSI deltas.
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi1_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=fsi2_test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'fsi']),
-        # Test Loopback Delta
-        gspaths.Payload(tgt_image=self.test_image,
-                        src_image=self.test_image,
-                        uri=output_uri,
-                        labels=['test', 'delta', 'n2n']),
-    ]
+    expected = [gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
+                                labels=['full']),
+                gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
+                                labels=['full']),
+                gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
+                                labels=['full']),
+                gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
+                                labels=['full']),
+                # NPO Deltas
+                gspaths.Payload(tgt_image=self.npo_image,
+                                src_image=self.basic_image,
+                                uri=output_uri,
+                                labels=['delta', 'npo']),
+                gspaths.Payload(tgt_image=self.premp_npo_image,
+                                src_image=self.premp_image,
+                                uri=output_uri,
+                                labels=['delta', 'npo']),
+                # FSI Deltas
+                gspaths.Payload(tgt_image=self.basic_image,
+                                src_image=fsi1_images[0],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.premp_image,
+                                src_image=fsi1_images[1],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.basic_image,
+                                src_image=fsi2_images[0],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.premp_image,
+                                src_image=fsi2_images[1],
+                                uri=output_uri,
+                                labels=['delta', 'fsi']),
+
+                # Test full payload.
+                gspaths.Payload(tgt_image=self.test_image,
+                                uri=output_uri,
+                                labels=['test', 'full']),
+
+                # Test NPO delta.
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=self.test_image,
+                                uri=output_uri,
+                                labels=['test', 'delta', 'npo']),
+
+                # Test FSI deltas.
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=fsi1_test_image,
+                                uri=output_uri,
+                                labels=['test', 'delta', 'fsi']),
+                gspaths.Payload(tgt_image=self.test_image,
+                                src_image=fsi2_test_image,
+                                uri=output_uri,
+                                labels=['test', 'delta', 'fsi'])]
 
     results = payload_manager.Get([])
     self.assertItemsEqual(sorted(results), sorted(expected))
@@ -1672,6 +1742,25 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
         [self.foo_build],
         True,
         expected_result)
+
+  def testDiscoverRequiredNpoDeltas(self):
+    """Test _DiscoverRequiredNpoDeltas."""
+    paygen = self._GetPaygenBuildInstance()
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([]), [])
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.basic_image]), [])
+
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.npo_image]), [])
+
+    # Basic and NPO images have different types, so there should be no delta
+    # payloads.
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.basic_image,
+                                                        self.npo_image]),
+                     [])
+    self.assertEqual(paygen._DiscoverRequiredNpoDeltas([self.premp_image,
+                                                        self.premp_npo_image]),
+                     [])
 
   def testDiscoverRequiredFromPreviousDeltas(self):
     """Test _DiscoverRequiredFromPreviousDeltas."""
