@@ -2005,15 +2005,18 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
           uint32_t stream_dependency;
           uint32_t parent_stream_id;
           bool exclusive;
-          uint8_t weight;
+          uint8_t serialized_weight;
           bool successful_read = reader.ReadUInt32(&stream_dependency);
           DCHECK(successful_read);
           UnpackStreamDependencyValues(stream_dependency, &exclusive,
                                        &parent_stream_id);
 
-          successful_read = reader.ReadUInt8(&weight);
+          successful_read = reader.ReadUInt8(&serialized_weight);
           DCHECK(successful_read);
           DCHECK(reader.IsDoneReading());
+          // Per RFC 7540 section 6.3, serialized weight value is
+          // actual value - 1.
+          int weight = serialized_weight + 1;
           visitor_->OnPriority(
               current_frame_stream_id_, parent_stream_id, weight, exclusive);
         }
@@ -2890,7 +2893,8 @@ SpdySerializedFrame SpdyFramer::SerializePriority(
 
   builder.WriteUInt32(PackStreamDependencyValues(priority.exclusive(),
                                                  priority.parent_stream_id()));
-  builder.WriteUInt8(priority.weight());
+  // Per RFC 7540 section 6.3, serialized weight value is actual value - 1.
+  builder.WriteUInt8(priority.weight() - 1);
   DCHECK_EQ(GetPrioritySize(), builder.length());
   return builder.take();
 }
@@ -3107,16 +3111,6 @@ HpackDecoder* SpdyFramer::GetHpackDecoder() {
     hpack_decoder_.reset(new HpackDecoder());
   }
   return hpack_decoder_.get();
-}
-
-uint8_t SpdyFramer::MapPriorityToWeight(SpdyPriority priority) {
-  const float kSteps = 255.9f / 7.f;
-  return static_cast<uint8_t>(kSteps * (7.f - priority));
-}
-
-SpdyPriority SpdyFramer::MapWeightToPriority(uint8_t weight) {
-  const float kSteps = 255.9f / 7.f;
-  return static_cast<SpdyPriority>(7.f - weight / kSteps);
 }
 
 // Incrementally decompress the control frame's header block, feeding the

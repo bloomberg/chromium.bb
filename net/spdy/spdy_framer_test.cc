@@ -191,7 +191,7 @@ class SpdyFramerTestUtil {
 
     void OnPriority(SpdyStreamId stream_id,
                     SpdyStreamId parent_stream_id,
-                    uint8_t weight,
+                    int weight,
                     bool exclusive) override {
       // Do nothing.
     }
@@ -352,7 +352,7 @@ class SpdyFramerTestUtil {
 
     void OnPriority(SpdyStreamId stream_id,
                     SpdyStreamId parent_stream_id,
-                    uint8_t weight,
+                    int weight,
                     bool exclusive) override {
       // Do nothing.
     }
@@ -658,7 +658,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void OnPriority(SpdyStreamId stream_id,
                   SpdyStreamId parent_stream_id,
-                  uint8_t weight,
+                  int weight,
                   bool exclusive) override {
     VLOG(1) << "OnPriority(" << stream_id << ", " << parent_stream_id << ", "
             << weight << ", " << (exclusive ? 1 : 0) << ")";
@@ -3584,14 +3584,14 @@ TEST_P(SpdyFramerTest, CreatePriority) {
       0x00, 0x00, 0x05, kType, 0x00,
       0x00, 0x00, 0x00, 0x02,  // Stream ID = 2
       0x80, 0x00, 0x00, 0x01,  // Exclusive dependency, parent stream ID = 1
-      0x10,                    // Weight = 16
+      0x10,                    // Weight = 17 (serialized value + 1)
   };
-  SpdyPriorityIR priority_ir(2, 1, 16, true);
+  SpdyPriorityIR priority_ir(2, 1, 17, true);
   SpdySerializedFrame frame(framer.SerializeFrame(priority_ir));
   CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
   SpdyPriorityIR priority2(2);
   priority2.set_parent_stream_id(1);
-  priority2.set_weight(16);
+  priority2.set_weight(17);
   priority2.set_exclusive(true);
   frame = framer.SerializeFrame(priority2);
   CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
@@ -5723,11 +5723,11 @@ TEST_P(SpdyFramerTest, ReadPriority) {
   }
 
   SpdyFramer framer(spdy_version_);
-  SpdyPriorityIR priority(3, 1, 255, false);
+  SpdyPriorityIR priority(3, 1, 256, false);
   SpdySerializedFrame frame(framer.SerializePriority(priority));
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   framer.set_visitor(&visitor);
-  EXPECT_CALL(visitor, OnPriority(3, 1, 255, false));
+  EXPECT_CALL(visitor, OnPriority(3, 1, 256, false));
   framer.ProcessInput(frame.data(), frame.size());
 
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -5735,39 +5735,6 @@ TEST_P(SpdyFramerTest, ReadPriority) {
       << SpdyFramer::ErrorCodeToString(framer.error_code());
   // TODO(mlavan): once we actually maintain a priority tree,
   // check that state is adjusted correctly.
-}
-
-TEST_P(SpdyFramerTest, PriorityWeightMapping) {
-  if (!IsHttp2()) {
-    return;
-  }
-
-  SpdyFramer framer(spdy_version_);
-
-  EXPECT_EQ(255u, framer.MapPriorityToWeight(0));
-  EXPECT_EQ(219u, framer.MapPriorityToWeight(1));
-  EXPECT_EQ(182u, framer.MapPriorityToWeight(2));
-  EXPECT_EQ(146u, framer.MapPriorityToWeight(3));
-  EXPECT_EQ(109u, framer.MapPriorityToWeight(4));
-  EXPECT_EQ(73u, framer.MapPriorityToWeight(5));
-  EXPECT_EQ(36u, framer.MapPriorityToWeight(6));
-  EXPECT_EQ(0u, framer.MapPriorityToWeight(7));
-
-  EXPECT_EQ(0u, framer.MapWeightToPriority(255));
-  EXPECT_EQ(0u, framer.MapWeightToPriority(220));
-  EXPECT_EQ(1u, framer.MapWeightToPriority(219));
-  EXPECT_EQ(1u, framer.MapWeightToPriority(183));
-  EXPECT_EQ(2u, framer.MapWeightToPriority(182));
-  EXPECT_EQ(2u, framer.MapWeightToPriority(147));
-  EXPECT_EQ(3u, framer.MapWeightToPriority(146));
-  EXPECT_EQ(3u, framer.MapWeightToPriority(110));
-  EXPECT_EQ(4u, framer.MapWeightToPriority(109));
-  EXPECT_EQ(4u, framer.MapWeightToPriority(74));
-  EXPECT_EQ(5u, framer.MapWeightToPriority(73));
-  EXPECT_EQ(5u, framer.MapWeightToPriority(37));
-  EXPECT_EQ(6u, framer.MapWeightToPriority(36));
-  EXPECT_EQ(6u, framer.MapWeightToPriority(1));
-  EXPECT_EQ(7u, framer.MapWeightToPriority(0));
 }
 
 // Tests handling of PRIORITY frame with incorrect size.

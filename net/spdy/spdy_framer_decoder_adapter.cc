@@ -174,9 +174,9 @@ void SpdyFramerVisitorAdapter::OnContinuation(SpdyStreamId stream_id,
 
 void SpdyFramerVisitorAdapter::OnPriority(SpdyStreamId stream_id,
                                           SpdyStreamId parent_id,
-                                          SpdyPriority priority,
+                                          int weight,
                                           bool exclusive) {
-  visitor_->OnPriority(stream_id, parent_id, priority, exclusive);
+  visitor_->OnPriority(stream_id, parent_id, weight, exclusive);
 }
 
 void SpdyFramerVisitorAdapter::OnAltSvc(

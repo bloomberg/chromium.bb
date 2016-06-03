@@ -134,7 +134,7 @@ class SpdyFramerVisitorAdapter : public SpdyFramerVisitorInterface {
   void OnContinuation(SpdyStreamId stream_id, bool end) override;
   void OnPriority(SpdyStreamId stream_id,
                   SpdyStreamId parent_id,
-                  SpdyPriority priority,
+                  int weight,
                   bool exclusive) override;
   void OnAltSvc(SpdyStreamId stream_id,
                 base::StringPiece origin,
