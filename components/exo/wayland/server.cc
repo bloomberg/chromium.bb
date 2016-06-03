@@ -15,7 +15,6 @@
 // Note: core wayland headers need to be included before protocol headers.
 #include <alpha-compositing-unstable-v1-server-protocol.h>  // NOLINT
 #include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
-#include <scaler-server-protocol.h>                         // NOLINT
 #include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
 #include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
 
@@ -2195,110 +2194,6 @@ void bind_viewporter(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// wl_viewport_interface:
-
-void viewport_destroy_DEPRECATED(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-void viewport_set_DEPRECATED(wl_client* client,
-                             wl_resource* resource,
-                             wl_fixed_t src_x,
-                             wl_fixed_t src_y,
-                             wl_fixed_t src_width,
-                             wl_fixed_t src_height,
-                             int32_t dst_width,
-                             int32_t dst_height) {
-  NOTIMPLEMENTED();
-}
-
-void viewport_set_source_DEPRECATED(wl_client* client,
-                                    wl_resource* resource,
-                                    wl_fixed_t x,
-                                    wl_fixed_t y,
-                                    wl_fixed_t width,
-                                    wl_fixed_t height) {
-  if (x == wl_fixed_from_int(-1) && y == wl_fixed_from_int(-1) &&
-      width == wl_fixed_from_int(-1) && height == wl_fixed_from_int(-1)) {
-    GetUserDataAs<Viewport>(resource)->SetSource(gfx::RectF());
-    return;
-  }
-
-  if (x < 0 || y < 0 || width <= 0 || height <= 0) {
-    wl_resource_post_error(resource, WL_VIEWPORT_ERROR_BAD_VALUE,
-                           "source rectangle must be non-empty (%dx%d) and"
-                           "have positive origin (%d,%d)",
-                           width, height, x, y);
-    return;
-  }
-
-  GetUserDataAs<Viewport>(resource)->SetSource(
-      gfx::RectF(wl_fixed_to_double(x), wl_fixed_to_double(y),
-                 wl_fixed_to_double(width), wl_fixed_to_double(height)));
-}
-
-void viewport_set_destination_DEPRECATED(wl_client* client,
-                                         wl_resource* resource,
-                                         int32_t width,
-                                         int32_t height) {
-  if (width == -1 && height == -1) {
-    GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size());
-    return;
-  }
-
-  if (width <= 0 || height <= 0) {
-    wl_resource_post_error(resource, WL_VIEWPORT_ERROR_BAD_VALUE,
-                           "destination size must be positive (%dx%d)", width,
-                           height);
-    return;
-  }
-
-  GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size(width, height));
-}
-
-const struct wl_viewport_interface viewport_implementation_DEPRECATED = {
-    viewport_destroy_DEPRECATED, viewport_set_DEPRECATED,
-    viewport_set_source_DEPRECATED, viewport_set_destination_DEPRECATED};
-
-////////////////////////////////////////////////////////////////////////////////
-// wl_scaler_interface:
-
-void scaler_destroy(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-void scaler_get_viewport(wl_client* client,
-                         wl_resource* resource,
-                         uint32_t id,
-                         wl_resource* surface_resource) {
-  Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->GetProperty(kSurfaceHasViewportKey)) {
-    wl_resource_post_error(resource, WL_SCALER_ERROR_VIEWPORT_EXISTS,
-                           "a viewport for that surface already exists");
-    return;
-  }
-
-  wl_resource* viewport_resource = wl_resource_create(
-      client, &wl_viewport_interface, wl_resource_get_version(resource), id);
-
-  SetImplementation(viewport_resource, &viewport_implementation_DEPRECATED,
-                    base::WrapUnique(new Viewport(surface)));
-}
-
-const struct wl_scaler_interface scaler_implementation = {scaler_destroy,
-                                                          scaler_get_viewport};
-
-const uint32_t scaler_version = 2;
-
-void bind_scaler(wl_client* client, void* data, uint32_t version, uint32_t id) {
-  wl_resource* resource = wl_resource_create(
-      client, &wl_scaler_interface, std::min(version, scaler_version), id);
-
-  wl_resource_set_implementation(resource, &scaler_implementation, data,
-                                 nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // security_interface:
 
 // Implements the security interface to a Surface. The "only visible on secure
@@ -2535,8 +2430,6 @@ Server::Server(Display* display)
                    display_, bind_seat);
   wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
                    bind_viewporter);
-  wl_global_create(wl_display_.get(), &wl_scaler_interface, scaler_version,
-                   display_, bind_scaler);
   wl_global_create(wl_display_.get(), &zwp_secure_output_v1_interface, 1,
                    display_, bind_secure_output);
   wl_global_create(wl_display_.get(), &zwp_alpha_compositing_v1_interface, 1,

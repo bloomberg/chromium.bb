@@ -45,26 +45,6 @@
       },
     },
     {
-      'target_name': 'scaler_protocol',
-      'type': 'static_library',
-      'dependencies' : [
-        '../wayland/wayland.gyp:wayland_util',
-      ],
-      'sources': [
-        'include/protocol/scaler-client-protocol.h',
-        'include/protocol/scaler-server-protocol.h',
-        'protocol/scaler-protocol.c',
-      ],
-      'include_dirs': [
-        'include/protocol',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          'include/protocol',
-        ],
-      },
-    },
-    {
       'target_name': 'viewporter_protocol',
       'type': 'static_library',
       'dependencies' : [
