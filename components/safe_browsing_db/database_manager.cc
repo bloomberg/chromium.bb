@@ -277,9 +277,8 @@ void SafeBrowsingDatabaseManager::PopulateApiMetadataResult(
   for (const SBFullHashResult& result : results) {
     for (const SBFullHash& full_hash : full_hashes) {
       if (SBFullHashEqual(full_hash, result.hash)) {
-        md->api_permissions.insert(md->api_permissions.end(),
-            result.metadata.api_permissions.begin(),
-            result.metadata.api_permissions.end());
+        md->api_permissions.insert(result.metadata.api_permissions.begin(),
+                                   result.metadata.api_permissions.end());
         break;
       }
     }

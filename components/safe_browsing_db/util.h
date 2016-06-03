@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <cstring>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -80,9 +81,9 @@ struct ThreatMetadata {
   // This will be NONE if it wasn't present in the reponse.
   ThreatPatternType threat_pattern_type;
 
-  // List of permissions blocked. Used with threat_type API_ABUSE.
+  // Set of permissions blocked. Used with threat_type API_ABUSE.
   // This will be empty if it wasn't present in the response.
-  std::vector<std::string> api_permissions;
+  std::set<std::string> api_permissions;
 
   // Opaque base64 string used for user-population experiments in pver4.
   // This will be empty if it wasn't present in the response.

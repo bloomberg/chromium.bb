@@ -230,7 +230,7 @@ bool V4GetHashProtocolManager::ParseHashResponse(
           for (const ThreatEntryMetadata::MetadataEntry& m :
                match.threat_entry_metadata().entries()) {
             if (m.key() == "permission") {
-              result.metadata.api_permissions.push_back(m.value());
+              result.metadata.api_permissions.insert(m.value());
             } else {
               RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
               return false;
