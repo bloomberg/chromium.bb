@@ -119,8 +119,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType type = ModelTypeFromInt(i);
     encrypted_types.Put(type);
-    encrypted_type_values->Append(new base::StringValue(
-        ModelTypeToString(type)));
+    encrypted_type_values->AppendString(ModelTypeToString(type));
   }
 
   EXPECT_CALL(mock_js_event_handler_,

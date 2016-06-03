@@ -550,7 +550,7 @@ FakeServer::GetEntitiesAsDictionaryValue() {
     // TODO(pvalenzuela): Store more data for each entity so additional
     // verification can be performed. One example of additional verification
     // is checking the correctness of the bookmark hierarchy.
-    list_value->Append(new base::StringValue(entity.GetName()));
+    list_value->AppendString(entity.GetName());
   }
 
   return dictionary;
