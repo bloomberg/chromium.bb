@@ -70,6 +70,10 @@ class MetricsProvider {
   virtual void ProvideGeneralMetrics(
       ChromeUserMetricsExtension* uma_proto);
 
+  // Called during regular collection to explicitly merge histogram deltas
+  // to the global StatisticsRecorder.
+  virtual void MergeHistogramDeltas();
+
   // Called during regular collection to explicitly load histogram snapshots
   // using a snapshot manager. PrepareDeltas() will have already been called
   // and FinishDeltas() will be called later; calls to only PrepareDelta(),

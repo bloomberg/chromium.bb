@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -59,19 +60,18 @@ class SubprocessMetricsProviderTest : public testing::Test {
     // Get this first so it isn't created inside a persistent allocator.
     base::PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
 
-    // RecordHistogramSnapshots needs to be called beause it uses a histogram
+    // MergeHistogramDeltas needs to be called beause it uses a histogram
     // macro which caches a pointer to a histogram. If not done before setting
     // a persistent global allocator, then it would point into memory that
-    // will go away. The easiest way to call it is through an existing utility
-    // method.
-    GetSnapshotHistogramCount();
+    // will go away.
+    provider_.MergeHistogramDeltas();
+
+    // Create a dedicated StatisticsRecorder for this test.
+    test_recorder_.reset(new base::StatisticsRecorder());
 
     // Create a global allocator using a block of memory from the heap.
     base::GlobalHistogramAllocator::CreateWithLocalMemory(TEST_MEMORY_SIZE,
                                                           0, "");
-
-    // Enable metrics reporting by default.
-    provider_.OnRecordingEnabled();
   }
 
   ~SubprocessMetricsProviderTest() override {
@@ -80,24 +80,26 @@ class SubprocessMetricsProviderTest : public testing::Test {
 
   SubprocessMetricsProvider* provider() { return &provider_; }
 
-  std::unique_ptr<base::PersistentHistogramAllocator> GetDuplicateAllocator() {
-    base::GlobalHistogramAllocator* global_allocator =
-        base::GlobalHistogramAllocator::Get();
-
-    // Just wrap around the data segment in-use by the global allocator.
+  std::unique_ptr<base::PersistentHistogramAllocator> CreateDuplicateAllocator(
+      base::PersistentHistogramAllocator* allocator) {
+    // Just wrap around the data segment in-use by the passed allocator.
     return WrapUnique(new base::PersistentHistogramAllocator(
         WrapUnique(new base::PersistentMemoryAllocator(
-            const_cast<void*>(global_allocator->data()),
-            global_allocator->length(), 0, 0, "", false))));
+            const_cast<void*>(allocator->data()), allocator->length(),
+            0, 0, "", false))));
   }
 
   size_t GetSnapshotHistogramCount() {
+    // Merge the data from the allocator into the StatisticsRecorder.
+    provider_.MergeHistogramDeltas();
+
+    // Flatten what is known to see what has changed since the last time.
     HistogramFlattenerDeltaRecorder flattener;
     base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    provider_.RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-    provider_.OnDidCreateMetricsLog();
+    // "true" to the begin() includes histograms held in persistent storage.
+    snapshot_manager.PrepareDeltas(
+        base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
+        base::Histogram::kNoFlags, base::Histogram::kNoFlags);
     return flattener.GetRecordedDeltaHistogramNames().size();
   }
 
@@ -116,6 +118,7 @@ class SubprocessMetricsProviderTest : public testing::Test {
 
  private:
   SubprocessMetricsProvider provider_;
+  std::unique_ptr<base::StatisticsRecorder> test_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SubprocessMetricsProviderTest);
 };
@@ -123,11 +126,17 @@ class SubprocessMetricsProviderTest : public testing::Test {
 TEST_F(SubprocessMetricsProviderTest, SnapshotMetrics) {
   base::HistogramBase* foo = base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
   base::HistogramBase* bar = base::Histogram::FactoryGet("bar", 1, 100, 10, 0);
+  base::HistogramBase* baz = base::Histogram::FactoryGet("baz", 1, 100, 10, 0);
   foo->Add(42);
   bar->Add(84);
 
-  // Register an allocator that duplicates the global allocator.
-  RegisterSubprocessAllocator(123, GetDuplicateAllocator());
+  // Detach the global allocator but keep it around until this method exits
+  // so that the memory holding histogram data doesn't get released. Register
+  // a new allocator that duplicates the global one.
+  std::unique_ptr<base::GlobalHistogramAllocator> global_allocator(
+      base::GlobalHistogramAllocator::ReleaseForTesting());
+  RegisterSubprocessAllocator(123,
+                              CreateDuplicateAllocator(global_allocator.get()));
 
   // Recording should find the two histograms created in persistent memory.
   EXPECT_EQ(2U, GetSnapshotHistogramCount());
@@ -136,13 +145,12 @@ TEST_F(SubprocessMetricsProviderTest, SnapshotMetrics) {
   EXPECT_EQ(0U, GetSnapshotHistogramCount());
 
   // Create a new histogram and update existing ones. Should now report 3 items.
-  base::HistogramBase* baz = base::Histogram::FactoryGet("baz", 1, 100, 10, 0);
   baz->Add(1969);
   foo->Add(10);
   bar->Add(20);
   EXPECT_EQ(3U, GetSnapshotHistogramCount());
 
-  // Ensure that deregistering still keeps allocator around for final report.
+  // Ensure that deregistering does a final merge of the data.
   foo->Add(10);
   bar->Add(20);
   DeregisterSubprocessAllocator(123);
@@ -151,50 +159,5 @@ TEST_F(SubprocessMetricsProviderTest, SnapshotMetrics) {
   // Further snapshots should be empty even if things have changed.
   foo->Add(10);
   bar->Add(20);
-  EXPECT_EQ(0U, GetSnapshotHistogramCount());
-}
-
-TEST_F(SubprocessMetricsProviderTest, EnableDisable) {
-  base::HistogramBase* foo = base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
-  base::HistogramBase* bar = base::Histogram::FactoryGet("bar", 1, 100, 10, 0);
-
-  // Simulate some "normal" operation...
-  RegisterSubprocessAllocator(123, GetDuplicateAllocator());
-  foo->Add(42);
-  bar->Add(84);
-  EXPECT_EQ(2U, GetSnapshotHistogramCount());
-  foo->Add(42);
-  bar->Add(84);
-  EXPECT_EQ(2U, GetSnapshotHistogramCount());
-
-  // Ensure that disable/enable reporting won't affect "live" allocators.
-  DisableRecording();
-  EnableRecording();
-  foo->Add(42);
-  bar->Add(84);
-  EXPECT_EQ(2U, GetSnapshotHistogramCount());
-
-  // Ensure that allocators are released when reporting is disabled.
-  DisableRecording();
-  DeregisterSubprocessAllocator(123);
-  EnableRecording();
-  foo->Add(42);
-  bar->Add(84);
-  EXPECT_EQ(0U, GetSnapshotHistogramCount());
-
-  // Ensure that allocators added when reporting disabled will work if enabled.
-  DisableRecording();
-  RegisterSubprocessAllocator(123, GetDuplicateAllocator());
-  EnableRecording();
-  foo->Add(42);
-  bar->Add(84);
-  EXPECT_EQ(2U, GetSnapshotHistogramCount());
-
-  // Ensure that last-chance allocators are released if reporting is disabled.
-  DeregisterSubprocessAllocator(123);
-  DisableRecording();
-  EnableRecording();
-  foo->Add(42);
-  bar->Add(84);
   EXPECT_EQ(0U, GetSnapshotHistogramCount());
 }

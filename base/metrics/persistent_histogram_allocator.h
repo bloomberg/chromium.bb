@@ -248,6 +248,12 @@ class BASE_EXPORT PersistentHistogramAllocator {
   // True, forgetting it otherwise.
   void FinalizeHistogram(Reference ref, bool registered);
 
+  // Merges the data in a persistent histogram with one held globally by the
+  // StatisticsRecorder, updating the "logged" samples within the passed
+  // object so that repeated merges are allowed. Don't call this on a "global"
+  // allocator because histograms created there will already be in the SR.
+  void MergeHistogramToStatisticsRecorder(HistogramBase* histogram);
+
   // Returns the object that manages the persistent-sample-map records for a
   // given |id|. Only one |user| of this data is allowed at a time. This does
   // an automatic Acquire() on the records. The user must call Release() on

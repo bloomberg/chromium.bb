@@ -16,6 +16,7 @@
 #include "base/metrics/persistent_sample_map.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/pickle.h"
 #include "base/synchronization/lock.h"
 
 // TODO(bcwhite): Order these methods to match the header file. The current
@@ -481,6 +482,52 @@ void PersistentHistogramAllocator::FinalizeHistogram(Reference ref,
   // acquired memory so just change the type to be empty.
   else
     memory_allocator_->SetType(ref, 0);
+}
+
+void PersistentHistogramAllocator::MergeHistogramToStatisticsRecorder(
+    HistogramBase* histogram) {
+  // This should never be called on the global histogram allocator as objects
+  // created there are already within the global statistics recorder.
+  DCHECK_NE(g_allocator, this);
+  DCHECK(histogram);
+
+  HistogramBase* existing =
+      StatisticsRecorder::FindHistogram(histogram->histogram_name());
+  if (!existing) {
+    // Adding the passed histogram to the SR would cause a problem if the
+    // allocator that holds it eventually goes away. Instead, create a new
+    // one from a serialized version and then add the data to it. Future
+    // merges won't need to do this step since FindHistogram() will locate
+    // the one created here.
+    base::Pickle pickle;
+    if (!histogram->SerializeInfo(&pickle)) {
+      // Pickling should never fail but if it does, no real harm is done.
+      // The data won't be merged but it also won't be recorded as merged
+      // so a future try, if successful, will get what was missed. If it
+      // continues to fail, some metric data will be lost but that is
+      // better than crashing.
+      NOTREACHED();
+      return;
+    }
+
+    PickleIterator iter(pickle);
+    existing = DeserializeHistogramInfo(&iter);
+    if (!existing) {
+      // Un-pickling should similarly never fail.
+      NOTREACHED();
+      return;
+    }
+
+    // Make sure there is no "serialization" flag set.
+    DCHECK_EQ(0,
+              existing->flags() & HistogramBase::kIPCSerializationSourceFlag);
+
+    // Record the newly created histogram in the SR.
+    existing = StatisticsRecorder::RegisterOrDeleteDuplicate(existing);
+  }
+
+  // Merge the delta from the passed object to the one in the SR.
+  existing->AddSamples(*histogram->SnapshotDelta());
 }
 
 PersistentSampleMapRecords* PersistentHistogramAllocator::UseSampleMapRecords(

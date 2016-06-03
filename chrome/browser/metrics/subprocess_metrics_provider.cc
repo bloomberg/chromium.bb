@@ -39,46 +39,18 @@ void SubprocessMetricsProvider::DeregisterSubprocessAllocator(int id) {
   if (!allocators_by_id_.Lookup(id))
     return;
 
-  // Extract the matching allocator from the list of active ones.
+  // Extract the matching allocator from the list of active ones. It will
+  // be automatically released when this method exits.
   std::unique_ptr<base::PersistentHistogramAllocator> allocator(
       allocators_by_id_.Replace(id, nullptr));
   allocators_by_id_.Remove(id);
   DCHECK(allocator);
 
-  // If metrics recording is enabled, transfer the allocator to the "release"
-  // list. The allocator will continue to live (and keep the associated shared
-  // memory alive) until the next upload after which it will be released.
-  // Otherwise, the allocator and its memory will be released when the
-  // unique_ptr goes out of scope at the end of this method.
-  if (metrics_recording_enabled_)
-    allocators_for_exited_processes_.push_back(std::move(allocator));
+  // Merge the last deltas from the allocator before it is released.
+  MergeHistogramDeltasFromAllocator(id, allocator.get());
 }
 
-void SubprocessMetricsProvider::OnDidCreateMetricsLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // The previous reporting cycle is complete and the data used to create it
-  // will never be needed again. Allocators for exited processes can finally
-  // be released.
-  allocators_to_release_.clear();
-}
-
-void SubprocessMetricsProvider::OnRecordingEnabled() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  metrics_recording_enabled_ = true;
-}
-
-void SubprocessMetricsProvider::OnRecordingDisabled() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  metrics_recording_enabled_ = false;
-  allocators_for_exited_processes_.clear();
-  allocators_to_release_.clear();
-}
-
-void SubprocessMetricsProvider::RecordHistogramSnapshotsFromAllocator(
-    base::HistogramSnapshotManager* snapshot_manager,
+void SubprocessMetricsProvider::MergeHistogramDeltasFromAllocator(
     int id,
     base::PersistentHistogramAllocator* allocator) {
   DCHECK(allocator);
@@ -89,7 +61,7 @@ void SubprocessMetricsProvider::RecordHistogramSnapshotsFromAllocator(
     std::unique_ptr<base::HistogramBase> histogram = hist_iter.GetNext();
     if (!histogram)
       break;
-    snapshot_manager->PrepareDeltaTakingOwnership(std::move(histogram));
+    allocator->MergeHistogramToStatisticsRecorder(histogram.get());
     ++histogram_count;
   }
 
@@ -97,29 +69,18 @@ void SubprocessMetricsProvider::RecordHistogramSnapshotsFromAllocator(
            << id;
 }
 
-void SubprocessMetricsProvider::RecordHistogramSnapshots(
-    base::HistogramSnapshotManager* snapshot_manager) {
+void SubprocessMetricsProvider::MergeHistogramDeltas() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (AllocatorByIdMap::iterator iter(&allocators_by_id_); !iter.IsAtEnd();
        iter.Advance()) {
-    RecordHistogramSnapshotsFromAllocator(
-        snapshot_manager, iter.GetCurrentKey(), iter.GetCurrentValue());
+    MergeHistogramDeltasFromAllocator(iter.GetCurrentKey(),
+                                      iter.GetCurrentValue());
   }
-
-  for (auto& allocator : allocators_for_exited_processes_)
-    RecordHistogramSnapshotsFromAllocator(snapshot_manager, 0, allocator.get());
 
   UMA_HISTOGRAM_COUNTS_100(
       "UMA.SubprocessMetricsProvider.SubprocessCount",
-      allocators_by_id_.size() + allocators_for_exited_processes_.size());
-
-  // Move allocators for exited processes (which just had final reporting done
-  // for them) to the queue for being released. The actual release is delayed
-  // until after reporting is complete so as to not destruct objects that may
-  // still be needed.
-  DCHECK(allocators_to_release_.empty());
-  allocators_to_release_.swap(allocators_for_exited_processes_);
+      allocators_by_id_.size());
 }
 
 void SubprocessMetricsProvider::Observe(

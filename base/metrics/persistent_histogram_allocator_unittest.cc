@@ -9,6 +9,7 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -39,6 +40,11 @@ class PersistentHistogramAllocatorTest : public testing::Test {
     GlobalHistogramAllocator::ReleaseForTesting();
   }
 
+  std::unique_ptr<StatisticsRecorder> CreateLocalStatisticsRecorder() {
+    return WrapUnique(new StatisticsRecorder());
+  }
+
+  StatisticsRecorder statistics_recorder_;
   std::unique_ptr<char[]> allocator_memory_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
@@ -119,6 +125,56 @@ TEST_F(PersistentHistogramAllocatorTest, CreateAndIterateTest) {
 
   recovered = histogram_iter.GetNext();
   EXPECT_FALSE(recovered);
+}
+
+TEST_F(PersistentHistogramAllocatorTest, StatisticsRecorderTest) {
+  size_t starting_sr_count = StatisticsRecorder::GetHistogramCount();
+
+  // Create a local StatisticsRecorder in which the newly created histogram
+  // will be recorded.
+  std::unique_ptr<StatisticsRecorder> local_sr =
+      CreateLocalStatisticsRecorder();
+  EXPECT_EQ(0U, StatisticsRecorder::GetHistogramCount());
+
+  HistogramBase* histogram = LinearHistogram::FactoryGet(
+      "TestHistogram", 1, 10, 10, HistogramBase::kIsPersistent);
+  EXPECT_TRUE(histogram);
+  EXPECT_EQ(1U, StatisticsRecorder::GetHistogramCount());
+  histogram->Add(3);
+  histogram->Add(1);
+  histogram->Add(4);
+  histogram->Add(1);
+  histogram->Add(6);
+
+  // Destroy the local SR and ensure that we're back to the initial state.
+  local_sr.reset();
+  EXPECT_EQ(starting_sr_count, StatisticsRecorder::GetHistogramCount());
+
+  // Create a second allocator and have it access the memory of the first.
+  std::unique_ptr<HistogramBase> recovered;
+  PersistentHistogramAllocator recovery(
+      WrapUnique(new PersistentMemoryAllocator(
+          allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false)));
+  PersistentHistogramAllocator::Iterator histogram_iter(&recovery);
+
+  recovered = histogram_iter.GetNext();
+  ASSERT_TRUE(recovered);
+
+  // Merge the recovered histogram to the SR. It will always be a new object.
+  recovery.MergeHistogramToStatisticsRecorder(recovered.get());
+  EXPECT_EQ(starting_sr_count + 1, StatisticsRecorder::GetHistogramCount());
+  HistogramBase* found =
+      StatisticsRecorder::FindHistogram(recovered->histogram_name());
+  ASSERT_TRUE(found);
+  EXPECT_NE(recovered.get(), found);
+
+  // Ensure that the data got merged, too.
+  std::unique_ptr<HistogramSamples> snapshot = found->SnapshotSamples();
+  EXPECT_EQ(recovered->SnapshotSamples()->TotalCount(), snapshot->TotalCount());
+  EXPECT_EQ(1, snapshot->GetCount(3));
+  EXPECT_EQ(2, snapshot->GetCount(1));
+  EXPECT_EQ(1, snapshot->GetCount(4));
+  EXPECT_EQ(1, snapshot->GetCount(6));
 }
 
 }  // namespace base

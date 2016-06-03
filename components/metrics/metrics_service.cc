@@ -1119,6 +1119,11 @@ void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
 
 void MetricsService::RecordCurrentHistograms() {
   DCHECK(log_manager_.current_log());
+
+  // Merge any data from metrics providers into the global StatisticsRecorder.
+  for (MetricsProvider* provider : metrics_providers_)
+    provider->MergeHistogramDeltas();
+
   histogram_snapshot_manager_.StartDeltas();
   // "true" to the begin() call indicates that StatisticsRecorder should include
   // histograms held in persistent storage.

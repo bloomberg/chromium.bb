@@ -22,8 +22,10 @@ class PersistentHistogramAllocator;
 class SharedPersistentMemoryAllocator;
 }
 
-// SubprocessMetricsProvider gathers and logs histograms stored in shared
-// memory segments between processes.
+// SubprocessMetricsProvider gathers and merges histograms stored in shared
+// memory segments between processes. Merging occurs when a process exits,
+// when metrics are being collected for upload, or when something else needs
+// combined metrics (such as the chrome://histograms page).
 class SubprocessMetricsProvider : public metrics::MetricsProvider,
                                   public content::NotificationObserver,
                                   public content::RenderProcessHostObserver {
@@ -44,18 +46,15 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
   // allocator it was using.
   void DeregisterSubprocessAllocator(int id);
 
-  // Report all histograms of a given allocator to the snapshot-manager.
-  void RecordHistogramSnapshotsFromAllocator(
-      base::HistogramSnapshotManager* snapshot_manager,
+  // Merge all histograms of a given allocator to the global StatisticsRecorder.
+  // This is called periodically during UMA metrics collection (if enabled) and
+  // possibly on-demand for other purposes.
+  void MergeHistogramDeltasFromAllocator(
       int id,
       base::PersistentHistogramAllocator* allocator);
 
   // metrics::MetricsProvider:
-  void OnDidCreateMetricsLog() override;
-  void OnRecordingEnabled() override;
-  void OnRecordingDisabled() override;
-  void RecordHistogramSnapshots(
-      base::HistogramSnapshotManager* snapshot_manager) override;
+  void MergeHistogramDeltas() override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -79,20 +78,9 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
       IDMap<base::PersistentHistogramAllocator, IDMapOwnPointer, int>;
   AllocatorByIdMap allocators_by_id_;
 
-  // Allocators that are no longer attached to a subprocess, to be released
-  // once the last data contained therein has been reported.
-  std::vector<std::unique_ptr<base::PersistentHistogramAllocator>>
-      allocators_for_exited_processes_;
-  std::vector<std::unique_ptr<base::PersistentHistogramAllocator>>
-      allocators_to_release_;
-
   // Track all observed render processes to un-observe them on exit.
   ScopedObserver<content::RenderProcessHost, SubprocessMetricsProvider>
       scoped_observer_;
-
-  // Flag indicating if metrics recording is enabled. Allocators will not
-  // live past the death of the subprocess if it is not.
-  bool metrics_recording_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SubprocessMetricsProvider);
 };

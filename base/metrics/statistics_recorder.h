@@ -26,6 +26,8 @@
 #include "base/metrics/histogram_base.h"
 #include "base/strings/string_piece.h"
 
+class SubprocessMetricsProviderTest;
+
 namespace base {
 
 class BucketRanges;
@@ -185,10 +187,12 @@ class BASE_EXPORT StatisticsRecorder {
   typedef std::map<uint32_t, std::list<const BucketRanges*>*> RangesMap;
 
   friend struct DefaultLazyInstanceTraits<StatisticsRecorder>;
+  friend class ::SubprocessMetricsProviderTest;
   friend class HistogramBaseTest;
   friend class HistogramSnapshotManagerTest;
   friend class HistogramTest;
   friend class JsonPrefStoreTest;
+  friend class PersistentHistogramAllocatorTest;
   friend class SharedHistogramTest;
   friend class SparseHistogramTest;
   friend class StatisticsRecorderTest;
