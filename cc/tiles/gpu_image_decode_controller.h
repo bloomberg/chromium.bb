@@ -126,11 +126,16 @@ class CC_EXPORT GpuImageDecodeController
     UploadedImageData();
     ~UploadedImageData();
 
-    // May be null if image not yet uploaded / prepared.
-    sk_sp<SkImage> image;
+    void SetImage(sk_sp<SkImage> image);
+    const sk_sp<SkImage>& image() const { return image_; }
+
     // True if the image is counting against our memory limits.
     bool budgeted = false;
     uint32_t ref_count = 0;
+
+   private:
+    // May be null if image not yet uploaded / prepared.
+    sk_sp<SkImage> image_;
   };
 
   struct ImageData {
