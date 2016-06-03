@@ -6,8 +6,11 @@
 #define HEADLESS_TEST_HEADLESS_BROWSER_TEST_H_
 
 #include <memory>
+#include <string>
+
 #include "content/public/test/browser_test_base.h"
 #include "headless/public/headless_browser.h"
+#include "headless/public/headless_web_contents.h"
 
 namespace base {
 class RunLoop;
@@ -17,7 +20,7 @@ namespace headless {
 namespace runtime {
 class EvaluateResult;
 }
-class HeadlessWebContents;
+class HeadlessDevToolsClient;
 
 // Base class for tests which require a full instance of the headless browser.
 class HeadlessBrowserTest : public content::BrowserTestBase {
@@ -60,6 +63,34 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserTest);
+};
+
+#define HEADLESS_ASYNC_DEVTOOLED_TEST_F(TEST_FIXTURE_NAME)               \
+  IN_PROC_BROWSER_TEST_F(TEST_FIXTURE_NAME, RunAsyncTest) { RunTest(); } \
+  class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
+
+// Base class for tests that require access to a DevToolsClient. Subclasses
+// should override the RunDevTooledTest() method, which is called asynchronously
+// when the DevToolsClient is ready.
+class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
+                                          public HeadlessWebContents::Observer {
+ public:
+  HeadlessAsyncDevTooledBrowserTest();
+  ~HeadlessAsyncDevTooledBrowserTest() override;
+
+  // HeadlessWebContentsObserver implementation:
+  void DevToolsTargetReady() override;
+
+  // Implemented by tests and used to send request(s) to DevTools. Subclasses
+  // need to ensure that FinishAsynchronousTest() is called after response(s)
+  // are processed (e.g. in a callback).
+  virtual void RunDevTooledTest() = 0;
+
+ protected:
+  void RunTest();
+
+  HeadlessWebContents* web_contents_;
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 };
 
 }  // namespace headless

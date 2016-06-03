@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "base/synchronization/lock.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
@@ -37,6 +38,8 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   HeadlessWebContents* CreateWebContents(const GURL& initial_url,
                                          const gfx::Size& size) override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
+      const override;
+  scoped_refptr<base::SingleThreadTaskRunner> BrowserFileThread()
       const override;
 
   void Shutdown() override;
@@ -73,6 +76,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   std::unordered_map<HeadlessWebContents*, std::unique_ptr<HeadlessWebContents>>
       web_contents_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);
 };
 

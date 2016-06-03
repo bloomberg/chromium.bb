@@ -4,6 +4,8 @@
 
 #include "headless/lib/browser/headless_browser_impl.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/app/content_main.h"
@@ -51,6 +53,12 @@ HeadlessBrowserImpl::BrowserMainThread() const {
       content::BrowserThread::UI);
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+HeadlessBrowserImpl::BrowserFileThread() const {
+  return content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::FILE);
+}
+
 void HeadlessBrowserImpl::Shutdown() {
   DCHECK(BrowserMainThread()->BelongsToCurrentThread());
   BrowserMainThread()->PostTask(FROM_HERE,
@@ -87,7 +95,10 @@ void HeadlessBrowserImpl::set_browser_main_parts(
 
 void HeadlessBrowserImpl::RunOnStartCallback() {
   DCHECK(aura::Env::GetInstance());
-  window_tree_host_.reset(aura::WindowTreeHost::Create(gfx::Rect()));
+  // TODO(eseckler): allow configuration of window (viewport) size by embedder.
+  const gfx::Size kDefaultSize(800, 600);
+  window_tree_host_.reset(
+      aura::WindowTreeHost::Create(gfx::Rect(kDefaultSize)));
   window_tree_host_->InitHost();
 
   window_tree_client_.reset(

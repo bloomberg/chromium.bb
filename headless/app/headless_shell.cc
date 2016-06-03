@@ -4,10 +4,13 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +24,10 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
+#include "net/base/file_stream.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
+#include "net/base/net_errors.h"
 #include "ui/gfx/geometry/size.h"
 
 using headless::HeadlessBrowser;
@@ -33,6 +39,8 @@ namespace runtime = headless::runtime;
 namespace {
 // Address where to listen to incoming DevTools connections.
 const char kDevToolsHttpServerAddress[] = "127.0.0.1";
+// Default file name for screenshot. Can be overriden by "--screenshot" switch.
+const char kDefaultScreenshotFileName[] = "screenshot.png";
 }
 
 // A sample application which demonstrates the use of the headless API.
@@ -41,6 +49,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   HeadlessShell()
       : browser_(nullptr),
         devtools_client_(HeadlessDevToolsClient::Create()),
+        web_contents_(nullptr),
         processed_page_ready_(false) {}
   ~HeadlessShell() override {}
 
@@ -135,6 +144,9 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
           << "Type a Javascript expression to evaluate or \"quit\" to exit."
           << std::endl;
       InputExpression();
+    } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                   headless::switches::kScreenshot)) {
+      CaptureScreenshot();
     } else {
       Shutdown();
     }
@@ -181,6 +193,83 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     InputExpression();
   }
 
+  void CaptureScreenshot() {
+    devtools_client_->GetPage()->GetExperimental()->CaptureScreenshot(
+        page::CaptureScreenshotParams::Builder().Build(),
+        base::Bind(&HeadlessShell::OnScreenshotCaptured,
+                   base::Unretained(this)));
+  }
+
+  void OnScreenshotCaptured(
+      std::unique_ptr<page::CaptureScreenshotResult> result) {
+    base::FilePath file_name =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            headless::switches::kScreenshot);
+    if (file_name.empty()) {
+      file_name = base::FilePath().AppendASCII(kDefaultScreenshotFileName);
+    }
+
+    screenshot_file_stream_.reset(
+        new net::FileStream(browser_->BrowserFileThread()));
+    const int open_result = screenshot_file_stream_->Open(
+        file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+                       base::File::FLAG_ASYNC,
+        base::Bind(&HeadlessShell::OnScreenshotFileOpened,
+                   base::Unretained(this), base::Passed(std::move(result)),
+                   file_name));
+    if (open_result != net::ERR_IO_PENDING) {
+      // Operation could not be started.
+      OnScreenshotFileOpened(nullptr, file_name, open_result);
+    }
+  }
+
+  void OnScreenshotFileOpened(
+      std::unique_ptr<page::CaptureScreenshotResult> result,
+      const base::FilePath file_name,
+      const int open_result) {
+    if (open_result != net::OK) {
+      LOG(ERROR) << "Writing screenshot to file " << file_name.value()
+                 << " was unsuccessful, could not open file: "
+                 << net::ErrorToString(open_result);
+      return;
+    }
+
+    std::string decoded_png;
+    base::Base64Decode(result->GetData(), &decoded_png);
+    scoped_refptr<net::IOBufferWithSize> buf =
+        new net::IOBufferWithSize(decoded_png.size());
+    memcpy(buf->data(), decoded_png.data(), decoded_png.size());
+    const int write_result = screenshot_file_stream_->Write(
+        buf.get(), buf->size(),
+        base::Bind(&HeadlessShell::OnScreenshotFileWritten,
+                   base::Unretained(this), file_name, buf->size()));
+    if (write_result != net::ERR_IO_PENDING) {
+      // Operation may have completed successfully or failed.
+      OnScreenshotFileWritten(file_name, buf->size(), write_result);
+    }
+  }
+
+  void OnScreenshotFileWritten(const base::FilePath file_name,
+                               const int length,
+                               const int write_result) {
+    if (write_result < length) {
+      // TODO(eseckler): Support recovering from partial writes.
+      LOG(ERROR) << "Writing screenshot to file " << file_name.value()
+                 << " was unsuccessful: " << net::ErrorToString(write_result);
+    } else {
+      std::cout << "Screenshot written to file " << file_name.value() << "."
+                << std::endl;
+    }
+    int close_result = screenshot_file_stream_->Close(base::Bind(
+        &HeadlessShell::OnScreenshotFileClosed, base::Unretained(this)));
+    if (close_result != net::ERR_IO_PENDING) {
+      // Operation could not be started.
+      OnScreenshotFileClosed(close_result);
+    }
+  }
+
+  void OnScreenshotFileClosed(const int close_result) { Shutdown(); }
+
   bool RemoteDebuggingEnabled() const {
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
@@ -193,6 +282,7 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   HeadlessWebContents* web_contents_;
   bool processed_page_ready_;
+  std::unique_ptr<net::FileStream> screenshot_file_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

@@ -24,6 +24,8 @@ namespace headless {
   class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 // A test fixture which attaches a devtools client before starting the test.
+// TODO(eseckler): Use the reusable HeadlessAsyncDevTooledTest and macro from
+// headless_browser_test.h instead of this class.
 class HeadlessDevToolsClientTest : public HeadlessBrowserTest,
                                    public HeadlessWebContents::Observer {
  public:

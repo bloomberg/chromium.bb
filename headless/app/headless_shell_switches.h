@@ -11,6 +11,7 @@ extern const char kDumpDom[];
 extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];
 extern const char kRepl[];
+extern const char kScreenshot[];
 }  // namespace switches
 }  // namespace headless
 

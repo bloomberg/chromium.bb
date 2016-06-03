@@ -24,5 +24,8 @@ const char kRemoteDebuggingAddress[] = "remote-debugging-address";
 // expressions.
 const char kRepl[] = "repl";
 
+// Save a screenshot of the loaded page.
+const char kScreenshot[] = "screenshot";
+
 }  // namespace switches
 }  // namespace headless

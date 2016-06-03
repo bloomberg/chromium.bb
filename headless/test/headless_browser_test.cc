@@ -19,6 +19,8 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
+#include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 namespace headless {
 namespace {
@@ -171,6 +173,31 @@ void HeadlessBrowserTest::RunAsynchronousTest() {
 
 void HeadlessBrowserTest::FinishAsynchronousTest() {
   run_loop_->Quit();
+}
+
+HeadlessAsyncDevTooledBrowserTest::HeadlessAsyncDevTooledBrowserTest()
+    : web_contents_(nullptr),
+      devtools_client_(HeadlessDevToolsClient::Create()) {}
+
+HeadlessAsyncDevTooledBrowserTest::~HeadlessAsyncDevTooledBrowserTest() {}
+
+void HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady() {
+  EXPECT_TRUE(web_contents_->GetDevToolsTarget());
+  web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+  RunDevTooledTest();
+}
+
+void HeadlessAsyncDevTooledBrowserTest::RunTest() {
+  web_contents_ =
+      browser()->CreateWebContents(GURL("about:blank"), gfx::Size(800, 600));
+  web_contents_->AddObserver(this);
+
+  RunAsynchronousTest();
+
+  web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+  web_contents_->RemoveObserver(this);
+  web_contents_->Close();
+  web_contents_ = nullptr;
 }
 
 }  // namespace headless

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -49,6 +50,10 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
   // Returns a task runner for submitting work to the browser main thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
+      const = 0;
+
+  // Returns a task runner for submitting work to the browser file thread.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserFileThread()
       const = 0;
 
   // Requests browser to stop as soon as possible. |Run| will return as soon as
