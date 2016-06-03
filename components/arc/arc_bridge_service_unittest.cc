@@ -19,6 +19,8 @@
 
 namespace arc {
 
+namespace {
+
 class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
  public:
   ArcBridgeTest() : ready_(false) {}
@@ -56,7 +58,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
 
     instance_.reset(new FakeArcBridgeInstance());
     service_.reset(new ArcBridgeServiceImpl(
-        base::WrapUnique(new FakeArcBridgeBootstrap(instance_.get()))));
+        base::MakeUnique<FakeArcBridgeBootstrap>(instance_.get())));
 
     service_->AddObserver(this);
   }
@@ -75,6 +77,10 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeTest);
 };
+
+class DummyObserver : public ArcBridgeService::Observer {};
+
+}  // namespace
 
 // Exercises the basic functionality of the ARC Bridge Service.  A message from
 // within the instance should cause the observer to be notified.
@@ -136,6 +142,20 @@ TEST_F(ArcBridgeTest, Restart) {
 
   service_->Shutdown();
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+}
+
+// Removing the same observer more than once should be okay.
+TEST_F(ArcBridgeTest, RemoveObserverTwice) {
+  ASSERT_FALSE(ready());
+  service_->RemoveObserver(this);
+  // The teardown method will also remove |this|.
+}
+
+// Removing an unknown observer should be allowed.
+TEST_F(ArcBridgeTest, RemoveUnknownObserver) {
+  ASSERT_FALSE(ready());
+  auto dummy_observer = base::MakeUnique<DummyObserver>();
+  service_->RemoveObserver(dummy_observer.get());
 }
 
 }  // namespace arc

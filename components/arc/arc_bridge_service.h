@@ -177,7 +177,8 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   virtual void Shutdown() = 0;
 
   // Adds or removes observers. This can only be called on the thread that this
-  // class was created on.
+  // class was created on. RemoveObserver does nothing if |observer| is not in
+  // the list.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
