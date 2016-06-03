@@ -41,7 +41,10 @@ class CronetBidirectionalStream extends BidirectionalStream {
     private enum State {
         /* Initial state, stream not started. */
         NOT_STARTED,
-        /* Stream started, request headers are being sent. */
+        /*
+         * Stream started, request headers are being sent if mDelayRequestHeadersUntilNextFlush
+         * is not set to true.
+         */
         STARTED,
         /* Waiting for {@code read()} to be called. */
         WAITING_FOR_READ,
@@ -55,8 +58,9 @@ class CronetBidirectionalStream extends BidirectionalStream {
         ERROR,
         /* Reading and writing are done, and the stream is closed successfully. */
         SUCCESS,
-        /* Waiting for {@code nativeWritevData()} to be called. */
-        WAITING_FOR_WRITE,
+        /* Waiting for {@code nativeSendRequestHeaders()} or {@code nativeWritevData()} to be
+           called. */
+        WAITING_FOR_FLUSH,
         /* Writing to the remote, {@code onWritevCompleted()} callback will be called when done. */
         WRITING,
         /* There is no more data to write and stream is half-closed by the local side. */
@@ -71,6 +75,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
     private final String mInitialMethod;
     private final String mRequestHeaders[];
     private final boolean mDisableAutoFlush;
+    private final boolean mDelayRequestHeadersUntilFirstFlush;
 
     /*
      * Synchronizes access to mNativeStream, mReadState and mWriteState.
@@ -89,6 +94,10 @@ class CronetBidirectionalStream extends BidirectionalStream {
     @GuardedBy("mNativeStreamLock")
     // Whether an end-of-stream flag is passed in through write().
     private boolean mEndOfStreamWritten;
+
+    @GuardedBy("mNativeStreamLock")
+    // Whether request headers have been sent.
+    private boolean mRequestHeadersSent;
 
     /* Native BidirectionalStream object, owned by CronetBidirectionalStream. */
     @GuardedBy("mNativeStreamLock")
@@ -109,7 +118,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
      *                         / <---  WRITING  <--- \
      *                         |                     |
      *                         \                     /
-     * NOT_STARTED -> STARTED --> WAITING_FOR_WRITE -> WRITING_DONE -> SUCCESS
+     * NOT_STARTED -> STARTED --> WAITING_FOR_FLUSH -> WRITING_DONE -> SUCCESS
      */
     @GuardedBy("mNativeStreamLock")
     private State mWriteState = State.NOT_STARTED;
@@ -202,7 +211,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
     CronetBidirectionalStream(CronetUrlRequestContext requestContext, String url,
             @BidirectionalStream.Builder.StreamPriority int priority, Callback callback,
             Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
-            boolean disableAutoFlush) {
+            boolean disableAutoFlush, boolean delayRequestHeadersUntilNextFlush) {
         mRequestContext = requestContext;
         mInitialUrl = url;
         mInitialPriority = convertStreamPriority(priority);
@@ -211,6 +220,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
         mInitialMethod = httpMethod;
         mRequestHeaders = stringsFromHeaderList(requestHeaders);
         mDisableAutoFlush = disableAutoFlush;
+        mDelayRequestHeadersUntilFirstFlush = delayRequestHeadersUntilNextFlush;
         mPendingData = new LinkedList<>();
         mFlushData = new LinkedList<>();
     }
@@ -223,7 +233,8 @@ class CronetBidirectionalStream extends BidirectionalStream {
             }
             try {
                 mNativeStream = nativeCreateBidirectionalStream(
-                        mRequestContext.getUrlRequestContextAdapter(), mDisableAutoFlush);
+                        mRequestContext.getUrlRequestContextAdapter(),
+                        !mDelayRequestHeadersUntilFirstFlush);
                 mRequestContext.onRequestStarted();
                 // Non-zero startResult means an argument error.
                 int startResult = nativeStart(mNativeStream, mInitialUrl, mInitialPriority,
@@ -302,13 +313,24 @@ class CronetBidirectionalStream extends BidirectionalStream {
 
     @SuppressWarnings("GuardedByChecker")
     private void flushLocked() {
-        if (isDoneLocked()) {
+        if (isDoneLocked()
+                || (mWriteState != State.WAITING_FOR_FLUSH && mWriteState != State.WRITING)) {
             return;
         }
         if (mPendingData.isEmpty() && mFlushData.isEmpty()) {
-            // No-op if there is nothing to write.
+            // If there is no pending write when flush() is called, see if
+            // request headers need to be flushed.
+            if (!mRequestHeadersSent) {
+                mRequestHeadersSent = true;
+                nativeSendRequestHeaders(mNativeStream);
+                if (!doesMethodAllowWriteData(mInitialMethod)) {
+                    mWriteState = State.WRITING_DONE;
+                }
+            }
             return;
         }
+
+        assert !mPendingData.isEmpty() || !mFlushData.isEmpty();
 
         // Move buffers from mPendingData to the flushing queue.
         if (!mPendingData.isEmpty()) {
@@ -321,6 +343,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
             // called before pushing data to the native stack.
             return;
         }
+        assert mWriteState == State.WAITING_FOR_FLUSH;
         int size = mFlushData.size();
         ByteBuffer[] buffers = new ByteBuffer[size];
         int[] positions = new int[size];
@@ -332,11 +355,12 @@ class CronetBidirectionalStream extends BidirectionalStream {
             limits[i] = buffer.limit();
         }
         assert mFlushData.isEmpty();
+        assert buffers.length >= 1;
         mWriteState = State.WRITING;
         if (!nativeWritevData(mNativeStream, buffers, positions, limits, mEndOfStreamWritten)) {
-            // Still waiting on write. This is just to have consistent
+            // Still waiting on flush. This is just to have consistent
             // behavior with the other error cases.
-            mWriteState = State.WAITING_FOR_WRITE;
+            mWriteState = State.WAITING_FOR_FLUSH;
             throw new IllegalArgumentException("Unable to call native writev.");
         }
     }
@@ -401,18 +425,19 @@ class CronetBidirectionalStream extends BidirectionalStream {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onStreamReady() {
+    private void onStreamReady(final boolean requestHeadersSent) {
         postTaskToExecutor(new Runnable() {
             public void run() {
                 synchronized (mNativeStreamLock) {
                     if (isDoneLocked()) {
                         return;
                     }
-                    if (doesMethodAllowWriteData(mInitialMethod)) {
-                        mWriteState = State.WAITING_FOR_WRITE;
-                        mReadState = State.WAITING_FOR_READ;
-                    } else {
+                    mRequestHeadersSent = requestHeadersSent;
+                    mReadState = State.WAITING_FOR_READ;
+                    if (!doesMethodAllowWriteData(mInitialMethod) && mRequestHeadersSent) {
                         mWriteState = State.WRITING_DONE;
+                    } else {
+                        mWriteState = State.WAITING_FOR_FLUSH;
                     }
                 }
 
@@ -487,7 +512,7 @@ class CronetBidirectionalStream extends BidirectionalStream {
         assert byteBuffers.length == initialPositions.length;
         assert byteBuffers.length == initialLimits.length;
         synchronized (mNativeStreamLock) {
-            mWriteState = State.WAITING_FOR_WRITE;
+            mWriteState = State.WAITING_FOR_FLUSH;
             // Flush if there is anything in the flush queue mFlushData.
             if (!mFlushData.isEmpty()) {
                 flushLocked();
@@ -688,11 +713,14 @@ class CronetBidirectionalStream extends BidirectionalStream {
 
     // Native methods are implemented in cronet_bidirectional_stream_adapter.cc.
     private native long nativeCreateBidirectionalStream(
-            long urlRequestContextAdapter, boolean disableAutoFlush);
+            long urlRequestContextAdapter, boolean sendRequestHeadersAutomatically);
 
     @NativeClassQualifiedName("CronetBidirectionalStreamAdapter")
     private native int nativeStart(long nativePtr, String url, int priority, String method,
             String[] headers, boolean endOfStream);
+
+    @NativeClassQualifiedName("CronetBidirectionalStreamAdapter")
+    private native void nativeSendRequestHeaders(long nativePtr);
 
     @NativeClassQualifiedName("CronetBidirectionalStreamAdapter")
     private native boolean nativeReadData(

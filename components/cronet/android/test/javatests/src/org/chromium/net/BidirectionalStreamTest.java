@@ -250,6 +250,9 @@ public class BidirectionalStreamTest extends CronetTestBase {
                                              .addHeader("empty", "")
                                              .addHeader("Content-Type", "zebra")
                                              .build();
+        // Flush before stream is started should not crash.
+        stream.flush();
+
         stream.start();
         callback.blockForDone();
         assertTrue(stream.isDone());
@@ -268,33 +271,123 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    public void testSimpleGetWithFlush() throws Exception {
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String url = Http2TestServer.getEchoStreamUrl();
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
+                @Override
+                public void onStreamReady(BidirectionalStream stream) {
+                    try {
+                        // Attempt to write data for GET request.
+                        stream.write(ByteBuffer.wrap("dummy".getBytes()), true);
+                    } catch (IllegalArgumentException e) {
+                        // Expected.
+                    }
+                    // If there are delayed headers, this flush should try to send them.
+                    // If nothing to flush, it should not crash.
+                    stream.flush();
+                    super.onStreamReady(stream);
+                    try {
+                        // Attempt to write data for GET request.
+                        stream.write(ByteBuffer.wrap("dummy".getBytes()), true);
+                    } catch (IllegalArgumentException e) {
+                        // Expected.
+                    }
+                }
+            };
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(url, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .setHttpMethod("GET")
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .build();
+            // Flush before stream is started should not crash.
+            stream.flush();
+
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+
+            // Flush after stream is completed is no-op. It shouldn't call into the destroyed
+            // adapter.
+            stream.flush();
+
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals("", callback.mResponseAsString);
+            assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));
+            assertEquals("", callback.mResponseInfo.getAllHeaders().get("echo-empty").get(0));
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testSimplePostWithFlushAfterOneWrite() throws Exception {
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String url = Http2TestServer.getEchoStreamUrl();
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+            callback.addWriteData("Test String".getBytes(), true);
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(url, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .addHeader("Content-Type", "zebra")
+                                                 .build();
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals("Test String", callback.mResponseAsString);
+            assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));
+            assertEquals("", callback.mResponseInfo.getAllHeaders().get("echo-empty").get(0));
+            assertEquals("zebra",
+                    callback.mResponseInfo.getAllHeaders().get("echo-content-type").get(0));
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSimplePostWithFlushTwice() throws Exception {
-        String url = Http2TestServer.getEchoStreamUrl();
-        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
-        callback.addWriteData("Test String".getBytes(), false);
-        callback.addWriteData("1234567890".getBytes(), false);
-        callback.addWriteData("woot!".getBytes(), true);
-        callback.addWriteData("Test String".getBytes(), false);
-        callback.addWriteData("1234567890".getBytes(), false);
-        callback.addWriteData("woot!".getBytes(), true);
-        BidirectionalStream stream = new BidirectionalStream
-                                             .Builder(url, callback, callback.getExecutor(),
-                                                     mTestFramework.mCronetEngine)
-                                             .disableAutoFlush(true)
-                                             .addHeader("foo", "bar")
-                                             .addHeader("empty", "")
-                                             .addHeader("Content-Type", "zebra")
-                                             .build();
-        stream.start();
-        callback.blockForDone();
-        assertTrue(stream.isDone());
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals(
-                "Test String1234567890woot!Test String1234567890woot!", callback.mResponseAsString);
-        assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));
-        assertEquals("", callback.mResponseInfo.getAllHeaders().get("echo-empty").get(0));
-        assertEquals(
-                "zebra", callback.mResponseInfo.getAllHeaders().get("echo-content-type").get(0));
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String url = Http2TestServer.getEchoStreamUrl();
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+            callback.addWriteData("Test String".getBytes(), false);
+            callback.addWriteData("1234567890".getBytes(), false);
+            callback.addWriteData("woot!".getBytes(), true);
+            callback.addWriteData("Test String".getBytes(), false);
+            callback.addWriteData("1234567890".getBytes(), false);
+            callback.addWriteData("woot!".getBytes(), true);
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(url, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .addHeader("Content-Type", "zebra")
+                                                 .build();
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals("Test String1234567890woot!Test String1234567890woot!",
+                    callback.mResponseAsString);
+            assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));
+            assertEquals("", callback.mResponseInfo.getAllHeaders().get("echo-empty").get(0));
+            assertEquals("zebra",
+                    callback.mResponseInfo.getAllHeaders().get("echo-content-type").get(0));
+        }
     }
 
     @SmallTest

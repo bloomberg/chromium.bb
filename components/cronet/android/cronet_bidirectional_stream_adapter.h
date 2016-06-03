@@ -71,7 +71,7 @@ class CronetBidirectionalStreamAdapter
       CronetURLRequestContextAdapter* context,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jbidi_stream,
-      bool jdisable_auto_flush);
+      bool jsend_request_headers_automatically);
   ~CronetBidirectionalStreamAdapter() override;
 
   // Validates method and headers, initializes and starts the request. If
@@ -88,6 +88,19 @@ class CronetBidirectionalStreamAdapter
              const base::android::JavaParamRef<jstring>& jmethod,
              const base::android::JavaParamRef<jobjectArray>& jheaders,
              jboolean jend_of_stream);
+
+  // Sends request headers to server.
+  // When |send_request_headers_automatically_| is
+  // false and OnStreamReady() is invoked with request_headers_sent = false,
+  // headers will be combined with next WriteData/WritevData unless this
+  // method is called first, in which case headers will be sent separately
+  // without delay.
+  // (This method cannot be called when |send_request_headers_automatically_| is
+  // true nor when OnStreamReady() is invoked with request_headers_sent = true,
+  // since headers have been sent by the stream when stream is negotiated
+  // successfully.)
+  void SendRequestHeaders(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& jcaller);
 
   // Reads more data into |jbyte_buffer| starting at |jposition| and not
   // exceeding |jlimit|. Arguments are preserved to ensure that |jbyte_buffer|
@@ -121,7 +134,7 @@ class CronetBidirectionalStreamAdapter
 
  private:
   // net::BidirectionalStream::Delegate implementations:
-  void OnStreamReady() override;
+  void OnStreamReady(bool request_headers_sent) override;
   void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;
@@ -130,6 +143,7 @@ class CronetBidirectionalStreamAdapter
 
   void StartOnNetworkThread(
       std::unique_ptr<net::BidirectionalStreamRequestInfo> request_info);
+  void SendRequestHeadersOnNetworkThread();
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
@@ -145,7 +159,7 @@ class CronetBidirectionalStreamAdapter
 
   // Java object that owns this CronetBidirectionalStreamAdapter.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
-  const bool disable_auto_flush_;
+  const bool send_request_headers_automatically_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   std::unique_ptr<PendingWriteData> pending_write_data_;

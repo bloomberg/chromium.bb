@@ -113,7 +113,7 @@ void CronetBidirectionalStream::Destroy() {
                             base::Unretained(this)));
 }
 
-void CronetBidirectionalStream::OnStreamReady() {
+void CronetBidirectionalStream::OnStreamReady(bool /*request_headers_sent*/) {
   DCHECK(environment_->IsOnNetworkThread());
   DCHECK(write_state_ == STARTED);
   write_state_ = WAITING_FOR_WRITE;

@@ -743,7 +743,7 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
   const SpdyHeaderBlock& response_headers() const { return response_headers_; }
 
  private:
-  void OnStreamReady() override {}
+  void OnStreamReady(bool request_headers_sent) override {}
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     response_headers_ = response_headers;
     loop_.Quit();
@@ -1633,7 +1633,8 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   bidi_request_info.priority = LOWEST;
 
   TestBidirectionalDelegate delegate;
-  stream_impl->Start(&bidi_request_info, BoundNetLog(), false, &delegate,
+  stream_impl->Start(&bidi_request_info, BoundNetLog(),
+                     /*send_request_headers_automatically=*/true, &delegate,
                      nullptr);
   delegate.WaitUntilDone();
 
@@ -1759,7 +1760,8 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   bidi_request_info.priority = LOWEST;
 
   TestBidirectionalDelegate delegate;
-  stream_impl->Start(&bidi_request_info, BoundNetLog(), false, &delegate,
+  stream_impl->Start(&bidi_request_info, BoundNetLog(),
+                     /*send_request_headers_automatically=*/true, &delegate,
                      nullptr);
   delegate.WaitUntilDone();
 

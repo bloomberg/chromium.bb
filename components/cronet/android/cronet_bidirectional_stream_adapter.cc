@@ -71,7 +71,7 @@ static jlong CreateBidirectionalStream(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jbidi_stream,
     jlong jurl_request_context_adapter,
-    jboolean jdisable_auto_flush) {
+    jboolean jsend_request_headers_automatically) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(
           jurl_request_context_adapter);
@@ -79,7 +79,7 @@ static jlong CreateBidirectionalStream(
 
   CronetBidirectionalStreamAdapter* adapter =
       new CronetBidirectionalStreamAdapter(context_adapter, env, jbidi_stream,
-                                           jdisable_auto_flush);
+                                           jsend_request_headers_automatically);
 
   return reinterpret_cast<jlong>(adapter);
 }
@@ -93,14 +93,24 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     CronetURLRequestContextAdapter* context,
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jbidi_stream,
-    bool disable_auto_flush)
+    bool send_request_headers_automatically)
     : context_(context),
       owner_(env, jbidi_stream),
-      disable_auto_flush_(disable_auto_flush),
+      send_request_headers_automatically_(send_request_headers_automatically),
       stream_failed_(false) {}
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {
   DCHECK(context_->IsOnNetworkThread());
+}
+
+void CronetBidirectionalStreamAdapter::SendRequestHeaders(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  context_->PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(
+          &CronetBidirectionalStreamAdapter::SendRequestHeadersOnNetworkThread,
+          base::Unretained(this)));
 }
 
 jint CronetBidirectionalStreamAdapter::Start(
@@ -228,10 +238,12 @@ void CronetBidirectionalStreamAdapter::Destroy(
                  base::Unretained(this), jsend_on_canceled));
 }
 
-void CronetBidirectionalStreamAdapter::OnStreamReady() {
+void CronetBidirectionalStreamAdapter::OnStreamReady(
+    bool request_headers_sent) {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
-  cronet::Java_CronetBidirectionalStream_onStreamReady(env, owner_.obj());
+  cronet::Java_CronetBidirectionalStream_onStreamReady(
+      env, owner_.obj(), request_headers_sent ? JNI_TRUE : JNI_FALSE);
 }
 
 void CronetBidirectionalStreamAdapter::OnHeadersReceived(
@@ -321,7 +333,22 @@ void CronetBidirectionalStreamAdapter::StartOnNetworkThread(
       std::move(request_info), context_->GetURLRequestContext()
                                    ->http_transaction_factory()
                                    ->GetSession(),
-      disable_auto_flush_, this));
+      send_request_headers_automatically_, this));
+}
+
+void CronetBidirectionalStreamAdapter::SendRequestHeadersOnNetworkThread() {
+  DCHECK(context_->IsOnNetworkThread());
+  DCHECK(!send_request_headers_automatically_);
+
+  if (stream_failed_) {
+    // If stream failed between the time when SendRequestHeaders is invoked and
+    // SendRequestHeadersOnNetworkThread is executed, do not call into
+    // |bidi_stream_| since the underlying stream might have been destroyed.
+    // Do not invoke Java callback either, since onError is posted when
+    // |stream_failed_| is set to true.
+    return;
+  }
+  bidi_stream_->SendRequestHeaders();
 }
 
 void CronetBidirectionalStreamAdapter::ReadDataOnNetworkThread(

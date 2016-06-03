@@ -107,28 +107,33 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
     @OnlyRunNativeCronet
     public void testSimplePostWithFlush() throws Exception {
         setUp(QuicBidirectionalStreams.ENABLED);
-        String path = "/simple.txt";
-        String quicURL = QuicTestServer.getServerURL() + path;
-        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
-        // Although we have no way to verify data sent at this point, this test
-        // can make sure that onWriteCompleted is invoked appropriately.
-        callback.addWriteData("Test String".getBytes(), false);
-        callback.addWriteData("1234567890".getBytes(), false);
-        callback.addWriteData("woot!".getBytes(), true);
-        BidirectionalStream stream = new BidirectionalStream
-                                             .Builder(quicURL, callback, callback.getExecutor(),
-                                                     mTestFramework.mCronetEngine)
-                                             .disableAutoFlush(true)
-                                             .addHeader("foo", "bar")
-                                             .addHeader("empty", "")
-                                             .addHeader("Content-Type", "zebra")
-                                             .build();
-        stream.start();
-        callback.blockForDone();
-        assertTrue(stream.isDone());
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String path = "/simple.txt";
+            String quicURL = QuicTestServer.getServerURL() + path;
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+            // Although we have no way to verify data sent at this point, this test
+            // can make sure that onWriteCompleted is invoked appropriately.
+            callback.addWriteData("Test String".getBytes(), false);
+            callback.addWriteData("1234567890".getBytes(), false);
+            callback.addWriteData("woot!".getBytes(), true);
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(quicURL, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .addHeader("Content-Type", "zebra")
+                                                 .build();
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals(
+                    "This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+            assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        }
     }
 
     @SmallTest
@@ -136,31 +141,113 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
     @OnlyRunNativeCronet
     public void testSimplePostWithFlushTwice() throws Exception {
         setUp(QuicBidirectionalStreams.ENABLED);
-        String path = "/simple.txt";
-        String quicURL = QuicTestServer.getServerURL() + path;
-        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
-        // Although we have no way to verify data sent at this point, this test
-        // can make sure that onWriteCompleted is invoked appropriately.
-        callback.addWriteData("Test String".getBytes(), false);
-        callback.addWriteData("1234567890".getBytes(), false);
-        callback.addWriteData("woot!".getBytes(), true);
-        callback.addWriteData("Test String".getBytes(), false);
-        callback.addWriteData("1234567890".getBytes(), false);
-        callback.addWriteData("woot!".getBytes(), true);
-        BidirectionalStream stream = new BidirectionalStream
-                                             .Builder(quicURL, callback, callback.getExecutor(),
-                                                     mTestFramework.mCronetEngine)
-                                             .disableAutoFlush(true)
-                                             .addHeader("foo", "bar")
-                                             .addHeader("empty", "")
-                                             .addHeader("Content-Type", "zebra")
-                                             .build();
-        stream.start();
-        callback.blockForDone();
-        assertTrue(stream.isDone());
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String path = "/simple.txt";
+            String quicURL = QuicTestServer.getServerURL() + path;
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+            // Although we have no way to verify data sent at this point, this test
+            // can make sure that onWriteCompleted is invoked appropriately.
+            callback.addWriteData("Test String".getBytes(), false);
+            callback.addWriteData("1234567890".getBytes(), false);
+            callback.addWriteData("woot!".getBytes(), true);
+            callback.addWriteData("Test String".getBytes(), false);
+            callback.addWriteData("1234567890".getBytes(), false);
+            callback.addWriteData("woot!".getBytes(), true);
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(quicURL, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .addHeader("Content-Type", "zebra")
+                                                 .build();
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals(
+                    "This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+            assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testSimpleGetWithFlush() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String path = "/simple.txt";
+            String url = QuicTestServer.getServerURL() + path;
+
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
+                @Override
+                public void onStreamReady(BidirectionalStream stream) {
+                    // This flush should send the delayed headers.
+                    stream.flush();
+                    super.onStreamReady(stream);
+                }
+            };
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(url, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .setHttpMethod("GET")
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .build();
+            // Flush before stream is started should not crash.
+            stream.flush();
+
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+
+            // Flush after stream is completed is no-op. It shouldn't call into the destroyed
+            // adapter.
+            stream.flush();
+
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals(
+                    "This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+            assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testSimplePostWithFlushAfterOneWrite() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        // TODO(xunjieli): Use ParameterizedTest instead of the loop.
+        for (int i = 0; i < 2; i++) {
+            String path = "/simple.txt";
+            String url = QuicTestServer.getServerURL() + path;
+
+            TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+            callback.addWriteData("Test String".getBytes(), true);
+            BidirectionalStream stream = new BidirectionalStream
+                                                 .Builder(url, callback, callback.getExecutor(),
+                                                         mTestFramework.mCronetEngine)
+                                                 .disableAutoFlush(true)
+                                                 .delayRequestHeadersUntilFirstFlush(i == 0)
+                                                 .addHeader("foo", "bar")
+                                                 .addHeader("empty", "")
+                                                 .addHeader("Content-Type", "zebra")
+                                                 .build();
+            stream.start();
+            callback.blockForDone();
+            assertTrue(stream.isDone());
+
+            assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+            assertEquals(
+                    "This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+            assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        }
     }
 
     @SmallTest

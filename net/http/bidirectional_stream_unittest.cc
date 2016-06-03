@@ -58,12 +58,15 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
         on_data_sent_count_(0),
         do_not_start_read_(false),
         run_until_completion_(false),
-        not_expect_callback_(false),
-        disable_auto_flush_(false) {}
+        not_expect_callback_(false) {}
 
   ~TestDelegateBase() override {}
 
-  void OnStreamReady() override {
+  void OnStreamReady(bool request_headers_sent) override {
+    // Request headers should always be sent in H2's case, because the
+    // functionality to combine header frame with data frames is not
+    // implemented.
+    EXPECT_TRUE(request_headers_sent);
     if (callback_.is_null())
       return;
     callback_.Run(OK);
@@ -111,12 +114,10 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
       loop_->Quit();
   }
 
-  void DisableAutoFlush() { disable_auto_flush_ = true; }
-
   void Start(std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
              HttpNetworkSession* session) {
     stream_.reset(new BidirectionalStream(std::move(request_info), session,
-                                          false, this, std::move(timer_)));
+                                          true, this, std::move(timer_)));
     if (run_until_completion_)
       loop_->Run();
   }
@@ -126,8 +127,7 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
              const CompletionCallback& cb) {
     callback_ = cb;
     stream_.reset(new BidirectionalStream(std::move(request_info), session,
-                                          disable_auto_flush_, this,
-                                          std::move(timer_)));
+                                          true, this, std::move(timer_)));
     if (run_until_completion_)
       loop_->Run();
   }
@@ -222,7 +222,6 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   // This is to ensure that delegate callback is not invoked synchronously when
   // calling into |stream_|.
   bool not_expect_callback_;
-  bool disable_auto_flush_;
 
   CompletionCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(TestDelegateBase);
@@ -764,7 +763,6 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   std::unique_ptr<TestDelegateBase> delegate(new TestDelegateBase(
       read_buffer.get(), kReadBufferSize, base::WrapUnique(timer)));
   delegate->set_do_not_start_read(true);
-  delegate->DisableAutoFlush();
   TestCompletionCallback callback;
   delegate->Start(std::move(request_info), http_session_.get(),
                   callback.callback());

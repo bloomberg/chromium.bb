@@ -50,7 +50,9 @@ class NET_EXPORT BidirectionalStream
     // or call BidirectionalStream::SendData to send data.
     // The delegate should not call BidirectionalStream::Cancel
     // during this callback.
-    virtual void OnStreamReady() = 0;
+    // |request_headers_sent| if true, request headers have been sent. If false,
+    // SendRequestHeaders() needs to be explicitly called.
+    virtual void OnStreamReady(bool request_headers_sent) = 0;
 
     // Called when headers are received. This is called at most once for the
     // lifetime of a stream.
@@ -94,10 +96,14 @@ class NET_EXPORT BidirectionalStream
   // the request, and must be non-NULL. |session| is the http network session
   // with which this request will be made. |delegate| must be non-NULL.
   // |session| and |delegate| must outlive |this|.
+  // |send_request_headers_automatically| if true, request headers will be sent
+  // automatically when stream is negotiated. If false, request headers will be
+  // sent only when SendRequestHeaders() is invoked or with
+  // next SendData/SendvData.
   BidirectionalStream(
       std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
       HttpNetworkSession* session,
-      bool disable_auto_flush,
+      bool send_request_headers_automatically,
       Delegate* delegate);
 
   // Constructor that accepts a Timer, which can be used in tests to control
@@ -105,7 +111,7 @@ class NET_EXPORT BidirectionalStream
   BidirectionalStream(
       std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
       HttpNetworkSession* session,
-      bool disable_auto_flush,
+      bool send_request_headers_automatically,
       Delegate* delegate,
       std::unique_ptr<base::Timer> timer);
 
@@ -113,6 +119,18 @@ class NET_EXPORT BidirectionalStream
   // |this| should not be destroyed during Delegate::OnHeadersSent or
   // Delegate::OnDataSent.
   ~BidirectionalStream() override;
+
+  // Sends request headers to server.
+  // When |send_request_headers_automatically_| is
+  // false and OnStreamReady() is invoked with request_headers_sent = false,
+  // headers will be combined with next SendData/SendvData unless this
+  // method is called first, in which case headers will be sent separately
+  // without delay.
+  // (This method cannot be called when |send_request_headers_automatically_| is
+  // true nor when OnStreamReady() is invoked with request_headers_sent = true,
+  // since headers have been sent by the stream when stream is negotiated
+  // successfully.)
+  void SendRequestHeaders();
 
   // Reads at most |buf_len| bytes into |buf|. Returns the number of bytes read,
   // or ERR_IO_PENDING if the read is to be completed asynchronously, or an
@@ -161,7 +179,7 @@ class NET_EXPORT BidirectionalStream
 
  private:
   // BidirectionalStreamImpl::Delegate implementation:
-  void OnStreamReady() override;
+  void OnStreamReady(bool request_headers_sent) override;
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;
@@ -204,7 +222,11 @@ class NET_EXPORT BidirectionalStream
 
   HttpNetworkSession* session_;
 
-  bool disable_auto_flush_;
+  bool send_request_headers_automatically_;
+  // Whether request headers have been sent, as indicated in OnStreamReady()
+  // callback.
+  bool request_headers_sent_;
+
   Delegate* const delegate_;
 
   // Timer used to buffer data received in short time-spans and send a single

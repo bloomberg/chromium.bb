@@ -59,32 +59,31 @@ std::unique_ptr<base::Value> NetLogCallback(const GURL* url,
 
 BidirectionalStream::Delegate::Delegate() {}
 
-void BidirectionalStream::Delegate::OnStreamReady() {}
-
 BidirectionalStream::Delegate::~Delegate() {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
-    bool disable_auto_flush,
+    bool send_request_headers_automatically,
     Delegate* delegate)
     : BidirectionalStream(std::move(request_info),
                           session,
-                          disable_auto_flush,
+                          send_request_headers_automatically,
                           delegate,
                           base::WrapUnique(new base::Timer(false, false))) {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
-    bool disable_auto_flush,
+    bool send_request_headers_automatically,
     Delegate* delegate,
     std::unique_ptr<base::Timer> timer)
     : request_info_(std::move(request_info)),
       net_log_(BoundNetLog::Make(session->net_log(),
                                  NetLog::SOURCE_BIDIRECTIONAL_STREAM)),
       session_(session),
-      disable_auto_flush_(disable_auto_flush),
+      send_request_headers_automatically_(send_request_headers_automatically),
+      request_headers_sent_(false),
       delegate_(delegate),
       timer_(std::move(timer)) {
   DCHECK(delegate_);
@@ -130,6 +129,14 @@ BidirectionalStream::~BidirectionalStream() {
   if (net_log_.IsCapturing()) {
     net_log_.EndEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE);
   }
+}
+
+void BidirectionalStream::SendRequestHeaders() {
+  DCHECK(stream_impl_);
+  DCHECK(!request_headers_sent_);
+  DCHECK(!send_request_headers_automatically_);
+
+  stream_impl_->SendRequestHeaders();
 }
 
 int BidirectionalStream::ReadData(IOBuffer* buf, int buf_len) {
@@ -203,8 +210,9 @@ int64_t BidirectionalStream::GetTotalSentBytes() const {
   return stream_impl_->GetTotalSentBytes();
 }
 
-void BidirectionalStream::OnStreamReady() {
-  delegate_->OnStreamReady();
+void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
+  request_headers_sent_ = request_headers_sent;
+  delegate_->OnStreamReady(request_headers_sent);
 }
 
 void BidirectionalStream::OnHeadersReceived(
@@ -279,7 +287,8 @@ void BidirectionalStream::OnBidirectionalStreamImplReady(
 
   stream_request_.reset();
   stream_impl_.reset(stream);
-  stream_impl_->Start(request_info_.get(), net_log_, disable_auto_flush_, this,
+  stream_impl_->Start(request_info_.get(), net_log_,
+                      send_request_headers_automatically_, this,
                       std::move(timer_));
 }
 

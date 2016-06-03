@@ -43,7 +43,9 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
     // or call BidirectionalStreamImpl::Cancel to cancel the stream.
     // The delegate should not call BidirectionalStreamImpl::Cancel
     // during this callback.
-    virtual void OnStreamReady() = 0;
+    // |request_headers_sent| if true, request headers have been sent. If false,
+    // SendRequestHeaders() needs to be explicitly called.
+    virtual void OnStreamReady(bool request_headers_sent) = 0;
 
     // Called when response headers are received.
     // This is called at most once for the lifetime of a stream.
@@ -90,11 +92,27 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
   virtual ~BidirectionalStreamImpl();
 
   // Starts the BidirectionalStreamImpl and sends request headers.
+  // |send_request_headers_automatically| if true, request headers will be sent
+  // automatically when stream is negotiated. If false, request headers will be
+  // sent only when SendRequestHeaders() is invoked or with next
+  // SendData/SendvData.
   virtual void Start(const BidirectionalStreamRequestInfo* request_info,
                      const BoundNetLog& net_log,
-                     bool disable_auto_flush,
+                     bool send_request_headers_automatically,
                      BidirectionalStreamImpl::Delegate* delegate,
                      std::unique_ptr<base::Timer> timer) = 0;
+
+  // Sends request headers to server.
+  // When |send_request_headers_automatically_| is
+  // false and OnStreamReady() is invoked with request_headers_sent = false,
+  // headers will be combined with next SendData/SendvData unless this
+  // method is called first, in which case headers will be sent separately
+  // without delay.
+  // (This method cannot be called when |send_request_headers_automatically_| is
+  // true nor when OnStreamReady() is invoked with request_headers_sent = true,
+  // since headers have been sent by the stream when stream is negotiated
+  // successfully.)
+  virtual void SendRequestHeaders() = 0;
 
   // Reads at most |buf_len| bytes into |buf|. Returns the number of bytes read,
   // ERR_IO_PENDING if the read is to be completed asynchronously, or an error
