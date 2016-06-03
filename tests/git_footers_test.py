@@ -35,8 +35,17 @@ My commit message is my best friend. It is my life. I must master it.
 
   _git_svn_id_footer_branch = 'git-svn-id: %s\n' % _git_svn_id_branch
 
-
   def testFootersBasic(self):
+    self.assertEqual(
+        git_footers.split_footers('Not-A: footer'),
+        (['Not-A: footer'], [], []))
+    self.assertEqual(
+        git_footers.split_footers('Header\n\nActual: footer'),
+        (['Header', ''], ['Actual: footer'], [('Actual', 'footer')]))
+    self.assertEqual(
+        git_footers.split_footers('\nActual: footer'),
+        ([''], ['Actual: footer'], [('Actual', 'footer')]))
+
     self.assertEqual(
         git_footers.parse_footers(self._message), {})
     self.assertEqual(
@@ -82,6 +91,9 @@ My commit message is my best friend. It is my life. I must master it.
         'desc\nBUG=not-a-valid-footer\n\nChange-Id: Ixxx'))
 
   def testAddFooterChangeId(self):
+    with self.assertRaises(AssertionError):
+      git_footers.add_footer_change_id('Already has\n\nChange-Id: Ixxx', 'Izzz')
+
     self.assertEqual(
         git_footers.add_footer_change_id('header-only', 'Ixxx'),
         'header-only\n\nChange-Id: Ixxx')
@@ -106,6 +118,33 @@ My commit message is my best friend. It is my life. I must master it.
     self.assertEqual(
         git_footers.add_footer_change_id('header: like footer', 'Ixxx'),
         'header: like footer\n\nChange-Id: Ixxx')
+
+  def testAddFooter(self):
+    self.assertEqual(
+        git_footers.add_footer('', 'Key', 'Value'),
+        '\nKey: Value')
+    self.assertEqual(
+        git_footers.add_footer('Header with empty line.\n\n', 'Key', 'Value'),
+        'Header with empty line.\n\nKey: Value')
+
+    self.assertEqual(
+        git_footers.add_footer('Top\n\nSome: footer', 'Key', 'value'),
+        'Top\n\nSome: footer\nKey: value')
+
+    self.assertEqual(
+        git_footers.add_footer('Top\n\nSome: footer', 'Key', 'value',
+                               after_keys=['Any']),
+        'Top\n\nKey: value\nSome: footer')
+
+    self.assertEqual(
+        git_footers.add_footer('Top\n\nSome: footer', 'Key', 'value',
+                               after_keys=['Some']),
+        'Top\n\nSome: footer\nKey: value')
+
+    self.assertEqual(
+         git_footers.add_footer('Top\n\nSome: footer\nOther: footer',
+                                'Key', 'value', after_keys=['Some']),
+         'Top\n\nSome: footer\nKey: value\nOther: footer')
 
   def testReadStdin(self):
     self.mock(git_footers.sys, 'stdin', StringIO.StringIO(

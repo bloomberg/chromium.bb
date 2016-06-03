@@ -23,6 +23,7 @@ def normalize_name(header):
 
 
 def parse_footer(line):
+  """Returns footer's (key, value) if footer is valid, else None."""
   match = FOOTER_PATTERN.match(line)
   if match:
     return (match.group(1), match.group(2))
@@ -32,21 +33,39 @@ def parse_footer(line):
 
 def parse_footers(message):
   """Parses a git commit message into a multimap of footers."""
+  _, _, parsed_footers = split_footers(message)
+  footer_map = defaultdict(list)
+  if parsed_footers:
+    # Read footers from bottom to top, because latter takes precedense,
+    # and we want it to be first in the multimap value.
+    for (k, v) in reversed(parsed_footers):
+      footer_map[normalize_name(k)].append(v.strip())
+  return footer_map
+
+
+def split_footers(message):
+  """Returns (non_footer_lines, footer_lines, parsed footers).
+
+  Guarantees that:
+    (non_footer_lines + footer_lines) == message.splitlines().
+    parsed_footers is parse_footer applied on each line of footer_lines.
+  """
+  message_lines = list(message.splitlines())
   footer_lines = []
-  for line in reversed(message.splitlines()):
+  for line in reversed(message_lines):
     if line == '' or line.isspace():
       break
     footer_lines.append(line)
+  else:
+    # The whole description was consisting of footers,
+    # which means those aren't footers.
+    footer_lines = []
 
+  footer_lines.reverse()
   footers = map(parse_footer, footer_lines)
-  if not all(footers):
-    return defaultdict(list)
-
-  footer_map = defaultdict(list)
-  for (k, v) in footers:
-    footer_map[normalize_name(k)].append(v.strip())
-
-  return footer_map
+  if not footer_lines or not all(footers):
+    return message_lines, [], []
+  return message_lines[:-len(footer_lines)], footer_lines, footers
 
 
 def get_footer_svn_id(branch=None):
@@ -71,38 +90,46 @@ def get_footer_change_id(message):
 def add_footer_change_id(message, change_id):
   """Returns message with Change-ID footer in it.
 
-  Assumes that Change-Id is not yet in footers, which is then
-  inserted after any of these footers: Bug|Issue|Test|Feature.
+  Assumes that Change-Id is not yet in footers, which is then inserted at
+  earliest footer line which is after all of these footers:
+    Bug|Issue|Test|Feature.
   """
-  assert 0 == len(get_footer_change_id(message))
-  change_id_line = 'Change-Id: %s' % change_id
-  # This code does the same as parse_footers, but keeps track of line
-  # numbers so that ChangeId is inserted in the right place.
-  lines = message.splitlines()
-  footer_lines = []
-  for line in reversed(lines):
-    if line == '' or line.isspace():
-      break
-    footer_lines.append(line)
+  assert 'Change-Id' not in parse_footers(message)
+  return add_footer(message, 'Change-Id', change_id,
+                    after_keys=['Bug', 'Issue', 'Test', 'Feature'])
+
+def add_footer(message, key, value, after_keys=None):
+  """Returns a message with given footer appended.
+
+  If after_keys is None (default), appends footer last.
+  Otherwise, after_keys must be iterable of footer keys, then the new footer
+  would be inserted at the topmost position such there would be no footer lines
+  after it with key matching one of after_keys.
+  For example, given
+      message='Header.\n\nAdded: 2016\nBug: 123\nVerified-By: CQ'
+      after_keys=['Bug', 'Issue']
+  the new footer will be inserted between Bug and Verified-By existing footers.
+  """
+  assert key == normalize_name(key), 'Use normalized key'
+  new_footer = '%s: %s' % (key, value)
+
+  top_lines, footer_lines, parsed_footers = split_footers(message)
+  if not footer_lines:
+    if not top_lines or top_lines[-1] != '':
+      top_lines.append('')
+    footer_lines = [new_footer]
+  elif not after_keys:
+    footer_lines.append(new_footer)
   else:
-    # The whole description was consisting of footers,
-    # which means those aren't footers.
-    footer_lines = []
-  # footers order is from end to start of the message.
-  footers = map(parse_footer, footer_lines)
-  if not footers or not all(footers):
-    lines.append('')
-    lines.append(change_id_line)
-  else:
-    after = set(map(normalize_name, ['Bug', 'Issue', 'Test', 'Feature']))
-    for i, (key, _) in enumerate(footers):
-      if normalize_name(key) in after:
-        insert_at = len(lines) - i
+    after_keys = set(map(normalize_name, after_keys))
+    # Iterate from last to first footer till we find the footer keys above.
+    for i, (key, _) in reversed(list(enumerate(parsed_footers))):
+      if normalize_name(key) in after_keys:
+        footer_lines.insert(i + 1, new_footer)
         break
     else:
-      insert_at = len(lines) - len(footers)
-    lines.insert(insert_at, change_id_line)
-  return '\n'.join(lines)
+      footer_lines.insert(0, new_footer)
+  return '\n'.join(top_lines + footer_lines)
 
 
 def get_unique(footers, key):
