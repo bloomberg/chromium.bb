@@ -19,17 +19,18 @@
   <template>
     <style include="settings-shared">
       :host {
-        @apply(--layout-vertical);
         @apply(--layout-fit);
         -webkit-user-select: none;
         background-color: var(--settings-background-color);
+        display: flex;
+        flex-direction: column;
       }
 
       paper-drawer-panel {
-        @apply(--layout-center);
         --paper-drawer-panel-drawer-container: {
           background: none;  /* Remove default background styling. */
         };
+        align-items: center;
         position: relative;
       }
 
@@ -88,7 +89,6 @@
       }
 
       paper-input {
-        @apply(--layout-center);
         --paper-input-container: {
           padding-top: 0;
         };
@@ -117,6 +117,8 @@
           top: 3px; /* Special positioning needed for UX design. */
         };
         --paper-input-max-width: 200px;
+
+        align-items: center;
       }
 
       /* These header elements must create stacking contexts when a section is
