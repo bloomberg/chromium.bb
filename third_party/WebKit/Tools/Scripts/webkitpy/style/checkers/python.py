@@ -40,11 +40,11 @@ class PythonChecker(object):
         self._file_path = file_path
         self._handle_style_error = handle_style_error
 
-    def check(self, lines):
-        self._check_pep8(lines)
-        self._check_pylint(lines)
+    def check(self, lines_unused=None):
+        self._check_pep8()
+        self._check_pylint()
 
-    def _check_pep8(self, lines):
+    def _check_pep8(self):
         # Initialize pep8.options, which is necessary for
         # Checker.check_all() to execute.
         pep8.process_options(arglist=[self._file_path])
@@ -65,8 +65,9 @@ class PythonChecker(object):
         pep8_checker.report_error = _pep8_handle_error
         pep8_errors = pep8_checker.check_all()
 
-    def _check_pylint(self, lines):
+    def _check_pylint(self):
         output = self._run_pylint(self._file_path)
+        print output
         errors = self._parse_pylint_output(output)
         for line_number, category, message in errors:
             self._handle_style_error(line_number, category, 5, message)
@@ -82,7 +83,6 @@ class PythonChecker(object):
                                              wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')))
         return executive.run_command([sys.executable, wkf.path_from_depot_tools_base('pylint.py'),
                                       '--output-format=parseable',
-                                      '--errors-only',
                                       '--rcfile=' + wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc'),
                                       path],
                                      env=env,

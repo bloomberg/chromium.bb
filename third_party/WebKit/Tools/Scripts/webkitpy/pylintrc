@@ -57,7 +57,8 @@ load-plugins=
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time.
-#enable=
+enable=
+  print-statement,
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifier separated by comma (,) or put this option
