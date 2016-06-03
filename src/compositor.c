@@ -4866,3 +4866,32 @@ weston_compositor_get_user_data(struct weston_compositor *compositor)
 {
 	return compositor->user_data;
 }
+
+/** Load a backend into a weston_compositor
+ *
+ * A backend must be loaded to make a weston_compositor work. A backend
+ * provides input and output capabilities, and determines the renderer to use.
+ *
+ * \param compositor A compositor that has not had a backend loaded yet.
+ * \param backend Name of the backend file.
+ * \param config_base A pointer to a backend-specific configuration
+ * structure's 'base' member.
+ *
+ * \return 0 on success, or -1 on error.
+ */
+WL_EXPORT int
+weston_compositor_load_backend(struct weston_compositor *compositor,
+			       const char *backend,
+			       struct weston_backend_config *config_base)
+{
+	int (*backend_init)(struct weston_compositor *c,
+			    int *argc, char *argv[],
+			    struct weston_config *config,
+			    struct weston_backend_config *config_base);
+
+	backend_init = weston_load_module(backend, "backend_init");
+	if (!backend_init)
+		return -1;
+
+	return backend_init(compositor, NULL, NULL, NULL, config_base);
+}

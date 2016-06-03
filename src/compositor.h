@@ -1466,6 +1466,10 @@ void
 weston_compositor_destroy(struct weston_compositor *ec);
 struct weston_compositor *
 weston_compositor_create(struct wl_display *display, void *user_data);
+int
+weston_compositor_load_backend(struct weston_compositor *compositor,
+			       const char *backend,
+			       struct weston_backend_config *config_base);
 void
 weston_compositor_exit(struct weston_compositor *ec);
 void *

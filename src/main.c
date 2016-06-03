@@ -909,36 +909,6 @@ handle_exit(struct weston_compositor *c)
 	wl_display_terminate(c->wl_display);
 }
 
-/** Main module call-point for backends.
- *
- * All backends should use this routine to access their init routine.
- * Backends may subclass weston_backend_config to add their own
- * configuration data, setting the major/minor version in config_base
- * accordingly.
- *
- * The config_base object should be treated as temporary, and any data
- * copied out of it by backend_init before returning.  The load_backend_new
- * callers may then free the config_base object.
- *
- * NOTE: This is a temporary function intended to eventually be replaced
- * by weston_compositor_load_backend().
- */
-static int
-load_backend_new(struct weston_compositor *compositor, const char *backend,
-		 struct weston_backend_config *config_base)
-{
-	int (*backend_init)(struct weston_compositor *c,
-			    int *argc, char *argv[],
-			    struct weston_config *config,
-			    struct weston_backend_config *config_base);
-
-	backend_init = weston_load_module(backend, "backend_init");
-	if (!backend_init)
-		return -1;
-
-	return backend_init(compositor, NULL, NULL, NULL, config_base);
-}
-
 static enum weston_drm_backend_output_mode
 drm_configure_output(struct weston_compositor *c,
 		     bool use_current_mode,
@@ -1033,7 +1003,7 @@ load_drm_backend(struct weston_compositor *c, const char *backend,
 	config.configure_output = drm_configure_output;
 	config.configure_device = configure_input_device;
 
-	ret = load_backend_new(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, backend, &config.base);
 
 	free(config.gbm_format);
 	free(config.seat_id);
@@ -1072,7 +1042,7 @@ load_headless_backend(struct weston_compositor *c, char const * backend,
 	config.base.struct_size = sizeof(struct weston_headless_backend_config);
 
 	/* load the actual wayland backend and configure it */
-	ret = load_backend_new(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, backend, &config.base);
 
 	return ret;
 }
@@ -1117,7 +1087,7 @@ load_rdp_backend(struct weston_compositor *c, char const * backend,
 
 	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
 
-	ret = load_backend_new(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, backend, &config.base);
 
 	free(config.bind_address);
 	free(config.rdp_key);
@@ -1157,7 +1127,7 @@ load_fbdev_backend(struct weston_compositor *c, char const * backend,
 	config.configure_device = configure_input_device;
 
 	/* load the actual wayland backend and configure it */
-	ret = load_backend_new(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, backend, &config.base);
 
 	free(config.device);
 
@@ -1293,7 +1263,7 @@ load_x11_backend(struct weston_compositor *c, char const * backend,
 	config.base.struct_size = sizeof(struct weston_x11_backend_config);
 
 	/* load the actual backend and configure it */
-	ret = load_backend_new(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, backend, &config.base);
 
 out:
 	for (j = 0; j < config.num_outputs; ++j)
@@ -1513,7 +1483,7 @@ load_wayland_backend(struct weston_compositor *c, char const * backend,
 	}
 
 	/* load the actual wayland backend and configure it */
-	ret = load_backend_new(c, backend, &config.base);
+	ret = weston_compositor_load_backend(c, backend, &config.base);
 	weston_wayland_backend_config_release(&config);
 	return ret;
 }
