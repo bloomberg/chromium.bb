@@ -196,13 +196,6 @@ class QuicHeadersStream::SpdyFramerVisitor
 
   void OnContinuation(SpdyStreamId stream_id, bool end) override {}
 
-  void OnPriority(SpdyStreamId stream_id,
-                  SpdyStreamId parent_id,
-                  int weight,
-                  bool exclusive) override {
-    CloseConnection("SPDY PRIORITY frame received.");
-  }
-
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     CloseConnection("Unknown frame type received.");
     return false;

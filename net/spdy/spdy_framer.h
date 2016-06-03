@@ -262,14 +262,9 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
       const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {}
 
   // Called when a PRIORITY frame is received.
-  // |stream_id| The stream to update the priority of.
-  // |parent_stream_id| The parent stream of |stream_id|.
-  // |weight| Stream weight, in the range [1, 256].
-  // |exclusive| Whether |stream_id| should be an only child of
-  //     |parent_stream_id|.
   virtual void OnPriority(SpdyStreamId stream_id,
                           SpdyStreamId parent_stream_id,
-                          int weight,
+                          uint8_t weight,
                           bool exclusive) {}
 
   // Called when a frame type we don't recognize is received.
@@ -561,6 +556,13 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyPriority GetLowestPriority() const { return kV3LowestPriority; }
 
   SpdyPriority GetHighestPriority() const { return kV3HighestPriority; }
+
+  // Interpolates SpdyPriority values into SPDY4/HTTP2 priority weights, and
+  // vice versa. Note that these methods accept/return weight values in their
+  // on-the-wire form, i.e. in range [0, 255], rather than their effective
+  // values in range [1, 256].
+  static uint8_t MapPriorityToWeight(SpdyPriority priority);
+  static SpdyPriority MapWeightToPriority(uint8_t weight);
 
   // Deliver the given control frame's compressed headers block to the visitor
   // in decompressed form, in chunks. Returns true if the visitor has

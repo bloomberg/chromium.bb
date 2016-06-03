@@ -1126,7 +1126,7 @@ class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
         exclusive_(false) {}
   SpdyPriorityIR(SpdyStreamId stream_id,
                  SpdyStreamId parent_stream_id,
-                 int weight,
+                 uint8_t weight,
                  bool exclusive)
       : SpdyFrameWithStreamIdIR(stream_id),
         parent_stream_id_(parent_stream_id),
@@ -1134,7 +1134,7 @@ class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
         exclusive_(exclusive) {}
   SpdyStreamId parent_stream_id() const { return parent_stream_id_; }
   void set_parent_stream_id(SpdyStreamId id) { parent_stream_id_ = id; }
-  int weight() const { return weight_; }
+  uint8_t weight() const { return weight_; }
   void set_weight(uint8_t weight) { weight_ = weight; }
   bool exclusive() const { return exclusive_; }
   void set_exclusive(bool exclusive) { exclusive_ = exclusive; }
@@ -1143,7 +1143,7 @@ class NET_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
 
  private:
   SpdyStreamId parent_stream_id_;
-  int weight_;
+  uint8_t weight_;
   bool exclusive_;
   DISALLOW_COPY_AND_ASSIGN(SpdyPriorityIR);
 };
