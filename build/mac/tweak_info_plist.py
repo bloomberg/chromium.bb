@@ -31,6 +31,12 @@ import tempfile
 TOP = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 
+def _ConvertPlist(source_plist, output_plist, fmt):
+  """Convert |source_plist| to |fmt| and save as |output_plist|."""
+  return subprocess.call(
+      ['plutil', '-convert', fmt, '-o', output_plist, source_plist])
+
+
 def _GetOutput(args):
   """Runs a subprocess and waits for termination. Returns (stdout, returncode)
   of the process. stderr is attached to the parent."""
@@ -61,7 +67,26 @@ def _RemoveKeys(plist, *keys):
       pass
 
 
-def _AddVersionKeys(plist, version=None):
+def _ApplyVersionOverrides(version, keys, overrides, separator='.'):
+  """Applies version overrides.
+
+  Given a |version| string as "a.b.c.d" (assuming a default separator) with
+  version components named by |keys| then overrides any value that is present
+  in |overrides|.
+
+  >>> _ApplyVersionOverrides('a.b', ['major', 'minor'], {'minor': 'd'})
+  'a.d'
+  """
+  if not overrides:
+    return version
+  version_values = version.split(separator)
+  for i, (key, value) in enumerate(zip(keys, version_values)):
+    if key in overrides:
+      version_values[i] = overrides[key]
+  return separator.join(version_values)
+
+
+def _AddVersionKeys(plist, version=None, overrides=None):
   """Adds the product version number into the plist. Returns True on success and
   False on error. The error will be printed to stderr."""
   if version:
@@ -80,11 +105,13 @@ def _AddVersionKeys(plist, version=None):
 
     (stdout, retval1) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
                                     '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'])
-    full_version = stdout.rstrip()
+    full_version = _ApplyVersionOverrides(
+        stdout.rstrip(), ('MAJOR', 'MINOR', 'BUILD', 'PATCH'), overrides)
 
     (stdout, retval2) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
                                     '@BUILD@.@PATCH@'])
-    bundle_version = stdout.rstrip()
+    bundle_version = _ApplyVersionOverrides(
+        stdout.rstrip(), ('BUILD', 'PATCH'), overrides)
 
     # If either of the two version commands finished with non-zero returncode,
     # report the error up.
@@ -131,11 +158,11 @@ def _DoSCMKeys(plist, add_keys):
   return True
 
 
-def _AddBreakpadKeys(plist, branding):
+def _AddBreakpadKeys(plist, branding, platform):
   """Adds the Breakpad keys. This must be called AFTER _AddVersionKeys() and
   also requires the |branding| argument."""
   plist['BreakpadReportInterval'] = '3600'  # Deliberately a string.
-  plist['BreakpadProduct'] = '%s_Mac' % branding
+  plist['BreakpadProduct'] = '%s_%s' % (branding, platform)
   plist['BreakpadProductDisplay'] = branding
   plist['BreakpadVersion'] = plist['CFBundleShortVersionString']
   # These are both deliberately strings and not boolean.
@@ -220,6 +247,15 @@ def Main(argv):
   parser.add_option('--bundle_id', dest='bundle_identifier',
       action='store', type='string', default=None,
       help='The bundle id of the binary')
+  parser.add_option('--platform', choices=('ios', 'mac'), default='mac',
+      help='The target platform of the bundle')
+  parser.add_option('--version-overrides', action='append',
+      help='Key-value pair to override specific component of version '
+           'like key=value (can be passed multiple time to configure '
+           'more than one override)')
+  parser.add_option('--format', choices=('binary1', 'xml1', 'json'),
+      default='xml1', help='Format to use when writing property list '
+          '(default: %(default)s)')
   parser.add_option('--version', dest='version', action='store', type='string',
       default=None, help='The version string [major.minor.build.patch]')
   (options, args) = parser.parse_args(argv)
@@ -232,11 +268,29 @@ def Main(argv):
     print >>sys.stderr, 'No --plist specified.'
     return 1
 
-  # Read the plist into its parsed format.
-  plist = plistlib.readPlist(options.plist_path)
+  # Read the plist into its parsed format. Convert the file to 'xml1' as
+  # plistlib only supports that format in Python 2.7.
+  with tempfile.NamedTemporaryFile() as temp_info_plist:
+    retcode = _ConvertPlist(options.plist_path, temp_info_plist.name, 'xml1')
+    if retcode != 0:
+      return retcode
+    plist = plistlib.readPlist(temp_info_plist.name)
+
+  # Convert overrides.
+  overrides = {}
+  if options.version_overrides:
+    for pair in options.version_overrides:
+      if not '=' in pair:
+        print >>sys.stderr, 'Invalid value for --version-overrides:', pair
+        return 1
+      key, value = pair.split('=', 1)
+      overrides[key] = value
+      if key not in ('MAJOR', 'MINOR', 'BUILD', 'PATCH'):
+        print >>sys.stderr, 'Unsupported key for --version-overrides:', key
+        return 1
 
   # Insert the product version.
-  if not _AddVersionKeys(plist, version=options.version):
+  if not _AddVersionKeys(plist, version=options.version, overrides=overrides):
     return 2
 
   # Add Breakpad if configured to do so.
@@ -244,7 +298,10 @@ def Main(argv):
     if options.branding is None:
       print >>sys.stderr, 'Use of Breakpad requires branding.'
       return 1
-    _AddBreakpadKeys(plist, options.branding)
+    # Map gyp "OS" / gn "target_os" passed via the --platform parameter to
+    # the platform as known by breakpad.
+    platform = {'mac': 'Mac', 'ios': 'iOS'}[options.platform]
+    _AddBreakpadKeys(plist, options.branding, platform)
     if options.breakpad_uploads:
       plist['BreakpadURL'] = 'https://clients2.google.com/cr/report'
     else:
@@ -271,20 +328,17 @@ def Main(argv):
   if not _DoSCMKeys(plist, options.add_scm_info):
     return 3
 
-  # Now that all keys have been mutated, rewrite the file.
-  temp_info_plist = tempfile.NamedTemporaryFile()
-  plistlib.writePlist(plist, temp_info_plist.name)
-
-  # Info.plist will work perfectly well in any plist format, but traditionally
-  # applications use xml1 for this, so convert it to ensure that it's valid.
   output_path = options.plist_path
   if options.plist_output is not None:
     output_path = options.plist_output
-  proc = subprocess.Popen(['plutil', '-convert', 'xml1',
-                           '-o', output_path,
-                           temp_info_plist.name])
-  proc.wait()
-  return proc.returncode
+
+  # Now that all keys have been mutated, rewrite the file.
+  with tempfile.NamedTemporaryFile() as temp_info_plist:
+    plistlib.writePlist(plist, temp_info_plist.name)
+
+    # Convert Info.plist to the format requested by the --format flag. Any
+    # format would work on Mac but iOS requires specific format.
+    return _ConvertPlist(temp_info_plist.name, output_path, options.format)
 
 
 if __name__ == '__main__':
