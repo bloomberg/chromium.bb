@@ -46,7 +46,15 @@ int EventFlagsFromModifiers(NSUInteger modifiers) {
 
 int EventFlagsFromNSEventWithModifiers(NSEvent* event, NSUInteger modifiers) {
   int flags = EventFlagsFromModifiers(modifiers);
-  flags |= IsLeftButtonEvent(event) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
+  if (IsLeftButtonEvent(event)) {
+    // For Mac, convert Ctrl+LeftClick to a RightClick, and remove the Control
+    // key modifier.
+    if (modifiers & NSControlKeyMask)
+      flags = (flags & ~ui::EF_CONTROL_DOWN) | ui::EF_RIGHT_MOUSE_BUTTON;
+    else
+      flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  }
+
   flags |= IsRightButtonEvent(event) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
   flags |= IsMiddleButtonEvent(event) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
   return flags;

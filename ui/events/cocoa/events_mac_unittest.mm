@@ -153,10 +153,16 @@ TEST_F(EventsMacTest, EventFlagsFromNative) {
                                                               NSShiftKeyMask);
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_SHIFT_DOWN, EventFlagsFromNative(shift));
 
-  // Ctrl + Left
+  // Ctrl + Left. Note we map this to a right click on Mac and remove Control.
   NSEvent* ctrl = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp,
                                                              NSControlKeyMask);
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_CONTROL_DOWN, EventFlagsFromNative(ctrl));
+  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON, EventFlagsFromNative(ctrl));
+
+  // Ctrl + Right. Remains a right click.
+  NSEvent* ctrl_right = cocoa_test_event_utils::MouseEventWithType(
+      NSRightMouseUp, NSControlKeyMask);
+  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON | EF_CONTROL_DOWN,
+            EventFlagsFromNative(ctrl_right));
 
   // Alt + Left
   NSEvent* alt = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp,
@@ -168,10 +174,10 @@ TEST_F(EventsMacTest, EventFlagsFromNative) {
                                                             NSCommandKeyMask);
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_COMMAND_DOWN, EventFlagsFromNative(cmd));
 
-  // Shift + Ctrl + Left
+  // Shift + Ctrl + Left. Also mapped to a right-click. Control removed.
   NSEvent* shiftctrl = cocoa_test_event_utils::MouseEventWithType(
       NSLeftMouseUp, NSShiftKeyMask | NSControlKeyMask);
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_SHIFT_DOWN | EF_CONTROL_DOWN,
+  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON | EF_SHIFT_DOWN,
             EventFlagsFromNative(shiftctrl));
 
   // Cmd + Alt + Right
