@@ -24,7 +24,7 @@ namespace blink {
 
 UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
     int detail, PlatformEvent::Modifiers modifiers, double platformTimeStamp, InputDeviceCapabilities* sourceCapabilities)
-    : UIEvent(type, canBubble, cancelable, platformTimeStamp, view, detail, sourceCapabilities)
+    : UIEvent(type, canBubble, cancelable, ComposedMode::Composed, platformTimeStamp, view, detail, sourceCapabilities)
     , m_modifiers(modifiers)
 {
 }

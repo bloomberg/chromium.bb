@@ -33,7 +33,7 @@ CompositionEvent::CompositionEvent()
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, AbstractView* view, const String& data)
-    : UIEvent(type, true, true, view, 0, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
+    : UIEvent(type, true, true, ComposedMode::Composed, view, 0, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_data(data)
 {
 }

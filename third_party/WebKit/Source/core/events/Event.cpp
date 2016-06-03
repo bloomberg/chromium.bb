@@ -34,44 +34,27 @@
 
 namespace blink {
 
-static bool isScoped(const AtomicString& eventType)
-{
-    // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
-    // Changing this breaks existing sites.
-    // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
-    return (eventType == EventTypeNames::abort
-        || eventType == EventTypeNames::change
-        || eventType == EventTypeNames::error
-        || eventType == EventTypeNames::load
-        || eventType == EventTypeNames::reset
-        || eventType == EventTypeNames::resize
-        || eventType == EventTypeNames::scroll
-        || eventType == EventTypeNames::select
-        || eventType == EventTypeNames::selectstart
-        || eventType == EventTypeNames::slotchange);
-}
-
 Event::Event()
     : Event("", false, false)
 {
     m_wasInitialized = false;
 }
 
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
-    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), monotonicallyIncreasingTime())
-{
-}
-
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp)
-    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), platformTimeStamp)
+    : Event(eventType, canBubbleArg, cancelableArg, ComposedMode::Scoped, platformTimeStamp)
 {
 }
 
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool composed, double platformTimeStamp)
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, ComposedMode composedMode)
+    : Event(eventType, canBubbleArg, cancelableArg, composedMode, monotonicallyIncreasingTime())
+{
+}
+
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, ComposedMode composedMode, double platformTimeStamp)
     : m_type(eventType)
     , m_canBubble(canBubbleArg)
     , m_cancelable(cancelableArg)
-    , m_composed(composed)
+    , m_composed(composedMode == ComposedMode::Composed)
     , m_propagationStopped(false)
     , m_immediatePropagationStopped(false)
     , m_defaultPrevented(false)
@@ -88,7 +71,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
 }
 
 Event::Event(const AtomicString& eventType, const EventInit& initializer)
-    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.composed(), monotonicallyIncreasingTime())
+    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.composed() ? ComposedMode::Composed : ComposedMode::Scoped, monotonicallyIncreasingTime())
 {
 }
 
@@ -98,7 +81,20 @@ Event::~Event()
 
 bool Event::isScopedInV0() const
 {
-    return isTrusted() && isScoped(m_type);
+    // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
+    // Changing this breaks existing sites.
+    // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
+    return isTrusted()
+        && (m_type == EventTypeNames::abort
+            || m_type == EventTypeNames::change
+            || m_type == EventTypeNames::error
+            || m_type == EventTypeNames::load
+            || m_type == EventTypeNames::reset
+            || m_type == EventTypeNames::resize
+            || m_type == EventTypeNames::scroll
+            || m_type == EventTypeNames::select
+            || m_type == EventTypeNames::selectstart
+            || m_type == EventTypeNames::slotchange);
 }
 
 void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg)

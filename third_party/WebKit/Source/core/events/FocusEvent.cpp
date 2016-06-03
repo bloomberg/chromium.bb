@@ -45,7 +45,7 @@ FocusEvent::FocusEvent()
 }
 
 FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, int detail, EventTarget* relatedTarget, InputDeviceCapabilities* sourceCapabilities)
-    : UIEvent(type, canBubble, cancelable, view, detail, sourceCapabilities)
+    : UIEvent(type, canBubble, cancelable, ComposedMode::Composed, view, detail, sourceCapabilities)
     , m_relatedTarget(relatedTarget)
 {
 }

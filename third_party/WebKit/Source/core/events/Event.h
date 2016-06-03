@@ -74,6 +74,11 @@ public:
         RailsModeVertical   = 2
     };
 
+    enum class ComposedMode {
+        Composed,
+        Scoped,
+    };
+
     static Event* create()
     {
         return new Event;
@@ -215,8 +220,9 @@ public:
 
 protected:
     Event();
+    Event(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode, double platformTimeStamp);
     Event(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp);
-    Event(const AtomicString& type, bool canBubble, bool cancelable);
+    Event(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode = ComposedMode::Scoped);
     Event(const AtomicString& type, const EventInit&);
 
     virtual void receivedTarget();
@@ -224,7 +230,6 @@ protected:
     void setCanBubble(bool bubble) { m_canBubble = bubble; }
 
 private:
-    Event(const AtomicString& type, bool canBubble, bool cancelable, bool composed, double platformTimeStamp);
 
     enum EventPathMode {
         EmptyAfterDispatch,

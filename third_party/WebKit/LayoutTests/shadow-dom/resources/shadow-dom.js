@@ -128,6 +128,36 @@ function dispatchEventWithLog(nodes, target, event) {
   return log;
 }
 
+function dispatchUAEventWithLog(nodes, target, eventType, callback) {
+
+  function labelFor(e) {
+    return e.id || e.tagName;
+  }
+
+  let log = [];
+  let attachedNodes = [];
+  for (let label in nodes) {
+    let startingNode = nodes[label];
+    for (let node = startingNode; node; node = node.parentNode) {
+      if (attachedNodes.indexOf(node) >= 0)
+        continue;
+      let id = node.id;
+      if (!id)
+        continue;
+      attachedNodes.push(node);
+      node.addEventListener(eventType, (e) => {
+        log.push([id,
+                  event.relatedTarget ? labelFor(event.relatedTarget) : null,
+                  event.composedPath().map((n) => {
+                    return labelFor(n);
+                  })]);
+      });
+    }
+  }
+  callback(target);
+  return log;
+}
+
 // This function assumes that testharness.js is available.
 function assert_event_path_equals(actual, expected) {
   assert_equals(actual.length, expected.length);

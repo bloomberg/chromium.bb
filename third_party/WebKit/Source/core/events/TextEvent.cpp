@@ -63,7 +63,7 @@ TextEvent::TextEvent()
 }
 
 TextEvent::TextEvent(AbstractView* view, const String& data, TextEventInputType inputType)
-    : UIEvent(EventTypeNames::textInput, true, true, view, 0)
+    : UIEvent(EventTypeNames::textInput, true, true, ComposedMode::Composed, view, 0)
     , m_inputType(inputType)
     , m_data(data)
     , m_pastingFragment(nullptr)
@@ -74,7 +74,7 @@ TextEvent::TextEvent(AbstractView* view, const String& data, TextEventInputType 
 
 TextEvent::TextEvent(AbstractView* view, const String& data, DocumentFragment* pastingFragment,
                      bool shouldSmartReplace, bool shouldMatchStyle)
-    : UIEvent(EventTypeNames::textInput, true, true, view, 0)
+    : UIEvent(EventTypeNames::textInput, true, true, ComposedMode::Composed, view, 0)
     , m_inputType(TextEventInputPaste)
     , m_data(data)
     , m_pastingFragment(pastingFragment)

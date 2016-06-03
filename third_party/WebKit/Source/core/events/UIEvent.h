@@ -45,7 +45,7 @@ public:
     }
     static UIEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, int detail)
     {
-        return new UIEvent(type, canBubble, cancelable, view, detail);
+        return new UIEvent(type, canBubble, cancelable, ComposedMode::Scoped, view, detail);
     }
     static UIEvent* create(const AtomicString& type, const UIEventInit& initializer)
     {
@@ -70,8 +70,8 @@ public:
 protected:
     UIEvent();
     // TODO(crbug.com/563542): Remove of this ctor in favor of making platformTimeStamp (and perhaps sourceCapabilities) required in all constructions sites
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode, double platformTimeStamp, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities);
     UIEvent(const AtomicString&, const UIEventInit&);
 
 private:
