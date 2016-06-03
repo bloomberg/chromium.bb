@@ -31,7 +31,6 @@
 #include "wtf/WTFExport.h"
 #include "wtf/text/Unicode.h"
 #include <limits.h>
-#include <string.h>
 
 #if OS(MACOSX)
 typedef const struct __CFString * CFStringRef;
@@ -526,14 +525,8 @@ inline bool equalIgnoringASCIICase(const StringImpl* a, const char* b) { return 
 
 WTF_EXPORT int codePointCompareIgnoringASCIICase(const StringImpl*, const LChar*);
 
-inline size_t find(const LChar* characters, unsigned length, LChar matchCharacter, unsigned index = 0)
-{
-    const LChar* found = static_cast<const LChar*>(
-        memchr(characters + index, matchCharacter, length - index));
-    return found ? found - characters : kNotFound;
-}
-
-inline size_t find(const UChar* characters, unsigned length, UChar matchCharacter, unsigned index = 0)
+template<typename CharacterType>
+inline size_t find(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = 0)
 {
     while (index < length) {
         if (characters[index] == matchCharacter)
@@ -552,12 +545,6 @@ inline size_t find(const LChar* characters, unsigned length, UChar matchCharacte
 {
     if (matchCharacter & ~0xFF)
         return kNotFound;
-    return find(characters, length, static_cast<LChar>(matchCharacter), index);
-}
-
-template <typename CharacterType>
-inline size_t find(const CharacterType* characters, unsigned length, char matchCharacter, unsigned index = 0)
-{
     return find(characters, length, static_cast<LChar>(matchCharacter), index);
 }
 
