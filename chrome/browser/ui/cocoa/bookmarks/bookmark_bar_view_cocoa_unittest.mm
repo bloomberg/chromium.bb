@@ -112,7 +112,7 @@ const NSPoint kPoint = {10, 10};
 
 // NSPasteboard mocking functions.
 
-- (BOOL)containsURLData {
+- (BOOL)containsURLDataConvertingTextToURL:(BOOL)convertTextToURL {
   NSArray* urlTypes = [URLDropTargetHandler handledDragTypes];
   if (dragDataType_)
     return [urlTypes containsObject:dragDataType_];
@@ -143,8 +143,9 @@ const NSPoint kPoint = {10, 10};
 }
 
 - (void)getURLs:(NSArray**)outUrls
-    andTitles:(NSArray**)outTitles
-    convertingFilenames:(BOOL)convertFilenames {
+              andTitles:(NSArray**)outTitles
+    convertingFilenames:(BOOL)convertFilenames
+    convertingTextToURL:(BOOL)convertTextToURL {
 }
 
 - (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info {

@@ -661,12 +661,15 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   NSFileManager* fileManager = [NSFileManager defaultManager];
 
-  if (![pboard containsURLData])
+  if (![pboard containsURLDataConvertingTextToURL:YES])
     return NULL;
 
   NSArray *urls = NULL;
   NSArray* titles = NULL;
-  [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
+  [pboard getURLs:&urls
+                andTitles:&titles
+      convertingFilenames:YES
+      convertingTextToURL:YES];
 
   NSString* urlStr = [urls objectAtIndex:0];
   NSString* nameStr = [titles objectAtIndex:0];

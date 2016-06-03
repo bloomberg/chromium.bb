@@ -80,7 +80,7 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
                                         kCorePasteboardFlavorType_url,
                                         kCorePasteboardFlavorType_urln,
                                         nil]];
-	return [self declareTypes:allTypes owner:newOwner];
+       return [self declareTypes:allTypes owner:newOwner];
 }
 
 //
@@ -173,8 +173,9 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
 // is YES, then the function will attempt to convert filenames in the drag
 // to file URLs.
 - (void) getURLs:(NSArray**)outUrls
-    andTitles:(NSArray**)outTitles
+              andTitles:(NSArray**)outTitles
     convertingFilenames:(BOOL)convertFilenames
+    convertingTextToURL:(BOOL)convertTextToURL
 {
   NSArray* types = [self types];
   NSURL* urlFromNSURL = nil;  // Used below in getting an URL from the NSURLPboardType.
@@ -231,7 +232,7 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
     if (!title && [types containsObject:NSStringPboardType])
       title = [self stringForType:NSStringPboardType];
     *outTitles = [NSArray arrayWithObject:(title ? title : @"")];
-  } else if ([types containsObject:NSStringPboardType]) {
+  } else if (convertTextToURL && [types containsObject:NSStringPboardType]) {
     NSString* potentialURLString = [self cleanedStringWithPasteboardString:[self stringForType:NSStringPboardType]];
     if ([potentialURLString isValidURI]) {
       *outUrls = [NSArray arrayWithObject:potentialURLString];
@@ -261,15 +262,15 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
 // NB: Does not consider our internal bookmark list format, because callers
 // usually need to deal with this separately because it can include folders etc.
 //
-- (BOOL) containsURLData
+- (BOOL) containsURLDataConvertingTextToURL:(BOOL)convertTextToURL
 {
   NSArray* types = [self types];
-  if (    [types containsObject:kWebURLsWithTitlesPboardType]
-       || [types containsObject:NSURLPboardType]
-       || [types containsObject:NSFilenamesPboardType] )
+  if ([types containsObject:kWebURLsWithTitlesPboardType] ||
+      [types containsObject:NSURLPboardType] ||
+      [types containsObject:NSFilenamesPboardType])
     return YES;
   
-  if ([types containsObject:NSStringPboardType]) {
+  if (convertTextToURL && [types containsObject:NSStringPboardType]) {
     // Trim whitespace off the ends and newlines out of the middle so we don't reject otherwise-valid URLs;
     // we'll do another cleaning when we set the URLs and titles later, so this is safe.
     NSString* potentialURLString = [self cleanedStringWithPasteboardString:[self stringForType:NSStringPboardType]];

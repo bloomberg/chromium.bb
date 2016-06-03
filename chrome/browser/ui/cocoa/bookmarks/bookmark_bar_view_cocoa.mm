@@ -144,7 +144,7 @@ using bookmarks::BookmarkNode;
           dataForType:ui::ClipboardUtil::UTIForPasteboardType(
                           kBookmarkButtonDragType)] ||
       bookmarks::PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
-      [[info draggingPasteboard] containsURLData]) {
+      [[info draggingPasteboard] containsURLDataConvertingTextToURL:YES]) {
     // We only show the drop indicator if we're not in a position to
     // perform a hover-open since it doesn't make sense to do both.
     BOOL showIt = [controller_ shouldShowIndicatorShownForPoint:
@@ -212,11 +212,14 @@ using bookmarks::BookmarkNode;
 // performDragOperation: for URLs.
 - (BOOL)performDragOperationForURL:(id<NSDraggingInfo>)info {
   NSPasteboard* pboard = [info draggingPasteboard];
-  DCHECK([pboard containsURLData]);
+  DCHECK([pboard containsURLDataConvertingTextToURL:YES]);
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
+  [pboard getURLs:&urls
+                andTitles:&titles
+      convertingFilenames:YES
+      convertingTextToURL:YES];
 
   return [controller_ addURLs:urls
                    withTitles:titles
@@ -267,7 +270,7 @@ using bookmarks::BookmarkNode;
       return YES;
     // Fall through....
   }
-  if ([pboard containsURLData]) {
+  if ([pboard containsURLDataConvertingTextToURL:YES]) {
     if ([self performDragOperationForURL:info])
       return YES;
   }

@@ -54,9 +54,10 @@ MOZILLA_EXPORT extern NSString* const kWebURLsWithTitlesPboardType;
 
 - (void) setURLs:(NSArray*)inUrls withTitles:(NSArray*)inTitles;
 - (void) getURLs:(NSArray**)outUrls
-    andTitles:(NSArray**)outTitles
-    convertingFilenames:(BOOL)convertFilenames;
-- (BOOL) containsURLData;
+              andTitles:(NSArray**)outTitles
+    convertingFilenames:(BOOL)convertFilenames
+    convertingTextToURL:(BOOL)convertTextToURL;
+- (BOOL) containsURLDataConvertingTextToURL:(BOOL)convertTextToURL;
 
 @end
 

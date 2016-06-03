@@ -91,10 +91,12 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
       [[[pasteboard stub] andReturn:[NSData data]] dataForType:dataType];
     }
     [[[pasteboard stub] andReturn:nil] dataForType:OCMOCK_ANY];
-    [[[pasteboard stub] andReturnBool:YES] containsURLData];
+    [[[pasteboard stub] andReturnBool:YES]
+        containsURLDataConvertingTextToURL:YES];
     [[pasteboard stub] getURLs:[OCMArg setTo:nil]
                      andTitles:[OCMArg setTo:nil]
-           convertingFilenames:YES];
+           convertingFilenames:YES
+           convertingTextToURL:YES];
     return pasteboard;
   }
 

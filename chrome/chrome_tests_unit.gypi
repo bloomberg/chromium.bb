@@ -1320,6 +1320,7 @@
       'browser/ui/cocoa/toolbar/toolbar_controller_unittest.mm',
       'browser/ui/cocoa/toolbar/toolbar_view_unittest.mm',
       'browser/ui/cocoa/translate/translate_bubble_controller_unittest.mm',
+      'browser/ui/cocoa/url_drop_target_unittest.mm',
       'browser/ui/cocoa/validation_message_bubble_controller_unittest.mm',
       'browser/ui/cocoa/vertical_gradient_view_unittest.mm',
       'browser/ui/cocoa/view_resizer_pong.h',

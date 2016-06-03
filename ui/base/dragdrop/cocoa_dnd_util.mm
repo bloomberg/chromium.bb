@@ -22,15 +22,17 @@ BOOL PopulateURLAndTitleFromPasteboard(GURL* url,
   CHECK(url);
 
   // Bail out early if there's no URL data.
-  if (![pboard containsURLData])
+  if (![pboard containsURLDataConvertingTextToURL:YES])
     return NO;
 
   // -getURLs:andTitles:convertingFilenames: will already validate URIs so we
   // don't need to again. The arrays returned are both of NSStrings.
   NSArray* url_array = nil;
   NSArray* title_array = nil;
-  [pboard getURLs:&url_array andTitles:&title_array
-      convertingFilenames:convert_filenames];
+  [pboard getURLs:&url_array
+                andTitles:&title_array
+      convertingFilenames:convert_filenames
+      convertingTextToURL:YES];
   DCHECK_EQ([url_array count], [title_array count]);
   // It's possible that no URLs were actually provided!
   if (![url_array count])

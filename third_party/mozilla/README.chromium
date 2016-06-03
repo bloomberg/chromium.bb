@@ -23,6 +23,10 @@ Local modifications:
 - NSPasteboard+Utils.mm was modified to add an argument to
   -[NSPasteboard getURLs:andTitles:] to determine whether or not filenames in
   the drag should be converted to file URLs.
+- -[NSPasteboard:containsURLData] and [NSPasteboard getURLs:andTitles:] were
+  modified to accept an additional parameter convertingTextToURL:, which
+  indicates whether the string contents of the pasteboard should be
+  interpreted as a URL if possible.
 - -[NSPasteboard htmlFromRtf] was added to do rtf->html conversion.
 - NSWorkspace+Utils.m was modified to compile on the x86_64 architecture.
 - MOZILLA_EXPORT was added to some constants in NSPasteboard+Utils.h.

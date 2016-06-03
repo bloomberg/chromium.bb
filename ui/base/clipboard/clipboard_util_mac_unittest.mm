@@ -31,7 +31,10 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemFromUrl) {
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pasteboard->get() getURLs:&urls andTitles:&titles convertingFilenames:NO];
+  [pasteboard->get() getURLs:&urls
+                   andTitles:&titles
+         convertingFilenames:NO
+         convertingTextToURL:NO];
 
   ASSERT_EQ(1u, [urls count]);
   EXPECT_NSEQ(urlString, [urls objectAtIndex:0]);
@@ -53,7 +56,10 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithTitle) {
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pasteboard->get() getURLs:&urls andTitles:&titles convertingFilenames:NO];
+  [pasteboard->get() getURLs:&urls
+                   andTitles:&titles
+         convertingFilenames:NO
+         convertingTextToURL:NO];
 
   ASSERT_EQ(1u, [urls count]);
   EXPECT_NSEQ(urlString, [urls objectAtIndex:0]);
@@ -76,7 +82,10 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithFilePath) {
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pasteboard->get() getURLs:&urls andTitles:&titles convertingFilenames:NO];
+  [pasteboard->get() getURLs:&urls
+                   andTitles:&titles
+         convertingFilenames:NO
+         convertingTextToURL:NO];
 
   ASSERT_EQ(1u, [urls count]);
   EXPECT_NSEQ(urlString, [urls objectAtIndex:0]);

@@ -61,7 +61,7 @@ using bookmarks::BookmarkNode;
           dataForType:ui::ClipboardUtil::UTIForPasteboardType(
                           kBookmarkButtonDragType)] ||
       bookmarks::PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
-      [[info draggingPasteboard] containsURLData]) {
+      [[info draggingPasteboard] containsURLDataConvertingTextToURL:YES]) {
     // Find the position of the drop indicator.
     BOOL showIt = [[self controller]
                    shouldShowIndicatorShownForPoint:[info draggingLocation]];
@@ -131,11 +131,14 @@ using bookmarks::BookmarkNode;
 // performDragOperation: for URLs.
 - (BOOL)performDragOperationForURL:(id<NSDraggingInfo>)info {
   NSPasteboard* pboard = [info draggingPasteboard];
-  DCHECK([pboard containsURLData]);
+  DCHECK([pboard containsURLDataConvertingTextToURL:YES]);
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
+  [pboard getURLs:&urls
+                andTitles:&titles
+      convertingFilenames:YES
+      convertingTextToURL:YES];
 
   return [[self controller] addURLs:urls
                          withTitles:titles
@@ -187,7 +190,8 @@ using bookmarks::BookmarkNode;
                               kBookmarkButtonDragType)] &&
       [self performDragOperationForBookmarkButton:info])
     return YES;
-  if ([pboard containsURLData] && [self performDragOperationForURL:info])
+  if ([pboard containsURLDataConvertingTextToURL:YES] &&
+      [self performDragOperationForURL:info])
     return YES;
   return NO;
 }

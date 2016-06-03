@@ -142,7 +142,7 @@ int GetModifierFlags() {
     return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
-    if ([[info draggingPasteboard] containsURLData])
+    if ([[info draggingPasteboard] containsURLDataConvertingTextToURL:YES])
       return NSDragOperationCopy;
     return NSDragOperationNone;
   }
@@ -200,7 +200,7 @@ int GetModifierFlags() {
     return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
-    if ([[info draggingPasteboard] containsURLData])
+    if ([[info draggingPasteboard] containsURLDataConvertingTextToURL:YES])
       return NSDragOperationCopy;
     return NSDragOperationNone;
   }
@@ -231,7 +231,7 @@ int GetModifierFlags() {
   // Check if we only allow navigation and navigate to a url on the pasteboard.
   if ([self onlyAllowsNavigation]) {
     NSPasteboard* pboard = [info draggingPasteboard];
-    if ([pboard containsURLData]) {
+    if ([pboard containsURLDataConvertingTextToURL:YES]) {
       GURL url;
       ui::PopulateURLAndTitleFromPasteboard(&url, NULL, pboard, YES);
       webContents_->OpenURL(OpenURLParams(

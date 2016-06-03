@@ -96,7 +96,7 @@ void DrawTruncatedTitle(NSAttributedString* title, NSRect frame) {
 }  // namespace
 
 GURL GetFileURLFromDropData(id<NSDraggingInfo> info) {
-  if ([[info draggingPasteboard] containsURLData]) {
+  if ([[info draggingPasteboard] containsURLDataConvertingTextToURL:YES]) {
     GURL url;
     ui::PopulateURLAndTitleFromPasteboard(&url,
                                           NULL,

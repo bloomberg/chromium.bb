@@ -84,10 +84,13 @@
   NSPoint dropPoint =
       [view_ convertPoint:[sender draggingLocation] fromView:nil];
   // Tell the window controller about the dropped URL(s).
-  if ([pboard containsURLData]) {
+  if ([pboard containsURLDataConvertingTextToURL:NO]) {
     NSArray* urls = nil;
     NSArray* titles;  // discarded
-    [pboard getURLs:&urls andTitles:&titles convertingFilenames:YES];
+    [pboard getURLs:&urls
+                  andTitles:&titles
+        convertingFilenames:YES
+        convertingTextToURL:NO];
 
     if ([urls count]) {
       [[view_ urlDropController] dropURLs:urls inView:view_ at:dropPoint];
@@ -111,7 +114,8 @@
   NSPasteboard* pboard = [sender draggingPasteboard];
   NSArray *supportedTypes = [NSArray arrayWithObjects:NSStringPboardType, nil];
   NSString *bestType = [pboard availableTypeFromArray:supportedTypes];
-  if (![pboard containsURLData] && ![pboard stringForType:bestType])
+  if (![pboard containsURLDataConvertingTextToURL:YES] &&
+      ![pboard stringForType:bestType])
     return NSDragOperationNone;
 
   // Only allow the copy operation.
