@@ -198,7 +198,7 @@ class LauncherPlatformAppBrowserTest
 
   ash::ShelfID CreateAppShortcutLauncherItem(const std::string& name) {
     return controller_->CreateAppShortcutLauncherItem(
-        name, controller_->model()->item_count());
+        name, shelf_model()->item_count());
   }
 
   const ash::ShelfItem& GetLastLauncherItem() {

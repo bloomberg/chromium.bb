@@ -21,7 +21,6 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_properties.h"

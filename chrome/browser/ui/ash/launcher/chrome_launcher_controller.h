@@ -75,8 +75,8 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
 // This incarnation groups running tabs/windows in application specific lists.
-// * Browser app windows have BrowserLauncherItemController, owned by the
-//   BrowserView instance.
+// * Browser app windows have BrowserShortcutLauncherItemController, owned by
+//   the BrowserView instance.
 // * App windows have AppWindowLauncherItemController, owned by
 //   AppWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
@@ -216,8 +216,6 @@ class ChromeLauncherController
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
   // id of the app.
   void PersistPinnedState();
-
-  ash::ShelfModel* model();
 
   // Accessor to the currently loaded profile. Note that in multi profile use
   // cases this might change over time.

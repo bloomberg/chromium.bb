@@ -9,6 +9,10 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 
+namespace ash {
+class ShelfModel;
+}
+
 namespace content {
 class WebContents;
 }
@@ -23,8 +27,8 @@ class ChromeLauncherController;
 // Item controller for an browser shortcut.
 class BrowserShortcutLauncherItemController : public LauncherItemController {
  public:
-  explicit BrowserShortcutLauncherItemController(
-      ChromeLauncherController* controller);
+  BrowserShortcutLauncherItemController(ChromeLauncherController* controller,
+                                        ash::ShelfModel* shelf_model);
 
   ~BrowserShortcutLauncherItemController() override;
 
@@ -77,6 +81,8 @@ class BrowserShortcutLauncherItemController : public LauncherItemController {
 
   // Get a list of active browsers.
   BrowserList::BrowserVector GetListOfActiveBrowsers();
+
+  ash::ShelfModel* shelf_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserShortcutLauncherItemController);
 };

@@ -19,6 +19,10 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace ash {
+class ShelfModel;
+}
+
 namespace {
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
@@ -31,7 +35,8 @@ ExtensionLauncherContextMenu::ExtensionLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     ash::Shelf* shelf)
-    : LauncherContextMenu(controller, item, shelf) {
+    : LauncherContextMenu(controller, item, shelf),
+      shelf_model_(shelf->shelf_model()) {
   Init();
 }
 
@@ -80,7 +85,7 @@ void ExtensionLauncherContextMenu::Init() {
       AddItemWithStringId(MENU_NEW_INCOGNITO_WINDOW,
                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-    if (!BrowserShortcutLauncherItemController(controller())
+    if (!BrowserShortcutLauncherItemController(controller(), shelf_model_)
              .IsListOfActiveBrowserEmpty()) {
       AddItem(MENU_CLOSE,
               l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));

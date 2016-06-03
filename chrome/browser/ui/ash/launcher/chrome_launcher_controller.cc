@@ -841,10 +841,6 @@ void ChromeLauncherController::PersistPinnedState() {
                  base::Unretained(this)));
 }
 
-ash::ShelfModel* ChromeLauncherController::model() {
-  return model_;
-}
-
 Profile* ChromeLauncherController::profile() {
   return profile_;
 }
@@ -1704,7 +1700,8 @@ ChromeLauncherController::GetBrowserShortcutLauncherItemController() {
     if (item.type == ash::TYPE_BROWSER_SHORTCUT)
       return static_cast<BrowserShortcutLauncherItemController*>(i->second);
   }
-  NOTREACHED() << "There should be always a BrowserLauncherItemController.";
+  NOTREACHED()
+      << "There should be always be a BrowserShortcutLauncherItemController.";
   return nullptr;
 }
 
@@ -1717,7 +1714,7 @@ ash::ShelfID ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   size_t index = GetChromeIconIndexForCreation();
   model_->AddAt(index, browser_shortcut);
   id_to_item_controller_map_[id] =
-      new BrowserShortcutLauncherItemController(this);
+      new BrowserShortcutLauncherItemController(this, model_);
   id_to_item_controller_map_[id]->set_shelf_id(id);
   // ShelfItemDelegateManager owns BrowserShortcutLauncherItemController.
   SetShelfItemDelegate(id, id_to_item_controller_map_[id]);

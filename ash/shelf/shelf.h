@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_locking_manager.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -39,7 +40,6 @@ class FocusCycler;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
-class ShelfView;
 
 namespace wm {
 class WmShelfAura;
@@ -143,6 +143,8 @@ class ASH_EXPORT Shelf {
   void LaunchAppIndexAt(int item_index);
 
   ShelfWidget* shelf_widget() { return shelf_widget_; }
+
+  ShelfModel* shelf_model() { return shelf_view_->model(); }
 
   // TODO(msw): ShelfLayoutManager should not be accessed externally.
   ShelfLayoutManager* shelf_layout_manager() {

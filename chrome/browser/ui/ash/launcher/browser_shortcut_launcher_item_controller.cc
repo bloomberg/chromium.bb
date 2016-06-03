@@ -58,11 +58,12 @@ bool IsSettingsBrowser(Browser* browser) {
 }  // namespace
 
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
-    ChromeLauncherController* launcher_controller)
+    ChromeLauncherController* launcher_controller,
+    ash::ShelfModel* shelf_model)
     : LauncherItemController(TYPE_SHORTCUT,
                              extension_misc::kChromeAppId,
-                             launcher_controller) {
-}
+                             launcher_controller),
+      shelf_model_(shelf_model) {}
 
 BrowserShortcutLauncherItemController::
     ~BrowserShortcutLauncherItemController() {
@@ -74,12 +75,11 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   if (!ash::Shell::HasInstance())
     return;
 
-  ash::ShelfModel* model = launcher_controller()->model();
-
   // Determine the new browser's active state and change if necessary.
-  int browser_index = model->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
+  int browser_index =
+      shelf_model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
   DCHECK_GE(browser_index, 0);
-  ash::ShelfItem browser_item = model->items()[browser_index];
+  ash::ShelfItem browser_item = shelf_model_->items()[browser_index];
   ash::ShelfItemStatus browser_status = ash::STATUS_CLOSED;
 
   aura::Window* window = ash::wm::GetActiveWindow();
@@ -115,7 +115,7 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
 
   if (browser_status != browser_item.status) {
     browser_item.status = browser_status;
-    model->Set(browser_index, browser_item);
+    shelf_model_->Set(browser_index, browser_item);
   }
 }
 

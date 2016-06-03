@@ -15,6 +15,7 @@ class ChromeLauncherController;
 namespace ash {
 class Shelf;
 struct ShelfItem;
+class ShelfModel;
 }
 
 namespace extensions {
@@ -41,6 +42,7 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
   void Init();
 
   std::unique_ptr<extensions::ContextMenuMatcher> extension_items_;
+  ash::ShelfModel* shelf_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionLauncherContextMenu);
 };
