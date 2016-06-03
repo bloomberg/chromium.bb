@@ -283,16 +283,12 @@ ANDROID_BUILD_TARGETS = {
     # get rid of this.
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
-    # TODO(hidehiko): Decprecate this when we switch to public CTS bundle.
-    'CTS': ('linux-cts', r'/android-cts\.zip$'),
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
 }
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
-    # TODO(hidehiko): Decprecate this when we switch to public CTS bundle.
-    'CTS': 'googlestorage_acl_cts.txt',
     'SDK_TOOLS': 'googlestorage_acl_cts.txt',
 }
 
