@@ -821,18 +821,16 @@ class TestGitCl(TestCase):
             expected_upstream_ref + '..' + ref_to_push],), ''),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
-    # Add cc from watch list.
-    # TODO(tandrii): bring this back after http://crbug.com/604377.
-    # if ref_suffix == '':
-    #   ref_suffix = '%cc=joe@example.com'
-    # else:
-    #   ref_suffix += ',cc=joe@example.com'
 
     notify_suffix = 'notify=%s' % ('ALL' if notify else 'NONE')
     if ref_suffix:
       ref_suffix += ',' + notify_suffix
     else:
       ref_suffix = '%' + notify_suffix
+
+    # Add cc from watch list.
+    ref_suffix += ',cc=joe@example.com'
+
     if reviewers:
       ref_suffix += ',' + ','.join('r=%s' % email
                                    for email in sorted(reviewers))
