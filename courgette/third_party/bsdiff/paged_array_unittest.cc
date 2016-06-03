@@ -15,10 +15,12 @@
 
 namespace {
 
+#if !defined(ADDRESS_SANITIZER) || !defined(OS_WIN)
 // Total allocation of 4GB will fail in 32 bit programs if allocations are
 // leaked.
 const int kIterations = 20;
 const int kSizeBig = 200 * 1024 * 1024 / sizeof(int);  // 200MB
+#endif
 
 const size_t kLogBlockSizeSmall = 10;
 const size_t kBlockSizeSmall = 1 << kLogBlockSizeSmall;
