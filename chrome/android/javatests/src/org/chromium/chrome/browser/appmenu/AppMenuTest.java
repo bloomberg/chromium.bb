@@ -15,7 +15,6 @@ import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -191,12 +190,8 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Test that changing orientation hides the menu.
      */
-    /*
-    @SmallTest
     @Feature({"Browser", "Main"})
-    crbug.com/458193
-    */
-    @DisabledTest
+    @SmallTest
     public void testChangingOrientationHidesMenu() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();
