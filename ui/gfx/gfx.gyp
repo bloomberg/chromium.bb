@@ -313,6 +313,8 @@
         'scoped_ui_graphics_push_context_ios.mm',
         'scrollbar_size.cc',
         'scrollbar_size.h',
+        'selection_bound.cc',
+        'selection_bound.h',
         'selection_model.cc',
         'selection_model.h',
         'sequential_id_generator.cc',

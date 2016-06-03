@@ -16,6 +16,7 @@
         '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events',
         '../events/events.gyp:gesture_detection',
+        '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [

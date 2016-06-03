@@ -44,8 +44,8 @@ const int kBarBottomAllowance = 3;
 // For selection bounds |b1| and |b2| in a paragraph of text, returns -1 if |b1|
 // is physically before |b2|, +1 if |b2| is before |b1|, and 0 if they are at
 // the same location.
-int CompareTextSelectionBounds(const ui::SelectionBound& b1,
-                               const ui::SelectionBound& b2) {
+int CompareTextSelectionBounds(const gfx::SelectionBound& b1,
+                               const gfx::SelectionBound& b2) {
   if (b1.edge_top().y() < b2.edge_top().y() ||
       b1.edge_top().x() < b2.edge_top().x()) {
     return -1;
@@ -181,7 +181,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     return GetSelectionController()->GetCursorHandleNativeView();
   }
 
-  ui::SelectionBound::Type GetSelectionHandle1Type() {
+  gfx::SelectionBound::Type GetSelectionHandle1Type() {
     return GetSelectionController()->GetSelectionHandle1Type();
   }
 
@@ -197,7 +197,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     return GetSelectionController()->GetCursorHandleBounds();
   }
 
-  gfx::Rect GetExpectedHandleBounds(const ui::SelectionBound& bound) {
+  gfx::Rect GetExpectedHandleBounds(const gfx::SelectionBound& bound) {
     return GetSelectionController()->GetExpectedHandleBounds(bound);
   }
 
@@ -235,7 +235,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   void VerifyHandlePositions(bool cursor_at_selection_handle_1,
                              bool check_direction,
                              const tracked_objects::Location& from_here) {
-    ui::SelectionBound anchor, focus;
+    gfx::SelectionBound anchor, focus;
     textfield_->GetSelectionEndPoints(&anchor, &focus);
     std::string from_str = from_here.ToString();
     if (textfield_->HasSelection()) {
@@ -261,14 +261,14 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     }
     if (check_direction)  {
       if (CompareTextSelectionBounds(anchor, focus) < 0) {
-        EXPECT_EQ(ui::SelectionBound::LEFT, anchor.type()) << from_str;
-        EXPECT_EQ(ui::SelectionBound::RIGHT, focus.type())  << from_str;
+        EXPECT_EQ(gfx::SelectionBound::LEFT, anchor.type()) << from_str;
+        EXPECT_EQ(gfx::SelectionBound::RIGHT, focus.type()) << from_str;
       } else if (CompareTextSelectionBounds(anchor, focus) > 0) {
-        EXPECT_EQ(ui::SelectionBound::LEFT, focus.type())  << from_str;
-        EXPECT_EQ(ui::SelectionBound::RIGHT, anchor.type())  << from_str;
+        EXPECT_EQ(gfx::SelectionBound::LEFT, focus.type()) << from_str;
+        EXPECT_EQ(gfx::SelectionBound::RIGHT, anchor.type()) << from_str;
       } else {
-        EXPECT_EQ(ui::SelectionBound::CENTER, focus.type()) << from_str;
-        EXPECT_EQ(ui::SelectionBound::CENTER, anchor.type()) << from_str;
+        EXPECT_EQ(gfx::SelectionBound::CENTER, focus.type()) << from_str;
+        EXPECT_EQ(gfx::SelectionBound::CENTER, anchor.type()) << from_str;
       }
     }
   }
@@ -603,8 +603,8 @@ TEST_F(TouchSelectionControllerImplTest, HiddenSelectionHandleExposed) {
   }
 
   // Confirm that the exposed handle maintains the LEFT orientation
-  // (and does not reset to ui::SelectionBound::Type::CENTER).
-  EXPECT_EQ(ui::SelectionBound::Type::LEFT, GetSelectionHandle1Type());
+  // (and does not reset to gfx::SelectionBound::Type::CENTER).
+  EXPECT_EQ(gfx::SelectionBound::Type::LEFT, GetSelectionHandle1Type());
 }
 
 TEST_F(TouchSelectionControllerImplTest,
@@ -646,7 +646,7 @@ class TestTouchEditable : public ui::TouchEditable {
 
   void set_cursor_rect(const gfx::RectF& cursor_rect) {
     cursor_bound_.SetEdge(cursor_rect.origin(), cursor_rect.bottom_left());
-    cursor_bound_.set_type(ui::SelectionBound::Type::CENTER);
+    cursor_bound_.set_type(gfx::SelectionBound::Type::CENTER);
   }
 
   ~TestTouchEditable() override {}
@@ -657,8 +657,8 @@ class TestTouchEditable : public ui::TouchEditable {
     NOTREACHED();
   }
   void MoveCaretTo(const gfx::Point& point) override { NOTREACHED(); }
-  void GetSelectionEndPoints(ui::SelectionBound* anchor,
-                             ui::SelectionBound* focus) override {
+  void GetSelectionEndPoints(gfx::SelectionBound* anchor,
+                             gfx::SelectionBound* focus) override {
     *anchor = *focus = cursor_bound_;
   }
   gfx::Rect GetBounds() override { return gfx::Rect(bounds_.size()); }
@@ -704,7 +704,7 @@ class TestTouchEditable : public ui::TouchEditable {
 
   // Cursor position inside the client view.
   //gfx::Rect cursor_rect_;
-  ui::SelectionBound cursor_bound_;
+  gfx::SelectionBound cursor_bound_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditable);
 };

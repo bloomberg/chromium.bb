@@ -2,30 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TOUCH_SELECTION_BOUND_H_
-#define UI_BASE_TOUCH_SELECTION_BOUND_H_
+#ifndef UI_GFX_SELECTION_BOUND_H_
+#define UI_GFX_SELECTION_BOUND_H_
 
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
+
 class Rect;
 class RectF;
-}
-
-namespace ui {
 
 // Bound of a selection end-point.
-class UI_BASE_EXPORT SelectionBound {
+class GFX_EXPORT SelectionBound {
  public:
-  enum Type {
-    LEFT,
-    RIGHT,
-    CENTER,
-    EMPTY,
-    LAST = EMPTY
-  };
+  enum Type { LEFT, RIGHT, CENTER, EMPTY, LAST = EMPTY };
 
   SelectionBound();
   SelectionBound(const SelectionBound& other);
@@ -59,17 +51,17 @@ class UI_BASE_EXPORT SelectionBound {
   bool visible_;
 };
 
-UI_BASE_EXPORT bool operator==(const SelectionBound& lhs,
-                               const SelectionBound& rhs);
-UI_BASE_EXPORT bool operator!=(const SelectionBound& lhs,
-                               const SelectionBound& rhs);
+GFX_EXPORT bool operator==(const SelectionBound& lhs,
+                           const SelectionBound& rhs);
+GFX_EXPORT bool operator!=(const SelectionBound& lhs,
+                           const SelectionBound& rhs);
 
-UI_BASE_EXPORT gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
-                                                    const SelectionBound& b2);
+GFX_EXPORT gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
+                                                const SelectionBound& b2);
 
-UI_BASE_EXPORT gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
-                                                      const SelectionBound& b2);
+GFX_EXPORT gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
+                                                  const SelectionBound& b2);
 
 }  // namespace ui
 
-#endif  // UI_BASE_TOUCH_SELECTION_BOUND_H_
+#endif  // UI_GFX_SELECTION_BOUND_H_

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_UI_TOUCH_SELECTION_HELPER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_UI_TOUCH_SELECTION_HELPER_H_
 
-#include "ui/base/touch/selection_bound.h"
+#include "ui/gfx/selection_bound.h"
 
 namespace cc {
 struct ViewportSelectionBound;
@@ -13,7 +13,7 @@ struct ViewportSelectionBound;
 
 namespace content {
 
-ui::SelectionBound ConvertSelectionBound(
+gfx::SelectionBound ConvertSelectionBound(
     const cc::ViewportSelectionBound& bound);
 
 }  // namespace content

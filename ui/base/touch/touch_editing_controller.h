@@ -10,10 +10,10 @@
 namespace gfx {
 class Point;
 class Rect;
+class SelectionBound;
 }
 
 namespace ui {
-class SelectionBound;
 
 // An interface implemented by widget that has text that can be selected/edited
 // using touch.
@@ -40,8 +40,8 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   //
   // Visually, anchor could be to the right of focus in the figure above - it
   // depends on the selection direction.
-  virtual void GetSelectionEndPoints(ui::SelectionBound* anchor,
-                                     ui::SelectionBound* focus) = 0;
+  virtual void GetSelectionEndPoints(gfx::SelectionBound* anchor,
+                                     gfx::SelectionBound* focus) = 0;
 
   // Gets the bounds of the client view in its local coordinates.
   virtual gfx::Rect GetBounds() = 0;

@@ -5,20 +5,18 @@
 #include <algorithm>
 
 #include "base/macros.h"
-#include "ui/base/touch/selection_bound.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/selection_bound.h"
 
-namespace ui {
+namespace gfx {
 
-SelectionBound::SelectionBound() : type_(EMPTY), visible_(false) {
-}
+SelectionBound::SelectionBound() : type_(EMPTY), visible_(false) {}
 
 SelectionBound::SelectionBound(const SelectionBound& other) = default;
 
-SelectionBound::~SelectionBound() {
-}
+SelectionBound::~SelectionBound() {}
 
 void SelectionBound::SetEdgeTop(const gfx::PointF& value) {
   edge_top_ = value;
@@ -82,4 +80,4 @@ gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
   return gfx::RectF(top_left, gfx::SizeF(diff.x(), diff.y()));
 }
 
-}  // namespace ui
+}  // namespace gfx

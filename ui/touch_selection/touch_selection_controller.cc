@@ -12,7 +12,7 @@
 namespace ui {
 namespace {
 
-gfx::Vector2dF ComputeLineOffsetFromBottom(const SelectionBound& bound) {
+gfx::Vector2dF ComputeLineOffsetFromBottom(const gfx::SelectionBound& bound) {
   gfx::Vector2dF line_offset =
       gfx::ScaleVector2d(bound.edge_top() - bound.edge_bottom(), 0.5f);
   // An offset of 8 DIPs is sufficient for most line sizes. For small lines,
@@ -24,15 +24,16 @@ gfx::Vector2dF ComputeLineOffsetFromBottom(const SelectionBound& bound) {
   return line_offset;
 }
 
-TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
+TouchHandleOrientation ToTouchHandleOrientation(
+    gfx::SelectionBound::Type type) {
   switch (type) {
-    case SelectionBound::LEFT:
+    case gfx::SelectionBound::LEFT:
       return TouchHandleOrientation::LEFT;
-    case SelectionBound::RIGHT:
+    case gfx::SelectionBound::RIGHT:
       return TouchHandleOrientation::RIGHT;
-    case SelectionBound::CENTER:
+    case gfx::SelectionBound::CENTER:
       return TouchHandleOrientation::CENTER;
-    case SelectionBound::EMPTY:
+    case gfx::SelectionBound::EMPTY:
       return TouchHandleOrientation::UNDEFINED;
   }
   NOTREACHED() << "Invalid selection bound type: " << type;
@@ -76,17 +77,17 @@ TouchSelectionController::~TouchSelectionController() {
 }
 
 void TouchSelectionController::OnSelectionBoundsChanged(
-    const SelectionBound& start,
-    const SelectionBound& end) {
+    const gfx::SelectionBound& start,
+    const gfx::SelectionBound& end) {
   if (!force_next_update_ && start == start_ && end_ == end)
     return;
 
   // Notify if selection bounds have just been established or dissolved.
-  if (start.type() != SelectionBound::EMPTY &&
-      start_.type() == SelectionBound::EMPTY) {
+  if (start.type() != gfx::SelectionBound::EMPTY &&
+      start_.type() == gfx::SelectionBound::EMPTY) {
     client_->OnSelectionEvent(SELECTION_ESTABLISHED);
-  } else if (start.type() == SelectionBound::EMPTY &&
-             start_.type() != SelectionBound::EMPTY) {
+  } else if (start.type() == gfx::SelectionBound::EMPTY &&
+             start_.type() != gfx::SelectionBound::EMPTY) {
     client_->OnSelectionEvent(SELECTION_DISSOLVED);
   }
 
@@ -625,8 +626,8 @@ void TouchSelectionController::ForceNextUpdateIfInactive() {
   // considered "inactive", i.e., it wasn't preceded by a user gesture or
   // the handles have since been explicitly hidden.
   if (active_status_ == INACTIVE &&
-      start_.type() != SelectionBound::EMPTY &&
-      end_.type() != SelectionBound::EMPTY) {
+      start_.type() != gfx::SelectionBound::EMPTY &&
+      end_.type() != gfx::SelectionBound::EMPTY) {
     force_next_update_ = true;
   }
 }

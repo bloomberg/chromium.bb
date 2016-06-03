@@ -17,7 +17,6 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/touch/selection_bound.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -28,6 +27,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/selection_bound.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -1159,8 +1159,8 @@ void Textfield::MoveCaretTo(const gfx::Point& point) {
   SelectRect(point, point);
 }
 
-void Textfield::GetSelectionEndPoints(ui::SelectionBound* anchor,
-                                      ui::SelectionBound* focus) {
+void Textfield::GetSelectionEndPoints(gfx::SelectionBound* anchor,
+                                      gfx::SelectionBound* focus) {
   gfx::RenderText* render_text = GetRenderText();
   const gfx::SelectionModel& sel = render_text->selection_model();
   gfx::SelectionModel start_sel =
@@ -1179,15 +1179,15 @@ void Textfield::GetSelectionEndPoints(ui::SelectionBound* anchor,
   size_t focus_position_index = sel.selection().end();
 
   if (anchor_position_index == focus_position_index) {
-    anchor->set_type(ui::SelectionBound::CENTER);
-    focus->set_type(ui::SelectionBound::CENTER);
+    anchor->set_type(gfx::SelectionBound::CENTER);
+    focus->set_type(gfx::SelectionBound::CENTER);
   } else if ((ltr && anchor_position_index < focus_position_index) ||
              (!ltr && anchor_position_index > focus_position_index)) {
-    anchor->set_type(ui::SelectionBound::LEFT);
-    focus->set_type(ui::SelectionBound::RIGHT);
+    anchor->set_type(gfx::SelectionBound::LEFT);
+    focus->set_type(gfx::SelectionBound::RIGHT);
   } else {
-    anchor->set_type(ui::SelectionBound::RIGHT);
-    focus->set_type(ui::SelectionBound::LEFT);
+    anchor->set_type(gfx::SelectionBound::RIGHT);
+    focus->set_type(gfx::SelectionBound::LEFT);
   }
 }
 

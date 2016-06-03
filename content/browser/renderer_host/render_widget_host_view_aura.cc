@@ -1067,15 +1067,15 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
 
 void RenderWidgetHostViewAura::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
-  ui::SelectionBound anchor_bound, focus_bound;
+  gfx::SelectionBound anchor_bound, focus_bound;
   anchor_bound.SetEdge(gfx::PointF(params.anchor_rect.origin()),
                        gfx::PointF(params.anchor_rect.bottom_left()));
   focus_bound.SetEdge(gfx::PointF(params.focus_rect.origin()),
                       gfx::PointF(params.focus_rect.bottom_left()));
 
   if (params.anchor_rect == params.focus_rect) {
-    anchor_bound.set_type(ui::SelectionBound::CENTER);
-    focus_bound.set_type(ui::SelectionBound::CENTER);
+    anchor_bound.set_type(gfx::SelectionBound::CENTER);
+    focus_bound.set_type(gfx::SelectionBound::CENTER);
   } else {
     // Whether text is LTR at the anchor handle.
     bool anchor_LTR = params.anchor_dir == blink::WebTextDirectionLeftToRight;
@@ -1084,15 +1084,15 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
 
     if ((params.is_anchor_first && anchor_LTR) ||
         (!params.is_anchor_first && !anchor_LTR)) {
-      anchor_bound.set_type(ui::SelectionBound::LEFT);
+      anchor_bound.set_type(gfx::SelectionBound::LEFT);
     } else {
-      anchor_bound.set_type(ui::SelectionBound::RIGHT);
+      anchor_bound.set_type(gfx::SelectionBound::RIGHT);
     }
     if ((params.is_anchor_first && focus_LTR) ||
         (!params.is_anchor_first && !focus_LTR)) {
-      focus_bound.set_type(ui::SelectionBound::RIGHT);
+      focus_bound.set_type(gfx::SelectionBound::RIGHT);
     } else {
-      focus_bound.set_type(ui::SelectionBound::LEFT);
+      focus_bound.set_type(gfx::SelectionBound::LEFT);
     }
   }
 
@@ -1576,7 +1576,7 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
   return ConvertRectToScreen(
-      ui::RectBetweenSelectionBounds(selection_anchor_, selection_focus_));
+      gfx::RectBetweenSelectionBounds(selection_anchor_, selection_focus_));
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
@@ -2761,10 +2761,11 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
   target_host->ForwardKeyboardEvent(event);
 }
 
-void RenderWidgetHostViewAura::SelectionUpdated(bool is_editable,
-                                                bool is_empty_text_form_control,
-                                                const ui::SelectionBound& start,
-                                                const ui::SelectionBound& end) {
+void RenderWidgetHostViewAura::SelectionUpdated(
+    bool is_editable,
+    bool is_empty_text_form_control,
+    const gfx::SelectionBound& start,
+    const gfx::SelectionBound& end) {
   selection_controller_->OnSelectionEditable(is_editable);
   selection_controller_->OnSelectionEmpty(is_empty_text_form_control);
   selection_controller_->OnSelectionBoundsChanged(start, end);

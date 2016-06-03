@@ -11,30 +11,30 @@ namespace content {
 
 namespace {
 
-ui::SelectionBound::Type ConvertSelectionBoundType(
+gfx::SelectionBound::Type ConvertSelectionBoundType(
     cc::SelectionBoundType type) {
   switch (type) {
     case cc::SELECTION_BOUND_LEFT:
-      return ui::SelectionBound::LEFT;
+      return gfx::SelectionBound::LEFT;
     case cc::SELECTION_BOUND_RIGHT:
-      return ui::SelectionBound::RIGHT;
+      return gfx::SelectionBound::RIGHT;
     case cc::SELECTION_BOUND_CENTER:
-      return ui::SelectionBound::CENTER;
+      return gfx::SelectionBound::CENTER;
     case cc::SELECTION_BOUND_EMPTY:
-      return ui::SelectionBound::EMPTY;
+      return gfx::SelectionBound::EMPTY;
   }
   NOTREACHED() << "Unknown selection bound type";
-  return ui::SelectionBound::EMPTY;
+  return gfx::SelectionBound::EMPTY;
 }
 
 }  // namespace
 
-ui::SelectionBound ConvertSelectionBound(
+gfx::SelectionBound ConvertSelectionBound(
     const cc::ViewportSelectionBound& bound) {
-  ui::SelectionBound ui_bound;
+  gfx::SelectionBound ui_bound;
   ui_bound.set_type(ConvertSelectionBoundType(bound.type));
   ui_bound.set_visible(bound.visible);
-  if (ui_bound.type() != ui::SelectionBound::EMPTY)
+  if (ui_bound.type() != gfx::SelectionBound::EMPTY)
     ui_bound.SetEdge(bound.edge_top, bound.edge_bottom);
   return ui_bound;
 }

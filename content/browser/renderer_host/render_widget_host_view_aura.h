@@ -37,11 +37,11 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/touch/selection_bound.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/gestures/motion_event_aura.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/selection_bound.h"
 #include "ui/wm/public/activation_delegate.h"
 
 namespace aura {
@@ -514,8 +514,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // received. It will update selection controller.
   void SelectionUpdated(bool is_editable,
                         bool is_empty_text_form_control,
-                        const ui::SelectionBound& start,
-                        const ui::SelectionBound& end);
+                        const gfx::SelectionBound& start,
+                        const gfx::SelectionBound& end);
 
   // Helper function to create a selection controller.
   void CreateSelectionController();
@@ -583,8 +583,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool can_compose_inline_;
 
   // Bounds for the selection.
-  ui::SelectionBound selection_anchor_;
-  ui::SelectionBound selection_focus_;
+  gfx::SelectionBound selection_anchor_;
+  gfx::SelectionBound selection_focus_;
 
   // The current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;

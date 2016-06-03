@@ -233,8 +233,6 @@ component("base") {
     "template_expressions.h",
     "theme_provider.cc",
     "theme_provider.h",
-    "touch/selection_bound.cc",
-    "touch/selection_bound.h",
     "touch/touch_device.h",
     "touch/touch_editing_controller.cc",
     "touch/touch_editing_controller.h",
@@ -782,7 +780,6 @@ test("ui_base_unittests") {
       "models/tree_node_model_unittest.cc",
       "test/data/resource.h",
       "text/bytes_formatting_unittest.cc",
-      "touch/selection_bound_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
   }

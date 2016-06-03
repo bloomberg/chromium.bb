@@ -122,15 +122,15 @@ class TouchSelectionControllerTest : public testing::Test,
   void SetDraggingEnabled(bool enabled) { dragging_enabled_ = enabled; }
 
   void ClearSelection() {
-    controller_->OnSelectionBoundsChanged(SelectionBound(),
-                                          SelectionBound());
+    controller_->OnSelectionBoundsChanged(gfx::SelectionBound(),
+                                          gfx::SelectionBound());
   }
 
   void ClearInsertion() { ClearSelection(); }
 
   void ChangeInsertion(const gfx::RectF& rect, bool visible) {
-    SelectionBound bound;
-    bound.set_type(SelectionBound::CENTER);
+    gfx::SelectionBound bound;
+    bound.set_type(gfx::SelectionBound::CENTER);
     bound.SetEdge(rect.origin(), rect.bottom_left());
     bound.set_visible(visible);
     controller_->OnSelectionBoundsChanged(bound, bound);
@@ -140,9 +140,9 @@ class TouchSelectionControllerTest : public testing::Test,
                        bool start_visible,
                        const gfx::RectF& end_rect,
                        bool end_visible) {
-    SelectionBound start_bound, end_bound;
-    start_bound.set_type(SelectionBound::LEFT);
-    end_bound.set_type(SelectionBound::RIGHT);
+    gfx::SelectionBound start_bound, end_bound;
+    start_bound.set_type(gfx::SelectionBound::LEFT);
+    end_bound.set_type(gfx::SelectionBound::RIGHT);
     start_bound.SetEdge(start_rect.origin(), start_rect.bottom_left());
     end_bound.SetEdge(end_rect.origin(), end_rect.bottom_left());
     start_bound.set_visible(start_visible);

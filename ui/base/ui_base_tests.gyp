@@ -90,7 +90,6 @@
         'test/scoped_fake_nswindow_fullscreen_unittest.mm',
         'test/test_clipboard_unittest.cc',
         'text/bytes_formatting_unittest.cc',
-        'touch/selection_bound_unittest.cc',
         'user_activity/user_activity_detector_unittest.cc',
         'view_prop_unittest.cc',
         'webui/web_ui_util_unittest.cc',
@@ -161,7 +160,6 @@
             '../../testing/android/native_test.gyp:native_test_native_code',
           ],
           'sources!': [
-            'touch/selection_bound_unittest.cc',
             'user_activity/user_activity_detector_unittest.cc',
           ],
         }],

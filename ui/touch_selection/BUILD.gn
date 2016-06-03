@@ -32,7 +32,8 @@ component("touch_selection") {
     "//ui/base:base",
     "//ui/events:events",
     "//ui/events:gesture_detection",
-    "//ui/gfx/geometry:geometry",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 
   if (use_aura) {

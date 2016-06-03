@@ -1699,8 +1699,8 @@ void RenderWidgetHostViewAndroid::OnShowingPastePopup(
   // of the region have been updated, explicitly set the properties now.
   // TODO(jdduke): Remove this workaround when auxiliary paste popup
   // notifications are no longer required, crbug.com/398170.
-  ui::SelectionBound insertion_bound;
-  insertion_bound.set_type(ui::SelectionBound::CENTER);
+  gfx::SelectionBound insertion_bound;
+  insertion_bound.set_type(gfx::SelectionBound::CENTER);
   insertion_bound.set_visible(true);
   insertion_bound.SetEdge(point, point);
   selection_controller_->HideAndDisallowShowingAutomatically();
