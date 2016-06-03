@@ -1,57 +1,16 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that a degenerate cues without separating blank lines are parsed correctly.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc032-degenerate-cues.vtt", function(track) {
+    var expected = [
+        { startTime: 0, endTime: 1, text: "" },
+        { startTime: 2, endTime: 3, text: "" },
+        { startTime: 4, endTime: 5, text: "" }
+    ];
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-
-            numberOfTrackTests = 1;
-
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack0();
-                }
-            }
-
-            function testTrack0()
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length: 3,
-                    tests:
-                    [
-                        {
-                            property: "startTime",
-                            values: [ "0", "2", "4" ],
-                        },
-                        {
-                            property: "endTime",
-                            values: [ "1", "3", "5" ],
-                        },
-                        {
-                            property: "text",
-                            values: [ '', '', '' ],
-                        },
-                    ],
-                };
-
-                testCues(0, expected);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-      <p>Tests that a degenerate cues without separating blank lines are parsed correctly.</p>
-        <video>
-            <track src="captions-webvtt/tc032-degenerate-cues.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    assert_cues_match(track.cues, expected);
+});
+</script>

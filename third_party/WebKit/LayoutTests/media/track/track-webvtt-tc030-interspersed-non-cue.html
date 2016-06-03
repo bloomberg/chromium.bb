@@ -1,52 +1,15 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that an empty line after an identifier line discards the current cue and restarts the cue loop.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc030-interspersed-non-cue.vtt", function(track) {
+    var expected = [
+        { text: "First" },
+        { text: "Second" }
+    ];
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-
-            numberOfTrackTests = 1;
-
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack0();
-                }
-            }
-
-            function testTrack0()
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length: 2,
-                    tests:
-                    [
-                        {
-                            property: "text",
-                            values:
-                            [
-                                'First',
-                                'Second',
-                            ],
-                        },
-                    ],
-                };
-                testCues(0, expected);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-      <p>Tests that an empty line after an identifier line discards the current cue and restarts the cue loop.</p>
-        <video>
-            <track src="captions-webvtt/tc030-interspersed-non-cue.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    assert_cues_match(track.cues, expected);
+});
+</script>

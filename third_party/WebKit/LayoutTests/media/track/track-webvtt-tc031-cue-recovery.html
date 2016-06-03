@@ -1,65 +1,19 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that a cue is recovered when a line with a "-->" is encountered (missing blank line separator).</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc031-cue-recovery-header.vtt", testTrack);
+check_cues_from_track("captions-webvtt/tc031-cue-recovery-note.vtt", testTrack);
+check_cues_from_track("captions-webvtt/tc031-cue-recovery-cuetext.vtt", testTrack);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+function testTrack(track) {
+    var expected = [
+        { startTime: 0, endTime: 1, text: "Valid cue 1" },
+        { startTime: 2, endTime: 3, text: "Valid cue 2" }
+    ];
 
-            numberOfTrackTests = 3;
-
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrack(1);
-                    testTrack(2);
-                }
-            }
-
-            function testTrack(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length: 2,
-                    tests:
-                    [
-                        {
-                            property: "startTime",
-                            values: [ "0", "2" ],
-                        },
-                        {
-                            property: "endTime",
-                            values: [ "1", "3" ],
-                        },
-                        {
-                            property: "text",
-                            values:
-                            [
-                                'Valid cue 1',
-                                'Valid cue 2',
-                            ],
-                        },
-                    ],
-                };
-
-                testCues(i, expected);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-      <p>Tests that a cue is recovered when a line with a "-->" is encountered (missing blank line separator).</p>
-        <video>
-            <track src="captions-webvtt/tc031-cue-recovery-header.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc031-cue-recovery-note.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc031-cue-recovery-cuetext.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    assert_cues_match(track.cues, expected);
+}
+</script>
