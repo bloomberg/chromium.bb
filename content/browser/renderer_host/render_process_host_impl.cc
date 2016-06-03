@@ -1566,6 +1566,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_CHROMEOS)
     switches::kDisableVaapiAcceleratedVideoEncode,
 #endif
+#if defined(MOJO_SHELL_CLIENT)
+    switches::kUseMusInRenderer,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

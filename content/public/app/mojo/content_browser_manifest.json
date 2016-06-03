@@ -6,6 +6,9 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] },
+      "exe:content_renderer": {
+        "interfaces": [ "content::mojom::RenderWidgetWindowTreeClientFactory" ]
+      },
       "mojo:shell": {
         "classes": [
           "shell:client_process",
