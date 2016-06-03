@@ -45,6 +45,11 @@ const uint16_t kPort = 443;
 const char kReportUri[] = "http://report-example.test/test";
 const char kExpectCTStaticHostname[] = "preloaded-expect-ct.badssl.com";
 const char kExpectCTStaticReportURI[] = "https://report.badssl.com/expect-ct";
+const char kExpectStapleStaticHostname[] = "preloaded-expect-staple.badssl.com";
+const char kExpectStapleStaticReportURI[] =
+    "https://report.badssl.com/expect-staple";
+const char kExpectStapleStaticIncludeSubdomainsHostname[] =
+    "preloaded-expect-staple-include-subdomains.badssl.com";
 
 // kGoodPath is blog.torproject.org.
 const char* const kGoodPath[] = {
@@ -246,6 +251,10 @@ class TransportSecurityStateTest : public testing::Test {
     state->enable_static_expect_ct_ = true;
   }
 
+  static void EnableStaticExpectStaple(TransportSecurityState* state) {
+    state->enable_static_expect_staple_ = true;
+  }
+
   static HashValueVector GetSampleSPKIHashes() {
     HashValueVector spki_hashes;
     HashValue hash(HASH_VALUE_SHA256);
@@ -266,6 +275,12 @@ class TransportSecurityStateTest : public testing::Test {
                         const std::string& host,
                         TransportSecurityState::ExpectCTState* result) {
     return state->GetStaticExpectCTState(host, result);
+  }
+
+  bool GetExpectStapleState(TransportSecurityState* state,
+                            const std::string& host,
+                            TransportSecurityState::ExpectStapleState* result) {
+    return state->GetStaticExpectStapleState(host, result);
   }
 };
 
@@ -1665,6 +1680,38 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectCT) {
   EXPECT_EQ(GURL(kExpectCTStaticReportURI), expect_ct_state.report_uri);
   EXPECT_FALSE(
       GetExpectCTState(&state, "pinning-test.badssl.com", &expect_ct_state));
+}
+
+// Tests that static (preloaded) expect staple state is read correctly.
+TEST_F(TransportSecurityStateTest, PreloadedExpectStaple) {
+  TransportSecurityState state;
+  TransportSecurityState::ExpectStapleState expect_staple_state;
+  EXPECT_FALSE(GetExpectStapleState(&state, kExpectStapleStaticHostname,
+                                    &expect_staple_state));
+  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  EXPECT_TRUE(GetExpectStapleState(&state, kExpectStapleStaticHostname,
+                                   &expect_staple_state));
+  EXPECT_EQ(kExpectStapleStaticHostname, expect_staple_state.domain);
+  EXPECT_EQ(GURL(kExpectStapleStaticReportURI), expect_staple_state.report_uri);
+  EXPECT_FALSE(expect_staple_state.include_subdomains);
+  EXPECT_FALSE(GetExpectStapleState(&state, "pinning-test.badssl.com",
+                                    &expect_staple_state));
+  std::string subdomain = "subdomain.";
+  subdomain += kExpectStapleStaticHostname;
+  EXPECT_FALSE(GetExpectStapleState(&state, subdomain, &expect_staple_state));
+}
+
+TEST_F(TransportSecurityStateTest, PreloadedExpectStapleIncludeSubdomains) {
+  TransportSecurityState state;
+  TransportSecurityStateTest::EnableStaticExpectStaple(&state);
+  TransportSecurityState::ExpectStapleState expect_staple_state;
+  std::string subdomain = "subdomain.";
+  subdomain += kExpectStapleStaticIncludeSubdomainsHostname;
+  EXPECT_TRUE(GetExpectStapleState(&state, subdomain, &expect_staple_state));
+  EXPECT_EQ(kExpectStapleStaticIncludeSubdomainsHostname,
+            expect_staple_state.domain);
+  EXPECT_TRUE(expect_staple_state.include_subdomains);
+  EXPECT_EQ(GURL(kExpectStapleStaticReportURI), expect_staple_state.report_uri);
 }
 
 // Tests that the Expect CT reporter is not notified for invalid or absent

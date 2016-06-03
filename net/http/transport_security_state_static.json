@@ -211,7 +211,8 @@
     { "name": "pinningtest.appspot.com", "include_subdomains": true, "pins": "test" },
     { "name": "pinning-test.badssl.com", "include_subdomains": true, "pins": "test" },
     { "name": "preloaded-expect-ct.badssl.com", "expect_ct": true, "expect_ct_report_uri": "https://report.badssl.com/expect-ct" },
-
+    { "name": "preloaded-expect-staple.badssl.com", "expect_staple": true, "expect_staple_report_uri": "https://report.badssl.com/expect-staple" },
+    { "name": "preloaded-expect-staple-include-subdomains.badssl.com", "expect_staple": true, "expect_staple_report_uri": "https://report.badssl.com/expect-staple", "include_subdomains_for_expect_staple": true },
     // Now we force HTTPS for subtrees of google.com.
     { "name": "accounts.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "admin.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
