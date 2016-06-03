@@ -983,6 +983,11 @@
             '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
+          ],
+        }],
         ['OS=="android"', {
           'dependencies': [
             '../ui/android/ui_android.gyp:ui_android',

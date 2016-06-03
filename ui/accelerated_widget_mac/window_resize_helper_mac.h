@@ -53,6 +53,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT WindowResizeHelperMac {
   void Init(
       const scoped_refptr<base::SingleThreadTaskRunner>& target_task_runner);
 
+  // Because this class is global, many tests may want to do this setup
+  // repeatedly, so need some way to uninitialize as well.
+  void ShutdownForTests();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const;
 
   // UI THREAD ONLY -----------------------------------------------------------

@@ -300,6 +300,10 @@ void WindowResizeHelperMac::Init(
       base::Bind(&WindowResizeHelperMac::EventTimedWait), target_task_runner);
 }
 
+void WindowResizeHelperMac::ShutdownForTests() {
+  task_runner_ = nullptr;
+}
+
 bool WindowResizeHelperMac::WaitForSingleTaskToRun(
     const base::TimeDelta& max_delay) {
   PumpableTaskRunner* pumpable_task_runner =

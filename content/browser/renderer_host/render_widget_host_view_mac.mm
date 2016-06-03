@@ -600,6 +600,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         ->GetInputEventRouter()
         ->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
   }
+
+  if (!render_widget_host_->is_hidden())
+    EnsureBrowserCompositorView();
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -1497,8 +1500,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     gfx::Size dip_size = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
 
     root_layer_->SetBounds(gfx::Rect(dip_size));
-    if (!render_widget_host_->is_hidden()) {
-      EnsureBrowserCompositorView();
+    if (browser_compositor_ && browser_compositor_->compositor()) {
       browser_compositor_->compositor()->SetScaleAndSize(
           scale_factor, pixel_size);
     }

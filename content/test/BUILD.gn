@@ -191,6 +191,10 @@ source_set("test_support") {
   if (v8_use_external_startup_data) {
     deps += [ "//gin:gin" ]
   }
+
+  if (is_mac) {
+    deps += [ "//ui/accelerated_widget_mac" ]
+  }
 }
 
 # browsertest_support can be used by targets that run content_shell based
@@ -788,6 +792,7 @@ test("content_unittests") {
     deps += [
       "//third_party/mozilla",
       "//third_party/ocmock",
+      "//ui/accelerated_widget_mac",
     ]
   }
   if (is_chromeos) {

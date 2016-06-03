@@ -20,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/layout.h"
 
 using content::RenderWidgetHostViewMac;
@@ -133,6 +134,10 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
 
   base::mac::ScopedNSAutoreleasePool pool;
 
+  base::MessageLoop message_loop;
+  ui::WindowResizeHelperMac::Get()->Init(
+    base::MessageLoop::current()->task_runner());
+
   // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.
   RenderWidgetHostViewMac* rwhv_mac = new RenderWidgetHostViewMac(
       render_widget, false);
@@ -157,11 +162,10 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   rwhv_cocoa.reset();
   pool.Recycle();
 
-  {
-    // The |render_widget|'s process needs to be deleted within |message_loop|.
-    base::MessageLoop message_loop;
-    delete render_widget;
-  }
+  // The |render_widget|'s process needs to be deleted within |message_loop|.
+  delete render_widget;
+
+  ui::WindowResizeHelperMac::Get()->ShutdownForTests();
 }
 
 // Test RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass
