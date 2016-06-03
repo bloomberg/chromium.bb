@@ -27,20 +27,25 @@ const size_t kMaxIconSizeInPx = 200;
 
 const int kMinInstanceVersion = 3;  // see intent_helper.mojom
 
-mojom::IntentHelperInstance* GetIntentHelperInstance() {
+mojom::IntentHelperInstance* GetIntentHelperInstance(
+    ActivityIconLoader::GetResult* out_error_code) {
+  DCHECK(out_error_code);
   ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
   if (!bridge_service) {
     VLOG(2) << "ARC bridge is not ready.";
+    *out_error_code = ActivityIconLoader::GetResult::FAILED_ARC_NOT_SUPPORTED;
     return nullptr;
   }
   mojom::IntentHelperInstance* intent_helper_instance =
       bridge_service->intent_helper_instance();
   if (!intent_helper_instance) {
     VLOG(2) << "ARC intent helper instance is not ready.";
+    *out_error_code = ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY;
     return nullptr;
   }
   if (bridge_service->intent_helper_version() < kMinInstanceVersion) {
     VLOG(1) << "ARC intent helper instance is too old.";
+    *out_error_code = ActivityIconLoader::GetResult::FAILED_ARC_NOT_SUPPORTED;
     return nullptr;
   }
   return intent_helper_instance;
@@ -82,7 +87,7 @@ void ActivityIconLoader::InvalidateIcons(const std::string& package_name) {
   }
 }
 
-bool ActivityIconLoader::GetActivityIcons(
+ActivityIconLoader::GetResult ActivityIconLoader::GetActivityIcons(
     const std::vector<ActivityName>& activities,
     const OnIconsReadyCallback& cb) {
   std::unique_ptr<ActivityToIconsMap> result(new ActivityToIconsMap);
@@ -100,12 +105,19 @@ bool ActivityIconLoader::GetActivityIcons(
     }
   }
 
-  mojom::IntentHelperInstance* instance = GetIntentHelperInstance();
-  if (activities_to_fetch.empty() || !instance) {
-    // If there's nothing to fetch or the mojo channel is not available, call
-    // back right now.
+  if (activities_to_fetch.empty()) {
+    // If there's nothing to fetch, run the callback now.
     cb.Run(std::move(result));
-    return true;
+    return GetResult::SUCCEEDED_SYNC;
+  }
+
+  GetResult error_code = GetResult::FAILED_ARC_NOT_SUPPORTED;
+  mojom::IntentHelperInstance* instance = GetIntentHelperInstance(&error_code);
+  if (!instance) {
+    // The mojo channel is not yet ready (or not supported at all). Run the
+    // callback with |result| that could be empty.
+    cb.Run(std::move(result));
+    return error_code;
   }
 
   // Fetch icons from ARC.
@@ -113,7 +125,7 @@ bool ActivityIconLoader::GetActivityIcons(
       std::move(activities_to_fetch), mojom::ScaleFactor(scale_factor_),
       base::Bind(&ActivityIconLoader::OnIconsReady, this, base::Passed(&result),
                  cb));
-  return false;
+  return GetResult::SUCCEEDED_ASYNC;
 }
 
 void ActivityIconLoader::OnIconsResizedForTesting(
@@ -125,6 +137,19 @@ void ActivityIconLoader::OnIconsResizedForTesting(
 void ActivityIconLoader::AddIconToCacheForTesting(const ActivityName& activity,
                                                   const gfx::Image& image) {
   cached_icons_.insert(std::make_pair(activity, Icons(image, image)));
+}
+
+// static
+bool ActivityIconLoader::HasIconsReadyCallbackRun(GetResult result) {
+  switch (result) {
+    case GetResult::SUCCEEDED_ASYNC:
+      return false;
+    case GetResult::SUCCEEDED_SYNC:
+    case GetResult::FAILED_ARC_NOT_READY:
+    case GetResult::FAILED_ARC_NOT_SUPPORTED:
+      break;
+  }
+  return true;
 }
 
 void ActivityIconLoader::OnIconsReady(

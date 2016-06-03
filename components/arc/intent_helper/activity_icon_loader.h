@@ -44,6 +44,19 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
     std::string activity_name;
   };
 
+  enum class GetResult {
+    // Succeeded. The callback will be called asynchronously.
+    SUCCEEDED_ASYNC,
+    // Succeeded. The callback has already been called synchronously.
+    SUCCEEDED_SYNC,
+    // Failed. The intent_helper instance is not yet ready. This is a temporary
+    // error.
+    FAILED_ARC_NOT_READY,
+    // Failed. Either ARC is not supported at all or intent_helper instance
+    // version is too old.
+    FAILED_ARC_NOT_SUPPORTED,
+  };
+
   using ActivityToIconsMap = std::map<ActivityName, Icons>;
   using OnIconsReadyCallback =
       base::Callback<void(std::unique_ptr<ActivityToIconsMap>)>;
@@ -55,16 +68,20 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
 
   // Retrieves icons for the |activities| and calls |cb|. The |cb| is called
   // back exactly once, either synchronously in the GetActivityIcons() when
-  // all icons were already cached locally, or asynchronously with icons fetched
-  // from ARC side.
-  // Returns true in the former synchronous case, where everything is done.
-  bool GetActivityIcons(const std::vector<ActivityName>& activities,
-                        const OnIconsReadyCallback& cb);
+  // the result is _not_ SUCCEEDED_ASYNC (i.e. all icons are already cached
+  // locally or ARC is not ready/supported). Otherwise, the callback is run
+  // later asynchronously with icons fetched from ARC side.
+  GetResult GetActivityIcons(const std::vector<ActivityName>& activities,
+                             const OnIconsReadyCallback& cb);
 
   void OnIconsResizedForTesting(const OnIconsReadyCallback& cb,
                                 std::unique_ptr<ActivityToIconsMap> result);
   void AddIconToCacheForTesting(const ActivityName& activity,
                                 const gfx::Image& image);
+
+  // Returns true if |result| indicates that the |cb| object passed to
+  // GetActivityIcons() has already called.
+  static bool HasIconsReadyCallbackRun(GetResult result);
 
   const ActivityToIconsMap& cached_icons_for_testing() { return cached_icons_; }
 

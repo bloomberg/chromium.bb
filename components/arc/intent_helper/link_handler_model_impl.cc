@@ -115,9 +115,10 @@ void LinkHandlerModelImpl::OnUrlHandlerList(
       activities.emplace_back(handlers_[i]->package_name,
                               handlers_[i]->activity_name);
     }
-    icon_info_notified = icon_loader_->GetActivityIcons(
+    const ActivityIconLoader::GetResult result = icon_loader_->GetActivityIcons(
         activities, base::Bind(&LinkHandlerModelImpl::NotifyObserver,
                                weak_ptr_factory_.GetWeakPtr()));
+    icon_info_notified = ActivityIconLoader::HasIconsReadyCallbackRun(result);
   }
 
   if (!icon_info_notified) {
