@@ -338,7 +338,7 @@ SkColor LocationBarView::GetColor(
     case EV_BUBBLE_TEXT_AND_BORDER:
       return ui::MaterialDesignController::IsModeMaterial()
                  ? GetSecureTextColor(
-                       GetToolbarModel()->GetSecurityLevel(false))
+                       security_state::SecurityStateModel::EV_SECURE)
                  : SkColorSetRGB(7, 149, 0);
   }
   NOTREACHED();

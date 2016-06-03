@@ -98,8 +98,8 @@ bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
 
 SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
-  // When editing, assume no security style.
-  return (input_in_progress() && !ignore_editing)
+  // When editing or empty, assume no security style.
+  return ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
              ? SecurityStateModel::NONE
              : delegate_->GetSecurityLevel();
 }
