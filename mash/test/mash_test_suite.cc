@@ -28,7 +28,7 @@ void MashTestSuite::Initialize() {
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
   base::FilePath mash_test_strings =
-      path.Append(FILE_PATH_LITERAL("mash_wm_resources.pak"));
+      path.Append(FILE_PATH_LITERAL("ash_mus_resources.pak"));
 
   ui::ResourceBundle::InitSharedInstanceWithPakPath(mash_test_strings);
 

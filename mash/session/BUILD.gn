@@ -25,10 +25,10 @@ source_set("lib") {
   ]
 
   data_deps = [
+    "//ash/mus",
     "//ash/sysui",
     "//mash/app_driver",
     "//mash/quick_launch",
-    "//mash/wm",
   ]
 }
 

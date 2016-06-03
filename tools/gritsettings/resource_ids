@@ -39,7 +39,7 @@
   "net/base/net_resources.grd": {
     "includes": [4000],
   },
-  "mash/wm/resources/mash_wm_resources.grd": {
+  "ash/mus/resources/ash_mus_resources.grd": {
     "structures": [4400],
   },
   "ui/resources/ui_unscaled_resources.grd": {

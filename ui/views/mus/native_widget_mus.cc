@@ -661,7 +661,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   aura::client::SetScreenPositionClient(hosted_window,
                                         screen_position_client_.get());
 
-  // TODO(erg): Remove this check when mash/wm/frame/move_event_handler.cc's
+  // TODO(erg): Remove this check when ash/mus/frame/move_event_handler.cc's
   // direct usage of mus::Window::SetPredefinedCursor() is switched to a
   // private method on WindowManagerClient.
   if (surface_type_ == mus::mojom::SurfaceType::DEFAULT) {

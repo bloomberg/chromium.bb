@@ -39,10 +39,10 @@ test("mash_unittests") {
     "test/mash_unittests.cc",
   ]
   deps = [
+    "//ash/mus:resources",
+    "//ash/mus:unittests",
     "//base",
     "//base/test:test_support",
-    "//mash/wm:resources",
-    "//mash/wm:unittests",
     "//services/shell/background:main",
     "//ui/aura",
     "//ui/base",
@@ -51,7 +51,7 @@ test("mash_unittests") {
   ]
   data_deps = [
     ":unittests_manifest",
-    "//mash/wm:resources",
+    "//ash/mus:resources",
   ]
 }
 

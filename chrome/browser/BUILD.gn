@@ -614,7 +614,7 @@ source_set("browser") {
       "//ui/views/mus:for_component",
     ]
     defines += [ "MOJO_SHELL_CLIENT" ]
-    data_deps += [ "//mash/wm" ]
+    data_deps += [ "//ash/mus" ]
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]

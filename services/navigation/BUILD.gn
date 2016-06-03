@@ -40,7 +40,7 @@ executable("navigation") {
 
   data_deps = [
     ":manifest",
-    "//mash/wm",
+    "//components/mus/test_wm",
   ]
 
   if (is_win) {

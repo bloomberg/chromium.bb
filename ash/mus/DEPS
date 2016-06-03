@@ -1,0 +1,16 @@
+include_rules = [
+  "-ash",
+  "+ash/common",
+  "+ash/mus",
+  "+ash/public",
+  "+components/mus/common",
+  "+components/mus/public",
+  "+grit/ash_mus_resources.h",
+  "+mash/session/public",
+  "+mash/shelf/public",
+  "+mojo/common",
+  "+mojo/public",
+  "+services/catalog/public",
+  "+services/shell/public",
+  "+services/tracing/public",
+]

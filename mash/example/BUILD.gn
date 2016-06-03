@@ -8,9 +8,9 @@ group("example") {
   testonly = true
 
   deps = [
+    "//ash/mus",
     "//mash/example/views_examples",
     "//mash/example/window_type_launcher",
-    "//mash/wm",
     "//services/shell/standalone",
   ]
 }
