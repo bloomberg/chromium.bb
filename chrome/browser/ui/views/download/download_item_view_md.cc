@@ -338,9 +338,9 @@ void DownloadItemViewMd::Layout() {
       child_origin.Offset(button_size.width() + kButtonPadding, 0);
     }
     discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-    DCHECK_EQ(GetPreferredSize().width(),
-              discard_button_->bounds().right() + kEndPadding);
-  } else {
+  }
+
+  if (mode_ != DANGEROUS_MODE) {
     dropdown_button_->SizeToPreferredSize();
     dropdown_button_->SetPosition(
         gfx::Point(width() - dropdown_button_->width() - kEndPadding,
@@ -368,9 +368,11 @@ gfx::Size DownloadItemViewMd::GetPreferredSize() const {
         std::max({child_height, button_size.height(), kWarningIconSize});
   } else {
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + kTextWidth +
-            dropdown_button_->GetPreferredSize().width() + kEndPadding;
+            kProgressTextPadding + kTextWidth + kEndPadding;
   }
+
+  if (mode_ != DANGEROUS_MODE)
+    width += dropdown_button_->GetPreferredSize().width();
 
   return gfx::Size(width, std::max(kDefaultHeight,
                                    2 * kMinimumVerticalPadding + child_height));
@@ -966,7 +968,7 @@ void DownloadItemViewMd::ShowWarningDialog() {
   AddChildView(dangerous_download_label_);
   SizeLabelToMinWidth();
 
-  dropdown_button_->SetVisible(false);
+  dropdown_button_->SetVisible(mode_ == MALICIOUS_MODE);
 }
 
 gfx::ImageSkia DownloadItemViewMd::GetWarningIcon() {
