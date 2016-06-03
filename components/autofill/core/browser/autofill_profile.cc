@@ -218,25 +218,6 @@ void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
   std::swap(*type_set, collapsed_set);
 }
 
-class FindByPhone {
- public:
-  FindByPhone(const base::string16& phone,
-              const std::string& country_code,
-              const std::string& app_locale)
-      : phone_(phone),
-        country_code_(country_code),
-        app_locale_(app_locale) {}
-
-  bool operator()(const base::string16& phone) {
-    return i18n::PhoneNumbersMatch(phone, phone_, country_code_, app_locale_);
-  }
-
- private:
-  base::string16 phone_;
-  std::string country_code_;
-  std::string app_locale_;
-};
-
 base::string16 NormalizeForComparison(const base::string16& text) {
   using icu::UnicodeString;
   using icu::Transliterator;
