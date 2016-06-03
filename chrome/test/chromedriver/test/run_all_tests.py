@@ -194,7 +194,6 @@ def main():
       # git hash rather than commit position, and 2) come from a different
       # download site (so we can't just convert the commit position to a hash).
       versions['51'] = '5a161bb6fe3d6bfbe2dafc0a7dd5831478f34277'
-      versions['50'] = '4acbec91b57f31a501264906aded632cc64c9300'
       versions['49'] = '7acdedefe3ddcb27b3fc826027f519bdb5d04d7e'
       # TODO(samuong): speculative fix for crbug.com/611886
       os.environ['CHROME_DEVEL_SANDBOX'] = '/opt/chromium/chrome_sandbox'
