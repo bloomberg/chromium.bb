@@ -1443,6 +1443,41 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['description', '-n', 'hihi']))
     self.assertEqual('hihi', ChangelistMock.desc)
 
+  def test_description_appends_bug_line(self):
+    current_desc = 'Some\n\nChange-Id: xxx'
+
+    def RunEditor(desc, _, **kwargs):
+      self.assertEquals(
+          '# Enter a description of the change.\n'
+          '# This will be displayed on the codereview site.\n'
+          '# The first line will also be used as the subject of the review.\n'
+          '#--------------------This line is 72 characters long'
+          '--------------------\n' +
+          # TODO(tandrii): fix this http://crbug.com/614587.
+          current_desc + '\n\nBUG=',
+          desc)
+      return current_desc + '\n\nBUG='
+
+    def UpdateDescriptionRemote(_, desc):
+      # TODO(tandrii): fix this http://crbug.com/614587.
+      self.assertEquals(desc, current_desc + '\n\nBUG=')
+
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *args: current_desc)
+    self.mock(git_cl._GerritChangelistImpl, 'UpdateDescriptionRemote',
+              UpdateDescriptionRemote)
+    self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
+
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        ((['git', 'config', 'rietveld.autoupdate'],), ''),
+        ((['git', 'config', 'rietveld.bug-prefix'],), ''),
+        ((['git', 'config', 'core.editor'],), 'vi'),
+    ]
+    self.assertEqual(0, git_cl.main(['description', '--gerrit']))
+
   def test_description_set_stdin(self):
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stdout', out)
