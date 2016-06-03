@@ -426,6 +426,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # The functions test have been persistently flaky on D3D9
     self.Flaky('conformance/glsl/functions/*',
         ['win', 'd3d9'], bug=415609)
+    self.Flaky('conformance/glsl/matrices/glsl-mat4-to-mat3.html',
+        ['win', 'd3d9'], bug=617148)
 
     # WIN / D3D9 / Intel failures
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
