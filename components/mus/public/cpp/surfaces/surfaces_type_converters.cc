@@ -40,8 +40,6 @@ using mus::mojom::Quad;
 using mus::mojom::QuadPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
-using mus::mojom::SharedQuadState;
-using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
 using mus::mojom::SolidColorQuadStatePtr;
 using mus::mojom::SurfaceQuadState;
@@ -79,18 +77,6 @@ static_assert(cc::YUVVideoDrawQuad::REC_601 ==
 // mojo.
 
 namespace {
-
-cc::SharedQuadState* ConvertSharedQuadState(
-    const mus::mojom::SharedQuadStatePtr& input,
-    cc::RenderPass* render_pass) {
-  cc::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-  state->SetAll(input->quad_to_target_transform, input->quad_layer_bounds,
-                input->visible_quad_layer_rect, input->clip_rect,
-                input->is_clipped, input->opacity,
-                static_cast<::SkXfermode::Mode>(input->blend_mode),
-                input->sorting_context_id);
-  return state;
-}
 
 bool ConvertDrawQuad(const QuadPtr& input,
                      const CompositorFrameMetadataPtr& metadata,
@@ -340,22 +326,6 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
 }
 
 // static
-mus::mojom::SharedQuadStatePtr
-TypeConverter<mus::mojom::SharedQuadStatePtr, cc::SharedQuadState>::Convert(
-    const cc::SharedQuadState& input) {
-  mus::mojom::SharedQuadStatePtr state = SharedQuadState::New();
-  state->quad_to_target_transform = input.quad_to_target_transform;
-  state->quad_layer_bounds = input.quad_layer_bounds;
-  state->visible_quad_layer_rect = input.visible_quad_layer_rect;
-  state->clip_rect = input.clip_rect;
-  state->is_clipped = input.is_clipped;
-  state->opacity = input.opacity;
-  state->blend_mode = static_cast<mus::mojom::SkXfermode>(input.blend_mode);
-  state->sorting_context_id = input.sorting_context_id;
-  return state;
-}
-
-// static
 PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
     const cc::RenderPass& input) {
   PassPtr pass = Pass::New();
@@ -365,7 +335,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
   pass->transform_to_root_target = input.transform_to_root_target;
   pass->has_transparent_background = input.has_transparent_background;
   Array<QuadPtr> quads(input.quad_list.size());
-  Array<mus::mojom::SharedQuadStatePtr> shared_quad_state(
+  Array<cc::SharedQuadState> shared_quad_state(
       input.shared_quad_state_list.size());
   const cc::SharedQuadState* last_sqs = nullptr;
   cc::SharedQuadStateList::ConstIterator next_sqs_iter =
@@ -375,8 +345,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
     const cc::DrawQuad& quad = **iter;
     quads[iter.index()] = Quad::From(quad);
     if (quad.shared_quad_state != last_sqs) {
-      shared_quad_state[next_sqs_iter.index()] =
-          SharedQuadState::From(**next_sqs_iter);
+      shared_quad_state[next_sqs_iter.index()] = **next_sqs_iter;
       last_sqs = *next_sqs_iter;
       ++next_sqs_iter;
     }
@@ -402,7 +371,8 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
                input->transform_to_root_target,
                input->has_transparent_background);
   for (size_t i = 0; i < input->shared_quad_states.size(); ++i) {
-    ConvertSharedQuadState(input->shared_quad_states[i], pass.get());
+    cc::SharedQuadState* state = pass->CreateAndAppendSharedQuadState();
+    *state = input->shared_quad_states[i];
   }
   cc::SharedQuadStateList::Iterator sqs_iter =
       pass->shared_quad_state_list.begin();

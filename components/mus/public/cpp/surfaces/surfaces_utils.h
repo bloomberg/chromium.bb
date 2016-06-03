@@ -8,6 +8,10 @@
 #include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
 #include "components/mus/public/interfaces/quads.mojom.h"
 
+namespace cc {
+class SharedQuadState;
+}
+
 namespace gfx {
 class Rect;
 class Size;
@@ -15,7 +19,7 @@ class Size;
 
 namespace mojo {
 
-MOJO_SURFACES_EXPORT mus::mojom::SharedQuadStatePtr CreateDefaultSQS(
+MOJO_SURFACES_EXPORT cc::SharedQuadState CreateDefaultSQS(
     const gfx::Size& size);
 
 // Constructs a pass with the given id, output_rect and damage_rect set to rect,

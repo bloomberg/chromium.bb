@@ -47,13 +47,6 @@ struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::QuadPtr, cc::DrawQuad> {
   static mus::mojom::QuadPtr Convert(const cc::DrawQuad& input);
 };
 
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<mus::mojom::SharedQuadStatePtr, cc::SharedQuadState> {
-  static mus::mojom::SharedQuadStatePtr Convert(
-      const cc::SharedQuadState& input);
-};
-
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const mus::mojom::PassPtr& input,
     const mus::mojom::CompositorFrameMetadataPtr& metadata,

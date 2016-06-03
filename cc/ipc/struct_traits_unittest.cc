@@ -39,6 +39,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(r);
   }
 
+  void EchoSharedQuadState(
+      const SharedQuadState& s,
+      const EchoSharedQuadStateCallback& callback) override {
+    callback.Run(s);
+  }
+
   void EchoSurfaceId(const SurfaceId& s,
                      const EchoSurfaceIdCallback& callback) override {
     callback.Run(s);
@@ -126,6 +132,34 @@ TEST_F(StructTraitsTest, SurfaceId) {
   EXPECT_EQ(id_namespace, output.id_namespace());
   EXPECT_EQ(local_id, output.local_id());
   EXPECT_EQ(nonce, output.nonce());
+}
+
+TEST_F(StructTraitsTest, SharedQuadState) {
+  const gfx::Transform quad_to_target_transform(1.f, 2.f, 3.f, 4.f, 5.f, 6.f,
+                                                7.f, 8.f, 9.f, 10.f, 11.f, 12.f,
+                                                13.f, 14.f, 15.f, 16.f);
+  const gfx::Size layer_bounds(1234, 5678);
+  const gfx::Rect visible_layer_rect(12, 34, 56, 78);
+  const gfx::Rect clip_rect(123, 456, 789, 101112);
+  const bool is_clipped = true;
+  const float opacity = 0.9f;
+  const SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+  const int sorting_context_id = 1337;
+  SharedQuadState input_sqs;
+  input_sqs.SetAll(quad_to_target_transform, layer_bounds, visible_layer_rect,
+                   clip_rect, is_clipped, opacity, blend_mode,
+                   sorting_context_id);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SharedQuadState output_sqs;
+  proxy->EchoSharedQuadState(input_sqs, &output_sqs);
+  EXPECT_EQ(quad_to_target_transform, output_sqs.quad_to_target_transform);
+  EXPECT_EQ(layer_bounds, output_sqs.quad_layer_bounds);
+  EXPECT_EQ(visible_layer_rect, output_sqs.visible_quad_layer_rect);
+  EXPECT_EQ(clip_rect, output_sqs.clip_rect);
+  EXPECT_EQ(is_clipped, output_sqs.is_clipped);
+  EXPECT_EQ(opacity, output_sqs.opacity);
+  EXPECT_EQ(blend_mode, output_sqs.blend_mode);
+  EXPECT_EQ(sorting_context_id, output_sqs.sorting_context_id);
 }
 
 TEST_F(StructTraitsTest, TransferableResource) {

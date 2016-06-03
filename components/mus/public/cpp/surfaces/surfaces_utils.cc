@@ -10,20 +10,18 @@
 
 using mus::mojom::Pass;
 using mus::mojom::PassPtr;
-using mus::mojom::SharedQuadState;
-using mus::mojom::SharedQuadStatePtr;
 
 namespace mojo {
 
-SharedQuadStatePtr CreateDefaultSQS(const gfx::Size& size) {
-  SharedQuadStatePtr sqs = SharedQuadState::New();
-  sqs->quad_layer_bounds = size;
-  sqs->visible_quad_layer_rect = gfx::Rect(size);
-  sqs->clip_rect = gfx::Rect(size);
-  sqs->is_clipped = false;
-  sqs->opacity = 1.f;
-  sqs->blend_mode = mus::mojom::SkXfermode::kSrc_Mode;
-  sqs->sorting_context_id = 0;
+cc::SharedQuadState CreateDefaultSQS(const gfx::Size& size) {
+  cc::SharedQuadState sqs;
+  sqs.quad_layer_bounds = size;
+  sqs.visible_quad_layer_rect = gfx::Rect(size);
+  sqs.clip_rect = gfx::Rect(size);
+  sqs.is_clipped = false;
+  sqs.opacity = 1.f;
+  sqs.blend_mode = SkXfermode::kSrc_Mode;
+  sqs.sorting_context_id = 0;
   return sqs;
 }
 

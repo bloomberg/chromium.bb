@@ -93,8 +93,7 @@ void BitmapUploader::Upload() {
   frame->resources.resize(0u);
 
   pass->quads.resize(0u);
-  pass->shared_quad_states.push_back(
-      mojo::CreateDefaultSQS(bounds.size()));
+  pass->shared_quad_states.push_back(mojo::CreateDefaultSQS(bounds.size()));
 
   if (bitmap_.get()) {
     gpu::gles2::GLES2Interface* gl = gles2_context_->interface();

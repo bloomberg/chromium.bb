@@ -35,8 +35,6 @@ using mus::mojom::Quad;
 using mus::mojom::QuadPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
-using mus::mojom::SharedQuadState;
-using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
 using mus::mojom::SolidColorQuadStatePtr;
 using mus::mojom::SurfaceQuadState;
@@ -166,8 +164,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   mus_pass->id.layer_id = 1;
   mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
-  SharedQuadStatePtr mus_sqs = SharedQuadState::New();
-  mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
+  mus_pass->shared_quad_states.push_back(cc::SharedQuadState());
 
   std::unique_ptr<cc::RenderPass> pass =
       mus_pass.To<std::unique_ptr<cc::RenderPass>>();
@@ -185,39 +182,11 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   mus_pass->id.layer_id = 1;
   mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
-  SharedQuadStatePtr mus_sqs = SharedQuadState::New();
-  mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
+  mus_pass->shared_quad_states.push_back(cc::SharedQuadState());
 
   std::unique_ptr<cc::RenderPass> pass =
       mus_pass.To<std::unique_ptr<cc::RenderPass>>();
   EXPECT_FALSE(pass);
-}
-
-TEST(SurfaceLibTest, SharedQuadState) {
-  gfx::Transform quad_to_target_transform;
-  quad_to_target_transform.Scale3d(0.3f, 0.7f, 0.9f);
-  gfx::Size quad_layer_bounds(57, 39);
-  gfx::Rect visible_quad_layer_rect(3, 7, 28, 42);
-  gfx::Rect clip_rect(9, 12, 21, 31);
-  bool is_clipped = true;
-  float opacity = 0.65f;
-  int sorting_context_id = 13;
-  ::SkXfermode::Mode blend_mode = ::SkXfermode::kSrcOver_Mode;
-  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(quad_to_target_transform, quad_layer_bounds,
-              visible_quad_layer_rect, clip_rect, is_clipped, opacity,
-              blend_mode, sorting_context_id);
-
-  SharedQuadStatePtr mus_sqs = SharedQuadState::From(*sqs);
-  ASSERT_FALSE(mus_sqs.is_null());
-  EXPECT_EQ(quad_to_target_transform, mus_sqs->quad_to_target_transform);
-  EXPECT_EQ(quad_layer_bounds, mus_sqs->quad_layer_bounds);
-  EXPECT_EQ(visible_quad_layer_rect, mus_sqs->visible_quad_layer_rect);
-  EXPECT_EQ(clip_rect, mus_sqs->clip_rect);
-  EXPECT_EQ(is_clipped, mus_sqs->is_clipped);
-  EXPECT_EQ(opacity, mus_sqs->opacity);
-  EXPECT_EQ(sorting_context_id, mus_sqs->sorting_context_id);
 }
 
 TEST(SurfaceLibTest, RenderPass) {

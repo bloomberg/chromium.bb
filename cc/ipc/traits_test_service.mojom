@@ -7,6 +7,7 @@ module cc.mojom;
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/returned_resource.mojom";
+import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/transferable_resource.mojom";
 
@@ -19,8 +20,12 @@ interface TraitsTestService {
   [Sync]
   EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
 
+
   [Sync]
   EchoReturnedResource(ReturnedResource r) => (ReturnedResource pass);
+
+  [Sync]
+  EchoSharedQuadState(SharedQuadState s) => (SharedQuadState pass);
 
   [Sync]
   EchoSurfaceId(SurfaceId s) => (SurfaceId pass);
