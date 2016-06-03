@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -15,12 +16,22 @@ namespace {
 
 static const char kMediaRecorderHtmlFile[] = "/media/mediarecorder_test.html";
 
+static struct EncodingParameters {
+  bool disable_accelerator;
+  std::string video_codec;
+} const kEncodingParameters[] = {
+    {true, "VP8"},  {true, "VP9"},  {true, "H264"},
+    {false, "VP8"}, {false, "VP9"}, {false, "H264"},
+};
+
 }  // namespace
 
 namespace content {
 
 // This class tests the recording of a media stream.
-class WebRtcMediaRecorderTest : public WebRtcContentBrowserTest {
+class WebRtcMediaRecorderTest
+    : public WebRtcContentBrowserTest,
+      public testing::WithParamInterface<struct EncodingParameters> {
  public:
   WebRtcMediaRecorderTest() {}
   ~WebRtcMediaRecorderTest() override {}
@@ -37,6 +48,14 @@ class WebRtcMediaRecorderTest : public WebRtcContentBrowserTest {
         switches::kEnableBlinkFeatures, "GetUserMedia");
   }
 
+  void MaybeForceDisableEncodeAccelerator(bool disable) {
+    if (!disable)
+      return;
+    // This flag is also used for encoding, https://crbug.com/616640.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableAcceleratedVideoDecode);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRtcMediaRecorderTest);
 };
@@ -49,14 +68,20 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, MediaRecorderStartAndStop) {
   MakeTypicalCall("testStartStopAndRecorderState();", kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest,
                        MediaRecorderStartAndDataAvailable) {
-  MakeTypicalCall("testStartAndDataAvailable();", kMediaRecorderHtmlFile);
+  MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
+  MakeTypicalCall(base::StringPrintf("testStartAndDataAvailable(\"%s\");",
+                                     GetParam().video_codec.c_str()),
+                  kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest,
                        MediaRecorderStartWithTimeSlice) {
-  MakeTypicalCall("testStartWithTimeSlice();", kMediaRecorderHtmlFile);
+  MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
+  MakeTypicalCall(base::StringPrintf("testStartWithTimeSlice(\"%s\");",
+                                     GetParam().video_codec.c_str()),
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, MediaRecorderResume) {
@@ -68,9 +93,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
   MakeTypicalCall("testIllegalResumeThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest,
                        MediaRecorderResumeAndDataAvailable) {
-  MakeTypicalCall("testResumeAndDataAvailable();", kMediaRecorderHtmlFile);
+  MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
+  MakeTypicalCall(base::StringPrintf("testResumeAndDataAvailable(\"%s\");",
+                                     GetParam().video_codec.c_str()),
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, MediaRecorderPause) {
@@ -144,5 +172,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
   MakeTypicalCall("testRemovingTrackFromMediaStreamFiresErrorEvent();",
                   kMediaRecorderHtmlFile);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        WebRtcMediaRecorderTest,
+                        testing::ValuesIn(kEncodingParameters));
 
 }  // namespace content
