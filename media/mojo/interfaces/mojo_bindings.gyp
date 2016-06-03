@@ -70,5 +70,30 @@
         '../../../services/shell/shell_public.gyp:shell_public',
       ],
     },
+    {
+      # GN version: //media/mojo/interfaces:image_capture
+      'target_name': 'image_capture_mojo_bindings',
+      'type': 'static_library',
+      'includes': [
+        '../../../mojo/mojom_bindings_generator.gypi',
+      ],
+      'sources': [
+        'image_capture.mojom',
+      ],
+    },
+    {
+      # GN version: //media/mojo/interfaces:image_capture
+      'target_name': 'image_capture_mojo_bindings_for_blink',
+      'type': 'static_library',
+      'variables': {
+        'for_blink': 'true',
+      },
+      'includes': [
+        '../../../mojo/mojom_bindings_generator.gypi',
+      ],
+      'sources': [
+        'image_capture.mojom',
+      ],
+    },
   ],
 }
