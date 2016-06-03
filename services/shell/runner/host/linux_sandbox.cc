@@ -38,12 +38,14 @@ intptr_t SandboxSIGSYSHandler(const struct sandbox::arch_seccomp_data& args,
   const sandbox::syscall_broker::BrokerProcess* broker_process =
       static_cast<const sandbox::syscall_broker::BrokerProcess*>(aux);
   switch (args.nr) {
+#if !defined(__aarch64__)
     case __NR_access:
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
     case __NR_open:
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
                                   static_cast<int>(args.args[1]));
+#endif
     case __NR_faccessat:
       if (static_cast<int>(args.args[0]) == AT_FDCWD) {
         return broker_process->Access(
