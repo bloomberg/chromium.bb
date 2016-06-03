@@ -523,13 +523,9 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
         ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
 
-    // m_document can be null, but not in any of the cases where csp is actually used below.
-    // ImageResourceTest.MultipartImage crashes w/o the m_document null check.
-    // I believe it's the Resource::Raw case.
-    const ContentSecurityPolicy* csp = m_document ? m_document->contentSecurityPolicy() : nullptr;
-
-    if (csp) {
-        if (!shouldBypassMainWorldCSP && !csp->allowRequest(resourceRequest.requestContext(), url, redirectStatus, cspReporting))
+    if (m_document) {
+        DCHECK(m_document->contentSecurityPolicy());
+        if (!shouldBypassMainWorldCSP && !m_document->contentSecurityPolicy()->allowRequest(resourceRequest.requestContext(), url, redirectStatus, cspReporting))
             return ResourceRequestBlockedReasonCSP;
     }
 
@@ -562,14 +558,6 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
             UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
         if (!url.user().isEmpty() || !url.pass().isEmpty())
             UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
-    }
-
-    // Measure the number of pages that load resources after a redirect
-    // when a CSP is active, to see if implementing CSP
-    // 'unsafe-redirect' is feasible.
-    if (csp && csp->isActive() && resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel && resourceRequest.frameType() != WebURLRequest::FrameTypeAuxiliary && redirectStatus == RedirectStatus::FollowedRedirect) {
-        ASSERT(frame()->document());
-        UseCounter::count(frame()->document(), UseCounter::ResourceLoadedAfterRedirectWithCSP);
     }
 
     // Last of all, check for mixed content. We do this last so that when

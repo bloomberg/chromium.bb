@@ -556,7 +556,6 @@ public:
         V8Animation_Onfinish_AttributeSetter = 701,
         V8Window_WebKitAnimationEvent_ConstructorGetter = 707,
         V8Window_WebKitAnimationEvent_AttributeSetter = 708,
-        ResourceLoadedAfterRedirectWithCSP = 709,
         CryptoGetRandomValues = 710,
         SubtleCryptoEncrypt = 711,
         SubtleCryptoDecrypt = 712,
