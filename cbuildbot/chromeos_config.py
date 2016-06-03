@@ -88,9 +88,15 @@ class HWTestList(object):
     async_kwargs['suite_min_duts'] = 1
     async_kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
 
+    if IS_RELEASE_BRANCH:
+      bvt_inline_kwargs = async_kwargs
+    else:
+      bvt_inline_kwargs = kwargs.copy()
+      bvt_inline_kwargs['timeout'] = 120 * 60
+
     # BVT + AU suite.
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    timeout=120*60, **kwargs),
+                                    **bvt_inline_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                     blocking=True, **au_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
