@@ -38,18 +38,13 @@ import urllib2
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.memoized import memoized
 from webkitpy.common.system.executive import ScriptError
-from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
+from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
 from webkitpy.layout_tests.port import factory
 from webkitpy.tool.commands.command import Command
 
 
 _log = logging.getLogger(__name__)
-
-
-# FIXME: Should TestResultWriter know how to compute this string?
-def _baseline_name(fs, test_name, suffix):
-    return fs.splitext(test_name)[0] + TestResultWriter.FILENAME_SUFFIX_EXPECTED + "." + suffix
 
 
 class AbstractRebaseliningCommand(Command):
@@ -247,10 +242,10 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         files_to_delete = []
         files_to_add = []
         for suffix in self._baseline_suffix_list:
-            baseline_name = _baseline_name(self._tool.filesystem, test_name, suffix)
-            succeeded, more_files_to_delete, more_files_to_add = optimizer.optimize(baseline_name)
+            name = baseline_name(self._tool.filesystem, test_name, suffix)
+            succeeded, more_files_to_delete, more_files_to_add = optimizer.optimize(name)
             if not succeeded:
-                print "Heuristics failed to optimize %s" % baseline_name
+                _log.error("Heuristics failed to optimize %s", name)
             files_to_delete.extend(more_files_to_delete)
             files_to_add.extend(more_files_to_add)
         return files_to_delete, files_to_add
@@ -259,7 +254,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         self._baseline_suffix_list = options.suffixes.split(',')
         port_names = tool.port_factory.all_port_names(options.platform)
         if not port_names:
-            print "No port names match '%s'" % options.platform
+            _log.error("No port names match '%s'", options.platform)
             return
         port = tool.port_factory.get(port_names[0])
         optimizer = BaselineOptimizer(tool, port, port_names, skip_scm_commands=options.no_modify_scm)

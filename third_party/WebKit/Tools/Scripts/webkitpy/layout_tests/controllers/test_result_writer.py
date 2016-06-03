@@ -96,6 +96,11 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
             writer.create_repaint_overlay_result(driver_output.text, expected_driver_output.text)
 
 
+def baseline_name(filesystem, test_name, suffix):
+    base = filesystem.splitext(test_name)[0]
+    return '%s%s.%s' % (base, TestResultWriter.FILENAME_SUFFIX_EXPECTED, suffix)
+
+
 class TestResultWriter(object):
     """A class which handles all writing operations to the result directory."""
 

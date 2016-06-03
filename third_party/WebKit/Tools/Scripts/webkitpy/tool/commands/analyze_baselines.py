@@ -30,16 +30,12 @@ import logging
 import optparse
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
+from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
 
 _log = logging.getLogger(__name__)
-
-
-# FIXME: Should TestResultWriter know how to compute this string?
-def _baseline_name(fs, test_name, suffix):
-    return fs.splitext(test_name)[0] + TestResultWriter.FILENAME_SUFFIX_EXPECTED + "." + suffix
 
 
 class AnalyzeBaselines(AbstractRebaseliningCommand):
@@ -62,13 +58,13 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
 
     def _analyze_baseline(self, options, test_name):
         for suffix in self._baseline_suffix_list:
-            baseline_name = _baseline_name(self._tool.filesystem, test_name, suffix)
-            results_by_directory = self._baseline_optimizer.read_results_by_directory(baseline_name)
+            name = baseline_name(self._tool.filesystem, test_name, suffix)
+            results_by_directory = self._baseline_optimizer.read_results_by_directory(name)
             if results_by_directory:
-                self._write("%s:" % baseline_name)
+                self._write("%s:" % name)
                 self._baseline_optimizer.write_by_directory(results_by_directory, self._write, "  ")
             elif options.missing:
-                self._write("%s: (no baselines found)" % baseline_name)
+                self._write("%s: (no baselines found)" % name)
 
     def execute(self, options, args, tool):
         self._baseline_suffix_list = options.suffixes.split(',')
