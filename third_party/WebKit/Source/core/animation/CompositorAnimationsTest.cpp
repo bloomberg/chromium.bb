@@ -33,7 +33,6 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
-#include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
@@ -69,7 +68,7 @@ protected:
     RefPtr<TimingFunction> m_stepTimingFunction;
 
     Timing m_timing;
-    CompositorAnimationsImpl::CompositorTiming m_compositorTiming;
+    CompositorAnimations::CompositorTiming m_compositorTiming;
     OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector2;
     Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect2;
     OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector5;
@@ -88,7 +87,7 @@ protected:
         m_stepTimingFunction = StepsTimingFunction::create(1, StepsTimingFunction::StepPosition::END);
 
         m_timing = createCompositableTiming();
-        m_compositorTiming = CompositorAnimationsImpl::CompositorTiming();
+        m_compositorTiming = CompositorAnimations::CompositorTiming();
         // Make sure the CompositableTiming is really compositable, otherwise
         // most other tests will fail.
         ASSERT(convertTimingForCompositor(m_timing, m_compositorTiming));
@@ -109,13 +108,13 @@ protected:
     }
 
 public:
-    bool convertTimingForCompositor(const Timing& t, CompositorAnimationsImpl::CompositorTiming& out)
+    bool convertTimingForCompositor(const Timing& t, CompositorAnimations::CompositorTiming& out)
     {
-        return CompositorAnimationsImpl::convertTimingForCompositor(t, 0, out, 1);
+        return CompositorAnimations::convertTimingForCompositor(t, 0, out, 1);
     }
     bool isCandidateForAnimationOnCompositor(const Timing& timing, const EffectModel& effect)
     {
-        return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *m_element.get(), nullptr, effect, 1);
+        return CompositorAnimations::isCandidateForAnimationOnCompositor(timing, *m_element.get(), nullptr, effect, 1);
     }
     void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<CompositorAnimation>>& animations)
     {
@@ -123,11 +122,11 @@ public:
     }
     void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<CompositorAnimation>>& animations, double playerPlaybackRate)
     {
-        CompositorAnimationsImpl::getAnimationOnCompositor(timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations, playerPlaybackRate);
+        CompositorAnimations::getAnimationOnCompositor(timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations, playerPlaybackRate);
     }
     bool getAnimationBounds(FloatBox& boundingBox, const EffectModel& effect, double minValue, double maxValue)
     {
-        return CompositorAnimations::instance()->getAnimatedBoundingBox(boundingBox, effect, minValue, maxValue);
+        return CompositorAnimations::getAnimatedBoundingBox(boundingBox, effect, minValue, maxValue);
     }
 
     bool duplicateSingleKeyframeAndTestIsCandidateOnResult(AnimatableValueKeyframe* frame)
@@ -983,7 +982,7 @@ TEST_F(AnimationCompositorAnimationsTest, cancelIncompatibleCompositorAnimations
     // The first animation for opacity is ok to run on compositor.
     KeyframeEffect* keyframeEffect1 = KeyframeEffect::create(element.get(), animationEffect1, timing);
     Animation* animation1 = m_timeline->play(keyframeEffect1);
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), animation1, *animationEffect1, 1));
+    EXPECT_TRUE(CompositorAnimations::isCandidateForAnimationOnCompositor(timing, *element.get(), animation1, *animationEffect1, 1));
 
     // simulate KeyframeEffect::maybeStartAnimationOnCompositor
     Vector<int> compositorAnimationIds;
@@ -994,7 +993,7 @@ TEST_F(AnimationCompositorAnimationsTest, cancelIncompatibleCompositorAnimations
     // The second animation for opacity is not ok to run on compositor.
     KeyframeEffect* keyframeEffect2 = KeyframeEffect::create(element.get(), animationEffect2, timing);
     Animation* animation2 = m_timeline->play(keyframeEffect2);
-    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, *element.get(), animation2, *animationEffect2, 1));
+    EXPECT_FALSE(CompositorAnimations::isCandidateForAnimationOnCompositor(timing, *element.get(), animation2, *animationEffect2, 1));
     EXPECT_FALSE(animation2->hasActiveAnimationsOnCompositor());
 
     // A fallback to blink implementation needed, so cancel all compositor-side opacity animations for this element.

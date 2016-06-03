@@ -31,8 +31,8 @@
 #include "core/animation/CompositorAnimations.h"
 
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/ElementAnimations.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
@@ -41,7 +41,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/AnimationTranslationUtil.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
@@ -141,19 +140,6 @@ bool hasIncompatibleAnimations(const Element& targetElement, const Animation& an
 
 } // namespace
 
-CompositorAnimations::CompositorAnimations()
-{
-}
-
-CompositorAnimations* CompositorAnimations::instance(CompositorAnimations* newInstance)
-{
-    static CompositorAnimations* instance = new CompositorAnimations();
-    if (newInstance) {
-        instance = newInstance;
-    }
-    return instance;
-}
-
 bool CompositorAnimations::isCompositableProperty(CSSPropertyID property)
 {
     for (CSSPropertyID id : compositableProperties) {
@@ -173,7 +159,7 @@ const CSSPropertyID CompositorAnimations::compositableProperties[7] = {
     CSSPropertyBackdropFilter
 };
 
-bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const EffectModel& effect, double minValue, double maxValue) const
+bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const EffectModel& effect, double minValue, double maxValue)
 {
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
@@ -299,8 +285,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (animationToAdd && hasIncompatibleAnimations(targetElement, *animationToAdd, effect))
         return false;
 
-    CompositorAnimationsImpl::CompositorTiming out;
-    if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, 0, out, animationPlaybackRate))
+    CompositorTiming out;
+    if (!convertTimingForCompositor(timing, 0, out, animationPlaybackRate))
         return false;
 
     return true;
@@ -348,7 +334,7 @@ void CompositorAnimations::startAnimationOnCompositor(const Element& element, in
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
     Vector<OwnPtr<CompositorAnimation>> animations;
-    CompositorAnimationsImpl::getAnimationOnCompositor(timing, group, startTime, timeOffset, keyframeEffect, animations, animationPlaybackRate);
+    getAnimationOnCompositor(timing, group, startTime, timeOffset, keyframeEffect, animations, animationPlaybackRate);
     ASSERT(!animations.isEmpty());
     for (auto& compositorAnimation : animations) {
         int id = compositorAnimation->id();
@@ -425,11 +411,7 @@ void CompositorAnimations::attachCompositedLayers(const Element& element, const 
     compositorPlayer->attachLayer(layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer());
 }
 
-// -----------------------------------------------------------------------
-// CompositorAnimationsImpl
-// -----------------------------------------------------------------------
-
-bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, double timeOffset, CompositorTiming& out, double animationPlaybackRate)
+bool CompositorAnimations::convertTimingForCompositor(const Timing& timing, double timeOffset, CompositorTiming& out, double animationPlaybackRate)
 {
     timing.assertValid();
 
@@ -440,12 +422,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     if (std::isnan(timing.iterationDuration) || !timing.iterationCount || !timing.iterationDuration)
         return false;
 
-    if (!std::isfinite(timing.iterationCount)) {
-        out.adjustedIterationCount = -1;
-    } else {
-        out.adjustedIterationCount = timing.iterationCount;
-    }
-
+    out.adjustedIterationCount = std::isfinite(timing.iterationCount) ? timing.iterationCount : -1;
     out.scaledDuration = timing.iterationDuration;
     out.direction = timing.direction;
     // Compositor's time offset is positive for seeking into the animation.
@@ -453,7 +430,13 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     out.playbackRate = timing.playbackRate * animationPlaybackRate;
     out.fillMode = timing.fillMode == Timing::FillModeAuto ? Timing::FillModeNone : timing.fillMode;
     out.iterationStart = timing.iterationStart;
-    out.assertValid();
+
+    DCHECK_GT(out.scaledDuration, 0);
+    DCHECK(std::isfinite(out.scaledTimeOffset));
+    DCHECK(out.adjustedIterationCount > 0 || out.adjustedIterationCount == -1);
+    DCHECK(std::isfinite(out.playbackRate) && out.playbackRate);
+    DCHECK_GE(out.iterationStart, 0);
+
     return true;
 }
 
@@ -573,7 +556,7 @@ void addKeyframesToCurve(PlatformAnimationCurveType& curve, const AnimatableValu
 
 } // namespace
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate)
+void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;

@@ -932,7 +932,6 @@
             'animation/CSSVisibilityInterpolationType.h',
             'animation/CompositorAnimations.cpp',
             'animation/CompositorAnimations.h',
-            'animation/CompositorAnimationsImpl.h',
             'animation/CompositorPendingAnimations.cpp',
             'animation/CompositorPendingAnimations.h',
             'animation/CustomCompositorAnimations.cpp',

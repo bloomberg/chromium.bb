@@ -41,35 +41,42 @@
 namespace blink {
 
 class Animation;
+class CompositorAnimation;
 class Element;
 class FloatBox;
+class KeyframeEffectModelBase;
 
 class CORE_EXPORT CompositorAnimations {
-    USING_FAST_MALLOC(CompositorAnimations);
-    WTF_MAKE_NONCOPYABLE(CompositorAnimations);
+    STATIC_ONLY(CompositorAnimations);
 public:
-    static CompositorAnimations* instance() { return instance(0); }
-    static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }
     static bool isCompositableProperty(CSSPropertyID);
     static const CSSPropertyID compositableProperties[7];
 
-    virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const Animation*, const EffectModel&, double animationPlaybackRate);
-    virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const Animation&, const EffectModel&);
-    virtual bool canStartAnimationOnCompositor(const Element&);
-    virtual void startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const Animation&, const EffectModel&, Vector<int>& startedAnimationIds, double animationPlaybackRate);
-    virtual void cancelAnimationOnCompositor(const Element&, const Animation&, int id);
-    virtual void pauseAnimationForTestingOnCompositor(const Element&, const Animation&, int id, double pauseTime);
+    static bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const Animation*, const EffectModel&, double animationPlaybackRate);
+    static void cancelIncompatibleAnimationsOnCompositor(const Element&, const Animation&, const EffectModel&);
+    static bool canStartAnimationOnCompositor(const Element&);
+    static void startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const Animation&, const EffectModel&, Vector<int>& startedAnimationIds, double animationPlaybackRate);
+    static void cancelAnimationOnCompositor(const Element&, const Animation&, int id);
+    static void pauseAnimationForTestingOnCompositor(const Element&, const Animation&, int id, double pauseTime);
 
-    virtual bool canAttachCompositedLayers(const Element&, const Animation&);
-    virtual void attachCompositedLayers(const Element&, const Animation&);
+    static bool canAttachCompositedLayers(const Element&, const Animation&);
+    static void attachCompositedLayers(const Element&, const Animation&);
 
-    virtual bool getAnimatedBoundingBox(FloatBox&, const EffectModel&, double minValue, double maxValue) const;
+    static bool getAnimatedBoundingBox(FloatBox&, const EffectModel&, double minValue, double maxValue);
 
-protected:
-    CompositorAnimations();
+    struct CompositorTiming {
+        Timing::PlaybackDirection direction;
+        double scaledDuration;
+        double scaledTimeOffset;
+        double adjustedIterationCount;
+        double playbackRate;
+        Timing::FillMode fillMode;
+        double iterationStart;
+    };
 
-private:
-    static CompositorAnimations* instance(CompositorAnimations* newInstance);
+    static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double animationPlaybackRate);
+
+    static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate);
 };
 
 } // namespace blink
