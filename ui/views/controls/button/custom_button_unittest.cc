@@ -509,4 +509,79 @@ TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
             ink_drop_delegate->GetTargetInkDropState());
 }
 
+TEST_F(CustomButtonTest, InkDropShowHideOnMouseDragged) {
+  gfx::Point center(10, 10);
+  gfx::Point oob(-1, -1);
+
+  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseDragged(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseDragged(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseDragged(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseReleased(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_FALSE(button()->pressed());
+}
+
+TEST_F(CustomButtonTest, InkDropStaysHiddenWhileDragging) {
+  gfx::Point center(10, 10);
+  gfx::Point oob(-1, -1);
+
+  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate->GetTargetInkDropState());
+
+  SetDraggedView(button());
+  widget()->SetCapture(button());
+  widget()->ReleaseCapture();
+
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseDragged(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseDragged(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+
+  SetDraggedView(nullptr);
+}
+
 }  // namespace views
