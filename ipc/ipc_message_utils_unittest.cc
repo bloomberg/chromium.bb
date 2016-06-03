@@ -105,8 +105,8 @@ TEST(IPCMessageUtilsTest, ValueSize) {
   value->SetWithoutPathExpansion("nested", std::move(nested_dict));
 
   std::unique_ptr<base::ListValue> list_value(new base::ListValue);
-  list_value->Append(new base::StringValue("im a string"));
-  list_value->Append(new base::StringValue("im another string"));
+  list_value->AppendString("im a string");
+  list_value->AppendString("im another string");
   value->SetWithoutPathExpansion("awesome-list", std::move(list_value));
 
   base::Pickle pickle;
