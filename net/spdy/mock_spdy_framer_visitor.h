@@ -74,7 +74,7 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD4(OnPriority,
                void(SpdyStreamId stream_id,
                     SpdyStreamId parent_stream_id,
-                    uint8_t weight,
+                    int weight,
                     bool exclusive));
   MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));
 
