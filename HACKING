@@ -224,15 +224,18 @@ place where you can create a zip file. The LDFLAGS='-all-static'
 ensures that libgcc is linked in statically. Otherwise the users need
 to have libgcc_s_sjlj-1.dll.
 
+Some users want the dlls unversioned. To achieve that add
+'-avoid-version' to LDFLAGS.
+
   ./configure --build=i686-pc-linux-gnu --host=i686-w64-mingw32 --prefix=/tmp/liblouis-mingw32
-  make LDFLAGS='-Xcompiler -static-libgcc'
+  make LDFLAGS='-avoid-version -Xcompiler -static-libgcc'
   make install
   zip -r liblouis-mingw32msvc.zip /tmp/liblouis-mingw32
 
 To compile for win64, use the MinGW-w64 cross-compiler:
 
   ./configure --build=i686-pc-linux-gnu --host=x86_64-w64-mingw32 --prefix=/tmp/liblouis-w64-mingw32
-  make LDFLAGS='-Xcompiler -static-libgcc'
+  make LDFLAGS='-avoid-version -Xcompiler -static-libgcc'
   make install
   zip -r liblouis-w64-mingw32.zip /tmp/liblouis-w64-mingw32
 
