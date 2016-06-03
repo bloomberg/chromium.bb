@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/vr/test/fake_vr_device_provider.h"
+#include "device/vr/test/fake_vr_device_provider.h"
 
-namespace content {
+namespace device {
 
 FakeVRDeviceProvider::FakeVRDeviceProvider() : VRDeviceProvider() {
   initialized_ = false;
 }
 
-FakeVRDeviceProvider::~FakeVRDeviceProvider() {
-}
+FakeVRDeviceProvider::~FakeVRDeviceProvider() {}
 
 void FakeVRDeviceProvider::AddDevice(VRDevice* device) {
   devices_.push_back(device);
@@ -28,11 +27,11 @@ void FakeVRDeviceProvider::RemoveDevice(VRDevice* device) {
   }
 }
 
-void FakeVRDeviceProvider::GetDevices(std::vector<VRDevice*>& devices) {
+void FakeVRDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
   std::vector<VRDevice*>::iterator iter;
 
   for (auto device : devices_) {
-    devices.push_back(device);
+    devices->push_back(device);
   }
 }
 
@@ -40,4 +39,4 @@ void FakeVRDeviceProvider::Initialize() {
   initialized_ = true;
 }
 
-}  // namespace content
+}  // namespace device

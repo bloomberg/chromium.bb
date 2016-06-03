@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_PROVIDER_H_
-#define CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_PROVIDER_H_
+#ifndef DEVICE_VR_TEST_FAKE_VR_DEVICE_PROVIDER_H_
+#define DEVICE_VR_TEST_FAKE_VR_DEVICE_PROVIDER_H_
 
 #include <vector>
-#include "content/browser/vr/vr_device.h"
-#include "content/browser/vr/vr_device_provider.h"
+#include "device/vr/vr_device.h"
+#include "device/vr/vr_device_provider.h"
 
-namespace content {
+namespace device {
 
 class FakeVRDeviceProvider : public VRDeviceProvider {
  public:
@@ -22,7 +22,7 @@ class FakeVRDeviceProvider : public VRDeviceProvider {
   void RemoveDevice(VRDevice* device);
   bool IsInitialized() { return initialized_; }
 
-  void GetDevices(std::vector<VRDevice*>& devices) override;
+  void GetDevices(std::vector<VRDevice*>* devices) override;
   void Initialize() override;
 
  private:
@@ -30,6 +30,6 @@ class FakeVRDeviceProvider : public VRDeviceProvider {
   bool initialized_;
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_PROVIDER_H_
+#endif  // DEVICE_VR_TEST_FAKE_VR_DEVICE_PROVIDER_H_

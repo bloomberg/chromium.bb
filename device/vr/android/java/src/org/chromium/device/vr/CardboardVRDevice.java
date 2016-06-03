@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.input;
+package org.chromium.device.vr;
 
 import android.content.Context;
 
@@ -19,7 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  * This is the implementation of the C++ counterpart CardboardVRDevice.
  */
-@JNINamespace("content")
+@JNINamespace("device")
 class CardboardVRDevice {
     private static final String TAG = "CardboardVRDevice";
     private final HeadMountedDisplayManager mHMDManager;

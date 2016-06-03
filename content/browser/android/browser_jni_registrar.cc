@@ -38,7 +38,6 @@
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/time_zone_monitor_android.h"
-#include "content/browser/vr/android/cardboard/cardboard_vr_device.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "mojo/android/system/core_impl.h"
 
@@ -58,10 +57,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
          RegisterNetworkObserver},
     {"BrowserAccessibilityManager",
      content::RegisterBrowserAccessibilityManager},
-#if defined(ENABLE_WEBVR)
-    {"CardboardVRDevice",
-     content::CardboardVRDevice::RegisterCardboardVRDevice},
-#endif
     {"ContentViewCore", content::RegisterContentViewCore},
     {"ContentViewRenderView",
      content::ContentViewRenderView::RegisterContentViewRenderView},

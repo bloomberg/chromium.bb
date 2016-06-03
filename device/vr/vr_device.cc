@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/vr/vr_device.h"
-#include "content/browser/vr/vr_device_provider.h"
+#include "device/vr/vr_device.h"
+#include "device/vr/vr_device_provider.h"
 
-namespace content {
+namespace device {
 
 unsigned int VRDevice::next_id_ = 1;
 
@@ -16,7 +16,6 @@ VRDevice::VRDevice(VRDeviceProvider* provider)
     next_id_++;
 }
 
-VRDevice::~VRDevice() {
-}
+VRDevice::~VRDevice() {}
 
-}  // namespace content
+}  // namespace device

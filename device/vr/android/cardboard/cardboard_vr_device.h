@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_H
-#define CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_H
+#ifndef DEVICE_VR_CARDBOARD_VR_DEVICE_H
+#define DEVICE_VR_CARDBOARD_VR_DEVICE_H
 
 #include <jni.h>
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "content/browser/vr/vr_device.h"
+#include "device/vr/vr_device.h"
 
-namespace content {
+namespace device {
 
 class CardboardVRDevice : public VRDevice {
  public:
@@ -31,6 +31,6 @@ class CardboardVRDevice : public VRDevice {
   DISALLOW_COPY_AND_ASSIGN(CardboardVRDevice);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_H
+#endif  // DEVICE_VR_CARDBOARD_VR_DEVICE_H

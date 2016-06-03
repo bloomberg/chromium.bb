@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/vr/android/cardboard/cardboard_vr_device_provider.h"
+#include "device/vr/android/cardboard/cardboard_vr_device_provider.h"
 
-#include "content/browser/vr/android/cardboard/cardboard_vr_device.h"
+#include "device/vr/android/cardboard/cardboard_vr_device.h"
 
-namespace content {
+namespace device {
 
-CardboardVRDeviceProvider::CardboardVRDeviceProvider() : VRDeviceProvider() {
-}
+CardboardVRDeviceProvider::CardboardVRDeviceProvider() : VRDeviceProvider() {}
 
-CardboardVRDeviceProvider::~CardboardVRDeviceProvider() {
-}
+CardboardVRDeviceProvider::~CardboardVRDeviceProvider() {}
 
 void CardboardVRDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
   if (!cardboard_device_) {
@@ -26,4 +24,4 @@ void CardboardVRDeviceProvider::Initialize() {
   // No initialization needed for Cardboard devices.
 }
 
-}  // namespace content
+}  // namespace device

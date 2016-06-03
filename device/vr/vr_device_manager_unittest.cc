@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/vr/vr_device_manager.h"
+#include "device/vr/vr_device_manager.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "content/browser/vr/test/fake_vr_device.h"
-#include "content/browser/vr/test/fake_vr_device_provider.h"
-#include "content/browser/vr/vr_device_provider.h"
+#include "device/vr/test/fake_vr_device.h"
+#include "device/vr/test/fake_vr_device_provider.h"
+#include "device/vr/vr_device_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace device {
 
 class VRDeviceManagerTest : public testing::Test {
  protected:
@@ -32,11 +32,9 @@ class VRDeviceManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VRDeviceManagerTest);
 };
 
-VRDeviceManagerTest::VRDeviceManagerTest() {
-}
+VRDeviceManagerTest::VRDeviceManagerTest() {}
 
-VRDeviceManagerTest::~VRDeviceManagerTest() {
-}
+VRDeviceManagerTest::~VRDeviceManagerTest() {}
 
 void VRDeviceManagerTest::SetUp() {
   std::unique_ptr<FakeVRDeviceProvider> provider(new FakeVRDeviceProvider());
@@ -97,4 +95,4 @@ TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
   EXPECT_EQ(webvr_devices[0]->index, device2->id());
 }
 
-}  // namespace content
+}  // namespace device

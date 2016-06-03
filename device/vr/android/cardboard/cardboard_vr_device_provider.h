@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_PROVIDER_H
-#define CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_PROVIDER_H
+#ifndef DEVICE_VR_CARDBOARD_VR_DEVICE_PROVIDER_H
+#define DEVICE_VR_CARDBOARD_VR_DEVICE_PROVIDER_H
 
 #include <map>
 #include <memory>
 
 #include "base/macros.h"
-#include "content/browser/vr/vr_device.h"
-#include "content/browser/vr/vr_device_provider.h"
+#include "device/vr/vr_device.h"
+#include "device/vr/vr_device_provider.h"
 
-namespace content {
+namespace device {
 
 class CardboardVRDeviceProvider : public VRDeviceProvider {
  public:
@@ -28,6 +28,6 @@ class CardboardVRDeviceProvider : public VRDeviceProvider {
   DISALLOW_COPY_AND_ASSIGN(CardboardVRDeviceProvider);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_VR_CARDBOARD_VR_DEVICE_PROVIDER_H
+#endif  // DEVICE_VR_CARDBOARD_VR_DEVICE_PROVIDER_H

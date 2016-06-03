@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_VR_VR_DEVICE_PROVIDER_H
-#define CONTENT_BROWSER_VR_VR_DEVICE_PROVIDER_H
+#ifndef DEVICE_VR_VR_DEVICE_PROVIDER_H
+#define DEVICE_VR_VR_DEVICE_PROVIDER_H
 
 #include <vector>
 
-namespace content {
+namespace device {
 
 class VRDevice;
 
@@ -22,6 +22,6 @@ class VRDeviceProvider {
   virtual void Initialize() = 0;
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_VR_VR_DEVICE_PROVIDER_H
+#endif  // DEVICE_VR_VR_DEVICE_PROVIDER_H

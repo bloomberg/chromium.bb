@@ -17,6 +17,7 @@ include_rules = [
   "+content/public/browser",
   "+device/battery",  # For battery status service.
   "+device/vibration",  # For Vibration API
+  "+device/vr",  # For WebVR API
   "+gin/v8_initializer.h",
   "+mojo",
   "+services",

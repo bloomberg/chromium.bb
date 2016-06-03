@@ -95,8 +95,8 @@
 
 #if defined(ENABLE_WEBVR)
 #include "base/command_line.h"
-#include "content/browser/vr/vr_device_manager.h"
 #include "content/public/common/content_switches.h"
+#include "device/vr/vr_device_manager.h" // nogncheck
 #endif
 
 using base::TimeDelta;
@@ -2026,7 +2026,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
 
   if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
     GetServiceRegistry()->AddService<blink::mojom::VRService>(
-        base::Bind(&VRDeviceManager::BindRequest));
+        base::Bind(&device::VRDeviceManager::BindRequest));
   }
 #endif
 

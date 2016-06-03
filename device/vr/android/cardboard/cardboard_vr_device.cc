@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/vr/android/cardboard/cardboard_vr_device.h"
+#include "device/vr/android/cardboard/cardboard_vr_device.h"
 
 #include <math.h>
 #include <algorithm>
@@ -21,7 +21,7 @@
 
 using base::android::AttachCurrentThread;
 
-namespace content {
+namespace device {
 
 bool CardboardVRDevice::RegisterCardboardVRDevice(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -85,7 +85,7 @@ blink::mojom::VRDisplayPtr CardboardVRDevice::GetVRDevice() {
 
   float ipd = Java_CardboardVRDevice_getIpd(env, j_cardboard_device_.obj());
 
-  left_eye->offset= mojo::Array<float>::New(3);
+  left_eye->offset = mojo::Array<float>::New(3);
   left_eye->offset[0] = ipd * -0.5f;
   left_eye->offset[1] = 0.0f;
   left_eye->offset[2] = 0.0f;
@@ -154,4 +154,4 @@ void CardboardVRDevice::ResetPose() {
                                      j_cardboard_device_.obj());
 }
 
-}  // namespace content
+}  // namespace device

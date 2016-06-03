@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_VR_VR_DEVICE_H
-#define CONTENT_BROWSER_VR_VR_DEVICE_H
+#ifndef DEVICE_VR_VR_DEVICE_H
+#define DEVICE_VR_VR_DEVICE_H
 
 #include "base/macros.h"
+#include "device/vr/vr_export.h"
 #include "third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h"
 
 namespace blink {
@@ -16,7 +17,7 @@ namespace ui {
 class BaseWindow;
 }
 
-namespace content {
+namespace device {
 
 class VRDeviceProvider;
 
@@ -24,11 +25,11 @@ const unsigned int VR_DEVICE_LAST_ID = 0xFFFFFFFF;
 
 class VRDevice {
  public:
-  explicit VRDevice(VRDeviceProvider* provider);
-  virtual ~VRDevice();
+  DEVICE_VR_EXPORT explicit VRDevice(VRDeviceProvider* provider);
+  DEVICE_VR_EXPORT virtual ~VRDevice();
 
-  VRDeviceProvider* provider() const { return provider_; }
-  unsigned int id() const { return id_; }
+  DEVICE_VR_EXPORT VRDeviceProvider* provider() const { return provider_; }
+  DEVICE_VR_EXPORT unsigned int id() const { return id_; }
 
   virtual blink::mojom::VRDisplayPtr GetVRDevice() = 0;
   virtual blink::mojom::VRPosePtr GetPose() = 0;
@@ -43,6 +44,6 @@ class VRDevice {
   DISALLOW_COPY_AND_ASSIGN(VRDevice);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_VR_VR_DEVICE_H
+#endif  // DEVICE_VR_VR_DEVICE_H

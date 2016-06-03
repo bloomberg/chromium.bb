@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/vr/vr_device_manager.h"
+#include "device/vr/vr_device_manager.h"
 
 #include <utility>
 
@@ -11,10 +11,10 @@
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/vr/android/cardboard/cardboard_vr_device_provider.h"
+#include "device/vr/android/cardboard/cardboard_vr_device_provider.h"
 #endif
 
-namespace content {
+namespace device {
 
 namespace {
 VRDeviceManager* g_vr_device_manager = nullptr;
@@ -139,8 +139,7 @@ void VRDeviceManager::GetDisplays(const GetDisplaysCallback& callback) {
   callback.Run(GetVRDevices());
 }
 
-void VRDeviceManager::GetPose(uint32_t index,
-                              const GetPoseCallback& callback) {
+void VRDeviceManager::GetPose(uint32_t index, const GetPoseCallback& callback) {
   VRDevice* device = GetDevice(index);
   if (device) {
     callback.Run(device->GetPose());
@@ -155,4 +154,4 @@ void VRDeviceManager::ResetPose(uint32_t index) {
     device->ResetPose();
 }
 
-}  // namespace content
+}  // namespace device

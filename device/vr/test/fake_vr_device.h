@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_H_
-#define CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_H_
+#ifndef DEVICE_VR_TEST_FAKE_VR_DEVICE_H_
+#define DEVICE_VR_TEST_FAKE_VR_DEVICE_H_
 
 #include "base/macros.h"
-#include "content/browser/vr/vr_device.h"
-#include "content/browser/vr/vr_device_provider.h"
+#include "device/vr/vr_device.h"
+#include "device/vr/vr_device_provider.h"
 
-namespace content {
+namespace device {
 
 class FakeVRDevice : public VRDevice {
  public:
   explicit FakeVRDevice(VRDeviceProvider* provider);
   ~FakeVRDevice() override;
 
-  void SetVRDevice(const mojom::VRDisplayPtr& device);
-  void SetPose(const mojom::VRPosePtr& state);
+  void SetVRDevice(const blink::mojom::VRDisplayPtr& device);
+  void SetPose(const blink::mojom::VRPosePtr& state);
 
   blink::mojom::VRDisplayPtr GetVRDevice() override;
   blink::mojom::VRPosePtr GetPose() override;
   void ResetPose() override;
 
  private:
-  mojom::VRDisplayPtr device_;
-  mojom::VRPosePtr state_;
+  blink::mojom::VRDisplayPtr device_;
+  blink::mojom::VRPosePtr pose_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRDevice);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_H_
+#endif  // DEVICE_VR_TEST_FAKE_VR_DEVICE_H_

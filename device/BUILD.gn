@@ -60,6 +60,7 @@ test("device_unittests") {
     "nfc/nfc_chromeos_unittest.cc",
     "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
+    "vr/vr_device_manager_unittest.cc",
   ]
 
   deps = [
@@ -69,6 +70,8 @@ test("device_unittests") {
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/nfc",
+    "//device/vr",
+    "//device/vr:fakes",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
