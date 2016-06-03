@@ -1323,7 +1323,7 @@ crbug.com/487344 media/video-no-audio.html [ NeedsManualRebaseline ]
 crbug.com/487344 media/video-paint-invalidation.html [ NeedsManualRebaseline ]
 
 # Failed expectation after auto-rebaseline.
-crbug.com/617033 [ Mac10.11 ] tables/mozilla/bugs/bug30692.html [ Failure ]
+crbug.com/617033 [ Mac10.11 Retina ] tables/mozilla/bugs/bug30692.html [ Failure ]
 
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
 
