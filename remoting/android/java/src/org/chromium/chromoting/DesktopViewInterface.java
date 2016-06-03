@@ -4,12 +4,14 @@
 
 package org.chromium.chromoting;
 
+import android.graphics.Point;
+
 /**
  * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
  */
 public interface DesktopViewInterface {
     /** Triggers a brief animation to indicate the existence and location of an input event. */
-    void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow);
+    void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow, Point pos);
 
     /** Shows the action bar. */
     void showActionBar();

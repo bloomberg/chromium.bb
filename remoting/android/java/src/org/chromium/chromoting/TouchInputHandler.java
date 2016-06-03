@@ -6,6 +6,7 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.GestureDetector;
@@ -526,7 +527,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             }
 
             if (mInputStrategy.onTap(button)) {
-                mViewer.showInputFeedback(mInputStrategy.getShortPressFeedbackType());
+                Point pos;
+                synchronized (mRenderData) {
+                    pos = mRenderData.getCursorPosition();
+                }
+                mViewer.showInputFeedback(mInputStrategy.getShortPressFeedbackType(), pos);
             }
             return true;
         }
@@ -544,7 +549,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             }
 
             if (mInputStrategy.onPressAndHold(button)) {
-                mViewer.showInputFeedback(mInputStrategy.getLongPressFeedbackType());
+                Point pos;
+                synchronized (mRenderData) {
+                    pos = mRenderData.getCursorPosition();
+                }
+                mViewer.showInputFeedback(mInputStrategy.getLongPressFeedbackType(), pos);
                 mSuppressFling = true;
                 mIsDragging = true;
             }

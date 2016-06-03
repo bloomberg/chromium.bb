@@ -10,9 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.RadialGradient;
 import android.graphics.Rect;
-import android.graphics.Shader;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.InputType;
@@ -60,102 +58,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     // synchronized on |mRenderData|.
     private boolean mSurfaceCreated = false;
 
-    /** Helper class for displaying the long-press feedback animation. This class is thread-safe. */
-    private static class FeedbackAnimator {
-        /** Total duration of the animation, in milliseconds. */
-        private static final float TOTAL_DURATION_MS = 220;
-
-        /** Start time of the animation, from {@link SystemClock#uptimeMillis()}. */
-        private long mStartTimeInMs = 0;
-
-        private boolean mRunning = false;
-
-        /** Contains the size of the feedback animation for the most recent request. */
-        private float mFeedbackSizeInPixels;
-
-        /** Lock to allow multithreaded access to {@link #mStartTimeInMs} and {@link #mRunning}. */
-        private final Object mLock = new Object();
-
-        private Paint mPaint = new Paint();
-
-        public boolean isAnimationRunning() {
-            synchronized (mLock) {
-                return mRunning;
-            }
-        }
-
-        /**
-         * Begins a new animation sequence. After calling this method, the caller should
-         * call {@link #render(Canvas, float, float, float)} periodically whilst
-         * {@link #isAnimationRunning()} returns true.
-         */
-        public void startAnimation(InputFeedbackType feedbackType) {
-            if (feedbackType == InputFeedbackType.NONE) {
-                return;
-            }
-
-            synchronized (mLock) {
-                mRunning = true;
-                mStartTimeInMs = SystemClock.uptimeMillis();
-                mFeedbackSizeInPixels = getInputFeedbackSizeInPixels(feedbackType);
-            }
-        }
-
-        public void render(Canvas canvas, float x, float y, float scale) {
-            // |progress| is 0 at the beginning, 1 at the end.
-            float progress;
-            float size;
-            synchronized (mLock) {
-                // |mStartTimeInMs| is set and accessed on different threads (hence the lock).  It
-                // is possible for |mStartTimeInMs| to be updated when an animation is in progress.
-                // When this occurs, |radius| will eventually be set to 0 and used to initialize
-                // RadialGradient which requires the radius to be > 0.  This will result in a crash.
-                // In order to avoid this problem, we return early if the elapsed time is 0.
-                float elapsedTimeInMs = SystemClock.uptimeMillis() - mStartTimeInMs;
-                if (elapsedTimeInMs < 1) {
-                    return;
-                }
-
-                progress = elapsedTimeInMs / TOTAL_DURATION_MS;
-                if (progress >= 1) {
-                    mRunning = false;
-                    return;
-                }
-                size = mFeedbackSizeInPixels / scale;
-            }
-
-            // Animation grows from 0 to |size|, and goes from fully opaque to transparent for a
-            // seamless fading-out effect. The animation needs to have more than one color so it's
-            // visible over any background color.
-            float radius = size * progress;
-            int alpha = (int) ((1 - progress) * 0xff);
-
-            int transparentBlack = Color.argb(0, 0, 0, 0);
-            int white = Color.argb(alpha, 0xff, 0xff, 0xff);
-            int black = Color.argb(alpha, 0, 0, 0);
-            mPaint.setShader(new RadialGradient(x, y, radius,
-                    new int[] {transparentBlack, white, black, transparentBlack},
-                    new float[] {0.0f, 0.8f, 0.9f, 1.0f}, Shader.TileMode.CLAMP));
-            canvas.drawCircle(x, y, radius, mPaint);
-        }
-
-        private float getInputFeedbackSizeInPixels(InputFeedbackType feedbackType) {
-            switch (feedbackType) {
-                case SMALL_ANIMATION:
-                    return 40.0f;
-
-                case LARGE_ANIMATION:
-                    return 160.0f;
-
-                default:
-                    // Unreachable, but required by Google Java style and findbugs.
-                    assert false : "Unreached";
-                    return 0.0f;
-            }
-        }
-    }
-
-    private FeedbackAnimator mFeedbackAnimator = new FeedbackAnimator();
+    private final Event.Raisable<PaintEventParameter> mOnPaint = new Event.Raisable<>();
 
     // Variables to control animation by the TouchInputHandler.
 
@@ -177,6 +80,10 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         mRepaintPending = false;
 
         getHolder().addCallback(this);
+    }
+
+    public Event<PaintEventParameter> onPaint() {
+        return mOnPaint;
     }
 
     public void setDesktop(Desktop desktop) {
@@ -263,15 +170,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(image, 0, 0, new Paint());
 
-        // TODO(joedow): Replace the custom animation code with a standard Android implementation.
-        boolean feedbackAnimationRunning = mFeedbackAnimator.isAnimationRunning();
-        if (feedbackAnimationRunning) {
-            float scaleFactor;
-            synchronized (mRenderData) {
-                scaleFactor = mRenderData.transform.mapRadius(1);
-            }
-            mFeedbackAnimator.render(canvas, cursorPosition.x, cursorPosition.y, scaleFactor);
+        float scaleFactor;
+        synchronized (mRenderData) {
+            scaleFactor = mRenderData.transform.mapRadius(1);
         }
+        mOnPaint.raise(new PaintEventParameter(cursorPosition, canvas, scaleFactor));
 
         if (drawCursor) {
             Bitmap cursorBitmap = mClient.getDisplay().getCursorBitmap();
@@ -284,14 +187,18 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
         getHolder().unlockCanvasAndPost(canvas);
 
-        synchronized (mAnimationLock) {
-            if (mInputAnimationRunning || feedbackAnimationRunning) {
-                getHandler().postAtTime(new Runnable() {
-                    @Override
-                    public void run() {
-                        processAnimation();
-                    }
-                }, startTimeMs + 30);
+        if (!mOnPaint.isEmpty()) {
+            requestRepaint();
+        } else {
+            synchronized (mAnimationLock) {
+                if (mInputAnimationRunning) {
+                    getHandler().postAtTime(new Runnable() {
+                        @Override
+                        public void run() {
+                            processAnimation();
+                        }
+                    }, startTimeMs + 30);
+                }
             }
         }
     }
@@ -303,9 +210,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         }
         if (running) {
             mInputHandler.processAnimation();
-        }
-        running |= mFeedbackAnimator.isAnimationRunning();
-        if (running) {
             requestRepaint();
         }
     }
@@ -379,9 +283,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     }
 
     @Override
-    public void showInputFeedback(InputFeedbackType feedbackToShow) {
+    public void showInputFeedback(InputFeedbackType feedbackToShow, Point pos) {
         if (feedbackToShow != InputFeedbackType.NONE) {
-            mFeedbackAnimator.startAnimation(feedbackToShow);
+            FeedbackAnimator.startAnimation(this, pos, feedbackToShow);
             requestRepaint();
         }
     }
