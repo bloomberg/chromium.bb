@@ -85,7 +85,6 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
-#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/ssl/token_binding.h"
@@ -123,7 +122,6 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/windows_version.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -8806,55 +8804,6 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 }
 
-#if defined(OS_WIN)
-
-namespace {
-
-bool IsECDSACipherSuite(uint16_t cipher_suite) {
-  const char* key_exchange;
-  const char* cipher;
-  const char* mac;
-  bool is_aead;
-  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, cipher_suite);
-  return std::string(key_exchange).find("ECDSA") != std::string::npos;
-}
-
-}  // namespace
-
-// Test that ECDSA is disabled on Windows XP, where ECDSA certificates cannot be
-// verified.
-TEST_F(HTTPSRequestTest, DisableECDSAOnXP) {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    LOG(INFO) << "Skipping test on this version.";
-    return;
-  }
-
-  EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.ServeFilesFromSourceDirectory("net/data/ssl");
-  ASSERT_TRUE(test_server.Start());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
-      test_server.GetURL("/client-cipher-list"), DEFAULT_PRIORITY, &d));
-  r->Start();
-  EXPECT_TRUE(r->is_pending());
-
-  base::RunLoop().Run();
-
-  EXPECT_EQ(1, d.response_started_count());
-  std::vector<std::string> lines = base::SplitString(
-      d.data_received(), "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  for (size_t i = 0; i < lines.size(); i++) {
-    int cipher_suite;
-    ASSERT_TRUE(base::StringToInt(lines[i], &cipher_suite));
-    EXPECT_FALSE(IsECDSACipherSuite(cipher_suite))
-        << "ClientHello advertised " << cipher_suite;
-  }
-}
-
-#endif  // OS_WIN
-
 class FallbackTestURLRequestContext : public TestURLRequestContext {
  public:
   explicit FallbackTestURLRequestContext(bool delay_initialization)
@@ -9312,12 +9261,7 @@ static bool SystemUsesChromiumEVMetadata() {
 }
 
 static bool SystemSupportsOCSP() {
-#if defined(USE_OPENSSL_CERTS)
-  // http://crbug.com/117478 - OpenSSL does not support OCSP.
-  return false;
-#elif defined(OS_WIN)
-  return base::win::GetVersion() >= base::win::VERSION_VISTA;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // TODO(jnd): http://crbug.com/117478 - EV verification is not yet supported.
   return false;
 #else
@@ -9326,10 +9270,8 @@ static bool SystemSupportsOCSP() {
 }
 
 static bool SystemSupportsOCSPStapling() {
-#if defined(USE_NSS_CERTS)
+#if defined(USE_NSS_CERTS) || defined(OS_WIN)
   return true;
-#elif defined(OS_WIN)
-  return base::win::GetVersion() >= base::win::VERSION_VISTA;
 #else
   return false;
 #endif
