@@ -2268,6 +2268,14 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ClearData) {
           << message_;
 }
 
+// Regression test for https://crbug.com/615429.
+IN_PROC_BROWSER_TEST_P(WebViewTest, ClearDataTwice) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTestWithArg("platform_apps/web_view/common",
+                                        "cleardata_twice"))
+      << message_;
+}
+
 #if defined(OS_WIN)
 // Test is disabled on Windows because it fails often (~9% time)
 // http://crbug.com/489088

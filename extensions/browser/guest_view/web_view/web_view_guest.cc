@@ -750,7 +750,6 @@ bool WebViewGuest::ClearData(base::Time remove_since,
     // StoragePartitionHttpCacheDataRemover::ClearData() does not clear that.
     web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
         render_process_id);
-    web_cache::WebCacheManager::GetInstance()->Remove(render_process_id);
 
     base::Closure cache_removal_done_callback = base::Bind(
         &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
