@@ -25,6 +25,10 @@
           "backgroundColor": "#D3D3D3",
           "paintInvalidations": [
             {
+              "object": "InlineTextBox 'test'",
+              "reason": "selection"
+            },
+            {
               "object": "LayoutBlockFlow DIV id='scroller'",
               "reason": "selection"
             }

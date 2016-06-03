@@ -157,13 +157,6 @@ crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/mouse-po
 crbug.com/548226 [ Win ] virtual/trustedeventsdefaultaction/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] virtual/pointerevent/fast/events/pointerevents/multi-pointer-preventdefault.html [ Failure Pass ]
 
-crbug.com/616634 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
-crbug.com/616634 paint/invalidation/caret-with-composited-scroll.html [ NeedsRebaseline ]
-crbug.com/616634 paint/selection/selection-within-composited-scroller.html [ NeedsRebaseline ]
-crbug.com/616634 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-color-change.html [ NeedsRebaseline ]
-crbug.com/616634 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
-crbug.com/616634 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
-
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]

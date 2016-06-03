@@ -11,6 +11,60 @@
           "bounds": [200, 200],
           "shouldFlattenTransform": false,
           "drawsContent": true,
+          "paintInvalidations": [
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'CONTENT'",
+              "reason": "style change"
+            }
+          ],
           "children": [
             {
               "bounds": [185, 185],
