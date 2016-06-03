@@ -63,6 +63,11 @@ if (!is_android && !is_mac) {
     if (is_win) {
       public_deps += [ ":reorder_imports" ]
     }
+    if (use_aura && (is_win || is_linux)) {
+      data_deps = [
+        "//chrome/app:mojo_manifests",
+      ]
+    }
   }
 
   executable("chrome_initial") {
