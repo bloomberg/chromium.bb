@@ -178,3 +178,14 @@ class PowerGpuRasterizationTop25(perf_benchmark.PerfBenchmark):
     if found:
       stories.RemoveStory(found)
     return stories
+
+
+@benchmark.Enabled('mac')
+class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
+  """Scroll a trivial page and measure power consumption."""
+  test = power.QuiescentPower
+  page_set = page_sets.TrivialScrollStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'power.trivial_scroll'
