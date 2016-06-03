@@ -109,15 +109,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableAllBookmarksView);
   }
 
-  // Populate command line flag for the NTP favicons experiment from the
-  // configuration plist.
-  NSString* enableNTPFavicons = [defaults stringForKey:@"EnableNTPFavicons"];
-  if ([enableNTPFavicons isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableNTPFavicons);
-  } else if ([enableNTPFavicons isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableNTPFavicons);
-  }
-
   // Populate command line flags from PasswordGenerationEnabled.
   NSString* enablePasswordGenerationValue =
       [defaults stringForKey:@"PasswordGenerationEnabled"];

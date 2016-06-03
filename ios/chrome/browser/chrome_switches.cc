@@ -40,9 +40,6 @@ const char kDisableIOSWKWebView[] = "disable-wkwebview";
 // Disable the snapshots lru cache.
 const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
 
-// Disables NTP favicons.
-const char kDisableNTPFavicons[] = "disable-ntp-favicons";
-
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 
@@ -82,9 +79,6 @@ const char kEnableIOSWKWebView[] = "enable-wkwebview";
 
 // Enables the snapshot lru cache.
 const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
-
-// Enables NTP favicons.
-const char kEnableNTPFavicons[] = "enable-ntp-favicons";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
