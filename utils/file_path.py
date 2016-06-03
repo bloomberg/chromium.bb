@@ -17,8 +17,9 @@ import re
 import shlex
 import stat
 import sys
-import unicodedata
+import tempfile
 import time
+import unicodedata
 
 from utils import fs
 from utils import tools
@@ -59,7 +60,7 @@ if sys.platform == 'win32':
     if 0 == windll.kernel32.QueryDosDeviceW(drive_letter, p, chars):
       err = GetLastError()
       if err:
-        # pylint: disable=E0602
+        # pylint: disable=undefined-variable
         msg = u'QueryDosDevice(%s): %s (%d)' % (
               drive_letter, FormatError(err), err)
         raise WindowsError(err, msg.encode('utf-8'))
@@ -77,7 +78,7 @@ if sys.platform == 'win32':
 
     err = GetLastError()
     if err:
-      # pylint: disable=E0602
+      # pylint: disable=undefined-variable
       msg = u'GetShortPathName(%s): %s (%d)' % (
             long_path, FormatError(err), err)
       raise WindowsError(err, msg.encode('utf-8'))
@@ -94,9 +95,21 @@ if sys.platform == 'win32':
 
     err = GetLastError()
     if err:
-      # pylint: disable=E0602
+      # pylint: disable=undefined-variable
       msg = u'GetLongPathName(%s): %s (%d)' % (
             short_path, FormatError(err), err)
+      raise WindowsError(err, msg.encode('utf-8'))
+
+
+  def MoveFileEx(oldpath, newpath, flags):
+    """Calls MoveFileEx, converting errors to WindowsError exceptions."""
+    old_p = fs.extend(oldpath)
+    new_p = fs.extend(newpath)
+    if not windll.kernel32.MoveFileExW(old_p, new_p, int(flags)):
+      # pylint: disable=undefined-variable
+      err = GetLastError()
+      msg = u'MoveFileEx(%s, %s, %d): %s (%d)' % (
+            oldpath, newpath, flags, FormatError(err), err)
       raise WindowsError(err, msg.encode('utf-8'))
 
 
@@ -126,7 +139,7 @@ if sys.platform == 'win32':
                      self._MAPPING[mapped], letter))
             else:
               self._MAPPING[mapped] = letter
-          except WindowsError:  # pylint: disable=E0602
+          except WindowsError:  # pylint: disable=undefined-variable
             pass
 
     def to_win32(self, path):
@@ -764,6 +777,41 @@ def link_file(outfile, infile, action):
       # Signal caller that fallback copy was used.
       return False
   return True
+
+
+def atomic_replace(path, body):
+  """Atomically replaces content of the file at given path.
+
+  'body' will be written to the file as is (as in open(..., 'wb') mode).
+
+  Does not preserve file attributes.
+
+  Raises OSError or IOError on errors (e.g. in case the file is locked on
+  Windows). The caller may retry a bunch of times in such cases before giving
+  up.
+  """
+  assert path and path[-1] != os.sep, path
+  path = os.path.abspath(path)
+  dir_name, base_name = os.path.split(path)
+
+  fd, tmp_name = tempfile.mkstemp(dir=dir_name, prefix=base_name+'_')
+  try:
+    with os.fdopen(fd, 'wb') as f:
+      f.write(body)
+    if sys.platform != 'win32':
+      os.rename(tmp_name, path)
+    else:
+      # Flags are MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH.
+      MoveFileEx(unicode(tmp_name), unicode(path), 0x1|0x8)
+    tmp_name =  None # no need to remove it in 'finally' block anymore
+  finally:
+    if tmp_name:
+      try:
+        os.remove(tmp_name)
+      except OSError as e:
+        logging.warning(
+            'Failed to delete temp file %s in replace_file_content: %s',
+            tmp_name, e)
 
 
 ### Write directory functions.

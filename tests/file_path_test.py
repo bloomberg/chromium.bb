@@ -57,6 +57,22 @@ class FilePathTest(auto_stub.TestCase):
       self._tempdir = tempfile.mkdtemp(prefix=u'run_isolated_test')
     return self._tempdir
 
+  def test_atomic_replace_new_file(self):
+    path = os.path.join(self.tempdir, 'new_file')
+    file_path.atomic_replace(path, 'blah')
+    with open(path, 'rb') as f:
+      self.assertEqual('blah', f.read())
+    self.assertEqual([u'new_file'], os.listdir(self.tempdir))
+
+  def test_atomic_replace_existing_file(self):
+    path = os.path.join(self.tempdir, 'existing_file')
+    with open(path, 'wb') as f:
+      f.write('existing body')
+    file_path.atomic_replace(path, 'new body')
+    with open(path, 'rb') as f:
+      self.assertEqual('new body', f.read())
+    self.assertEqual([u'existing_file'], os.listdir(self.tempdir))
+
   def assertFileMode(self, filepath, mode, umask=None):
     umask = test_utils.umask() if umask is None else umask
     actual = fs.stat(filepath).st_mode
