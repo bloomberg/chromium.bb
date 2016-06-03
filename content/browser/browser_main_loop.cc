@@ -1404,8 +1404,10 @@ bool BrowserMainLoop::InitializeToolkit() {
 #if defined(USE_AURA)
 
 #if defined(USE_X11)
-  if (!gfx::GetXDisplay())
+  if (!gfx::GetXDisplay()) {
+    LOG(ERROR) << "Unable to open X display.";
     return false;
+  }
 
 #if !defined(OS_CHROMEOS)
   // InitializeToolkit is called before CreateStartupTasks which one starts the
