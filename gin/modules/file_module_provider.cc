@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gin/converter.h"
 
 namespace gin {
@@ -64,8 +66,9 @@ void FileModuleProvider::AttempToLoadModules(
     if (attempted_ids_.count(id))
       continue;
     attempted_ids_.insert(id);
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        AttempToLoadModule, runner->GetWeakPtr(), search_paths_, id));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(AttempToLoadModule, runner->GetWeakPtr(),
+                              search_paths_, id));
   }
 }
 
