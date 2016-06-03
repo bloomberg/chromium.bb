@@ -41,7 +41,7 @@ class AbstractLocalServerCommand(Command):
         super(AbstractLocalServerCommand, self).__init__(options=options)
 
     def _prepare_config(self, options, args, tool):
-        return None
+        raise NotImplementedError('Subclasses should implement this method.')
 
     def execute(self, options, args, tool):
         config = self._prepare_config(options, args, tool)

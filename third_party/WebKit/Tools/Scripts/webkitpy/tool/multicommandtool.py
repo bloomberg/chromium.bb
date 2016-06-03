@@ -114,7 +114,7 @@ class MultiCommandTool(object):
     def should_show_in_main_help(self, command):
         return command.show_in_main_help
 
-    def should_execute_command(self, command):
+    def should_execute_command(self, command):  # Argument may be used in subclasses - pylint: disable=unused-argument
         return True
 
     def _add_global_options(self, option_parser):

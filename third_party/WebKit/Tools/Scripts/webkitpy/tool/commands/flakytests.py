@@ -28,9 +28,7 @@
 
 import logging
 
-from webkitpy.common.net import sheriff_calendar
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
-from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.models.test_expectations import TestExpectationsModel
 from webkitpy.tool.commands.command import Command
@@ -75,8 +73,6 @@ Flakiness dashboard: %s
         return filtered
 
     def _collect_expectation_lines(self, builder_names, factory):
-        all_lines = []
-
         models = []
         for builder_name in builder_names:
             model = TestExpectationsModel()

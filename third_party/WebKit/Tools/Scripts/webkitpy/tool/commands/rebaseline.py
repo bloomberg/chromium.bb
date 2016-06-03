@@ -26,23 +26,19 @@
 # (INCLUDING NEGLIGENCE OR/ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Queue
 import json
 import logging
 import optparse
 import re
 import sys
-import threading
 import time
 import traceback
-import urllib
 import urllib2
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.memoized import memoized
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
-from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
 from webkitpy.layout_tests.port import factory
 from webkitpy.tool.commands.command import Command
@@ -189,7 +185,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
     def _results_url(self, builder_name):
         return self._tool.buildbot.builder_with_name(builder_name).latest_layout_test_results_url()
 
-    def _save_baseline(self, data, target_baseline, baseline_directory, test_name, suffix):
+    def _save_baseline(self, data, target_baseline):
         if not data:
             _log.debug("No baseline data to save.")
             return
@@ -208,7 +204,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
 
         _log.debug("Retrieving %s." % source_baseline)
         self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True),
-                            target_baseline, baseline_directory, test_name, suffix)
+                            target_baseline)
 
     def _rebaseline_test_and_update_expectations(self, options):
         self._baseline_suffix_list = options.suffixes.split(',')
@@ -833,7 +829,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             return
 
         min_revision = int(min([item["revision"] for item in revision_data]))
-        tests, revision, commit, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(
+        tests, revision, commit, author, bugs, _ = self.tests_to_rebaseline(
             tool, min_revision, print_revisions=options.verbose)
 
         if options.verbose:
@@ -851,7 +847,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         _log.info('Rebaselining %s for r%s by %s.' % (list(tests), revision, author))
 
-        test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
+        test_prefix_list, _ = self.get_test_prefix_list(tests)
 
         did_switch_branches = False
         did_finish = False

@@ -88,7 +88,8 @@ class CommitAnnouncer(SingleServerIRCBot):
     def stop(self, message=""):
         self.connection.execute_delayed(0, lambda: self.die(message))
 
-    # IRC event handlers.
+    # IRC event handlers. Methods' arguments are determined by superclass
+    # and some arguments maybe unused - pylint: disable=unused-argument
 
     def on_nicknameinuse(self, connection, event):
         connection.nick('%s_' % connection.get_nickname())

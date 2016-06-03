@@ -150,7 +150,7 @@ class HelpPrintingOptionParser(optparse.OptionParser):
 
     # We override format_epilog to avoid the default formatting which would paragraph-wrap the epilog
     # and also to allow us to compute the epilog lazily instead of in the constructor (allowing it to be context sensitive).
-    def format_epilog(self, epilog):
+    def format_epilog(self, epilog):  # pylint: disable=unused-argument
         if self.epilog_method:
             return "\n%s\n" % self.epilog_method()
         return ""

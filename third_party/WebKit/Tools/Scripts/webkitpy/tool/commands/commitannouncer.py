@@ -29,7 +29,6 @@ import time
 import traceback
 
 from webkitpy.common.config.irc import update_wait_seconds
-from webkitpy.tool.bot.commitannouncer import CommitAnnouncer
 from webkitpy.tool.bot.commitannouncer import CommitAnnouncerThread
 from webkitpy.tool.commands.command import Command
 
@@ -58,7 +57,7 @@ class CommitAnnouncerCommand(Command):
                 time.sleep(update_wait_seconds)
         except KeyboardInterrupt:
             _log.error("Terminated by keyboard interrupt")
-        except Exception as e:
+        except Exception:
             _log.error("Unexpected error:")
             _log.error(traceback.format_exc())
 

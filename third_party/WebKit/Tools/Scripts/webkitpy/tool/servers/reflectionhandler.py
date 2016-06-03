@@ -126,7 +126,7 @@ class ReflectionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_response(200)
             self._send_access_control_header()
             self.send_header("Content-Length", os.path.getsize(file_path))
-            mime_type, encoding = mimetypes.guess_type(file_path)
+            mime_type, _ = mimetypes.guess_type(file_path)
             if mime_type:
                 self.send_header("Content-type", mime_type)
 
