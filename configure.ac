@@ -633,7 +633,7 @@ if test "x$enable_systemd_notify" = "xyes"; then
   PKG_CHECK_MODULES(SYSTEMD_DAEMON, [libsystemd])
 fi
 
-AC_CONFIG_FILES([Makefile src/version.h src/weston.pc])
+AC_CONFIG_FILES([Makefile src/version.h compositor/weston.pc])
 
 # AC_CONFIG_FILES needs the full name when running autoconf, so we need to use
 # libweston_abi_version here, and outside [] because of m4 quoting rules

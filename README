@@ -114,6 +114,11 @@ Details:
 
 - xwayland ???
 
+- weston-launch is still with libweston even though it can only launch
+  Weston and nothing else. We would like to allow it to launch any compositor,
+  but since it gives by design root access to input devices and DRM, how can
+  we restrict it to intended programs?
+
 There are still many more details to be decided.
 
 
@@ -141,13 +146,13 @@ would be roughly like this:
 - fbdev-backend (depends on libudev...)
 
 - rdp-backend (depends on freerdp)
-	+ screen-share
 
 - weston (the executable, not parallel-installable):
 	+ desktop shell
 	+ ivi-shell
 	+ fullscreen shell
 	+ weston-info, weston-terminal, etc. we install by default
+	+ screen-share
 
 - weston demos (not parallel-installable)
 	+ weston-simple-* programs

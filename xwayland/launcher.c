@@ -37,7 +37,7 @@
 
 #include "xwayland.h"
 #include "shared/helpers.h"
-#include "weston.h"
+#include "compositor/weston.h"
 
 static int
 handle_sigusr1(int signal_number, void *data)

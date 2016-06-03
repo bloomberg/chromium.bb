@@ -60,7 +60,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "weston.h"
+#include "compositor/weston.h"
 #include "compositor.h"
 #include "ivi-shell.h"
 #include "ivi-layout-export.h"

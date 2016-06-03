@@ -30,7 +30,7 @@
 #include <cairo/cairo-xcb.h>
 
 #include "compositor.h"
-#include "weston.h"
+#include "compositor/weston.h"
 
 #define SEND_EVENT_MASK (0x80)
 #define EVENT_TYPE(event) ((event)->response_type & ~SEND_EVENT_MASK)

@@ -32,7 +32,7 @@
 #include <string.h>
 
 #include "src/compositor.h"
-#include "src/weston.h"
+#include "compositor/weston.h"
 #include "weston-test-server-protocol.h"
 
 #ifdef ENABLE_EGL

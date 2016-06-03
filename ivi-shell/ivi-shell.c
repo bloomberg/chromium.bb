@@ -46,7 +46,7 @@
 #include "ivi-layout-export.h"
 #include "ivi-layout-shell.h"
 #include "shared/helpers.h"
-#include "weston.h"
+#include "compositor/weston.h"
 
 /* Representation of ivi_surface protocol object. */
 struct ivi_shell_surface

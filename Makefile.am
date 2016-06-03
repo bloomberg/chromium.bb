@@ -113,7 +113,7 @@ systemd_notify_la_CFLAGS =			\
 	$(PIXMAN_CFLAGS)			\
 	$(AM_CFLAGS)
 systemd_notify_la_SOURCES =			\
-	src/systemd-notify.c			\
+	compositor/systemd-notify.c		\
 	shared/helpers.h			\
 	shared/zalloc.h				\
 	src/compositor.h
@@ -148,9 +148,9 @@ weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	-lm libshared.la libweston.la
 
 weston_SOURCES = 					\
-	src/main.c					\
-	src/weston-screenshooter.c			\
-	src/text-backend.c
+	compositor/main.c				\
+	compositor/weston-screenshooter.c		\
+	compositor/text-backend.c
 
 # Track this dependency explicitly instead of using BUILT_SOURCES.  We
 # add BUILT_SOURCES to CLEANFILES, but we want to keep git-version.h
@@ -220,10 +220,10 @@ endif
 endif # BUILD_WESTON_LAUNCH
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = src/weston.pc src/libweston-${LIBWESTON_ABI_VERSION}.pc
+pkgconfig_DATA = compositor/weston.pc src/libweston-${LIBWESTON_ABI_VERSION}.pc
 
 wayland_sessiondir = $(datadir)/wayland-sessions
-dist_wayland_session_DATA = src/weston.desktop
+dist_wayland_session_DATA = compositor/weston.desktop
 
 libwestonincludedir = $(includedir)/libweston-${LIBWESTON_ABI_VERSION}
 libwestoninclude_HEADERS =				\
@@ -242,7 +242,7 @@ libwestoninclude_HEADERS =				\
 	shared/platform.h
 
 westonincludedir = $(includedir)/weston
-westoninclude_HEADERS = src/weston.h
+westoninclude_HEADERS = compositor/weston.h
 
 if ENABLE_IVI_SHELL
 westoninclude_HEADERS +=				\
@@ -401,9 +401,9 @@ cms_static_la_LDFLAGS = -module -avoid-version
 cms_static_la_LIBADD = $(COMPOSITOR_LIBS) $(LCMS_LIBS) libshared.la
 cms_static_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LCMS_CFLAGS)
 cms_static_la_SOURCES =				\
-	src/cms-static.c				\
-	src/cms-helper.c				\
-	src/cms-helper.h				\
+	compositor/cms-static.c			\
+	compositor/cms-helper.c			\
+	compositor/cms-helper.h			\
 	shared/helpers.h
 if ENABLE_COLORD
 module_LTLIBRARIES += cms-colord.la
@@ -411,9 +411,9 @@ cms_colord_la_LDFLAGS = -module -avoid-version
 cms_colord_la_LIBADD = $(COMPOSITOR_LIBS) $(COLORD_LIBS)
 cms_colord_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(COLORD_CFLAGS)
 cms_colord_la_SOURCES =				\
-	src/cms-colord.c			\
-	src/cms-helper.c			\
-	src/cms-helper.h			\
+	compositor/cms-colord.c			\
+	compositor/cms-helper.c			\
+	compositor/cms-helper.h			\
 	shared/helpers.h
 endif
 endif
@@ -945,7 +945,7 @@ screen_share_la_CFLAGS =			\
 	$(SCREEN_SHARE_CFLAGS)			\
 	$(AM_CFLAGS)
 screen_share_la_SOURCES =			\
-	src/screen-share.c			\
+	compositor/screen-share.c		\
 	shared/helpers.h
 nodist_screen_share_la_SOURCES =			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
