@@ -855,8 +855,23 @@ typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allo
 
     ++m_keyCount;
 
-    if (shouldExpand())
+    if (shouldExpand()) {
         entry = expand(entry);
+    } else if (Traits::weakHandlingFlag == WeakHandlingInCollections && shouldShrink()) {
+        // When weak hash tables are processed by the garbage collector,
+        // elements with no other strong references to them will have their
+        // table entries cleared. But no shrinking of the backing store is
+        // allowed at that time, as allocations are prohibited during that
+        // GC phase.
+        //
+        // With that weak processing taking care of removals, explicit
+        // remove()s of elements is rarely done. Which implies that the
+        // weak hash table will never be checked if it can be shrunk.
+        //
+        // To prevent weak hash tables with very low load factors from
+        // developing, we perform it when adding elements instead.
+        entry = rehash(m_tableSize / 2, entry);
+    }
 
     return AddResult(this, entry, true);
 }
