@@ -398,7 +398,12 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
     // We want to paint the first frame under two conditions: Either (1) we have
     // enough frames to know it's definitely the first frame or (2) there may be
     // no more frames coming (sometimes unless we paint one of them).
+    //
+    // For the first condition, we need at least two frames or the first frame
+    // must have a timestamp >= |start_timestamp_|, since otherwise we may be
+    // prerolling frames before the actual start time that will be dropped.
     if (algorithm_->frames_queued() > 1 || received_end_of_stream_ ||
+        algorithm_->first_frame()->timestamp() >= start_timestamp_ ||
         low_delay_ || !video_frame_stream_->CanReadWithoutStalling()) {
       scoped_refptr<VideoFrame> frame = algorithm_->first_frame();
       CheckForMetadataChanges(frame->format(), frame->natural_size());
