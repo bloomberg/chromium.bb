@@ -10,41 +10,71 @@ crash-reporting system.
 * Developer/Reviews: [google-breakpad-dev@googlegroups.com](https://groups.google.com/d/forum/google-breakpad-dev)
 * Tests: [![Build Status](https://travis-ci.org/google/breakpad.svg?branch=master)](https://travis-ci.org/google/breakpad)
 
-## Getting started in 32-bit mode (from trunk)
+## Getting started (from master)
 
-```sh
-# Configure
-CXXFLAGS=-m32 CFLAGS=-m32 CPPFLAGS=-m32 ./configure
-# Build
-make
-# Test
-make check
-# Install
-make install
-```
+1.  First, [download depot_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools)
+    and ensure that they're in your `PATH`.
+
+2.  Create a new directory for checking out the source code (it must be named
+    breakpad).
+
+    ```sh
+    mkdir breakpad && cd breakpad
+    ```
+
+3.  Run the `fetch` tool from depot_tools to download all the source repos.
+
+    ```sh
+    fetch breakpad
+    cd src
+    ```
+
+4.  Build the source.
+
+    ```sh
+    ./configure && make
+    ```
+
+    You can also cd to another directory and run configure from there to build
+    outside the source tree.
+
+    This will build the processor tools (`src/processor/minidump_stackwalk`,
+    `src/processor/minidump_dump`, etc), and when building on Linux it will
+    also build the client libraries and some tools
+    (`src/tools/linux/dump_syms/dump_syms`,
+    `src/tools/linux/md2core/minidump-2-core`, etc).
+
+5.  Optionally, run tests.
+
+    ```sh
+    make check
+    ```
+
+6.  Optionally, install the built libraries
+
+    ```sh
+    make install
+    ```
 
 If you need to reconfigure your build be sure to run `make distclean` first.
 
-## To request change review:
+To update an existing checkout to a newer revision, you can
+`git pull` as usual, but then you should run `gclient sync` to ensure that the
+dependent repos are up-to-date.
 
-1.  Get a copy of depot_tools repo.
-    http://dev.chromium.org/developers/how-tos/install-depot-tools
+## To request change review
 
-2.  Create a new directory for checking out the source code.
-    mkdir breakpad && cd breakpad
+1.  Follow the steps above to get the source and build it.
 
-3.  Run the `fetch` tool from depot_tools to download all the source repos.
-    `fetch breakpad`
-
-4.  Make changes. Build and test your changes.
+2.  Make changes. Build and test your changes.
     For core code like processor use methods above.
     For linux/mac/windows, there are test targets in each project file.
 
-5.  Commit your changes to your local repo and upload them to the server.
+3.  Commit your changes to your local repo and upload them to the server.
     http://dev.chromium.org/developers/contributing-code
     e.g. `git commit ... && git cl upload ...`
     You will be prompted for credential and a description.
 
-6.  At https://codereview.chromium.org/ you'll find your issue listed; click on
+4.  At https://codereview.chromium.org/ you'll find your issue listed; click on
     it, and select Publish+Mail, and enter in the code reviewer and CC
     google-breakpad-dev@googlegroups.com
