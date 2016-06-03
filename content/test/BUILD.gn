@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 content_tests_gypi_values =
@@ -907,4 +908,14 @@ test("content_perftests") {
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
+}
+
+fuzzer_test("renderer_fuzzer") {
+  sources = [
+    "renderer_fuzzer.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//content/shell:content_shell_lib",
+  ]
 }
