@@ -35,7 +35,7 @@ class NET_EXPORT WriteToFileNetLogObserver : public NetLog::ThreadSafeObserver {
   void set_capture_mode(NetLogCaptureMode capture_mode);
 
   // Starts observing |net_log| and writes output to |file|.  Must not already
-  // be watching a NetLog.  Separate from constructor to enforce thread safety.
+  // be watching a NetLog.
   //
   // |file| must be a non-NULL empty file that's open for writing.
   //
@@ -63,6 +63,21 @@ class NET_EXPORT WriteToFileNetLogObserver : public NetLog::ThreadSafeObserver {
   void OnAddEntry(const NetLog::Entry& entry) override;
 
  private:
+  // ----------------
+  // Thread safety
+  // ----------------
+  //
+  // NetLog observers are invoked on arbitrary threads, however are notified of
+  // events in a serial fashion (the NetLog lock is held while dispatching
+  // events to observers).
+  //
+  // As a result, the following variables do NOT need to be protected by a lock,
+  // as parallel execution of OnAddEntry() is not possible.
+  //
+  // However any access to them outside of OnAddEntry() should be either
+  // before the call to NetLog::DeprecatedAddObserver() or after the call to
+  // NetLog::DeprecatedRemoveObserver().
+
   base::ScopedFILE file_;
 
   // The capture mode to log at.
