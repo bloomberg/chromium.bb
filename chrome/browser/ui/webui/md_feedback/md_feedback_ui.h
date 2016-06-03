@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 // The WebUI for chrome://feedback.
 class MdFeedbackUI : public content::WebUIController {
  public:
@@ -16,5 +20,10 @@ class MdFeedbackUI : public content::WebUIController {
  private:
   DISALLOW_COPY_AND_ASSIGN(MdFeedbackUI);
 };
+
+// Create and show a web dialog with the MD feedback UI.
+// |browser_context| Is used to constructed the HTML dialog's WebContents.
+void ShowFeedbackWebDialog(
+    content::BrowserContext* browser_context);
 
 #endif  // CHROME_BROWSER_UI_WEBUI_MD_FEEDBACK_MD_FEEDBACK_UI_H_
