@@ -92,7 +92,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState, Excep
     // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
     // TODO(mcasas) consider sending the security origin as well:
     // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind<media::mojom::blink::PhotoCapabilitiesPtr>(&ImageCapture::onCapabilities, this, resolver)));
+    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind<mojom::blink::PhotoCapabilitiesPtr>(&ImageCapture::onCapabilities, this, resolver)));
     return promise;
 }
 
@@ -161,7 +161,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
 
 }
 
-void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom::blink::PhotoCapabilitiesPtr capabilities)
+void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, mojom::blink::PhotoCapabilitiesPtr capabilities)
 {
     DVLOG(1) << __FUNCTION__;
     if (!m_serviceRequests.contains(resolver))

@@ -5,17 +5,17 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_IMAGE_CAPTURE_IMPL_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_IMAGE_CAPTURE_IMPL_H_
 
-#include "media/mojo/interfaces/image_capture.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/WebKit/public/platform/modules/imagecapture/image_capture.mojom.h"
 
 namespace content {
 
-class ImageCaptureImpl : public media::mojom::ImageCapture {
+class ImageCaptureImpl : public blink::mojom::ImageCapture {
  public:
   static void Create(
-      mojo::InterfaceRequest<media::mojom::ImageCapture> request);
+      mojo::InterfaceRequest<blink::mojom::ImageCapture> request);
   ~ImageCaptureImpl() override;
 
   void GetCapabilities(const mojo::String& source_id,
@@ -26,9 +26,9 @@ class ImageCaptureImpl : public media::mojom::ImageCapture {
 
  private:
   explicit ImageCaptureImpl(
-      mojo::InterfaceRequest<media::mojom::ImageCapture> request);
+      mojo::InterfaceRequest<blink::mojom::ImageCapture> request);
 
-  mojo::StrongBinding<media::mojom::ImageCapture> binding_;
+  mojo::StrongBinding<blink::mojom::ImageCapture> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCaptureImpl);
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module media.mojom;
+module blink.mojom;
 
 // Equivalent to idl MediaSettingsRange, arbitrary range representing the
 // allowed variations of a Capability or an Option.
@@ -13,23 +13,15 @@ struct Range {
   uint32 current;
 };
 
-// Equivalent to idl PhotoCapabilities,
-// http://w3c.github.io/mediacapture-image/#photocapabilities
 struct PhotoCapabilities {
   Range zoom;
 };
 
-// |source_id| is the renderer-side UUID identifier of the image capture device.
 interface ImageCapture
 {
-    // Retrieves the image capture device capabilities and current settings.
-    // http://w3c.github.io/mediacapture-image/index.html#widl-ImageCapture-getPhotoCapabilities-Promise-PhotoCapabilities
     GetCapabilities(string source_id)
         => (PhotoCapabilities capabilities);
 
-    // Takes a Photo from the given |source_id|, returning it encoded in |data|
-    // with the format specified in |mime_type|.
-    // http://w3c.github.io/mediacapture-image/index.html#widl-ImageCapture-takePhoto-Promise-Blob
     TakePhoto(string source_id)
         => (string mime_type, array<uint8> data);
 };
