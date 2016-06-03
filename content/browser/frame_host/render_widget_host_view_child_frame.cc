@@ -294,6 +294,7 @@ void RenderWidgetHostViewChildFrame::Destroy() {
 
 void RenderWidgetHostViewChildFrame::SetTooltipText(
     const base::string16& tooltip_text) {
+  frame_connector_->GetRootRenderWidgetHostView()->SetTooltipText(tooltip_text);
 }
 
 void RenderWidgetHostViewChildFrame::SelectionChanged(
