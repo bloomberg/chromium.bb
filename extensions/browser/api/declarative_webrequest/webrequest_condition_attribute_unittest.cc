@@ -49,7 +49,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   scoped_refptr<const WebRequestConditionAttribute> result;
   base::StringValue string_value("main_frame");
   base::ListValue resource_types;
-  resource_types.Append(new base::StringValue("main_frame"));
+  resource_types.AppendString("main_frame");
 
   // Test wrong condition name passed.
   error.clear();
@@ -90,7 +90,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   base::ListValue resource_types;
   // The 'sub_frame' value is chosen arbitrarily, so as the corresponding
   // content::ResourceType is not 0, the default value.
-  resource_types.Append(new base::StringValue("sub_frame"));
+  resource_types.AppendString("sub_frame");
 
   scoped_refptr<const WebRequestConditionAttribute> attribute =
       WebRequestConditionAttribute::Create(
@@ -153,7 +153,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   base::MessageLoop::current()->Run();
 
   base::ListValue content_types;
-  content_types.Append(new base::StringValue("text/plain"));
+  content_types.AppendString("text/plain");
   scoped_refptr<const WebRequestConditionAttribute> attribute_include =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);
@@ -177,7 +177,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
                      url_request->response_headers())));
 
   content_types.Clear();
-  content_types.Append(new base::StringValue("something/invalid"));
+  content_types.AppendString("something/invalid");
   scoped_refptr<const WebRequestConditionAttribute> attribute_unincluded =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);
@@ -389,12 +389,12 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
           // Ignoring return value, we already verified the entry is there.
           dictionary->RemoveWithoutPathExpansion(*name, &entry_owned);
           list->Append(entry_owned.release());
-          list->Append(new base::StringValue(*value));
+          list->AppendString(*value);
           dictionary->SetWithoutPathExpansion(*name, list);
           break;
         case base::Value::TYPE_LIST:  // Just append to the list.
           CHECK(entry->GetAsList(&list));
-          list->Append(new base::StringValue(*value));
+          list->AppendString(*value);
           break;
         default:
           NOTREACHED();  // We never put other Values here.

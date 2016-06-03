@@ -72,22 +72,22 @@ ListBuilder::ListBuilder(const base::ListValue& init) : list_(init.DeepCopy()) {
 ListBuilder::~ListBuilder() {}
 
 ListBuilder& ListBuilder::Append(int in_value) {
-  list_->Append(new base::FundamentalValue(in_value));
+  list_->AppendInteger(in_value);
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(double in_value) {
-  list_->Append(new base::FundamentalValue(in_value));
+  list_->AppendDouble(in_value);
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(const std::string& in_value) {
-  list_->Append(new base::StringValue(in_value));
+  list_->AppendString(in_value);
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(const base::string16& in_value) {
-  list_->Append(new base::StringValue(in_value));
+  list_->AppendString(in_value);
   return *this;
 }
 
@@ -97,7 +97,7 @@ ListBuilder& ListBuilder::Append(std::unique_ptr<base::Value> in_value) {
 }
 
 ListBuilder& ListBuilder::AppendBoolean(bool in_value) {
-  list_->Append(new base::FundamentalValue(in_value));
+  list_->AppendBoolean(in_value);
   return *this;
 }
 

@@ -24,7 +24,7 @@ TEST(WebRequestUploadDataPresenterTest, ParsedData) {
 
   // Expected output.
   std::unique_ptr<base::ListValue> values(new base::ListValue);
-  values->Append(new base::StringValue("value"));
+  values->AppendString("value");
   base::DictionaryValue expected_form;
   expected_form.SetWithoutPathExpansion("key.with.dots", values.release());
 

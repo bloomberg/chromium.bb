@@ -509,8 +509,8 @@ TEST_F(SimpleFeatureTest, ParseNull) {
 TEST_F(SimpleFeatureTest, ParseWhitelist) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* whitelist = new base::ListValue();
-  whitelist->Append(new base::StringValue("foo"));
-  whitelist->Append(new base::StringValue("bar"));
+  whitelist->AppendString("foo");
+  whitelist->AppendString("bar");
   value->Set("whitelist", whitelist);
   std::unique_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
@@ -522,12 +522,12 @@ TEST_F(SimpleFeatureTest, ParseWhitelist) {
 TEST_F(SimpleFeatureTest, ParsePackageTypes) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* extension_types = new base::ListValue();
-  extension_types->Append(new base::StringValue("extension"));
-  extension_types->Append(new base::StringValue("theme"));
-  extension_types->Append(new base::StringValue("legacy_packaged_app"));
-  extension_types->Append(new base::StringValue("hosted_app"));
-  extension_types->Append(new base::StringValue("platform_app"));
-  extension_types->Append(new base::StringValue("shared_module"));
+  extension_types->AppendString("extension");
+  extension_types->AppendString("theme");
+  extension_types->AppendString("legacy_packaged_app");
+  extension_types->AppendString("hosted_app");
+  extension_types->AppendString("platform_app");
+  extension_types->AppendString("shared_module");
   value->Set("extension_types", extension_types);
   std::unique_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
@@ -555,13 +555,13 @@ TEST_F(SimpleFeatureTest, ParsePackageTypes) {
 TEST_F(SimpleFeatureTest, ParseContexts) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* contexts = new base::ListValue();
-  contexts->Append(new base::StringValue("blessed_extension"));
-  contexts->Append(new base::StringValue("unblessed_extension"));
-  contexts->Append(new base::StringValue("content_script"));
-  contexts->Append(new base::StringValue("web_page"));
-  contexts->Append(new base::StringValue("blessed_web_page"));
-  contexts->Append(new base::StringValue("webui"));
-  contexts->Append(new base::StringValue("extension_service_worker"));
+  contexts->AppendString("blessed_extension");
+  contexts->AppendString("unblessed_extension");
+  contexts->AppendString("content_script");
+  contexts->AppendString("web_page");
+  contexts->AppendString("blessed_web_page");
+  contexts->AppendString("webui");
+  contexts->AppendString("extension_service_worker");
   value->Set("contexts", contexts);
   std::unique_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
@@ -659,9 +659,9 @@ TEST_F(SimpleFeatureTest, Inheritance) {
   base::ListValue* whitelist = new base::ListValue();
   base::ListValue* extension_types = new base::ListValue();
   base::ListValue* contexts = new base::ListValue();
-  whitelist->Append(new base::StringValue("bar"));
-  extension_types->Append(new base::StringValue("extension"));
-  contexts->Append(new base::StringValue("unblessed_extension"));
+  whitelist->AppendString("bar");
+  extension_types->AppendString("extension");
+  contexts->AppendString("unblessed_extension");
   definition.Set("whitelist", whitelist);
   definition.Set("extension_types", extension_types);
   definition.Set("contexts", contexts);

@@ -49,8 +49,7 @@ class DefaultObserver : public SettingsObserver {
     // string-based event payloads is removed. http://crbug.com/136045
     std::unique_ptr<base::ListValue> args(new base::ListValue());
     args->Append(base::JSONReader::Read(change_json));
-    args->Append(new base::StringValue(settings_namespace::ToString(
-        settings_namespace)));
+    args->AppendString(settings_namespace::ToString(settings_namespace));
     std::unique_ptr<Event> event(new Event(events::STORAGE_ON_CHANGED,
                                            api::storage::OnChanged::kEventName,
                                            std::move(args)));

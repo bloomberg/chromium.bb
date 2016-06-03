@@ -271,7 +271,7 @@ std::unique_ptr<base::Value> NetLogModificationCallback(
       delta->modified_request_headers);
   while (modification.GetNext()) {
     std::string line = modification.name() + ": " + modification.value();
-    modified_headers->Append(new base::StringValue(line));
+    modified_headers->AppendString(line);
   }
   dict->Set("modified_headers", modified_headers);
 
@@ -280,7 +280,7 @@ std::unique_ptr<base::Value> NetLogModificationCallback(
            delta->deleted_request_headers.begin();
        key != delta->deleted_request_headers.end();
        ++key) {
-    deleted_headers->Append(new base::StringValue(*key));
+    deleted_headers->AppendString(*key);
   }
   dict->Set("deleted_headers", deleted_headers);
   return std::move(dict);
@@ -295,9 +295,7 @@ bool InDecreasingExtensionInstallationTimeOrder(
 base::ListValue* StringToCharList(const std::string& s) {
   base::ListValue* result = new base::ListValue;
   for (size_t i = 0, n = s.size(); i < n; ++i) {
-    result->Append(
-        new base::FundamentalValue(
-            *reinterpret_cast<const unsigned char*>(&s[i])));
+    result->AppendInteger(*reinterpret_cast<const unsigned char*>(&s[i]));
   }
   return result;
 }

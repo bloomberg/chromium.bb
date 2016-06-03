@@ -290,7 +290,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   value->SetInteger("manifest_version", 1);
 
   base::ListValue* scripts = new base::ListValue();
-  scripts->Append(new base::StringValue("foo.js"));
+  scripts->AppendString("foo.js");
   value->Set("background.scripts", scripts);
 
   std::string error;
@@ -308,7 +308,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   EXPECT_EQ(0U, warnings.size());
 
   scripts->Clear();
-  scripts->Append(new base::StringValue("http://google.com/foo.js"));
+  scripts->AppendString("http://google.com/foo.js");
 
   extension = LoadExtensionManifest(*value.get(), temp.path(),
                                     Manifest::UNPACKED, 0, &error);

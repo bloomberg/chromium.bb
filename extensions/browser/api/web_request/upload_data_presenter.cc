@@ -125,8 +125,8 @@ void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
 
   FormDataParser::Result result;
   while (parser_->GetNextNameValue(&result)) {
-    GetOrCreateList(dictionary_.get(), result.name())->Append(
-        new base::StringValue(result.value()));
+    GetOrCreateList(dictionary_.get(), result.name())
+        ->AppendString(result.value());
   }
 }
 

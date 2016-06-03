@@ -38,7 +38,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
   if (!extent.empty()) {
     base::ListValue* urls = new base::ListValue();
     manifest.Set("app.urls", urls);
-    urls->Append(new base::StringValue(extent));
+    urls->AppendString(extent);
   }
 
   std::string error;

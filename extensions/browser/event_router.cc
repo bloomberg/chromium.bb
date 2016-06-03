@@ -406,7 +406,7 @@ void EventRouter::SetRegisteredEvents(const std::string& extension_id,
   ListValue* events_value = new ListValue;
   for (std::set<std::string>::const_iterator iter = events.begin();
        iter != events.end(); ++iter) {
-    events_value->Append(new base::StringValue(*iter));
+    events_value->AppendString(*iter);
   }
   extension_prefs_->UpdateExtensionPref(
       extension_id, kRegisteredEvents, events_value);

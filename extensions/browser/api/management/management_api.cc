@@ -864,7 +864,7 @@ void ManagementEventRouter::BroadcastEvent(
     return;  // Don't dispatch events for built-in extenions.
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == management::OnUninstalled::kEventName) {
-    args->Append(new base::StringValue(extension->id()));
+    args->AppendString(extension->id());
   } else {
     args->Append(CreateExtensionInfo(*extension, browser_context_).ToValue());
   }

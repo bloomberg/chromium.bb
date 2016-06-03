@@ -109,7 +109,7 @@ void DOMActivityLogger::logEvent(const WebString& event_name,
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string event_name_utf8 = event_name.utf8();
   for (int i = 0; i < argc; ++i)
-    args->Append(new base::StringValue(argv[i]));
+    args->AppendString(argv[i]);
   SendDomActionMessage(event_name_utf8, url, title, DomActionType::METHOD,
                        std::move(args));
 }
