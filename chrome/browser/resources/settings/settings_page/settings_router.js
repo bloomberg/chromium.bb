@@ -233,6 +233,18 @@ Polymer({
       subpage: ['site-settings', 'all-sites'],
     },
     {
+      url: '/siteSettings/automaticDownloads',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-automatic-downloads'],
+    },
+    {
+      url: '/siteSettings/backgroundSync',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-background-sync'],
+    },
+    {
       url: '/siteSettings/camera',
       page: 'advanced',
       section: 'privacy',
@@ -255,6 +267,12 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-images'],
+    },
+    {
+      url: '/siteSettings/keygen',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-keygen'],
     },
     {
       url: '/siteSettings/location',
@@ -281,10 +299,22 @@ Polymer({
       subpage: ['site-settings', 'site-settings-category-notifications'],
     },
     {
+      url: '/siteSettings/plugins',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-plugins'],
+    },
+    {
       url: '/siteSettings/popups',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-popups'],
+    },
+    {
+      url: '/siteSettings/unsandboxedPlugins',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-unsandboxed-plugins'],
     },
     // Site details routes.
     {
@@ -292,6 +322,20 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'all-sites', 'site-details'],
+    },
+    {
+      url: '/siteSettings/automaticDownloads/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-automatic-downloads',
+          'site-details'],
+    },
+    {
+      url: '/siteSettings/backgroundSync/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-background-sync',
+          'site-details'],
     },
     {
       url: '/siteSettings/camera/details',
@@ -319,6 +363,13 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-images',
+          'site-details'],
+    },
+    {
+      url: '/siteSettings/keygen/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-keygen',
           'site-details'],
     },
     {
@@ -350,10 +401,24 @@ Polymer({
           'site-details'],
     },
     {
+      url: '/siteSettings/plugins/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-plugins',
+          'site-details'],
+    },
+    {
       url: '/siteSettings/popups/details',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-popups',
+          'site-details'],
+    },
+    {
+      url: '/siteSettings/unsandboxedPlugins/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-unsandsboxed-plugins',
           'site-details'],
     },
     {

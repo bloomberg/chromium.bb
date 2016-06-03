@@ -74,9 +74,11 @@ Polymer({
    */
   onToggleChange_: function(event) {
     switch (this.category) {
+      case settings.ContentSettingsTypes.BACKGROUND_SYNC:
       case settings.ContentSettingsTypes.COOKIES:
       case settings.ContentSettingsTypes.IMAGES:
       case settings.ContentSettingsTypes.JAVASCRIPT:
+      case settings.ContentSettingsTypes.KEYGEN:
       case settings.ContentSettingsTypes.POPUPS:
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
@@ -85,15 +87,25 @@ Polymer({
                 settings.PermissionValues.ALLOW :
                 settings.PermissionValues.BLOCK);
         break;
-      case settings.ContentSettingsTypes.NOTIFICATIONS:
+      case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
       case settings.ContentSettingsTypes.GEOLOCATION:
       case settings.ContentSettingsTypes.CAMERA:
       case settings.ContentSettingsTypes.MIC:
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
+      case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
             this.categoryEnabled ?
                 settings.PermissionValues.ASK :
+                settings.PermissionValues.BLOCK);
+        break;
+      case settings.ContentSettingsTypes.PLUGINS:
+        // "Detect important" vs "Let me choose".
+        this.browserProxy.setDefaultValueForContentType(
+            this.category,
+            this.categoryEnabled ?
+                settings.PermissionValues.IMPORTANT_CONTENT :
                 settings.PermissionValues.BLOCK);
         break;
       default:

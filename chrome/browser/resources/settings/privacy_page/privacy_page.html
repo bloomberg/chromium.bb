@@ -125,6 +125,24 @@
           </all-sites>
         </settings-subpage>
       </template>
+      <template is="dom-if" name="site-settings-category-automatic-downloads">
+        <settings-subpage page-title="$i18n{siteSettingsAutomaticDownloads}">
+          <site-settings-category
+              selected-site="{{selectedSite}}"
+              current-route="{{currentRoute}}"
+              category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
+          </site-settings-category>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" name="site-settings-category-background-sync">
+        <settings-subpage page-title="$i18n{siteSettingsBackgroundSync}">
+          <site-settings-category
+              selected-site="{{selectedSite}}"
+              current-route="{{currentRoute}}"
+              category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
+          </site-settings-category>
+        </settings-subpage>
+      </template>
       <template is="dom-if" name="site-settings-category-camera">
         <settings-subpage page-title="$i18n{siteSettingsCategoryCamera}">
           <site-settings-category
@@ -181,6 +199,15 @@
           </site-settings-category>
         </settings-subpage>
       </template>
+      <template is="dom-if" name="site-settings-category-keygen">
+        <settings-subpage page-title="$i18n{siteSettingsKeygen}">
+          <site-settings-category
+              selected-site="{{selectedSite}}"
+              current-route="{{currentRoute}}"
+              category="{{ContentSettingsTypes.KEYGEN}}">
+          </site-settings-category>
+        </settings-subpage>
+      </template>
       <template is="dom-if" name="site-settings-category-microphone">
         <settings-subpage
             page-title="$i18n{siteSettingsCategoryMicrophone}">
@@ -201,12 +228,30 @@
           </site-settings-category>
         </settings-subpage>
       </template>
+      <template is="dom-if" name="site-settings-category-plugins">
+        <settings-subpage page-title="$i18n{siteSettingsPlugins}">
+          <site-settings-category
+              selected-site="{{selectedSite}}"
+              current-route="{{currentRoute}}"
+              category="{{ContentSettingsTypes.PLUGINS}}">
+          </site-settings-category>
+        </settings-subpage>
+      </template>
       <template is="dom-if" name="site-settings-category-popups">
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
               category="{{ContentSettingsTypes.POPUPS}}">
+          </site-settings-category>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" name="site-settings-category-unsandboxed-plugins">
+        <settings-subpage page-title="$i18n{siteSettingsUnsandboxedPlugins}">
+          <site-settings-category
+              selected-site="{{selectedSite}}"
+              current-route="{{currentRoute}}"
+              category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
           </site-settings-category>
         </settings-subpage>
       </template>

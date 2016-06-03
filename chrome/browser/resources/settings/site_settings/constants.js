@@ -7,20 +7,25 @@ cr.define('settings', function() {
    * All possible contentSettingsTypes that we currently support configuring in
    * the UI. Both top-level categories and content settings that represent
    * individual permissions under Site Details should appear here. This is a
-   * subset of the constants found under content_setttings_types.h and the
-   * values should be kept in sync.
-   * @enum {number}
+   * subset of the constants found in site_settings_helper.cc and the values
+   * should be kept in sync.
+   * @enum {string}
    */
   var ContentSettingsTypes = {
-    COOKIES: 0,
-    IMAGES: 1,
-    JAVASCRIPT: 2,
-    POPUPS: 4,
-    GEOLOCATION: 5,
-    NOTIFICATIONS: 6,
-    FULLSCREEN: 8,
-    MIC: 12,
-    CAMERA: 13,
+    COOKIES: 'cookies',
+    IMAGES: 'images',
+    JAVASCRIPT: 'javascript',
+    PLUGINS: 'plugins',
+    POPUPS: 'popups',
+    GEOLOCATION: 'location',
+    NOTIFICATIONS: 'notifications',
+    FULLSCREEN: 'fullscreen',
+    MIC: 'media-stream-mic',
+    CAMERA: 'media-stream-camera',
+    UNSANDBOXED_PLUGINS: 'ppapi-broker',
+    AUTOMATIC_DOWNLOADS: 'multiple-automatic-downloads',
+    KEYGEN: 'keygen',
+    BACKGROUND_SYNC: 'background-sync',
   };
 
   /**
@@ -32,13 +37,14 @@ cr.define('settings', function() {
     ALLOW: 'allow',
     BLOCK: 'block',
     ASK: 'ask',
+    IMPORTANT_CONTENT: 'detect_important_content',
   };
 
   /**
    * A category value to use for the All Sites list.
-   * @const {number}
+   * @const {string}
    */
-  var ALL_SITES = -1;
+  var ALL_SITES = 'all-sites';
 
   /**
    * An invalid subtype value.

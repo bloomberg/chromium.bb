@@ -910,6 +910,12 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALL_SITES" desc="Label for the all sites site settings.">
     All sites
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOADS" desc="Label for the automatic downloads site settings.">
+    Automatic downloads
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC" desc="Label for the background sync site settings.">
+    Background sync
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CAMERA" desc="Label for the camera site settings.">
     Camera
   </message>
@@ -918,6 +924,9 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION" desc="Label for the location site settings.">
     Location
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN" desc="Label for the key generation site settings.">
+    Key generation
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIC" desc="Label for the microphone site settings.">
     Microphone
@@ -931,8 +940,14 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT" desc="Label for the javascript site settings.">
     Javascript
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS" desc="Label for the plugins site settings.">
+    Plugins
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_POPUPS" desc="Label for the popups site settings.">
     Popups
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS" desc="Label for the unsandboxed plugin access site settings.">
+    Unsandboxed plugin access
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN" desc="Label for the fullscreen site settings.">
     Fullscreen
@@ -972,6 +987,51 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_ALLOW_SITES_RECOMMENDED" desc="The 'allow cookies' label in site settings -- the recommended setting for when sites want to read/write cookie information.">
     Allow sites to save and read cookie data (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS_DETECT_IMPORTANT" desc="The 'detect and run important content' label in site settings.">
+    Detect and run important plugin content
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS_DETECT_IMPORTANT_RECOMMENDED" desc="The 'detect and run important content' label in site settings -- the recommended setting for when sites want to run plugins.">
+    Detect and run important plugin content (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PLUGINS_CHOOSE" desc="The 'let me choose' label in site settings.">
+    Let me choose when to run plugin content
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOW_RECENTLY_CLOSED_SITES" desc="The allow label for background sync in site settings.">
+    Allow recently closed sites to finish sending and receiving data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_ALLOW_RECENTLY_CLOSED_SITES_RECOMMENDED" desc="The allow label for background sync in site settings (with the 'recommended' suffix).">
+    Allow recently closed sites to finish sending and receiving data (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_BLOCKED" desc="The block label for background sync in site settings.">
+    Do not allow recently closed sites to finish sending and receiving data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_ALLOW" desc="The allow label for keygen in site settings.">
+    Allow all sites to use key generation in forms
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK" desc="The block label for key generation in site settings.">
+    Do not allow any site to use key generation in forms
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK_RECOMMENDED" desc="The block label for key generation in site settings (with the 'recommended' suffix).">
+    Do not allow any site to use key generation in forms (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOAD_ASK" desc="The allow label for automatic download in site settings.">
+    Ask when a site tries to download files automatically after the first file
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOAD_ASK_RECOMMENDED" desc="The allow label for automatic download in site settings (with the 'recommended' suffix).">
+    Ask when a site tries to download files automatically after the first file (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOAD_BLOCK" desc="The block label for automatic download in site settings.">
+    Do not allow any site to download multiple files automatically.
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS_ASK" desc="The allow label for unsandboxed plugins in site settings.">
+    Ask when a site wants to use a plugin to access your computer
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS_ASK_RECOMMENDED" desc="The allow label for unsandboxed plugins in site settings (with the 'recommended' suffix).">
+    Ask when a site wants to use a plugin to access your computer (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS_BLOCK" desc="The block label for unsandboxed plugins in site settings.">
+    Do not allow any site to use a plugin to access your computer.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOWED" desc="A generic Allowed label to show in Site Settings when Allow is NOT the recommended option.">
     Allowed

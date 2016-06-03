@@ -26,7 +26,9 @@ cr.define('site_list', function() {
        */
       var prefs = {
         exceptions: {
-          media_stream_camera: [],
+          auto_downloads: [],
+          background_sync: [],
+          camera: [],
           cookies: [],
           fullscreen: [],
           geolocation: [
@@ -57,9 +59,12 @@ cr.define('site_list', function() {
           ],
           images: [],
           javascript: [],
-          media_stream_mic: [],
+          keygen: [],
+          mic: [],
           notifications: [],
+          plugins: [],
           popups: [],
+          unsandboxed_plugins: [],
         }
       };
 
@@ -92,7 +97,9 @@ cr.define('site_list', function() {
        */
       var prefsMixedOriginAndPattern = {
         exceptions: {
-          media_stream_camera: [],
+          auto_downloads: [],
+          background_sync: [],
+          camera: [],
           cookies: [],
           fullscreen: [],
           geolocation: [
@@ -103,6 +110,7 @@ cr.define('site_list', function() {
               source: 'preference',
             },
           ],
+          images: [],
           javascript: [
             {
               origin: 'https://[*.]foo.com',
@@ -111,10 +119,12 @@ cr.define('site_list', function() {
               source: 'preference',
             },
           ],
-          images: [],
-          media_stream_mic: [],
+          keygen: [],
+          mic: [],
           notifications: [],
+          plugins: [],
           popups: [],
+          unsandboxed_plugins: [],
         }
       };
 
@@ -125,7 +135,9 @@ cr.define('site_list', function() {
        */
       var prefsVarious = {
         exceptions: {
-          media_stream_camera: [],
+          auto_downloads: [],
+          background_sync: [],
+          camera: [],
           cookies: [],
           fullscreen: [],
           geolocation: [
@@ -144,7 +156,8 @@ cr.define('site_list', function() {
           ],
           images: [],
           javascript: [],
-          media_stream_mic: [],
+          keygen: [],
+          mic: [],
           notifications: [
             {
               embeddingOrigin: 'https://google.com',
@@ -165,7 +178,9 @@ cr.define('site_list', function() {
               source: 'preference',
             },
           ],
+          plugins: [],
           popups: [],
+          unsandboxed_plugins: [],
         }
       };
 

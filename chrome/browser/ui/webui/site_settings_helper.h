@@ -39,6 +39,12 @@ extern const char kSource[];
 extern const char kEmbeddingOrigin[];
 extern const char kPreferencesSource[];
 
+// Gets a content settings type from the group name identifier.
+ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name);
+
+// Gets a string identifier for the group name.
+std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
+
 // Fills in |exceptions| with Values for the given |type| from |map|.
 void GetExceptionsFromHostContentSettingsMap(
     const HostContentSettingsMap* map,

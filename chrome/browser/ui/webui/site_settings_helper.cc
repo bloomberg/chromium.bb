@@ -20,6 +20,57 @@ const char kSource[] = "source";
 const char kEmbeddingOrigin[] = "embeddingOrigin";
 const char kPreferencesSource[] = "preference";
 
+struct ContentSettingsTypeNameEntry {
+  ContentSettingsType type;
+  const char* name;
+};
+
+const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
+  {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
+  {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
+  {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
+  {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
+  {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
+  {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
+  {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
+  {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
+  {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
+  {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
+  {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
+  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
+  {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
+  {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
+  {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
+  {CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging"},
+  {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, "ssl-cert-decisions"},
+#if defined(OS_CHROMEOS)
+  {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
+#endif
+  {CONTENT_SETTINGS_TYPE_KEYGEN, "keygen"},
+  {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
+};
+
+ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
+  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+    if (name == kContentSettingsTypeGroupNames[i].name)
+      return kContentSettingsTypeGroupNames[i].type;
+  }
+
+  NOTREACHED() << name << " is not a recognized content settings type.";
+  return CONTENT_SETTINGS_TYPE_DEFAULT;
+}
+
+std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
+  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+    if (type == kContentSettingsTypeGroupNames[i].type)
+      return kContentSettingsTypeGroupNames[i].name;
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(

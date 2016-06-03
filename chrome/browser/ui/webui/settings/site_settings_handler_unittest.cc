@@ -137,18 +137,16 @@ class SiteSettingsHandlerTest : public testing::Test {
 };
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
-  ContentSettingsType type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-
   // Test the JS -> C++ -> JS callback path for getting and setting defaults.
   base::ListValue getArgs;
   getArgs.AppendString(kCallbackId);
-  getArgs.AppendInteger(type);
+  getArgs.AppendString("notifications");
   handler()->HandleGetDefaultValueForContentType(&getArgs);
   ValidateDefault(true, 1U);
 
   // Set the default to 'Blocked'.
   base::ListValue setArgs;
-  setArgs.AppendInteger(type);
+  setArgs.AppendString("notifications");
   setArgs.AppendString("block");
   handler()->HandleSetDefaultValueForContentType(&setArgs);
 
@@ -160,15 +158,13 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
-  ContentSettingsType type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-
   // Test the JS -> C++ -> JS callback path for configuring origins, by setting
   // Google.com to blocked.
   base::ListValue setArgs;
   std::string google("http://www.google.com");
   setArgs.AppendString(google);  // Primary pattern.
   setArgs.AppendString(google);  // Secondary pattern.
-  setArgs.AppendInteger(type);
+  setArgs.AppendString("notifications");
   setArgs.AppendString("block");
   handler()->HandleSetCategoryPermissionForOrigin(&setArgs);
   EXPECT_EQ(1U, web_ui()->call_data().size());
@@ -176,7 +172,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   // Verify the change was successful.
   base::ListValue listArgs;
   listArgs.AppendString(kCallbackId);
-  listArgs.AppendInteger(type);
+  listArgs.AppendString("notifications");
   handler()->HandleGetExceptionList(&listArgs);
   ValidateOrigin(google, google, "block", "preference", 2U);
 
@@ -184,7 +180,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   base::ListValue resetArgs;
   resetArgs.AppendString(google);
   resetArgs.AppendString(google);
-  resetArgs.AppendInteger(type);
+  resetArgs.AppendString("notifications");
   handler()->HandleResetCategoryPermissionForOrigin(&resetArgs);
   EXPECT_EQ(3U, web_ui()->call_data().size());
 

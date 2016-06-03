@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
+#include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -129,7 +130,7 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
 
 std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
   return kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-         options::ContentSettingsHandler::ContentSettingsTypeToGroupName(type);
+         site_settings::ContentSettingsTypeToGroupName(type);
 }
 
 }  // namespace
@@ -305,8 +306,7 @@ void ShowContentSettings(Browser* browser,
   ShowSettingsSubPage(
       browser,
       kContentSettingsSubPage + std::string(kHashMark) +
-          options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
-              content_settings_type));
+          site_settings::ContentSettingsTypeToGroupName(content_settings_type));
 }
 
 void ShowClearBrowsingDataDialog(Browser* browser) {

@@ -115,7 +115,7 @@ Polymer({
 
   /**
    * Called when a site changes permission.
-   * @param {number} category The category of the site that changed.
+   * @param {string} category The category of the site that changed.
    * @param {string} site The site that changed.
    * @private
    */

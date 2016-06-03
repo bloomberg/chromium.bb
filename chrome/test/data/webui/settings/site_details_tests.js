@@ -17,7 +17,23 @@ cr.define('site_details', function() {
        */
       var prefs = {
         exceptions: {
-          media_stream_camera: [
+          auto_downloads: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ],
+          background_sync: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ],
+          camera: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
               origin: 'https://foo-allow.com:443',
@@ -57,7 +73,15 @@ cr.define('site_details', function() {
               source: 'preference',
             },
           ],
-          media_stream_mic: [
+          keygen: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ],
+          mic: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
               origin: 'https://foo-allow.com:443',
@@ -73,7 +97,23 @@ cr.define('site_details', function() {
               source: 'preference',
             },
           ],
+          plugins: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ],
           popups: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ],
+          unsandboxed_plugins: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
               origin: 'https://foo-allow.com:443',

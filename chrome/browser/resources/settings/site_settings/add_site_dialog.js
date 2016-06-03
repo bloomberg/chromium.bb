@@ -37,21 +37,6 @@ Polymer({
   },
 
   /**
-   * Adds the wildcard prefix to a pattern string.
-   * @param {string} pattern The pattern to add the wildcard to.
-   * @return {string} The resulting pattern.
-   * @private
-   */
-  addPatternWildcard_: function(pattern) {
-    if (pattern.startsWith('http://'))
-      return pattern.replace('http://', 'http://[*.]');
-    else if (pattern.startsWith('https://'))
-      return pattern.replace('https://', 'https://[*.]');
-    else
-      return '[*.]' + pattern;
-  },
-
-  /**
    * The tap handler for the Add [Site] button (adds the pattern and closes
    * the dialog).
    * @private
@@ -59,7 +44,7 @@ Polymer({
   onAddTap_: function() {
     var pattern = this.addPatternWildcard_(this.site_);
     this.setCategoryPermissionForOrigin(
-        pattern, pattern, this.category, settings.PermissionValues.ALLOW);
+        pattern, '', this.category, settings.PermissionValues.ALLOW);
     this.$.dialog.close();
   },
 });

@@ -63,9 +63,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
       PP_Flash_BrowserOperations_Permission default_permission,
       const ppapi::FlashSiteSettings& sites) override;
 
-  // Gets a string identifier for the group name, for use in HTML.
-  static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
-
  private:
   // Used to determine whether we should show links to Flash camera and
   // microphone settings.

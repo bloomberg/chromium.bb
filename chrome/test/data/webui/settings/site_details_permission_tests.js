@@ -17,7 +17,7 @@ cr.define('site_details_permission', function() {
        */
       var prefs = {
         exceptions: {
-          media_stream_camera: [
+          camera: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
               origin: 'https://foo-allow.com:443',

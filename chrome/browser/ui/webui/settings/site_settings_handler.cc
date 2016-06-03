@@ -104,14 +104,17 @@ void SiteSettingsHandler::OnContentSettingChanged(
     ContentSettingsType content_type,
     std::string resource_identifier) {
   if (primary_pattern.ToString().empty()) {
-    CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::StringValue("contentSettingCategoryChanged"),
-                           base::FundamentalValue(content_type));
+    CallJavascriptFunction(
+        "cr.webUIListenerCallback",
+        base::StringValue("contentSettingCategoryChanged"),
+        base::StringValue(site_settings::ContentSettingsTypeToGroupName(
+            content_type)));
   } else {
     CallJavascriptFunction(
         "cr.webUIListenerCallback",
         base::StringValue("contentSettingSitePermissionChanged"),
-        base::FundamentalValue(content_type),
+        base::StringValue(site_settings::ContentSettingsTypeToGroupName(
+            content_type)),
         base::StringValue(primary_pattern.ToString()));
   }
 }
@@ -136,8 +139,8 @@ void SiteSettingsHandler::HandleClearUsage(
   CHECK_EQ(2U, args->GetSize());
   std::string origin;
   CHECK(args->GetString(0, &origin));
-  double type;
-  CHECK(args->GetDouble(1, &type));
+  std::string type;
+  CHECK(args->GetString(1, &type));
 
   GURL url(origin);
   if (url.is_valid()) {
@@ -148,7 +151,8 @@ void SiteSettingsHandler::HandleClearUsage(
         = new StorageInfoFetcher(profile_);
     storage_info_fetcher->ClearStorage(
         url.host(),
-        static_cast<storage::StorageType>(static_cast<int>(type)),
+        static_cast<storage::StorageType>(static_cast<int>(
+            site_settings::ContentSettingsTypeFromGroupName(type))),
         base::Bind(&SiteSettingsHandler::OnUsageInfoCleared,
             base::Unretained(this)));
 
@@ -162,8 +166,8 @@ void SiteSettingsHandler::HandleClearUsage(
 void SiteSettingsHandler::HandleSetDefaultValueForContentType(
     const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
-  double content_type;
-  CHECK(args->GetDouble(0, &content_type));
+  std::string content_type;
+  CHECK(args->GetString(0, &content_type));
   std::string setting;
   CHECK(args->GetString(1, &setting));
   ContentSetting default_setting;
@@ -172,7 +176,8 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   map->SetDefaultContentSetting(
-      static_cast<ContentSettingsType>(static_cast<int>(content_type)),
+      static_cast<ContentSettingsType>(static_cast<int>(
+          site_settings::ContentSettingsTypeFromGroupName(content_type))),
       default_setting);
 }
 
@@ -183,11 +188,12 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
   CHECK_EQ(2U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
-  double type;
-  CHECK(args->GetDouble(1, &type));
+  std::string type;
+  CHECK(args->GetString(1, &type));
 
   ContentSettingsType content_type =
-      static_cast<ContentSettingsType>(static_cast<int>(type));
+      static_cast<ContentSettingsType>(static_cast<int>(
+          site_settings::ContentSettingsTypeFromGroupName(type)));
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   ContentSetting setting = map->GetDefaultContentSetting(content_type, nullptr);
@@ -208,10 +214,11 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
-  double type;
-  CHECK(args->GetDouble(1, &type));
+  std::string type;
+  CHECK(args->GetString(1, &type));
   ContentSettingsType content_type =
-      static_cast<ContentSettingsType>(static_cast<int>(type));
+      static_cast<ContentSettingsType>(static_cast<int>(
+          site_settings::ContentSettingsTypeFromGroupName(type)));
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -228,11 +235,12 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
   CHECK(args->GetString(0, &primary_pattern));
   std::string secondary_pattern;
   CHECK(args->GetString(1, &secondary_pattern));
-  double type;
-  CHECK(args->GetDouble(2, &type));
+  std::string type;
+  CHECK(args->GetString(2, &type));
 
   ContentSettingsType content_type =
-      static_cast<ContentSettingsType>(static_cast<int>(type));
+      static_cast<ContentSettingsType>(static_cast<int>(
+          site_settings::ContentSettingsTypeFromGroupName(type)));
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -251,13 +259,14 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
   CHECK(args->GetString(0, &primary_pattern));
   std::string secondary_pattern;
   CHECK(args->GetString(1, &secondary_pattern));
-  double type;
-  CHECK(args->GetDouble(2, &type));
+  std::string type;
+  CHECK(args->GetString(2, &type));
   std::string value;
   CHECK(args->GetString(3, &value));
 
   ContentSettingsType content_type =
-      static_cast<ContentSettingsType>(static_cast<int>(type));
+      static_cast<ContentSettingsType>(static_cast<int>(
+          site_settings::ContentSettingsTypeFromGroupName(type)));
   ContentSetting setting;
   CHECK(content_settings::ContentSettingFromString(value, &setting));
 
