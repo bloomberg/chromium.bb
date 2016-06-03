@@ -22,11 +22,19 @@
 <script src="resources/interpolation-test.js"></script>
 <script>
 // Matched keywords in size value list.
-assertNoInterpolation({
+assertInterpolation({
   property: '-webkit-background-size',
   from: '0px 0px, 0px 0px, contain, cover',
   to: '40px 40px, 40px 40px, contain, cover',
-});
+}, [
+  {at: -0.25, is: ' 0px  0px,  0px  0px, contain, cover'},
+  {at: 0, is:     ' 0px  0px,  0px  0px, contain, cover'},
+  {at: 0.25, is:  '10px 10px, 10px 10px, contain, cover'},
+  {at: 0.5, is:   '20px 20px, 20px 20px, contain, cover'},
+  {at: 0.75, is:  '30px 30px, 30px 30px, contain, cover'},
+  {at: 1, is:     '40px 40px, 40px 40px, contain, cover'},
+  {at: 1.25, is:  '50px 50px, 50px 50px, contain, cover'},
+]);
 
 // Mismatched keywords in size value list.
 assertNoInterpolation({

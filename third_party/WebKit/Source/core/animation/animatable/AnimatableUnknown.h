@@ -59,7 +59,7 @@ protected:
         return defaultInterpolateTo(this, value, fraction);
     }
 
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override { return true; }
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     explicit AnimatableUnknown(CSSValue* value)
@@ -79,6 +79,12 @@ inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const
 {
     const AnimatableUnknown* unknown = toAnimatableUnknown(value);
     return m_value == unknown->m_value || m_value->equals(*unknown->m_value);
+}
+
+inline bool AnimatableUnknown::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableUnknown& unknown = toAnimatableUnknown(*value);
+    return !m_value->equals(*unknown.m_value);
 }
 
 } // namespace blink
