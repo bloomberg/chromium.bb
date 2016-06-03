@@ -134,12 +134,8 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
         Drawable tintedRefresh = ContextCompat.getDrawable(this, R.drawable.btn_toolbar_reload);
         tintedRefresh.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
-        menu.add(0, R.id.menu_id_refresh, 0, R.string.physical_web_refresh)
+        menu.add(0, R.id.menu_id_refresh, 1, R.string.physical_web_refresh)
                 .setIcon(tintedRefresh)
-                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
-        menu.add(0, R.id.menu_id_close, 1, R.string.close)
-                .setIcon(R.drawable.btn_close)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         Drawable tintedSettings = ContextCompat.getDrawable(this, R.drawable.settings_cog);
@@ -147,6 +143,10 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         menu.add(0, R.id.menu_id_settings, 2, R.string.menu_preferences)
                 .setIcon(tintedSettings)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
+        menu.add(0, R.id.menu_id_close, 3, R.string.close)
+                .setIcon(R.drawable.btn_close)
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         return super.onCreateOptionsMenu(menu);
     }
