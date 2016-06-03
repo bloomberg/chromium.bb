@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Environment;
+import android.os.SystemClock;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -26,6 +27,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class holding static util functions for offline pages.
@@ -203,7 +206,7 @@ public class OfflinePageUtils {
      * Records UMA data when the Offline Pages Background Load service awakens.
      * @param context android context
      */
-    public static void recordWakeupUMA(Context context) {
+    public static void recordWakeupUMA(Context context, long millisSinceBootTask) {
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         // Note this is a sticky intent, so we aren't really registering a receiver, just getting
         // the sticky intent.  That means that we don't need to unregister the filter later.
@@ -223,6 +226,17 @@ public class OfflinePageUtils {
         Log.d(TAG, "Found single network of type " + connectionType);
         RecordHistogram.recordEnumeratedHistogram("OfflinePages.Wakeup.NetworkAvailable",
                 connectionType, ConnectionType.CONNECTION_LAST + 1);
+
+        // Collect UMA on the time since the request started.
+        long milliSinceBootNow = SystemClock.elapsedRealtime();
+        long delayInMilliseconds = milliSinceBootNow - millisSinceBootTask;
+        if (delayInMilliseconds <= 0) {
+            return;
+        }
+        RecordHistogram.recordLongTimesHistogram(
+                "OfflinePages.Wakeup.DelayTime",
+                delayInMilliseconds,
+                TimeUnit.MILLISECONDS);
     }
 
     private static boolean isPowerConnected(Intent batteryStatus) {

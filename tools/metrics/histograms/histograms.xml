@@ -35319,6 +35319,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Wakeup.DelayTime" units="ms">
+  <owner>petewil@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Time delay from a dinosaur page to connection being available.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Wakeup.NetworkAvailable"
     enum="NetworkConnectionType">
   <owner>petewil@chromium.org</owner>

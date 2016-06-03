@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.ChromeBackgroundService;
  */
 public class BackgroundScheduler {
     /** Bundle key for the timestamp in milliseconds when the request started. */
-    private static final String DATE_TAG = "Date";
+    public static final String DATE_TAG = "Date";
     private static final long ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
 
     /**

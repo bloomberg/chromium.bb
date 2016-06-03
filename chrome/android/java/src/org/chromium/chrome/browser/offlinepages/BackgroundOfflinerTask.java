@@ -28,7 +28,8 @@ public class BackgroundOfflinerTask implements BackgroundSchedulerBridge.Process
 
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
-        OfflinePageUtils.recordWakeupUMA(context);
+        long millisSinceBootTask = bundle.getLong(BackgroundScheduler.DATE_TAG);
+        OfflinePageUtils.recordWakeupUMA(context, millisSinceBootTask);
 
         return true;
     }
