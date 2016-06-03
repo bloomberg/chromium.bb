@@ -11,6 +11,7 @@ import datetime
 import itertools
 import mock
 import os
+import shutil
 import time
 import tempfile
 
@@ -139,6 +140,63 @@ class BootstrapStageTest(
         '--nobootstrap',
     ])
 
+
+class SyncStageRepoCacheTest(
+    generic_stages_unittest.AbstractStageTestCase):
+  """Tests the SyncStage base class."""
+  # pylint: disable=abstract-method
+
+  def setUp(self):
+    self.cache_dir = os.path.join(self.tempdir, 'cache')
+    self.copy_mock = self.PatchObject(shutil, 'copytree')
+    self.sync_stage = None
+
+  def _Prepare(self, root_populated, has_cache, cache_populated, **kwargs):
+    cmd_args = ['-r', self.build_root]
+
+    if not root_populated:
+      shutil.rmtree(os.path.join(self.build_root, '.repo'))
+
+    if has_cache:
+      cmd_args += ['--repo-cache', self.cache_dir]
+
+    if cache_populated:
+      osutils.SafeMakedirs(os.path.join(self.cache_dir, '.repo'))
+
+    super(SyncStageRepoCacheTest, self)._Prepare(cmd_args=cmd_args, **kwargs)
+    self.sync_stage = sync_stages.SyncStage(self._run)
+
+  def testInitializeRepoPopulatedNoCache(self):
+    """Tests basic SyncStage repo cache initialization code."""
+    self._Prepare(root_populated=True, has_cache=False, cache_populated=False)
+    self.sync_stage._InitializeRepo()
+    self.assertEqual(self.copy_mock.call_args_list, [])
+
+  def testInitializeRepoNotPopulatedNoCache(self):
+    """Tests basic SyncStage repo cache initialization code."""
+    self._Prepare(root_populated=False, has_cache=False, cache_populated=False)
+    self.sync_stage._InitializeRepo()
+    self.assertEqual(self.copy_mock.call_args_list, [])
+
+  def testInitializeRepoPopulatedCache(self):
+    """Tests basic SyncStage repo cache initialization code."""
+    self._Prepare(root_populated=True, has_cache=True, cache_populated=True)
+    self.sync_stage._InitializeRepo()
+    self.assertEqual(self.copy_mock.call_args_list, [])
+
+  def testInitializeRepoNotPopulatedCache(self):
+    """Tests basic SyncStage repo cache initialization code."""
+    self._Prepare(root_populated=False, has_cache=True, cache_populated=True)
+    self.sync_stage._InitializeRepo()
+    self.assertEqual(self.copy_mock.call_args_list, [
+        mock.call(self.cache_dir, self.build_root)
+    ])
+
+  def testInitializeRepoNotPopulatedEmptyCache(self):
+    """Tests basic SyncStage repo cache initialization code."""
+    self._Prepare(root_populated=False, has_cache=True, cache_populated=False)
+    self.sync_stage._InitializeRepo()
+    self.assertEqual(self.copy_mock.call_args_list, [])
 
 class ManifestVersionedSyncStageTest(
     generic_stages_unittest.AbstractStageTestCase):
