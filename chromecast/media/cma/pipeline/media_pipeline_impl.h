@@ -74,6 +74,9 @@ class MediaPipelineImpl {
     BACKEND_STATE_PAUSED
   };
   struct FlushTask;
+  void CheckForPlaybackStall(base::TimeDelta media_time,
+                             base::TimeTicks current_stc);
+
   void OnFlushDone(bool is_audio_stream);
 
   // Invoked to notify about a change of buffering state.
@@ -115,6 +118,11 @@ class MediaPipelineImpl {
   base::TimeDelta elapsed_time_delta_;
   int audio_bytes_for_bitrate_estimation_;
   int video_bytes_for_bitrate_estimation_;
+
+  // Playback stalled handling.
+  bool playback_stalled_;
+  base::TimeTicks playback_stalled_time_;
+  bool playback_stalled_notification_sent_;
 
   base::WeakPtr<MediaPipelineImpl> weak_this_;
   base::WeakPtrFactory<MediaPipelineImpl> weak_factory_;
