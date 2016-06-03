@@ -61,17 +61,15 @@ float LayoutSVGResourceRadialGradient::focalRadius(const RadialGradientAttribute
     return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(), *attributes.fr());
 }
 
-void LayoutSVGResourceRadialGradient::buildGradient(GradientData* gradientData) const
+PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::buildGradient() const
 {
     const RadialGradientAttributes& attributes = this->attributes();
-    gradientData->gradient = Gradient::create(this->focalPoint(attributes),
-        this->focalRadius(attributes),
-        this->centerPoint(attributes),
-        this->radius(attributes));
-
-    gradientData->gradient->setSpreadMethod(platformSpreadMethodFromSVGType(attributes.spreadMethod()));
-
-    addStops(gradientData, attributes.stops());
+    RefPtr<Gradient> gradient = Gradient::create(
+        focalPoint(attributes), focalRadius(attributes),
+        centerPoint(attributes), radius(attributes));
+    gradient->setSpreadMethod(platformSpreadMethodFromSVGType(attributes.spreadMethod()));
+    addStops(*gradient, attributes.stops());
+    return gradient.release();
 }
 
 } // namespace blink

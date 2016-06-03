@@ -76,7 +76,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
 
     // Create gradient object
     if (!gradientData->gradient) {
-        buildGradient(gradientData.get());
+        gradientData->gradient = buildGradient();
 
         // We want the text bounding box applied to the gradient space transform now, so the gradient shader can use it.
         if (gradientUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && !objectBoundingBox.isEmpty()) {
@@ -84,9 +84,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
             gradientData->userspaceTransform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
         }
 
-        AffineTransform gradientTransform;
-        calculateGradientTransform(gradientTransform);
-
+        AffineTransform gradientTransform = calculateGradientTransform();
         gradientData->userspaceTransform *= gradientTransform;
     }
 
@@ -107,15 +105,13 @@ bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child, const Comput
     return toLayoutSVGResourceContainer(child)->isSVGPaintServer();
 }
 
-void LayoutSVGResourceGradient::addStops(GradientData* gradientData, const Vector<Gradient::ColorStop>& stops) const
+void LayoutSVGResourceGradient::addStops(Gradient& gradient, const Vector<Gradient::ColorStop>& stops) const
 {
-    ASSERT(gradientData->gradient);
-
     for (const auto& stop : stops)
-        gradientData->gradient->addColorStop(stop);
+        gradient.addColorStop(stop);
 }
 
-GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(SVGSpreadMethodType method) const
+GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(SVGSpreadMethodType method)
 {
     switch (method) {
     case SVGSpreadMethodUnknown:

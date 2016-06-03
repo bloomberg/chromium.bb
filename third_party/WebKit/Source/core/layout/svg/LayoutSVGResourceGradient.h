@@ -50,14 +50,14 @@ public:
     bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const final;
 
 protected:
-    void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;
+    void addStops(Gradient&, const Vector<Gradient::ColorStop>&) const;
 
     virtual SVGUnitTypes::SVGUnitType gradientUnits() const = 0;
-    virtual void calculateGradientTransform(AffineTransform&) = 0;
+    virtual AffineTransform calculateGradientTransform() const = 0;
     virtual bool collectGradientAttributes(SVGGradientElement*) = 0;
-    virtual void buildGradient(GradientData*) const = 0;
+    virtual PassRefPtr<Gradient> buildGradient() const = 0;
 
-    GradientSpreadMethod platformSpreadMethodFromSVGType(SVGSpreadMethodType) const;
+    static GradientSpreadMethod platformSpreadMethodFromSVGType(SVGSpreadMethodType);
 
 private:
     bool m_shouldCollectGradientAttributes : 1;

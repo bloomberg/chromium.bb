@@ -39,9 +39,9 @@ public:
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
-    void calculateGradientTransform(AffineTransform& transform) override { transform = attributes().gradientTransform(); }
+    AffineTransform calculateGradientTransform() const override { return attributes().gradientTransform(); }
     bool collectGradientAttributes(SVGGradientElement*) override;
-    void buildGradient(GradientData*) const override;
+    PassRefPtr<Gradient> buildGradient() const override;
 
     FloatPoint startPoint(const LinearGradientAttributes&) const;
     FloatPoint endPoint(const LinearGradientAttributes&) const;

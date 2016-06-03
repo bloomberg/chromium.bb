@@ -35,7 +35,7 @@ public:
 
     Color stopColorIncludingOpacity() const;
 
-    SVGAnimatedNumber* offset() { return m_offset.get(); }
+    SVGAnimatedNumber* offset() const { return m_offset.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
