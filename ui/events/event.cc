@@ -472,7 +472,13 @@ MouseEvent::MouseEvent(const PointerEvent& pointer_event)
       break;
 
     case ET_POINTER_MOVED:
-      SetType(ET_MOUSE_MOVED);
+      if (pointer_event.flags() &
+          (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
+           EF_RIGHT_MOUSE_BUTTON)) {
+        SetType(ET_MOUSE_DRAGGED);
+      } else {
+        SetType(ET_MOUSE_MOVED);
+      }
       break;
 
     case ET_POINTER_ENTERED:
