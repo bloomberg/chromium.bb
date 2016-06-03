@@ -28,9 +28,10 @@
 
 import unittest
 
-
+from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system import filesystem_mock
 from webkitpy.common.system import filesystem_unittest
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 
 class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSystemTests):
@@ -84,3 +85,29 @@ class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSyste
 
     def test_relpath_win32(self):
         pass
+
+    def test_filesystem_walk(self):
+        mock_dir = 'foo'
+        mock_files = {'foo/bar/baz': '',
+                      'foo/a': '',
+                      'foo/b': '',
+                      'foo/c': ''}
+        host = MockHost()
+        host.filesystem = MockFileSystem(files=mock_files)
+        self.assertEquals(host.filesystem.walk(mock_dir), [('foo', ['bar'], ['a', 'b', 'c']), ('foo/bar', [], ['baz'])])
+
+    def test_filesystem_walk_deeply_nested(self):
+        mock_dir = 'foo'
+        mock_files = {'foo/bar/baz': '',
+                      'foo/bar/quux': '',
+                      'foo/a/x': '',
+                      'foo/a/y': '',
+                      'foo/a/z/lyrics': '',
+                      'foo/b': '',
+                      'foo/c': ''}
+        host = MockHost()
+        host.filesystem = MockFileSystem(files=mock_files)
+        self.assertEquals(host.filesystem.walk(mock_dir), [('foo', ['a', 'bar'], ['c', 'b']),
+                                                           ('foo/a', ['z'], ['x', 'y']),
+                                                           ('foo/a/z', [], ['lyrics']),
+                                                           ('foo/bar', [], ['quux', 'baz'])])

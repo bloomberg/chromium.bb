@@ -223,7 +223,12 @@ class MockFileSystem(object):
                         dirs.append(dir)
                 else:
                     files.append(remaining)
-        return [(top[:-1], dirs, files)]
+        file_system_tuples = [(top[:-1], dirs, files)]
+        for dir in dirs:
+            dir = top + dir
+            tuples_from_subdirs = self.walk(dir)
+            file_system_tuples += tuples_from_subdirs
+        return file_system_tuples
 
     def mtime(self, path):
         if self.exists(path):

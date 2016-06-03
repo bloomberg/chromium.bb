@@ -54,6 +54,7 @@ class TestImporterTest(unittest.TestCase):
             "overwrite": False,
             "destination": "w3c",
             "ignore_expectations": False,
+            "dry_run": False,
         }
         options.update(kwargs)
         return optparse.Values(options)
