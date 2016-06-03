@@ -138,19 +138,19 @@ bool PopulateItem(const base::Value& from,
 }
 
 void AddItemToList(const int from, base::ListValue* out) {
-  out->Append(new base::FundamentalValue(from));
+  out->AppendInteger(from);
 }
 
 void AddItemToList(const bool from, base::ListValue* out) {
-  out->Append(new base::FundamentalValue(from));
+  out->AppendBoolean(from);
 }
 
 void AddItemToList(const double from, base::ListValue* out) {
-  out->Append(new base::FundamentalValue(from));
+  out->AppendDouble(from);
 }
 
 void AddItemToList(const std::string& from, base::ListValue* out) {
-  out->Append(new base::StringValue(from));
+  out->AppendString(from);
 }
 
 void AddItemToList(const std::vector<char>& from, base::ListValue* out) {

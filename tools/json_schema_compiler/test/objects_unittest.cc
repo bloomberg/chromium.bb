@@ -17,8 +17,8 @@ using namespace test::api::objects_movable_json;
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
     std::unique_ptr<base::ListValue> strings(new base::ListValue());
-    strings->Append(new base::StringValue("one"));
-    strings->Append(new base::StringValue("two"));
+    strings->AppendString("one");
+    strings->AppendString("two");
     std::unique_ptr<base::DictionaryValue> info_value(
         new base::DictionaryValue());
     info_value->Set("strings", strings.release());
@@ -38,8 +38,8 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   }
   {
     std::unique_ptr<base::ListValue> strings(new base::ListValue());
-    strings->Append(new base::StringValue("one"));
-    strings->Append(new base::StringValue("two"));
+    strings->AppendString("one");
+    strings->AppendString("two");
     std::unique_ptr<base::DictionaryValue> info_value(
         new base::DictionaryValue());
     info_value->Set("strings", strings.release());
