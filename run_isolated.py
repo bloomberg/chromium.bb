@@ -327,21 +327,23 @@ def map_and_run(
     'had_hard_timeout': False,
     'internal_failure': None,
     'stats': {
-    #  'download': {
-    #    'duration': 0.,
-    #    'initial_number_items': 0,
-    #    'initial_size': 0,
-    #    'items_cold': '<large.pack()>',
-    #    'items_hot': '<large.pack()>',
-    #  },
-    #  'upload': {
-    #    'duration': 0.,
-    #    'items_cold': '<large.pack()>',
-    #    'items_hot': '<large.pack()>',
+    # 'isolated': {
+    #    'download': {
+    #      'duration': 0.,
+    #      'initial_number_items': 0,
+    #      'initial_size': 0,
+    #      'items_cold': '<large.pack()>',
+    #      'items_hot': '<large.pack()>',
+    #    },
+    #    'upload': {
+    #      'duration': 0.,
+    #      'items_cold': '<large.pack()>',
+    #      'items_hot': '<large.pack()>',
+    #    },
     #  },
     },
     'outputs_ref': None,
-    'version': 3,
+    'version': 4,
   }
   if root_dir:
     file_path.ensure_tree(root_dir, 0700)
@@ -356,7 +358,8 @@ def map_and_run(
 
   try:
     if isolated_hash:
-      bundle, result['stats']['download'] = fetch_and_measure(
+      isolated_stats = result['stats'].setdefault('isolated', {})
+      bundle, isolated_stats['download'] = fetch_and_measure(
           isolated_hash=isolated_hash,
           storage=storage,
           cache=cache,
@@ -433,7 +436,8 @@ def map_and_run(
 
       # This deletes out_dir if leak_temp_dir is not set.
       if out_dir:
-        result['outputs_ref'], success, result['stats']['upload'] = (
+        isolated_stats = result['stats'].setdefault('isolated', {})
+        result['outputs_ref'], success, isolated_stats['upload'] = (
             delete_and_upload(storage, out_dir, leak_temp_dir))
       if not success and result['exit_code'] == 0:
         result['exit_code'] = 1

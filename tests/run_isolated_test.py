@@ -516,29 +516,32 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
         u'namespace': u'default-gzip',
       },
       u'stats': {
-        u'download': {
-          u'initial_number_items': 0,
-          u'initial_size': 0,
-          u'items_cold': [len(isolated_in_json)],
-          u'items_hot': [],
-        },
-        u'upload': {
-          u'items_cold': [len(isolated_out_json)],
-          u'items_hot': [15],
+        u'isolated': {
+          u'download': {
+            u'initial_number_items': 0,
+            u'initial_size': 0,
+            u'items_cold': [len(isolated_in_json)],
+            u'items_hot': [],
+          },
+          u'upload': {
+            u'items_cold': [len(isolated_out_json)],
+            u'items_hot': [15],
+          },
         },
       },
-      u'version': 3,
+      u'version': 4,
     }
     actual = tools.read_json(out)
     # duration can be exactly 0 due to low timer resolution, especially but not
     # exclusively on Windows.
     self.assertLessEqual(0, actual.pop(u'duration'))
-    self.assertLessEqual(0, actual[u'stats'][u'download'].pop(u'duration'))
-    self.assertLessEqual(0, actual[u'stats'][u'upload'].pop(u'duration'))
+    actual_isolated_stats = actual[u'stats'][u'isolated']
+    self.assertLessEqual(0, actual_isolated_stats[u'download'].pop(u'duration'))
+    self.assertLessEqual(0, actual_isolated_stats[u'upload'].pop(u'duration'))
     for i in (u'download', u'upload'):
       for j in (u'items_cold', u'items_hot'):
-        actual[u'stats'][i][j] = large.unpack(
-            base64.b64decode(actual[u'stats'][i][j]))
+        actual_isolated_stats[i][j] = large.unpack(
+            base64.b64decode(actual_isolated_stats[i][j]))
     self.assertEqual(expected, actual)
 
 
