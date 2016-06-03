@@ -1022,6 +1022,25 @@ class TestGitCl(TestCase):
     change_id = git_cl.GenerateGerritChangeId('line1\nline2\n')
     self.assertEqual(change_id, 'Ihashchange')
 
+  def test_desecription_append_footer(self):
+    for init_desc, footer_line, expected_desc in [
+      # Use unique desc first lines for easy test failure identification.
+      ('foo', 'R=one', 'foo\n\nR=one'),
+      ('foo\n\nR=one', 'BUG=', 'foo\n\nR=one\nBUG='),
+      ('foo\n\nR=one', 'Change-Id: Ixx', 'foo\n\nR=one\n\nChange-Id: Ixx'),
+      ('foo\n\nChange-Id: Ixx', 'R=one', 'foo\n\nR=one\n\nChange-Id: Ixx'),
+      ('foo\n\nR=one\n\nChange-Id: Ixx', 'TBR=two',
+       'foo\n\nR=one\nTBR=two\n\nChange-Id: Ixx'),
+      ('foo\n\nR=one\n\nChange-Id: Ixx', 'Foo-Bar: baz',
+       'foo\n\nR=one\n\nChange-Id: Ixx\nFoo-Bar: baz'),
+      ('foo\n\nChange-Id: Ixx', 'Foo-Bak: baz',
+       'foo\n\nChange-Id: Ixx\nFoo-Bak: baz'),
+      ('foo', 'Change-Id: Ixx', 'foo\n\nChange-Id: Ixx'),
+    ]:
+      desc = git_cl.ChangeDescription(init_desc)
+      desc.append_footer(footer_line)
+      self.assertEqual(desc.description, expected_desc)
+
   def test_update_reviewers(self):
     data = [
       ('foo', [], 'foo'),
@@ -1444,7 +1463,7 @@ class TestGitCl(TestCase):
     self.assertEqual('hihi', ChangelistMock.desc)
 
   def test_description_appends_bug_line(self):
-    current_desc = 'Some\n\nChange-Id: xxx'
+    current_desc = 'Some.\n\nChange-Id: xxx'
 
     def RunEditor(desc, _, **kwargs):
       self.assertEquals(
@@ -1452,15 +1471,14 @@ class TestGitCl(TestCase):
           '# This will be displayed on the codereview site.\n'
           '# The first line will also be used as the subject of the review.\n'
           '#--------------------This line is 72 characters long'
-          '--------------------\n' +
-          # TODO(tandrii): fix this http://crbug.com/614587.
-          current_desc + '\n\nBUG=',
+          '--------------------\n'
+          'Some.\n\nBUG=\n\nChange-Id: xxx',
           desc)
-      return current_desc + '\n\nBUG='
+      # Simulate user changing something.
+      return 'Some.\n\nBUG=123\n\nChange-Id: xxx'
 
     def UpdateDescriptionRemote(_, desc):
-      # TODO(tandrii): fix this http://crbug.com/614587.
-      self.assertEquals(desc, current_desc + '\n\nBUG=')
+      self.assertEquals(desc, 'Some.\n\nBUG=123\n\nChange-Id: xxx')
 
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.Changelist, 'GetDescription',

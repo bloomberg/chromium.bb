@@ -2692,13 +2692,41 @@ class ChangeDescription(object):
     self.set_description(clean_lines)
 
   def append_footer(self, line):
-    if self._description_lines:
-      # Add an empty line if either the last line or the new line isn't a tag.
-      last_line = self._description_lines[-1]
-      if (not presubmit_support.Change.TAG_LINE_RE.match(last_line) or
-          not presubmit_support.Change.TAG_LINE_RE.match(line)):
-        self._description_lines.append('')
-    self._description_lines.append(line)
+    """Adds a footer line to the description.
+
+    Differentiates legacy "KEY=xxx" footers (used to be called tags) and
+    Gerrit's footers in the form of "Footer-Key: footer any value" and ensures
+    that Gerrit footers are always at the end.
+    """
+    parsed_footer_line = git_footers.parse_footer(line)
+    if parsed_footer_line:
+      # Line is a gerrit footer in the form: Footer-Key: any value.
+      # Thus, must be appended observing Gerrit footer rules.
+      self.set_description(
+          git_footers.add_footer(self.description,
+                                 key=parsed_footer_line[0],
+                                 value=parsed_footer_line[1]))
+      return
+
+    if not self._description_lines:
+      self._description_lines.append(line)
+      return
+
+    top_lines, gerrit_footers, _ = git_footers.split_footers(self.description)
+    if gerrit_footers:
+      # git_footers.split_footers ensures that there is an empty line before
+      # actual (gerrit) footers, if any. We have to keep it that way.
+      assert top_lines and top_lines[-1] == ''
+      top_lines, separator = top_lines[:-1], top_lines[-1:]
+    else:
+      separator = []  # No need for separator if there are no gerrit_footers.
+
+    prev_line = top_lines[-1] if top_lines else ''
+    if (not presubmit_support.Change.TAG_LINE_RE.match(prev_line) or
+        not presubmit_support.Change.TAG_LINE_RE.match(line)):
+      top_lines.append('')
+    top_lines.append(line)
+    self._description_lines = top_lines + separator + gerrit_footers
 
   def get_reviewers(self):
     """Retrieves the list of reviewers."""
