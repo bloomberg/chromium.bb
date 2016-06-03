@@ -542,11 +542,15 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
     private class InternalGestureDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            // TODO(mdjones): Investigate how this is ever the case. The API docs do not say this
+            // can happen (https://crbug.com/613069).
+            if (e == null) return false;
             return handleSingleTapUp(e);
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (e1 == null || e2 == null) return false;
             return handleScroll(e1, e2, distanceY);
         }
     }
