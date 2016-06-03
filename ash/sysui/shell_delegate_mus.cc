@@ -5,7 +5,6 @@
 #include "ash/sysui/shell_delegate_mus.h"
 
 #include "ash/default_accessibility_delegate.h"
-#include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/session/session_state_delegate.h"
@@ -15,6 +14,7 @@
 #include "ash/sysui/context_menu_mus.h"
 #include "ash/sysui/pointer_watcher_delegate_mus.h"
 #include "ash/sysui/shelf_delegate_mus.h"
+#include "ash/sysui/user_wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
@@ -185,8 +185,7 @@ SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
 }
 
 UserWallpaperDelegate* ShellDelegateMus::CreateUserWallpaperDelegate() {
-  NOTIMPLEMENTED() << " Using the default UserWallpaperDelegate implementation";
-  return new DefaultUserWallpaperDelegate();
+  return new UserWallpaperDelegateMus();
 }
 
 SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {

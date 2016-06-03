@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/sysui/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -20,7 +21,8 @@ class AshInit;
 
 class SysUIApplication
     : public shell::ShellClient,
-      public shell::InterfaceFactory<mash::shelf::mojom::ShelfController> {
+      public shell::InterfaceFactory<mash::shelf::mojom::ShelfController>,
+      public shell::InterfaceFactory<mojom::WallpaperController> {
  public:
   SysUIApplication();
   ~SysUIApplication() override;
@@ -34,14 +36,18 @@ class SysUIApplication
 
   // InterfaceFactory<mash::shelf::mojom::ShelfController>:
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<mash::shelf::mojom::ShelfController>
-                  request) override;
+              mash::shelf::mojom::ShelfControllerRequest request) override;
+
+  // InterfaceFactory<mojom::WallpaperController>:
+  void Create(shell::Connection* connection,
+              mojom::WallpaperControllerRequest request) override;
 
   mojo::TracingImpl tracing_;
   std::unique_ptr<AshInit> ash_init_;
 
   mojo::BindingSet<mash::shelf::mojom::ShelfController>
       shelf_controller_bindings_;
+  mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(SysUIApplication);
 };

@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
+#include "chrome/browser/ui/ash/chrome_wallpaper_manager.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -64,6 +65,7 @@ ChromeInterfaceFactory::~ChromeInterfaceFactory() {}
 bool ChromeInterfaceFactory::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<keyboard::mojom::Keyboard>(this);
   connection->AddInterface<mash::mojom::Launchable>(this);
+  connection->AddInterface<ash::sysui::mojom::WallpaperManager>(this);
   connection->AddInterface<app_list::mojom::AppListPresenter>(this);
   return true;
 }
@@ -81,6 +83,14 @@ void ChromeInterfaceFactory::Create(shell::Connection* connection,
   if (!launchable_)
     launchable_.reset(new ChromeLaunchable);
   launchable_->ProcessRequest(std::move(request));
+}
+
+void ChromeInterfaceFactory::Create(
+    shell::Connection* connection,
+    ash::sysui::mojom::WallpaperManagerRequest request) {
+  if (!wallpaper_manager_)
+    wallpaper_manager_.reset(new ChromeWallpaperManager);
+  wallpaper_manager_->ProcessRequest(std::move(request));
 }
 
 void ChromeInterfaceFactory::Create(

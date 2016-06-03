@@ -4,6 +4,7 @@ include_rules = [
   "+cc",
   "+components/mus/common",
   "+components/mus/public",
+  "+components/wallpaper",
   "+mash/shelf/public/interfaces",
   "+mojo/common",
   "+mojo/converters",

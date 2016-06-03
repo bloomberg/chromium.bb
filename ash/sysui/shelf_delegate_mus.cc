@@ -352,12 +352,13 @@ void ShelfDelegateMus::SetItemImage(const mojo::String& app_id,
 }
 
 void ShelfDelegateMus::OnUserWindowObserverAdded(
-    mojo::Array<mojom::UserWindowPtr> user_windows) {
+    mojo::Array<ash::mojom::UserWindowPtr> user_windows) {
   for (size_t i = 0; i < user_windows.size(); ++i)
     OnUserWindowAdded(std::move(user_windows[i]));
 }
 
-void ShelfDelegateMus::OnUserWindowAdded(mojom::UserWindowPtr user_window) {
+void ShelfDelegateMus::OnUserWindowAdded(
+    ash::mojom::UserWindowPtr user_window) {
   DCHECK(!window_id_to_shelf_id_.count(user_window->window_id));
 
   if (user_window->ignored_by_shelf)

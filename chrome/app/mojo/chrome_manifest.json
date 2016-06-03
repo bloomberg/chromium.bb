@@ -6,7 +6,10 @@
     "required": {
       "*": { "classes": [ "app" ] },
       "mojo:ash_sysui": {
-        "interfaces": [ "mash::shelf::mojom::ShelfController" ]
+        "interfaces": [
+          "ash::sysui::mojom::WallpaperController",
+          "mash::shelf::mojom::ShelfController"
+        ]
       }
     },
     "provided": {

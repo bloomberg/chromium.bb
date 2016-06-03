@@ -28,6 +28,8 @@ source_set("lib") {
     "stub_context_factory.h",
     "sysui_application.cc",
     "sysui_application.h",
+    "user_wallpaper_delegate_mus.cc",
+    "user_wallpaper_delegate_mus.h",
   ]
 
   deps = [
@@ -39,6 +41,7 @@ source_set("lib") {
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//components/user_manager",
+    "//components/wallpaper",
     "//device/bluetooth",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
@@ -60,9 +63,11 @@ source_set("lib") {
     "//ui/strings",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
+    "//ui/wm",
   ]
 
   public_deps = [
+    "//ash/sysui/public/interfaces",
     "//mash/shelf/public/interfaces",
   ]
 

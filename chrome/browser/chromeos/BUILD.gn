@@ -43,6 +43,7 @@ source_set("chromeos") {
     "//ash",
     "//ash:ash_with_content",
     "//ash/public/interfaces",
+    "//ash/sysui/public/interfaces",
     "//build/linux:fontconfig",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",

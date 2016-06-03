@@ -24,7 +24,7 @@ namespace sysui {
 // the browser.
 class ShelfDelegateMus : public ShelfDelegate,
                          public mash::shelf::mojom::ShelfController,
-                         public mojom::UserWindowObserver {
+                         public ash::mojom::UserWindowObserver {
  public:
   explicit ShelfDelegateMus(ShelfModel* model);
   ~ShelfDelegateMus() override;
@@ -56,10 +56,10 @@ class ShelfDelegateMus : public ShelfDelegate,
   void UnpinItem(const mojo::String& app_id) override;
   void SetItemImage(const mojo::String& app_id, const SkBitmap& image) override;
 
-  // mojom::UserWindowObserver:
+  // ash::mojom::UserWindowObserver:
   void OnUserWindowObserverAdded(
-      mojo::Array<mojom::UserWindowPtr> user_windows) override;
-  void OnUserWindowAdded(mojom::UserWindowPtr user_window) override;
+      mojo::Array<ash::mojom::UserWindowPtr> user_windows) override;
+  void OnUserWindowAdded(ash::mojom::UserWindowPtr user_window) override;
   void OnUserWindowRemoved(uint32_t window_id) override;
   void OnUserWindowTitleChanged(uint32_t window_id,
                                 const mojo::String& window_title) override;
@@ -74,9 +74,9 @@ class ShelfDelegateMus : public ShelfDelegate,
 
   mojo::AssociatedInterfacePtrSet<mash::shelf::mojom::ShelfObserver> observers_;
 
-  mojom::ShelfLayoutPtr shelf_layout_;
-  mojom::UserWindowControllerPtr user_window_controller_;
-  mojo::Binding<mojom::UserWindowObserver> binding_;
+  ash::mojom::ShelfLayoutPtr shelf_layout_;
+  ash::mojom::UserWindowControllerPtr user_window_controller_;
+  mojo::Binding<ash::mojom::UserWindowObserver> binding_;
   std::map<uint32_t, ShelfID> window_id_to_shelf_id_;
 
   std::map<std::string, ShelfID> app_id_to_shelf_id_;

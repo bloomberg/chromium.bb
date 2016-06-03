@@ -11,7 +11,10 @@
           "ash::mojom::UserWindowController"
         ]
       },
-      "exe:chrome" : { "classes": [ "app_list:presenter" ] }
+      "exe:chrome" : {
+        "interfaces": [ "ash::sysui::mojom::WallpaperManager" ],
+        "classes": [ "app_list:presenter" ]
+      }
     }
   }
 }

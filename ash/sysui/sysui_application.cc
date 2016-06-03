@@ -11,6 +11,7 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/material_design/material_design_controller.h"
@@ -24,6 +25,7 @@
 #include "ash/sysui/shelf_delegate_mus.h"
 #include "ash/sysui/shell_delegate_mus.h"
 #include "ash/sysui/stub_context_factory.h"
+#include "ash/sysui/user_wallpaper_delegate_mus.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -34,6 +36,8 @@
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/platform_window/stub/stub_window.h"
 #include "ui/views/mus/aura_init.h"
@@ -60,38 +64,38 @@ const char kResourceFile100[] = "ash_resources_100_percent.pak";
 const char kResourceFile200[] = "ash_resources_200_percent.pak";
 
 // Tries to determine the corresponding mash container from widget init params.
-mojom::Container GetContainerId(const views::Widget::InitParams& params) {
+ash::mojom::Container GetContainerId(const views::Widget::InitParams& params) {
   const int id = params.parent->id();
   if (id == kShellWindowId_DesktopBackgroundContainer)
-    return mojom::Container::USER_BACKGROUND;
+    return ash::mojom::Container::USER_BACKGROUND;
   if (id == kShellWindowId_ShelfContainer)
-    return mojom::Container::USER_PRIVATE_SHELF;
+    return ash::mojom::Container::USER_PRIVATE_SHELF;
   if (id == kShellWindowId_StatusContainer)
-    return mojom::Container::STATUS;
+    return ash::mojom::Container::STATUS;
 
   // Determine the container based on Widget type.
   switch (params.type) {
     case views::Widget::InitParams::Type::TYPE_BUBBLE:
-      return mojom::Container::BUBBLES;
+      return ash::mojom::Container::BUBBLES;
     case views::Widget::InitParams::Type::TYPE_MENU:
-      return mojom::Container::MENUS;
+      return ash::mojom::Container::MENUS;
     case views::Widget::InitParams::Type::TYPE_TOOLTIP:
-      return mojom::Container::DRAG_AND_TOOLTIPS;
+      return ash::mojom::Container::DRAG_AND_TOOLTIPS;
     default:
-      return mojom::Container::COUNT;
+      return ash::mojom::Container::COUNT;
   }
 }
 
 // Tries to determine the corresponding ash window type from the ash container
 // for the widget.
-mojom::AshWindowType GetAshWindowType(aura::Window* container) {
+ash::mojom::AshWindowType GetAshWindowType(aura::Window* container) {
   DCHECK(container);
   int id = container->id();
   if (id == kShellWindowId_ShelfContainer)
-    return mojom::AshWindowType::SHELF;
+    return ash::mojom::AshWindowType::SHELF;
   if (id == kShellWindowId_StatusContainer)
-    return mojom::AshWindowType::STATUS_AREA;
-  return mojom::AshWindowType::COUNT;
+    return ash::mojom::AshWindowType::STATUS_AREA;
+  return ash::mojom::AshWindowType::COUNT;
 }
 
 // Creates a StubWindow, which means this window never receives any input event,
@@ -140,15 +144,15 @@ class NativeWidgetFactory {
       views::internal::NativeWidgetDelegate* delegate) {
     std::map<std::string, std::vector<uint8_t>> properties;
     if (params.parent) {
-      mojom::Container container = GetContainerId(params);
-      if (container != mojom::Container::COUNT) {
-        properties[mojom::kWindowContainer_Property] =
+      ash::mojom::Container container = GetContainerId(params);
+      if (container != ash::mojom::Container::COUNT) {
+        properties[ash::mojom::kWindowContainer_Property] =
             mojo::ConvertTo<std::vector<uint8_t>>(
                 static_cast<int32_t>(container));
       }
-      mojom::AshWindowType type = GetAshWindowType(params.parent);
-      if (type != mojom::AshWindowType::COUNT) {
-        properties[mojom::kAshWindowType_Property] =
+      ash::mojom::AshWindowType type = GetAshWindowType(params.parent);
+      if (type != ash::mojom::AshWindowType::COUNT) {
+        properties[ash::mojom::kAshWindowType_Property] =
             mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(type));
       }
     }
@@ -235,7 +239,6 @@ class AshInit {
     Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
 
     Shell::GetPrimaryRootWindow()->GetHost()->Show();
-    SetupWallpaper(SkColorSetARGB(255, 0, 255, 0));
   }
 
   void InitializeResourceBundle(::shell::Connector* connector) {
@@ -262,23 +265,6 @@ class AshInit {
                            ui::SCALE_FACTOR_100P);
     rb.AddDataPackFromFile(loader.TakeFile(kResourceFile200),
                            ui::SCALE_FACTOR_200P);
-  }
-
-  void SetupWallpaper(SkColor color) {
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(16, 16);
-    bitmap.eraseColor(color);
-#if !defined(NDEBUG)
-    // In debug builds we generate a simple pattern that allows visually
-    // notice if transparency is broken.
-    {
-      SkAutoLockPixels alp(bitmap);
-      *bitmap.getAddr32(0, 0) = SkColorSetRGB(0, 0, 0);
-    }
-#endif
-    gfx::ImageSkia wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-    Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
-        wallpaper, wallpaper::WALLPAPER_LAYOUT_TILE);
   }
 
   void InitializeComponents() {
@@ -317,15 +303,25 @@ void SysUIApplication::Initialize(::shell::Connector* connector,
 
 bool SysUIApplication::AcceptConnection(::shell::Connection* connection) {
   connection->AddInterface<mash::shelf::mojom::ShelfController>(this);
+  connection->AddInterface<mojom::WallpaperController>(this);
   return true;
 }
 
 void SysUIApplication::Create(
     ::shell::Connection* connection,
-    mojo::InterfaceRequest<mash::shelf::mojom::ShelfController> request) {
+    mash::shelf::mojom::ShelfControllerRequest request) {
   mash::shelf::mojom::ShelfController* shelf_controller =
       static_cast<ShelfDelegateMus*>(Shell::GetInstance()->GetShelfDelegate());
   shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
+}
+
+void SysUIApplication::Create(::shell::Connection* connection,
+                              mojom::WallpaperControllerRequest request) {
+  mojom::WallpaperController* wallpaper_controller =
+      static_cast<UserWallpaperDelegateMus*>(
+          Shell::GetInstance()->user_wallpaper_delegate());
+  wallpaper_controller_bindings_.AddBinding(wallpaper_controller,
+                                            std::move(request));
 }
 
 }  // namespace sysui
