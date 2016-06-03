@@ -1342,3 +1342,13 @@ crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calcul
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
 crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
+
+crbug.com/547938 fast/css/001.html [ NeedsRebaseline ]
+crbug.com/547938 fast/lists/004.html [ NeedsRebaseline ]
+crbug.com/547938 fast/lists/008-vertical.html [ NeedsRebaseline ]
+crbug.com/547938 fast/lists/008.html [ NeedsRebaseline ]
+crbug.com/547938 fast/lists/markers-in-selection.html [ NeedsRebaseline ]
+crbug.com/547938 fast/lists/inline-before-content-after-list-marker.html [ NeedsRebaseline ]
+crbug.com/547938 fast/repaint/list-marker.html [ NeedsRebaseline ]
+crbug.com/547938 css1/classification/list_style_position.html [ NeedsRebaseline ]
+crbug.com/547938 tables/mozilla/bugs/bug30692.html [ NeedsRebaseline ]

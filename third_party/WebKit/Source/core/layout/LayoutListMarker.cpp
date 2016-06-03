@@ -36,6 +36,11 @@ namespace blink {
 
 const int cMarkerPaddingPx = 7;
 
+// TODO(glebl): Move to WebKit/Source/core/css/html.css after
+// Blink starts to support ::marker crbug.com/457718
+// Recommended UA margin for list markers.
+const int cUAMarkerMarginEm = 1;
+
 LayoutListMarker::LayoutListMarker(LayoutListItem* item)
     : LayoutBox(nullptr)
     , m_listItem(item)
@@ -261,7 +266,7 @@ void LayoutListMarker::updateMargins()
             switch (getListStyleCategory()) {
             case ListStyleCategory::Symbol:
                 marginStart = LayoutUnit(-1);
-                marginEnd = fontMetrics.ascent() - minPreferredLogicalWidth() + 1;
+                marginEnd = fontMetrics.ascent() - minPreferredLogicalWidth() + 1 + LayoutUnit(cUAMarkerMarginEm * style()->computedFontSize());
                 break;
             default:
                 break;
