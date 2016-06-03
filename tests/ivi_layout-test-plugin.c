@@ -32,7 +32,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "src/compositor.h"
+#include "compositor.h"
 #include "compositor/weston.h"
 #include "weston-test-server-protocol.h"
 #include "ivi-test.h"

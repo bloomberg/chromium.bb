@@ -49,7 +49,7 @@
 #include <linux/input.h>
 #include <wayland-client.h>
 
-#include "src/vertex-clipping.h"
+#include "libweston/vertex-clipping.h"
 #include "shared/xalloc.h"
 #include "window.h"
 

@@ -31,14 +31,14 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "src/compositor.h"
+#include "compositor.h"
 #include "compositor/weston.h"
 #include "weston-test-server-protocol.h"
 
 #ifdef ENABLE_EGL
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include "src/weston-egl-ext.h"
+#include "weston-egl-ext.h"
 #endif /* ENABLE_EGL */
 
 #include "shared/helpers.h"
