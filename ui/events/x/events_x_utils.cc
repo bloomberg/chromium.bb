@@ -377,8 +377,7 @@ EventType EventTypeFromXEvent(const XEvent& xev) {
   // ET_UNKNOWN as the type so this event will not be further processed.
   // NOTE: During some events unittests there is no device data manager.
   if (DeviceDataManager::HasInstance() &&
-      static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance())
-          ->IsEventBlocked(xev)) {
+      DeviceDataManagerX11::GetInstance()->IsEventBlocked(xev)) {
     return ET_UNKNOWN;
   }
 

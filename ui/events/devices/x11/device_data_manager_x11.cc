@@ -817,7 +817,7 @@ void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
 void DeviceDataManagerX11::DisableDevice(int deviceid) {
   blocked_devices_.set(deviceid, true);
   // TODO(rsadam@): Support blocking touchscreen devices.
-  std::vector<InputDevice> keyboards = keyboard_devices();
+  std::vector<InputDevice> keyboards = GetKeyboardDevices();
   std::vector<InputDevice>::iterator it =
       FindDeviceWithId(keyboards.begin(), keyboards.end(), deviceid);
   if (it != std::end(keyboards)) {
@@ -833,7 +833,7 @@ void DeviceDataManagerX11::EnableDevice(int deviceid) {
   std::map<int, InputDevice>::iterator it =
       blocked_keyboard_devices_.find(deviceid);
   if (it != blocked_keyboard_devices_.end()) {
-    std::vector<InputDevice> devices = keyboard_devices();
+    std::vector<InputDevice> devices = GetKeyboardDevices();
     // Add device to current list of active devices.
     devices.push_back((*it).second);
     blocked_keyboard_devices_.erase(it);

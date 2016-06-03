@@ -98,7 +98,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
     }
 
     for (const ui::InputDevice& device :
-         device_data_manager->keyboard_devices()) {
+         device_data_manager->GetKeyboardDevices()) {
       if (device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
         keyboard_device_id_ = device.id;
         device_data_manager->DisableDevice(keyboard_device_id_);

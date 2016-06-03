@@ -29,6 +29,8 @@
         'events_devices_export.h',
         'input_device.cc',
         'input_device.h',
+        'input_device_manager.cc',
+        'input_device_manager.h',
         'input_device_event_observer.h',
         'touchscreen_device.cc',
         'touchscreen_device.h',

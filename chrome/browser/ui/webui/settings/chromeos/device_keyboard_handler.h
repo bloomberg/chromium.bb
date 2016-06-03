@@ -19,7 +19,7 @@ class WebUI;
 }
 
 namespace ui {
-class DeviceDataManager;
+class InputDeviceManager;
 }
 
 class Profile;
@@ -56,7 +56,7 @@ class KeyboardHandler
 
   Profile* profile_;  // Weak pointer.
 
-  ScopedObserver<ui::DeviceDataManager, KeyboardHandler> observer_;
+  ScopedObserver<ui::InputDeviceManager, KeyboardHandler> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardHandler);
 };

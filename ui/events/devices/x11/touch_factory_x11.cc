@@ -336,7 +336,7 @@ void TouchFactory::CacheTouchscreenIds(int device_id) {
   if (!DeviceDataManager::HasInstance())
     return;
   std::vector<TouchscreenDevice> touchscreens =
-      DeviceDataManager::GetInstance()->touchscreen_devices();
+      DeviceDataManager::GetInstance()->GetTouchscreenDevices();
   const auto it =
       std::find_if(touchscreens.begin(), touchscreens.end(),
                    [device_id](const TouchscreenDevice& touchscreen) {

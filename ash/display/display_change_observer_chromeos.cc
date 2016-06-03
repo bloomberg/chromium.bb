@@ -29,7 +29,7 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/display_util.h"
-#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
@@ -144,11 +144,11 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
 
 DisplayChangeObserver::DisplayChangeObserver() {
   Shell::GetInstance()->AddShellObserver(this);
-  ui::DeviceDataManager::GetInstance()->AddObserver(this);
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 DisplayChangeObserver::~DisplayChangeObserver() {
-  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -269,7 +269,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
   }
 
   AssociateTouchscreens(
-      &displays, ui::DeviceDataManager::GetInstance()->touchscreen_devices());
+      &displays,
+      ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices());
   // DisplayManager can be null during the boot.
   Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
 

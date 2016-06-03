@@ -82,7 +82,7 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   // If a scan of available devices has already completed, use material-hybrid
   // if a touchscreen is present.
   if (DeviceDataManager::HasInstance() &&
-      DeviceDataManager::GetInstance()->device_lists_complete()) {
+      DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
     return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED
                ? MATERIAL_HYBRID
                : MATERIAL_NORMAL;

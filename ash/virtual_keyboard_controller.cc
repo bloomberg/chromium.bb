@@ -11,8 +11,8 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
-#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -37,13 +37,13 @@ VirtualKeyboardController::VirtualKeyboardController()
       has_touchscreen_(false),
       ignore_external_keyboard_(false) {
   Shell::GetInstance()->AddShellObserver(this);
-  ui::DeviceDataManager::GetInstance()->AddObserver(this);
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
   UpdateDevices();
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
   Shell::GetInstance()->RemoveShellObserver(this);
-  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 }
 
 void VirtualKeyboardController::OnMaximizeModeStarted() {
@@ -76,17 +76,17 @@ void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
 }
 
 void VirtualKeyboardController::UpdateDevices() {
-  ui::DeviceDataManager* device_data_manager =
-      ui::DeviceDataManager::GetInstance();
+  ui::InputDeviceManager* device_data_manager =
+      ui::InputDeviceManager::GetInstance();
 
   // Checks for touchscreens.
-  has_touchscreen_ = device_data_manager->touchscreen_devices().size() > 0;
+  has_touchscreen_ = device_data_manager->GetTouchscreenDevices().size() > 0;
 
   // Checks for keyboards.
   has_external_keyboard_ = false;
   has_internal_keyboard_ = false;
   for (const ui::InputDevice& device :
-       device_data_manager->keyboard_devices()) {
+       device_data_manager->GetKeyboardDevices()) {
     if (has_internal_keyboard_ && has_external_keyboard_)
       break;
     ui::InputDeviceType type = device.type;

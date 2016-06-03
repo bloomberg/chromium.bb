@@ -13,6 +13,8 @@ component("devices") {
     "input_device.cc",
     "input_device.h",
     "input_device_event_observer.h",
+    "input_device_manager.cc",
+    "input_device_manager.h",
     "touchscreen_device.cc",
     "touchscreen_device.h",
   ]

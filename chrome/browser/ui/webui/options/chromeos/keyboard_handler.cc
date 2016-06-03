@@ -18,7 +18,7 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace {
 const struct ModifierKeysSelectItem {
@@ -51,7 +51,7 @@ const char* kDataValuesNames[] = {
 
 bool HasExternalKeyboard() {
   for (const ui::InputDevice& keyboard :
-       ui::DeviceDataManager::GetInstance()->keyboard_devices()) {
+       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
     if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_EXTERNAL)
       return true;
   }
@@ -64,11 +64,11 @@ namespace chromeos {
 namespace options {
 
 KeyboardHandler::KeyboardHandler() {
-  ui::DeviceDataManager::GetInstance()->AddObserver(this);
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 KeyboardHandler::~KeyboardHandler() {
-  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 }
 
 void KeyboardHandler::GetLocalizedValues(

@@ -5,14 +5,14 @@
 #include "ui/base/touch/touch_device.h"
 
 #include "base/logging.h"
-#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace ui {
 
 namespace {
 
 bool IsTouchDevicePresent() {
-  return !DeviceDataManager::GetInstance()->touchscreen_devices().empty();
+  return !InputDeviceManager::GetInstance()->GetTouchscreenDevices().empty();
 }
 
 }  // namespace
@@ -21,15 +21,15 @@ TouchScreensAvailability GetTouchScreensAvailability() {
   if (!IsTouchDevicePresent())
     return TouchScreensAvailability::NONE;
 
-  return DeviceDataManager::GetInstance()->AreTouchscreensEnabled() ?
-      TouchScreensAvailability::ENABLED :
-      TouchScreensAvailability::DISABLED;
+  return InputDeviceManager::GetInstance()->AreTouchscreensEnabled()
+             ? TouchScreensAvailability::ENABLED
+             : TouchScreensAvailability::DISABLED;
 }
 
 int MaxTouchPoints() {
   int max_touch = 0;
   const std::vector<ui::TouchscreenDevice>& touchscreen_devices =
-      ui::DeviceDataManager::GetInstance()->touchscreen_devices();
+      ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices();
   for (const ui::TouchscreenDevice& device : touchscreen_devices) {
     if (device.touch_points > max_touch)
       max_touch = device.touch_points;

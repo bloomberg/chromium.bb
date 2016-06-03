@@ -61,7 +61,7 @@ std::string GetShimLibraryName() {
 // window's coordinate space.
 void ScaleTouchEvent(TouchEvent* event, const gfx::SizeF& size) {
   for (const auto& device :
-       DeviceDataManager::GetInstance()->touchscreen_devices()) {
+       DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (device.id == event->source_device_id()) {
       gfx::SizeF touchscreen_size = gfx::SizeF(device.size);
       gfx::Transform transform;
