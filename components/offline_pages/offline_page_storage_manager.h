@@ -33,8 +33,8 @@ const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(10);
 // has been expired.
 const base::TimeDelta kRemovePageItemInterval = base::TimeDelta::FromDays(21);
 
-class ArchiveManager;
 class ClientPolicyController;
+class OfflinePageModel;
 
 // This class is used for storage management of offline pages. It provides
 // a ClearPagesIfNeeded method which is used to clear expired offline pages
@@ -46,29 +46,6 @@ class ClientPolicyController;
 // And this manager would use OfflinePageModel to get/remove pages.
 class OfflinePageStorageManager {
  public:
-  // This interface should have no knowledge of offline page model.
-  // This interface should be implemented by clients managed by storage manager.
-  class Client {
-   public:
-    virtual ~Client() {}
-
-    // Asks the client to delete pages based on |ofline_ids| and invokes
-    // |callback| upon completion.
-    virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                                        const DeletePageCallback& callback) = 0;
-
-    // Asks the client to get all offline pages and invokes |callback| upon
-    // completion.
-    virtual void GetAllPages(
-        const MultipleOfflinePageItemCallback& callback) = 0;
-
-    // Asks the client to mark pages with |offline_ids| as expired and delete
-    // the associated archive files.
-    virtual void ExpirePages(const std::vector<int64_t>& offline_ids,
-                             const base::Time& expiration_time,
-                             const base::Callback<void(bool)>& callback) = 0;
-  };
-
   enum class ClearStorageResult {
     SUCCESS,                     // Cleared successfully.
     UNNECESSARY,                 // No expired pages.
@@ -86,7 +63,7 @@ class OfflinePageStorageManager {
   // ClearStorageResult: result of expiring pages in storage.
   typedef base::Callback<void(size_t, ClearStorageResult)> ClearStorageCallback;
 
-  explicit OfflinePageStorageManager(Client* client,
+  explicit OfflinePageStorageManager(OfflinePageModel* model,
                                      ClientPolicyController* policy_controller,
                                      ArchiveManager* archive_manager);
 
@@ -118,7 +95,7 @@ class OfflinePageStorageManager {
       const ClearStorageCallback& callback,
       const ArchiveManager::StorageStats& pages);
 
-  // Callback called after getting all pages from client.
+  // Callback called after getting all pages from model.
   void OnGetAllPagesDoneForClearingPages(
       const ClearStorageCallback& callback,
       const ArchiveManager::StorageStats& storage_stats,
@@ -130,7 +107,7 @@ class OfflinePageStorageManager {
                       const std::vector<int64_t>& page_ids_to_remove,
                       bool expiration_succeeded);
 
-  // Callback called after clearing outdated pages from client.
+  // Callback called after clearing outdated pages from model.
   void OnOutdatedPagesCleared(const ClearStorageCallback& callback,
                               size_t pages_cleared,
                               bool expiration_succeeded,
@@ -155,7 +132,7 @@ class OfflinePageStorageManager {
   bool IsInProgress() const;
 
   // Not owned.
-  Client* client_;
+  OfflinePageModel* model_;
 
   // Not owned.
   ClientPolicyController* policy_controller_;

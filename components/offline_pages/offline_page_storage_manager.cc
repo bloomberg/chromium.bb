@@ -12,14 +12,15 @@
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_client_policy.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model.h"
 
 namespace offline_pages {
 
 OfflinePageStorageManager::OfflinePageStorageManager(
-    Client* client,
+    OfflinePageModel* model,
     ClientPolicyController* policy_controller,
     ArchiveManager* archive_manager)
-    : client_(client),
+    : model_(model),
       policy_controller_(policy_controller),
       archive_manager_(archive_manager),
       clock_(new base::DefaultClock()),
@@ -52,7 +53,7 @@ void OfflinePageStorageManager::OnGetStorageStatsDoneForClearingPages(
     callback.Run(0, ClearStorageResult::UNNECESSARY);
     return;
   }
-  client_->GetAllPages(
+  model_->GetAllPages(
       base::Bind(&OfflinePageStorageManager::OnGetAllPagesDoneForClearingPages,
                  weak_ptr_factory_.GetWeakPtr(), callback, stats));
 }
@@ -64,7 +65,7 @@ void OfflinePageStorageManager::OnGetAllPagesDoneForClearingPages(
   std::vector<int64_t> page_ids_to_expire;
   std::vector<int64_t> page_ids_to_remove;
   GetPageIdsToClear(pages, stats, &page_ids_to_expire, &page_ids_to_remove);
-  client_->ExpirePages(
+  model_->ExpirePages(
       page_ids_to_expire, clear_time_,
       base::Bind(&OfflinePageStorageManager::OnPagesExpired,
                  weak_ptr_factory_.GetWeakPtr(), callback,
@@ -78,7 +79,7 @@ void OfflinePageStorageManager::OnPagesExpired(
     bool expiration_succeeded) {
   // We want to delete the outdated page records regardless the expiration
   // succeeded or not.
-  client_->DeletePagesByOfflineId(
+  model_->DeletePagesByOfflineId(
       page_ids_to_remove,
       base::Bind(&OfflinePageStorageManager::OnOutdatedPagesCleared,
                  weak_ptr_factory_.GetWeakPtr(), callback, pages_expired,

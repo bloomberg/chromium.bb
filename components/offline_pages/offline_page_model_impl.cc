@@ -451,7 +451,7 @@ void OfflinePageModelImpl::GetAllPages(
 }
 
 void OfflinePageModelImpl::GetAllPagesAfterLoadDone(
-    const MultipleOfflinePageItemCallback& callback) {
+    const MultipleOfflinePageItemCallback& callback) const {
   DCHECK(is_loaded_);
 
   MultipleOfflinePageItemResult offline_pages;

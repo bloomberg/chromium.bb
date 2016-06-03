@@ -69,9 +69,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
+  void ClearAll(const base::Closure& callback) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback) override;
-  void ClearAll(const base::Closure& callback) override;
   void DeletePagesByURLPredicate(const UrlPredicate& predicate,
                                  const DeletePageCallback& callback) override;
   void HasPages(const std::string& name_space,
@@ -130,7 +130,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnEnsureArchivesDirCreatedDone(const base::TimeTicks& start_time);
 
   void GetAllPagesAfterLoadDone(
-      const MultipleOfflinePageItemCallback& callback);
+      const MultipleOfflinePageItemCallback& callback) const;
   void CheckPagesExistOfflineAfterLoadDone(
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback);
