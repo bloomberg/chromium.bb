@@ -101,7 +101,7 @@ void DWriteFontProxyMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     content::BrowserThread::ID* thread) {
   if (IPC_MESSAGE_CLASS(message) == DWriteFontProxyMsgStart)
-    *thread = BrowserThread::FILE;
+    *thread = BrowserThread::FILE_USER_BLOCKING;
 }
 
 void DWriteFontProxyMessageFilter::OnFindFamily(
@@ -325,7 +325,7 @@ void DWriteFontProxyMessageFilter::OnMapCharacters(
 }
 
 void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   if (direct_write_initialized_)
     return;
   direct_write_initialized_ = true;
