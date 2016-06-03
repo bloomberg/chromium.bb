@@ -41619,6 +41619,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PreloadScanner.TTFB" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The time between preload discovery and when the first bytes of the response
+    data arrive.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.AbandonTimeUntilUsed" units="ms">
   <owner>davidben@chromium.org</owner>
   <owner>pasko@chromium.org</owner>

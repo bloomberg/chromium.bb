@@ -586,6 +586,11 @@ bool Resource::unlock()
 void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle>)
 {
     m_responseTimestamp = currentTime();
+    if (m_preloadDiscoveryTime) {
+        int timeSinceDiscovery = static_cast<int>(1000 * (monotonicallyIncreasingTime() - m_preloadDiscoveryTime));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDiscoveryToFirstByteHistogram, ("PreloadScanner.TTFB", 0, 10000, 50));
+        preloadDiscoveryToFirstByteHistogram.count(timeSinceDiscovery);
+    }
 
     if (!m_revalidatingRequest.isNull()) {
         if (response.httpStatusCode() == 304) {
