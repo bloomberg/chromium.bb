@@ -111,7 +111,9 @@ template("mac_toolchain") {
     }
 
     tool("alink") {
-      command = "rm -f {{output}} && ./gyp-mac-tool filter-libtool libtool -static {{arflags}} -o {{output}} {{inputs}}"
+      script =
+          rebase_path("//build/toolchain/mac/filter_libtool.py", root_build_dir)
+      command = "rm -f {{output}} && python $script libtool -static {{arflags}} -o {{output}} {{inputs}}"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [
         "{{output_dir}}/{{target_output_name}}{{output_extension}}",
