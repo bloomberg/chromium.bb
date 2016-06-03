@@ -189,11 +189,10 @@ def _FilterForPremp(artifacts):
 
 
 def _FilterForBasic(artifacts):
-  """Return the basic (not NPO) images in a list of artifacts.
+  """Return the basic images in a list of artifacts.
 
-  As an example, an image for a stable channel build might be in the
-  "stable-channel", or it might be in the "npo-channel". This only returns
-  the basic images that match "stable-channel".
+  This only returns the basic images that match the target channel. This will
+  filter out NPO and other duplicate channels that may exist in older builds.
 
   Args:
     artifacts: The list of artifacts to filter.
@@ -489,11 +488,6 @@ class _PaygenBuild(object):
 
       premp basic build.
       mp basic build.
-      premp NPO build.
-      mp NPO build.
-
-    We also expect that it will have at least one basic build, and never have
-    an NPO build for which it doesn't have a matching basic build.
 
     Args:
       build: The build the images are from.
@@ -503,36 +497,24 @@ class _PaygenBuild(object):
       BuildCorrupt: Raised if unexpected images are found.
       ImageMissing: Raised if expected images are missing.
     """
-
     premp_basic = _FilterForBasic(_FilterForPremp(images))
-    premp_npo = _FilterForNpo(_FilterForPremp(images))
     mp_basic = _FilterForBasic(_FilterForMp(images))
-    mp_npo = _FilterForNpo(_FilterForMp(images))
+    npo = _FilterForNpo(images)
 
     # Make sure there is no more than one of each of our basic types.
-    for i in (premp_basic, premp_npo, mp_basic, mp_npo):
+    for i in (premp_basic, mp_basic):
       if len(i) > 1:
         msg = '%s has unexpected filtered images: %s.' % (build, i)
         raise BuildCorrupt(msg)
 
     # Make sure there were no unexpected types of images.
-    if len(images) != len(premp_basic + premp_npo + mp_basic + mp_npo):
+    if len(images) != len(premp_basic + mp_basic + npo):
       msg = '%s has unexpected unfiltered images: %s' % (build, images)
       raise BuildCorrupt(msg)
 
     # Make sure there is at least one basic image.
     if not premp_basic and not mp_basic:
       msg = '%s has no basic images.' % build
-      raise ImageMissing(msg)
-
-    # Can't have a premp NPO with the match basic image.
-    if premp_npo and not premp_basic:
-      msg = '%s has a premp NPO, but not a premp basic image.' % build
-      raise ImageMissing(msg)
-
-    # Can't have an mp NPO with the match basic image.
-    if mp_npo and not mp_basic:
-      msg = '%s has a mp NPO, but not a mp basic image.' % build
       raise ImageMissing(msg)
 
   def _DiscoverImages(self, build):
@@ -542,9 +524,8 @@ class _PaygenBuild(object):
       build: The build to find images for.
 
     Returns:
-      A list of images associated with the build. This may include premp, mp,
-      and premp/mp NPO images. We don't currently ever expect more than these
-      four combinations to be present.
+      A list of images associated with the build. This may include premp, and mp
+      images.
 
     Raises:
       BuildCorrupt: Raised if unexpected images are found.
@@ -747,55 +728,28 @@ class _PaygenBuild(object):
     """
     return [gspaths.Payload(tgt_image=i) for i in images]
 
-  def _DiscoverRequiredNpoDeltas(self, images):
-    """Find the NPO deltas for the images from the current build.
+  def _DiscoverRequiredLoopbackDelta(self, images):
+    """Find the delta from an image to itself.
 
-    Images from the current build, already filtered to be all MP or all PREMP.
+    To test our ability to update away from a given image, we generate a delta
+    from itself. to itself and ensure we can apply successfully.
 
     Args:
       images: The key-filtered images for the current build.
 
     Returns:
-      A list of gspaths.Payload objects for the deltas needed for NPO testing.
-      May be empty.
+      A list of gspaths.Payload objects for the deltas needed from the previous
+      builds, which may be empty.
     """
-    basics = _FilterForBasic(images)
-    # If previously filtered for premp, and filtered for npo, there can only
-    # be one of each.
-    assert len(basics) <= 1, 'Unexpected images found %s' % basics
-    if basics:
-      npos = _FilterForImageType(_FilterForNpo(images), basics[0].image_type)
-      assert len(npos) <= 1, 'Unexpected NPO images found %s' % npos
-      if npos:
-        return [gspaths.Payload(tgt_image=npos[0], src_image=basics[0])]
+    # If we have no images to delta to, no results.
+    if not images:
+      return []
 
-    return []
+    # After filtering for MP/PREMP, there can be only one!
+    assert len(images) == 1, 'Unexpected images found %s.' % images
+    image = images[0]
 
-  # TODO(garnold) The reason we need this separately from
-  # _DiscoverRequiredNpoDeltas is that, with test images, we generate
-  # a current -> current delta rather than a real current -> NPO one (there are
-  # no test NPO images generated, unfortunately). Also, the naming of signed
-  # images is different from that of test image archives, so we need different
-  # filtering logic. In all likelihood, we will stop generating NPO deltas with
-  # signed images once this feature stabilizes; at this point, there will no
-  # longer be any use for a signed NPO.
-  def _DiscoverRequiredTestNpoDeltas(self, images):
-    """Find the NPO deltas test-equivalent for images from the current build.
-
-    Args:
-      images: The pre-filtered test images for the current build.
-
-    Returns:
-      A (possibly empty) list of gspaths.Payload objects representing NPO
-      deltas of test images.
-    """
-    # If previously filtered for test images, there must be at most one image.
-    assert len(images) <= 1, 'Unexpected test images found %s' % images
-
-    if images:
-      return [gspaths.Payload(tgt_image=images[0], src_image=images[0])]
-
-    return []
+    return [gspaths.Payload(tgt_image=image, src_image=image)]
 
   def _DiscoverRequiredFromPreviousDeltas(self, images, previous_images):
     """Find the deltas from previous builds.
@@ -815,7 +769,7 @@ class _PaygenBuild(object):
     if not images:
       return []
 
-    # After filtering for NPO, and for MP/PREMP, there can be only one!
+    # After filtering for MP/PREMP, there can be only one!
     assert len(images) == 1, 'Unexpected images found %s.' % images
     image = images[0]
     # Filter artifacts that have the same |image_type| as that of |image|.
@@ -932,17 +886,6 @@ class _PaygenBuild(object):
     # Discover delta payloads.
     skip_deltas = self._skip_delta_payloads
 
-    # Deltas for current -> NPO (pre-MP and MP).
-    delta_npo_labels = ['delta', 'npo']
-    payload_manager.Add(
-        delta_npo_labels,
-        self._DiscoverRequiredNpoDeltas(_FilterForPremp(images)),
-        skip=skip_deltas)
-    payload_manager.Add(
-        delta_npo_labels,
-        self._DiscoverRequiredNpoDeltas(_FilterForMp(images)),
-        skip=skip_deltas)
-
     # Deltas for previous -> current (pre-MP and MP).
     delta_previous_labels = ['delta', 'previous']
     payload_manager.Add(
@@ -958,7 +901,7 @@ class _PaygenBuild(object):
             _FilterForMp(previous_images)),
         skip=skip_deltas)
 
-    # Deltats for fsi -> current (pre-MP and MP).
+    # Deltas for fsi -> current (pre-MP and MP).
     delta_fsi_labels = ['delta', 'fsi']
     payload_manager.Add(
         delta_fsi_labels,
@@ -987,10 +930,10 @@ class _PaygenBuild(object):
           ['test', 'full', 'previous'],
           self._DiscoverRequiredFullPayloads(_FilterForTest(previous_images)))
 
-      # Deltas for current -> NPO (test payloads).
+      # Deltas for current -> current (for testing update away).
       payload_manager.Add(
-          ['test', 'delta', 'npo'],
-          self._DiscoverRequiredTestNpoDeltas(_FilterForTest(images)),
+          ['test', 'delta', 'n2n'],
+          self._DiscoverRequiredLoopbackDelta(_FilterForTest(images)),
           skip=skip_test_deltas)
 
       # Deltas for previous -> current (test payloads).
