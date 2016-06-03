@@ -11,8 +11,6 @@ source_set("quirks") {
     "quirks_export.h",
     "quirks_manager.cc",
     "quirks_manager.h",
-    "switches.cc",
-    "switches.h",
   ]
 
   defines = [ "QUIRKS_IMPLEMENTATION" ]

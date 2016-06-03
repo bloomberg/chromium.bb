@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
@@ -18,7 +17,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/quirks/pref_names.h"
 #include "components/quirks/quirks_client.h"
-#include "components/quirks/switches.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -253,11 +251,6 @@ void QuirksManager::CreateClient(
 }
 
 bool QuirksManager::QuirksEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableQuirksClient)) {
-    VLOG(2) << "Quirks Client disabled by command line flag.";
-    return false;
-  }
   if (!delegate_->DevicePolicyEnabled()) {
     VLOG(2) << "Quirks Client disabled by device policy.";
     return false;

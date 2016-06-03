@@ -30,8 +30,6 @@
         'quirks/quirks_export.h',
         'quirks/quirks_manager.cc',
         'quirks/quirks_manager.h',
-        'quirks/switches.cc',
-        'quirks/switches.h',
       ],
     },
   ],

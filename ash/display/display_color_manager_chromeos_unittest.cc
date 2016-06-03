@@ -4,7 +4,6 @@
 
 #include "ash/display/display_color_manager_chromeos.h"
 
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -15,7 +14,6 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "chromeos/chromeos_paths.h"
 #include "components/quirks/quirks_manager.h"
-#include "components/quirks/switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
@@ -94,8 +92,8 @@ class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
     return base::FilePath();
   }
 
-  // Unused by these tests.
-  bool DevicePolicyEnabled() const override { return true; }
+  // |false| prevents attempts at Quirks Server contact.
+  bool DevicePolicyEnabled() const override { return false; }
 
   // Unused by these tests.
   void GetDaysSinceOobe(
@@ -114,9 +112,6 @@ class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
 class DisplayColorManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        quirks::switches::kDisableQuirksClient);
-
     pool_owner_.reset(
         new base::SequencedWorkerPoolOwner(3, "DisplayColorManagerTest"));
     log_.reset(new ui::test::ActionLogger());
