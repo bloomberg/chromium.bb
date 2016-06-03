@@ -16,17 +16,8 @@
  * results are available.  When results (possibly intermediate ones)
  * are available, the Javascript formats them and displays them.
  */
-define('main', [
-    'mojo/public/js/bindings',
-    'mojo/public/js/core',
-    'mojo/public/js/connection',
-    'chrome/browser/ui/webui/omnibox/omnibox.mojom',
-    'content/public/renderer/frame_service_registry',
-], function(bindings, core, connection, browser, serviceProvider) {
-  'use strict';
 
-  var page;
-
+(function() {
   /**
    * Register our event handlers.
    */
@@ -72,17 +63,12 @@ define('main', [
     // - forth element: the value of prefer-keyword
     // - fifth element: the value of page-classification
     cursorPositionUsed = $('input-text').selectionEnd;
-    var pipe = core.createMessagePipe();
-    var stub = connection.bindHandleToStub(pipe.handle0, browser.OmniboxPage);
-    bindings.StubBindings(stub).delegate = page;
-    page.stub_ = stub;
-    page.browser_.startOmniboxQuery(
+    browserProxy.startOmniboxQuery(
         $('input-text').value,
         cursorPositionUsed,
         $('prevent-inline-autocomplete').checked,
         $('prefer-keyword').checked,
-        parseInt($('page-classification').value),
-        pipe.handle1);
+        parseInt($('page-classification').value));
     // Cancel the submit action.  i.e., don't submit the form.  (We handle
     // display the results solely with Javascript.)
     event.preventDefault();
@@ -421,24 +407,65 @@ define('main', [
     }
   }
 
-  function OmniboxPageImpl(browser) {
-    this.browser_ = browser;
-    initialize();
+  /**
+   * Helper to convert callback-based define() API to a promise-based API.
+   * @param {!Array<string>} moduleNames
+   * @return {!Promise}
+   */
+  function importModules(moduleNames) {
+    return new Promise(function(resolve, reject) {
+      define(moduleNames, function(var_args) {
+        resolve(Array.prototype.slice.call(arguments, 0));
+      });
+    });
   }
 
-  OmniboxPageImpl.prototype =
-      Object.create(browser.OmniboxPage.stubClass.prototype);
+  // NOTE: Need to keep a global reference to the |pageImpl| such that it is not
+  // garbage collected, which causes the pipe to close and future calls from C++
+  // to JS to get dropped.
+  var pageImpl = null;
+  var browserProxy = null;
 
-  OmniboxPageImpl.prototype.handleNewAutocompleteResult = function(result) {
-    progressiveAutocompleteResults.push(result);
-    refresh();
-  };
+  function initializeProxies() {
+    return importModules([
+      'mojo/public/js/connection',
+      'chrome/browser/ui/webui/omnibox/omnibox.mojom',
+      'content/public/renderer/frame_service_registry',
+    ]).then(function(modules) {
+      var connection = modules[0];
+      var mojom = modules[1];
+      var serviceRegistry = modules[2];
 
-  return function() {
-    var browserProxy = connection.bindHandleToProxy(
-        serviceProvider.connectToService(
-            browser.OmniboxUIHandlerMojo.name),
-        browser.OmniboxUIHandlerMojo);
-    page = new OmniboxPageImpl(browserProxy);
-  };
-});
+      browserProxy = connection.bindHandleToProxy(
+          serviceRegistry.connectToService(mojom.OmniboxPageHandler.name),
+          mojom.OmniboxPageHandler);
+
+      /** @constructor */
+      var OmniboxPageImpl = function() {};
+
+      OmniboxPageImpl.prototype = {
+        __proto__: mojom.OmniboxPage.stubClass.prototype,
+
+        /** @override */
+        handleNewAutocompleteResult: function(result) {
+          progressiveAutocompleteResults.push(result);
+          refresh();
+        },
+      };
+
+      pageImpl = new OmniboxPageImpl();
+
+      // Create a message pipe, with one end of the pipe already connected to
+      // JS.
+      var handle = connection.bindStubDerivedImpl(pageImpl);
+      // Send the other end of the pipe to C++.
+      browserProxy.setClientPage(handle);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    return initializeProxies().then(function() {
+      initialize();
+    });
+  });
+})();

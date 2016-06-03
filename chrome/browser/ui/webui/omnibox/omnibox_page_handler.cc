@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox_page_handler.h"
 
 #include <stddef.h>
 
@@ -59,10 +59,9 @@ struct TypeConverter<mojo::Array<mojom::AutocompleteAdditionalInfoPtr>,
 };
 
 template <>
-struct TypeConverter<mojom::AutocompleteMatchMojoPtr, AutocompleteMatch> {
-  static mojom::AutocompleteMatchMojoPtr Convert(
-      const AutocompleteMatch& input) {
-    mojom::AutocompleteMatchMojoPtr result(mojom::AutocompleteMatchMojo::New());
+struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
+  static mojom::AutocompleteMatchPtr Convert(const AutocompleteMatch& input) {
+    mojom::AutocompleteMatchPtr result(mojom::AutocompleteMatch::New());
     if (input.provider != NULL) {
       result->provider_name = input.provider->GetName();
       result->provider_done = input.provider->done();
@@ -100,39 +99,37 @@ struct TypeConverter<mojom::AutocompleteMatchMojoPtr, AutocompleteMatch> {
 };
 
 template <>
-struct TypeConverter<mojom::AutocompleteResultsForProviderMojoPtr,
+struct TypeConverter<mojom::AutocompleteResultsForProviderPtr,
                      scoped_refptr<AutocompleteProvider>> {
-  static mojom::AutocompleteResultsForProviderMojoPtr Convert(
+  static mojom::AutocompleteResultsForProviderPtr Convert(
       const scoped_refptr<AutocompleteProvider>& input) {
-    mojom::AutocompleteResultsForProviderMojoPtr result(
-        mojom::AutocompleteResultsForProviderMojo::New());
+    mojom::AutocompleteResultsForProviderPtr result(
+        mojom::AutocompleteResultsForProvider::New());
     result->provider_name = input->GetName();
     result->results =
-        mojo::Array<mojom::AutocompleteMatchMojoPtr>::From(input->matches());
+        mojo::Array<mojom::AutocompleteMatchPtr>::From(input->matches());
     return result;
   }
 };
 
 }  // namespace mojo
 
-OmniboxUIHandler::OmniboxUIHandler(
+OmniboxPageHandler::OmniboxPageHandler(
     Profile* profile,
-    mojo::InterfaceRequest<mojom::OmniboxUIHandlerMojo> request)
+    mojo::InterfaceRequest<mojom::OmniboxPageHandler> request)
     : profile_(profile), binding_(this, std::move(request)) {
   ResetController();
 }
 
-OmniboxUIHandler::~OmniboxUIHandler() {
-}
+OmniboxPageHandler::~OmniboxPageHandler() {}
 
-void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
-  mojom::OmniboxResultMojoPtr result(mojom::OmniboxResultMojo::New());
+void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
+  mojom::OmniboxResultPtr result(mojom::OmniboxResult::New());
   result->done = controller_->done();
   result->time_since_omnibox_started_ms =
       (base::Time::Now() - time_omnibox_started_).InMilliseconds();
-  const base::string16 host = input_.text().substr(
-      input_.parts().host.begin,
-      input_.parts().host.len);
+  const base::string16 host =
+      input_.text().substr(input_.parts().host.begin, input_.parts().host.len);
   result->host = mojo::String::From(host);
   bool is_typed_host;
   if (!LookupIsTypedHost(host, &is_typed_host))
@@ -145,21 +142,21 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
     ACMatches matches(controller_->result().begin(),
                       controller_->result().end());
     result->combined_results =
-        mojo::Array<mojom::AutocompleteMatchMojoPtr>::From(matches);
+        mojo::Array<mojom::AutocompleteMatchPtr>::From(matches);
   }
   result->results_by_provider =
-      mojo::Array<mojom::AutocompleteResultsForProviderMojoPtr>::From(
+      mojo::Array<mojom::AutocompleteResultsForProviderPtr>::From(
           controller_->providers());
 
-  // Fill AutocompleteMatchMojo::starred.
+  // Fill AutocompleteMatch::starred.
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
   if (bookmark_model) {
-    for (size_t i =  0; i < result->combined_results.size(); ++i) {
+    for (size_t i = 0; i < result->combined_results.size(); ++i) {
       result->combined_results[i]->starred = bookmark_model->IsBookmarked(
           GURL(result->combined_results[i]->destination_url.get()));
     }
     for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
-      const mojom::AutocompleteResultsForProviderMojo& result_by_provider =
+      const mojom::AutocompleteResultsForProvider& result_by_provider =
           *result->results_by_provider[i];
       for (size_t j = 0; j < result_by_provider.results.size(); ++j) {
         result_by_provider.results[j]->starred = bookmark_model->IsBookmarked(
@@ -171,8 +168,8 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   page_->HandleNewAutocompleteResult(std::move(result));
 }
 
-bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
-                                         bool* is_typed_host) const {
+bool OmniboxPageHandler::LookupIsTypedHost(const base::string16& host,
+                                           bool* is_typed_host) const {
   history::HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);
@@ -185,19 +182,21 @@ bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
   return true;
 }
 
-void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
-                                         int32_t cursor_position,
-                                         bool prevent_inline_autocomplete,
-                                         bool prefer_keyword,
-                                         int32_t page_classification,
-                                         mojom::OmniboxPagePtr page) {
+void OmniboxPageHandler::SetClientPage(mojom::OmniboxPagePtr page) {
+  page_ = std::move(page);
+}
+
+void OmniboxPageHandler::StartOmniboxQuery(const mojo::String& input_string,
+                                           int32_t cursor_position,
+                                           bool prevent_inline_autocomplete,
+                                           bool prefer_keyword,
+                                           int32_t page_classification) {
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
   // variable (or something else) and some providers will short-circuit
   // important logic and return stale results.  In short, we want the
   // actual results to not depend on the state of the previous request.
   ResetController();
-  page_ = std::move(page);
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
       input_string.To<base::string16>(), cursor_position, std::string(), GURL(),
@@ -208,7 +207,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
   controller_->Start(input_);
 }
 
-void OmniboxUIHandler::ResetController() {
+void OmniboxPageHandler::ResetController() {
   controller_.reset(new AutocompleteController(
       base::WrapUnique(new ChromeAutocompleteProviderClient(profile_)), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));

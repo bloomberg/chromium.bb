@@ -11,7 +11,7 @@ struct AutocompleteAdditionalInfo {
   string value;
 };
 
-struct AutocompleteMatchMojo {
+struct AutocompleteMatch {
   string? provider_name;
   // Only meaningful if |provider_name| is valid.
   bool provider_done;
@@ -33,30 +33,30 @@ struct AutocompleteMatchMojo {
   array<AutocompleteAdditionalInfo> additional_info;
 };
 
-struct AutocompleteResultsForProviderMojo {
+struct AutocompleteResultsForProvider {
   string provider_name;
-  array<AutocompleteMatchMojo> results;
+  array<AutocompleteMatch> results;
 };
 
-struct OmniboxResultMojo {
+struct OmniboxResult {
   bool done;
   // Time delta since the request was started, in milliseconds.
   int32 time_since_omnibox_started_ms;
   string host;
   bool is_typed_host;
-  array<AutocompleteMatchMojo> combined_results;
-  array<AutocompleteResultsForProviderMojo> results_by_provider;
+  array<AutocompleteMatch> combined_results;
+  array<AutocompleteResultsForProvider> results_by_provider;
 };
 
-interface OmniboxUIHandlerMojo {
+interface OmniboxPageHandler {
+  SetClientPage(OmniboxPage page);
   StartOmniboxQuery(string input_string,
                     int32 cursor_position,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
-                    int32 page_classification,
-                    OmniboxPage page);
+                    int32 page_classification);
 };
 
 interface OmniboxPage {
-  HandleNewAutocompleteResult(OmniboxResultMojo result);
+  HandleNewAutocompleteResult(OmniboxResult result);
 };

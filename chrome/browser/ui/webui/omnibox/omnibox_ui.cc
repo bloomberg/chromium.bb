@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
+#include "chrome/browser/ui/webui/omnibox/omnibox_page_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -30,7 +30,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
 OmniboxUI::~OmniboxUI() {}
 
 void OmniboxUI::BindUIHandler(
-    mojo::InterfaceRequest<mojom::OmniboxUIHandlerMojo> request) {
-  omnibox_ui_handler_.reset(
-      new OmniboxUIHandler(Profile::FromWebUI(web_ui()), std::move(request)));
+    mojo::InterfaceRequest<mojom::OmniboxPageHandler> request) {
+  omnibox_handler_.reset(
+      new OmniboxPageHandler(Profile::FromWebUI(web_ui()), std::move(request)));
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_UI_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_UI_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_PAGE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_PAGE_HANDLER_H_
 
 #include <stdint.h>
 
@@ -22,29 +22,29 @@
 class AutocompleteController;
 class Profile;
 
-// Implementation of OmniboxUIHandlerMojo.  StartOmniboxQuery() calls to a
+// Implementation of mojo::OmniboxPageHandler.  StartOmniboxQuery() calls to a
 // private AutocompleteController. It also listens for updates from the
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
-class OmniboxUIHandler : public AutocompleteControllerDelegate,
-                         public mojom::OmniboxUIHandlerMojo,
-                         public MojoWebUIHandler {
+class OmniboxPageHandler : public AutocompleteControllerDelegate,
+                           public mojom::OmniboxPageHandler,
+                           public MojoWebUIHandler {
  public:
-  // OmniboxUIHandler is deleted when the supplied pipe is destroyed.
-  OmniboxUIHandler(Profile* profile,
-                   mojo::InterfaceRequest<mojom::OmniboxUIHandlerMojo> request);
-  ~OmniboxUIHandler() override;
+  // OmniboxPageHandler is deleted when the supplied pipe is destroyed.
+  OmniboxPageHandler(Profile* profile,
+                     mojo::InterfaceRequest<mojom::OmniboxPageHandler> request);
+  ~OmniboxPageHandler() override;
 
   // AutocompleteControllerDelegate overrides:
   void OnResultChanged(bool default_match_changed) override;
 
-  // mojom::OmniboxUIHandlerMojo overrides:
+  // mojom::OmniboxPageHandler overrides:
+  void SetClientPage(mojom::OmniboxPagePtr page) override;
   void StartOmniboxQuery(const mojo::String& input_string,
                          int32_t cursor_position,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
-                         int32_t page_classification,
-                         mojom::OmniboxPagePtr page) override;
+                         int32_t page_classification) override;
 
  private:
   // Looks up whether the hostname is a typed host (i.e., has received
@@ -74,9 +74,9 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // The Profile* handed to us in our constructor.
   Profile* profile_;
 
-  mojo::Binding<mojom::OmniboxUIHandlerMojo> binding_;
+  mojo::Binding<mojom::OmniboxPageHandler> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(OmniboxUIHandler);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_UI_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_OMNIBOX_OMNIBOX_PAGE_HANDLER_H_
