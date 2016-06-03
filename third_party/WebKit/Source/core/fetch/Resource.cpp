@@ -548,6 +548,7 @@ const ResourceRequest& Resource::lastResourceRequest() const
 
 void Resource::setRevalidatingRequest(const ResourceRequest& request)
 {
+    SECURITY_CHECK(m_redirectChain.isEmpty());
     m_revalidatingRequest = request;
     m_status = NotStarted;
 }
@@ -916,6 +917,8 @@ String Resource::getMemoryDumpName() const
 
 void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)
 {
+    SECURITY_CHECK(m_redirectChain.isEmpty());
+    SECURITY_CHECK(validatingResponse.url() == m_response.url());
     m_response.setResourceLoadTiming(validatingResponse.resourceLoadTiming());
 
     // RFC2616 10.3.5
@@ -940,7 +943,7 @@ void Resource::revalidationFailed()
 {
     m_resourceRequest = m_revalidatingRequest;
     m_revalidatingRequest = ResourceRequest();
-    m_redirectChain.clear();
+    SECURITY_CHECK(m_redirectChain.isEmpty());
     m_data.clear();
     m_cacheHandler.clear();
     destroyDecodedDataForFailedRevalidation();
