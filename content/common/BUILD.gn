@@ -161,7 +161,6 @@ source_set("common") {
     sources -= [
       "pepper_file_util.cc",
       "pepper_file_util.h",
-      "pepper_messages.h",
       "pepper_plugin_list.cc",
       "pepper_plugin_list.h",
       "pepper_renderer_instance_data.cc",

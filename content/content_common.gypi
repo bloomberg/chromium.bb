@@ -452,7 +452,6 @@
       'common/page_zoom.cc',
       'common/pepper_file_util.cc',
       'common/pepper_file_util.h',
-      'common/pepper_messages.h',
       'common/pepper_plugin_list.cc',
       'common/pepper_plugin_list.h',
       'common/pepper_renderer_instance_data.cc',
@@ -605,7 +604,6 @@
       'sources!': [
         'common/pepper_file_util.cc',
         'common/pepper_file_util.h',
-        'common/pepper_messages.h',
         'common/pepper_plugin_list.cc',
         'common/pepper_plugin_list.h',
         'common/pepper_renderer_instance_data.cc',
