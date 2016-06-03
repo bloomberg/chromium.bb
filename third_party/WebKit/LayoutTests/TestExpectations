@@ -47,6 +47,9 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
+crbug.com/617152 imported/wpt/mediacapture-streams/GUM-impossible-constraint.html [ Skip ]
+crbug.com/617154 imported/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-support.htm [ Skip ]
+
 # Expected to fail until OffscreenCanvas can render on the gpu
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
@@ -907,9 +910,8 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
-crbug.com/471824 imported/wpt/pointerevents/ [ Skip ]
-crbug.com/471824 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_touch-action-illegal.html [ Skip ]
-crbug.com/471824 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
+crbug.com/612924 imported/wpt/pointerevents/ [ Skip ]
+crbug.com/612924 virtual/pointerevent/imported/wpt/pointerevents/ [ Skip ]
 crbug.com/616459 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_constructor.html [ Failure ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.

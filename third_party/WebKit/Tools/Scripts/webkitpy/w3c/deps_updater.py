@@ -172,7 +172,8 @@ class DepsUpdater(object):
             self.print_('## Done: no changes to import.')
 
     def is_manual_test(self, fs, dirname, basename):
-        return basename.endswith('-manual.html') or basename.endswith('-manual.htm')
+        # We are importing manual pointer event tests and we are automating them.
+        return ("pointerevents" not in dirname) and (basename.endswith('-manual.html') or basename.endswith('-manual.htm'))
 
     def is_baseline(self, fs, dirname, basename):
         return basename.endswith('-expected.txt')
