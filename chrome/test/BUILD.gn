@@ -2308,7 +2308,7 @@ if (!is_android) {
   }
 }
 
-if (is_win || (is_linux && !is_chromeos)) {
+if (!is_android && !is_ios && !is_chromecast) {
   test("performance_browser_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.performance_browser_tests_sources,

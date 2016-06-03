@@ -2786,43 +2786,6 @@
       'sources': [
         '<@(performance_browser_tests_sources)',
       ],
-      'rules': [
-        {
-          'rule_name': 'js2webui',
-          'extension': 'js',
-          'msvs_external_rule': 1,
-          'variables': {
-            'conditions': [
-              ['v8_use_external_startup_data==1', {
-                'external_v8': 'y',
-              }, {
-                'external_v8': 'n',
-              }],
-            ],
-          },
-          'inputs': [
-            '<(gypv8sh)',
-            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
-            '<(mock_js)',
-            '<(test_api_js)',
-            '<(js2gtest)',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
-            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
-          ],
-          'process_outputs_as_sources': 1,
-          'action': [
-            'python',
-            '<@(_inputs)',
-            'webui',
-            '--external', '<(external_v8)',
-            '<(RULE_INPUT_PATH)',
-            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
-            '<@(_outputs)',
-          ],
-        },
-      ],
       'conditions': [
         ['OS=="win"', {
           'sources': [
