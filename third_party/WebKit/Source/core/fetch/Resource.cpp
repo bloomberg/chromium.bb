@@ -554,6 +554,9 @@ void Resource::setRevalidatingRequest(const ResourceRequest& request)
 
 void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
+    if (!m_revalidatingRequest.isNull())
+        revalidationFailed();
+
     newRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
     m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
 }

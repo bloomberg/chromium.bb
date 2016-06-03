@@ -57,7 +57,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
 
 class DummyClient final : public GarbageCollectedFinalized<DummyClient>, public RawResourceClient {
 public:
-    DummyClient() : m_called(false) {}
+    DummyClient() : m_called(false), m_numberOfRedirectsReceived(0) {}
     ~DummyClient() override {}
 
     // ResourceClient implementation.
@@ -72,12 +72,19 @@ public:
         m_data.append(data, length);
     }
 
+    void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override
+    {
+        ++m_numberOfRedirectsReceived;
+    }
+
     bool called() { return m_called; }
+    int numberOfRedirectsReceived() const { return m_numberOfRedirectsReceived; }
     const Vector<char>& data() { return m_data; }
     DEFINE_INLINE_TRACE() {}
 
 private:
     bool m_called;
+    int m_numberOfRedirectsReceived;
     Vector<char> m_data;
 };
 
@@ -241,6 +248,81 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
     EXPECT_FALSE(resource->hasClientsOrObservers());
     EXPECT_FALSE(client->called());
     EXPECT_EQ(0u, client->data().size());
+}
+
+TEST(RawResourceTest, RedirectDuringRevalidation)
+{
+    Resource* resource = RawResource::create(ResourceRequest("https://example.com/1"), Resource::Raw);
+    ResourceResponse response;
+    response.setURL(KURL(ParsedURLString, "https://example.com/1"));
+    response.setHTTPStatusCode(200);
+    resource->responseReceived(response, nullptr);
+    const char data[5] = "abcd";
+    resource->appendData(data, 4);
+    resource->finish();
+    memoryCache()->add(resource);
+
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
+    EXPECT_EQ("https://example.com/1", resource->lastResourceRequest().url().getString());
+
+    // Simulate a revalidation.
+    resource->setRevalidatingRequest(ResourceRequest("https://example.com/1"));
+    EXPECT_TRUE(resource->isCacheValidator());
+    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
+    EXPECT_EQ("https://example.com/1", resource->lastResourceRequest().url().getString());
+
+    Persistent<DummyClient> client = new DummyClient;
+    resource->addClient(client);
+
+    // The revalidating request is redirected.
+    ResourceResponse redirectResponse;
+    redirectResponse.setURL(KURL(ParsedURLString, "https://example.com/1"));
+    redirectResponse.setHTTPHeaderField("location", "https://example.com/2");
+    redirectResponse.setHTTPStatusCode(308);
+    ResourceRequest redirectedRevalidatingRequest("https://example.com/2");
+    resource->willFollowRedirect(redirectedRevalidatingRequest, redirectResponse);
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
+    EXPECT_EQ("https://example.com/2", resource->lastResourceRequest().url().getString());
+
+    // The final response is received.
+    ResourceResponse revalidatingResponse;
+    revalidatingResponse.setURL(KURL(ParsedURLString, "https://example.com/2"));
+    revalidatingResponse.setHTTPStatusCode(200);
+    resource->responseReceived(revalidatingResponse, nullptr);
+    const char data2[4] = "xyz";
+    resource->appendData(data2, 3);
+    resource->finish();
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
+    EXPECT_EQ("https://example.com/2", resource->lastResourceRequest().url().getString());
+    EXPECT_FALSE(resource->isCacheValidator());
+    EXPECT_EQ(200, resource->response().httpStatusCode());
+    EXPECT_EQ(3u, resource->resourceBuffer()->size());
+    EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "https://example.com/1")), resource);
+
+    EXPECT_TRUE(client->called());
+    EXPECT_EQ(1, client->numberOfRedirectsReceived());
+    EXPECT_EQ("xyz", String(client->data().data(), client->data().size()));
+
+    // Test the case where a client is added after revalidation is completed.
+    Persistent<DummyClient> client2 = new DummyClient;
+    resource->addClient(client2);
+
+    // Because RawResourceClient is added asynchronously,
+    // |runPendingTasks()| is called to make |client2| to be notified.
+    testing::runPendingTasks();
+
+    EXPECT_TRUE(client2->called());
+    EXPECT_EQ(1, client2->numberOfRedirectsReceived());
+    EXPECT_EQ("xyz", String(client2->data().data(), client2->data().size()));
+
+    memoryCache()->remove(resource);
+
+    resource->removeClient(client);
+    resource->removeClient(client2);
+    EXPECT_FALSE(resource->hasClientsOrObservers());
 }
 
 TEST(RawResourceTest, AddClientDuringCallback)
