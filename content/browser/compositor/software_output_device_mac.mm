@@ -140,15 +140,19 @@ void SoftwareOutputDeviceMac::EndPaint() {
     if (io_result)
       DLOG(ERROR) << "Failed to unlock IOSurface " << io_result;
   }
-
   canvas_.reset();
-  base::TimeTicks vsync_timebase;
-  base::TimeDelta vsync_interval;
-  ui::AcceleratedWidgetMacGotFrame(
-      compositor_->widget(), 0, false, 0, io_surfaces_[current_index_],
-      pixel_size_, scale_factor_, &vsync_timebase, &vsync_interval);
-  if (!update_vsync_callback_.is_null())
-    update_vsync_callback_.Run(vsync_timebase, vsync_interval);
+
+  ui::AcceleratedWidgetMac* widget =
+      ui::AcceleratedWidgetMac::Get(compositor_->widget());
+  if (widget) {
+    widget->GotIOSurfaceFrame(io_surfaces_[current_index_], pixel_size_,
+                              scale_factor_);
+    base::TimeTicks vsync_timebase;
+    base::TimeDelta vsync_interval;
+    widget->GetVSyncParameters(&vsync_timebase, &vsync_interval);
+    if (!update_vsync_callback_.is_null())
+      update_vsync_callback_.Run(vsync_timebase, vsync_interval);
+  }
 
   current_index_ = !current_index_;
 }

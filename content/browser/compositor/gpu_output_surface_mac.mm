@@ -15,6 +15,36 @@
 
 namespace content {
 
+struct GpuOutputSurfaceMac::RemoteLayers {
+  void UpdateLayers(CAContextID content_ca_context_id,
+                    CAContextID fullscreen_low_power_ca_context_id) {
+    if (content_ca_context_id) {
+      if ([content_layer contextId] != content_ca_context_id) {
+        content_layer.reset([[CALayerHost alloc] init]);
+        [content_layer setContextId:content_ca_context_id];
+        [content_layer
+            setAutoresizingMask:kCALayerMaxXMargin | kCALayerMaxYMargin];
+      }
+    } else {
+      content_layer.reset();
+    }
+
+    if (fullscreen_low_power_ca_context_id) {
+      if ([fullscreen_low_power_layer contextId] !=
+          fullscreen_low_power_ca_context_id) {
+        fullscreen_low_power_layer.reset([[CALayerHost alloc] init]);
+        [fullscreen_low_power_layer
+            setContextId:fullscreen_low_power_ca_context_id];
+      }
+    } else {
+      fullscreen_low_power_layer.reset();
+    }
+  }
+
+  base::scoped_nsobject<CALayerHost> content_layer;
+  base::scoped_nsobject<CALayerHost> fullscreen_low_power_layer;
+};
+
 GpuOutputSurfaceMac::GpuOutputSurfaceMac(
     scoped_refptr<ContextProviderCommandBuffer> context,
     gpu::SurfaceHandle surface_handle,
@@ -31,7 +61,8 @@ GpuOutputSurfaceMac::GpuOutputSurfaceMac(
           std::move(overlay_candidate_validator),
           GL_TEXTURE_RECTANGLE_ARB,
           GL_RGBA,
-          gpu_memory_buffer_manager) {}
+          gpu_memory_buffer_manager),
+      remote_layers_(new RemoteLayers) {}
 
 GpuOutputSurfaceMac::~GpuOutputSurfaceMac() {}
 
@@ -48,15 +79,28 @@ void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  remote_layers_->UpdateLayers(params_mac->ca_context_id,
+                               params_mac->fullscreen_low_power_ca_context_id);
   if (should_show_frames_state_ == SHOULD_SHOW_FRAMES) {
-    gfx::AcceleratedWidget native_widget =
+    ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(
         content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
-            params_mac->surface_handle);
-    ui::AcceleratedWidgetMacGotFrame(
-        native_widget, params_mac->ca_context_id,
-        params_mac->fullscreen_low_power_ca_context_valid,
-        params_mac->fullscreen_low_power_ca_context_id, params_mac->io_surface,
-        params_mac->pixel_size, params_mac->scale_factor, nullptr, nullptr);
+            params_mac->surface_handle));
+    if (widget) {
+      if (remote_layers_->content_layer) {
+        widget->GotCALayerFrame(
+            base::scoped_nsobject<CALayer>(remote_layers_->content_layer.get(),
+                                           base::scoped_policy::RETAIN),
+            params_mac->fullscreen_low_power_ca_context_valid,
+            base::scoped_nsobject<CALayer>(
+                remote_layers_->fullscreen_low_power_layer.get(),
+                base::scoped_policy::RETAIN),
+            params_mac->pixel_size, params_mac->scale_factor);
+      } else {
+        widget->GotIOSurfaceFrame(params_mac->io_surface,
+                                  params_mac->pixel_size,
+                                  params_mac->scale_factor);
+      }
+    }
   }
   GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
       latency_info, result, params_mac);

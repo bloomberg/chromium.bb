@@ -34,6 +34,11 @@ class GpuOutputSurfaceMac
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
 
  private:
+  // Store remote layers in a separate structure, so that non-Objective-C files
+  // may include this header.
+  struct RemoteLayers;
+  std::unique_ptr<RemoteLayers> remote_layers_;
+
   enum ShouldShowFramesState {
     // Frames that come from the GPU process should appear on-screen.
     SHOULD_SHOW_FRAMES,

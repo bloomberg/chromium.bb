@@ -8,9 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+
+namespace ui {
+class AcceleratedWidgetMac;
+}
 
 namespace content {
 

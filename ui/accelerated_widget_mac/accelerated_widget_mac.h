@@ -5,10 +5,12 @@
 #ifndef UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_
 #define UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_
 
+#import <Cocoa/Cocoa.h>
 #include <IOSurface/IOSurface.h>
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
@@ -16,11 +18,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-
-#if defined(__OBJC__)
-#import <Cocoa/Cocoa.h>
-#import "base/mac/scoped_nsobject.h"
-#endif  // __OBJC__
 
 class SkCanvas;
 
@@ -30,7 +27,6 @@ class SoftwareFrameData;
 
 namespace ui {
 
-class AcceleratedWidgetMac;
 class FullscreenLowPowerCoordinator;
 
 // A class through which an AcceleratedWidget may be bound to draw the contents
@@ -43,8 +39,6 @@ class AcceleratedWidgetMacNSView {
     base::TimeTicks* timebase, base::TimeDelta* interval) const = 0;
   virtual void AcceleratedWidgetSwapCompleted() = 0;
 };
-
-#if defined(__OBJC__)
 
 // AcceleratedWidgetMac owns a tree of CALayers. The widget may be passed
 // to a ui::Compositor, which will cause, through its output surface, calls to
@@ -77,33 +71,18 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   void GetVSyncParameters(
       base::TimeTicks* timebase, base::TimeDelta* interval) const;
 
-  void GotFrame(CAContextID ca_context_id,
-                bool fullscreen_low_power_ca_context_valid,
-                CAContextID fullscreen_low_power_ca_context_id,
-                base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                const gfx::Size& pixel_size,
-                float scale_factor);
-
- private:
-  void GotCAContextFrame(CAContextID ca_context_id,
-                         bool fullscreen_low_power_ca_context_valid,
-                         CAContextID fullscreen_low_power_ca_context_id,
-                         const gfx::Size& pixel_size,
-                         float scale_factor);
-
+  static AcceleratedWidgetMac* Get(gfx::AcceleratedWidget widget);
+  void GotCALayerFrame(
+      base::scoped_nsobject<CALayer> content_layer,
+      bool fullscreen_low_power_layer_valid,
+      base::scoped_nsobject<CALayer> fullscreen_low_power_layer,
+      const gfx::Size& pixel_size,
+      float scale_factor);
   void GotIOSurfaceFrame(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                          const gfx::Size& pixel_size,
                          float scale_factor);
 
-  // Remove a layer from the heirarchy and destroy it. Because the accelerated
-  // layer types may be replaced by a layer of the same type, the layer to
-  // destroy is parameterized, and, if it is the current layer, the current
-  // layer is reset.
-  void DestroyCAContextLayer(
-      base::scoped_nsobject<CALayerHost> ca_context_layer);
-  void DestroyLocalLayer();
-  void EnsureLocalLayer();
-
+ private:
   // The AcceleratedWidgetMacNSView that is using this as its internals.
   AcceleratedWidgetMacNSView* view_;
 
@@ -123,32 +102,18 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   // behavior.
   base::scoped_nsobject<CALayer> flipped_layer_;
 
-  // The accelerated CoreAnimation layers hosted by the GPU process.
-  base::scoped_nsobject<CALayerHost> ca_context_layer_;
-  base::scoped_nsobject<CALayerHost> fullscreen_low_power_layer_;
+  // A CALayer with content provided by the output surface.
+  base::scoped_nsobject<CALayer> content_layer_;
+  base::scoped_nsobject<CALayer> fullscreen_low_power_layer_;
 
-  // The locally drawn layer, which has its contents set to an IOSurface.
-  base::scoped_nsobject<CALayer> local_layer_;
+  // A CALayer that has its content set to an IOSurface.
+  base::scoped_nsobject<CALayer> io_surface_layer_;
 
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedWidgetMac);
 };
-
-#endif  // __OBJC__
-
-ACCELERATED_WIDGET_MAC_EXPORT
-void AcceleratedWidgetMacGotFrame(
-    gfx::AcceleratedWidget widget,
-    CAContextID ca_context_id,
-    bool fullscreen_low_power_ca_context_valid,
-    CAContextID fullscreen_low_power_ca_context_id,
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-    const gfx::Size& pixel_size,
-    float scale_factor,
-    base::TimeTicks* vsync_timebase,
-    base::TimeDelta* vsync_interval);
 
 }  // namespace ui
 
