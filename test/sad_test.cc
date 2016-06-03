@@ -677,17 +677,6 @@ INSTANTIATE_TEST_CASE_P(NEON, SADx4Test, ::testing::ValuesIn(x4d_neon_tests));
 
 //------------------------------------------------------------------------------
 // x86 functions
-#if HAVE_MMX
-const SadMxNParam mmx_tests[] = {
-  make_tuple(16, 16, &aom_sad16x16_mmx, -1),
-  make_tuple(16, 8, &aom_sad16x8_mmx, -1),
-  make_tuple(8, 16, &aom_sad8x16_mmx, -1),
-  make_tuple(8, 8, &aom_sad8x8_mmx, -1),
-  make_tuple(4, 4, &aom_sad4x4_mmx, -1),
-};
-INSTANTIATE_TEST_CASE_P(MMX, SADTest, ::testing::ValuesIn(mmx_tests));
-#endif  // HAVE_MMX
-
 #if HAVE_SSE
 #if CONFIG_USE_X86INC
 const SadMxNx4Param x4d_sse_tests[] = {
