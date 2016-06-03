@@ -13,6 +13,7 @@
 namespace blink {
 
 class FrameView;
+class LayoutAPIShim;
 class Node;
 
 class LayoutItem {
@@ -257,6 +258,8 @@ protected:
 
 private:
     LayoutObject* m_layoutObject;
+
+    friend class LayoutAPIShim;
 };
 
 } // namespace blink

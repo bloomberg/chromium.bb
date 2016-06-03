@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintLayer.h"
@@ -32,7 +33,7 @@ private:
         RenderingTest::SetUp();
         enableCompositing();
 
-        m_layoutView = document().view()->layoutView();
+        m_layoutView = toLayoutView(LayoutAPIShim::layoutObjectFrom(document().view()->layoutViewItem()));
         ASSERT_TRUE(m_layoutView);
     }
 
