@@ -3270,12 +3270,14 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // before updating the current history item.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     SendUpdateState();
-    current_history_item_ = item;
   } else {
     render_view_->SendUpdateState();
     render_view_->history_controller()->UpdateForCommit(
         this, item, commit_type, navigation_state->WasWithinSamePage());
   }
+  // Update the current history item for this frame (both in default Chrome and
+  // subframe FrameNavigationEntry modes).
+  current_history_item_ = item;
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);

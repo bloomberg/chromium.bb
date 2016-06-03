@@ -64,9 +64,13 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
   const WebHistoryItem& item_for_create = is_target_frame ? new_item : item_;
   HistoryNode* new_history_node = new HistoryNode(new_entry, item_for_create);
 
-  if (is_target_frame && clone_children_of_target && !item_.isNull()) {
+  // Use the last committed history item for the frame rather than item_, since
+  // the latter may not accurately reflect which URL is currently committed in
+  // the frame.  See https://crbug.com/612713#c12.
+  const WebHistoryItem& current_item = current_frame->current_history_item();
+  if (is_target_frame && clone_children_of_target && !current_item.isNull()) {
     new_history_node->item().setDocumentSequenceNumber(
-        item_.documentSequenceNumber());
+        current_item.documentSequenceNumber());
   }
 
   // TODO(creis): This needs to be updated to handle HistoryEntry in

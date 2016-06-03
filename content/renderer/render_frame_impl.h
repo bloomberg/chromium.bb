@@ -245,6 +245,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // to using RenderFrame instead of RenderView.
   RenderViewImpl* render_view() { return render_view_.get(); }
 
+  const blink::WebHistoryItem& current_history_item() {
+    return current_history_item_;
+  }
+
   RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
   // Returns the RenderWidget associated with this frame.

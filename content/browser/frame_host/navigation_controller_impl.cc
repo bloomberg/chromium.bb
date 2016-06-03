@@ -1376,9 +1376,14 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
     const GURL& url,
     bool renderer_says_in_page,
     RenderFrameHost* rfh) const {
+  RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
   GURL last_committed_url;
   if (rfh->GetParent()) {
-    last_committed_url = rfh->GetLastCommittedURL();
+    // Use the FrameTreeNode's current_url and not rfh->GetLastCommittedURL(),
+    // which might be empty in a new RenderFrameHost after a process swap.
+    // Here, we care about the last committed URL in the FrameTreeNode,
+    // regardless of which process it is in.
+    last_committed_url = rfhi->frame_tree_node()->current_url();
   } else {
     NavigationEntry* last_committed = GetLastCommittedEntry();
     // There must be a last-committed entry to compare URLs to. TODO(avi): When
@@ -1390,9 +1395,8 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
   }
 
   WebPreferences prefs = rfh->GetRenderViewHost()->GetWebkitPreferences();
-  const url::Origin& committed_origin = static_cast<RenderFrameHostImpl*>(rfh)
-                                            ->frame_tree_node()
-                                            ->current_origin();
+  const url::Origin& committed_origin =
+      rfhi->frame_tree_node()->current_origin();
   bool is_same_origin = last_committed_url.is_empty() ||
                         // TODO(japhet): We should only permit navigations
                         // originating from about:blank to be in-page if the
@@ -1854,6 +1858,8 @@ void NavigationControllerImpl::FindFramesToNavigate(
   DCHECK(pending_entry_);
   DCHECK_GE(last_committed_entry_index_, 0);
   FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
+  // TODO(creis): Store the last committed FrameNavigationEntry to use here,
+  // rather than assuming the NavigationEntry has up to date info on subframes.
   FrameNavigationEntry* old_item =
       GetLastCommittedEntry()->GetFrameEntry(frame);
   if (!new_item)

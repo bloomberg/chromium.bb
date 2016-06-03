@@ -3782,11 +3782,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
       ExecuteScript(shell()->web_contents(), "console.log('Success');"));
 }
 
-// This tests that 1) the initial "about:blank" URL is elided from the
-// navigation history of a subframe when it is loaded, and 2) that that initial
-// "about:blank" returns if it is navigated to as part of a history navigation.
-// See http://crbug.com/542299 and https://github.com/whatwg/html/issues/546 .
-// TODO(avi, creis): This test is partially neutered; fix it.
+// This test shows that the initial "about:blank" URL is elided from the
+// navigation history of a subframe when it is loaded.
+//
+// It also prevents regression for an in-page navigation renderer kill when
+// going back after an in-page navigation in the main frame is followed by an
+// auto subframe navigation, due to a bug in HistoryEntry::CloneAndReplace.
+// See https://crbug.com/612713.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackToAboutBlankIframe) {
   GURL original_url(embedded_test_server()->GetURL(
@@ -3819,7 +3821,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameTreeNode* frame = root->child_at(0);
   ASSERT_NE(nullptr, frame);
 
-  EXPECT_EQ(GURL(url::kAboutBlankURL), frame->current_url());
+  GURL blank_url(url::kAboutBlankURL);
+  EXPECT_EQ(blank_url, frame->current_url());
 
   // Now create a new navigation entry. Note that the old navigation entry has
   // "about:blank" as the URL in the iframe.
@@ -3836,7 +3839,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // shouldn't get a new navigation entry.
 
   GURL frame_url = embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_2.html");
+      "foo.com", "/navigation_controller/simple_page_2.html");
   NavigateFrameToURL(frame, frame_url);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
@@ -3846,34 +3849,73 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(frame_url, frame->current_url());
 
-  // At this point the rest of the test is inapplicable. The bug that it tests
-  // to be gone had to be reintroduced.
-  //
-  // See the discussion in NavigationControllerImpl::FindFramesToNavigate for
-  // more information.
-
-#if 0
-  // Go back. Because the old state had an empty frame, that should be restored
-  // even though it was replaced in the second navigation entry.
-
-  TestFrameNavigationObserver observer(frame);
-  ASSERT_TRUE(controller.CanGoBack());
-  controller.GoBack();
-  observer.Wait();
+  // Go back.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(controller.CanGoBack());
+    controller.GoBack();
+    observer.Wait();
+  }
 
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(2, RendererHistoryLength(shell()));
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 
-  EXPECT_EQ(GURL(url::kAboutBlankURL), frame->current_url());
-#endif
+  // There is some open discussion over whether this should send the iframe
+  // back to the blank page, but for now it stays in place to preserve
+  // compatibility with existing sites. See
+  // NavigationControllerImpl::FindFramesToNavigate for more information, as
+  // well as http://crbug.com/542299, https://crbug.com/598043 (for the
+  // regressions caused by going back), and
+  // https://github.com/whatwg/html/issues/546.
+  // TODO(avi, creis): Figure out the correct behavior to use here.
+  EXPECT_EQ(frame_url, frame->current_url());
+
+  // Now test for https://crbug.com/612713 to prevent an NC_IN_PAGE_NAVIGATION
+  // renderer kill.
+
+  // Do an in-page navigation in the subframe.
+  std::string fragment_script = "location.href = \"#foo\";";
+  EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), fragment_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(2, RendererHistoryLength(shell()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  GURL frame_url_2 = embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_2.html#foo");
+  EXPECT_EQ(frame_url_2, frame->current_url());
+
+  // Go back.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    controller.GoBack();
+    observer.Wait();
+  }
+
+  // Verify the process is still alive by running script.  We can't just call
+  // IsRenderFrameLive after the navigation since it might not have disconnected
+  // yet.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "true;"));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+
+  // TODO(creis): We should probably go back to frame_url here instead of the
+  // initial blank page.  That might require updating all relevant NavEntries to
+  // know what the first committed URL is, so that we really elide the initial
+  // blank page from history.
+  //
+  // TODO(creis): This actually goes to frame_url in some cases when subframe
+  // FrameNavigationEntries are enabled, due to a mismatch between PageState and
+  // the entry's URL.  That should be fixed in https://crbug.com/617239.
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    EXPECT_EQ(blank_url, frame->current_url());
 }
 
 // This test is similar to "BackToAboutBlankIframe" above, except that a
 // fragment navigation is used rather than pushState (both create an in-page
 // navigation, so we need to test both), and an initial 'src' is given to the
 // iframe to test proper restoration in that case.
-// TODO(avi, creis): This test is partially neutered; fix it.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        BackToIframeWithContent) {
   GURL links_url(embedded_test_server()->GetURL(
@@ -3928,36 +3970,199 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // _will_ create a new navigation entry.
 
   GURL frame_url_2 = embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_2.html");
+      "foo.com", "/navigation_controller/simple_page_2.html");
   NavigateFrameToURL(frame, frame_url_2);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(3, controller.GetEntryCount());
-  EXPECT_EQ(3, RendererHistoryLength(shell()));
+  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
+  if (!AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(3, RendererHistoryLength(shell()));
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   EXPECT_EQ(frame_url_2, frame->current_url());
 
-  // At this point the rest of the test is inapplicable. The bug that it tests
-  // to be gone had to be reintroduced.
-  //
-  // See the discussion in NavigationControllerImpl::FindFramesToNavigate for
-  // more information.
-
-#if 0
-  // Go back two entries. The original frame URL should be back.
-
-  TestFrameNavigationObserver observer(frame);
-  ASSERT_TRUE(controller.CanGoToOffset(-2));
-  controller.GoToOffset(-2);
-  observer.Wait();
+  // Go back two entries.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(controller.CanGoToOffset(-2));
+    controller.GoToOffset(-2);
+    observer.Wait();
+  }
 
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(3, RendererHistoryLength(shell()));
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 
+  // There is some open discussion over whether this should send the iframe back
+  // to the original page, but for now it stays in place to preserve
+  // compatibility with existing sites.  See
+  // NavigationControllerImpl::FindFramesToNavigate for more information, as
+  // well as http://crbug.com/542299, https://crbug.com/598043 (for the
+  // regressions caused by going back), and
+  // https://github.com/whatwg/html/issues/546.
+  // TODO(avi, creis): Figure out the correct behavior to use here.
+  EXPECT_EQ(frame_url_2, frame->current_url());
+
+  // Now test for https://crbug.com/612713 to prevent an NC_IN_PAGE_NAVIGATION
+  // renderer kill.
+
+  // Do an in-page navigation in the subframe.
+  std::string fragment_script = "location.href = \"#foo\";";
+  EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), fragment_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
+  if (!AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(2, RendererHistoryLength(shell()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // Go back.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    controller.GoBack();
+    observer.Wait();
+  }
+
+  // Verify the process is still alive by running script.  We can't just call
+  // IsRenderFrameLive after the navigation since it might not have disconnected
+  // yet.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "true;"));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+
+  // TODO(creis): It's a bit surprising to go to frame_url_1 here instead of
+  // frame_url_2.  Perhaps we should be going back to frame_url_1 when going
+  // back two entries above, since it's different than the initial blank case.
+  //
+  // TODO(creis): This actually goes to frame_url_2 in some cases when subframe
+  // FrameNavigationEntries are enabled, due to a mismatch between PageState and
+  // the entry's URL.  That should be fixed in https://crbug.com/617239.
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    EXPECT_EQ(frame_url_1, frame->current_url());
+}
+
+// Test for in-page navigation kills due to using the wrong history item in
+// HistoryController::RecursiveGoToEntry and NavigationControllerImpl::
+// FindFramesToNavigate.  See https://crbug.com/612713.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackTwiceToIframeWithContent) {
+  GURL links_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+  NavigateToURL(shell(), links_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+
+  // Add an iframe with a 'src'.
+
+  GURL frame_url_1 = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html");
+  std::string script =
+      "var iframe = document.createElement('iframe');"
+      "iframe.src = '" + frame_url_1.spec() + "';"
+      "iframe.id = 'frame';"
+      "document.body.appendChild(iframe);";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* frame = root->child_at(0);
+  ASSERT_NE(nullptr, frame);
+
   EXPECT_EQ(frame_url_1, frame->current_url());
-#endif
+
+  // Do an in-page navigation in the subframe.
+  GURL frame_url_2 = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html#foo");
+  std::string fragment_script = "location.href = \"#foo\";";
+  EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), fragment_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(2, RendererHistoryLength(shell()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(frame_url_2, frame->current_url());
+
+  // Do a fragment navigation at the top level.
+  std::string link_script = "document.getElementById('fraglink').click()";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), link_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(3, RendererHistoryLength(shell()));
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(frame_url_2, frame->current_url());
+
+  // Go cross-site in the iframe.
+  GURL frame_url_3 = embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_2.html");
+  NavigateFrameToURL(frame, frame_url_3);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(4, controller.GetEntryCount());
+  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
+  if (!AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(4, RendererHistoryLength(shell()));
+  EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(frame_url_3, frame->current_url());
+
+  // Go back two entries.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(controller.CanGoToOffset(-2));
+    controller.GoToOffset(-2);
+    observer.Wait();
+  }
+  EXPECT_EQ(4, controller.GetEntryCount());
+  // TODO(creis): Replicate history length for OOPIFs: https://crbug.com/501116.
+  if (!AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(4, RendererHistoryLength(shell()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(links_url, root->current_url());
+
+  // There is some open discussion over whether this should send the iframe back
+  // to the original page, but for now it stays in place to preserve
+  // compatibility with existing sites.  See
+  // NavigationControllerImpl::FindFramesToNavigate for more information, as
+  // well as http://crbug.com/542299, https://crbug.com/598043 (for the
+  // regressions caused by going back), and
+  // https://github.com/whatwg/html/issues/546.
+  // TODO(avi, creis): Figure out the correct behavior to use here.
+  EXPECT_EQ(frame_url_3, frame->current_url());
+
+  // Now test for https://crbug.com/612713 to prevent an NC_IN_PAGE_NAVIGATION
+  // renderer kill.
+
+  // Go back.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    controller.GoBack();
+    observer.Wait();
+  }
+
+  // Verify the process is still alive by running script.  We can't just call
+  // IsRenderFrameLive after the navigation since it might not have disconnected
+  // yet.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "true;"));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+
+  // TODO(creis): It's a bit surprising to go to frame_url_1 here instead of
+  // frame_url_2.  Perhaps we should be going back to frame_url_1 when going
+  // back two entries above, since it's different than the initial blank case.
+  //
+  // TODO(creis): This actually goes to frame_url_2 in some cases when subframe
+  // FrameNavigationEntries are enabled, due to a mismatch between PageState and
+  // the entry's URL.  That should be fixed in https://crbug.com/617239.
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
 // Ensure that we do not corrupt a NavigationEntry's PageState if a subframe

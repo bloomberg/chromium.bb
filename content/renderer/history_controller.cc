@@ -135,8 +135,12 @@ void HistoryController::RecursiveGoToEntry(
   RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
   const WebHistoryItem& new_item =
       provisional_entry_->GetItemForFrame(render_frame);
-  const WebHistoryItem& old_item =
-      current_entry_->GetItemForFrame(render_frame);
+
+  // Use the last committed history item for the frame rather than
+  // current_entry_, since the latter may not accurately reflect which URL is
+  // currently committed in the frame.  See https://crbug.com/612713#c12.
+  const WebHistoryItem& old_item = render_frame->current_history_item();
+
   if (new_item.isNull())
     return;
 
