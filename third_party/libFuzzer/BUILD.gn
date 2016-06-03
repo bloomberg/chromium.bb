@@ -10,6 +10,8 @@ source_set("libfuzzer") {
   sources = [
     "src/FuzzerCrossOver.cpp",
     "src/FuzzerDriver.cpp",
+    "src/FuzzerExtFunctionsDlsym.cpp",
+    "src/FuzzerExtFunctionsWeak.cpp",
     "src/FuzzerIO.cpp",
     "src/FuzzerLoop.cpp",
     "src/FuzzerMain.cpp",
