@@ -5,15 +5,22 @@
 #include "core/dom/custom/CustomElement.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
 #include "platform/text/Character.h"
 #include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
+
+CustomElementsRegistry* CustomElement::registry(const Element& element)
+{
+    if (LocalDOMWindow* window = element.document().domWindow())
+        return window->customElements();
+    return nullptr;
+}
 
 bool CustomElement::isValidName(const AtomicString& name)
 {

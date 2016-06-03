@@ -7,36 +7,40 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCustomElementDefinitionBuilder.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/ElementRegistrationOptions.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDefinitionBuilder.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementUpgradeReaction.h"
+#include "core/dom/custom/CustomElementUpgradeSorter.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 
 namespace blink {
 
 CustomElementsRegistry* CustomElementsRegistry::create(
-    V0CustomElementRegistrationContext* v0)
+    Document* document)
 {
-    // TODO(dominicc): The window could install a new document; add a signal
-    // when a window installs a new document to notify that V0 context, too.
-    CustomElementsRegistry* registry = new CustomElementsRegistry(v0);
-    if (v0)
-        v0->setV1(registry);
+    CustomElementsRegistry* registry = new CustomElementsRegistry(document);
+    if (V0CustomElementRegistrationContext* v0Context = registry->v0())
+        v0Context->setV1(registry);
     return registry;
 }
 
-CustomElementsRegistry::CustomElementsRegistry(
-    const V0CustomElementRegistrationContext* v0)
-    : m_v0(v0)
+CustomElementsRegistry::CustomElementsRegistry(Document* document)
+    : m_document(document)
+    , m_upgradeCandidates(new UpgradeCandidateMap())
 {
 }
 
 DEFINE_TRACE(CustomElementsRegistry)
 {
     visitor->trace(m_definitions);
-    visitor->trace(m_v0);
+    visitor->trace(m_document);
+    visitor->trace(m_upgradeCandidates);
 }
 
 void CustomElementsRegistry::define(
@@ -61,6 +65,8 @@ void CustomElementsRegistry::define(
     const ElementRegistrationOptions& options,
     ExceptionState& exceptionState)
 {
+    CEReactionsScope reactions;
+
     if (!builder.checkConstructorIntrinsics())
         return;
 
@@ -108,6 +114,14 @@ void CustomElementsRegistry::define(
         m_definitions.add(descriptor.name(), definition);
     CHECK(result.isNewEntry);
 
+    HeapVector<Member<Element>> candidates;
+    collectCandidates(descriptor, &candidates);
+    for (Element* candidate : candidates) {
+        reactions.enqueue(
+            candidate,
+            new CustomElementUpgradeReaction(definition));
+    }
+
     // TODO(dominicc): Implement steps:
     // 20: when-defined promise processing
 }
@@ -124,17 +138,62 @@ ScriptValue CustomElementsRegistry::get(const AtomicString& name)
     return definition->getConstructorForScript();
 }
 
-bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name) const
+bool CustomElementsRegistry::nameIsDefined(const AtomicString& name) const
 {
-    if (!m_v0)
-        return false;
-    return m_v0->nameIsDefined(name);
+    return m_definitions.contains(name);
+}
+
+V0CustomElementRegistrationContext* CustomElementsRegistry::v0()
+{
+    return m_document->registrationContext();
+}
+
+bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name)
+{
+    if (V0CustomElementRegistrationContext* v0Context = v0())
+        return v0Context->nameIsDefined(name);
+    return false;
 }
 
 CustomElementDefinition* CustomElementsRegistry::definitionForName(
     const AtomicString& name) const
 {
     return m_definitions.get(name);
+}
+
+void CustomElementsRegistry::addCandidate(Element* candidate)
+{
+    const AtomicString& name = candidate->localName();
+    if (nameIsDefined(name) || v0NameIsDefined(name))
+        return;
+    UpgradeCandidateMap::iterator it = m_upgradeCandidates->find(name);
+    UpgradeCandidateSet* set;
+    if (it != m_upgradeCandidates->end()) {
+        set = it->value;
+    } else {
+        set = m_upgradeCandidates->add(name, new UpgradeCandidateSet())
+            .storedValue
+            ->value;
+    }
+    set->add(candidate);
+}
+
+void CustomElementsRegistry::collectCandidates(
+    const CustomElementDescriptor& desc,
+    HeapVector<Member<Element>>* elements)
+{
+    UpgradeCandidateMap::iterator it = m_upgradeCandidates->find(desc.name());
+    if (it == m_upgradeCandidates->end())
+        return;
+    CustomElementUpgradeSorter sorter;
+    for (Element* element : *it.get()->value) {
+        if (!element || !desc.matches(*element))
+            continue;
+        sorter.add(element);
+    }
+
+    m_upgradeCandidates->remove(it);
+    sorter.sorted(elements, m_document.get());
 }
 
 } // namespace blink

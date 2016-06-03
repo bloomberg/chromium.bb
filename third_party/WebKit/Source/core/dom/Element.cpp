@@ -73,6 +73,8 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -1421,8 +1423,14 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
             rareData->intersectionObserverData()->activateValidIntersectionObservers(*this);
     }
 
-    if (isUpgradedV0CustomElement() && inShadowIncludingDocument())
-        V0CustomElement::didAttach(this, document());
+    if (inShadowIncludingDocument()) {
+        if (getCustomElementState() != CustomElementState::Custom && CustomElement::descriptorMayMatch(*this)) {
+            if (CustomElementsRegistry* registry = CustomElement::registry(*this))
+                registry->addCandidate(this);
+        }
+        if (isUpgradedV0CustomElement())
+            V0CustomElement::didAttach(this, document());
+    }
 
     TreeScope& scope = insertionPoint->treeScope();
     if (scope != treeScope())

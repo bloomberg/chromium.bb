@@ -1336,8 +1336,8 @@ CustomElementsRegistry* LocalDOMWindow::customElements(ScriptState* scriptState)
 
 CustomElementsRegistry* LocalDOMWindow::customElements() const
 {
-    if (!m_customElements)
-        m_customElements = CustomElementsRegistry::create(document()->registrationContext());
+    if (!m_customElements && m_document)
+        m_customElements = CustomElementsRegistry::create(document());
     return m_customElements;
 }
 

@@ -6,6 +6,7 @@
 #define CustomElementDescriptor_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Element.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/AtomicString.h"
@@ -13,18 +14,21 @@
 namespace blink {
 
 // Describes what elements a custom element definition applies to.
+// https://html.spec.whatwg.org/multipage/scripting.html#custom-elements-core-concepts
 //
-// There are two kinds of definitions: The first has its own tag name;
-// in this case the "name" (definition name) and local name (tag name)
-// are the same. The second kind customizes a built-in element; in
-// that case, the descriptor's local name will be a built-in element
-// name, or an unknown element name that is *not* a valid custom
-// element name.
+// There are two kinds of definitions:
 //
-// This type is used when the kind of custom element definition is
-// known, and generally the difference is important. For example, a
-// definition for "my-element", "my-element" must not be applied to an
-// element <button is="my-element">.
+// [Autonomous] These have their own tag name. In that case "name"
+// (the definition name) and local name (the tag name) are identical.
+//
+// [Customized built-in] The name is still a valid custom element
+// name; but the local name will be a built-in element name, or an
+// unknown element name that is *not* a valid custom element name.
+//
+// CustomElementDescriptor used when the kind of custom element
+// definition is known, and generally the difference is important. For
+// example, a definition for "my-element", "my-element" must not be
+// applied to an element <button is="my-element">.
 class CORE_EXPORT CustomElementDescriptor final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
@@ -57,6 +61,16 @@ public:
 
     const AtomicString& name() const { return m_name; }
     const AtomicString& localName() const { return m_localName; }
+
+    bool matches(const Element& element) const
+    {
+        return localName() == element.localName()
+            && (isAutonomous()
+                || name() == element.getAttribute(HTMLNames::isAttr))
+            && element.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
+    }
+
+    bool isAutonomous() const { return m_name == m_localName; }
 
 private:
     AtomicString m_name;

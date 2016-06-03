@@ -14,6 +14,7 @@
 namespace blink {
 
 class ScriptState;
+class Element;
 
 class CORE_EXPORT CustomElementDefinition
     : public GarbageCollectedFinalized<CustomElementDefinition> {
@@ -22,19 +23,34 @@ public:
     CustomElementDefinition(const CustomElementDescriptor&);
     virtual ~CustomElementDefinition();
 
+    DECLARE_VIRTUAL_TRACE();
+
     const CustomElementDescriptor& descriptor() { return m_descriptor; }
 
-    // TODO(yosin): To support Web Module, once we introduce abstract class
-    // |CustomElementConstructor|, allows us to have JavaScript and C++
-    // constructor, and ask binding layer to convert |CustomElementConstructor|
-    // to |ScriptValue|, we should replace |getConstructorForScript()| by
-    // |getConstructor() -> CustomElementConstructor|.
+    // TODO(yosin): To support Web Modules, introduce an abstract
+    // class |CustomElementConstructor| to allow us to have JavaScript
+    // and C++ constructors and ask the binding layer to convert
+    // |CustomElementConstructor| to |ScriptValue|. Replace
+    // |getConstructorForScript()| by |getConstructor() ->
+    // CustomElementConstructor|.
     virtual ScriptValue getConstructorForScript() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    using ConstructionStack = HeapVector<Member<Element>, 1>;
+    ConstructionStack& constructionStack()
+    {
+        return m_constructionStack;
+    }
+
+    void upgrade(Element*);
+
+protected:
+    // TODO(dominicc): Make this pure virtual when the script side is
+    // implemented.
+    virtual bool runConstructor(Element*);
 
 private:
     const CustomElementDescriptor m_descriptor;
+    ConstructionStack m_constructionStack;
 };
 
 } // namespace blink

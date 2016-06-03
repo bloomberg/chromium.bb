@@ -20,7 +20,17 @@
 namespace blink {
 
 class CustomElementUpgradeSorterTest : public ::testing::Test {
-public:
+protected:
+    void SetUp() override
+    {
+        m_page = DummyPageHolder::create(IntSize(1, 1));
+    }
+
+    void TearDown() override
+    {
+        m_page = nullptr;
+    }
+
     Element* createElementWithId(const char* localName, const char* id)
     {
         NonThrowableExceptionState noExceptions;
@@ -43,17 +53,6 @@ public:
         ShadowRootInit shadowRootInit;
         return
             element->attachShadow(scriptState(), shadowRootInit, noExceptions);
-    }
-
-protected:
-    void SetUp() override
-    {
-        m_page = DummyPageHolder::create(IntSize(1, 1));
-    }
-
-    void TearDown() override
-    {
-        m_page = nullptr;
     }
 
 private:

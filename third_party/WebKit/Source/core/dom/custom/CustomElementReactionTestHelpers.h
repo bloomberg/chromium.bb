@@ -17,8 +17,8 @@ class Element;
 class Command : public GarbageCollectedFinalized<Command> {
     WTF_MAKE_NONCOPYABLE(Command);
 public:
-    Command() { }
-    virtual ~Command() { }
+    Command() = default;
+    virtual ~Command() = default;
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void run(Element*) = 0;
 };
@@ -27,7 +27,7 @@ class Log : public Command {
     WTF_MAKE_NONCOPYABLE(Log);
 public:
     Log(char what, std::vector<char>& where) : m_what(what), m_where(where) { }
-    virtual ~Log() { }
+    ~Log() override = default;
     void run(Element*) override { m_where.push_back(m_what); }
 private:
     char m_what;
@@ -38,7 +38,7 @@ class Recurse : public Command {
     WTF_MAKE_NONCOPYABLE(Recurse);
 public:
     Recurse(CustomElementReactionQueue* queue) : m_queue(queue) { }
-    virtual ~Recurse() { }
+    ~Recurse() override = default;
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         Command::trace(visitor);
@@ -57,7 +57,7 @@ public:
         , m_reaction(reaction)
     {
     }
-    virtual ~Enqueue() { }
+    ~Enqueue() override = default;
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         Command::trace(visitor);
@@ -83,7 +83,7 @@ public:
         for (auto& command : commands)
             m_commands.append(command);
     }
-    virtual ~TestReaction() = default;
+    ~TestReaction() override = default;
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         CustomElementReaction::trace(visitor);
