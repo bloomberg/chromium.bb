@@ -57,8 +57,8 @@ TEST_F(ConfigurationPolicyPrefStoreListTest, GetDefault) {
 
 TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
   std::unique_ptr<base::ListValue> in_value(new base::ListValue());
-  in_value->Append(new base::StringValue("test1"));
-  in_value->Append(new base::StringValue("test2,"));
+  in_value->AppendString("test1");
+  in_value->AppendString("test2,");
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, in_value->CreateDeepCopy(), nullptr);

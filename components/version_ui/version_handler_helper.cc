@@ -36,7 +36,7 @@ std::unique_ptr<base::Value> GetVariationsList() {
   std::unique_ptr<base::ListValue> variations_list(new base::ListValue);
   for (std::vector<std::string>::const_iterator it = variations.begin();
        it != variations.end(); ++it) {
-    variations_list->Append(new base::StringValue(*it));
+    variations_list->AppendString(*it);
   }
 
   return std::move(variations_list);

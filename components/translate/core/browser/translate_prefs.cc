@@ -540,7 +540,7 @@ void TranslatePrefs::BlacklistValue(const char* pref_id,
       NOTREACHED() << "Unregistered translate blacklist pref";
       return;
     }
-    blacklist->Append(new base::StringValue(value));
+    blacklist->AppendString(value);
   }
 }
 

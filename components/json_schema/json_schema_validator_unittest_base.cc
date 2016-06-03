@@ -385,12 +385,12 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   ASSERT_TRUE(schema.get());
 
   std::unique_ptr<base::ListValue> instance(new base::ListValue());
-  instance->Append(new base::StringValue("42"));
-  instance->Append(new base::FundamentalValue(42));
+  instance->AppendString("42");
+  instance->AppendInteger(42);
 
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
-  instance->Append(new base::StringValue("anything"));
+  instance->AppendString("anything");
   ExpectNotValid(TEST_SOURCE,
                  instance.get(),
                  schema.get(),
@@ -405,7 +405,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
                  JSONSchemaValidator::kArrayItemRequired);
 
   instance->Set(0, new base::FundamentalValue(42));
-  instance->Append(new base::FundamentalValue(42));
+  instance->AppendInteger(42);
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "0",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -416,7 +416,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   additional_properties->SetString(schema::kType, schema::kAny);
   schema->Set(schema::kAdditionalProperties, additional_properties);
   instance->Set(0, new base::StringValue("42"));
-  instance->Append(new base::StringValue("anything"));
+  instance->AppendString("anything");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
   instance->Set(2, new base::ListValue());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
@@ -457,14 +457,14 @@ void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
   schema->SetInteger(schema::kMaxItems, 3);
 
   std::unique_ptr<base::ListValue> instance(new base::ListValue());
-  instance->Append(new base::StringValue("x"));
-  instance->Append(new base::StringValue("x"));
+  instance->AppendString("x");
+  instance->AppendString("x");
 
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Append(new base::StringValue("x"));
+  instance->AppendString("x");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
-  instance->Append(new base::StringValue("x"));
+  instance->AppendString("x");
   ExpectNotValid(TEST_SOURCE,
                  instance.get(),
                  schema.get(),
@@ -484,7 +484,7 @@ void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
                      JSONSchemaValidator::kArrayMinItems, "2"));
 
   instance->Remove(1, NULL);
-  instance->Append(new base::FundamentalValue(42));
+  instance->AppendInteger(42);
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "1",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,

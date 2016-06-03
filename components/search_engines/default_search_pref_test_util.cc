@@ -49,7 +49,7 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
 
   std::unique_ptr<base::ListValue> alternate_url_list(new base::ListValue());
   if (!alternate_url.empty())
-    alternate_url_list->Append(new base::StringValue(alternate_url));
+    alternate_url_list->AppendString(alternate_url);
   value->Set(DefaultSearchManager::kAlternateURLs,
              alternate_url_list.release());
   return value;

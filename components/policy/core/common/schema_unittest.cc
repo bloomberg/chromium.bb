@@ -804,7 +804,7 @@ TEST(SchemaTest, Validate) {
     root.Set("List", list_value);  // Pass ownership to root.
 
     // Test that there are not errors here.
-    list_value->Append(new base::FundamentalValue(12345));
+    list_value->AppendInteger(12345);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
@@ -812,7 +812,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
 
     // Invalid list item.
-    list_value->Append(new base::StringValue("blabla"));
+    list_value->AppendString("blabla");
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
@@ -833,7 +833,7 @@ TEST(SchemaTest, Validate) {
     root.Append(dict_value);  // Pass ownership to root.
 
     // Test that there are not errors here.
-    list_value->Append(new base::StringValue("blabla"));
+    list_value->AppendString("blabla");
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
@@ -841,7 +841,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
 
     // Invalid list item.
-    list_value->Append(new base::FundamentalValue(12345));
+    list_value->AppendInteger(12345);
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);

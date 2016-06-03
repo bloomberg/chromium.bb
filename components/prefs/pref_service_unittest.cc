@@ -414,7 +414,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   base::ListValue new_value;
-  new_value.Append(new base::StringValue(kValue));
+  new_value.AppendString(kValue);
   observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);

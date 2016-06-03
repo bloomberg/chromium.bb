@@ -254,8 +254,8 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
   {
     ListPrefUpdate update(GetPrefs(), kListPrefName);
     base::ListValue* url_list = update.Get();
-    url_list->Append(new base::StringValue(kExampleUrl0));
-    url_list->Append(new base::StringValue(kExampleUrl1));
+    url_list->AppendString(kExampleUrl0);
+    url_list->AppendString(kExampleUrl1);
   }
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
@@ -273,16 +273,16 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   {
     ListPrefUpdate update(GetPrefs(), kListPrefName);
     base::ListValue* url_list = update.Get();
-    url_list->Append(new base::StringValue(kExampleUrl0));
-    url_list->Append(new base::StringValue(kExampleUrl1));
+    url_list->AppendString(kExampleUrl0);
+    url_list->AppendString(kExampleUrl1);
   }
 
   syncer::SyncDataList in;
   syncer::SyncChangeList out;
   AddToRemoteDataList(kStringPrefName, base::StringValue(kExampleUrl1), &in);
   base::ListValue urls_to_restore;
-  urls_to_restore.Append(new base::StringValue(kExampleUrl1));
-  urls_to_restore.Append(new base::StringValue(kExampleUrl2));
+  urls_to_restore.AppendString(kExampleUrl1);
+  urls_to_restore.AppendString(kExampleUrl2);
   AddToRemoteDataList(kListPrefName, urls_to_restore, &in);
   AddToRemoteDataList(kDefaultCharsetPrefName,
                       base::StringValue(kNonDefaultCharsetValue),
@@ -295,9 +295,9 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   EXPECT_EQ(kExampleUrl1, prefs_.GetString(kStringPrefName));
 
   std::unique_ptr<base::ListValue> expected_urls(new base::ListValue);
-  expected_urls->Append(new base::StringValue(kExampleUrl1));
-  expected_urls->Append(new base::StringValue(kExampleUrl2));
-  expected_urls->Append(new base::StringValue(kExampleUrl0));
+  expected_urls->AppendString(kExampleUrl1);
+  expected_urls->AppendString(kExampleUrl2);
+  expected_urls->AppendString(kExampleUrl0);
   std::unique_ptr<base::Value> value(FindValue(kListPrefName, out));
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(value->Equals(expected_urls.get()));
@@ -417,16 +417,16 @@ TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
 TEST_F(PrefServiceSyncableTest, ManagedListPreferences) {
   // Make the list of urls to restore on startup managed.
   base::ListValue managed_value;
-  managed_value.Append(new base::StringValue(kExampleUrl0));
-  managed_value.Append(new base::StringValue(kExampleUrl1));
+  managed_value.AppendString(kExampleUrl0);
+  managed_value.AppendString(kExampleUrl1);
   prefs_.SetManagedPref(kListPrefName, managed_value.DeepCopy());
 
   // Set a cloud version.
   syncer::SyncDataList in;
   syncer::SyncChangeList out;
   base::ListValue urls_to_restore;
-  urls_to_restore.Append(new base::StringValue(kExampleUrl1));
-  urls_to_restore.Append(new base::StringValue(kExampleUrl2));
+  urls_to_restore.AppendString(kExampleUrl1);
+  urls_to_restore.AppendString(kExampleUrl2);
   AddToRemoteDataList(kListPrefName, urls_to_restore, &in);
 
   // Start sync and verify the synced value didn't get merged.
@@ -437,14 +437,14 @@ TEST_F(PrefServiceSyncableTest, ManagedListPreferences) {
   // Changing the user's urls to restore on startup pref should not sync
   // anything.
   base::ListValue user_value;
-  user_value.Append(new base::StringValue("http://chromium.org"));
+  user_value.AppendString("http://chromium.org");
   prefs_.SetUserPref(kListPrefName, user_value.DeepCopy());
   EXPECT_FALSE(FindValue(kListPrefName, out).get());
 
   // An incoming sync transaction should change the user value, not the managed
   // value.
   base::ListValue sync_value;
-  sync_value.Append(new base::StringValue("http://crbug.com"));
+  sync_value.AppendString("http://crbug.com");
   syncer::SyncChangeList list;
   list.push_back(MakeRemoteChange(
       1, kListPrefName, sync_value,

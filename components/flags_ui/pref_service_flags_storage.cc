@@ -42,7 +42,7 @@ bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   experiments_list->Clear();
   for (std::set<std::string>::const_iterator it = flags.begin();
        it != flags.end(); ++it) {
-    experiments_list->Append(new base::StringValue(*it));
+    experiments_list->AppendString(*it);
   }
 
   return true;

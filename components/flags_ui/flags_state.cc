@@ -82,7 +82,7 @@ const struct {
 void AddOsStrings(unsigned bitmask, base::ListValue* list) {
   for (size_t i = 0; i < arraysize(kBitsToOs); ++i) {
     if (bitmask & kBitsToOs[i].bit)
-      list->Append(new base::StringValue(kBitsToOs[i].name));
+      list->AppendString(kBitsToOs[i].name);
   }
 }
 
