@@ -70,7 +70,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private PaymentRequestClient mClient;
     private Set<String> mSupportedMethods;
     private List<LineItem> mLineItems;
-    private List<PaymentItem> mPaymentItems;
+    private List<PaymentItem> mDisplayItems;
     private List<ShippingOption> mShippingOptions;
     private SectionInformation mShippingOptionsSection;
     private JSONObject mData;
@@ -206,7 +206,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mPendingApps.remove(app);
             } else {
                 isGettingInstruments = true;
-                app.getInstruments(mPaymentItems, this);
+                app.getInstruments(mDisplayItems, this);
             }
         }
 
@@ -252,10 +252,10 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             disconnectFromClientWithDebugMessage("Invalid line items");
             return false;
         }
-        mPaymentItems = Arrays.asList(details.items);
+        mDisplayItems = Arrays.asList(details.displayItems);
 
         mShippingOptionsSection =
-                getValidatedShippingOptions(details.items[0].amount.currencyCode, details);
+                getValidatedShippingOptions(details.displayItems[0].amount.currencyCode, details);
         if (mShippingOptionsSection == null) {
             disconnectFromClientWithDebugMessage("Invalid shipping options");
             return false;
@@ -281,10 +281,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private List<LineItem> getValidatedLineItems(PaymentDetails details) {
         // Line items are required.
-        if (details == null || details.items == null || details.items.length == 0) return null;
+        if (details == null || details.displayItems == null || details.displayItems.length == 0) {
+            return null;
+        }
 
-        for (int i = 0; i < details.items.length; i++) {
-            PaymentItem item = details.items[i];
+        for (int i = 0; i < details.displayItems.length; i++) {
+            PaymentItem item = details.displayItems[i];
             // "id", "label", "currencyCode", and "value" should be non-empty.
             if (item == null || TextUtils.isEmpty(item.label) || item.amount == null
                     || TextUtils.isEmpty(item.amount.currencyCode)
@@ -294,23 +296,27 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         CurrencyStringFormatter formatter = new CurrencyStringFormatter(
-                details.items[0].amount.currencyCode, Locale.getDefault());
+                details.displayItems[0].amount.currencyCode, Locale.getDefault());
 
         // Currency codes should be in correct format.
-        if (!formatter.isValidAmountCurrencyCode(details.items[0].amount.currencyCode)) return null;
+        if (!formatter.isValidAmountCurrencyCode(details.displayItems[0].amount.currencyCode)) {
+            return null;
+        }
 
-        List<LineItem> result = new ArrayList<>(details.items.length);
-        for (int i = 0; i < details.items.length; i++) {
-            PaymentItem item = details.items[i];
+        List<LineItem> result = new ArrayList<>(details.displayItems.length);
+        for (int i = 0; i < details.displayItems.length; i++) {
+            PaymentItem item = details.displayItems[i];
 
             // All currency codes must match.
-            if (!item.amount.currencyCode.equals(details.items[0].amount.currencyCode)) return null;
+            if (!item.amount.currencyCode.equals(details.displayItems[0].amount.currencyCode)) {
+                return null;
+            }
 
             // Value should be in correct format.
             if (!formatter.isValidAmountValue(item.amount.value)) return null;
 
             result.add(new LineItem(item.label,
-                    i == details.items.length - 1 ? item.amount.currencyCode : "",
+                    i == details.displayItems.length - 1 ? item.amount.currencyCode : "",
                     formatter.format(item.amount.value)));
         }
 
@@ -484,7 +490,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
-        instrument.getDetails(mMerchantName, mOrigin, mPaymentItems,
+        instrument.getDetails(mMerchantName, mOrigin, mDisplayItems,
                 mData.optJSONObject(instrument.getMethodName()), this);
     }
 

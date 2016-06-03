@@ -78,7 +78,7 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
         shippingOption = buildShippingOptionForTest();
 
     PaymentDetails result;
-    result.setItems(HeapVector<PaymentItem>(1, item));
+    result.setDisplayItems(HeapVector<PaymentItem>(1, item));
     result.setShippingOptions(HeapVector<ShippingOption>(2, shippingOption));
 
     return result;

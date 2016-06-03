@@ -14,7 +14,7 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     var details = {
-      items: [
+      displayItems: [
         {
           id: 'sub',
           label: 'Subtotal',
@@ -76,7 +76,8 @@ function updateDetails(details, addr) {
     if (addr.administrativeArea === 'CA') {
       shippingOption.id = 'ca';
       shippingOption.label = 'Free shipping in California';
-      details.items[details.items.length - 1].amount.value = '5.00';
+      details.displayItems[details.displayItems.length - 1].amount.value =
+          '5.00';
     } else {
       shippingOption.id = 'us';
       shippingOption.label = 'Standard shipping in US';

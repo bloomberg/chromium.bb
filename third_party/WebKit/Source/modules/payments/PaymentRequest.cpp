@@ -79,7 +79,7 @@ struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
     static PaymentDetailsPtr Convert(const blink::PaymentDetails& input)
     {
         PaymentDetailsPtr output = PaymentDetails::New();
-        output->items = mojo::WTFArray<PaymentItemPtr>::From(input.items());
+        output->display_items = mojo::WTFArray<PaymentItemPtr>::From(input.displayItems());
         if (input.hasShippingOptions())
             output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::From(input.shippingOptions());
         else
@@ -103,7 +103,7 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
 namespace blink {
 namespace {
 
-// Validates ShippingOption and PaymentItem dictionaries, which happen to have identical fields.
+// Validates ShippingOption and PaymentItem dictionaries, which happen to have identical fields,
 // except for "id", which is present only in ShippingOption.
 template <typename T>
 void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& exceptionState)
@@ -154,17 +154,17 @@ void validateShippingOptionsIds(HeapVector<ShippingOption> options, ExceptionSta
 
 void validatePaymentDetails(const PaymentDetails& details, ExceptionState& exceptionState)
 {
-    if (!details.hasItems()) {
-        exceptionState.throwTypeError("Must specify items");
+    if (!details.hasDisplayItems()) {
+        exceptionState.throwTypeError("Must specify display items");
         return;
     }
 
-    if (details.items().isEmpty()) {
+    if (details.displayItems().isEmpty()) {
         exceptionState.throwTypeError("Must specify at least one item");
         return;
     }
 
-    validateShippingOptionsOrPaymentItems(details.items(), exceptionState);
+    validateShippingOptionsOrPaymentItems(details.displayItems(), exceptionState);
     if (exceptionState.hadException())
         return;
 

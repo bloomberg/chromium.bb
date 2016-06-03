@@ -14,7 +14,7 @@ function buy() {  // eslint-disable-line no-unused-vars
   try {
     var request = new PaymentRequest(
         ['visa'], {
-          items: [{
+          displayItems: [{
             id: 'total',
             label: 'Total',
             amount: {currency: 'USD', value: '5.00'}

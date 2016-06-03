@@ -25,7 +25,9 @@ function buildItem(optionalSubstituteKeyValuePair) {
 
 function buildDetails(optionalDetailName, optionalSubstituteKeyValuePair) {
     var details = {};
-    var detailNames = ['items', 'shippingOptions'];
+    var detailNames = ['displayItems', 'shippingOptions'];
+
+    assert_true(!optionalDetailName || detailNames.indexOf(optionalDetailName) >= 0, 'Detail name "' + optionalDetailName + '" should be either "displayItems" or "shippingOptions".');
 
     for (var i in detailNames) {
         if (optionalDetailName == detailNames[i]) {
@@ -104,12 +106,12 @@ test(function() {
 }, 'Shipping option identifier should default to the single provided option.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {"items": [buildItem()]}, {'requestShipping': true});
+    var request = new PaymentRequest(['foo'], {'displayItems': [buildItem()]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null when no shipping options are provided.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {'items': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]}, {'requestShipping': true});
+    var request = new PaymentRequest(['foo'], {'displayItems': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null at first when multiple shipping options are provided.');
 
@@ -134,7 +136,7 @@ generate_tests(assert_throws, [
         new PaymentRequest(['foo'], {})
     }],
     ['Empty items should throw', null, function() {
-        new PaymentRequest(['foo'], {'items': []})
+        new PaymentRequest(['foo'], {'displayItems': []})
     }],
     ['Aborting before showing should throw.', null, function() {
         new PaymentRequest(['foo'], buildDetails()).abort()
@@ -168,7 +170,7 @@ generate_tests(assert_throws, [
     }],
 ]);
 
-var detailNames = ['items', 'shippingOptions'];
+var detailNames = ['displayItems', 'shippingOptions'];
 for (var i in detailNames) {
     generate_tests(assert_throws, [
         // Invalid currency code formats.
