@@ -23,16 +23,16 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // These functions act on "web profiles" aka "LOCAL_PROFILE" profiles.
   // -------------------------
 
-  // Returns the GUIDs of all profiles.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileGUIDsForSettings(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+  // Returns the number of web and auxiliary profiles.
+  jint GetProfileCount(JNIEnv* unused_env,
+                       const base::android::JavaParamRef<jobject>& unused_obj);
 
-  // Returns the GUIDs of the profiles to suggest to the user. See
-  // PersonalDataManager::GetProfilesToSuggest for more details.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileGUIDsToSuggest(
+  // Returns the profile as indexed by |index| in the PersonalDataManager's
+  // |GetProfiles()| collection.
+  base::android::ScopedJavaLocalRef<jobject> GetProfileByIndex(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      jint index);
 
   // Returns the profile with the specified |jguid|, or NULL if there is no
   // profile with the specified |jguid|. Both web and auxiliary profiles may
@@ -54,33 +54,28 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // distinguishing the profiles from one another.
   //
   // The labels never contain the full name and include at least 2 fields.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabelsForSettings(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
-
-  // Gets the labels for the profiles to suggest to the user. These labels are
-  // useful for distinguishing the profiles from one another.
   //
-  // The labels never contain the full name. Fields such as phone number and
-  // email address are also omitted, but all other fields are included in the
-  // label.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabelsToSuggest(
+  // If |address_only| is true, then such fields as phone number and email
+  // address are also omitted, but all fields are included in the label.
+  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      bool address_only);
 
   // These functions act on local credit cards.
   // --------------------
 
-  // Returns the GUIDs of all the credit cards.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetCreditCardGUIDsForSettings(
-      JNIEnv* env,
+  // Returns the number of credit cards.
+  jint GetCreditCardCount(
+      JNIEnv* unused_env,
       const base::android::JavaParamRef<jobject>& unused_obj);
 
-  // Returns the GUIDs of the credit cards to suggest to the user. See
-  // PersonalDataManager::GetCreditCardsToSuggest for more details.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetCreditCardGUIDsToSuggest(
+  // Returns the credit card as indexed by |index| in the PersonalDataManager's
+  // |GetCreditCards()| collection.
+  base::android::ScopedJavaLocalRef<jobject> GetCreditCardByIndex(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      jint index);
 
   // Returns the credit card with the specified |jguid|, or NULL if there is
   // no credit card with the specified |jguid|.
@@ -128,54 +123,8 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);
 
-  // Sets the use count and use date of the profile associated to the |jguid|.
-  // Both |count| and |date| should be non-negative. |date| represents an
-  // absolute point in coordinated universal time (UTC) represented as
-  // microseconds since the Windows epoch. For more details see the comment
-  // header in time.h.
-  void SetProfileUseStatsForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jguid,
-      jint count,
-      jint date);
-
-  // Sets the use count and use date of the credit card associated to the
-  // |jguid|. Both |count| and |date| should be non-negative. |date| represents
-  // an absolute point in coordinated universal time (UTC) represented as
-  // microseconds since the Windows epoch. For more details see the comment
-  // header in time.h.
-  void SetCreditCardUseStatsForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jguid,
-      jint count,
-      jint date);
-
  private:
   ~PersonalDataManagerAndroid() override;
-
-  // Returns the GUIDs of the |profiles| passed as parameter.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileGUIDs(
-      JNIEnv* env,
-      const std::vector<AutofillProfile*>& profiles);
-
-  // Returns the GUIDs of the |credit_cards| passed as parameter.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetCreditCardGUIDs(
-      JNIEnv* env,
-      const std::vector<CreditCard*>& credit_cards);
-
-  // Gets the labels for the |profiles| passed as parameters. These labels are
-  // useful for distinguishing the profiles from one another.
-  //
-  // The labels never contain the full name and include at least 2 fields.
-  //
-  // If |address_only| is true, then such fields as phone number and email
-  // address are also omitted, but all fields are included in the label.
-  base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
-      JNIEnv* env,
-      bool address_only,
-      std::vector<AutofillProfile*> profiles);
 
   // Pointer to the java counterpart.
   JavaObjectWeakGlobalRef weak_java_obj_;

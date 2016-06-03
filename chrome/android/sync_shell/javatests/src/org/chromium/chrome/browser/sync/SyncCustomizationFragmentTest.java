@@ -740,8 +740,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                List<CreditCard> cards =
-                        PersonalDataManager.getInstance().getCreditCardsForSettings();
+                List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCards();
                 for (int i = 0; i < cards.size(); i++) {
                     if (!cards.get(i).getIsLocal()) return true;
                 }

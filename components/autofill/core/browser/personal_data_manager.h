@@ -180,9 +180,6 @@ class PersonalDataManager : public KeyedService,
   // Returns true if there is some data synced from Wallet.
   bool HasServerData() const;
 
-  // Returns the profiles to suggest to the user, ordered by frecency.
-  const std::vector<AutofillProfile*> GetProfilesToSuggest() const;
-
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field
   // has already been autofilled. |other_field_types| represents the rest of
@@ -192,11 +189,6 @@ class PersonalDataManager : public KeyedService,
       const base::string16& field_contents,
       bool field_is_autofilled,
       const std::vector<ServerFieldType>& other_field_types);
-
-  // Returns the credit cards to suggest to the user. Those have been deduped
-  // and ordered by frecency with the expired cards put at the end of the
-  // vector.
-  const std::vector<CreditCard*> GetCreditCardsToSuggest() const;
 
   // Gets credit cards that can suggest data for |type|. See
   // GetProfileSuggestions for argument descriptions. The variant in each
@@ -246,7 +238,7 @@ class PersonalDataManager : public KeyedService,
   // local duplicates, and local cards are preferred over their masked server
   // card duplicate.
   static void DedupeCreditCardToSuggest(
-      std::list<CreditCard*>* cards_to_suggest);
+      std::list<const CreditCard*>* cards_to_suggest);
 
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
@@ -406,7 +398,7 @@ class PersonalDataManager : public KeyedService,
   std::vector<Suggestion> GetSuggestionsForCards(
       const AutofillType& type,
       const base::string16& field_contents,
-      const std::vector<CreditCard*>& cards_to_suggest) const;
+      const std::list<const CreditCard*>& cards_to_suggest) const;
 
   const std::string app_locale_;
 

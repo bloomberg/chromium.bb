@@ -33,7 +33,7 @@ public class AutofillPaymentApp implements PaymentApp {
 
     @Override
     public void getInstruments(List<PaymentItem> unusedItems, final InstrumentsCallback callback) {
-        List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCardsToSuggest();
+        List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCards();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());
         for (int i = 0; i < cards.size(); i++) {
             instruments.add(new AutofillPaymentInstrument(mWebContents, cards.get(i)));
