@@ -218,12 +218,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                                       !settings.single_thread_proxy_scheduler),
       // Must be initialized after is_synchronous_single_threaded_ and
       // task_runner_provider_.
-      tile_manager_(new TileManager(this,
-                                    GetTaskRunner(),
-                                    is_synchronous_single_threaded_
-                                        ? std::numeric_limits<size_t>::max()
-                                        : settings.scheduled_raster_task_limit,
-                                    settings.use_partial_raster)),
+      tile_manager_(this,
+                    GetTaskRunner(),
+                    is_synchronous_single_threaded_
+                        ? std::numeric_limits<size_t>::max()
+                        : settings.scheduled_raster_task_limit,
+                    settings.use_partial_raster),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
       fps_counter_(
@@ -499,7 +499,7 @@ bool LayerTreeHostImpl::PrepareTiles() {
     return false;
 
   client_->WillPrepareTiles();
-  bool did_prepare_tiles = tile_manager_->PrepareTiles(global_tile_state_);
+  bool did_prepare_tiles = tile_manager_.PrepareTiles(global_tile_state_);
   if (did_prepare_tiles)
     tile_priorities_dirty_ = false;
   client_->DidPrepareTiles();
@@ -1104,7 +1104,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // This will cause NotifyTileStateChanged() to be called for any tiles that
   // completed, which will add damage for visible tiles to the frame for them so
   // they appear as part of the current frame being drawn.
-  tile_manager_->Flush();
+  tile_manager_.Flush();
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
   frame->render_passes.clear();
@@ -1641,7 +1641,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                               !output_surface_->context_provider());
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
-  memory_history_->SaveEntry(tile_manager_->memory_stats_from_last_assign());
+  memory_history_->SaveEntry(tile_manager_.memory_stats_from_last_assign());
 
   if (debug_state_.ShowHudRects()) {
     debug_rect_history_->SaveDebugRectsForCurrentFrame(
@@ -2210,7 +2210,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
       std::move(raster_buffer_provider), task_graph_runner);
 
   // TODO(vmpstr): Initialize tile task limit at ctor time.
-  tile_manager_->SetResources(
+  tile_manager_.SetResources(
       resource_pool_.get(), image_decode_controller_.get(),
       tile_task_manager_.get(),
       is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
@@ -2302,7 +2302,7 @@ void LayerTreeHostImpl::SetLayerTreeMutator(
 
 void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   ClearUIResources();
-  tile_manager_->FinishTasksAndCleanUp();
+  tile_manager_.FinishTasksAndCleanUp();
   resource_pool_ = nullptr;
   tile_task_manager_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
@@ -3608,9 +3608,6 @@ void LayerTreeHostImpl::RemoveVideoFrameController(
 }
 
 void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
-  if (!tile_manager_)
-    return;
-
   if (global_tile_state_.tree_priority == priority)
     return;
   global_tile_state_.tree_priority = priority;
@@ -3663,11 +3660,10 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
   }
   state->EndArray();
 
-  if (tile_manager_) {
-    state->BeginDictionary("tile_manager_basic_state");
-    tile_manager_->BasicStateAsValueInto(state);
-    state->EndDictionary();
-  }
+  state->BeginDictionary("tile_manager_basic_state");
+  tile_manager_.BasicStateAsValueInto(state);
+  state->EndDictionary();
+
   state->BeginDictionary("active_tree");
   active_tree_->AsValueInto(state);
   state->EndDictionary();
@@ -3686,11 +3682,9 @@ void LayerTreeHostImpl::AsValueWithFrameInto(
 void LayerTreeHostImpl::ActivationStateAsValueInto(
     base::trace_event::TracedValue* state) const {
   TracedValue::SetIDRef(this, state, "lthi");
-  if (tile_manager_) {
-    state->BeginDictionary("tile_manager");
-    tile_manager_->BasicStateAsValueInto(state);
-    state->EndDictionary();
-  }
+  state->BeginDictionary("tile_manager");
+  tile_manager_.BasicStateAsValueInto(state);
+  state->EndDictionary();
 }
 
 void LayerTreeHostImpl::SetDebugState(

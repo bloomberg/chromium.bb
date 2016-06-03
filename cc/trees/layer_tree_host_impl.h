@@ -394,7 +394,7 @@ class CC_EXPORT LayerTreeHostImpl
   int RequestedMSAASampleCount() const;
 
   virtual bool InitializeRenderer(OutputSurface* output_surface);
-  TileManager* tile_manager() { return tile_manager_.get(); }
+  TileManager* tile_manager() { return &tile_manager_; }
 
   void SetHasGpuRasterizationTrigger(bool flag) {
     has_gpu_rasterization_trigger_ = flag;
@@ -787,7 +787,7 @@ class CC_EXPORT LayerTreeHostImpl
   ManagedMemoryPolicy cached_managed_memory_policy_;
 
   const bool is_synchronous_single_threaded_;
-  std::unique_ptr<TileManager> tile_manager_;
+  TileManager tile_manager_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
 
