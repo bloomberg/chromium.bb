@@ -20,9 +20,6 @@ DECLARE_ALIGNED(16, static const int16_t, bilinear_filters_mmx[8][8]) = {
   { 32, 32, 32, 32, 96, 96, 96, 96 }, { 16, 16, 16, 16, 112, 112, 112, 112 }
 };
 
-extern void aom_get4x4var_mmx(const uint8_t *a, int a_stride, const uint8_t *b,
-                              int b_stride, unsigned int *sse, int *sum);
-
 extern void aom_filter_block2d_bil4x4_var_mmx(const unsigned char *ref_ptr,
                                               int ref_pixels_per_line,
                                               const unsigned char *src_ptr,
@@ -36,98 +33,6 @@ extern void aom_filter_block2d_bil_var_mmx(
     const unsigned char *src_ptr, int src_pixels_per_line, unsigned int Height,
     const int16_t *HFilter, const int16_t *VFilter, int *sum,
     unsigned int *sumsquared);
-
-unsigned int aom_variance4x4_mmx(const unsigned char *a, int a_stride,
-                                 const unsigned char *b, int b_stride,
-                                 unsigned int *sse) {
-  unsigned int var;
-  int avg;
-
-  aom_get4x4var_mmx(a, a_stride, b, b_stride, &var, &avg);
-  *sse = var;
-  return (var - (((unsigned int)avg * avg) >> 4));
-}
-
-unsigned int aom_variance8x8_mmx(const unsigned char *a, int a_stride,
-                                 const unsigned char *b, int b_stride,
-                                 unsigned int *sse) {
-  unsigned int var;
-  int avg;
-
-  aom_get8x8var_mmx(a, a_stride, b, b_stride, &var, &avg);
-  *sse = var;
-
-  return (var - (((unsigned int)avg * avg) >> 6));
-}
-
-unsigned int aom_mse16x16_mmx(const unsigned char *a, int a_stride,
-                              const unsigned char *b, int b_stride,
-                              unsigned int *sse) {
-  unsigned int sse0, sse1, sse2, sse3, var;
-  int sum0, sum1, sum2, sum3;
-
-  aom_get8x8var_mmx(a, a_stride, b, b_stride, &sse0, &sum0);
-  aom_get8x8var_mmx(a + 8, a_stride, b + 8, b_stride, &sse1, &sum1);
-  aom_get8x8var_mmx(a + 8 * a_stride, a_stride, b + 8 * b_stride, b_stride,
-                    &sse2, &sum2);
-  aom_get8x8var_mmx(a + 8 * a_stride + 8, a_stride, b + 8 * b_stride + 8,
-                    b_stride, &sse3, &sum3);
-
-  var = sse0 + sse1 + sse2 + sse3;
-  *sse = var;
-  return var;
-}
-
-unsigned int aom_variance16x16_mmx(const unsigned char *a, int a_stride,
-                                   const unsigned char *b, int b_stride,
-                                   unsigned int *sse) {
-  unsigned int sse0, sse1, sse2, sse3, var;
-  int sum0, sum1, sum2, sum3, avg;
-
-  aom_get8x8var_mmx(a, a_stride, b, b_stride, &sse0, &sum0);
-  aom_get8x8var_mmx(a + 8, a_stride, b + 8, b_stride, &sse1, &sum1);
-  aom_get8x8var_mmx(a + 8 * a_stride, a_stride, b + 8 * b_stride, b_stride,
-                    &sse2, &sum2);
-  aom_get8x8var_mmx(a + 8 * a_stride + 8, a_stride, b + 8 * b_stride + 8,
-                    b_stride, &sse3, &sum3);
-
-  var = sse0 + sse1 + sse2 + sse3;
-  avg = sum0 + sum1 + sum2 + sum3;
-  *sse = var;
-  return (var - (((unsigned int)avg * avg) >> 8));
-}
-
-unsigned int aom_variance16x8_mmx(const unsigned char *a, int a_stride,
-                                  const unsigned char *b, int b_stride,
-                                  unsigned int *sse) {
-  unsigned int sse0, sse1, var;
-  int sum0, sum1, avg;
-
-  aom_get8x8var_mmx(a, a_stride, b, b_stride, &sse0, &sum0);
-  aom_get8x8var_mmx(a + 8, a_stride, b + 8, b_stride, &sse1, &sum1);
-
-  var = sse0 + sse1;
-  avg = sum0 + sum1;
-  *sse = var;
-  return (var - (((unsigned int)avg * avg) >> 7));
-}
-
-unsigned int aom_variance8x16_mmx(const unsigned char *a, int a_stride,
-                                  const unsigned char *b, int b_stride,
-                                  unsigned int *sse) {
-  unsigned int sse0, sse1, var;
-  int sum0, sum1, avg;
-
-  aom_get8x8var_mmx(a, a_stride, b, b_stride, &sse0, &sum0);
-  aom_get8x8var_mmx(a + 8 * a_stride, a_stride, b + 8 * b_stride, b_stride,
-                    &sse1, &sum1);
-
-  var = sse0 + sse1;
-  avg = sum0 + sum1;
-  *sse = var;
-
-  return (var - (((unsigned int)avg * avg) >> 7));
-}
 
 uint32_t aom_sub_pixel_variance4x4_mmx(const uint8_t *a, int a_stride,
                                        int xoffset, int yoffset,

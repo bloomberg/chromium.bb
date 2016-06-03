@@ -951,20 +951,6 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if HAVE_MMX
-INSTANTIATE_TEST_CASE_P(MMX, AvxMseTest,
-                        ::testing::Values(make_tuple(4, 4, &aom_mse16x16_mmx)));
-
-INSTANTIATE_TEST_CASE_P(MMX, SumOfSquaresTest,
-                        ::testing::Values(aom_get_mb_ss_mmx));
-
-INSTANTIATE_TEST_CASE_P(
-    MMX, AvxVarianceTest,
-    ::testing::Values(make_tuple(4, 4, &aom_variance16x16_mmx, 0),
-                      make_tuple(4, 3, &aom_variance16x8_mmx, 0),
-                      make_tuple(3, 4, &aom_variance8x16_mmx, 0),
-                      make_tuple(3, 3, &aom_variance8x8_mmx, 0),
-                      make_tuple(2, 2, &aom_variance4x4_mmx, 0)));
-
 INSTANTIATE_TEST_CASE_P(
     MMX, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(4, 4, &aom_sub_pixel_variance16x16_mmx, 0),
