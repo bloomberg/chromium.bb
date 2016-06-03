@@ -18,7 +18,10 @@ class PersistentHistogramAllocatorTest : public testing::Test {
  protected:
   const int32_t kAllocatorMemorySize = 64 << 10;  // 64 KiB
 
-  PersistentHistogramAllocatorTest() { CreatePersistentHistogramAllocator(); }
+  PersistentHistogramAllocatorTest()
+      : statistics_recorder_(StatisticsRecorder::CreateTemporaryForTesting()) {
+    CreatePersistentHistogramAllocator();
+  }
   ~PersistentHistogramAllocatorTest() override {
     DestroyPersistentHistogramAllocator();
   }
@@ -40,11 +43,7 @@ class PersistentHistogramAllocatorTest : public testing::Test {
     GlobalHistogramAllocator::ReleaseForTesting();
   }
 
-  std::unique_ptr<StatisticsRecorder> CreateLocalStatisticsRecorder() {
-    return WrapUnique(new StatisticsRecorder());
-  }
-
-  StatisticsRecorder statistics_recorder_;
+  std::unique_ptr<StatisticsRecorder> statistics_recorder_;
   std::unique_ptr<char[]> allocator_memory_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
@@ -133,7 +132,7 @@ TEST_F(PersistentHistogramAllocatorTest, StatisticsRecorderTest) {
   // Create a local StatisticsRecorder in which the newly created histogram
   // will be recorded.
   std::unique_ptr<StatisticsRecorder> local_sr =
-      CreateLocalStatisticsRecorder();
+      StatisticsRecorder::CreateTemporaryForTesting();
   EXPECT_EQ(0U, StatisticsRecorder::GetHistogramCount());
 
   HistogramBase* histogram = LinearHistogram::FactoryGet(

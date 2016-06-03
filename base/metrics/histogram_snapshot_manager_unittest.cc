@@ -68,11 +68,12 @@ class HistogramFlattenerDeltaRecorder : public HistogramFlattener {
 class HistogramSnapshotManagerTest : public testing::Test {
  protected:
   HistogramSnapshotManagerTest()
-      : histogram_snapshot_manager_(&histogram_flattener_delta_recorder_) {}
+      : statistics_recorder_(StatisticsRecorder::CreateTemporaryForTesting()),
+        histogram_snapshot_manager_(&histogram_flattener_delta_recorder_) {}
 
   ~HistogramSnapshotManagerTest() override {}
 
-  StatisticsRecorder statistics_recorder_;
+  std::unique_ptr<StatisticsRecorder> statistics_recorder_;
   HistogramFlattenerDeltaRecorder histogram_flattener_delta_recorder_;
   HistogramSnapshotManager histogram_snapshot_manager_;
 };

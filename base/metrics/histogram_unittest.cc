@@ -56,7 +56,7 @@ class HistogramTest : public testing::TestWithParam<bool> {
 
   void InitializeStatisticsRecorder() {
     DCHECK(!statistics_recorder_);
-    statistics_recorder_.reset(new StatisticsRecorder());
+    statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
   }
 
   void UninitializeStatisticsRecorder() {

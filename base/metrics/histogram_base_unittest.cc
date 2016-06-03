@@ -29,7 +29,7 @@ class HistogramBaseTest : public testing::Test {
     // It is necessary to fully destruct any existing StatisticsRecorder
     // before creating a new one.
     statistics_recorder_.reset();
-    statistics_recorder_.reset(new StatisticsRecorder());
+    statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
   }
 
   HistogramBase* GetCreationReportHistogram(const std::string& name) {

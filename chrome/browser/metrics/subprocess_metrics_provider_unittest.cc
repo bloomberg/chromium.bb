@@ -67,7 +67,7 @@ class SubprocessMetricsProviderTest : public testing::Test {
     provider_.MergeHistogramDeltas();
 
     // Create a dedicated StatisticsRecorder for this test.
-    test_recorder_.reset(new base::StatisticsRecorder());
+    test_recorder_ = base::StatisticsRecorder::CreateTemporaryForTesting();
 
     // Create a global allocator using a block of memory from the heap.
     base::GlobalHistogramAllocator::CreateWithLocalMemory(TEST_MEMORY_SIZE,
