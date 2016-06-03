@@ -94,10 +94,7 @@ class ChromeWebViewInternalShowContextMenuFunction
 
  protected:
   ~ChromeWebViewInternalShowContextMenuFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebViewInternalShowContextMenuFunction);
 };

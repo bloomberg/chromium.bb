@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
     // Show second popup in new window.
-    listener.Reply("");
+    listener.Reply("show another");
     frame_observer.Wait();
     EXPECT_TRUE(BrowserActionTestUtil(new_browser).HasPopup());
   }
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
 
   ResultCatcher catcher;
   // Return control to javascript to validate that opening a popup fails now.
-  listener.Reply("");
+  listener.Reply("show another");
   ASSERT_TRUE(catcher.GetNextResult()) << message_;
 }
 

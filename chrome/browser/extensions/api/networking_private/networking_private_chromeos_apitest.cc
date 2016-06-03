@@ -143,7 +143,8 @@ class TestListener : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& /* source */,
                const content::NotificationDetails& details) override {
-    const std::string& message = *content::Details<std::string>(details).ptr();
+    const std::string& message =
+        content::Details<std::pair<std::string, bool*>>(details).ptr()->first;
     if (message == message_)
       callback_.Run();
   }

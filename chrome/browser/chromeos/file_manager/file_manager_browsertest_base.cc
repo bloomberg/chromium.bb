@@ -229,10 +229,12 @@ class FileManagerTestListener : public content::NotificationObserver {
     entry.message = type != extensions::NOTIFICATION_EXTENSION_TEST_PASSED
                         ? *content::Details<std::string>(details).ptr()
                         : std::string();
-    entry.function =
-        type == extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE
-            ? content::Source<extensions::TestSendMessageFunction>(source).ptr()
-            : NULL;
+    if (type == extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE) {
+      entry.function =
+          content::Source<extensions::TestSendMessageFunction>(source).ptr();
+      *content::Details<std::pair<std::string, bool*>>(details).ptr()->second =
+          true;
+    }
     messages_.push_back(entry);
     base::MessageLoopForUI::current()->QuitWhenIdle();
   }
@@ -584,8 +586,10 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
     const base::DictionaryValue* message_dictionary = NULL;
     std::string name;
     if (!value || !value->GetAsDictionary(&message_dictionary) ||
-        !message_dictionary->GetString("name", &name))
+        !message_dictionary->GetString("name", &name)) {
+      entry.function->Reply(std::string());
       continue;
+    }
 
     std::string output;
     OnMessage(name, *message_dictionary, &output);

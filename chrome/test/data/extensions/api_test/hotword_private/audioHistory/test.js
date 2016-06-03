@@ -8,18 +8,18 @@ chrome.test.runTests([
         true,
         chrome.test.callbackPass(function(state) {
           if (state.success)
-            chrome.test.sendMessage("set AH: "+state.enabled+" success");
+            chrome.test.sendMessage("set AH True: "+state.enabled+" success");
           else
-            chrome.test.sendMessage("set AH: "+state.enabled+" failure");
+            chrome.test.sendMessage("set AH True: "+state.enabled+" failure");
         }));
     // Test with setting to false as well.
     chrome.hotwordPrivate.setAudioHistoryEnabled(
         false,
         chrome.test.callbackPass(function(state) {
           if (state.success)
-            chrome.test.sendMessage("set AH: "+state.enabled+" success");
+            chrome.test.sendMessage("set AH False: "+state.enabled+" success");
           else
-            chrome.test.sendMessage("set AH: "+state.enabled+" failure");
+            chrome.test.sendMessage("set AH False: "+state.enabled+" failure");
         }));
     chrome.hotwordPrivate.getAudioHistoryEnabled(chrome.test.callbackPass(
         function(state) {

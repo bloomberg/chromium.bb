@@ -78,7 +78,6 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
   }
 
   results_ = echo_api::GetRegistrationCode::Results::Create(result);
-  SendResponse(true);
 }
 
 bool EchoPrivateGetRegistrationCodeFunction::RunSync() {

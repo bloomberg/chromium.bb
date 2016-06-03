@@ -462,7 +462,8 @@ bool BookmarkManagerPrivateSortChildrenFunction::RunOnReady() {
   return true;
 }
 
-bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+BookmarkManagerPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> localized_strings(
       new base::DictionaryValue());
 
@@ -536,13 +537,7 @@ bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
-  SetResult(std::move(localized_strings));
-
-  // This is needed because unlike the rest of these functions, this class
-  // inherits from AsyncFunction directly, rather than BookmarkFunction.
-  SendResponse(true);
-
-  return true;
+  return RespondNow(OneArgument(std::move(localized_strings)));
 }
 
 bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {

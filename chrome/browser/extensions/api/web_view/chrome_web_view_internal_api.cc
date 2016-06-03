@@ -140,17 +140,15 @@ ChromeWebViewInternalShowContextMenuFunction::
     ~ChromeWebViewInternalShowContextMenuFunction() {
 }
 
-bool ChromeWebViewInternalShowContextMenuFunction::RunAsyncSafe(
-    WebViewGuest* guest) {
+ExtensionFunction::ResponseAction
+ChromeWebViewInternalShowContextMenuFunction::Run() {
   std::unique_ptr<webview::ShowContextMenu::Params> params(
       webview::ShowContextMenu::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // TODO(lazyboy): Actually implement filtering menu items.
-  guest->ShowContextMenu(params->request_id);
-
-  SendResponse(true);
-  return true;
+  guest_->ShowContextMenu(params->request_id);
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

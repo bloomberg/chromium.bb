@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(SetIconAPITest, Overview) {
       "    })\n"
       "  });\n"
       "});\n");
-  ExtensionTestMessageListener ready("ready", true);
+  ExtensionTestMessageListener ready("ready", false);
   const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
   ASSERT_TRUE(extension);
   const ExtensionAction* page_action =

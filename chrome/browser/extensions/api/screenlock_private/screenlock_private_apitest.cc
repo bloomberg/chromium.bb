@@ -80,8 +80,9 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    const std::string& content = *content::Details<std::string>(details).ptr();
-    if (content == kAttemptClickAuthMessage) {
+    const std::string& message =
+        content::Details<std::pair<std::string, bool*>>(details).ptr()->first;
+    if (message == kAttemptClickAuthMessage) {
       proximity_auth::ScreenlockBridge::Get()->lock_handler()->SetAuthType(
           test_account_id_,
           proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,

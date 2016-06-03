@@ -349,6 +349,7 @@ void AppWindowInteractiveTest::TestOuterBoundsHelper(
   launched_listener.Reply(frame_type);
   launched_listener.Reset();
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  launched_listener.Reply(std::string());
 
   AppWindow* window = GetFirstAppWindowForApp(app->id());
   gfx::Rect window_bounds;

@@ -204,7 +204,7 @@ void BluetoothSocketCreateFunction::Work() {
   bluetooth_socket::CreateInfo create_info;
   create_info.socket_id = AddSocket(socket);
   results_ = bluetooth_socket::Create::Results::Create(create_info);
-  AsyncWorkCompleted();
+  // AsyncWorkCompleted is called by AsyncWorkStart().
 }
 
 BluetoothSocketUpdateFunction::BluetoothSocketUpdateFunction() {}

@@ -174,7 +174,8 @@ void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
   SendResponse(true);
 }
 
-bool ActivityLogPrivateDeleteActivitiesFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+ActivityLogPrivateDeleteActivitiesFunction::Run() {
   std::unique_ptr<activity_log_private::DeleteActivities::Params> params(
       activity_log_private::DeleteActivities::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -187,20 +188,21 @@ bool ActivityLogPrivateDeleteActivitiesFunction::RunAsync() {
       action_ids.push_back(value);
   }
 
-  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
+  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
   DCHECK(activity_log);
   activity_log->RemoveActions(action_ids);
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ActivityLogPrivateDeleteDatabaseFunction::RunAsync() {
-  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
+ExtensionFunction::ResponseAction
+ActivityLogPrivateDeleteDatabaseFunction::Run() {
+  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
   DCHECK(activity_log);
   activity_log->DeleteDatabase();
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool ActivityLogPrivateDeleteUrlsFunction::RunAsync() {
+ExtensionFunction::ResponseAction ActivityLogPrivateDeleteUrlsFunction::Run() {
   std::unique_ptr<activity_log_private::DeleteUrls::Params> params(
       activity_log_private::DeleteUrls::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -214,10 +216,10 @@ bool ActivityLogPrivateDeleteUrlsFunction::RunAsync() {
     gurls.push_back(GURL(*it));
   }
 
-  ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
+  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
   DCHECK(activity_log);
   activity_log->RemoveURLs(gurls);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

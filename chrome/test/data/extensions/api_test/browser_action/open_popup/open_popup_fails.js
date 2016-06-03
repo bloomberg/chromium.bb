@@ -7,7 +7,9 @@
 // extension hides any open popups. After a popup is opened, we can assert that
 // a popup fails to open with this API.
 chrome.test.notifyPass();
-chrome.test.sendMessage('ready', function() {
+chrome.test.sendMessage('ready', function(reply) {
+  if (reply !== 'show another')
+    return;
   chrome.browserAction.openPopup(function(popupWindow2) {
     // This popup should fail to open.
     chrome.test.assertTrue(!popupWindow2);

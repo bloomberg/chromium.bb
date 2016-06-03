@@ -1259,7 +1259,7 @@ class PackagedAppTest : public ExtensionBrowserTest {
   }
 
   void RunTests(const std::string& extension_dirname) {
-    ExtensionTestMessageListener listener("PASS", true);
+    ExtensionTestMessageListener listener("PASS", false);
     LaunchTestingApp(extension_dirname);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }

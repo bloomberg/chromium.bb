@@ -138,7 +138,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 
     function->set_browser_context(browser()->profile());
     function->set_has_callback(true);
-    function->Run()->Execute();
+    function->RunWithValidation()->Execute();
   }
 
   std::string WaitForError(UIThreadExtensionFunction* function) {
@@ -1392,6 +1392,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->ignore_did_respond_for_testing();
   scoped_refptr<const Extension> extension(
       CreateExtension(SCOPES | AS_COMPONENT));
   func->set_extension(extension.get());
@@ -1403,6 +1404,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithNormalClientId) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->ignore_did_respond_for_testing();
   scoped_refptr<const Extension> extension(
       CreateExtension(CLIENT_ID | SCOPES | AS_COMPONENT));
   func->set_extension(extension.get());

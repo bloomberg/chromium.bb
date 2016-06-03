@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_message_filter.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
@@ -178,6 +179,9 @@ void UserGestureForTests::DecrementCount() {
 }  // namespace
 
 // static
+bool ExtensionFunction::ignore_all_did_respond_for_testing_do_not_use = false;
+
+// static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
   x->Destruct();
 }
@@ -228,8 +232,8 @@ ExtensionFunction::ExtensionFunction()
       histogram_value_(extensions::functions::UNKNOWN),
       source_tab_id_(-1),
       source_context_type_(Feature::UNSPECIFIED_CONTEXT),
-      source_process_id_(-1) {
-}
+      source_process_id_(-1),
+      did_respond_(false) {}
 
 ExtensionFunction::~ExtensionFunction() {
 }
@@ -379,6 +383,19 @@ void ExtensionFunction::Respond(ResponseValue result) {
   SendResponse(result->Apply());
 }
 
+bool ExtensionFunction::PreRunValidation(std::string* error) {
+  return true;
+}
+
+ExtensionFunction::ResponseAction ExtensionFunction::RunWithValidation() {
+  std::string error;
+  if (!PreRunValidation(&error)) {
+    DCHECK(!error.empty() || bad_message_);
+    return bad_message_ ? ValidationFailure(this) : RespondNow(Error(error));
+  }
+  return Run();
+}
+
 bool ExtensionFunction::ShouldSkipQuotaLimiting() const {
   return false;
 }
@@ -431,6 +448,14 @@ UIThreadExtensionFunction::UIThreadExtensionFunction()
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   if (dispatcher() && render_frame_host())
     dispatcher()->OnExtensionFunctionCompleted(extension());
+  // The extension function should always respond to avoid leaks in the
+  // renderer, dangling callbacks, etc. The exception is if the system is
+  // shutting down.
+  // TODO(devlin): Duplicate this check in IOThreadExtensionFunction. It's
+  // tricky because checking IsShuttingDown has to be called from the UI thread.
+  DCHECK(extensions::ExtensionsBrowserClient::Get()->IsShuttingDown() ||
+         did_respond_ || ignore_all_did_respond_for_testing_do_not_use)
+      << name_;
 }
 
 UIThreadExtensionFunction*
@@ -479,6 +504,8 @@ content::WebContents* UIThreadExtensionFunction::GetSenderWebContents() {
 }
 
 void UIThreadExtensionFunction::SendResponse(bool success) {
+  DCHECK(!did_respond_) << name_;
+  did_respond_ = true;
   if (delegate_)
     delegate_->OnSendResponse(this, success, bad_message_);
   else
@@ -523,6 +550,8 @@ void IOThreadExtensionFunction::Destruct() const {
 }
 
 void IOThreadExtensionFunction::SendResponse(bool success) {
+  DCHECK(!did_respond_) << name_;
+  did_respond_ = true;
   SendResponseImpl(success);
 }
 

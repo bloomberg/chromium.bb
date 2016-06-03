@@ -63,8 +63,9 @@ class TestLogFunction : public TestExtensionFunction {
   bool RunSafe() override;
 };
 
-class TestSendMessageFunction : public AsyncExtensionFunction {
+class TestSendMessageFunction : public UIThreadExtensionFunction {
  public:
+  TestSendMessageFunction();
   DECLARE_EXTENSION_FUNCTION("test.sendMessage", UNKNOWN)
 
   // Sends a reply back to the calling extension. Many extensions don't need
@@ -77,8 +78,13 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
  protected:
   ~TestSendMessageFunction() override;
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIExtensionFunction:
+  ResponseAction Run() override;
+
+  // Whether or not the function is currently waiting for a reply.
+  bool waiting_;
+
+  ResponseValue response_;
 };
 
 class TestGetConfigFunction : public TestExtensionFunction {

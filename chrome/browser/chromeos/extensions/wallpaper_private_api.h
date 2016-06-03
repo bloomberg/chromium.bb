@@ -194,7 +194,7 @@ class WallpaperPrivateSetCustomWallpaperLayoutFunction
 };
 
 class WallpaperPrivateMinimizeInactiveWindowsFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.minimizeInactiveWindows",
                              WALLPAPERPRIVATE_MINIMIZEINACTIVEWINDOWS)
@@ -203,13 +203,11 @@ class WallpaperPrivateMinimizeInactiveWindowsFunction
 
  protected:
   ~WallpaperPrivateMinimizeInactiveWindowsFunction() override;
-
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class WallpaperPrivateRestoreMinimizedWindowsFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.restoreMinimizedWindows",
                              WALLPAPERPRIVATE_RESTOREMINIMIZEDWINDOWS)
@@ -218,9 +216,7 @@ class WallpaperPrivateRestoreMinimizedWindowsFunction
 
  protected:
   ~WallpaperPrivateRestoreMinimizedWindowsFunction() override;
-
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {

@@ -310,7 +310,7 @@ var testPendingCallback = function() {
     chrome.test.assertEq(0, result, "failed to connect");
     console.log("Socket connect: result=" + result, chrome.runtime.lastError);
 
-    console.log("calling read with readCB2 callback");
+    console.log("calling read with readCB1 callback");
     if (protocol == "tcp")
       chrome.socket.read(socketId, readCB1);
     else
@@ -330,7 +330,7 @@ var testPendingCallback = function() {
     chrome.test.assertEq(0, result, "failed to connect");
     console.log("Socket connect: result=" + result, chrome.runtime.lastError);
 
-    console.log("calling read with readCB1 callback");
+    console.log("calling read with readCB2 callback");
     if (protocol == "tcp")
       chrome.socket.read(socketId, readCB2);
     else
@@ -353,10 +353,9 @@ var testPendingCallback = function() {
   function readCB1(readInfo) {
     console.log("Socket read CB1: result=" + readInfo.resultCode,
         chrome.runtime.lastError);
-
-    if (readInfo.resultCode < 0) {
-      chrome.test.fail("Error reading from socket: " + readInfo.resultCode);
-    }
+    // We disconnect the socket right after calling read(), so behavior here
+    // is undefined.
+    // TODO(devlin): Why do we do that? What are we trying to do?
   }
 
   // Second callback, for read call after re-connect

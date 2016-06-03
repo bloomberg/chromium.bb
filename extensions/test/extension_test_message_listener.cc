@@ -96,9 +96,14 @@ void ExtensionTestMessageListener::Observe(
   // We should have an empty message if we're not already satisfied.
   CHECK(message_.empty());
 
-  const std::string& message = *content::Details<std::string>(details).ptr();
+  std::pair<std::string, bool*>* message_details =
+      content::Details<std::pair<std::string, bool*>>(details).ptr();
+  const std::string& message = message_details->first;
   if (message == expected_message_ || wait_for_any_message_ ||
       (!failure_message_.empty() && message == failure_message_)) {
+    // We always reply to the message we were waiting for, even if it's just an
+    // empty string.
+    *message_details->second = true;
     message_ = message;
     satisfied_ = true;
     failed_ = (message_ == failure_message_);

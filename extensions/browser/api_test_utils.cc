@@ -234,7 +234,7 @@ bool RunFunction(
 
   function->set_browser_context(context);
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
-  function->Run()->Execute();
+  function->RunWithValidation()->Execute();
   response_delegate.WaitForResponse();
 
   EXPECT_TRUE(response_delegate.HasResponse());

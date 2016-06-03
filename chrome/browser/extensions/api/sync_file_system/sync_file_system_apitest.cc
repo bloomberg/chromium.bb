@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/test/base/test_switches.h"
+#include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -141,6 +143,10 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
   // Mock a pending remote change to be synced.
+  // We ignore the did_respond trait on ExtensionFunction because we mock out
+  // the service, which results in the callback never being called. Yuck.
+  base::AutoReset<bool> ignore_did_respond(
+      &ExtensionFunction::ignore_all_did_respond_for_testing_do_not_use, true);
   GURL origin;
   EXPECT_CALL(*mock_remote_service(), RegisterOrigin(_, _))
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
@@ -158,6 +164,10 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
   // Mock a pending remote change to be synced.
+  // We ignore the did_respond trait on ExtensionFunction because we mock out
+  // the service, which results in the callback never being called. Yuck.
+  base::AutoReset<bool> ignore_did_respond(
+      &ExtensionFunction::ignore_all_did_respond_for_testing_do_not_use, true);
   GURL origin;
   EXPECT_CALL(*mock_remote_service(), RegisterOrigin(_, _))
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));

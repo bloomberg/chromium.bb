@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, GetRemovedService) {
   event_router()->GattDiscoveryCompleteForService(mock_adapter_,
                                                   service0_.get());
 
-  ExtensionTestMessageListener get_service_success_listener(true);
+  ExtensionTestMessageListener get_service_success_listener(false);
   EXPECT_TRUE(get_service_success_listener.WaitUntilSatisfied());
   ASSERT_EQ("getServiceSuccess", get_service_success_listener.message())
       << get_service_success_listener.message();
@@ -1234,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
       .Times(1)
       .WillOnce(SaveArg<0>(&connect_callback));
 
-  ExtensionTestMessageListener listener(true);
+  ExtensionTestMessageListener listener(false);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/connect_in_progress")));
 

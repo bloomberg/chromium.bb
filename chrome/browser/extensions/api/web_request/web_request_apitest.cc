@@ -278,8 +278,8 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
   catcher_incognito.RestrictToBrowserContext(
       browser()->profile()->GetOffTheRecordProfile());
 
-  ExtensionTestMessageListener listener("done", true);
-  ExtensionTestMessageListener listener_incognito("done_incognito", true);
+  ExtensionTestMessageListener listener("done", false);
+  ExtensionTestMessageListener listener_incognito("done_incognito", false);
 
   int load_extension_flags = kFlagNone;
   if (load_extension_with_incognito_permission)
@@ -390,8 +390,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Wait for rules to be set up.
-  ExtensionTestMessageListener listener("done", true);
-  ExtensionTestMessageListener listener_incognito("done_incognito", true);
+  ExtensionTestMessageListener listener("done", false);
+  ExtensionTestMessageListener listener_incognito("done_incognito", false);
 
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("webrequest_reload"), kFlagEnableIncognito);
@@ -403,8 +403,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
 
   // Reload extension and wait for rules to be set up again. This should not
   // crash the browser.
-  ExtensionTestMessageListener listener2("done", true);
-  ExtensionTestMessageListener listener_incognito2("done_incognito", true);
+  ExtensionTestMessageListener listener2("done", false);
+  ExtensionTestMessageListener listener_incognito2("done_incognito", false);
 
   ReloadExtension(extension->id());
 
@@ -418,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   ExtensionTestMessageListener listener_main2("web_request_status2", true);
 
   ExtensionTestMessageListener listener_app("app_done", false);
-  ExtensionTestMessageListener listener_extension("extension_done", true);
+  ExtensionTestMessageListener listener_extension("extension_done", false);
 
   // Set up webRequest listener
   ASSERT_TRUE(LoadExtension(

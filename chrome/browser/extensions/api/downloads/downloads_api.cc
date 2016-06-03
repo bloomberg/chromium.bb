@@ -1270,7 +1270,7 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
       return;
     }
     error_ = errors::kInvisibleContext;
-    SendResponse(error_.empty());
+    SendResponse(false);
     return;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
@@ -1285,7 +1285,7 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
   // DownloadDangerPrompt deletes itself
   if (on_prompt_created_ && !on_prompt_created_->is_null())
     on_prompt_created_->Run(prompt);
-  SendResponse(error_.empty());
+  // Function finishes in DangerPromptCallback().
 }
 
 void DownloadsAcceptDangerFunction::DangerPromptCallback(

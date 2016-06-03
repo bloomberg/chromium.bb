@@ -197,7 +197,8 @@ class BookmarkManagerPrivateSortChildrenFunction
   bool RunOnReady() override;
 };
 
-class BookmarkManagerPrivateGetStringsFunction : public AsyncExtensionFunction {
+class BookmarkManagerPrivateGetStringsFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.getStrings",
                              BOOKMARKMANAGERPRIVATE_GETSTRINGS)
@@ -205,8 +206,8 @@ class BookmarkManagerPrivateGetStringsFunction : public AsyncExtensionFunction {
  protected:
   ~BookmarkManagerPrivateGetStringsFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 };
 
 class BookmarkManagerPrivateStartDragFunction

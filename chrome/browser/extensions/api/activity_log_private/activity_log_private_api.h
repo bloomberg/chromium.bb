@@ -81,7 +81,7 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
 
 // The implementation of activityLogPrivate.deleteActivities
 class ActivityLogPrivateDeleteActivitiesFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteActivities",
                              ACTIVITYLOGPRIVATE_DELETEACTIVITIES)
@@ -90,12 +90,12 @@ class ActivityLogPrivateDeleteActivitiesFunction
   ~ActivityLogPrivateDeleteActivitiesFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 // The implementation of activityLogPrivate.deleteDatabase
 class ActivityLogPrivateDeleteDatabaseFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteDatabase",
                              ACTIVITYLOGPRIVATE_DELETEDATABASE)
@@ -104,12 +104,11 @@ class ActivityLogPrivateDeleteDatabaseFunction
   ~ActivityLogPrivateDeleteDatabaseFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 // The implementation of activityLogPrivate.deleteUrls
-class ActivityLogPrivateDeleteUrlsFunction
-    : public ChromeAsyncExtensionFunction {
+class ActivityLogPrivateDeleteUrlsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteUrls",
                              ACTIVITYLOGPRIVATE_DELETEURLS)
@@ -118,7 +117,7 @@ class ActivityLogPrivateDeleteUrlsFunction
   ~ActivityLogPrivateDeleteUrlsFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

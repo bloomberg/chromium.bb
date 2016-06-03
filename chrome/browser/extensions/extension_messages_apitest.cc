@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Messaging) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingCrash) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ExtensionTestMessageListener ready_to_crash("ready_to_crash", true);
+  ExtensionTestMessageListener ready_to_crash("ready_to_crash", false);
   ASSERT_TRUE(LoadExtension(
           test_data_dir_.AppendASCII("messaging/connect_crash")));
   ui_test_utils::NavigateToURL(

@@ -78,27 +78,47 @@ bool TestLogFunction::RunSafe() {
   return true;
 }
 
-bool TestSendMessageFunction::RunAsync() {
+TestSendMessageFunction::TestSendMessageFunction() : waiting_(false) {}
+
+ExtensionFunction::ResponseAction TestSendMessageFunction::Run() {
   std::unique_ptr<PassMessage::Params> params(
       PassMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  bool listener_will_respond = false;
+  std::pair<std::string, bool*> details(params->message,
+                                        &listener_will_respond);
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
       content::Source<TestSendMessageFunction>(this),
-      content::Details<std::string>(&params->message));
-  return true;
+      content::Details<std::pair<std::string, bool*>>(&details));
+  // If the listener is not intending to respond, or has already responded,
+  // finish the function.
+  if (!listener_will_respond || response_.get()) {
+    if (!response_) {
+      response_ =
+          OneArgument(base::MakeUnique<base::StringValue>(std::string()));
+    }
+    return RespondNow(std::move(response_));
+  }
+  // Otherwise, wait for a reply.
+  waiting_ = true;
+  return RespondLater();
 }
 
 TestSendMessageFunction::~TestSendMessageFunction() {}
 
 void TestSendMessageFunction::Reply(const std::string& message) {
-  SetResult(base::MakeUnique<base::StringValue>(message));
-  SendResponse(true);
+  DCHECK(!response_);
+  response_ = OneArgument(base::MakeUnique<base::StringValue>(message));
+  if (waiting_)
+    Respond(std::move(response_));
 }
 
 void TestSendMessageFunction::ReplyWithError(const std::string& error) {
-  error_ = error;
-  SendResponse(false);
+  DCHECK(!response_);
+  response_ = Error(error);
+  if (waiting_)
+    Respond(std::move(response_));
 }
 
 // static

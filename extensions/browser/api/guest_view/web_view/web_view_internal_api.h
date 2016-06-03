@@ -23,12 +23,12 @@ namespace extensions {
 // An abstract base class for async webview APIs. It does a process ID check
 // in RunAsync, and then calls RunAsyncSafe which must be overriden by all
 // subclasses.
-class WebViewInternalExtensionFunction : public AsyncExtensionFunction {
+class LegacyWebViewInternalExtensionFunction : public AsyncExtensionFunction {
  public:
-  WebViewInternalExtensionFunction() {}
+  LegacyWebViewInternalExtensionFunction() {}
 
  protected:
-  ~WebViewInternalExtensionFunction() override {}
+  ~LegacyWebViewInternalExtensionFunction() override {}
 
   // ExtensionFunction implementation.
   bool RunAsync() final;
@@ -37,8 +37,19 @@ class WebViewInternalExtensionFunction : public AsyncExtensionFunction {
   virtual bool RunAsyncSafe(WebViewGuest* guest) = 0;
 };
 
+class WebViewInternalExtensionFunction : public UIThreadExtensionFunction {
+ public:
+  WebViewInternalExtensionFunction() {}
+
+ protected:
+  ~WebViewInternalExtensionFunction() override {}
+  bool PreRunValidation(std::string* error) override;
+
+  WebViewGuest* guest_ = nullptr;
+};
+
 class WebViewInternalCaptureVisibleRegionFunction
-    : public WebViewInternalExtensionFunction,
+    : public LegacyWebViewInternalExtensionFunction,
       public WebContentsCaptureClient {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
@@ -49,7 +60,7 @@ class WebViewInternalCaptureVisibleRegionFunction
   ~WebViewInternalCaptureVisibleRegionFunction() override {}
 
  private:
-  // WebViewInternalExtensionFunction implementation.
+  // LegacyWebViewInternalExtensionFunction implementation.
   bool RunAsyncSafe(WebViewGuest* guest) override;
 
   // extensions::WebContentsCaptureClient:
@@ -72,10 +83,7 @@ class WebViewInternalNavigateFunction
 
  protected:
   ~WebViewInternalNavigateFunction() override {}
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalNavigateFunction);
 };
@@ -195,15 +203,13 @@ class WebViewInternalSetNameFunction : public WebViewInternalExtensionFunction {
 
  protected:
   ~WebViewInternalSetNameFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetNameFunction);
 };
 
-class WebViewInternalSetAllowTransparencyFunction :
-    public WebViewInternalExtensionFunction {
+class WebViewInternalSetAllowTransparencyFunction
+    : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setAllowTransparency",
                              WEBVIEWINTERNAL_SETALLOWTRANSPARENCY);
@@ -212,9 +218,7 @@ class WebViewInternalSetAllowTransparencyFunction :
 
  protected:
   ~WebViewInternalSetAllowTransparencyFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetAllowTransparencyFunction);
 };
@@ -229,9 +233,7 @@ class WebViewInternalSetAllowScalingFunction
 
  protected:
   ~WebViewInternalSetAllowScalingFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetAllowScalingFunction);
 };
@@ -245,9 +247,7 @@ class WebViewInternalSetZoomFunction : public WebViewInternalExtensionFunction {
 
  protected:
   ~WebViewInternalSetZoomFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetZoomFunction);
 };
@@ -261,9 +261,7 @@ class WebViewInternalGetZoomFunction : public WebViewInternalExtensionFunction {
 
  protected:
   ~WebViewInternalGetZoomFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalGetZoomFunction);
 };
@@ -278,9 +276,7 @@ class WebViewInternalSetZoomModeFunction
 
  protected:
   ~WebViewInternalSetZoomModeFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetZoomModeFunction);
 };
@@ -295,27 +291,26 @@ class WebViewInternalGetZoomModeFunction
 
  protected:
   ~WebViewInternalGetZoomModeFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalGetZoomModeFunction);
 };
 
-class WebViewInternalFindFunction : public WebViewInternalExtensionFunction {
+class WebViewInternalFindFunction
+    : public LegacyWebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.find", WEBVIEWINTERNAL_FIND);
 
   WebViewInternalFindFunction();
 
   // Exposes SendResponse() for use by WebViewInternalFindHelper.
-  using WebViewInternalExtensionFunction::SendResponse;
+  using LegacyWebViewInternalExtensionFunction::SendResponse;
 
  protected:
   ~WebViewInternalFindFunction() override;
 
  private:
-  // WebViewInternalExtensionFunction implementation.
+  // LegacyWebViewInternalExtensionFunction implementation.
   bool RunAsyncSafe(WebViewGuest* guest) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalFindFunction);
@@ -331,10 +326,7 @@ class WebViewInternalStopFindingFunction
 
  protected:
   ~WebViewInternalStopFindingFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalStopFindingFunction);
 };
@@ -349,9 +341,7 @@ class WebViewInternalLoadDataWithBaseUrlFunction
 
  protected:
   ~WebViewInternalLoadDataWithBaseUrlFunction() override;
-
- private:
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalLoadDataWithBaseUrlFunction);
 };
@@ -364,10 +354,7 @@ class WebViewInternalGoFunction : public WebViewInternalExtensionFunction {
 
  protected:
   ~WebViewInternalGoFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalGoFunction);
 };
@@ -380,10 +367,7 @@ class WebViewInternalReloadFunction : public WebViewInternalExtensionFunction {
 
  protected:
   ~WebViewInternalReloadFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalReloadFunction);
 };
@@ -398,10 +382,7 @@ class WebViewInternalSetPermissionFunction
 
  protected:
   ~WebViewInternalSetPermissionFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetPermissionFunction);
 };
@@ -416,10 +397,7 @@ class WebViewInternalOverrideUserAgentFunction
 
  protected:
   ~WebViewInternalOverrideUserAgentFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalOverrideUserAgentFunction);
 };
@@ -432,10 +410,7 @@ class WebViewInternalStopFunction : public WebViewInternalExtensionFunction {
 
  protected:
   ~WebViewInternalStopFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalStopFunction);
 };
@@ -450,16 +425,13 @@ class WebViewInternalTerminateFunction
 
  protected:
   ~WebViewInternalTerminateFunction() override;
-
- private:
-  // WebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalTerminateFunction);
 };
 
 class WebViewInternalClearDataFunction
-    : public WebViewInternalExtensionFunction {
+    : public LegacyWebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.clearData",
                              WEBVIEWINTERNAL_CLEARDATA);
@@ -470,7 +442,7 @@ class WebViewInternalClearDataFunction
   ~WebViewInternalClearDataFunction() override;
 
  private:
-  // WebViewInternalExtensionFunction implementation.
+  // LegacyWebViewInternalExtensionFunction implementation.
   bool RunAsyncSafe(WebViewGuest* guest) override;
 
   uint32_t GetRemovalMask();

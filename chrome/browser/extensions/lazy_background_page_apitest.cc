@@ -576,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   // the event before proceeding with the test.  This allows the regular page
   // to test that the event page received the event, which makes the pass/fail
   // logic simpler.
-  ExtensionTestMessageListener event_page_ready("ready", true);
+  ExtensionTestMessageListener event_page_ready("ready", false);
 
   // Send an event by making a bookmark.
   BookmarkModel* bookmark_model =

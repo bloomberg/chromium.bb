@@ -135,6 +135,9 @@ void UDPSocketEventDispatcher::ReceiveCallback(
   } else if (bytes_read == net::ERR_IO_PENDING) {
     // This happens when resuming a socket which already had an
     // active "recv" callback.
+  } else if (bytes_read == net::ERR_CONNECTION_CLOSED) {
+    // This happens when the socket closes, which is expected since we
+    // continually add a receive listener in the success block above.
   } else {
     // Dispatch "onReceiveError" event but don't start another read to avoid
     // potential infinite reads if we have a persistent network error.

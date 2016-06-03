@@ -725,7 +725,6 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
   wallpaper_manager->GetLoggedInUserWallpaperInfo(&info);
   if (info.type != user_manager::User::CUSTOMIZED) {
     SetError("Only custom wallpaper can change layout.");
-    SendResponse(false);
     return false;
   }
   info.layout = wallpaper_api_util::GetLayoutEnum(
@@ -751,10 +750,11 @@ WallpaperPrivateMinimizeInactiveWindowsFunction::
     ~WallpaperPrivateMinimizeInactiveWindowsFunction() {
 }
 
-bool WallpaperPrivateMinimizeInactiveWindowsFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+WallpaperPrivateMinimizeInactiveWindowsFunction::Run() {
   WindowStateManager::MinimizeInactiveWindows(
       user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-  return true;
+  return RespondNow(NoArguments());
 }
 
 WallpaperPrivateRestoreMinimizedWindowsFunction::
@@ -765,10 +765,11 @@ WallpaperPrivateRestoreMinimizedWindowsFunction::
     ~WallpaperPrivateRestoreMinimizedWindowsFunction() {
 }
 
-bool WallpaperPrivateRestoreMinimizedWindowsFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+WallpaperPrivateRestoreMinimizedWindowsFunction::Run() {
   WindowStateManager::RestoreWindows(
       user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-  return true;
+  return RespondNow(NoArguments());
 }
 
 WallpaperPrivateGetThumbnailFunction::WallpaperPrivateGetThumbnailFunction() {
@@ -791,7 +792,6 @@ bool WallpaperPrivateGetThumbnailFunction::RunAsync() {
   } else {
     if (!IsOEMDefaultWallpaper()) {
       SetError("No OEM wallpaper.");
-      SendResponse(false);
       return false;
     }
 

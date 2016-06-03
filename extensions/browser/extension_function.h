@@ -65,6 +65,18 @@ class Sender;
 #define EXTENSION_FUNCTION_VALIDATE(test) CHECK(test)
 #endif  // NDEBUG
 
+#ifdef NDEBUG
+#define EXTENSION_FUNCTION_PRERUN_VALIDATE(test) \
+  do {                                           \
+    if (!(test)) {                               \
+      this->bad_message_ = true;                 \
+      return false;                              \
+    }                                            \
+  } while (0)
+#else  // NDEBUG
+#define EXTENSION_FUNCTION_PRERUN_VALIDATE(test) CHECK(test)
+#endif  // NDEBUG
+
 #define EXTENSION_FUNCTION_ERROR(error) \
   do {                                  \
     error_ = error;                     \
@@ -156,6 +168,16 @@ class ExtensionFunction
     ScopedUserGestureForTests();
     ~ScopedUserGestureForTests();
   };
+
+  // Called before Run() in order to perform a common verification check so that
+  // APIs subclassing this don't have to roll their own RunSafe() variants.
+  // If this returns false, then Run() is never called, and the function
+  // responds immediately with an error (note that error must be non-empty in
+  // this case). If this returns true, execution continues on to Run().
+  virtual bool PreRunValidation(std::string* error);
+
+  // Runs the extension function if PreRunValidation() succeeds.
+  ResponseAction RunWithValidation();
 
   // Runs the function and returns the action to take when the caller is ready
   // to respond.
@@ -287,6 +309,14 @@ class ExtensionFunction
   int source_process_id() const {
     return source_process_id_;
   }
+
+  // Sets did_respond_ to true so that the function won't DCHECK if it never
+  // sends a response. Typically, this shouldn't be used, even in testing. It's
+  // only for when you want to test functionality that doesn't exercise the
+  // Run() aspect of an extension function.
+  void ignore_did_respond_for_testing() { did_respond_ = true; }
+  // Same as above, but global. Yuck. Do not add any more uses of this.
+  static bool ignore_all_did_respond_for_testing_do_not_use;
 
  protected:
   friend struct ExtensionFunctionDeleteTraits;
@@ -438,6 +468,9 @@ class ExtensionFunction
   // The process ID of the page that triggered this function call, or -1
   // if unknown.
   int source_process_id_;
+
+  // Whether this function has responded.
+  bool did_respond_;
 
  private:
   base::ElapsedTimer timer_;
