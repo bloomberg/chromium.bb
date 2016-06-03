@@ -43,6 +43,9 @@ public class ExternalNavigationParams {
     /** Whether this navigation happens in main frame. */
     private final boolean mIsMainFrame;
 
+    /** Whether this navigation happens in a WebAPK. */
+    private final boolean mIsWebApk;
+
     /** Whether this navigation is launched by user gesture. */
     private final boolean mHasUserGesture;
 
@@ -55,7 +58,8 @@ public class ExternalNavigationParams {
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
             TabRedirectHandler redirectHandler, Tab tab, boolean openInNewTab,
-            boolean isBackgroundTabNavigation, boolean isMainFrame, boolean hasUserGesture,
+            boolean isBackgroundTabNavigation, boolean isMainFrame, boolean isWebApk,
+            boolean hasUserGesture,
             boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
         mUrl = url;
         mIsIncognito = isIncognito;
@@ -68,6 +72,7 @@ public class ExternalNavigationParams {
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
         mIsMainFrame = isMainFrame;
+        mIsWebApk = isWebApk;
         mHasUserGesture = hasUserGesture;
         mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent =
                 shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
@@ -131,6 +136,11 @@ public class ExternalNavigationParams {
         return mIsMainFrame;
     }
 
+    /** @return Whether this navigation happens in a WebAPK. */
+    public boolean isWebApk() {
+        return mIsWebApk;
+    }
+
     /** @return Whether this navigation is launched by user gesture. */
     public boolean hasUserGesture() {
         return mHasUserGesture;
@@ -177,6 +187,9 @@ public class ExternalNavigationParams {
 
         /** Whether this navigation happens in main frame. */
         private boolean mIsMainFrame;
+
+        /** Whether this navigation happens in a WebAPK. */
+        private boolean mIsWebApk;
 
         /** Whether this navigation is launched by user gesture. */
         private boolean mHasUserGesture;
@@ -237,6 +250,12 @@ public class ExternalNavigationParams {
             return this;
         }
 
+        /** Sets whether this navigation happens in a WebAPK. */
+        public Builder setIsWebApk(boolean v) {
+            mIsWebApk = v;
+            return this;
+        }
+
         /** Sets whether this navigation happens in main frame. */
         public Builder setHasUserGesture(boolean v) {
             mHasUserGesture = v;
@@ -254,8 +273,8 @@ public class ExternalNavigationParams {
         /** @return A fully constructed {@link ExternalNavigationParams} object. */
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
-                    mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler,
-                    mTab, mOpenInNewTab, mIsBackgroundTabNavigation, mIsMainFrame,
+                    mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler, mTab,
+                    mOpenInNewTab, mIsBackgroundTabNavigation, mIsMainFrame, mIsWebApk,
                     mHasUserGesture, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
         }
     }

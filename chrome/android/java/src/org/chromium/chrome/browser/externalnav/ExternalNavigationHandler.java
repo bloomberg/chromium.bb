@@ -347,6 +347,11 @@ public class ExternalNavigationHandler {
         // startActivityIfNeeded or startActivity.
         if (!isExternalProtocol) {
             if (!mDelegate.isSpecializedHandlerAvailable(resolvingInfos)) {
+                if (params.isWebApk()) {
+                    intent.setPackage(mDelegate.getPackageName());
+                    mDelegate.startActivity(intent);
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                }
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             } else if (params.getReferrerUrl() != null && (isLink || isFormSubmit)) {
                 // Current URL has at least one specialized handler available. For navigations

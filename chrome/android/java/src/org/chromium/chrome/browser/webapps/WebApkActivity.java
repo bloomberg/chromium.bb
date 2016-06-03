@@ -9,8 +9,12 @@ import android.content.Intent;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.AppBannerManager;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabRedirectHandler;
+import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
@@ -48,6 +52,22 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected TabDelegateFactory createTabDelegateFactory() {
         return new WebappDelegateFactory(this) {
+            @Override
+            public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
+                return new InterceptNavigationDelegateImpl(tab) {
+                    @Override
+                    public ExternalNavigationParams.Builder buildExternalNavigationParams(
+                            NavigationParams navigationParams,
+                            TabRedirectHandler tabRedirectHandler, boolean shouldCloseTab) {
+                        ExternalNavigationParams.Builder builder =
+                                super.buildExternalNavigationParams(
+                                        navigationParams, tabRedirectHandler, shouldCloseTab);
+                        builder.setIsWebApk(true);
+                        return builder;
+                    }
+                };
+            }
+
             @Override
             public AppBannerManager createAppBannerManager(Tab tab) {
                 // Do not show app banners for WebAPKs regardless of the current page URL.

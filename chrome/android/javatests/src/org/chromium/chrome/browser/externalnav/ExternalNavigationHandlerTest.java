@@ -39,9 +39,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     // Expectations
     private static final int IGNORE = 0x0;
     private static final int START_INCOGNITO = 0x1;
-    private static final int START_ACTIVITY = 0x2;
+    private static final int START_CHROME = 0x2;
     private static final int START_FILE = 0x4;
-    private static final int INTENT_SANITIZATION_EXCEPTION = 0x8;
+    private static final int START_OTHER_ACTIVITY = 0x8;
+    private static final int INTENT_SANITIZATION_EXCEPTION = 0x10;
 
     private static final String SEARCH_RESULT_URL_FOR_TOM_HANKS =
             "https://www.google.com/search?q=tom+hanks";
@@ -104,7 +105,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
         checkUrl("tel:012345678")
                 .withReferrer("chrome://about")
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -123,11 +125,13 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
         checkUrl("http://youtube.com://")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         // If the page matches the referrer, then continue loading in Chrome.
         checkUrl("http://youtube.com://")
@@ -141,7 +145,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .withReferrer("http://google.com")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         // It doesn't make sense to allow intent picker without redirect, since form data
         // is not encoded in the intent (although, in theory, it could be passed in as
@@ -182,10 +187,12 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     public void testPageTransitionType() {
         // Non-link page transition type are ignored.
         checkUrl("http://youtube.com/")
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
         checkUrl("http://youtube.com/")
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         // http://crbug.com/143118 - Don't show the picker for directly typed URLs, unless
         // the URL results in a redirect.
@@ -205,7 +212,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         checkUrl("wtai://wp/mc;0123456789")
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_ACTIVITY | INTENT_SANITIZATION_EXCEPTION);
+                        START_OTHER_ACTIVITY | INTENT_SANITIZATION_EXCEPTION);
 
         // These two cases are currently unimplemented.
         checkUrl("wtai://wp/sd;0123456789")
@@ -224,7 +231,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     @SmallTest
     public void testExternalUri() {
         checkUrl("tel:012345678")
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -233,7 +241,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.TYPED)
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         // http://crbug.com/143118
         checkUrl("market://1234")
@@ -254,7 +263,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         checkUrl("http://youtube.com/")
                 .withPageTransition(transitionTypeIncomingIntent)
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -264,12 +274,13 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         String urlWithSel = "intent:wtai://wp/#Intent;SEL;action=android.settings.SETTINGS;"
                 + "component=package/class;end";
 
-        checkUrl(url)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+        checkUrl(url).expecting(
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
 
         // http://crbug.com/370399
         checkUrl(urlWithSel)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -316,7 +327,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         // Do not ignore if a new intent cannot be handled by Chrome.
         redirectHandler.updateIntent(fooIntent);
@@ -326,7 +338,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -356,7 +369,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .withPageTransition(transTypeLinkFromIntent)
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -366,7 +380,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         checkUrl(INTENT_URL_WITH_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         Intent invokedIntent = mDelegate.startActivityIntent;
         assertEquals(IMDB_APP_INTENT_FOR_TOM_HANKS, invokedIntent.getData().toString());
@@ -431,7 +446,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         checkUrl(INTENT_URL_WITH_JAVASCRIPT_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         Intent invokedIntent = mDelegate.startActivityIntent;
         assertTrue(invokedIntent.getData().toString().startsWith("market://"));
@@ -550,7 +566,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         mDelegate.setIsChromeAppInForeground(false);
         checkUrl("http://youtube.com/")
                 .withChromeAppInForegroundRequired(false)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -590,7 +607,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     public void testSameDomainDifferentApps() {
         checkUrl(CALENDAR_URL)
                 .withReferrer(KEEP_URL)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @SmallTest
@@ -615,7 +633,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .withReferrer(referrer)
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
         assertEquals(Uri.parse(referrer),
                 mDelegate.startActivityIntent.getParcelableExtra(Intent.EXTRA_REFERRER));
         assertEquals(1, mDelegate.startActivityIntent.getIntExtra(
@@ -694,7 +713,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         checkUrl("sms:+012345678?body=hello%20there")
                 .withReferrer(referer)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         assertNotNull(mDelegate.startActivityIntent);
         assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
@@ -708,7 +728,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         checkUrl("sms:+012345678?body=hello%20there")
                 .withReferrer(referer)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         assertNotNull(mDelegate.startActivityIntent);
         assertNull(mDelegate.startActivityIntent.getPackage());
@@ -721,12 +742,23 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         checkUrl("intent://012345678?body=hello%20there/#Intent;scheme=sms;end")
                 .withReferrer(referer)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
 
         assertNotNull(mDelegate.startActivityIntent);
         assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
     }
 
+    /**
+     * Test that tapping on a link which is outside of the referrer Web APK's scope brings the
+     * user back to Chrome.
+     */
+    @SmallTest
+    public void testLeaveWebApk_LinkOutOfScope() {
+        checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .withIsWebApk(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_CHROME);
+    }
 
     private static ResolveInfo newResolveInfo(String packageName, String name) {
         ActivityInfo ai = new ActivityInfo();
@@ -918,11 +950,17 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         private boolean mIsRedirect;
         private boolean mChromeAppInForegroundRequired = true;
         private boolean mIsBackgroundTabNavigation;
+        private boolean mIsWebApk;
         private boolean mHasUserGesture;
         private TabRedirectHandler mRedirectHandler;
 
         private ExternalNavigationTestParams(String url) {
             mUrl = url;
+        }
+
+        public ExternalNavigationTestParams withIsWebApk(boolean isWebApk) {
+            mIsWebApk = isWebApk;
+            return this;
         }
 
         public ExternalNavigationTestParams withReferrer(String referrerUrl) {
@@ -970,9 +1008,13 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         public void expecting(OverrideUrlLoadingResult expectedOverrideResult,
                 int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
-            boolean expectStartActivity = (otherExpectation & START_ACTIVITY) != 0;
+            boolean expectStartActivity =
+                    (otherExpectation & (START_CHROME | START_OTHER_ACTIVITY)) != 0;
+            boolean expectStartChrome = (otherExpectation & START_CHROME) != 0;
+            boolean expectStartOtherActivity = (otherExpectation & START_OTHER_ACTIVITY) != 0;
             boolean expectStartFile = (otherExpectation & START_FILE) != 0;
-            boolean expectSaneIntent = (otherExpectation & INTENT_SANITIZATION_EXCEPTION) == 0;
+            boolean expectSaneIntent = expectStartOtherActivity
+                    && (otherExpectation & INTENT_SANITIZATION_EXCEPTION) == 0;
 
             mDelegate.reset();
 
@@ -983,14 +1025,23 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                     .setRedirectHandler(mRedirectHandler)
                     .setIsBackgroundTabNavigation(mIsBackgroundTabNavigation)
                     .setIsMainFrame(true)
+                    .setIsWebApk(mIsWebApk)
                     .setHasUserGesture(mHasUserGesture)
                     .build();
             OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
-            boolean startActivityCalled = mDelegate.startActivityIntent != null;
+            boolean startActivityCalled = false;
+            boolean startChromeCalled = false;
+            if (mDelegate.startActivityIntent != null) {
+                startActivityCalled = true;
+                String packageName = mDelegate.startActivityIntent.getPackage();
+                startChromeCalled =
+                        packageName != null && packageName.equals(mDelegate.getPackageName());
+            }
 
             assertEquals(expectedOverrideResult, result);
             assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
             assertEquals(expectStartActivity, startActivityCalled);
+            assertEquals(expectStartChrome, startChromeCalled);
             assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
 
             if (startActivityCalled && expectSaneIntent) {

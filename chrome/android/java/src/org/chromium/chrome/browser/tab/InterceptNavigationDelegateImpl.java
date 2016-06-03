@@ -106,24 +106,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 mTab.getActivity().getLastUserInteractionTime(), getLastCommittedEntryIndex());
 
         boolean shouldCloseTab = shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
-        boolean isInitialTabLaunchInBackground =
-                mTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
-        // http://crbug.com/448977: If a new tab is closed by this overriding, we should open an
-        // Intent in a new tab when Chrome receives it again.
-        ExternalNavigationParams params = new ExternalNavigationParams.Builder(
-                url, mTab.isIncognito(), navigationParams.referrer,
-                navigationParams.pageTransitionType,
-                navigationParams.isRedirect)
-                .setTab(mTab)
-                .setApplicationMustBeInForeground(true)
-                .setRedirectHandler(tabRedirectHandler)
-                .setOpenInNewTab(shouldCloseTab)
-                .setIsBackgroundTabNavigation(mTab.isHidden() && !isInitialTabLaunchInBackground)
-                .setIsMainFrame(navigationParams.isMainFrame)
-                .setHasUserGesture(navigationParams.hasUserGesture)
-                .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(shouldCloseTab
-                        && navigationParams.isMainFrame)
-                .build();
+        ExternalNavigationParams params = buildExternalNavigationParams(navigationParams,
+                tabRedirectHandler,
+                shouldCloseTab).build();
         OverrideUrlLoadingResult result = mExternalNavHandler.shouldOverrideUrlLoading(params);
         mLastOverrideUrlLoadingResult = result;
 
@@ -153,6 +138,31 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 return DataUseTabUIManager.shouldOverrideUrlLoading(mTab.getActivity(), mTab, url,
                         navigationParams.pageTransitionType, navigationParams.referrer);
         }
+    }
+
+    /**
+     * Returns ExternalNavigationParams.Builder to generate ExternalNavigationParams for
+     * ExternalNavigationHandler#shouldOverrideUrlLoading().
+     */
+    public ExternalNavigationParams.Builder buildExternalNavigationParams(
+            NavigationParams navigationParams, TabRedirectHandler tabRedirectHandler,
+            boolean shouldCloseTab) {
+        boolean isInitialTabLaunchInBackground =
+                mTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
+        // http://crbug.com/448977: If a new tab is closed by this overriding, we should open an
+        // Intent in a new tab when Chrome receives it again.
+        return new ExternalNavigationParams
+                .Builder(navigationParams.url, mTab.isIncognito(), navigationParams.referrer,
+                        navigationParams.pageTransitionType, navigationParams.isRedirect)
+                .setTab(mTab)
+                .setApplicationMustBeInForeground(true)
+                .setRedirectHandler(tabRedirectHandler)
+                .setOpenInNewTab(shouldCloseTab)
+                .setIsBackgroundTabNavigation(mTab.isHidden() && !isInitialTabLaunchInBackground)
+                .setIsMainFrame(navigationParams.isMainFrame)
+                .setHasUserGesture(navigationParams.hasUserGesture)
+                .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(
+                        shouldCloseTab && navigationParams.isMainFrame);
     }
 
     /**
