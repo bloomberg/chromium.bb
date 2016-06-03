@@ -2707,10 +2707,10 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   delegated_frame_host_->ResetCompositor();
 
 #if defined(OS_WIN)
-  // Update the legacy window's parent temporarily to the desktop window. It
+  // Update the legacy window's parent temporarily to the hidden window. It
   // will eventually get reparented to the right root.
   if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->UpdateParent(::GetDesktopWindow());
+    legacy_render_widget_host_HWND_->UpdateParent(ui::GetHiddenWindow());
 #endif
 }
 
