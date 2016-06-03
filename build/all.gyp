@@ -685,6 +685,8 @@
             # We refer to content_shell directly rather than blink_tests
             # because we don't want the _unittests binaries.
             '../content/content_shell_and_tests.gyp:content_shell',
+
+            '../v8/src/d8.gyp:d8',
           ],
           'conditions': [
             ['OS!="win"', {
