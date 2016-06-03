@@ -234,6 +234,8 @@ class SafeBrowsingDatabaseManager
                            GetCachedResults);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
                            CachedResultsMerged);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           CachedResultsAreEvicted);
 
   typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
   typedef std::map<SBPrefix, SBCachedFullHashResult> PrefixToFullHashResultsMap;

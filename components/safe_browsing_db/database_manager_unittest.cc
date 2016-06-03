@@ -455,4 +455,87 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CachedResultsMerged) {
   EXPECT_EQ("GEOLOCATION", permissions3[2]);
 }
 
+TEST_F(SafeBrowsingDatabaseManagerTest, CachedResultsAreEvicted) {
+  base::Time epoch = base::Time::UnixEpoch();
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = SBFullHashForString("example.com/");
+  full_hash_result.cache_expire_after = epoch;
+
+  SafeBrowsingDatabaseManager::PrefixToFullHashResultsMap& cache =
+      db_manager_->v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE];
+
+  // Fill the cache with some expired entries.
+  // Both negative cache and full hash expired.
+  cache[full_hash_result.hash.prefix] = SBCachedFullHashResult(epoch);
+  cache[full_hash_result.hash.prefix].full_hashes.push_back(full_hash_result);
+
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+
+  EXPECT_EQ(1ul, cache.size());
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  // Cache should be empty.
+  EXPECT_TRUE(client.callback_invoked());
+  EXPECT_TRUE(cache.empty());
+
+  // Negative cache still valid and full hash expired.
+  cache[full_hash_result.hash.prefix] =
+      SBCachedFullHashResult(base::Time::Max());
+  cache[full_hash_result.hash.prefix].full_hashes.push_back(full_hash_result);
+
+  EXPECT_EQ(1ul, cache.size());
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  // Cache entry should still be there.
+  EXPECT_EQ(1ul, cache.size());
+  auto entry = cache.find(full_hash_result.hash.prefix);
+  EXPECT_NE(cache.end(), entry);
+  EXPECT_EQ(base::Time::Max(), entry->second.expire_after);
+  EXPECT_EQ(1ul, entry->second.full_hashes.size());
+  EXPECT_TRUE(SBFullHashEqual(full_hash_result.hash,
+                              entry->second.full_hashes[0].hash));
+  EXPECT_EQ(full_hash_result.cache_expire_after,
+            entry->second.full_hashes[0].cache_expire_after);
+
+  // Negative cache still valid and full hash still valid.
+  cache[full_hash_result.hash.prefix].full_hashes[0].
+      cache_expire_after = base::Time::Max();
+
+  EXPECT_EQ(1ul, cache.size());
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  // Cache entry should still be there.
+  EXPECT_EQ(1ul, cache.size());
+  entry = cache.find(full_hash_result.hash.prefix);
+  EXPECT_NE(cache.end(), entry);
+  EXPECT_EQ(base::Time::Max(), entry->second.expire_after);
+  EXPECT_EQ(1ul, entry->second.full_hashes.size());
+  EXPECT_TRUE(SBFullHashEqual(full_hash_result.hash,
+                              entry->second.full_hashes[0].hash));
+  EXPECT_EQ(base::Time::Max(),
+            entry->second.full_hashes[0].cache_expire_after);
+
+  // Negative cache expired and full hash still valid.
+  cache[full_hash_result.hash.prefix].expire_after = epoch;
+
+  EXPECT_EQ(1ul, cache.size());
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  // Cache entry should still be there.
+  EXPECT_EQ(1ul, cache.size());
+  entry = cache.find(full_hash_result.hash.prefix);
+  EXPECT_NE(cache.end(), entry);
+  EXPECT_EQ(epoch, entry->second.expire_after);
+  EXPECT_EQ(1ul, entry->second.full_hashes.size());
+  EXPECT_TRUE(SBFullHashEqual(full_hash_result.hash,
+                              entry->second.full_hashes[0].hash));
+  EXPECT_EQ(base::Time::Max(),
+            entry->second.full_hashes[0].cache_expire_after);
+}
+
 }  // namespace safe_browsing

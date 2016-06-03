@@ -167,20 +167,20 @@ void SafeBrowsingDatabaseManager::GetFullHashCachedResults(
   //   Individual full hash results can be removed from the prefix's
   //   cache entry if they expire AND their expire time is after the negative
   //   cache expire time.
-  //
-  // TODO(kcarattini): Implement cache eviction.
   for (const SBFullHash& full_hash : full_hashes) {
     auto entry = v4_full_hash_cache_[threat_type].find(full_hash.prefix);
     if (entry != v4_full_hash_cache_[threat_type].end()) {
       // Case 1.
-      const SBCachedFullHashResult& cache_result = entry->second;
+      SBCachedFullHashResult& cache_result = entry->second;
 
       const SBFullHashResult* found_full_hash = nullptr;
+      size_t matched_idx = 0;
       for (const SBFullHashResult& hash_result : cache_result.full_hashes) {
         if (SBFullHashEqual(full_hash, hash_result.hash)) {
           found_full_hash = &hash_result;
           break;
         }
+        ++matched_idx;
       }
 
       if (found_full_hash) {
@@ -191,6 +191,16 @@ void SafeBrowsingDatabaseManager::GetFullHashCachedResults(
         } else {
           // Case ii.
           prefixes_needing_reqs->push_back(full_hash.prefix);
+          // If the negative cache expire time has passed, evict this full hash
+          // result from the cache.
+          if (cache_result.expire_after <= now) {
+            cache_result.full_hashes.erase(
+                cache_result.full_hashes.begin() + matched_idx);
+            // If there are no more full hashes, we can evict the entire entry.
+            if (cache_result.full_hashes.empty()) {
+              v4_full_hash_cache_[threat_type].erase(entry);
+            }
+          }
         }
       } else {
         // Case b.
@@ -208,6 +218,7 @@ void SafeBrowsingDatabaseManager::GetFullHashCachedResults(
   }
 
   // Multiple full hashes could share a prefix, remove duplicates.
+  // TODO(kcarattini): Make |prefixes_needing_reqs| a set.
   std::sort(prefixes_needing_reqs->begin(), prefixes_needing_reqs->end());
   prefixes_needing_reqs->erase(std::unique(prefixes_needing_reqs->begin(),
       prefixes_needing_reqs->end()), prefixes_needing_reqs->end());
