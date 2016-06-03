@@ -42,6 +42,13 @@ public:
         return adoptPtr(new PaintController());
     }
 
+    ~PaintController()
+    {
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        DisplayItemClient::endShouldKeepAliveAllClients(this);
+#endif
+    }
+
     void invalidateAll();
 
     // Record when paint offsets change during paint.

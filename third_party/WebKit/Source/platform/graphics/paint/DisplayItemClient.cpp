@@ -46,20 +46,26 @@ bool DisplayItemClient::isAlive() const
     return liveDisplayItemClients && liveDisplayItemClients->contains(this);
 }
 
-void DisplayItemClient::beginShouldKeepAlive(const void* owner) const
+void DisplayItemClient::beginShouldKeepAlive(const void* paintController) const
 {
     CHECK(isAlive());
     if (!displayItemClientsShouldKeepAlive)
         displayItemClientsShouldKeepAlive = new HashMap<const void*, HashMap<const DisplayItemClient*, String>>();
-    auto addResult = displayItemClientsShouldKeepAlive->add(owner, HashMap<const DisplayItemClient*, String>()).storedValue->value.add(this, "");
+    auto addResult = displayItemClientsShouldKeepAlive->add(paintController, HashMap<const DisplayItemClient*, String>()).storedValue->value.add(this, "");
     if (addResult.isNewEntry)
         addResult.storedValue->value = debugName();
 }
 
-void DisplayItemClient::endShouldKeepAliveAllClients(const void* owner)
+void DisplayItemClient::endShouldKeepAliveAllClients(const void* paintController)
 {
     if (displayItemClientsShouldKeepAlive)
-        displayItemClientsShouldKeepAlive->remove(owner);
+        displayItemClientsShouldKeepAlive->remove(paintController);
+}
+
+void DisplayItemClient::endShouldKeepAliveAllClients()
+{
+    delete displayItemClientsShouldKeepAlive;
+    displayItemClientsShouldKeepAlive = nullptr;
 }
 
 #endif // CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
