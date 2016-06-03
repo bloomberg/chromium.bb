@@ -3458,7 +3458,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Blink.Binding.InitializeWindowProxy" units="ms">
+<histogram name="Blink.Binding.InitializeWindowProxy" units="microseconds">
   <owner>peria@chromium.org</owner>
   <summary>Time spent initializing WindowProxy during a page loading.</summary>
 </histogram>
