@@ -1337,5 +1337,3 @@ crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calcul
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
 crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
-
-crbug.com/616969 fast/text/emoji-web-font.html [ NeedsRebaseline ]
