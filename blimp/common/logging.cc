@@ -77,6 +77,30 @@ class CompositorLogExtractor : public LogExtractor {
   }
 };
 
+// Logs fields from IME messages.
+class ImeLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    AddField("render_widget_id", message.ime().render_widget_id(), output);
+    switch (message.ime().type()) {
+      case ImeMessage::SHOW_IME:
+        AddField("subtype", "SHOW_IME", output);
+        AddField("text_input_type", message.ime().text_input_type(), output);
+        break;
+      case ImeMessage::HIDE_IME:
+        AddField("subtype", "HIDE_IME", output);
+        break;
+      case ImeMessage::SET_TEXT:
+        AddField("subtype", "SET_TEXT", output);
+        AddField("ime_text(length)", message.ime().ime_text().size(), output);
+        break;
+      case ImeMessage::UNKNOWN:
+        AddField("subtype", "UNKNOWN", output);
+        break;
+    }
+  }
+};
+
 // Logs fields from INPUT messages.
 class InputLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
@@ -283,6 +307,7 @@ class NullLogExtractor : public LogExtractor {
 BlimpMessageLogger::BlimpMessageLogger() {
   AddHandler("COMPOSITOR", BlimpMessage::kCompositor,
              base::WrapUnique(new CompositorLogExtractor));
+  AddHandler("IME", BlimpMessage::kIme, base::WrapUnique(new ImeLogExtractor));
   AddHandler("INPUT", BlimpMessage::kInput,
              base::WrapUnique(new InputLogExtractor));
   AddHandler("NAVIGATION", BlimpMessage::kNavigation,

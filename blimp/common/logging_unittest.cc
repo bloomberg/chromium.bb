@@ -247,5 +247,30 @@ TEST_F(LoggingTest, Settings) {
       message);
 }
 
+TEST_F(LoggingTest, Ime) {
+  BlimpMessage message;
+  message.mutable_ime()->set_render_widget_id(1);
+
+  // Test SHOW_IME.
+  message.mutable_ime()->set_type(ImeMessage::SHOW_IME);
+  message.mutable_ime()->set_text_input_type(ImeMessage::NONE);
+  VerifyLogOutput(
+      "type=IME render_widget_id=1 subtype=SHOW_IME text_input_type=0",
+      message);
+
+  // Test HIDE_IME.
+  message.mutable_ime()->set_type(ImeMessage::HIDE_IME);
+  VerifyLogOutput(
+      "type=IME render_widget_id=1 subtype=HIDE_IME",
+      message);
+
+  // Test SET_TEXT.
+  message.mutable_ime()->set_type(ImeMessage::SET_TEXT);
+  message.mutable_ime()->set_ime_text("1234");
+  VerifyLogOutput(
+      "type=IME render_widget_id=1 subtype=SET_TEXT ime_text(length)=4",
+      message);
+}
+
 }  // namespace
 }  // namespace blimp
