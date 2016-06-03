@@ -68,10 +68,7 @@ AccessibilityHighlightManager::~AccessibilityHighlightManager() {
 
 void AccessibilityHighlightManager::HighlightFocus(bool focus) {
   focus_ = focus;
-
-  std::vector<gfx::Rect> rects;
-  rects.push_back(focus_ ? focus_rect_ : OffscreenRect());
-  AccessibilityFocusRingController::GetInstance()->SetFocusRing(rects);
+  UpdateFocusAndCaretHighlights();
 }
 
 void AccessibilityHighlightManager::HighlightCursor(bool cursor) {
@@ -83,9 +80,7 @@ void AccessibilityHighlightManager::HighlightCursor(bool cursor) {
 
 void AccessibilityHighlightManager::HighlightCaret(bool caret) {
   caret_ = caret;
-
-  AccessibilityFocusRingController::GetInstance()->SetCaretRing(
-      caret_ ? caret_point_ : OffscreenPoint());
+  UpdateFocusAndCaretHighlights();
 }
 
 void AccessibilityHighlightManager::OnMouseEvent(ui::MouseEvent* event) {
@@ -104,34 +99,44 @@ void AccessibilityHighlightManager::Observe(
   content::FocusedNodeDetails* node_details =
       content::Details<content::FocusedNodeDetails>(details).ptr();
   focus_rect_ = node_details->node_bounds_in_screen;
-
-  if (focus_) {
-    std::vector<gfx::Rect> rects;
-    rects.push_back(focus_rect_);
-    AccessibilityFocusRingController::GetInstance()->SetFocusRing(rects);
-  }
+  UpdateFocusAndCaretHighlights();
 }
 
 void AccessibilityHighlightManager::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
   if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
-    caret_point_ = OffscreenPoint();
-    if (caret_) {
-      AccessibilityFocusRingController::GetInstance()->SetCaretRing(
-          caret_point_);
-    }
+    caret_visible_ = false;
+    UpdateFocusAndCaretHighlights();
   }
 }
 
 void AccessibilityHighlightManager::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   gfx::Rect caret_bounds = client->GetCaretBounds();
-  if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
-    caret_bounds = OffscreenRect();
   caret_point_ = caret_bounds.CenterPoint();
+  caret_visible_ = client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
+                   (caret_bounds.width() || caret_bounds.height());
+  UpdateFocusAndCaretHighlights();
+}
 
-  if (caret_)
-    AccessibilityFocusRingController::GetInstance()->SetCaretRing(caret_point_);
+void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
+  auto controller = AccessibilityFocusRingController::GetInstance();
+
+  // The caret highlight takes precedence over the focus highlight if
+  // both are visible.
+  if (caret_ && caret_visible_) {
+    controller->SetCaretRing(caret_point_);
+    controller->SetFocusRing(std::vector<gfx::Rect>());
+  } else if (focus_) {
+    controller->SetCaretRing(OffscreenPoint());
+    std::vector<gfx::Rect> rects;
+    if (!focus_rect_.IsEmpty())
+      rects.push_back(focus_rect_);
+    controller->SetFocusRing(rects);
+  } else {
+    controller->SetCaretRing(OffscreenPoint());
+    controller->SetFocusRing(std::vector<gfx::Rect>());
+  }
 }
 
 }  // namespace chromeos

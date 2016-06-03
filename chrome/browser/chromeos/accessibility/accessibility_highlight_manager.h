@@ -48,6 +48,8 @@ class AccessibilityHighlightManager : public ui::EventHandler,
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
 
+  void UpdateFocusAndCaretHighlights();
+
   bool focus_ = false;
   gfx::Rect focus_rect_;
 
@@ -55,6 +57,7 @@ class AccessibilityHighlightManager : public ui::EventHandler,
   gfx::Point cursor_point_;
 
   bool caret_ = false;
+  bool caret_visible_ = false;
   gfx::Point caret_point_;
 
   content::NotificationRegistrar registrar_;
