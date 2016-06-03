@@ -38,6 +38,8 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 
 crbug.com/616775 http/tests/inspector-enabled/dedicated-workers-list.html [ Crash ]
 
+crbug.com/617137 http/tests/notifications/serviceworker-notification-properties.html [ Leak ]
+
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------
