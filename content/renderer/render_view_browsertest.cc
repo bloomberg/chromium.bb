@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -538,8 +539,8 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
   ViewHostMsg_SaveImageFromDataURL::Param param1;
   ViewHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(base::get<2>(param1).length(), image_data_url.length());
-  EXPECT_EQ(base::get<2>(param1), image_data_url);
+  EXPECT_EQ(std::get<2>(param1).length(), image_data_url.length());
+  EXPECT_EQ(std::get<2>(param1), image_data_url);
 
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -554,8 +555,8 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
   ViewHostMsg_SaveImageFromDataURL::Param param2;
   ViewHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(base::get<2>(param2).length(), large_data_url.length());
-  EXPECT_EQ(base::get<2>(param2), large_data_url);
+  EXPECT_EQ(std::get<2>(param2).length(), large_data_url.length());
+  EXPECT_EQ(std::get<2>(param2), large_data_url);
 
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -625,12 +626,12 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
   FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
                                               &host_nav_params);
-  EXPECT_EQ("POST", base::get<0>(host_nav_params).method);
+  EXPECT_EQ("POST", std::get<0>(host_nav_params).method);
 
   // Check post data sent to browser matches
-  EXPECT_TRUE(base::get<0>(host_nav_params).page_state.IsValid());
+  EXPECT_TRUE(std::get<0>(host_nav_params).page_state.IsValid());
   std::unique_ptr<HistoryEntry> entry =
-      PageStateToHistoryEntry(base::get<0>(host_nav_params).page_state);
+      PageStateToHistoryEntry(std::get<0>(host_nav_params).page_state);
   blink::WebHTTPBody body = entry->root().httpBody();
   blink::WebHTTPBody::Element element;
   bool successful = body.elementAt(0, element);
@@ -672,7 +673,7 @@ TEST_F(RenderViewImplTest, OnBrowserNavigationUpdatePageID) {
   FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
   FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
                                               &host_nav_params);
-  EXPECT_TRUE(base::get<0>(host_nav_params).page_state.IsValid());
+  EXPECT_TRUE(std::get<0>(host_nav_params).page_state.IsValid());
 
   const IPC::Message* frame_page_id_msg =
       render_thread_->sink().GetUniqueMessageMatching(
@@ -682,7 +683,7 @@ TEST_F(RenderViewImplTest, OnBrowserNavigationUpdatePageID) {
   FrameHostMsg_DidAssignPageId::Param host_page_id_params;
   FrameHostMsg_DidAssignPageId::Read(frame_page_id_msg, &host_page_id_params);
 
-  EXPECT_EQ(base::get<0>(host_page_id_params), view_page_id());
+  EXPECT_EQ(std::get<0>(host_page_id_params), view_page_id());
 }
 
 #if defined(OS_ANDROID)
@@ -709,7 +710,7 @@ TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
   // Check post data sent to browser matches.
   FrameHostMsg_UpdateTitle::Param title_params;
   EXPECT_TRUE(FrameHostMsg_UpdateTitle::Read(frame_title_msg, &title_params));
-  EXPECT_EQ(base::ASCIIToUTF16("Data page"), base::get<0>(title_params));
+  EXPECT_EQ(base::ASCIIToUTF16("Data page"), std::get<0>(title_params));
 }
 #endif
 
@@ -1019,8 +1020,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   ASSERT_TRUE(msg_A);
   ViewHostMsg_UpdateState::Param param;
   ViewHostMsg_UpdateState::Read(msg_A, &param);
-  int page_id_A = base::get<0>(param);
-  PageState state_A = base::get<1>(param);
+  int page_id_A = std::get<0>(param);
+  PageState state_A = std::get<1>(param);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -1033,8 +1034,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   ViewHostMsg_UpdateState::Read(msg_B, &param);
-  int page_id_B = base::get<0>(param);
-  PageState state_B = base::get<1>(param);
+  int page_id_B = std::get<0>(param);
+  PageState state_B = std::get<1>(param);
   EXPECT_EQ(2, page_id_B);
   EXPECT_NE(state_A, state_B);
   render_thread_->sink().ClearMessages();
@@ -1048,8 +1049,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
   ViewHostMsg_UpdateState::Read(msg_C, &param);
-  int page_id_C = base::get<0>(param);
-  PageState state_C = base::get<1>(param);
+  int page_id_C = std::get<0>(param);
+  PageState state_C = std::get<1>(param);
   EXPECT_EQ(3, page_id_C);
   EXPECT_NE(state_B, state_C);
   render_thread_->sink().ClearMessages();
@@ -1103,8 +1104,8 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
   ViewHostMsg_UpdateState::Read(msg, &param);
-  int page_id = base::get<0>(param);
-  PageState state = base::get<1>(param);
+  int page_id = std::get<0>(param);
+  PageState state = std::get<1>(param);
   EXPECT_EQ(page_id_C, page_id);
   EXPECT_NE(state_A, state);
   EXPECT_NE(state_B, state);
@@ -1177,7 +1178,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
     ViewHostMsg_TextInputStateChanged::Param params;
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-    TextInputState p = base::get<0>(params);
+    TextInputState p = std::get<0>(params);
     ui::TextInputType type = p.type;
     ui::TextInputMode input_mode = p.mode;
     bool can_compose_inline = p.can_compose_inline;
@@ -1197,7 +1198,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-    p = base::get<0>(params);
+    p = std::get<0>(params);
     type = p.type;
     input_mode = p.mode;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
@@ -1222,7 +1223,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       EXPECT_TRUE(msg != NULL);
       EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
       ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-      p = base::get<0>(params);
+      p = std::get<0>(params);
       type = p.type;
       input_mode = p.mode;
       EXPECT_EQ(test_case->expected_mode, input_mode);
@@ -1982,7 +1983,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
 
   ViewHostMsg_FocusedNodeChanged::Param params;
   ViewHostMsg_FocusedNodeChanged::Read(msg1, &params);
-  EXPECT_TRUE(base::get<0>(params));
+  EXPECT_TRUE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 
   ExecuteJavaScriptForTests("document.getElementById('test2').focus();");
@@ -1990,7 +1991,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
         ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg2);
   ViewHostMsg_FocusedNodeChanged::Read(msg2, &params);
-  EXPECT_TRUE(base::get<0>(params));
+  EXPECT_TRUE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 
   view()->webview()->clearFocusedElement();
@@ -1998,7 +1999,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
         ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg3);
   ViewHostMsg_FocusedNodeChanged::Read(msg3, &params);
-  EXPECT_FALSE(base::get<0>(params));
+  EXPECT_FALSE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 }
 
@@ -2098,7 +2099,7 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params;
   FrameHostMsg_DidStartProvisionalLoad::Read(frame_navigate_msg,
                                                      &host_nav_params);
-  base::TimeTicks transmitted_start = base::get<1>(host_nav_params);
+  base::TimeTicks transmitted_start = std::get<1>(host_nav_params);
   EXPECT_FALSE(transmitted_start.is_null());
   EXPECT_LT(lower_bound_navigation_start, transmitted_start);
 }
@@ -2122,7 +2123,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForReload) {
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   // The true timestamp is later than the browser initiated one.
-  EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params),
+  EXPECT_PRED2(TimeTicksGT, std::get<1>(host_nav_params),
                common_params.navigation_start);
 }
 
@@ -2144,7 +2145,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForHistoryNavigation) {
                        StartNavigationParams(), RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params),
+  EXPECT_PRED2(TimeTicksGT, std::get<1>(host_nav_params),
                common_params_back.navigation_start);
   render_thread_->sink().ClearMessages();
 
@@ -2157,7 +2158,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForHistoryNavigation) {
                        StartNavigationParams(), RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params2),
+  EXPECT_PRED2(TimeTicksGT, std::get<1>(host_nav_params2),
                common_params_forward.navigation_start);
 }
 
@@ -2172,7 +2173,7 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartSuccessfullyTransmitted) {
 
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(base::get<1>(host_nav_params), common_params.navigation_start);
+  EXPECT_EQ(std::get<1>(host_nav_params), common_params.navigation_start);
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {

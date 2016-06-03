@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/common/frame_messages.h"
@@ -64,7 +66,7 @@ TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
   FrameHostMsg_PluginContentOriginAllowed::Param params;
   FrameHostMsg_PluginContentOriginAllowed::Read(msg, &params);
   EXPECT_TRUE(url::Origin(GURL("http://other.com"))
-                  .IsSameOriginWith(base::get<0>(params)));
+                  .IsSameOriginWith(std::get<0>(params)));
 }
 
 TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {

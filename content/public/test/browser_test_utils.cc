@@ -5,6 +5,7 @@
 #include "content/public/test/browser_test_utils.h"
 
 #include <stddef.h>
+#include <tuple>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -1153,7 +1154,7 @@ bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
     if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
       return false;
     std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-    base::get<1>(param).AssignTo(frame.get());
+    std::get<1>(param).AssignTo(frame.get());
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -1244,8 +1245,8 @@ bool InputMsgWatcher::OnMessageReceived(const IPC::Message& message) {
   if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
     InputHostMsg_HandleInputEvent_ACK::Param params;
     InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
-    blink::WebInputEvent::Type ack_type = base::get<0>(params).type;
-    InputEventAckState ack_state = base::get<0>(params).state;
+    blink::WebInputEvent::Type ack_type = std::get<0>(params).type;
+    InputEventAckState ack_state = std::get<0>(params).state;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&InputMsgWatcher::ReceivedAck, this, ack_type, ack_state));

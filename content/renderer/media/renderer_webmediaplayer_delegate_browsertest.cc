@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/tuple.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
@@ -78,13 +79,13 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
         MediaPlayerDelegateHostMsg_OnMediaPlaying::ID);
     ASSERT_TRUE(msg);
 
-    base::Tuple<int, bool, bool, bool, base::TimeDelta> result;
+    std::tuple<int, bool, bool, bool, base::TimeDelta> result;
     ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPlaying::Read(msg, &result));
-    EXPECT_EQ(delegate_id, base::get<0>(result));
-    EXPECT_EQ(kHasVideo, base::get<1>(result));
-    EXPECT_EQ(kHasAudio, base::get<2>(result));
-    EXPECT_EQ(kIsRemote, base::get<3>(result));
-    EXPECT_EQ(kDuration, base::get<4>(result));
+    EXPECT_EQ(delegate_id, std::get<0>(result));
+    EXPECT_EQ(kHasVideo, std::get<1>(result));
+    EXPECT_EQ(kHasAudio, std::get<2>(result));
+    EXPECT_EQ(kIsRemote, std::get<3>(result));
+    EXPECT_EQ(kDuration, std::get<4>(result));
   }
 
   // Verify the paused message.
@@ -97,10 +98,10 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
         MediaPlayerDelegateHostMsg_OnMediaPaused::ID);
     ASSERT_TRUE(msg);
 
-    base::Tuple<int, bool> result;
+    std::tuple<int, bool> result;
     ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPaused::Read(msg, &result));
-    EXPECT_EQ(delegate_id, base::get<0>(result));
-    EXPECT_EQ(kReachedEndOfStream, base::get<1>(result));
+    EXPECT_EQ(delegate_id, std::get<0>(result));
+    EXPECT_EQ(kReachedEndOfStream, std::get<1>(result));
   }
 
   // Verify the destruction message.
@@ -111,10 +112,10 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
         MediaPlayerDelegateHostMsg_OnMediaDestroyed::ID);
     ASSERT_TRUE(msg);
 
-    base::Tuple<int> result;
+    std::tuple<int> result;
     ASSERT_TRUE(
         MediaPlayerDelegateHostMsg_OnMediaDestroyed::Read(msg, &result));
-    EXPECT_EQ(delegate_id, base::get<0>(result));
+    EXPECT_EQ(delegate_id, std::get<0>(result));
   }
 
   delegate_manager_->RemoveObserver(delegate_id);

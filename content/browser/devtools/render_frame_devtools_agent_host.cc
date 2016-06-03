@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -854,13 +855,12 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
   if (page_handler_)
-    page_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
+    page_handler_->OnSwapCompositorFrame(std::get<1>(param).metadata);
   if (input_handler_)
-    input_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
+    input_handler_->OnSwapCompositorFrame(std::get<1>(param).metadata);
   if (frame_trace_recorder_ && tracing_handler_->did_initiate_recording()) {
     frame_trace_recorder_->OnSwapCompositorFrame(
-        current_ ? current_->host() : nullptr,
-        base::get<1>(param).metadata);
+        current_ ? current_->host() : nullptr, std::get<1>(param).metadata);
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/chrome_render_frame_observer.h"
 
+#include <tuple>
+
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/translate/content/common/translate_messages.h"
@@ -31,7 +33,7 @@ TEST_F(ChromeRenderFrameObserverTest, SkipCapturingSubFrames) {
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeFrameHostMsg_TranslateLanguageDetermined::Param params;
   ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
-  EXPECT_TRUE(base::get<1>(params)) << "Page should be translatable.";
+  EXPECT_TRUE(std::get<1>(params)) << "Page should be translatable.";
   // Should have 2 samples: one for preliminary capture, one for final capture.
   // If there are more, then subframes are being captured more than once.
   histogram_tester.ExpectTotalCount(kTranslateCaptureText, 2);

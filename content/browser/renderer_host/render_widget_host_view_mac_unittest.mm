@@ -7,6 +7,7 @@
 #include <Cocoa/Cocoa.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -111,7 +112,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-    const blink::WebInputEvent* event = base::get<0>(params);
+    const blink::WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
     result += WebInputEventTraits::GetName(event->type);
@@ -1121,9 +1122,9 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   set_background = process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
-  base::Tuple<bool> sent_background;
+  std::tuple<bool> sent_background;
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_FALSE(base::get<0>(sent_background));
+  EXPECT_FALSE(std::get<0>(sent_background));
 
   // Try setting it back.
   process_host->sink().ClearMessages();
@@ -1134,7 +1135,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_TRUE(base::get<0>(sent_background));
+  EXPECT_TRUE(std::get<0>(sent_background));
 
   host->ShutdownAndDestroyWidget(true);
 }
@@ -1159,11 +1160,11 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
         break;
     }
     DCHECK(message);
-    base::Tuple<IPC::WebInputEventPointer, ui::LatencyInfo,
-                InputEventDispatchType>
+    std::tuple<IPC::WebInputEventPointer, ui::LatencyInfo,
+               InputEventDispatchType>
         data;
     InputMsg_HandleInputEvent::Read(message, &data);
-    IPC::WebInputEventPointer ipc_event = base::get<0>(data);
+    IPC::WebInputEventPointer ipc_event = std::get<0>(data);
     const blink::WebGestureEvent* gesture_event =
         static_cast<const blink::WebGestureEvent*>(ipc_event);
     return gesture_event->data.pinchUpdate.zoomDisabled;

@@ -6,6 +6,7 @@
 
 #include <list>
 #include <memory>
+#include <tuple>
 
 #include "base/logging.h"
 #include "content/common/screen_orientation_messages.h"
@@ -72,9 +73,9 @@ class ScreenOrientationDispatcherTest : public testing::Test {
         ScreenOrientationHostMsg_LockRequest::ID);
     EXPECT_TRUE(msg != NULL);
 
-    base::Tuple<blink::WebScreenOrientationLockType, int> params;
+    std::tuple<blink::WebScreenOrientationLockType, int> params;
     ScreenOrientationHostMsg_LockRequest::Read(msg, &params);
-    return base::get<1>(params);
+    return std::get<1>(params);
   }
 
   IPC::TestSink& sink() {

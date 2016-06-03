@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -47,9 +49,9 @@ class RenderMediaLogTest : public testing::Test {
       return std::vector<media::MediaLogEvent>();
     }
 
-    base::Tuple<std::vector<media::MediaLogEvent>> events;
+    std::tuple<std::vector<media::MediaLogEvent>> events;
     ViewHostMsg_MediaLogEvents::Read(msg, &events);
-    return base::get<0>(events);
+    return std::get<0>(events);
   }
 
  private:

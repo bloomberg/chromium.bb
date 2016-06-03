@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/frame_messages.h"
@@ -87,10 +89,10 @@ TEST_F(ExternalPopupMenuTest, NormalCase) {
   const IPC::Message* message =
       sink.GetUniqueMessageMatching(FrameHostMsg_ShowPopup::ID);
   ASSERT_TRUE(message != NULL);
-  base::Tuple<FrameHostMsg_ShowPopup_Params> param;
+  std::tuple<FrameHostMsg_ShowPopup_Params> param;
   FrameHostMsg_ShowPopup::Read(message, &param);
-  ASSERT_EQ(3U, base::get<0>(param).popup_items.size());
-  EXPECT_EQ(1, base::get<0>(param).selected_item);
+  ASSERT_EQ(3U, std::get<0>(param).popup_items.size());
+  EXPECT_EQ(1, std::get<0>(param).selected_item);
 
   // Simulate the user canceling the popup; the index should not have changed.
   frame()->OnSelectPopupMenuItem(-1);
@@ -107,8 +109,8 @@ TEST_F(ExternalPopupMenuTest, NormalCase) {
   message = sink.GetUniqueMessageMatching(FrameHostMsg_ShowPopup::ID);
   ASSERT_TRUE(message != NULL);
   FrameHostMsg_ShowPopup::Read(message, &param);
-  ASSERT_EQ(3U, base::get<0>(param).popup_items.size());
-  EXPECT_EQ(0, base::get<0>(param).selected_item);
+  ASSERT_EQ(3U, std::get<0>(param).popup_items.size());
+  EXPECT_EQ(0, std::get<0>(param).selected_item);
 }
 
 // Page shows popup, then navigates away while popup showing, then select.
@@ -190,11 +192,11 @@ TEST_F(ExternalPopupMenuDisplayNoneTest, SelectItem) {
   const IPC::Message* message =
       sink.GetUniqueMessageMatching(FrameHostMsg_ShowPopup::ID);
   ASSERT_TRUE(message != NULL);
-  base::Tuple<FrameHostMsg_ShowPopup_Params> param;
+  std::tuple<FrameHostMsg_ShowPopup_Params> param;
   FrameHostMsg_ShowPopup::Read(message, &param);
   // Number of items should match item count minus the number
   // of "display: none" items.
-  ASSERT_EQ(5U, base::get<0>(param).popup_items.size());
+  ASSERT_EQ(5U, std::get<0>(param).popup_items.size());
 
   // Select index 1 item. This should select item with index 2,
   // skipping the item with 'display: none'

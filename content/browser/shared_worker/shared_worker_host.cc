@@ -224,8 +224,8 @@ void SharedWorkerHost::RelayMessage(
     WorkerMsg_Connect::Param param;
     if (!WorkerMsg_Connect::Read(&message, &param))
       return;
-    int sent_message_port_id = base::get<0>(param);
-    int new_routing_id = base::get<1>(param);
+    int sent_message_port_id = std::get<0>(param);
+    int new_routing_id = std::get<1>(param);
 
     DCHECK(container_render_filter_);
     new_routing_id = container_render_filter_->GetNextRoutingID();

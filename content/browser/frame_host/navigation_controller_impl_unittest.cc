@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -247,10 +248,11 @@ class NavigationControllerTest
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
     CHECK(message);
-    base::Tuple<CommonNavigationParams, StartNavigationParams,
-          RequestNavigationParams> nav_params;
+    std::tuple<CommonNavigationParams, StartNavigationParams,
+               RequestNavigationParams>
+        nav_params;
     FrameMsg_Navigate::Read(message, &nav_params);
-    return base::get<0>(nav_params).url;
+    return std::get<0>(nav_params).url;
   }
 
  protected:

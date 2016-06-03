@@ -5,8 +5,8 @@
 #include "content/child/shared_memory_received_data_factory.h"
 
 #include <stddef.h>
+#include <tuple>
 
-#include "base/tuple.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
@@ -31,9 +31,9 @@ class MockSender : public IPC::Sender {
   bool Send(IPC::Message* message) override {
     bool result = false;
     if (message->type() == ResourceHostMsg_DataReceived_ACK::ID) {
-      base::Tuple<int> args;
+      std::tuple<int> args;
       ResourceHostMsg_DataReceived_ACK::Read(message, &args);
-      result = SendAck(base::get<0>(args));
+      result = SendAck(std::get<0>(args));
     } else {
       result = SendOtherwise(message);
     }

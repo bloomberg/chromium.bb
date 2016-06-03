@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -67,7 +68,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
-    const WebInputEvent* event = base::get<0>(params);
+    const WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
     result += WebInputEventTraits::GetName(event->type);
@@ -858,9 +859,9 @@ TEST_F(RenderWidgetHostTest, Background) {
       process_->sink().GetUniqueMessageMatching(
           ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
-  base::Tuple<bool> sent_background;
+  std::tuple<bool> sent_background;
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_FALSE(base::get<0>(sent_background));
+  EXPECT_FALSE(std::get<0>(sent_background));
 
 #if defined(USE_AURA)
   // See the comment above |InitAsChild(NULL)|.
@@ -895,9 +896,9 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   const IPC::Message* restored = process_->sink().GetUniqueMessageMatching(
       ViewMsg_WasShown::ID);
   ASSERT_TRUE(restored);
-  base::Tuple<bool, ui::LatencyInfo> needs_repaint;
+  std::tuple<bool, ui::LatencyInfo> needs_repaint;
   ViewMsg_WasShown::Read(restored, &needs_repaint);
-  EXPECT_TRUE(base::get<0>(needs_repaint));
+  EXPECT_TRUE(std::get<0>(needs_repaint));
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
@@ -1532,8 +1533,8 @@ void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
   InputMsg_HandleInputEvent::Param params;
   EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
 
-  const WebInputEvent* event = base::get<0>(params);
-  ui::LatencyInfo latency_info = base::get<1>(params);
+  const WebInputEvent* event = std::get<0>(params);
+  ui::LatencyInfo latency_info = std::get<1>(params);
 
   EXPECT_TRUE(event->type == expected_type);
   EXPECT_TRUE(latency_info.FindLatency(

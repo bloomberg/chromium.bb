@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <set>
+#include <tuple>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -1561,10 +1562,10 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
   std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  uint32_t output_surface_id = base::get<0>(param);
-  base::get<1>(param).AssignTo(frame.get());
+  uint32_t output_surface_id = std::get<0>(param);
+  std::get<1>(param).AssignTo(frame.get());
   std::vector<IPC::Message> messages_to_deliver_with_frame;
-  messages_to_deliver_with_frame.swap(base::get<2>(param));
+  messages_to_deliver_with_frame.swap(std::get<2>(param));
 
   if (!ui::LatencyInfo::Verify(frame->metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {

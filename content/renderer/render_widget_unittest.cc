@@ -4,6 +4,7 @@
 
 #include "content/renderer/render_widget.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/macros.h"
@@ -167,7 +168,7 @@ TEST_F(RenderWidgetUnittest, TouchHitTestSinglePoint) {
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
   InputHostMsg_HandleInputEvent_ACK::Param params;
   InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
-  InputEventAckState ack_state = base::get<0>(params).state;
+  InputEventAckState ack_state = std::get<0>(params).state;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, ack_state);
   widget()->sink()->ClearMessages();
 
@@ -185,7 +186,7 @@ TEST_F(RenderWidgetUnittest, TouchHitTestSinglePoint) {
   message = widget()->sink()->GetMessageAt(0);
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
   InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
-  ack_state = base::get<0>(params).state;
+  ack_state = std::get<0>(params).state;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_state);
   widget()->sink()->ClearMessages();
 }
@@ -212,7 +213,7 @@ TEST_F(RenderWidgetUnittest, TouchHitTestMultiplePoints) {
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
   InputHostMsg_HandleInputEvent_ACK::Param params;
   InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
-  InputEventAckState ack_state = base::get<0>(params).state;
+  InputEventAckState ack_state = std::get<0>(params).state;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, ack_state);
   widget()->sink()->ClearMessages();
 
@@ -223,7 +224,7 @@ TEST_F(RenderWidgetUnittest, TouchHitTestMultiplePoints) {
   message = widget()->sink()->GetMessageAt(0);
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
   InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
-  ack_state = base::get<0>(params).state;
+  ack_state = std::get<0>(params).state;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_state);
   widget()->sink()->ClearMessages();
 }
@@ -248,7 +249,7 @@ TEST_F(RenderWidgetUnittest, EventOverscroll) {
   ASSERT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
   InputHostMsg_HandleInputEvent_ACK::Param params;
   InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
-  const InputEventAck& ack = base::get<0>(params);
+  const InputEventAck& ack = std::get<0>(params);
   ASSERT_EQ(ack.type, scroll.type);
   ASSERT_TRUE(ack.overscroll);
   EXPECT_EQ(gfx::Vector2dF(0, 10), ack.overscroll->accumulated_overscroll);
@@ -269,7 +270,7 @@ TEST_F(RenderWidgetUnittest, FlingOverscroll) {
   ASSERT_EQ(InputHostMsg_DidOverscroll::ID, message->type());
   InputHostMsg_DidOverscroll::Param params;
   InputHostMsg_DidOverscroll::Read(message, &params);
-  const DidOverscrollParams& overscroll = base::get<0>(params);
+  const DidOverscrollParams& overscroll = std::get<0>(params);
   EXPECT_EQ(gfx::Vector2dF(10, 5), overscroll.latest_overscroll_delta);
   EXPECT_EQ(gfx::Vector2dF(5, 5), overscroll.accumulated_overscroll);
   EXPECT_EQ(gfx::PointF(1, 1), overscroll.causal_event_viewport_point);

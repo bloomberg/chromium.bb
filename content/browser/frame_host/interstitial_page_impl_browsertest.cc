@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/interstitial_page_impl.h"
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -101,7 +103,7 @@ class InterstitialTitleUpdateWatcher : public BrowserMessageFilter {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&InterstitialTitleUpdateWatcher::OnTitleUpdateReceived,
-                       this, base::get<0>(params)));
+                       this, std::get<0>(params)));
       }
     }
     return false;
@@ -156,7 +158,7 @@ class ClipboardMessageWatcher : public IPC::MessageFilter {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&ClipboardMessageWatcher::OnWriteText, this,
-                       base::UTF16ToUTF8(base::get<1>(params))));
+                       base::UTF16ToUTF8(std::get<1>(params))));
       }
       return true;
     }

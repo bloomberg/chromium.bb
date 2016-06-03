@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <tuple>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -1615,7 +1616,7 @@ TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
     ASSERT_TRUE(start_msg);
     EmbeddedWorkerMsg_StartWorker::Param param;
     EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    EmbeddedWorkerMsg_StartWorker_Params start_params = base::get<0>(param);
+    EmbeddedWorkerMsg_StartWorker_Params start_params = std::get<0>(param);
     EXPECT_FALSE(start_params.pause_after_download);
     sink->ClearMessages();
   }
@@ -1630,7 +1631,7 @@ TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
     ASSERT_TRUE(start_msg);
     EmbeddedWorkerMsg_StartWorker::Param param;
     EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    EmbeddedWorkerMsg_StartWorker_Params start_params = base::get<0>(param);
+    EmbeddedWorkerMsg_StartWorker_Params start_params = std::get<0>(param);
     EXPECT_TRUE(start_params.pause_after_download);
     sink->ClearMessages();
   }

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/tuple.h"
+#include <tuple>
+
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session.h"
 #include "content/browser/media/session/media_session_controller.h"
@@ -69,13 +70,13 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     if (!msg)
       return false;
 
-    base::Tuple<int> result;
+    std::tuple<int> result;
     if (!T::Read(msg, &result))
       return false;
 
-    EXPECT_EQ(id_.second, base::get<0>(result));
+    EXPECT_EQ(id_.second, std::get<0>(result));
     test_sink().ClearMessages();
-    return id_.second == base::get<0>(result);
+    return id_.second == std::get<0>(result);
   }
 
   template <typename T>
@@ -84,17 +85,17 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     if (!msg)
       return false;
 
-    base::Tuple<int, double> result;
+    std::tuple<int, double> result;
     if (!T::Read(msg, &result))
       return false;
 
-    EXPECT_EQ(id_.second, base::get<0>(result));
-    if (id_.second != base::get<0>(result))
+    EXPECT_EQ(id_.second, std::get<0>(result));
+    if (id_.second != std::get<0>(result))
       return false;
 
-    EXPECT_EQ(expected_multiplier, base::get<1>(result));
+    EXPECT_EQ(expected_multiplier, std::get<1>(result));
     test_sink().ClearMessages();
-    return expected_multiplier == base::get<1>(result);
+    return expected_multiplier == std::get<1>(result);
   }
 
   WebContentsObserver::MediaPlayerId id_;

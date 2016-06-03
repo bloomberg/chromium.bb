@@ -5,12 +5,12 @@
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
-#include "base/tuple.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/common/content_switches.h"
@@ -185,13 +185,13 @@ class BlobDispatcherHostTest : public testing::Test {
     const IPC::Message* message =
         sink_.GetUniqueMessageMatching(BlobStorageMsg_RequestMemoryItem::ID);
     ASSERT_TRUE(message);
-    base::Tuple<std::string, std::vector<storage::BlobItemBytesRequest>,
-                std::vector<base::SharedMemoryHandle>,
-                std::vector<IPC::PlatformFileForTransit>>
+    std::tuple<std::string, std::vector<storage::BlobItemBytesRequest>,
+               std::vector<base::SharedMemoryHandle>,
+               std::vector<IPC::PlatformFileForTransit>>
         args;
     BlobStorageMsg_RequestMemoryItem::Read(message, &args);
-    EXPECT_EQ(expected_uuid, base::get<0>(args));
-    std::vector<BlobItemBytesRequest> requests = base::get<1>(args);
+    EXPECT_EQ(expected_uuid, std::get<0>(args));
+    std::vector<BlobItemBytesRequest> requests = std::get<1>(args);
     ASSERT_EQ(requests.size(), expected_requests.size());
     for (size_t i = 0; i < expected_requests.size(); ++i) {
       EXPECT_EQ(expected_requests[i], requests[i]);
@@ -209,18 +209,18 @@ class BlobDispatcherHostTest : public testing::Test {
     const IPC::Message* message =
         sink_.GetUniqueMessageMatching(BlobStorageMsg_RequestMemoryItem::ID);
     ASSERT_TRUE(message);
-    base::Tuple<std::string, std::vector<storage::BlobItemBytesRequest>,
-                std::vector<base::SharedMemoryHandle>,
-                std::vector<IPC::PlatformFileForTransit>>
+    std::tuple<std::string, std::vector<storage::BlobItemBytesRequest>,
+               std::vector<base::SharedMemoryHandle>,
+               std::vector<IPC::PlatformFileForTransit>>
         args;
     BlobStorageMsg_RequestMemoryItem::Read(message, &args);
-    EXPECT_EQ(expected_uuid, base::get<0>(args));
-    std::vector<BlobItemBytesRequest> requests = base::get<1>(args);
+    EXPECT_EQ(expected_uuid, std::get<0>(args));
+    std::vector<BlobItemBytesRequest> requests = std::get<1>(args);
     ASSERT_EQ(requests.size(), expected_requests.size());
     for (size_t i = 0; i < expected_requests.size(); ++i) {
       EXPECT_EQ(expected_requests[i], requests[i]);
     }
-    *shared_memory_handles = std::move(base::get<2>(args));
+    *shared_memory_handles = std::move(std::get<2>(args));
   }
 
   void ExpectCancel(const std::string& expected_uuid,
@@ -232,10 +232,10 @@ class BlobDispatcherHostTest : public testing::Test {
     const IPC::Message* message =
         sink_.GetUniqueMessageMatching(BlobStorageMsg_CancelBuildingBlob::ID);
     ASSERT_TRUE(message);
-    base::Tuple<std::string, IPCBlobCreationCancelCode> args;
+    std::tuple<std::string, IPCBlobCreationCancelCode> args;
     BlobStorageMsg_CancelBuildingBlob::Read(message, &args);
-    EXPECT_EQ(expected_uuid, base::get<0>(args));
-    EXPECT_EQ(code, base::get<1>(args));
+    EXPECT_EQ(expected_uuid, std::get<0>(args));
+    EXPECT_EQ(code, std::get<1>(args));
   }
 
   void ExpectDone(const std::string& expected_uuid) {
@@ -245,9 +245,9 @@ class BlobDispatcherHostTest : public testing::Test {
         sink_.GetFirstMessageMatching(BlobStorageMsg_CancelBuildingBlob::ID));
     const IPC::Message* message =
         sink_.GetUniqueMessageMatching(BlobStorageMsg_DoneBuildingBlob::ID);
-    base::Tuple<std::string> args;
+    std::tuple<std::string> args;
     BlobStorageMsg_DoneBuildingBlob::Read(message, &args);
-    EXPECT_EQ(expected_uuid, base::get<0>(args));
+    EXPECT_EQ(expected_uuid, std::get<0>(args));
   }
 
   bool IsBeingBuiltInHost(const std::string& uuid) {

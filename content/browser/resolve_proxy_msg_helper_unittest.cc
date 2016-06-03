@@ -4,6 +4,8 @@
 
 #include "content/browser/resolve_proxy_msg_helper.h"
 
+#include <tuple>
+
 #include "base/memory/ptr_util.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/common/view_messages.h"
@@ -95,7 +97,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     EXPECT_TRUE(ViewHostMsg_ResolveProxy::ReadReplyParam(&msg, &reply_data));
     DCHECK(!pending_result_.get());
     pending_result_.reset(
-        new PendingResult(base::get<0>(reply_data), base::get<1>(reply_data)));
+        new PendingResult(std::get<0>(reply_data), std::get<1>(reply_data)));
     test_sink_.ClearMessages();
     return true;
   }

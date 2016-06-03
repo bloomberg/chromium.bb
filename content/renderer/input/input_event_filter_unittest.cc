@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <new>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -191,8 +192,8 @@ TEST_F(InputEventFilterTest, Basic) {
 
     InputHostMsg_HandleInputEvent_ACK::Param params;
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
-    WebInputEvent::Type event_type = base::get<0>(params).type;
-    InputEventAckState ack_result = base::get<0>(params).state;
+    WebInputEvent::Type event_type = std::get<0>(params).type;
+    InputEventAckState ack_result = std::get<0>(params).state;
 
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -217,7 +218,7 @@ TEST_F(InputEventFilterTest, Basic) {
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = base::get<0>(params);
+    const WebInputEvent* event = std::get<0>(params);
 
     EXPECT_EQ(kEvents[i].size, event->size);
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
@@ -243,8 +244,8 @@ TEST_F(InputEventFilterTest, Basic) {
 
     InputHostMsg_HandleInputEvent_ACK::Param params;
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
-    WebInputEvent::Type event_type = base::get<0>(params).type;
-    InputEventAckState ack_result = base::get<0>(params).state;
+    WebInputEvent::Type event_type = std::get<0>(params).type;
+    InputEventAckState ack_result = std::get<0>(params).state;
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }
@@ -351,8 +352,8 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = base::get<0>(params);
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+    const WebInputEvent* event = std::get<0>(params);
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     EXPECT_EQ(kEvents[i].size, event->size);
     kEvents[i].dispatchType =
@@ -370,8 +371,8 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
     const WebMouseWheelEvent* event =
-        static_cast<const WebMouseWheelEvent*>(base::get<0>(params));
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+        static_cast<const WebMouseWheelEvent*>(std::get<0>(params));
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     kEvents[2].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
@@ -429,8 +430,8 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = base::get<0>(params);
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+    const WebInputEvent* event = std::get<0>(params);
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     EXPECT_EQ(kEvents[i].size, event->size);
     kEvents[i].dispatchType =
@@ -448,8 +449,8 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
     const WebTouchEvent* event =
-        static_cast<const WebTouchEvent*>(base::get<0>(params));
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+        static_cast<const WebTouchEvent*>(std::get<0>(params));
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     EXPECT_EQ(kEvents[3].size, event->size);
     EXPECT_EQ(1u, kEvents[3].touchesLength);
@@ -488,8 +489,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = base::get<0>(params);
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+    const WebInputEvent* event = std::get<0>(params);
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     EXPECT_EQ(kEvents[0].size, event->size);
     kEvents[0].dispatchType =
@@ -509,8 +510,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = base::get<0>(params);
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+    const WebInputEvent* event = std::get<0>(params);
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     EXPECT_EQ(kEvents[1].size, event->size);
     kEvents[1].dispatchType =
@@ -530,8 +531,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
-    const WebInputEvent* event = base::get<0>(params);
-    InputEventDispatchType dispatch_type = base::get<2>(params);
+    const WebInputEvent* event = std::get<0>(params);
+    InputEventDispatchType dispatch_type = std::get<2>(params);
 
     EXPECT_EQ(kBlockingEvents[0].size, event->size);
     EXPECT_TRUE(memcmp(&kBlockingEvents[0], event, event->size) == 0);

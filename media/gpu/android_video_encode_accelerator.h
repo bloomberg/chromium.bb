@@ -11,13 +11,13 @@
 #include <list>
 #include <memory>
 #include <queue>
+#include <tuple>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "base/tuple.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
@@ -87,7 +87,7 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
   // Frames waiting to be passed to the codec, queued until an input buffer is
   // available.  Each element is a tuple of <Frame, key_frame, enqueue_time>.
   typedef std::queue<
-      base::Tuple<scoped_refptr<media::VideoFrame>, bool, base::Time>>
+      std::tuple<scoped_refptr<media::VideoFrame>, bool, base::Time>>
       PendingFrames;
   PendingFrames pending_frames_;
 

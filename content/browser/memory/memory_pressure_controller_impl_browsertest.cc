@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "content/browser/memory/memory_message_filter.h"
@@ -24,7 +26,7 @@ MATCHER_P(IsSetSuppressedMessage, suppressed, "") {
   if (!MemoryMsg_SetPressureNotificationsSuppressed::Read(message.get(),
                                                           &param))
     return false;
-  return suppressed == base::get<0>(param);
+  return suppressed == std::get<0>(param);
 }
 
 MATCHER_P(IsSimulateMessage, level, "") {
@@ -35,7 +37,7 @@ MATCHER_P(IsSimulateMessage, level, "") {
   MemoryMsg_SimulatePressureNotification::Param param;
   if (!MemoryMsg_SimulatePressureNotification::Read(message.get(), &param))
     return false;
-  return level == base::get<0>(param);
+  return level == std::get<0>(param);
 }
 
 MATCHER_P(IsPressureMessage, level, "") {
@@ -46,7 +48,7 @@ MATCHER_P(IsPressureMessage, level, "") {
   MemoryMsg_PressureNotification::Param param;
   if (!MemoryMsg_PressureNotification::Read(message.get(), &param))
     return false;
-  return level == base::get<0>(param);
+  return level == std::get<0>(param);
 }
 
 class MemoryMessageFilterForTesting : public MemoryMessageFilter {

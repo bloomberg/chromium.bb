@@ -4,6 +4,7 @@
 
 #include "content/renderer/input/input_event_filter.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -174,9 +175,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   InputMsg_HandleInputEvent::Param params;
   if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
-  const WebInputEvent* event = base::get<0>(params);
-  ui::LatencyInfo latency_info = base::get<1>(params);
-  InputEventDispatchType dispatch_type = base::get<2>(params);
+  const WebInputEvent* event = std::get<0>(params);
+  ui::LatencyInfo latency_info = std::get<1>(params);
+  InputEventDispatchType dispatch_type = std::get<2>(params);
   DCHECK(event);
   DCHECK(dispatch_type == DISPATCH_TYPE_BLOCKING ||
          dispatch_type == DISPATCH_TYPE_NON_BLOCKING);

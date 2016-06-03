@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -73,9 +75,9 @@ class RendererAccessibilityTest : public RenderViewTest {
     const IPC::Message* message =
         sink_->GetUniqueMessageMatching(AccessibilityHostMsg_Events::ID);
     ASSERT_TRUE(message);
-    base::Tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
+    std::tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
     AccessibilityHostMsg_Events::Read(message, &param);
-    *param_list = base::get<0>(param);
+    *param_list = std::get<0>(param);
   }
 
   void GetLastAccEvent(

@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
 #include <stddef.h>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -224,8 +225,8 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
     if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
       InputHostMsg_HandleInputEvent_ACK::Param params;
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
-      blink::WebInputEvent::Type type = base::get<0>(params).type;
-      InputEventAckState ack = base::get<0>(params).state;
+      blink::WebInputEvent::Type type = std::get<0>(params).type;
+      InputEventAckState ack = std::get<0>(params).state;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           base::Bind(&InputEventMessageFilterWaitsForAcks::ReceivedEventAck,
                      this, type, ack));

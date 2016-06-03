@@ -5,6 +5,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -212,58 +213,52 @@ struct FuzzTraits<base::string16> {
 
 // Specializations for tuples.
 template <>
-struct FuzzTraits<base::Tuple<>> {
-  static bool Fuzz(base::Tuple<>* p, Fuzzer* fuzzer) {
-    return true;
-  }
+struct FuzzTraits<std::tuple<>> {
+  static bool Fuzz(std::tuple<>* p, Fuzzer* fuzzer) { return true; }
 };
 
 template <class A>
-struct FuzzTraits<base::Tuple<A>> {
-  static bool Fuzz(base::Tuple<A>* p, Fuzzer* fuzzer) {
-    return FuzzParam(&base::get<0>(*p), fuzzer);
+struct FuzzTraits<std::tuple<A>> {
+  static bool Fuzz(std::tuple<A>* p, Fuzzer* fuzzer) {
+    return FuzzParam(&std::get<0>(*p), fuzzer);
   }
 };
 
 template <class A, class B>
-struct FuzzTraits<base::Tuple<A, B>> {
-  static bool Fuzz(base::Tuple<A, B>* p, Fuzzer* fuzzer) {
-    return
-        FuzzParam(&base::get<0>(*p), fuzzer) &&
-        FuzzParam(&base::get<1>(*p), fuzzer);
+struct FuzzTraits<std::tuple<A, B>> {
+  static bool Fuzz(std::tuple<A, B>* p, Fuzzer* fuzzer) {
+    return FuzzParam(&std::get<0>(*p), fuzzer) &&
+           FuzzParam(&std::get<1>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C>
-struct FuzzTraits<base::Tuple<A, B, C>> {
-  static bool Fuzz(base::Tuple<A, B, C>* p, Fuzzer* fuzzer) {
-    return
-        FuzzParam(&base::get<0>(*p), fuzzer) &&
-        FuzzParam(&base::get<1>(*p), fuzzer) &&
-        FuzzParam(&base::get<2>(*p), fuzzer);
+struct FuzzTraits<std::tuple<A, B, C>> {
+  static bool Fuzz(std::tuple<A, B, C>* p, Fuzzer* fuzzer) {
+    return FuzzParam(&std::get<0>(*p), fuzzer) &&
+           FuzzParam(&std::get<1>(*p), fuzzer) &&
+           FuzzParam(&std::get<2>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C, class D>
-struct FuzzTraits<base::Tuple<A, B, C, D>> {
-  static bool Fuzz(base::Tuple<A, B, C, D>* p, Fuzzer* fuzzer) {
-    return
-        FuzzParam(&base::get<0>(*p), fuzzer) &&
-        FuzzParam(&base::get<1>(*p), fuzzer) &&
-        FuzzParam(&base::get<2>(*p), fuzzer) &&
-        FuzzParam(&base::get<3>(*p), fuzzer);
+struct FuzzTraits<std::tuple<A, B, C, D>> {
+  static bool Fuzz(std::tuple<A, B, C, D>* p, Fuzzer* fuzzer) {
+    return FuzzParam(&std::get<0>(*p), fuzzer) &&
+           FuzzParam(&std::get<1>(*p), fuzzer) &&
+           FuzzParam(&std::get<2>(*p), fuzzer) &&
+           FuzzParam(&std::get<3>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C, class D, class E>
-struct FuzzTraits<base::Tuple<A, B, C, D, E>> {
-  static bool Fuzz(base::Tuple<A, B, C, D, E>* p, Fuzzer* fuzzer) {
-    return
-        FuzzParam(&base::get<0>(*p), fuzzer) &&
-        FuzzParam(&base::get<1>(*p), fuzzer) &&
-        FuzzParam(&base::get<2>(*p), fuzzer) &&
-        FuzzParam(&base::get<3>(*p), fuzzer) &&
-        FuzzParam(&base::get<4>(*p), fuzzer);
+struct FuzzTraits<std::tuple<A, B, C, D, E>> {
+  static bool Fuzz(std::tuple<A, B, C, D, E>* p, Fuzzer* fuzzer) {
+    return FuzzParam(&std::get<0>(*p), fuzzer) &&
+           FuzzParam(&std::get<1>(*p), fuzzer) &&
+           FuzzParam(&std::get<2>(*p), fuzzer) &&
+           FuzzParam(&std::get<3>(*p), fuzzer) &&
+           FuzzParam(&std::get<4>(*p), fuzzer);
   }
 };
 
@@ -1969,9 +1964,9 @@ template <typename Message>
 class FuzzerHelper;
 
 template <typename Meta, typename... Ins>
-class FuzzerHelper<IPC::MessageT<Meta, base::Tuple<Ins...>, void>> {
+class FuzzerHelper<IPC::MessageT<Meta, std::tuple<Ins...>, void>> {
  public:
-  using Message = IPC::MessageT<Meta, base::Tuple<Ins...>, void>;
+  using Message = IPC::MessageT<Meta, std::tuple<Ins...>, void>;
 
   static IPC::Message* Fuzz(IPC::Message* msg, Fuzzer* fuzzer) {
     return FuzzImpl(msg, fuzzer, base::MakeIndexSequence<sizeof...(Ins)>());
@@ -1987,7 +1982,7 @@ class FuzzerHelper<IPC::MessageT<Meta, base::Tuple<Ins...>, void>> {
       Message::Read(static_cast<Message*>(msg), &p);
     }
     if (FuzzParam(&p, fuzzer)) {
-      return MessageFactory<Message, Meta::kKind>::New(base::get<Ns>(p)...);
+      return MessageFactory<Message, Meta::kKind>::New(std::get<Ns>(p)...);
     }
     std::cerr << "Don't know how to handle " << Meta::kName << "\n";
     return nullptr;
@@ -1996,10 +1991,9 @@ class FuzzerHelper<IPC::MessageT<Meta, base::Tuple<Ins...>, void>> {
 
 template <typename Meta, typename... Ins, typename... Outs>
 class FuzzerHelper<
-    IPC::MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>> {
+    IPC::MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>> {
  public:
-  using Message =
-      IPC::MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>;
+  using Message = IPC::MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>;
 
   static IPC::Message* Fuzz(IPC::Message* msg, Fuzzer* fuzzer) {
     return FuzzImpl(msg, fuzzer, base::MakeIndexSequence<sizeof...(Ins)>());
@@ -2018,7 +2012,7 @@ class FuzzerHelper<
     }
     if (FuzzParam(&p, fuzzer)) {
       new_msg = MessageFactory<Message, Meta::kKind>::New(
-          base::get<Ns>(p)..., static_cast<Outs*>(nullptr)...);
+          std::get<Ns>(p)..., static_cast<Outs*>(nullptr)...);
     }
     if (real_msg && new_msg) {
       MessageCracker::CopyMessageID(new_msg, real_msg);

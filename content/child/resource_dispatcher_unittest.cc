@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -174,60 +175,60 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
       ADD_FAILURE() << "Expected ResourceHostMsg_RequestResource message";
       return -1;
     }
-    ResourceRequest request = base::get<2>(params);
+    ResourceRequest request = std::get<2>(params);
     EXPECT_EQ(kTestPageUrl, request.url.spec());
     message_queue_.erase(message_queue_.begin());
-    return base::get<1>(params);
+    return std::get<1>(params);
   }
 
   void ConsumeFollowRedirect(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
-    base::Tuple<int> args;
+    std::tuple<int> args;
     ASSERT_EQ(ResourceHostMsg_FollowRedirect::ID, message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_FollowRedirect::Read(
         &message_queue_[0], &args));
-    EXPECT_EQ(expected_request_id, base::get<0>(args));
+    EXPECT_EQ(expected_request_id, std::get<0>(args));
     message_queue_.erase(message_queue_.begin());
   }
 
   void ConsumeDataReceived_ACK(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
-    base::Tuple<int> args;
+    std::tuple<int> args;
     ASSERT_EQ(ResourceHostMsg_DataReceived_ACK::ID, message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_DataReceived_ACK::Read(
         &message_queue_[0], &args));
-    EXPECT_EQ(expected_request_id, base::get<0>(args));
+    EXPECT_EQ(expected_request_id, std::get<0>(args));
     message_queue_.erase(message_queue_.begin());
   }
 
   void ConsumeDataDownloaded_ACK(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
-    base::Tuple<int> args;
+    std::tuple<int> args;
     ASSERT_EQ(ResourceHostMsg_DataDownloaded_ACK::ID, message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_DataDownloaded_ACK::Read(
         &message_queue_[0], &args));
-    EXPECT_EQ(expected_request_id, base::get<0>(args));
+    EXPECT_EQ(expected_request_id, std::get<0>(args));
     message_queue_.erase(message_queue_.begin());
   }
 
   void ConsumeReleaseDownloadedFile(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
-    base::Tuple<int> args;
+    std::tuple<int> args;
     ASSERT_EQ(ResourceHostMsg_ReleaseDownloadedFile::ID,
               message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_ReleaseDownloadedFile::Read(
         &message_queue_[0], &args));
-    EXPECT_EQ(expected_request_id, base::get<0>(args));
+    EXPECT_EQ(expected_request_id, std::get<0>(args));
     message_queue_.erase(message_queue_.begin());
   }
 
   void ConsumeCancelRequest(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
-    base::Tuple<int> args;
+    std::tuple<int> args;
     ASSERT_EQ(ResourceHostMsg_CancelRequest::ID, message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_CancelRequest::Read(
         &message_queue_[0], &args));
-    EXPECT_EQ(expected_request_id, base::get<0>(args));
+    EXPECT_EQ(expected_request_id, std::get<0>(args));
     message_queue_.erase(message_queue_.begin());
   }
 

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,7 +19,6 @@
 #include "base/test/test_file_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/tuple.h"
 #include "content/child/blob_storage/blob_consolidation.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
@@ -134,18 +134,18 @@ class BlobTransportControllerTest : public testing::Test {
         sink_.GetUniqueMessageMatching(BlobStorageMsg_StartBuildingBlob::ID);
     ASSERT_TRUE(register_message);
     ASSERT_TRUE(start_message);
-    base::Tuple<std::string, std::string, std::string, std::set<std::string>>
+    std::tuple<std::string, std::string, std::string, std::set<std::string>>
         register_contents;
-    base::Tuple<std::string, std::vector<DataElement>> start_contents;
+    std::tuple<std::string, std::vector<DataElement>> start_contents;
     BlobStorageMsg_RegisterBlobUUID::Read(register_message, &register_contents);
     BlobStorageMsg_StartBuildingBlob::Read(start_message, &start_contents);
-    EXPECT_EQ(expected_uuid, base::get<0>(register_contents));
-    EXPECT_EQ(expected_uuid, base::get<0>(start_contents));
-    EXPECT_EQ(expected_content_type, base::get<1>(register_contents));
+    EXPECT_EQ(expected_uuid, std::get<0>(register_contents));
+    EXPECT_EQ(expected_uuid, std::get<0>(start_contents));
+    EXPECT_EQ(expected_content_type, std::get<1>(register_contents));
     if (descriptions)
-      *descriptions = base::get<1>(start_contents);
+      *descriptions = std::get<1>(start_contents);
     // We don't have dispositions from the renderer.
-    EXPECT_TRUE(base::get<2>(register_contents).empty());
+    EXPECT_TRUE(std::get<2>(register_contents).empty());
     sink_.ClearMessages();
   }
 
@@ -155,12 +155,12 @@ class BlobTransportControllerTest : public testing::Test {
     const IPC::Message* responses_message =
         sink_.GetUniqueMessageMatching(BlobStorageMsg_MemoryItemResponse::ID);
     ASSERT_TRUE(responses_message);
-    base::Tuple<std::string, std::vector<storage::BlobItemBytesResponse>>
+    std::tuple<std::string, std::vector<storage::BlobItemBytesResponse>>
         responses_content;
     BlobStorageMsg_MemoryItemResponse::Read(responses_message,
                                             &responses_content);
-    EXPECT_EQ(expected_uuid, base::get<0>(responses_content));
-    EXPECT_EQ(expected_responses, base::get<1>(responses_content));
+    EXPECT_EQ(expected_uuid, std::get<0>(responses_content));
+    EXPECT_EQ(expected_responses, std::get<1>(responses_content));
     sink_.ClearMessages();
   }
 
@@ -169,10 +169,10 @@ class BlobTransportControllerTest : public testing::Test {
     const IPC::Message* cancel_message =
         sink_.GetUniqueMessageMatching(BlobStorageMsg_CancelBuildingBlob::ID);
     ASSERT_TRUE(cancel_message);
-    base::Tuple<std::string, storage::IPCBlobCreationCancelCode> cancel_content;
+    std::tuple<std::string, storage::IPCBlobCreationCancelCode> cancel_content;
     BlobStorageMsg_CancelBuildingBlob::Read(cancel_message, &cancel_content);
-    EXPECT_EQ(expected_uuid, base::get<0>(cancel_content));
-    EXPECT_EQ(expected_code, base::get<1>(cancel_content));
+    EXPECT_EQ(expected_uuid, std::get<0>(cancel_content));
+    EXPECT_EQ(expected_code, std::get<1>(cancel_content));
   }
 
   void TearDown() override {
@@ -418,7 +418,7 @@ TEST_F(BlobTransportControllerTest, PublicMethods) {
   EXPECT_FALSE(holder->IsTransporting(kBlobUUID));
   io_thread_runner_->RunPendingTasks();
   EXPECT_TRUE(holder->IsTransporting(kBlobUUID));
-  base::Tuple<std::string, std::vector<DataElement>> message_contents;
+  std::tuple<std::string, std::vector<DataElement>> message_contents;
   EXPECT_TRUE(holder->IsTransporting(kBlobUUID));
   EXPECT_EQ(MakeBlobElement(KRefBlobUUID, 10, 10), message_descriptions[0]);
 

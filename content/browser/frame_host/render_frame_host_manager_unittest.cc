@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <tuple>
 #include <utility>
 
 #include "base/command_line.h"
@@ -72,7 +73,7 @@ void VerifyPageFocusMessage(MockRenderProcessHost* rph,
   EXPECT_EQ(expected_routing_id, message->routing_id());
   InputMsg_SetFocus::Param params;
   EXPECT_TRUE(InputMsg_SetFocus::Read(message, &params));
-  EXPECT_EQ(expected_focus, base::get<0>(params));
+  EXPECT_EQ(expected_focus, std::get<0>(params));
 }
 
 // Helper function for strict mixed content checking tests.
@@ -87,7 +88,7 @@ void CheckMixedContentIPC(TestRenderFrameHost* rfh,
   FrameMsg_EnforceStrictMixedContentChecking::Param params;
   EXPECT_TRUE(
       FrameMsg_EnforceStrictMixedContentChecking::Read(message, &params));
-  EXPECT_EQ(expected_param, base::get<0>(params));
+  EXPECT_EQ(expected_param, std::get<0>(params));
 }
 
 class RenderFrameHostManagerTestWebUIControllerFactory
@@ -2231,7 +2232,7 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   EXPECT_TRUE(message);
   FrameMsg_UpdateOpener::Param params;
   EXPECT_TRUE(FrameMsg_UpdateOpener::Read(message, &params));
-  EXPECT_EQ(tab2_opener_routing_id, base::get<0>(params));
+  EXPECT_EQ(tab2_opener_routing_id, std::get<0>(params));
 }
 
 // Test that opener proxies are created properly when the opener points
@@ -2278,7 +2279,7 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   EXPECT_TRUE(message);
   FrameMsg_UpdateOpener::Param params;
   EXPECT_TRUE(FrameMsg_UpdateOpener::Read(message, &params));
-  EXPECT_EQ(opener_routing_id, base::get<0>(params));
+  EXPECT_EQ(opener_routing_id, std::get<0>(params));
 }
 
 // Build the following frame opener graph and see that it can be properly

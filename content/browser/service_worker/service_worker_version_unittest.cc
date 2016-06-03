@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 
 #include <stdint.h>
+#include <tuple>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1361,11 +1362,11 @@ TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   ASSERT_EQ(TestMsg_TestEvent::ID, msg->type());
   TestMsg_TestEvent::Param params;
   TestMsg_TestEvent::Read(msg, &params);
-  EXPECT_EQ(request_id1, base::get<0>(params));
+  EXPECT_EQ(request_id1, std::get<0>(params));
   msg = helper_->inner_ipc_sink()->GetMessageAt(1);
   ASSERT_EQ(TestMsg_TestEvent::ID, msg->type());
   TestMsg_TestEvent::Read(msg, &params);
-  EXPECT_EQ(request_id2, base::get<0>(params));
+  EXPECT_EQ(request_id2, std::get<0>(params));
 
   // Reply to second event.
   std::string reply2("foobar");

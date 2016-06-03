@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -90,7 +91,7 @@ void ExpectIPCMessageWithArg1(const IPC::Message* msg, const ARG_T1& arg1) {
   ASSERT_EQ(MSG_T::ID, msg->type());
   typename MSG_T::Schema::Param param;
   ASSERT_TRUE(MSG_T::Read(msg, &param));
-  EXPECT_EQ(arg1, base::get<0>(param));
+  EXPECT_EQ(arg1, std::get<0>(param));
 }
 
 template<typename MSG_T, typename ARG_T1, typename ARG_T2>
@@ -100,8 +101,8 @@ void ExpectIPCMessageWithArg2(const IPC::Message* msg,
   ASSERT_EQ(MSG_T::ID, msg->type());
   typename MSG_T::Schema::Param param;
   ASSERT_TRUE(MSG_T::Read(msg, &param));
-  EXPECT_EQ(arg1, base::get<0>(param));
-  EXPECT_EQ(arg2, base::get<1>(param));
+  EXPECT_EQ(arg1, std::get<0>(param));
+  EXPECT_EQ(arg2, std::get<1>(param));
 }
 
 #if defined(USE_AURA)
@@ -1925,7 +1926,7 @@ class InputRouterImplScaleEventTest : public InputRouterImplTest {
 
     InputMsg_HandleInputEvent::Schema::Param param;
     InputMsg_HandleInputEvent::Read(process_->sink().GetMessageAt(0), &param);
-    return static_cast<const T*>(base::get<0>(param));
+    return static_cast<const T*>(std::get<0>(param));
   }
 
   template <typename T>

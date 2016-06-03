@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_client_utils.h"
 
 #include <algorithm>
+#include <tuple>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -266,11 +267,11 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
 
 void AddWindowClient(
     ServiceWorkerProviderHost* host,
-    std::vector<base::Tuple<int, int, std::string>>* client_info) {
+    std::vector<std::tuple<int, int, std::string>>* client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (host->client_type() != blink::WebServiceWorkerClientTypeWindow)
     return;
-  client_info->push_back(base::MakeTuple(host->process_id(), host->frame_id(),
+  client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
                                          host->client_uuid()));
 }
 
@@ -295,7 +296,7 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
 
 void OnGetWindowClientsOnUI(
     // The tuple contains process_id, frame_id, client_uuid.
-    const std::vector<base::Tuple<int, int, std::string>>& clients_info,
+    const std::vector<std::tuple<int, int, std::string>>& clients_info,
     const GURL& script_url,
     const GetWindowClientsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -303,7 +304,7 @@ void OnGetWindowClientsOnUI(
   std::unique_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
   for (const auto& it : clients_info) {
     ServiceWorkerClientInfo info = GetWindowClientInfoOnUI(
-        base::get<0>(it), base::get<1>(it), base::get<2>(it));
+        std::get<0>(it), std::get<1>(it), std::get<2>(it));
 
     // If the request to the provider_host returned an empty
     // ServiceWorkerClientInfo, that means that it wasn't possible to associate
@@ -375,7 +376,7 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
   DCHECK(options.client_type == blink::WebServiceWorkerClientTypeWindow ||
          options.client_type == blink::WebServiceWorkerClientTypeAll);
 
-  std::vector<base::Tuple<int, int, std::string>> clients_info;
+  std::vector<std::tuple<int, int, std::string>> clients_info;
   if (!options.include_uncontrolled) {
     for (auto& controllee : controller->controllee_map())
       AddWindowClient(controllee.second, &clients_info);

@@ -24,6 +24,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -86,8 +87,6 @@ using media::VideoDecodeAccelerator;
 
 namespace media {
 namespace {
-
-using base::MakeTuple;
 
 // Values optionally filled in from flags; see main() below.
 // The syntax of multiple test videos is:
@@ -1242,7 +1241,7 @@ void VideoDecodeAcceleratorTest::OutputLogFile(
 class VideoDecodeAcceleratorParamTest
     : public VideoDecodeAcceleratorTest,
       public ::testing::WithParamInterface<
-          base::Tuple<int, int, int, ResetPoint, ClientState, bool, bool>> {};
+          std::tuple<int, int, int, ResetPoint, ClientState, bool, bool>> {};
 
 // Wait for |note| to report a state and if it's not |expected_state| then
 // assert |client| has deleted its decoder.
@@ -1266,13 +1265,13 @@ enum { kMinSupportedNumConcurrentDecoders = 3 };
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
-  size_t num_concurrent_decoders = base::get<0>(GetParam());
-  const size_t num_in_flight_decodes = base::get<1>(GetParam());
-  int num_play_throughs = base::get<2>(GetParam());
-  const int reset_point = base::get<3>(GetParam());
-  const int delete_decoder_state = base::get<4>(GetParam());
-  bool test_reuse_delay = base::get<5>(GetParam());
-  const bool render_as_thumbnails = base::get<6>(GetParam());
+  size_t num_concurrent_decoders = std::get<0>(GetParam());
+  const size_t num_in_flight_decodes = std::get<1>(GetParam());
+  int num_play_throughs = std::get<2>(GetParam());
+  const int reset_point = std::get<3>(GetParam());
+  const int delete_decoder_state = std::get<4>(GetParam());
+  bool test_reuse_delay = std::get<5>(GetParam());
+  const bool render_as_thumbnails = std::get<6>(GetParam());
 
   if (test_video_files_.size() > 1)
     num_concurrent_decoders = test_video_files_.size();
@@ -1487,26 +1486,30 @@ INSTANTIATE_TEST_CASE_P(
     ReplayAfterEOS,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
-        MakeTuple(1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
+        std::make_tuple(1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
 
 // Test that Reset() before the first Decode() works fine.
-INSTANTIATE_TEST_CASE_P(
-    ResetBeforeDecode,
-    VideoDecodeAcceleratorParamTest,
-    ::testing::Values(
-        MakeTuple(1, 1, 1, START_OF_STREAM_RESET, CS_RESET, false, false)));
+INSTANTIATE_TEST_CASE_P(ResetBeforeDecode,
+                        VideoDecodeAcceleratorParamTest,
+                        ::testing::Values(std::make_tuple(1,
+                                                          1,
+                                                          1,
+                                                          START_OF_STREAM_RESET,
+                                                          CS_RESET,
+                                                          false,
+                                                          false)));
 
 // Test Reset() immediately after Decode() containing config info.
 INSTANTIATE_TEST_CASE_P(
     ResetAfterFirstConfigInfo,
     VideoDecodeAcceleratorParamTest,
-    ::testing::Values(MakeTuple(1,
-                                1,
-                                1,
-                                RESET_AFTER_FIRST_CONFIG_INFO,
-                                CS_RESET,
-                                false,
-                                false)));
+    ::testing::Values(std::make_tuple(1,
+                                      1,
+                                      1,
+                                      RESET_AFTER_FIRST_CONFIG_INFO,
+                                      CS_RESET,
+                                      false,
+                                      false)));
 
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
@@ -1514,13 +1517,13 @@ INSTANTIATE_TEST_CASE_P(
     MidStreamReset,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, MID_STREAM_RESET, CS_RESET, false, false)));
+        std::make_tuple(1, 1, 1, MID_STREAM_RESET, CS_RESET, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     SlowRendering,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, true, false)));
+        std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, true, false)));
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).
@@ -1528,71 +1531,102 @@ INSTANTIATE_TEST_CASE_P(
     TearDownTiming,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET, false, false),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED, false, false),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHING, false, false),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED, false, false),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESETTING, false, false),
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
-        MakeTuple(1,
-                  1,
-                  1,
-                  END_OF_STREAM_RESET,
-                  static_cast<ClientState>(-1),
-                  false,
-                  false),
-        MakeTuple(1,
-                  1,
-                  1,
-                  END_OF_STREAM_RESET,
-                  static_cast<ClientState>(-10),
-                  false,
-                  false),
-        MakeTuple(1,
-                  1,
-                  1,
-                  END_OF_STREAM_RESET,
-                  static_cast<ClientState>(-100),
-                  false,
-                  false)));
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_DECODER_SET,
+                        false,
+                        false),
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_INITIALIZED,
+                        false,
+                        false),
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_FLUSHING,
+                        false,
+                        false),
+        std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED, false, false),
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_RESETTING,
+                        false,
+                        false),
+        std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        static_cast<ClientState>(-1),
+                        false,
+                        false),
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        static_cast<ClientState>(-10),
+                        false,
+                        false),
+        std::make_tuple(1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        static_cast<ClientState>(-100),
+                        false,
+                        false)));
 
 // Test that decoding various variation works with multiple in-flight decodes.
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
-        MakeTuple(1, 10, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        std::make_tuple(1, 10, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
         // Tests queuing.
-        MakeTuple(1, 15, 1, END_OF_STREAM_RESET, CS_RESET, false, false)));
+        std::make_tuple(1,
+                        15,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_RESET,
+                        false,
+                        false)));
 
 // Find out how many concurrent decoders can go before we exhaust system
 // resources.
-INSTANTIATE_TEST_CASE_P(ResourceExhaustion,
-                        VideoDecodeAcceleratorParamTest,
-                        ::testing::Values(
-                            // +0 hack below to promote enum to int.
-                            MakeTuple(kMinSupportedNumConcurrentDecoders + 0,
-                                      1,
-                                      1,
-                                      END_OF_STREAM_RESET,
-                                      CS_RESET,
-                                      false,
-                                      false),
-                            MakeTuple(kMinSupportedNumConcurrentDecoders + 1,
-                                      1,
-                                      1,
-                                      END_OF_STREAM_RESET,
-                                      CS_RESET,
-                                      false,
-                                      false)));
+INSTANTIATE_TEST_CASE_P(
+    ResourceExhaustion,
+    VideoDecodeAcceleratorParamTest,
+    ::testing::Values(
+        // +0 hack below to promote enum to int.
+        std::make_tuple(kMinSupportedNumConcurrentDecoders + 0,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_RESET,
+                        false,
+                        false),
+        std::make_tuple(kMinSupportedNumConcurrentDecoders + 1,
+                        1,
+                        1,
+                        END_OF_STREAM_RESET,
+                        CS_RESET,
+                        false,
+                        false)));
 
 // Thumbnailing test
 INSTANTIATE_TEST_CASE_P(
     Thumbnail,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, true)));
+        std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, true)));
 
 // Measure the median of the decode time when VDA::Decode is called 30 times per
 // second.
