@@ -366,9 +366,19 @@ class TracingTrackTestCase(unittest.TestCase):
     # Cannot re-enable a category.
     with self.assertRaises(AssertionError):
       TracingTrack(None, additional_categories=('cc',))
-    # Cannot disable categories.
+    # Cannot disable categories via |additional_categories|.
     with self.assertRaises(AssertionError):
       TracingTrack(None, additional_categories=('-best-category-ever',))
+
+  def testDisabledCategories(self):
+    track = TracingTrack(None, disabled_categories=('toplevel',))
+    self.assertNotIn('toplevel', track.Categories())
+    self.assertIn('-toplevel', track.Categories())
+    # Can only disable categories that are enabled by default.
+    with self.assertRaises(AssertionError):
+      TracingTrack(None, disabled_categories=('best-category-ever',))
+    with self.assertRaises(AssertionError):
+      TracingTrack(None, disabled_categories=('cc',))
 
   def _HandleEvents(self, events):
     self.track.Handle('Tracing.dataCollected', {'params': {'value': [

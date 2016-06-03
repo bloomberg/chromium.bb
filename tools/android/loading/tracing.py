@@ -12,12 +12,14 @@ import operator
 import devtools_monitor
 
 
-_DISABLED_CATEGORIES = ('cc',) # Contains a lot of events, none of which we use.
 QUEUING_CATEGORY = 'disabled-by-default-loading.resource'
-INITIAL_CATEGORIES = (
+_ENABLED_CATEGORIES = (
     ('toplevel', 'blink', 'v8', 'java', 'devtools.timeline',
      'blink.user_timing', 'blink.net', 'disabled-by-default-blink.debug.layout')
-    + (QUEUING_CATEGORY,)
+    + (QUEUING_CATEGORY,))
+_DISABLED_CATEGORIES = ('cc',) # Contains a lot of events, none of which we use.
+INITIAL_CATEGORIES = (
+    _ENABLED_CATEGORIES
     + tuple('-' + cat for cat in _DISABLED_CATEGORIES))
 
 
@@ -27,6 +29,7 @@ class TracingTrack(devtools_monitor.Track):
   See https://goo.gl/Qabkqk for details on the protocol.
   """
   def __init__(self, connection, additional_categories=None,
+               disabled_categories=None,
                fetch_stream=False):
     """Initialize this TracingTrack.
 
@@ -35,7 +38,9 @@ class TracingTrack(devtools_monitor.Track):
       additional_categories: ([str] or None) If set, a list of additional
                              categories to add. This cannot be used to re-enable
                              a category which is disabled by default (see
-                             INITIAL_CATEGORIES), nor to disable a category.
+                             _DISABLED_CATEGORIES), nor to disable a category.
+      disabled_categories: If set, a set of categories from _ENABLED_CATEGORIES
+                           to disable.
       fetch_stream: if true, use a websocket stream to fetch tracing data rather
         than dataCollected events. It appears based on very limited testing that
         a stream is slower than the default reporting as dataCollected events.
@@ -43,13 +48,29 @@ class TracingTrack(devtools_monitor.Track):
     super(TracingTrack, self).__init__(connection)
     if connection:
       connection.RegisterListener('Tracing.dataCollected', self)
-    extra_categories = additional_categories or []
-    assert not (set(extra_categories) & set(_DISABLED_CATEGORIES)), (
-        'Cannot enable a disabled category')
-    assert not any(cat.startswith('-') for cat in extra_categories), (
-        'Cannot disable a category')
+
+    categories_to_enable = _ENABLED_CATEGORIES
+    categories_to_disable = _DISABLED_CATEGORIES
+
+    if disabled_categories:
+      assert not any(cat.startswith('-') for cat in disabled_categories), (
+          'Specify categories to disable without an initial -')
+      assert set(disabled_categories).issubset(set(_ENABLED_CATEGORIES)), (
+          'Can only disable categories that are enabled by default')
+      categories_to_enable = (
+          set(categories_to_enable).difference(set(disabled_categories)))
+      categories_to_disable += disabled_categories
+
+    if additional_categories:
+      assert not any(cat.startswith('-') for cat in additional_categories), (
+          'Use disabled_categories to disable a category')
+      assert not (set(additional_categories) & set(_DISABLED_CATEGORIES)), (
+          'Cannot enable a disabled category')
+      categories_to_enable += tuple(additional_categories)
+
     self._categories = set(
-        itertools.chain(INITIAL_CATEGORIES, extra_categories))
+        itertools.chain(categories_to_enable,
+                        tuple('-' + cat for cat in categories_to_disable)))
     params = {}
     params['categories'] = ','.join(self._categories)
     if fetch_stream:
