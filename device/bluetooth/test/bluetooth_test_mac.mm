@@ -41,18 +41,20 @@ class BluetoothTestMac::ScopedMockCentralManager {
 
 namespace {
 
-NSDictionary* CreateAdvertisementData(NSString* name, NSArray* uuids) {
-  NSMutableDictionary* advertisement_data =
+scoped_nsobject<NSDictionary> CreateAdvertisementData(NSString* name,
+                                                      NSArray* uuids) {
+  NSMutableDictionary* advertisement_data(
       [NSMutableDictionary dictionaryWithDictionary:@{
         CBAdvertisementDataLocalNameKey : name,
         CBAdvertisementDataServiceDataKey : @{},
         CBAdvertisementDataIsConnectable : @(YES),
-      }];
+      }]);
   if (uuids) {
     [advertisement_data setObject:uuids
                            forKey:CBAdvertisementDataServiceUUIDsKey];
   }
-  return [advertisement_data retain];
+  return scoped_nsobject<NSDictionary>(advertisement_data,
+                                       base::scoped_policy::RETAIN);
 }
 
 }  // namespace
@@ -229,7 +231,7 @@ void BluetoothTestMac::SimulateGattServicesDiscovered(
       static_cast<BluetoothLowEnergyDeviceMac*>(device);
   CBPeripheral* peripheral = device_mac->GetPeripheral();
   MockCBPeripheral* peripheral_mock = ObjCCast<MockCBPeripheral>(peripheral);
-  scoped_nsobject<NSMutableArray> services = [[NSMutableArray alloc] init];
+  scoped_nsobject<NSMutableArray> services([[NSMutableArray alloc] init]);
   for (auto uuid : uuids) {
     CBUUID* cb_service_uuid = [CBUUID UUIDWithString:@(uuid.c_str())];
     [services addObject:cb_service_uuid];

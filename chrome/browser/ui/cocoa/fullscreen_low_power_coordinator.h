@@ -44,7 +44,7 @@ class FullscreenLowPowerCoordinatorCocoa
   void EnterOrExitLowPowerModeIfNeeded();
 
   // The main fullscreen window.
-  base::scoped_nsobject<NSWindow> content_window_ = nil;
+  base::scoped_nsobject<NSWindow> content_window_;
 
   // Weak, reset by WillLoseAcceleratedWidget before it goes away.
   ui::AcceleratedWidgetMac* widget_ = nullptr;

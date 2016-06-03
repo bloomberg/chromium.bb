@@ -72,10 +72,10 @@ TEST(PasswordControllerTest, SaveOnNonHTMLLandingPage) {
       .WillByDefault(testing::Return(browser_state.get()));
   auto client = base::WrapUnique(new MockPasswordManagerClient);
   MockPasswordManagerClient* weak_client = client.get();
-  base::scoped_nsobject<PasswordController> passwordController =
+  base::scoped_nsobject<PasswordController> passwordController(
       [[PasswordController alloc] initWithWebState:&web_state
                                passwordsUiDelegate:nil
-                                            client:std::move(client)];
+                                            client:std::move(client)]);
 
   // Use a mock LogManager to detect that OnPasswordFormsRendered has been
   // called. TODO(crbug.com/598672): this is a hack, we should modularize the

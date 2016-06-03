@@ -140,7 +140,7 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   ServiceResolverImplMac* resolver_impl =
       static_cast<ServiceResolverImplMac*>(resolver.get());
   resolver_impl->GetContainerForTesting()->SetServiceForTesting(
-      test_service.release());
+      base::scoped_nsobject<NSNetService>(test_service));
   resolver->StartResolving();
 
   resolver_impl->GetContainerForTesting()->OnResolveUpdate(

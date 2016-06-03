@@ -91,10 +91,9 @@ NSImage* imageForResourceID(int resource_id) {
   }
   DCHECK(theSelector);
 
-  base::scoped_nsobject<NSCustomImageRep> imageRep =
-      [[NSCustomImageRep alloc]
-          initWithDrawSelector:theSelector
-                      delegate:[TabView class]];
+  base::scoped_nsobject<NSCustomImageRep> imageRep([[NSCustomImageRep alloc]
+      initWithDrawSelector:theSelector
+                  delegate:[TabView class]]);
 
   NSImage* newTabButtonImage =
       [[[NSImage alloc] initWithSize:NSMakeSize(imageWidth, 29)] autorelease];

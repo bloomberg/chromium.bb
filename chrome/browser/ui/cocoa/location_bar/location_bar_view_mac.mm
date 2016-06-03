@@ -128,10 +128,10 @@ const SkColor kMaterialDarkVectorIconColor = 0xCCFFFFFF;
         base::mac::GetSRGBColorSpace());
   }
 
-  base::scoped_nsobject<LocationBarImageRep> imageRep =
+  base::scoped_nsobject<LocationBarImageRep> imageRep(
       [[LocationBarImageRep alloc]
           initWithDrawSelector:@selector(drawLocationBarIcon:)
-                      delegate:[LocationBarImageRep class]];
+                      delegate:[LocationBarImageRep class]]);
   [imageRep setIconId:vectorIconId];
   [imageRep setFillColor:skia::SkColorToSRGBNSColor(vectorIconColor)];
 

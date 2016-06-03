@@ -128,8 +128,8 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
       kDesiredBubbleWidth,
       std::min<CGFloat>([credentialButtons_ count], kMaxHeightAccounts) *
           kCredentialHeight);
-  base::scoped_nsobject<NSScrollView> scrollView = [[NSScrollView alloc]
-      initWithFrame:NSMakeRect(0, 0, buttonsSize.width, buttonsSize.height)];
+  base::scoped_nsobject<NSScrollView> scrollView([[NSScrollView alloc]
+      initWithFrame:NSMakeRect(0, 0, buttonsSize.width, buttonsSize.height)]);
   [scrollView
       setHasVerticalScroller:[credentialButtons_ count] > kMaxHeightAccounts
                                  ? YES

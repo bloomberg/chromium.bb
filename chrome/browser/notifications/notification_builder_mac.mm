@@ -42,14 +42,14 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
 
 - (instancetype)init {
   if ((self = [super init])) {
-    notificationData_ = [[NSMutableDictionary alloc] init];
+    notificationData_.reset([[NSMutableDictionary alloc] init]);
   }
   return self;
 }
 
 - (instancetype)initWithDictionary:(NSDictionary*)data {
   if ((self = [super init])) {
-    notificationData_ = [data copy];
+    notificationData_.reset([data copy]);
   }
   return self;
 }

@@ -228,7 +228,7 @@ base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
   }
 
   if (!item) {
-    item = [[NSPasteboardItem alloc] init];
+    item.reset([[NSPasteboardItem alloc] init]);
   }
 
   [item setString:[toplevel_string_data componentsJoinedByString:@"\n"]

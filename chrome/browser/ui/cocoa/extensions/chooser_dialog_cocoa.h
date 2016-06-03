@@ -45,8 +45,8 @@ class ChooserDialogCocoa : public ConstrainedWindowMacDelegate,
  private:
   friend class ChooserDialogCocoaControllerTest;
   base::scoped_nsobject<ChooserDialogCocoaController>
-      chooser_dialog_cocoa_controller_ = nullptr;
-  std::unique_ptr<ConstrainedWindowMac> constrained_window_ = nullptr;
+      chooser_dialog_cocoa_controller_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
   content::WebContents* web_contents_;     // Weak.
   ChooserController* chooser_controller_;  // Weak.
 };

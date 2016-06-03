@@ -76,7 +76,7 @@ using base::scoped_nsobject;
 - (void)setState:(CBPeripheralState)state {
   _state = state;
   if (_state == CBPeripheralStateDisconnected) {
-    _services = nil;
+    _services.reset();
   }
 }
 

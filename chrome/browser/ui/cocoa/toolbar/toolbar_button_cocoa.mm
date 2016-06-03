@@ -231,10 +231,10 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 - (NSImage*)browserToolsIconForFillColor:(SkColor)fillColor {
   // Create a |BrowserToolsImageRep| to draw the browser tools icon using
   // the provided fill color.
-  base::scoped_nsobject<BrowserToolsImageRep> imageRep =
-  [[BrowserToolsImageRep alloc]
-      initWithDrawSelector:@selector(drawBrowserToolsIcon:)
-                  delegate:[BrowserToolsImageRep class]];
+  base::scoped_nsobject<BrowserToolsImageRep> imageRep(
+      [[BrowserToolsImageRep alloc]
+          initWithDrawSelector:@selector(drawBrowserToolsIcon:)
+                      delegate:[BrowserToolsImageRep class]]);
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     [imageRep setFillColor:skia::SkColorToCalibratedNSColor(fillColor)];
   } else {
@@ -254,10 +254,10 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
      withBackgroundStyle:(ToolbarButtonImageBackgroundStyle)style {
   // Create a |ToolbarButtonImageRep| to draw the button image using
   // the provided icon and background style.
-  base::scoped_nsobject<ToolbarButtonImageRep> imageRep =
+  base::scoped_nsobject<ToolbarButtonImageRep> imageRep(
       [[ToolbarButtonImageRep alloc]
           initWithDrawSelector:@selector(drawImage:)
-                      delegate:[ToolbarButtonImageRep class]];
+                      delegate:[ToolbarButtonImageRep class]]);
   [imageRep setIcon:iconImage];
   [imageRep setStyle:style];
 

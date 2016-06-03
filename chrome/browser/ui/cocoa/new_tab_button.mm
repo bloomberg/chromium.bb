@@ -359,10 +359,10 @@ CGFloat LineWidthFromContext(CGContextRef context) {
       NOTREACHED();
   }
 
-  base::scoped_nsobject<NewTabButtonCustomImageRep> imageRep =
+  base::scoped_nsobject<NewTabButtonCustomImageRep> imageRep(
       [[NewTabButtonCustomImageRep alloc]
           initWithDrawSelector:@selector(drawNewTabButtonImage:)
-                      delegate:[NewTabButton class]];
+                      delegate:[NewTabButton class]]);
   [imageRep setDestView:self];
   [imageRep setFillColor:fillColor];
   [imageRep setPatternPhasePosition:
