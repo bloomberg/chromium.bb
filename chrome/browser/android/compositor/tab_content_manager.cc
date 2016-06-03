@@ -82,7 +82,6 @@ class TabContentManager::TabReadbackRequest {
     content::RenderWidgetHost* rwh = view->GetWebContents()
                                          ->GetRenderViewHost()
                                          ->GetWidget();
-    rwh->LockBackingStore();
 
     SkColorType color_type = kN32_SkColorType;
     gfx::Rect src_rect = rwh->GetView()->GetViewBounds();
@@ -94,19 +93,6 @@ class TabContentManager::TabReadbackRequest {
   void OnFinishGetTabThumbnailBitmap(const SkBitmap& bitmap,
                                      content::ReadbackResponse response) {
     DCHECK(!j_content_view_core_.is_null());
-    JNIEnv* env = base::android::AttachCurrentThread();
-    content::ContentViewCore* view =
-        content::ContentViewCore::GetNativeContentViewCore(
-            env, j_content_view_core_.obj());
-
-    if (view) {
-      DCHECK(view->GetWebContents());
-      view->GetWebContents()
-          ->GetRenderViewHost()
-          ->GetWidget()
-          ->UnlockBackingStore();
-    }
-
     if (response != content::READBACK_SUCCESS || drop_after_readback_) {
       end_callback_.Run(0.f, SkBitmap());
       return;

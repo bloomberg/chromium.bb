@@ -284,6 +284,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Called after async screenshot task completes. Scales and crops the result
   // of the copy.
   static void PrepareTextureCopyOutputResult(
+      base::WeakPtr<RenderWidgetHostViewAndroid> rwhva,
       const gfx::Size& dst_size_in_pixel,
       SkColorType color_type,
       const base::TimeTicks& start_time,

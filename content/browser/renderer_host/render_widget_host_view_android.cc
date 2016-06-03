@@ -870,15 +870,16 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
-  if (!host_ || host_->is_hidden()) {
+  if (!host_ || host_->is_hidden() || !IsSurfaceAvailableForCopy()) {
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
+  if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
+    callback.Run(SkBitmap(), READBACK_FAILED);
+    return;
+  }
+
   base::TimeTicks start_time = base::TimeTicks::Now();
-  if (!IsSurfaceAvailableForCopy()) {
-    callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
-    return;
-  }
   const display::Display& display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
@@ -895,20 +896,18 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     return;
   }
 
-  if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
-    callback.Run(SkBitmap(), READBACK_FAILED);
-    return;
-  }
   ui::WindowAndroidCompositor* compositor =
       content_view_core_->GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
   DCHECK(!surface_id_.is_null());
   std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateRequest(
-          base::Bind(&PrepareTextureCopyOutputResult, dst_size_in_pixel,
-                     preferred_color_type, start_time, callback));
+      cc::CopyOutputRequest::CreateRequest(base::Bind(
+          &PrepareTextureCopyOutputResult, weak_ptr_factory_.GetWeakPtr(),
+          dst_size_in_pixel, preferred_color_type, start_time, callback));
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
+  // Make sure the layer doesn't get deleted until we fulfill the request.
+  LockCompositingSurface();
   layer_->RequestCopyOfOutput(std::move(request));
 }
 
@@ -1927,6 +1926,7 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 
 // static
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
+    base::WeakPtr<RenderWidgetHostViewAndroid> rwhva,
     const gfx::Size& dst_size_in_pixel,
     SkColorType color_type,
     const base::TimeTicks& start_time,
@@ -1936,9 +1936,21 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
       base::Bind(callback, SkBitmap(), READBACK_FAILED));
   TRACE_EVENT0("cc",
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
-
+  if (rwhva)
+    rwhva->UnlockCompositingSurface();
   if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
     return;
+  cc::TextureMailbox texture_mailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  result->TakeTexture(&texture_mailbox, &release_callback);
+  DCHECK(texture_mailbox.IsTexture());
+  if (!texture_mailbox.IsTexture())
+    return;
+  display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
+  if (!gl_helper)
+    return;
+  if (!gl_helper->IsReadbackConfigSupported(color_type))
+    color_type = kRGBA_8888_SkColorType;
 
   gfx::Size output_size_in_pixel;
   if (dst_size_in_pixel.IsEmpty())
@@ -1946,11 +1958,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   else
     output_size_in_pixel = dst_size_in_pixel;
 
-  display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
-  if (!gl_helper)
-    return;
-  if (!gl_helper->IsReadbackConfigSupported(color_type))
-    color_type = kRGBA_8888_SkColorType;
   std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(output_size_in_pixel.width(),
                                                 output_size_in_pixel.height(),
@@ -1964,13 +1971,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock(
       new SkAutoLockPixels(*bitmap));
   uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
-
-  cc::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
-    return;
 
   ignore_result(scoped_callback_runner.Release());
 
