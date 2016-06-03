@@ -910,24 +910,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <!-- Chrome Notifications center -->
-      <if expr="enable_notifications">
-        <if expr="is_win">
-          <message name="IDS_MESSAGE_CENTER_BALLOON_TITLE" desc="Title of the first run notification ballon describing the notification center.">
-            Chromium Notification Center
-          </message>
-          <message name="IDS_MESSAGE_CENTER_BALLOON_TEXT" desc="Body text for the the first run notification ballon describing the notification center.">
-            You can see all your notifications from Chromium apps, extensions, and websites here.
-          </message>
-        </if>
-        <message name="IDS_MESSAGE_CENTER_TOOLTIP" desc="Tooltip for notification tray icon without unread notifications">
-          Chromium - Notifications
-        </message>
-        <message name="IDS_MESSAGE_CENTER_TOOLTIP_UNREAD" desc="Tooltip for notification tray icon with unread notifications">
-          Chromium - Notifications (<ph name="QUANTITY">$1<ex>3</ex></ph> unread)
-        </message>
-      </if>
-
       <!-- MediaStream capture status tray icon -->
       <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO" desc="Tool tip for the capture status tray icon when microphone and camera are being used">
         Chromium is using your camera and microphone.

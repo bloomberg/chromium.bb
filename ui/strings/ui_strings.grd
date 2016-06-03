@@ -641,15 +641,6 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         You have no notifications
       </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for do not disturb mode.">
-        Do not disturb
-      </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR" desc="The button label to enter do not disturb mode in one hour.">
-        Do not disturb for one hour
-      </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1DAY" desc="The button label to enter do not disturb mode in one day.">
-        Do not disturb for one day
-      </message>
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the close button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification close
       </message>
