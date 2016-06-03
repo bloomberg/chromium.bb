@@ -31,7 +31,7 @@ class AppLaunchTest : public shell::test::ShellTest {
 };
 
 TEST_F(AppLaunchTest, TestQuickLaunch) {
-  connector()->Connect("mojo:desktop_wm");
+  connector()->Connect("mojo:ash");
   connector()->Connect("mojo:quick_launch");
 
   ::mus::mojom::WindowServerTestPtr test_interface;

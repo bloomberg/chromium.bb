@@ -115,7 +115,7 @@ class UI : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void StartWindowManager() {
-    window_manager_connection_ = connector_->Connect("mojo:desktop_wm");
+    window_manager_connection_ = connector_->Connect("mojo:ash");
     window_manager_connection_->SetConnectionLostClosure(
         base::Bind(&UI::StartWindowManager, base::Unretained(this)));
   }

@@ -52,7 +52,7 @@ class TestUserWindowObserver : public mojom::UserWindowObserver {
  public:
   explicit TestUserWindowObserver(shell::Connector* connector)
       : binding_(this), window_count_(0u), expected_window_count_(0u) {
-    connector->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
+    connector->ConnectToInterface("mojo:ash", &user_window_controller_);
     user_window_controller_->AddUserWindowObserver(
         binding_.CreateInterfacePtrAndBind());
   }
@@ -114,11 +114,10 @@ class TestUserWindowObserver : public mojom::UserWindowObserver {
 TEST_F(WindowManagerTest, OpenWindow) {
   WindowTreeClientDelegate window_tree_delegate;
 
-  // Bring up the the desktop_wm.
-  connector()->Connect("mojo:desktop_wm");
+  connector()->Connect("mojo:ash");
 
   // Connect to mus and create a new top level window. The request goes to
-  // the |desktop_wm|, but is async.
+  // |ash|, but is async.
   std::unique_ptr<::mus::WindowTreeClient> client(
       new ::mus::WindowTreeClient(&window_tree_delegate, nullptr, nullptr));
   client->ConnectViaWindowTreeFactory(connector());
@@ -141,8 +140,7 @@ TEST_F(WindowManagerTest, OpenWindow) {
 }
 
 TEST_F(WindowManagerTest, OpenWindowAndClose) {
-  // Bring up the the desktop_wm.
-  connector()->Connect("mojo:desktop_wm");
+  connector()->Connect("mojo:ash");
 
   TestUserWindowObserver observer(connector());
 

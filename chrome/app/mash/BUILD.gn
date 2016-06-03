@@ -53,8 +53,8 @@ mojo_application_manifest("manifest") {
   ]
   packaged_applications = [
     "app_driver",
+    "ash",
     "ash_sysui",
-    "desktop_wm",
     "mash_session",
     "mus",
     "quick_launch",

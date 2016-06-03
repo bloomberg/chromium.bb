@@ -184,8 +184,8 @@ ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
     : model_(model), binding_(this) {
   ::shell::Connector* connector =
       views::WindowManagerConnection::Get()->connector();
-  connector->ConnectToInterface("mojo:desktop_wm", &shelf_layout_);
-  connector->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
+  connector->ConnectToInterface("mojo:ash", &shelf_layout_);
+  connector->ConnectToInterface("mojo:ash", &user_window_controller_);
   user_window_controller_->AddUserWindowObserver(
       binding_.CreateInterfacePtrAndBind());
 }

@@ -108,7 +108,7 @@ source_set("lib") {
 }
 
 mojo_native_application("mus") {
-  output_name = "desktop_wm"
+  output_name = "ash"
 
   sources = [
     "main.cc",
@@ -131,7 +131,7 @@ mojo_native_application("mus") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "desktop_wm"
+  application_name = "ash"
   source = "manifest.json"
 }
 

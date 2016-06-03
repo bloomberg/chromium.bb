@@ -92,7 +92,7 @@ void Session::Create(shell::Connection* connection,
 
 void Session::StartWindowManager() {
   StartRestartableService(
-      "mojo:desktop_wm",
+      "mojo:ash",
       base::Bind(&Session::StartWindowManager,
                  base::Unretained(this)));
 }

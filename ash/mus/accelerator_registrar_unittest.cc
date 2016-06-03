@@ -74,7 +74,7 @@ class AcceleratorRegistrarTest : public shell::test::ShellTest {
 
  protected:
   void ConnectToRegistrar(AcceleratorRegistrarPtr* registrar) {
-    connector()->ConnectToInterface("mojo:desktop_wm", registrar);
+    connector()->ConnectToInterface("mojo:ash", registrar);
   }
 
  private:

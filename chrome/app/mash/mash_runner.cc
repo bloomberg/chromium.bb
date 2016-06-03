@@ -86,7 +86,7 @@ class DefaultShellClient : public shell::ShellClient,
       const std::string& name) {
     if (name == "mojo:ash_sysui")
       return base::WrapUnique(new ash::sysui::SysUIApplication);
-    if (name == "mojo:desktop_wm")
+    if (name == "mojo:ash")
       return base::WrapUnique(new ash::mus::WindowManagerApplication);
     if (name == "mojo:mash_session")
       return base::WrapUnique(new mash::session::Session);
