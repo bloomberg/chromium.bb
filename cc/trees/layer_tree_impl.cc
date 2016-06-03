@@ -444,11 +444,11 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
   }
 }
 
-LayerListIterator<LayerImpl> LayerTreeImpl::begin() {
+LayerListIterator<LayerImpl> LayerTreeImpl::begin() const {
   return LayerListIterator<LayerImpl>(root_layer_);
 }
 
-LayerListIterator<LayerImpl> LayerTreeImpl::end() {
+LayerListIterator<LayerImpl> LayerTreeImpl::end() const {
   return LayerListIterator<LayerImpl>(nullptr);
 }
 
@@ -1291,10 +1291,6 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerTreeImpl", this);
   state->SetInteger("source_frame_number", source_frame_number_);
 
-  state->BeginDictionary("root_layer");
-  root_layer_->AsValueInto(state);
-  state->EndDictionary();
-
   state->BeginArray("render_surface_layer_list");
   LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
   for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
@@ -1313,6 +1309,14 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginArray("pinned_swap_promise_trace_ids");
   for (const auto& swap_promise : pinned_swap_promise_list_)
     state->AppendDouble(swap_promise->TraceId());
+  state->EndArray();
+
+  state->BeginArray("layers");
+  for (auto* layer : *this) {
+    state->BeginDictionary();
+    layer->AsValueInto(state);
+    state->EndDictionary();
+  }
   state->EndArray();
 }
 

@@ -148,10 +148,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   bool UpdateLayers();
 
-  LayerListIterator<Layer> begin();
-  LayerListIterator<Layer> end();
-  const LayerListIterator<Layer> begin() const;
-  const LayerListIterator<Layer> end() const;
+  LayerListIterator<Layer> begin() const;
+  LayerListIterator<Layer> end() const;
   LayerListReverseIterator<Layer> rbegin();
   LayerListReverseIterator<Layer> rend();
 

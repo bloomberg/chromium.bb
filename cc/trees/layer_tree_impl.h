@@ -148,8 +148,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void MoveChangeTrackingToLayers();
 
-  LayerListIterator<LayerImpl> begin();
-  LayerListIterator<LayerImpl> end();
+  LayerListIterator<LayerImpl> begin() const;
+  LayerListIterator<LayerImpl> end() const;
   LayerListReverseIterator<LayerImpl> rbegin();
   LayerListReverseIterator<LayerImpl> rend();
 

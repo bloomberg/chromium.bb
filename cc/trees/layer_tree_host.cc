@@ -884,19 +884,11 @@ bool LayerTreeHost::UpdateLayers() {
   return result || next_commit_forces_redraw_;
 }
 
-LayerListIterator<Layer> LayerTreeHost::begin() {
+LayerListIterator<Layer> LayerTreeHost::begin() const {
   return LayerListIterator<Layer>(root_layer_.get());
 }
 
-LayerListIterator<Layer> LayerTreeHost::end() {
-  return LayerListIterator<Layer>(nullptr);
-}
-
-const LayerListIterator<Layer> LayerTreeHost::begin() const {
-  return LayerListIterator<Layer>(root_layer_.get());
-}
-
-const LayerListIterator<Layer> LayerTreeHost::end() const {
+LayerListIterator<Layer> LayerTreeHost::end() const {
   return LayerListIterator<Layer>(nullptr);
 }
 
