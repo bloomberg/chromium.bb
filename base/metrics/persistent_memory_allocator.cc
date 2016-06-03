@@ -84,8 +84,8 @@ const uint32_t PersistentMemoryAllocator::kAllocAlignment = 8;
 struct PersistentMemoryAllocator::BlockHeader {
   uint32_t size;       // Number of bytes in this block, including header.
   uint32_t cookie;     // Constant value indicating completed allocation.
-  uint32_t type_id;    // A number provided by caller indicating data type.
-  std::atomic<uint32_t> next;  // Pointer to the next block when iterating.
+  std::atomic<uint32_t> type_id;  // Arbitrary number indicating data type.
+  std::atomic<uint32_t> next;     // Pointer to the next block when iterating.
 };
 
 // The shared metadata exists once at the top of the memory segment to
@@ -194,7 +194,7 @@ PersistentMemoryAllocator::Iterator::GetNext(uint32_t* type_return) {
     // "strong" compare-exchange is used because failing unnecessarily would
     // mean repeating some fairly costly validations above.
     if (last_record_.compare_exchange_strong(last, next)) {
-      *type_return = block->type_id;
+      *type_return = block->type_id.load(std::memory_order_relaxed);
       break;
     }
   }
@@ -301,7 +301,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(
         shared_meta()->queue.next.load(std::memory_order_relaxed) != 0 ||
         first_block->size != 0 ||
         first_block->cookie != 0 ||
-        first_block->type_id != 0 ||
+        first_block->type_id.load(std::memory_order_relaxed) != 0 ||
         first_block->next != 0) {
       // ...or something malicious has been playing with the metadata.
       SetCorrupt();
@@ -428,15 +428,20 @@ uint32_t PersistentMemoryAllocator::GetType(Reference ref) const {
   const volatile BlockHeader* const block = GetBlock(ref, 0, 0, false, false);
   if (!block)
     return 0;
-  return block->type_id;
+  return block->type_id.load(std::memory_order_relaxed);
 }
 
-void PersistentMemoryAllocator::SetType(Reference ref, uint32_t type_id) {
+bool PersistentMemoryAllocator::ChangeType(Reference ref,
+                                           uint32_t to_type_id,
+                                           uint32_t from_type_id) {
   DCHECK(!readonly_);
   volatile BlockHeader* const block = GetBlock(ref, 0, 0, false, false);
   if (!block)
-    return;
-  block->type_id = type_id;
+    return false;
+
+  // This is a "strong" exchange because there is no loop that can retry in
+  // the wake of spurious failures possible with "weak" exchanges.
+  return block->type_id.compare_exchange_strong(from_type_id, to_type_id);
 }
 
 PersistentMemoryAllocator::Reference PersistentMemoryAllocator::Allocate(
@@ -550,7 +555,7 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
     // writing beyond the allocated space and into unallocated space.
     if (block->size != 0 ||
         block->cookie != kBlockCookieFree ||
-        block->type_id != 0 ||
+        block->type_id.load(std::memory_order_relaxed) != 0 ||
         block->next.load(std::memory_order_relaxed) != 0) {
       SetCorrupt();
       return kReferenceNull;
@@ -558,7 +563,7 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
 
     block->size = size;
     block->cookie = kBlockCookieAllocated;
-    block->type_id = type_id;
+    block->type_id.store(type_id, std::memory_order_relaxed);
     return freeptr;
   }
 }
@@ -690,8 +695,10 @@ PersistentMemoryAllocator::GetBlock(Reference ref, uint32_t type_id,
       return nullptr;
     if (ref != kReferenceQueue && block->cookie != kBlockCookieAllocated)
       return nullptr;
-    if (type_id != 0 && block->type_id != type_id)
+    if (type_id != 0 &&
+        block->type_id.load(std::memory_order_relaxed) != type_id) {
       return nullptr;
+    }
   }
 
   // Return pointer to block data.

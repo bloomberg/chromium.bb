@@ -241,9 +241,11 @@ class BASE_EXPORT PersistentMemoryAllocator {
 
   // Access the internal "type" of an object. This generally isn't necessary
   // but can be used to "clear" the type and so effectively mark it as deleted
-  // even though the memory stays valid and allocated.
+  // even though the memory stays valid and allocated. Changing the type is
+  // an atomic compare/exchange and so requires knowing the existing value.
+  // It will return false if the existing type is not what is expected.
   uint32_t GetType(Reference ref) const;
-  void SetType(Reference ref, uint32_t type_id);
+  bool ChangeType(Reference ref, uint32_t to_type_id, uint32_t from_type_id);
 
   // Reserve space in the memory segment of the desired |size| and |type_id|.
   // A return value of zero indicates the allocation failed, otherwise the

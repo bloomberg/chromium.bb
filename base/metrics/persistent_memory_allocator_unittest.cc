@@ -181,9 +181,9 @@ TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
 
   // Check that an objcet's type can be changed.
   EXPECT_EQ(2U, allocator_->GetType(block2));
-  allocator_->SetType(block2, 3);
+  allocator_->ChangeType(block2, 3, 2);
   EXPECT_EQ(3U, allocator_->GetType(block2));
-  allocator_->SetType(block2, 2);
+  allocator_->ChangeType(block2, 2, 3);
   EXPECT_EQ(2U, allocator_->GetType(block2));
 
   // Create second allocator (read/write) using the same memory segment.
@@ -511,7 +511,7 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
     r456 = local.Allocate(456, 456);
     r789 = local.Allocate(789, 789);
     local.MakeIterable(r123);
-    local.SetType(r456, 654);
+    local.ChangeType(r456, 654, 456);
     local.MakeIterable(r789);
     local.GetMemoryInfo(&meminfo1);
     EXPECT_FALSE(local.IsFull());
@@ -599,7 +599,7 @@ TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
     r456 = local.Allocate(456, 456);
     r789 = local.Allocate(789, 789);
     local.MakeIterable(r123);
-    local.SetType(r456, 654);
+    local.ChangeType(r456, 654, 456);
     local.MakeIterable(r789);
     local.GetMemoryInfo(&meminfo1);
     EXPECT_FALSE(local.IsFull());

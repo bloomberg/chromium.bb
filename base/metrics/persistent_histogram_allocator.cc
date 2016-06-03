@@ -481,7 +481,7 @@ void PersistentHistogramAllocator::FinalizeHistogram(Reference ref,
   // two to be created. The allocator does not support releasing the
   // acquired memory so just change the type to be empty.
   else
-    memory_allocator_->SetType(ref, 0);
+    memory_allocator_->ChangeType(ref, 0, kTypeIdHistogram);
 }
 
 void PersistentHistogramAllocator::MergeHistogramToStatisticsRecorder(
