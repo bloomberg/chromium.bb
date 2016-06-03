@@ -3830,6 +3830,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(AV1_COMP *cpi, TileDataEnc *tile_data,
   mbmi->mv[0].as_int = 0;
   x->skip = 1;
 
+#if CONFIG_REF_MV
+  mbmi->ref_mv_idx = 0;
+  mbmi->pred_mv[0].as_int = 0;
+#endif
+
   if (cm->interp_filter != BILINEAR) {
     best_filter = EIGHTTAP;
     if (cm->interp_filter == SWITCHABLE &&
