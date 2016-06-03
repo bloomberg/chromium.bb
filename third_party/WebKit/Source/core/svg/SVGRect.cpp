@@ -75,11 +75,8 @@ SVGParsingError SVGRect::setValueAsString(const String& string)
     if (string.isNull())
         return SVGParseStatus::NoError;
 
-    if (string.isEmpty()) {
-        m_value = FloatRect(0.0f, 0.0f, 0.0f, 0.0f);
-        m_isValid = true;
-        return SVGParseStatus::NoError;
-    }
+    if (string.isEmpty())
+        return SVGParsingError(SVGParseStatus::ExpectedNumber, 0);
 
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
