@@ -21,6 +21,8 @@ namespace {
 
 std::string StartSituationToSuffix(
     ServiceWorkerMetrics::StartSituation situation) {
+  // Don't change these returned strings. They are written (in hashed form) into
+  // logs.
   switch (situation) {
     case ServiceWorkerMetrics::StartSituation::DURING_STARTUP:
       return "_DuringStartup";
@@ -32,6 +34,42 @@ std::string StartSituationToSuffix(
       NOTREACHED() << static_cast<int>(situation);
   }
   return "_Unknown";
+}
+
+std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
+  // Don't change these returned strings. They are written (in hashed form) into
+  // logs.
+  switch (event_type) {
+    case ServiceWorkerMetrics::EventType::ACTIVATE:
+      return "_ACTIVATE";
+    case ServiceWorkerMetrics::EventType::INSTALL:
+      return "_INSTALL";
+    case ServiceWorkerMetrics::EventType::SYNC:
+      return "_SYNC";
+    case ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK:
+      return "_NOTIFICATION_CLICK";
+    case ServiceWorkerMetrics::EventType::PUSH:
+      return "_PUSH";
+    case ServiceWorkerMetrics::EventType::MESSAGE:
+      return "_MESSAGE";
+    case ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE:
+      return "_NOTIFICATION_CLOSE";
+    case ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME:
+      return "_FETCH_MAIN_FRAME";
+    case ServiceWorkerMetrics::EventType::FETCH_SUB_FRAME:
+      return "_FETCH_SUB_FRAME";
+    case ServiceWorkerMetrics::EventType::FETCH_SHARED_WORKER:
+      return "_FETCH_SHARED_WORKER";
+    case ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE:
+      return "_FETCH_SUB_RESOURCE";
+    case ServiceWorkerMetrics::EventType::UNKNOWN:
+      return "_UNKNOWN";
+    case ServiceWorkerMetrics::EventType::FOREIGN_FETCH:
+      return "_FOREIGN_FETCH";
+    case ServiceWorkerMetrics::EventType::NUM_TYPES:
+      NOTREACHED() << static_cast<int>(event_type);
+  }
+  return "_UNKNOWN";
 }
 
 // Use this for histograms with dynamically generated names, which
@@ -46,6 +84,20 @@ void RecordSuffixedTimeHistogram(const std::string& name,
       base::TimeDelta::FromMinutes(3), 50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram_pointer->AddTime(sample);
+}
+
+// Use this for histograms with dynamically generated names, which
+// otherwise can't use the UMA_HISTOGRAM macro without code duplication.
+void RecordSuffixedStatusHistogram(const std::string& name,
+                                   const std::string& suffix,
+                                   ServiceWorkerStatusCode status) {
+  const std::string name_with_suffix = name + suffix;
+  // This unrolls UMA_HISTOGRAM_ENUMERATION.
+  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
+      name_with_suffix, 1, SERVICE_WORKER_ERROR_MAX_VALUE,
+      SERVICE_WORKER_ERROR_MAX_VALUE + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->Add(status);
 }
 
 void RecordURLMetricOnUI(const GURL& url) {
@@ -206,77 +258,8 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
-  switch (purpose) {
-    case EventType::ACTIVATE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_ACTIVATE", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::INSTALL:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_INSTALL", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::SYNC:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_SYNC", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::NOTIFICATION_CLICK:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_NOTIFICATION_CLICK",
-          status, SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::PUSH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_PUSH", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::MESSAGE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_MESSAGE", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::NOTIFICATION_CLOSE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_NOTIFICATION_CLOSE",
-          status, SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::FETCH_MAIN_FRAME:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_MAIN_FRAME", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::FETCH_SUB_FRAME:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_SUB_FRAME", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::FETCH_SHARED_WORKER:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_SHARED_WORKER",
-          status, SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::FETCH_SUB_RESOURCE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_SUB_RESOURCE",
-          status, SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::UNKNOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_UNKNOWN", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::FOREIGN_FETCH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_FOREIGN_FETCH", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::NUM_TYPES:
-      NOTREACHED();
-      break;
-  }
-
+  RecordSuffixedStatusHistogram("ServiceWorker.StartWorker.StatusByPurpose",
+                                EventTypeToSuffix(purpose), status);
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose",
                             static_cast<int>(purpose),
                             static_cast<int>(EventType::NUM_TYPES));
@@ -287,15 +270,19 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
   }
 }
 
-void ServiceWorkerMetrics::RecordStartWorkerTime(
-    base::TimeDelta time,
-    bool is_installed,
-    StartSituation start_situation) {
+void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
+                                                 bool is_installed,
+                                                 StartSituation start_situation,
+                                                 EventType purpose) {
   if (is_installed) {
     std::string name = "ServiceWorker.StartWorker.Time";
     UMA_HISTOGRAM_MEDIUM_TIMES(name, time);
     RecordSuffixedTimeHistogram(name, StartSituationToSuffix(start_situation),
                                 time);
+    RecordSuffixedTimeHistogram(
+        "ServiceWorker.StartWorker.Time",
+        StartSituationToSuffix(start_situation) + EventTypeToSuffix(purpose),
+        time);
   } else {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
   }

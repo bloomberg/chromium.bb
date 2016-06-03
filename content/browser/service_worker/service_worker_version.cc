@@ -1526,7 +1526,8 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
     ServiceWorkerMetrics::RecordStartWorkerTime(
         GetTickDuration(start_time), IsInstalled(prestart_status),
         ServiceWorkerMetrics::GetStartSituation(
-            is_browser_startup_complete, embedded_worker_->is_new_process()));
+            is_browser_startup_complete, embedded_worker_->is_new_process()),
+        purpose);
   }
 
   if (status != SERVICE_WORKER_ERROR_TIMEOUT)

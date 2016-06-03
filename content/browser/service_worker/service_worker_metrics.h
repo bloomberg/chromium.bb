@@ -158,7 +158,8 @@ class ServiceWorkerMetrics {
   // indicates whether the version has been installed.
   static void RecordStartWorkerTime(base::TimeDelta time,
                                     bool is_installed,
-                                    StartSituation start_situation);
+                                    StartSituation start_situation,
+                                    EventType purpose);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);
