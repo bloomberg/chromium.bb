@@ -2365,8 +2365,10 @@ bool CompositedLayerMapping::needsRepaint(const GraphicsLayer& graphicsLayer) co
 void CompositedLayerMapping::adjustForCompositedScrolling(const GraphicsLayer* graphicsLayer, IntSize& offset) const
 {
     if (graphicsLayer == m_scrollingContentsLayer.get() || graphicsLayer == m_foregroundLayer.get()) {
-        DoubleSize adjustedScrollOffset = m_owningLayer.getScrollableArea()->adjustedScrollOffset();
-        offset.expand(-adjustedScrollOffset.width(), -adjustedScrollOffset.height());
+        if (m_owningLayer.getScrollableArea()) {
+            DoubleSize adjustedScrollOffset = m_owningLayer.getScrollableArea()->adjustedScrollOffset();
+            offset.expand(-adjustedScrollOffset.width(), -adjustedScrollOffset.height());
+        }
     }
 }
 
