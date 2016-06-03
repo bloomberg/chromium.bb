@@ -39,10 +39,10 @@ bool PaginationController::OnScroll(const gfx::Vector2d& offset,
     offset_magnitude = offset.y();
   }
 
-  // Do not scroll on very small touchpad events. Mouse wheel events should
-  // scroll, no matter how small the value change.
-  if (type == SCROLL_MOUSE_WHEEL ||
-      abs(offset_magnitude) > kMinScrollToSwitchPage) {
+  // Do not scroll on very small events.
+  // TODO(calamity): This should only apply on touchpad scroll but touchpad
+  // events are coming in as mousewheel events. See https://crbug.com/594264.
+  if (abs(offset_magnitude) > kMinScrollToSwitchPage) {
     if (!pagination_model_->has_transition()) {
       pagination_model_->SelectPageRelative(offset_magnitude > 0 ? -1 : 1,
                                             true);
