@@ -9,12 +9,15 @@ cr.define('user_manager.user_manager_pages_tests', function() {
       var pagesElement = null;
 
       setup(function() {
-        PolymerTest.clearBody();
         pagesElement = document.createElement('user-manager-pages');
         document.body.appendChild(pagesElement);
       });
 
-      teardown(function() { pagesElement.remove(); });
+      teardown(function(done) {
+        pagesElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
+      });
 
       test('User Pods page is the default visible page', function() {
         assertTrue(

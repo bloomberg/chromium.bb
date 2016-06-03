@@ -5,7 +5,6 @@
 cr.define('user_manager.control_bar_tests', function() {
   /** @return {!ControlBarElement} */
   function createElement() {
-    PolymerTest.clearBody();
     var controlBarElement = document.createElement('control-bar');
     document.body.appendChild(controlBarElement);
     return controlBarElement;
@@ -27,7 +26,11 @@ cr.define('user_manager.control_bar_tests', function() {
         controlBarElement = createElement();
       });
 
-      teardown(function() { controlBarElement.remove(); });
+      teardown(function(done) {
+        controlBarElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
+      });
 
       test('Actions are hidden by default', function() {
         assertTrue(controlBarElement.$.launchGuest.hidden);
@@ -74,13 +77,13 @@ cr.define('user_manager.control_bar_tests', function() {
 
         controlBarElement = createElement();
 
-        errorDialogElement = document.createElement('error-dialog');
-        document.body.appendChild(errorDialogElement);
+        errorDialogElement = document.querySelector('error-dialog');
       });
 
-      teardown(function() {
+      teardown(function(done) {
         controlBarElement.remove();
-        errorDialogElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
       });
 
       test('Cannot create profile', function() {

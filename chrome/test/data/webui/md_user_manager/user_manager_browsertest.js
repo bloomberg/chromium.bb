@@ -38,9 +38,6 @@ UserManagerBrowserTest.prototype = {
 };
 
 TEST_F('UserManagerBrowserTest', 'UserManagerTest', function() {
-  // Disable 'pod-row' so it won't handle click events after we clear the body.
-  $('pod-row').disabled = true;
-
   user_manager.control_bar_tests.registerTests();
   user_manager.create_profile_tests.registerTests();
   user_manager.import_supervised_user_tests.registerTests();

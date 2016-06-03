@@ -17,7 +17,6 @@ cr.define('user_manager.import_supervised_user_tests', function() {
       }
 
       setup(function() {
-        PolymerTest.clearBody();
         importElement = document.createElement('import-supervised-user');
         document.body.appendChild(importElement);
 

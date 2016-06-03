@@ -5,7 +5,6 @@
 cr.define('user_manager.create_profile_tests', function() {
   /** @return {!CreateProfileElement} */
   function createElement() {
-    PolymerTest.clearBody();
     var createProfileElement = document.createElement('create-profile');
     document.body.appendChild(createProfileElement);
     return createProfileElement;
@@ -40,7 +39,11 @@ cr.define('user_manager.create_profile_tests', function() {
         Polymer.dom.flush();
       });
 
-      teardown(function() { createProfileElement.remove(); });
+      teardown(function(done) {
+        createProfileElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
+      });
 
       test('Handles available profile icons', function() {
         return browserProxy.whenCalled('getAvailableIcons').then(function() {
@@ -375,7 +378,11 @@ cr.define('user_manager.create_profile_tests', function() {
         Polymer.dom.flush();
       });
 
-      teardown(function() { createProfileElement.remove(); });
+      teardown(function(done) {
+        createProfileElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
+      });
 
       test('Handles no signed in users', function() {
         return browserProxy.whenCalled('getSignedInUsers').then(function() {
