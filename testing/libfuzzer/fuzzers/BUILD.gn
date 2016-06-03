@@ -183,15 +183,6 @@ fuzzer_test("libxml_xml_read_memory_fuzzer") {
   dict = "dicts/xml.dict"
 }
 
-fuzzer_test("unicode_string_codepage_create_fuzzer") {
-  sources = [
-    "unicode_string_codepage_create_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/icu",
-  ]
-}
-
 fuzzer_test("libpng_read_fuzzer") {
   sources = [
     "libpng_read_fuzzer.cc",
@@ -201,17 +192,6 @@ fuzzer_test("libpng_read_fuzzer") {
     "//third_party/libpng",
   ]
   dict = "dicts/png.dict"
-}
-
-fuzzer_test("icu_uregex_open_fuzzer") {
-  sources = [
-    "icu_uregex_open_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/icu",
-  ]
-  dict = "dicts/icu_regex.dict"
-  libfuzzer_options = [ "max_len=128" ]
 }
 
 fuzzer_test("v8_script_parser_fuzzer") {

@@ -740,6 +740,7 @@ group("gn_only") {
     deps += [
       "//testing/libfuzzer/fuzzers",
       "//testing/libfuzzer/tests:libfuzzer_tests",
+      "//third_party/icu/fuzzers",
     ]
   }
 
