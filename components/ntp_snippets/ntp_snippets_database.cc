@@ -37,11 +37,10 @@ NTPSnippetsDatabase::NTPSnippetsDatabase(
 NTPSnippetsDatabase::~NTPSnippetsDatabase() {}
 
 void NTPSnippetsDatabase::Load(const SnippetsLoadedCallback& callback) {
-  DCHECK(callback_.is_null());
-  DCHECK(!callback.is_null());
-  callback_ = callback;
   if (database_ && database_initialized_)
-    LoadImpl();
+    LoadImpl(callback);
+  else
+    pending_load_callbacks_.emplace_back(callback);
 }
 
 void NTPSnippetsDatabase::Save(const NTPSnippet& snippet) {
@@ -77,11 +76,12 @@ void NTPSnippetsDatabase::OnDatabaseInited(bool success) {
     return;
   }
   database_initialized_ = true;
-  if (!callback_.is_null())
-    LoadImpl();
+  for (const SnippetsLoadedCallback& callback : pending_load_callbacks_)
+    LoadImpl(callback);
 }
 
 void NTPSnippetsDatabase::OnDatabaseLoaded(
+    const SnippetsLoadedCallback& callback,
     bool success,
     std::unique_ptr<std::vector<SnippetProto>> entries) {
   if (!success) {
@@ -104,11 +104,7 @@ void NTPSnippetsDatabase::OnDatabaseLoaded(
     }
   }
 
-  // We only start loading if we have a non-null callback, but it's possible
-  // that it's been cleared in the meantime.
-  DCHECK(!callback_.is_null());
-  callback_.Run(std::move(snippets));
-  callback_.Reset();
+  callback.Run(std::move(snippets));
 
   // If any of the snippet protos couldn't be converted to actual snippets,
   // clean them up now.
@@ -123,11 +119,12 @@ void NTPSnippetsDatabase::OnDatabaseSaved(bool success) {
   }
 }
 
-void NTPSnippetsDatabase::LoadImpl() {
+void NTPSnippetsDatabase::LoadImpl(const SnippetsLoadedCallback& callback) {
   DCHECK(database_);
   DCHECK(database_initialized_);
   database_->LoadEntries(base::Bind(&NTPSnippetsDatabase::OnDatabaseLoaded,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    callback));
 }
 
 void NTPSnippetsDatabase::SaveImpl(

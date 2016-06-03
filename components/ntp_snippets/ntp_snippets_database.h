@@ -6,6 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_DATABASE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -33,9 +34,7 @@ class NTPSnippetsDatabase {
       scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   ~NTPSnippetsDatabase();
 
-  // Loads all snippets from storage and passes them to |callback|. Only one
-  // concurrent fetch is supported; it is only legal to call this again after
-  // the first load has completed.
+  // Loads all snippets from storage and passes them to |callback|.
   void Load(const SnippetsLoadedCallback& callback);
 
   // Adds or updates the given snippet.
@@ -56,11 +55,12 @@ class NTPSnippetsDatabase {
 
   // Callbacks for ProtoDatabase operations.
   void OnDatabaseInited(bool success);
-  void OnDatabaseLoaded(bool success,
+  void OnDatabaseLoaded(const SnippetsLoadedCallback& callback,
+                        bool success,
                         std::unique_ptr<std::vector<SnippetProto>> entries);
   void OnDatabaseSaved(bool success);
 
-  void LoadImpl();
+  void LoadImpl(const SnippetsLoadedCallback& callback);
 
   void SaveImpl(std::unique_ptr<KeyEntryVector> entries_to_save);
 
@@ -69,7 +69,7 @@ class NTPSnippetsDatabase {
   std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetProto>> database_;
   bool database_initialized_;
 
-  SnippetsLoadedCallback callback_;
+  std::vector<SnippetsLoadedCallback> pending_load_callbacks_;
 
   base::WeakPtrFactory<NTPSnippetsDatabase> weak_ptr_factory_;
 
