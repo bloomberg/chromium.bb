@@ -67,7 +67,7 @@ public class Event<ParamT> {
      * A self removable {@link ParameterRunner}, uses a boolean {@link ParameterCallback} to decide
      * whether removes self from {@link Event} or not.
      */
-    private static class SelfRemovableParameterRunnable<ParamT>
+    private static final class SelfRemovableParameterRunnable<ParamT>
             implements ParameterRunnable<ParamT> {
         private final ParameterCallback<Boolean, ParamT> mCallback;
         private final Event<ParamT> mOwner;
