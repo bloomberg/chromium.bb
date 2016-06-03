@@ -103,7 +103,11 @@ bool CursorRendererAura::SnapshotCursorState(const gfx::Rect& region_in_frame) {
   if (!window_->IsRootWindow()) {
     aura::client::ActivationClient* activation_client =
         aura::client::GetActivationClient(window_->GetRootWindow());
-    DCHECK(activation_client);
+    if (!activation_client) {
+      DVLOG(2) << "Assume window inactive with invalid activation_client";
+      Clear();
+      return false;
+    }
     aura::Window* active_window = activation_client->GetActiveWindow();
     if (!active_window->Contains(window_)) {
       // Return early if the target window is not active.
