@@ -4,5 +4,8 @@
 
 #include "net/spdy/spdy_flags.h"
 
+// When true, remove hardcoded HPACK size limit on buffered encoded data.
+bool FLAGS_chromium_http2_flag_remove_hpack_decode_buffer_size_limit = true;
+
 // Use NestedSpdyFramerDecoder.
 bool FLAGS_use_nested_spdy_framer_decoder = false;

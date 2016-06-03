@@ -511,6 +511,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     display_protocol_ = protocol;
   }
 
+  void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
+    GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+        max_decode_buffer_size_bytes);
+  }
+
   void SetDecoderHeaderTableDebugVisitor(
       std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
 

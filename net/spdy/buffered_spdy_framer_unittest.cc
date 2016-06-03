@@ -240,6 +240,31 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
   EXPECT_EQ(headers, visitor.headers_);
 }
 
+TEST_P(BufferedSpdyFramerTest, HeaderListTooLarge) {
+  SpdyHeaderBlock headers;
+  std::string long_header_value(256 * 1024, 'x');
+  headers["foo"] = long_header_value;
+  BufferedSpdyFramer framer(spdy_version());
+  std::unique_ptr<SpdySerializedFrame> control_frame(
+      framer.CreateHeaders(1,  // stream_id
+                           CONTROL_FLAG_NONE,
+                           255,  // weight
+                           &headers));
+  EXPECT_TRUE(control_frame);
+
+  TestBufferedSpdyVisitor visitor(spdy_version());
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(control_frame.get()->data()),
+      control_frame.get()->size());
+
+  EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(0, visitor.syn_frame_count_);
+  EXPECT_EQ(0, visitor.syn_reply_frame_count_);
+  EXPECT_EQ(0, visitor.headers_frame_count_);
+  EXPECT_EQ(0, visitor.push_promise_frame_count_);
+  EXPECT_EQ(SpdyHeaderBlock(), visitor.headers_);
+}
+
 TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   if (spdy_version() > SPDY3) {
     // SYN_REPLY not supported in SPDY>3.

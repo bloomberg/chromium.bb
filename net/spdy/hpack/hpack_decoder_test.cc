@@ -12,6 +12,7 @@
 #include "net/spdy/hpack/hpack_encoder.h"
 #include "net/spdy/hpack/hpack_input_stream.h"
 #include "net/spdy/hpack/hpack_output_stream.h"
+#include "net/spdy/spdy_flags.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,15 +121,39 @@ INSTANTIATE_TEST_CASE_P(WithAndWithoutHeadersHandler,
                         ::testing::Bool());
 
 TEST_P(HpackDecoderTest, AddHeaderDataWithHandleControlFrameHeadersData) {
-  // Strings under threshold are concatenated in the buffer.
-  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData("small string one", 16));
-  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData("small string two", 16));
-  // A string which would push the buffer over the threshold is refused.
-  EXPECT_FALSE(decoder_.HandleControlFrameHeadersData(
-      "fails", kMaxDecodeBufferSize - 32 + 1));
+  // The hpack decode buffer size is limited in size. This test verifies that
+  // adding encoded data under that limit is accepted, and data that exceeds the
+  // limit is rejected.
+  const size_t kMaxBufferSizeBytes = 50;
+  decoder_.set_max_decode_buffer_size_bytes(kMaxBufferSizeBytes);
 
-  EXPECT_EQ(decoder_peer_.headers_block_buffer(),
-            "small string onesmall string two");
+  // Strings under threshold are concatenated in the buffer.
+  string first_input;
+  first_input.push_back(0x00);  // Literal name and value, unindexed
+  first_input.push_back(0x7f);  // Name length = 127
+  ASSERT_EQ(2u, first_input.size());
+  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData(first_input.data(),
+                                                     first_input.size()));
+  // Further 38 bytes to make 40 total buffered bytes.
+  string second_input = string(38, 'x');
+  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData(second_input.data(),
+                                                     second_input.size()));
+  // A string which would push the buffer over the threshold is refused.
+  const int kThirdInputSize =
+      ((FLAGS_chromium_http2_flag_remove_hpack_decode_buffer_size_limit
+            ? kMaxBufferSizeBytes
+            : kMaxDecodeBufferSize) -
+       (first_input.size() + second_input.size())) +
+      1;
+  string third_input = string(kThirdInputSize, 'y');
+  ASSERT_GT(first_input.size() + second_input.size() + third_input.size(),
+            kMaxBufferSizeBytes);
+  EXPECT_FALSE(decoder_.HandleControlFrameHeadersData(third_input.data(),
+                                                      third_input.size()));
+
+  string expected(first_input);
+  expected.append(second_input);
+  EXPECT_EQ(expected, decoder_peer_.headers_block_buffer());
 }
 
 // Decode with incomplete data in buffer.

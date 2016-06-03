@@ -26,6 +26,7 @@ class NET_EXPORT_PRIVATE HeaderCoalescer : public SpdyHeadersHandlerInterface {
 
  private:
   SpdyHeaderBlock headers_;
+  size_t header_list_size_ = 0;
   bool error_seen_ = false;
 };
 

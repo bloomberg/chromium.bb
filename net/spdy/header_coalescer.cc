@@ -8,9 +8,21 @@
 
 namespace net {
 
+const size_t kMaxHeaderListSize = 256 * 1024;
+
 void HeaderCoalescer::OnHeader(base::StringPiece key, base::StringPiece value) {
+  if (error_seen_)
+    return;
+
   if (key.empty()) {
     DVLOG(1) << "Header name must not be empty.";
+    error_seen_ = true;
+    return;
+  }
+
+  // 32 byte overhead according to RFC 7540 Section 6.5.2.
+  header_list_size_ += key.size() + value.size() + 32;
+  if (header_list_size_ > kMaxHeaderListSize) {
     error_seen_ = true;
     return;
   }
