@@ -24,6 +24,7 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
@@ -519,6 +520,7 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
   // and replaced, pointing at the new view.
   DCHECK(!view || !compositor_widget_);
 
+  drag_drop_client_.reset();
   [bridged_view_ clearView];
   bridged_view_.reset();
   // Note that there can still be references to the old |bridged_view_|
@@ -527,6 +529,8 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
 
   if (view) {
     bridged_view_.reset([[BridgedContentView alloc] initWithView:view]);
+    drag_drop_client_.reset(new DragDropClientMac(this, view));
+
     // Objective C initializers can return nil. However, if |view| is non-NULL
     // this should be treated as an error and caught early.
     CHECK(bridged_view_);

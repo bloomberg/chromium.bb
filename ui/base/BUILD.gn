@@ -151,11 +151,10 @@ component("base") {
     "device_form_factor_desktop.cc",
     "device_form_factor_ios.mm",
     "dragdrop/drag_drop_types.h",
+    "dragdrop/drag_drop_types_mac.mm",
     "dragdrop/drag_drop_types_win.cc",
     "dragdrop/drag_source_win.cc",
     "dragdrop/drag_source_win.h",
-    "dragdrop/drag_utils_aura.cc",
-    "dragdrop/drag_utils_mac.mm",
     "dragdrop/drag_utils_win.cc",
     "dragdrop/drop_target_event.cc",
     "dragdrop/drop_target_event.h",
@@ -440,16 +439,11 @@ component("base") {
     sources -= [
       "cursor/cursor.cc",
       "cursor/cursor.h",
-      "dragdrop/drag_utils_aura.cc",
     ]
   }
 
   if (!use_aura || !is_linux) {
     sources -= [ "resource/resource_bundle_auralinux.cc" ]
-  }
-
-  if (use_aura && is_win) {
-    sources -= [ "dragdrop/drag_utils_aura.cc" ]
   }
 
   if (is_linux) {
@@ -519,8 +513,6 @@ component("base") {
     sources -= [
       "cursor/image_cursors.cc",
       "cursor/image_cursors.h",
-      "dragdrop/drag_utils.cc",
-      "dragdrop/drag_utils.h",
     ]
 
     libs += [

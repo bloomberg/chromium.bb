@@ -32,6 +32,10 @@ class UI_BASE_EXPORT DragDropTypes {
   static uint32_t DragOperationToDropEffect(int drag_operation);
   static int DropEffectToDragOperation(uint32_t effect);
 #endif
+
+#if defined(OS_MACOSX)
+  static uint64_t DragOperationToNSDragOperation(int drag_operation);
+#endif
 };
 
 }  // namespace ui

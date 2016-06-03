@@ -243,6 +243,13 @@ typedef NSInteger NSPressureBehavior;
 - (instancetype)initWithPressureBehavior:(NSPressureBehavior)pressureBehavior;
 @end
 
+enum {
+  NSSpringLoadingHighlightNone = 0,
+  NSSpringLoadingHighlightStandard,
+  NSSpringLoadingHighlightEmphasized
+};
+typedef NSUInteger NSSpringLoadingHighlight;
+
 #endif // MAC_OS_X_VERSION_10_11
 
 // ----------------------------------------------------------------------------

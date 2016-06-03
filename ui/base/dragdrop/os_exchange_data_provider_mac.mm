@@ -7,11 +7,14 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
+#include "ui/base/clipboard/custom_data_helper.h"
+#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -167,6 +170,46 @@ bool OSExchangeDataProviderMac::HasFile() const {
 bool OSExchangeDataProviderMac::HasCustomFormat(
     const Clipboard::FormatType& format) const {
   return [[pasteboard_->get() types] containsObject:format.ToNSString()];
+}
+
+void OSExchangeDataProviderMac::SetDragImage(
+    const gfx::ImageSkia& image,
+    const gfx::Vector2d& cursor_offset) {
+  drag_image_ = image;
+  cursor_offset_ = cursor_offset;
+}
+
+const gfx::ImageSkia& OSExchangeDataProviderMac::GetDragImage() const {
+  return drag_image_;
+}
+
+const gfx::Vector2d& OSExchangeDataProviderMac::GetDragImageOffset() const {
+  return cursor_offset_;
+}
+
+NSData* OSExchangeDataProviderMac::GetNSDataForType(NSString* type) const {
+  return [pasteboard_->get() dataForType:type];
+}
+
+// static
+std::unique_ptr<OSExchangeData>
+OSExchangeDataProviderMac::CreateDataFromPasteboard(NSPasteboard* pasteboard) {
+  OSExchangeDataProviderMac* provider = new OSExchangeDataProviderMac();
+
+  for (NSPasteboardItem* item in [pasteboard pasteboardItems])
+    ClipboardUtil::AddDataToPasteboard(provider->pasteboard_->get(), item);
+
+  return base::MakeUnique<OSExchangeData>(provider);
+}
+
+// static
+NSArray* OSExchangeDataProviderMac::SupportedPasteboardTypes() {
+  return @[
+    kWebCustomDataPboardType, ui::ClipboardUtil::UTIForWebURLsAndTitles(),
+    NSURLPboardType, NSFilenamesPboardType, ui::kChromeDragDummyPboardType,
+    NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
+    NSFilenamesPboardType, ui::kWebCustomDataPboardType, NSPasteboardTypeString
+  ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////

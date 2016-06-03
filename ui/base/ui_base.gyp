@@ -222,13 +222,12 @@
         'dragdrop/cocoa_dnd_util.h',
         'dragdrop/cocoa_dnd_util.mm',
         'dragdrop/drag_drop_types.h',
+        'dragdrop/drag_drop_types_mac.mm',
         'dragdrop/drag_drop_types_win.cc',
         'dragdrop/drag_source_win.cc',
         'dragdrop/drag_source_win.h',
         'dragdrop/drag_utils.cc',
         'dragdrop/drag_utils.h',
-        'dragdrop/drag_utils_aura.cc',
-        'dragdrop/drag_utils_mac.mm',
         'dragdrop/drag_utils_win.cc',
         'dragdrop/drop_target_event.cc',
         'dragdrop/drop_target_event.h',
@@ -462,11 +461,6 @@
             '../ozone/ozone.gyp:ozone_base',
           ],
         }],
-        ['use_aura==1 and OS=="win"', {
-          'sources/': [
-            ['exclude', 'dragdrop/drag_utils_aura.cc'],
-          ],
-        }],
         ['use_glib == 1', {
           'dependencies': [
             '../../build/linux/system.gyp:fontconfig',
@@ -575,8 +569,6 @@
           'sources!': [
             'cursor/image_cursors.cc',
             'cursor/image_cursors.h',
-            'dragdrop/drag_utils.cc',
-            'dragdrop/drag_utils.h',
           ],
           'link_settings': {
             'libraries': [

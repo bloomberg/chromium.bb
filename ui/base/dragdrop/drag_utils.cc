@@ -103,4 +103,12 @@ void SetDragImageOnDataObject(const gfx::Canvas& canvas,
   SetDragImageOnDataObject(image, cursor_offset, data_object);
 }
 
+#if !defined(OS_WIN)
+void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
+                              const gfx::Vector2d& cursor_offset,
+                              ui::OSExchangeData* data_object) {
+  data_object->provider().SetDragImage(image_skia, cursor_offset);
+}
+#endif
+
 }  // namespace drag_utils

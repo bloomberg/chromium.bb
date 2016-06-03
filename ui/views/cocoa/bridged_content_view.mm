@@ -10,6 +10,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/canvas_painter.h"
@@ -23,9 +25,12 @@
 #import "ui/gfx/path_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/strings/grit/ui_strings.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/drag_drop_client_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
 
 using views::MenuController;
@@ -225,6 +230,9 @@ base::string16 AttributedSubstringForRangeHelper(
 // Notification handler invoked when the Full Keyboard Access mode is changed.
 - (void)onFullKeyboardAccessModeChanged:(NSNotification*)notification;
 
+// Returns the native Widget's drag drop client. Possibly null.
+- (views::DragDropClientMac*)dragDropClient;
+
 // Menu action handlers.
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
@@ -272,6 +280,8 @@ base::string16 AttributedSubstringForRangeHelper(
     // Initialize the focus manager with the correct keyboard accessibility
     // setting.
     [self updateFullKeyboardAccess];
+    [self registerForDraggedTypes:ui::OSExchangeDataProviderMac::
+                                      SupportedPasteboardTypes()];
   }
   return self;
 }
@@ -394,6 +404,12 @@ base::string16 AttributedSubstringForRangeHelper(
   DCHECK([[notification name]
       isEqualToString:kFullKeyboardAccessChangedNotification]);
   [self updateFullKeyboardAccess];
+}
+
+- (views::DragDropClientMac*)dragDropClient {
+  views::BridgedNativeWidget* bridge =
+      views::NativeWidgetMac::GetBridgeForNativeWindow([self window]);
+  return bridge ? bridge->drag_drop_client() : nullptr;
 }
 
 - (void)undo:(id)sender {
@@ -583,6 +599,22 @@ base::string16 AttributedSubstringForRangeHelper(
 // will allow the event to be processed, rather than merely activate the window.
 - (BOOL)acceptsFirstMouse:(NSEvent*)theEvent {
   return YES;
+}
+
+// NSDraggingDestination protocol overrides.
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+  return [self draggingUpdated:sender];
+}
+
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+  views::DragDropClientMac* client = [self dragDropClient];
+  return client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
+}
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+  views::DragDropClientMac* client = [self dragDropClient];
+  return client && client->Drop(sender) != NSDragOperationNone;
 }
 
 - (NSTextInputContext*)inputContext {
@@ -1175,6 +1207,21 @@ base::string16 AttributedSubstringForRangeHelper(
     return textInputClient_->IsEditCommandEnabled(IDS_APP_SELECT_ALL);
 
   return NO;
+}
+
+// NSDraggingSource protocol implementation.
+
+- (NSDragOperation)draggingSession:(NSDraggingSession*)session
+    sourceOperationMaskForDraggingContext:(NSDraggingContext)context {
+  return NSDragOperationEvery;
+}
+
+- (void)draggingSession:(NSDraggingSession*)session
+           endedAtPoint:(NSPoint)screenPoint
+              operation:(NSDragOperation)operation {
+  views::DragDropClientMac* client = [self dragDropClient];
+  if (client)
+    client->EndDrag();
 }
 
 // NSAccessibility informal protocol implementation.

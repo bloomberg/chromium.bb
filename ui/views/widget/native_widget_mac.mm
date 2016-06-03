@@ -20,8 +20,10 @@
 #include "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -201,11 +203,9 @@ void NativeWidgetMac::ReorderNativeViews() {
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {
-  // TODO(tapted): Something for drag and drop might be needed here in future.
-  // See http://crbug.com/464581. A NOTIMPLEMENTED() here makes a lot of spam,
-  // so only emit it when a drag and drop could be likely.
-  if (IsMouseButtonDown())
-    NOTIMPLEMENTED();
+  DragDropClientMac* client = bridge_ ? bridge_->drag_drop_client() : nullptr;
+  if (client)
+    client->drop_helper()->ResetTargetViewIfEquals(view);
 }
 
 void NativeWidgetMac::SetNativeWindowProperty(const char* name, void* value) {
@@ -507,7 +507,7 @@ void NativeWidgetMac::RunShellDrag(View* view,
                                    const gfx::Point& location,
                                    int operation,
                                    ui::DragDropTypes::DragEventSource source) {
-  NOTIMPLEMENTED();
+  bridge_->drag_drop_client()->StartDragAndDrop(view, data, operation, source);
 }
 
 void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {

@@ -34,6 +34,7 @@ class BridgedNativeWidgetTestApi;
 }
 
 class CocoaMouseCapture;
+class DragDropClientMac;
 class NativeWidgetMac;
 class View;
 
@@ -171,6 +172,8 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
 
+  DragDropClientMac* drag_drop_client() { return drag_drop_client_.get(); }
+
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
   // parent will close children before the parent closes, and children will be
   // raised above their parent when window z-order changes.
@@ -263,6 +266,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<TooltipManager> tooltip_manager_;
+  std::unique_ptr<DragDropClientMac> drag_drop_client_;
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.
   Widget::InitParams::Type widget_type_;
 
