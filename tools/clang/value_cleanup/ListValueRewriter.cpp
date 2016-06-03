@@ -32,8 +32,11 @@ void ListValueRewriter::AppendCallback::run(
   auto* newExpr = result.Nodes.getNodeAs<clang::CXXNewExpr>("newExpr");
   auto* argExpr = result.Nodes.getNodeAs<clang::Expr>("argExpr");
 
+  // Note that for the end loc, we use the expansion loc: the argument might be
+  // a macro like true and false.
   clang::CharSourceRange pre_arg_range = clang::CharSourceRange::getCharRange(
-      newExpr->getLocStart(), argExpr->getLocStart());
+      newExpr->getLocStart(),
+      result.SourceManager->getExpansionLoc(argExpr->getLocStart()));
   replacements_->emplace(*result.SourceManager, pre_arg_range, "");
 
   clang::CharSourceRange post_arg_range =

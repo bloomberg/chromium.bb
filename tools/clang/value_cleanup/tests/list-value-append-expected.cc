@@ -4,9 +4,12 @@
 
 #include "base/values.h"
 
+#define true true
+
 void F() {
   base::ListValue list;
   list.AppendBoolean(1 == 0);
+  list.AppendBoolean(true);
   list.AppendInteger(static_cast<unsigned char>(1.0));
   list.AppendDouble(double{3});
   list.AppendString("abc");
