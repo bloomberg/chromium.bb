@@ -977,6 +977,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsPermissions", IDS_SETTINGS_SITE_SETTINGS_PERMISSIONS},
       {"siteSettingsClearAndReset", IDS_SETTINGS_SITE_SETTINGS_CLEAR_BUTTON},
       {"siteSettingsDelete", IDS_SETTINGS_SITE_SETTINGS_DELETE},
+      {"thirdPartyCookie", IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE},
+      {"thirdPartyCookieSublabel",
+       IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

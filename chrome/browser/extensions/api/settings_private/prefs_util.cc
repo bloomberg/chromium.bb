@@ -130,6 +130,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["translate_blocked_languages"] =
       settings_private::PrefType::PREF_TYPE_LIST;
 
+  // Site Settings prefs.
+  (*s_whitelist)["profile.block_third_party_cookies"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Clear browsing data settings.
   (*s_whitelist)["browser.clear_data.browsing_history"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;

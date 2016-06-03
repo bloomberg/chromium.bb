@@ -22,6 +22,14 @@ Polymer({
     },
 
     /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * Represents the state of the main toggle shown for the category. For
      * example, the Location category can be set to Block/Ask so false, in that
      * case, represents Block and true represents Ask.
@@ -56,6 +64,9 @@ Polymer({
 
     this.addWebUIListener('contentSettingCategoryChanged',
         this.defaultValueForCategoryChanged_.bind(this));
+
+    if (this.category == settings.ContentSettingsTypes.COOKIES)
+      this.$.cookieControls.hidden = false;
   },
 
   /**

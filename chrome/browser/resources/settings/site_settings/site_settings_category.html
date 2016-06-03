@@ -50,6 +50,17 @@
       <paper-toggle-button id="toggle" checked="{{categoryEnabled}}"
           on-change="onToggleChange_"></paper-toggle-button>
     </div>
+
+    <div id="cookieControls" hidden>
+      <div class="settings-box">
+        <settings-checkbox class="start"
+            label="$i18n{thirdPartyCookie}"
+            sub-label="$i18n{thirdPartyCookieSublabel}"
+            pref="{{prefs.profile.block_third_party_cookies}}">
+        </settings-checkbox>
+      </div>
+    </div>
+
     <settings-site-list id="blockList"
         category="[[category]]"
         current-route="{{currentRoute}}"
