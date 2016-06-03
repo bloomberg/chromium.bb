@@ -33,7 +33,9 @@ from webkitpy.common.host import Host
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup
-from webkitpy.w3c.test_converter import _W3CTestConverter
+from webkitpy.w3c.test_converter import _W3CTestConverter, convert_for_webkit
+from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 DUMMY_FILENAME = 'dummy.html'
 DUMMY_PATH = 'dummy/testharness/path'
@@ -310,3 +312,16 @@ CONTENT OF TEST
             index -= 1
 
         return (test_properties, html)
+
+    def test_convert_for_webkit_with_non_utf8(self):
+        files = {'/file': 'e\x87[P',
+                 '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '', }
+        host = MockSystemHost(filesystem=MockFileSystem(files=files))
+        convert_for_webkit('', '/file', '', host)
+
+    # This test passes if no Exception is raised
+    def test_convert_for_webkit_with_utf8(self):
+        files = {'/file': 'foo',
+                 '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '', }
+        host = MockSystemHost(filesystem=MockFileSystem(files=files))
+        convert_for_webkit('', '/file', '', host)
