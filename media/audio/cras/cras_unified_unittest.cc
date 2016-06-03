@@ -42,19 +42,6 @@ class MockAudioManagerCras : public AudioManagerCras {
                          base::ThreadTaskRunnerHandle::Get(),
                          &fake_audio_log_factory_) {}
 
-  MOCK_METHOD0(Init, void());
-  MOCK_METHOD0(HasAudioOutputDevices, bool());
-  MOCK_METHOD0(HasAudioInputDevices, bool());
-  MOCK_METHOD1(MakeLinearOutputStream, AudioOutputStream*(
-      const AudioParameters& params));
-  MOCK_METHOD2(MakeLowLatencyOutputStream,
-               AudioOutputStream*(const AudioParameters& params,
-                                  const std::string& device_id));
-  MOCK_METHOD2(MakeLinearOutputStream, AudioInputStream*(
-      const AudioParameters& params, const std::string& device_id));
-  MOCK_METHOD2(MakeLowLatencyInputStream, AudioInputStream*(
-      const AudioParameters& params, const std::string& device_id));
-
   // We need to override this function in order to skip the checking the number
   // of active output streams. It is because the number of active streams
   // is managed inside MakeAudioOutputStream, and we don't use
