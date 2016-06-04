@@ -68,6 +68,10 @@ public class SeparateTaskCustomTabActivity extends CustomTabActivity {
             finish();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ApiCompatibilityUtils.finishAndRemoveTask(this);
+
+            if (getIntentDataProvider() != null && getIntentDataProvider().isOpenedByChrome()) {
+                overridePendingTransition(R.anim.no_anim, R.anim.slide_out_down);
+            }
         } else {
             // TODO(tedchoc): This does not work reliably :-/.  Need to find a solution for the X
             //                button and the Android back.  Seems to only somewhat work for the

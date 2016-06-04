@@ -426,6 +426,7 @@ public class ChromeLauncherActivity extends Activity
         // Create and fire a launch intent.
         startActivity(createCustomTabActivityIntent(
                 this, getIntent(), !isCustomTabIntent() && mIsHerbIntent));
+        if (mIsHerbIntent) overridePendingTransition(R.anim.slide_in_up, R.anim.no_anim);
     }
 
     @SuppressLint("InlinedApi")

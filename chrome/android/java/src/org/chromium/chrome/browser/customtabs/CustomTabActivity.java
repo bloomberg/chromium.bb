@@ -545,6 +545,8 @@ public class CustomTabActivity extends ChromeActivity {
             overridePendingTransition(mIntentDataProvider.getAnimationEnterRes(),
                     mIntentDataProvider.getAnimationExitRes());
             mShouldOverridePackage = false;
+        } else if (mIntentDataProvider != null && mIntentDataProvider.isOpenedByChrome()) {
+            overridePendingTransition(R.anim.no_anim, R.anim.slide_out_down);
         }
     }
 
