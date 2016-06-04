@@ -128,6 +128,8 @@ public:
     void setContentsNeedDisplay();
     // LayoutRect is in the coordinate space of the layer's layout object.
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
+    // Invalidates just the non-scrolling content layers.
+    void setNonScrollingContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
     // Invalidates just scrolling content layers.
     void setScrollingContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
 

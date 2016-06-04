@@ -1416,7 +1416,8 @@ enum ApplyToGraphicsLayersModeFlags {
     ApplyToMaskLayers = (1 << 4),
     ApplyToContentLayers = (1 << 5),
     ApplyToChildContainingLayers = (1 << 6), // layers between m_graphicsLayer and children
-    ApplyToScrollingContentLayers = (1 << 7),
+    ApplyToNonScrollingContentLayers = (1 << 7),
+    ApplyToScrollingContentLayers = (1 << 8),
     ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToLayersAffectedByPreserve3D | ApplyToContentLayers | ApplyToScrollingContentLayers)
 };
 typedef unsigned ApplyToGraphicsLayersMode;
@@ -1428,7 +1429,7 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
 
     if ((mode & ApplyToLayersAffectedByPreserve3D) && mapping->childTransformLayer())
         f(mapping->childTransformLayer());
-    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->mainGraphicsLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers) || (mode & ApplyToNonScrollingContentLayers)) && mapping->mainGraphicsLayer())
         f(mapping->mainGraphicsLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->clippingLayer())
         f(mapping->clippingLayer());
@@ -1445,12 +1446,12 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
     if ((mode & ApplyToSquashingLayer) && mapping->squashingLayer())
         f(mapping->squashingLayer());
 
-    if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers)) && mapping->maskLayer())
+    if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers) || (mode & ApplyToNonScrollingContentLayers)) && mapping->maskLayer())
         f(mapping->maskLayer());
-    if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers)) && mapping->childClippingMaskLayer())
+    if (((mode & ApplyToMaskLayers) || (mode & ApplyToContentLayers) || (mode & ApplyToNonScrollingContentLayers)) && mapping->childClippingMaskLayer())
         f(mapping->childClippingMaskLayer());
 
-    if (((mode & ApplyToBackgroundLayer) || (mode & ApplyToContentLayers)) && mapping->backgroundLayer())
+    if (((mode & ApplyToBackgroundLayer) || (mode & ApplyToContentLayers) || (mode & ApplyToNonScrollingContentLayers)) && mapping->backgroundLayer())
         f(mapping->backgroundLayer());
 
     if ((mode & ApplyToScrollbarLayers) && mapping->layerForHorizontalScrollbar())
@@ -2096,9 +2097,9 @@ struct SetContentsNeedsDisplayInRectFunctor {
     const DisplayItemClient& client;
 };
 
-// r is in the coordinate space of the layer's layout object
 void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
 {
+    DCHECK(!m_owningLayer.layoutObject()->usesCompositedScrolling());
     // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
     // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
@@ -2110,8 +2111,23 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
+void CompositedLayerMapping::setNonScrollingContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
+{
+    DCHECK(m_owningLayer.layoutObject()->usesCompositedScrolling());
+    // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+    // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    SetContentsNeedsDisplayInRectFunctor functor = {
+        enclosingIntRect(LayoutRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())),
+        invalidationReason,
+        client
+    };
+    ApplyToGraphicsLayers(this, functor, ApplyToNonScrollingContentLayers);
+}
+
 void CompositedLayerMapping::setScrollingContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
 {
+    DCHECK(m_owningLayer.layoutObject()->usesCompositedScrolling());
     // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
     // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 

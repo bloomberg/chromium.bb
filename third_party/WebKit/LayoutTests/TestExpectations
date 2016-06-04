@@ -15,7 +15,7 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
-# TODO(yosin): We should convert following tests to use asynchronous spell checker.
+# TODO(yosin): We should convert following tests to use asynchronous spell checker.scroll-in
 crbug.com/563265 editing/spelling/context-menu-suggestions.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
@@ -75,6 +75,8 @@ crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failur
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
+
+crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container.html [ NeedsRebaseline ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
