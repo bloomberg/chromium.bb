@@ -12,7 +12,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/filter_operation.h"
-#include "cc/output/viewport_selection_bound.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"

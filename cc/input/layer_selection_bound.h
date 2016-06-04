@@ -7,8 +7,8 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/input/selection.h"
-#include "cc/input/selection_bound_type.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/selection_bound.h"
 
 namespace cc {
 
@@ -18,11 +18,12 @@ class LayerSelectionBound;
 }  // namespace proto
 
 // Marker for a selection end-point attached to a specific layer.
+// TODO(fsamuel): This could be unified with gfx::SelectionBound.
 struct CC_EXPORT LayerSelectionBound {
   LayerSelectionBound();
   ~LayerSelectionBound();
 
-  SelectionBoundType type;
+  gfx::SelectionBound::Type type;
   gfx::Point edge_top;
   gfx::Point edge_bottom;
   int layer_id;

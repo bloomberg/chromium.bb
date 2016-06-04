@@ -26,6 +26,7 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/selection_bound.h"
 #include "url/gurl.h"
 
 namespace cc {
@@ -316,7 +317,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::Vector2dF& controls_offset,
                        const gfx::Vector2dF& content_offset,
                        bool is_mobile_optimized_hint,
-                       const cc::ViewportSelectionBound& selection_start);
+                       const gfx::SelectionBound& selection_start);
 
   void ForceUpdateImeAdapter(long native_ime_adapter);
   void UpdateImeAdapter(long native_ime_adapter,

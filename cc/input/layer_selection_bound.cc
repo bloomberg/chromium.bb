@@ -10,45 +10,44 @@
 namespace cc {
 namespace {
 
-proto::LayerSelectionBound::SelectionBoundType SelectionBoundTypeToProtobuf(
-    const SelectionBoundType& type) {
+proto::LayerSelectionBound::SelectionBoundType
+LayerSelectionBoundTypeToProtobuf(const gfx::SelectionBound::Type& type) {
   switch (type) {
-    case SELECTION_BOUND_LEFT:
+    case gfx::SelectionBound::LEFT:
       return proto::LayerSelectionBound_SelectionBoundType_LEFT;
-    case SELECTION_BOUND_RIGHT:
+    case gfx::SelectionBound::RIGHT:
       return proto::LayerSelectionBound_SelectionBoundType_RIGHT;
-    case SELECTION_BOUND_CENTER:
+    case gfx::SelectionBound::CENTER:
       return proto::LayerSelectionBound_SelectionBoundType_CENTER;
-    case SELECTION_BOUND_EMPTY:
+    case gfx::SelectionBound::EMPTY:
       return proto::LayerSelectionBound_SelectionBoundType_EMPTY;
   }
   NOTREACHED() << "proto::LayerSelectionBound_SelectionBoundType_UNKNOWN";
   return proto::LayerSelectionBound_SelectionBoundType_UNKNOWN;
 }
 
-SelectionBoundType SelectionBoundTypeFromProtobuf(
+gfx::SelectionBound::Type LayerSelectionBoundTypeFromProtobuf(
     const proto::LayerSelectionBound::SelectionBoundType& type) {
   switch (type) {
     case proto::LayerSelectionBound_SelectionBoundType_LEFT:
-      return SELECTION_BOUND_LEFT;
+      return gfx::SelectionBound::LEFT;
     case proto::LayerSelectionBound_SelectionBoundType_RIGHT:
-      return SELECTION_BOUND_RIGHT;
+      return gfx::SelectionBound::RIGHT;
     case proto::LayerSelectionBound_SelectionBoundType_CENTER:
-      return SELECTION_BOUND_CENTER;
+      return gfx::SelectionBound::CENTER;
     case proto::LayerSelectionBound_SelectionBoundType_EMPTY:
-      return SELECTION_BOUND_EMPTY;
+      return gfx::SelectionBound::EMPTY;
     case proto::LayerSelectionBound_SelectionBoundType_UNKNOWN:
       NOTREACHED() << "proto::LayerSelectionBound_SelectionBoundType_UNKNOWN";
-      return SELECTION_BOUND_EMPTY;
+      return gfx::SelectionBound::EMPTY;
   }
-  return SELECTION_BOUND_EMPTY;
+  return gfx::SelectionBound::EMPTY;
 }
 
 }  // namespace
 
 LayerSelectionBound::LayerSelectionBound()
-    : type(SELECTION_BOUND_EMPTY), layer_id(0) {
-}
+    : type(gfx::SelectionBound::EMPTY), layer_id(0) {}
 
 LayerSelectionBound::~LayerSelectionBound() {
 }
@@ -63,7 +62,7 @@ bool LayerSelectionBound::operator!=(const LayerSelectionBound& other) const {
 }
 
 void LayerSelectionBound::ToProtobuf(proto::LayerSelectionBound* proto) const {
-  proto->set_type(SelectionBoundTypeToProtobuf(type));
+  proto->set_type(LayerSelectionBoundTypeToProtobuf(type));
   PointToProto(edge_top, proto->mutable_edge_top());
   PointToProto(edge_bottom, proto->mutable_edge_bottom());
   proto->set_layer_id(layer_id);
@@ -71,7 +70,7 @@ void LayerSelectionBound::ToProtobuf(proto::LayerSelectionBound* proto) const {
 
 void LayerSelectionBound::FromProtobuf(
     const proto::LayerSelectionBound& proto) {
-  type = SelectionBoundTypeFromProtobuf(proto.type());
+  type = LayerSelectionBoundTypeFromProtobuf(proto.type());
   edge_top = ProtoToPoint(proto.edge_top());
   edge_bottom = ProtoToPoint(proto.edge_bottom());
   layer_id = proto.layer_id();

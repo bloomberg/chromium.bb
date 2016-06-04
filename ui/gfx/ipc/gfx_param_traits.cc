@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_MACOSX)
@@ -75,6 +76,55 @@ void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Log(
   LogParam(p.get(), l);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+void ParamTraits<gfx::SelectionBound>::GetSize(base::PickleSizer* s,
+                                               const param_type& p) {
+  GetParamSize(s, static_cast<uint32_t>(p.type()));
+  GetParamSize(s, p.edge_top());
+  GetParamSize(s, p.edge_bottom());
+  GetParamSize(s, p.visible());
+}
+
+void ParamTraits<gfx::SelectionBound>::Write(base::Pickle* m,
+                                             const param_type& p) {
+  WriteParam(m, static_cast<uint32_t>(p.type()));
+  WriteParam(m, p.edge_top());
+  WriteParam(m, p.edge_bottom());
+  WriteParam(m, p.visible());
+}
+
+bool ParamTraits<gfx::SelectionBound>::Read(const base::Pickle* m,
+                                            base::PickleIterator* iter,
+                                            param_type* r) {
+  gfx::SelectionBound::Type type;
+  gfx::PointF edge_top;
+  gfx::PointF edge_bottom;
+  bool visible = false;
+
+  if (!ReadParam(m, iter, &type) || !ReadParam(m, iter, &edge_top) ||
+      !ReadParam(m, iter, &edge_bottom) || !ReadParam(m, iter, &visible)) {
+    return false;
+  }
+
+  r->set_type(type);
+  r->SetEdgeTop(edge_top);
+  r->SetEdgeBottom(edge_bottom);
+  r->set_visible(visible);
+  return true;
+}
+
+void ParamTraits<gfx::SelectionBound>::Log(const param_type& p,
+                                           std::string* l) {
+  l->append("gfx::SelectionBound(");
+  LogParam(static_cast<uint32_t>(p.type()), l);
+  l->append(", ");
+  LogParam(p.edge_top(), l);
+  l->append(", ");
+  LogParam(p.edge_bottom(), l);
+  l->append(", ");
+  LogParam(p.visible(), l);
+  l->append(")");
+}
 
 }  // namespace IPC
 

@@ -111,14 +111,14 @@ cc::LayerSelectionBound ConvertWebSelectionBound(
   const blink::WebSelectionBound& web_bound =
       is_start ? web_selection.start() : web_selection.end();
   DCHECK(web_bound.layerId);
-  cc_bound.type = cc::SELECTION_BOUND_CENTER;
+  cc_bound.type = gfx::SelectionBound::CENTER;
   if (web_selection.isRange()) {
     if (is_start) {
-      cc_bound.type = web_bound.isTextDirectionRTL ? cc::SELECTION_BOUND_RIGHT
-                                                   : cc::SELECTION_BOUND_LEFT;
+      cc_bound.type = web_bound.isTextDirectionRTL ? gfx::SelectionBound::RIGHT
+                                                   : gfx::SelectionBound::LEFT;
     } else {
-      cc_bound.type = web_bound.isTextDirectionRTL ? cc::SELECTION_BOUND_LEFT
-                                                   : cc::SELECTION_BOUND_RIGHT;
+      cc_bound.type = web_bound.isTextDirectionRTL ? gfx::SelectionBound::LEFT
+                                                   : gfx::SelectionBound::RIGHT;
     }
   }
   cc_bound.layer_id = web_bound.layerId;

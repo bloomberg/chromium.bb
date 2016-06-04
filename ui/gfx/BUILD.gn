@@ -155,8 +155,6 @@ component("gfx") {
     "scoped_ui_graphics_push_context_ios.mm",
     "scrollbar_size.cc",
     "scrollbar_size.h",
-    "selection_bound.cc",
-    "selection_bound.h",
     "selection_model.cc",
     "selection_model.h",
     "sequential_id_generator.cc",
@@ -239,6 +237,7 @@ component("gfx") {
   public_deps = [
     ":memory_buffer_sources",
     ":native_widget_types",
+    ":selection_bound_sources",
     "//base",
     "//skia",
     "//third_party/icu",
@@ -581,6 +580,36 @@ source_set("native_widget_types") {
 
   public_deps = [
     "//base",
+  ]
+}
+
+group("selection_bound") {
+  if (is_component_build) {
+    public_deps = [
+      ":gfx",
+    ]
+  } else {
+    public_deps = [
+      ":selection_bound_sources",
+    ]
+  }
+}
+
+# Depend on this to use selection_bound.h without pulling in all of gfx.
+source_set("selection_bound_sources") {
+  visibility = [ ":*" ]
+
+  sources = [
+    "gfx_export.h",
+    "selection_bound.cc",
+    "selection_bound.h",
+  ]
+
+  defines = [ "GFX_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//base",
+    "//ui/gfx/geometry",
   ]
 }
 

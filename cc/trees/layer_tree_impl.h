@@ -406,7 +406,7 @@ class CC_EXPORT LayerTreeImpl {
 
   // Compute the current selection handle location and visbility with respect to
   // the viewport.
-  void GetViewportSelection(ViewportSelection* selection);
+  void GetViewportSelection(Selection<gfx::SelectionBound>* selection);
 
   void set_top_controls_shrink_blink_size(bool shrink);
   bool top_controls_shrink_blink_size() const {

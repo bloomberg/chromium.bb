@@ -8270,16 +8270,16 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   // Ensure the default frame selection bounds are empty.
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_->output_surface());
-  const ViewportSelection& selection_before =
+  const Selection<gfx::SelectionBound>& selection_before =
       fake_output_surface->last_sent_frame().metadata.selection;
-  EXPECT_EQ(ViewportSelectionBound(), selection_before.start);
-  EXPECT_EQ(ViewportSelectionBound(), selection_before.end);
+  EXPECT_EQ(gfx::SelectionBound(), selection_before.start);
+  EXPECT_EQ(gfx::SelectionBound(), selection_before.end);
 
   // Plumb the layer-local selection bounds.
   gfx::Point selection_top(5, 0);
   gfx::Point selection_bottom(5, 5);
   LayerSelection selection;
-  selection.start.type = SELECTION_BOUND_CENTER;
+  selection.start.type = gfx::SelectionBound::CENTER;
   selection.start.layer_id = root_layer_id;
   selection.start.edge_bottom = selection_bottom;
   selection.start.edge_top = selection_top;
@@ -8297,14 +8297,14 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   EXPECT_TRUE(host_impl_->SwapBuffers(frame));
 
   // Ensure the selection bounds have propagated to the frame metadata.
-  const ViewportSelection& selection_after =
+  const Selection<gfx::SelectionBound>& selection_after =
       fake_output_surface->last_sent_frame().metadata.selection;
-  EXPECT_EQ(selection.start.type, selection_after.start.type);
-  EXPECT_EQ(selection.end.type, selection_after.end.type);
-  EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom);
-  EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top);
-  EXPECT_TRUE(selection_after.start.visible);
-  EXPECT_TRUE(selection_after.start.visible);
+  EXPECT_EQ(selection.start.type, selection_after.start.type());
+  EXPECT_EQ(selection.end.type, selection_after.end.type());
+  EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
+  EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top());
+  EXPECT_TRUE(selection_after.start.visible());
+  EXPECT_TRUE(selection_after.start.visible());
 }
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {

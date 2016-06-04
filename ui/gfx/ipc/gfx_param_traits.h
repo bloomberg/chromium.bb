@@ -12,6 +12,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/ipc/gfx_ipc_export.h"
 #include "ui/gfx/ipc/gfx_param_traits_macros.h"
+#include "ui/gfx/selection_bound.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "ui/gfx/mac/io_surface.h"
@@ -50,6 +51,17 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort> {
   static void Log(const param_type& p, std::string* l);
 };
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+template <>
+struct GFX_IPC_EXPORT ParamTraits<gfx::SelectionBound> {
+  typedef gfx::SelectionBound param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
 
 }  // namespace IPC
 

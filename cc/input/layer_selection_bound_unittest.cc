@@ -30,29 +30,29 @@ void VerifySerializeAndDeserializeLayerSelectionProto(
 
 TEST(LayerSelectionBoundTest, AllTypePermutations) {
   LayerSelectionBound bound;
-  bound.type = SelectionBoundType::SELECTION_BOUND_LEFT;
+  bound.type = gfx::SelectionBound::LEFT;
   bound.edge_top = gfx::Point(3, 14);
   bound.edge_bottom = gfx::Point(6, 28);
   bound.layer_id = 42;
 
   VerifySerializeAndDeserializeProto(bound);
-  bound.type = SelectionBoundType::SELECTION_BOUND_RIGHT;
+  bound.type = gfx::SelectionBound::RIGHT;
   VerifySerializeAndDeserializeProto(bound);
-  bound.type = SelectionBoundType::SELECTION_BOUND_CENTER;
+  bound.type = gfx::SelectionBound::CENTER;
   VerifySerializeAndDeserializeProto(bound);
-  bound.type = SelectionBoundType::SELECTION_BOUND_EMPTY;
+  bound.type = gfx::SelectionBound::EMPTY;
   VerifySerializeAndDeserializeProto(bound);
 }
 
 TEST(LayerSelectionTest, AllSelectionPermutations) {
   LayerSelectionBound start;
-  start.type = SelectionBoundType::SELECTION_BOUND_LEFT;
+  start.type = gfx::SelectionBound::LEFT;
   start.edge_top = gfx::Point(3, 14);
   start.edge_bottom = gfx::Point(6, 28);
   start.layer_id = 42;
 
   LayerSelectionBound end;
-  end.type = SelectionBoundType::SELECTION_BOUND_RIGHT;
+  end.type = gfx::SelectionBound::RIGHT;
   end.edge_top = gfx::Point(14, 3);
   end.edge_bottom = gfx::Point(28, 6);
   end.layer_id = 24;

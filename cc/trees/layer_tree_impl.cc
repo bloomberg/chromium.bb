@@ -1834,16 +1834,16 @@ void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
   selection_ = selection;
 }
 
-static ViewportSelectionBound ComputeViewportSelectionBound(
+static gfx::SelectionBound ComputeViewportSelectionBound(
     const LayerSelectionBound& layer_bound,
     LayerImpl* layer,
     float device_scale_factor,
     const TransformTree& transform_tree,
     const ClipTree& clip_tree) {
-  ViewportSelectionBound viewport_bound;
-  viewport_bound.type = layer_bound.type;
+  gfx::SelectionBound viewport_bound;
+  viewport_bound.set_type(layer_bound.type);
 
-  if (!layer || layer_bound.type == SELECTION_BOUND_EMPTY)
+  if (!layer || layer_bound.type == gfx::SelectionBound::EMPTY)
     return viewport_bound;
 
   auto layer_top = gfx::PointF(layer_bound.edge_top);
@@ -1857,16 +1857,16 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
       MathUtil::MapPoint(screen_space_transform, layer_bottom, &clipped);
 
   // MapPoint can produce points with NaN components (even when no inputs are
-  // NaN). Since consumers of ViewportSelectionBounds may round |edge_top| or
+  // NaN). Since consumers of gfx::SelectionBounds may round |edge_top| or
   // |edge_bottom| (and since rounding will crash on NaN), we return an empty
   // bound instead.
   if (std::isnan(screen_top.x()) || std::isnan(screen_top.y()) ||
       std::isnan(screen_bottom.x()) || std::isnan(screen_bottom.y()))
-    return ViewportSelectionBound();
+    return gfx::SelectionBound();
 
   const float inv_scale = 1.f / device_scale_factor;
-  viewport_bound.edge_top = gfx::ScalePoint(screen_top, inv_scale);
-  viewport_bound.edge_bottom = gfx::ScalePoint(screen_bottom, inv_scale);
+  viewport_bound.SetEdgeTop(gfx::ScalePoint(screen_top, inv_scale));
+  viewport_bound.SetEdgeBottom(gfx::ScalePoint(screen_bottom, inv_scale));
 
   // The bottom edge point is used for visibility testing as it is the logical
   // focal point for bound selection handles (this may change in the future).
@@ -1882,13 +1882,14 @@ static ViewportSelectionBound ComputeViewportSelectionBound(
       MathUtil::MapPoint(screen_space_transform, visibility_point, &clipped);
 
   float intersect_distance = 0.f;
-  viewport_bound.visible = PointHitsLayer(
-      layer, visibility_point, &intersect_distance, transform_tree, clip_tree);
+  viewport_bound.set_visible(PointHitsLayer(
+      layer, visibility_point, &intersect_distance, transform_tree, clip_tree));
 
   return viewport_bound;
 }
 
-void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
+void LayerTreeImpl::GetViewportSelection(
+    Selection<gfx::SelectionBound>* selection) {
   DCHECK(selection);
 
   selection->start = ComputeViewportSelectionBound(
@@ -1898,8 +1899,8 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
       property_trees_.clip_tree);
   selection->is_editable = selection_.is_editable;
   selection->is_empty_text_form_control = selection_.is_empty_text_form_control;
-  if (selection->start.type == SELECTION_BOUND_CENTER ||
-      selection->start.type == SELECTION_BOUND_EMPTY) {
+  if (selection->start.type() == gfx::SelectionBound::CENTER ||
+      selection->start.type() == gfx::SelectionBound::EMPTY) {
     selection->end = selection->start;
   } else {
     selection->end = ComputeViewportSelectionBound(

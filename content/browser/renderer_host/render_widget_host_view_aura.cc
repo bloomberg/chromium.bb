@@ -34,7 +34,6 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
-#include "content/browser/renderer_host/input/ui_touch_selection_helper.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -1163,20 +1162,27 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   if (!frame->delegated_frame_data)
     return;
 
-  cc::ViewportSelection selection = frame->metadata.selection;
+  cc::Selection<gfx::SelectionBound> selection = frame->metadata.selection;
   if (IsUseZoomForDSFEnabled()) {
     float viewportToDIPScale = 1.0f / current_device_scale_factor_;
-    selection.start.edge_top.Scale(viewportToDIPScale);
-    selection.start.edge_bottom.Scale(viewportToDIPScale);
-    selection.end.edge_top.Scale(viewportToDIPScale);
-    selection.end.edge_bottom.Scale(viewportToDIPScale);
+    gfx::PointF start_edge_top = selection.start.edge_top();
+    gfx::PointF start_edge_bottom = selection.start.edge_bottom();
+    gfx::PointF end_edge_top = selection.end.edge_top();
+    gfx::PointF end_edge_bottom = selection.end.edge_bottom();
+
+    start_edge_top.Scale(viewportToDIPScale);
+    start_edge_bottom.Scale(viewportToDIPScale);
+    end_edge_top.Scale(viewportToDIPScale);
+    end_edge_bottom.Scale(viewportToDIPScale);
+
+    selection.start.SetEdge(start_edge_top, start_edge_bottom);
+    selection.end.SetEdge(end_edge_top, end_edge_bottom);
   }
 
   delegated_frame_host_->SwapDelegatedFrame(output_surface_id,
                                             std::move(frame));
   SelectionUpdated(selection.is_editable, selection.is_empty_text_form_control,
-                   ConvertSelectionBound(selection.start),
-                   ConvertSelectionBound(selection.end));
+                   selection.start, selection.end);
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {
