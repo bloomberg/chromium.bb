@@ -57,7 +57,7 @@ namespace error {
     // client-side.
     kInvalidGpuMessage,
 
-    kContextLostReasonLast = kGpuChannelLost
+    kContextLostReasonLast = kInvalidGpuMessage
   };
 }
 
