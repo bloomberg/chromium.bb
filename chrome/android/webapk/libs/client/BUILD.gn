@@ -8,6 +8,7 @@ import("//chrome/android/webapk/libs/runtime_library_version.gni")
 android_library("client") {
   java_files = [
     "src/org/chromium/webapk/lib/client/DexOptimizer.java",
+    "src/org/chromium/webapk/lib/client/NavigationClient.java",
     "src/org/chromium/webapk/lib/client/WebApkServiceConnectionManager.java",
     "src/org/chromium/webapk/lib/client/WebApkValidator.java",
   ]

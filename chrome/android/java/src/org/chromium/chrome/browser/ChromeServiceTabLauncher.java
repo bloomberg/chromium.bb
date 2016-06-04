@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -19,6 +20,8 @@ import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.webapk.lib.client.NavigationClient;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
  * Service Tab Launcher implementation for Chrome. Provides the ability for Android Services
@@ -41,9 +44,17 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
             final int referrerPolicy, final String extraHeaders, final byte[] postData) {
         final TabDelegate tabDelegate = new TabDelegate(incognito);
 
-        // Try and retrieve a WebappDataStorage object with scope corresponding to the URL to be
-        // opened. If one is found, and it has been opened recently, create an intent to launch the
-        // URL in a standalone web app frame. Otherwise, open the URL in a tab.
+        // 1. Launch WebAPK if one matches the target URL.
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+            String webApkPackageName = WebApkValidator.queryWebApkPackage(context, url);
+            if (webApkPackageName != null) {
+                NavigationClient.launchWebApk(context, webApkPackageName, url);
+                return;
+            }
+        }
+
+        // 2. Launch WebappActivity if one matches the target URL and was opened recently.
+        // Otherwise, open the URL in a tab.
         FetchWebappDataStorageCallback callback = new FetchWebappDataStorageCallback() {
             @Override
             public void onWebappDataStorageRetrieved(final WebappDataStorage storage) {
