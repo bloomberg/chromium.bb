@@ -508,6 +508,8 @@ if (is_win) {
     # that shouldn't use the windows subsystem.
     "//build/config/win:console",
   ]
+} else if (is_mac) {
+  _mac_linker_configs = [ "//build/config/mac:strip_all" ]
 }
 
 # Executable defaults.
@@ -517,6 +519,8 @@ _executable_configs = _native_compiler_configs + [
                       ]
 if (is_win) {
   _executable_configs += _windows_linker_configs
+} else if (is_mac) {
+  _executable_configs += _mac_linker_configs
 }
 set_defaults("executable") {
   configs = _executable_configs
@@ -540,6 +544,8 @@ if (is_win) {
   # want this can remove this config.
   _shared_library_configs +=
       [ "//build/config/android:hide_native_jni_exports" ]
+} else if (is_mac) {
+  _shared_library_configs += _mac_linker_configs
 }
 set_defaults("shared_library") {
   configs = _shared_library_configs

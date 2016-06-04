@@ -9,6 +9,7 @@
 import("../goma.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/mac_sdk.gni")
+import("//build/config/mac/symbols.gni")
 
 assert(host_os == "mac")
 
@@ -46,6 +47,9 @@ template("mac_toolchain") {
     cxx = invoker.cxx
     ld = invoker.ld
 
+    linker_driver =
+        rebase_path("//build/toolchain/mac/linker_driver.py", root_build_dir)
+
     # Make these apply to all tools below.
     lib_switch = "-l"
     lib_dir_switch = "-L"
@@ -54,6 +58,13 @@ template("mac_toolchain") {
     # target_output_name since labels will generally have no spaces and will be
     # unique in the directory.
     object_subdir = "{{target_out_dir}}/{{label_name}}"
+
+    # If dSYMs are enabled, this flag will be added to the link tools.
+    if (enable_dsyms) {
+      dsym_switch = " -Wcrl,dsym," + rebase_path(root_out_dir) + " "
+    } else {
+      dsym_switch = ""
+    }
 
     tool("cc") {
       depfile = "{{output}}.d"
@@ -140,10 +151,11 @@ template("mac_toolchain") {
 
       does_reexport_command = "[ ! -e \"$dylib\" -o ! -e \"$tocname\" ] || otool -l \"$dylib\" | grep -q LC_REEXPORT_DYLIB"
 
-      link_command = "$ld -shared "
+      link_command = "$linker_driver $ld -shared "
       if (is_component_build) {
         link_command += " -Wl,-install_name,@rpath/\"{{target_output_name}}{{output_extension}}\" "
       }
+      link_command += dsym_switch
       link_command += "{{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{libs}} {{solibs}}"
 
       replace_command = "if ! cmp -s \"$temporary_tocname\" \"$tocname\"; then mv \"$temporary_tocname\" \"$tocname\""
@@ -176,17 +188,21 @@ template("mac_toolchain") {
       ]
       link_output = dylib
       depend_output = tocname
+
+      if (enable_dsyms) {
+        outputs += [ dylib + ".dSYM/" ]
+      }
     }
 
     tool("solink_module") {
       sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
       rspfile = sofile + ".rsp"
 
-      link_command =
-          "$ld -bundle {{ldflags}} -o \"$sofile\" -Wl,-filelist,\"$rspfile\""
+      link_command = "$linker_driver $ld -bundle {{ldflags}} -o \"$sofile\" -Wl,-filelist,\"$rspfile\""
       if (is_component_build) {
         link_command += " -Wl,-install_name,@rpath/{{target_output_name}}{{output_extension}}"
       }
+      link_command += dsym_switch
       link_command += " {{solibs}} {{libs}}"
       command = link_command
 
@@ -203,6 +219,10 @@ template("mac_toolchain") {
       outputs = [
         sofile,
       ]
+
+      if (enable_dsyms) {
+        outputs += [ sofile + ".dSYM/" ]
+      }
     }
 
     tool("link") {
@@ -217,12 +237,16 @@ template("mac_toolchain") {
       # do for command-line arguments. Thus any source names with spaces, or
       # label names with spaces (which GN bases the output paths on) will be
       # corrupted by this process. Don't use spaces for source files or labels.
-      command = "$ld {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
+      command = "$linker_driver $ld $dsym_switch {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
       description = "LINK $outfile"
       rspfile_content = "{{inputs_newline}}"
       outputs = [
         outfile,
       ]
+
+      if (enable_dsyms) {
+        outputs += [ outfile + ".dSYM/" ]
+      }
 
       default_output_dir = "{{root_out_dir}}"
     }

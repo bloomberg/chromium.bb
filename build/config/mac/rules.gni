@@ -214,6 +214,9 @@ template("mac_framework_bundle") {
 #         (optional) list of label, additional configs to apply to the
 #         executable target.
 #
+#     remove_configs:
+#         (optional) list of label, default configs to remove from the target.
+#
 #     extra_substitutions:
 #         (optional) string array, 'key=value' pairs for extra fields which are
 #         specified in a source Info.plist template.
@@ -253,6 +256,9 @@ template("mac_app_bundle") {
                            ])
     if (defined(extra_configs)) {
       configs += extra_configs
+    }
+    if (defined(remove_configs)) {
+      configs -= remove_configs
     }
     output_name = _output_name
     output_dir = "$target_out_dir/$_executable_target"

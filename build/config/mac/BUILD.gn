@@ -4,6 +4,7 @@
 
 import("//build/config/sysroot.gni")
 import("//build/config/mac/mac_sdk.gni")
+import("//build/config/mac/symbols.gni")
 
 # This is included by reference in the //build/config/compiler config that
 # is applied to all targets. It is here to separate out the logic.
@@ -85,4 +86,16 @@ config("mac_dynamic_flags") {
 config("mac_executable_flags") {
   # Remove this when targeting >=10.7 since it is the default in that config.
   ldflags = [ "-Wl,-pie" ]  # Position independent.
+}
+
+# The ldflags referenced below are handled by
+# //build/toolchain/mac/linker_driver.py.
+# Remove this config if a target wishes to change the arguments passed to the
+# strip command during linking. This config by default strips all symbols
+# from a binary, but some targets may wish to specify a saves file to preserve
+# specific symbols.
+config("strip_all") {
+  if (enable_stripping) {
+    ldflags = [ "-Wcrl,strip,-x,-S" ]
+  }
 }

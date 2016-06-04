@@ -21,6 +21,7 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/compiled_action.gni")
   import("//build/config/mac/rules.gni")
+  import("//build/config/mac/symbols.gni")
   import("//build/mac/tweak_info_plist.gni")
   import("//build/util/branding.gni")
   import("//build/util/version.gni")
@@ -461,6 +462,15 @@ if (is_win) {
       ":chrome_versioned_bundle_data",
       "//chrome/common:version_header",
     ]
+
+    # Remove the default strip configuration (which strips all symbols) so that
+    # a saves file can be specified.
+    if (enable_stripping) {
+      remove_configs = [ "//build/config/mac:strip_all" ]
+
+      ldflags =
+          [ "-Wcrl,strip,-s," + rebase_path("app/app.saves", root_build_dir) ]
+    }
   }
 
   compiled_action("chrome_app_strings") {
@@ -603,6 +613,15 @@ if (is_win) {
       "-rpath",
       "@loader_path/../../../../../../..",
     ]
+
+    # Remove the default strip configuration (which strips all symbols) so that
+    # a saves file can be specified.
+    if (enable_stripping) {
+      remove_configs = [ "//build/config/mac:strip_all" ]
+
+      ldflags +=
+          [ "-Wcrl,strip,-s," + rebase_path("app/app.saves", root_build_dir) ]
+    }
   }
 
   bundle_data("chrome_framework_locales") {
