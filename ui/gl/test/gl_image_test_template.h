@@ -67,8 +67,8 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
     case GL_TEXTURE_RECTANGLE_ARB:
       return GLHelper::LoadShader(
           GL_FRAGMENT_SHADER,
-          base::StringPrintf("%s\n"
-                             "#extension GL_ARB_texture_rectangle : require\n"
+          base::StringPrintf("#extension GL_ARB_texture_rectangle : require\n"
+                             "%s\n"
                              "#define SamplerType sampler2DRect\n"
                              "#define TextureLookup texture2DRect\n"
                              "#define TextureScale vec2(%f, %f)\n"
@@ -76,6 +76,18 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
                              is_gles ? kShaderFloatPrecision : "",
                              static_cast<double>(size.width()),
                              static_cast<double>(size.height()),
+                             kFragmentShader)
+              .c_str());
+    case GL_TEXTURE_EXTERNAL_OES:
+      return GLHelper::LoadShader(
+          GL_FRAGMENT_SHADER,
+          base::StringPrintf("#extension GL_OES_EGL_image_external : require\n"
+                             "%s\n"
+                             "#define SamplerType samplerExternalOES\n"
+                             "#define TextureLookup texture2D\n"
+                             "#define TextureScale vec2(1.0, 1.0)\n"
+                             "%s",
+                             is_gles ? kShaderFloatPrecision : "",
                              kFragmentShader)
               .c_str());
     default:

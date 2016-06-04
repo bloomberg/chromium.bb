@@ -50,7 +50,7 @@ class GLImageOzoneNativePixmapTestDelegate {
     return image;
   }
 
-  unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
+  unsigned GetTextureTarget() const { return GL_TEXTURE_EXTERNAL_OES; }
 
   const uint8_t* GetImageColor() {
     return format == gfx::BufferFormat::R_8 ? kRed : kGreen;
