@@ -269,20 +269,6 @@ TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
   EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, OneLowLoadsUntilIdle) {
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-}
-
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -294,9 +280,7 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
 
   high.reset();
   base::RunLoop().RunUntilIdle();
-  // TODO(mmenke):  The name of this test implies this should be false.
-  // Investigate if this is now expected, remove or update this test if it is.
-  EXPECT_TRUE(low2->started());
+  EXPECT_FALSE(low2->started());
 
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
   base::RunLoop().RunUntilIdle();
@@ -321,13 +305,17 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
   EXPECT_TRUE(low2->started());
 }
 
-TEST_F(ResourceSchedulerTest, LowDoesNotBlockCriticalComplete) {
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+TEST_F(ResourceSchedulerTest, MediumDoesNotBlockCriticalComplete) {
+  // kLayoutBlockingPriorityThreshold determines what priority level above which
+  // requests are considered layout-blocking and must be completed before the
+  // critical loading period is complete.  It is currently set to net::MEDIUM.
+  std::unique_ptr<TestRequest> medium(
+      NewRequest("http://host/low", net::MEDIUM));
   std::unique_ptr<TestRequest> lowest(
       NewRequest("http://host/lowest", net::LOWEST));
   std::unique_ptr<TestRequest> lowest2(
       NewRequest("http://host/lowest", net::LOWEST));
-  EXPECT_TRUE(low->started());
+  EXPECT_TRUE(medium->started());
   EXPECT_TRUE(lowest->started());
   EXPECT_FALSE(lowest2->started());
 
@@ -341,19 +329,37 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
       url::SchemeHostPort("https", "spdyhost", 443), true);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low_spdy(
-      NewRequest("https://spdyhost/low", net::LOWEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low_spdy(
+      NewRequest("https://spdyhost/low", net::LOWEST));
   EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low_spdy->started());
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
+  EXPECT_TRUE(low_spdy->started());
 
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low2->started());
+}
+
+TEST_F(ResourceSchedulerTest, SpdyLowBlocksOtherLowUntilBodyInserted) {
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low_spdy(
+      NewRequest("https://spdyhost/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  EXPECT_TRUE(high->started());
+  EXPECT_TRUE(low_spdy->started());
+  EXPECT_FALSE(low->started());
+
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+  high.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(low->started());
 }
 
 TEST_F(ResourceSchedulerTest, NavigationResetsState) {
@@ -375,7 +381,11 @@ TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, StartMultipleLowRequestsWhenIdle) {
+TEST_F(ResourceSchedulerTest, MoreThanOneHighRequestBlocksDelayableRequests) {
+  // If there are more than kInFlightNonDelayableRequestCountThreshold (=1)
+  // high-priority / non-delayable requests, block all low priority fetches and
+  // allow them through one at a time once the number of high priority requests
+  // drops.
   std::unique_ptr<TestRequest> high1(
       NewRequest("http://host/high1", net::HIGHEST));
   std::unique_ptr<TestRequest> high2(
@@ -384,16 +394,13 @@ TEST_F(ResourceSchedulerTest, StartMultipleLowRequestsWhenIdle) {
   std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high1->started());
   EXPECT_TRUE(high2->started());
-  EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low->started());
   EXPECT_FALSE(low2->started());
 
   high1.reset();
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
-
-  high2.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
 }
 
 TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
@@ -419,6 +426,7 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low2->started());
 
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low1->started());
@@ -686,75 +694,77 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
 }
 
 TEST_F(ResourceSchedulerTest, OustandingRequestLimitEnforced) {
-  const int kRequestLimit = 3;
-  ASSERT_TRUE(InitializeFieldTrials(
-      base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
-                         kRequestLimit)));
-  InitializeScheduler();
+    const int kRequestLimit = 3;
+    ASSERT_TRUE(InitializeFieldTrials(
+        base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
+                           kRequestLimit)));
+    InitializeScheduler();
 
-  // Throw in requests up to the above limit; make sure they are started.
-  ScopedVector<TestRequest> requests;
-  for (int i = 0; i < kRequestLimit; ++i) {
+    // Throw in requests up to the above limit; make sure they are started.
+    ScopedVector<TestRequest> requests;
+    for (int i = 0; i < kRequestLimit; ++i) {
+      string url = "http://host/medium";
+      requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
+      EXPECT_TRUE(requests[i]->started());
+    }
+
+    // Confirm that another request will indeed fail.
     string url = "http://host/medium";
     requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-    EXPECT_TRUE(requests[i]->started());
+    EXPECT_FALSE(requests[kRequestLimit]->started());
   }
 
-  // Confirm that another request will indeed fail.
-  string url = "http://host/medium";
-  requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-  EXPECT_FALSE(requests[kRequestLimit]->started());
-}
+  // Confirm that outstanding requests limits apply to requests to hosts
+  // that support request priority.
+  TEST_F(ResourceSchedulerTest,
+         OutstandingRequestsLimitsEnforcedForRequestPriority) {
+    const int kRequestLimit = 3;
+    ASSERT_TRUE(InitializeFieldTrials(
+        base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
+                           kRequestLimit)));
+    InitializeScheduler();
 
-// Confirm that outstanding requests limits apply to requests to hosts
-// that support request priority.
-TEST_F(ResourceSchedulerTest,
-       OutstandingRequestsLimitsEnforcedForRequestPriority) {
-  const int kRequestLimit = 3;
-  ASSERT_TRUE(InitializeFieldTrials(
-      base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
-                         kRequestLimit)));
-  InitializeScheduler();
+    http_server_properties_.SetSupportsSpdy(
+        url::SchemeHostPort("https", "spdyhost", 443), true);
 
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
+    // Throw in requests up to the above limit; make sure they are started.
+    ScopedVector<TestRequest> requests;
+    for (int i = 0; i < kRequestLimit; ++i) {
+      string url = "http://spdyhost/medium";
+      requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
+      EXPECT_TRUE(requests[i]->started());
+    }
 
-  // Throw in requests up to the above limit; make sure they are started.
-  ScopedVector<TestRequest> requests;
-  for (int i = 0; i < kRequestLimit; ++i) {
+    // Confirm that another request will indeed fail.
     string url = "http://spdyhost/medium";
     requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-    EXPECT_TRUE(requests[i]->started());
+    EXPECT_FALSE(requests[kRequestLimit]->started());
   }
 
-  // Confirm that another request will indeed fail.
-  string url = "http://spdyhost/medium";
-  requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-  EXPECT_FALSE(requests[kRequestLimit]->started());
-}
+  TEST_F(ResourceSchedulerTest, OutstandingRequestLimitDelays) {
+    const int kRequestLimit = 3;
+    ASSERT_TRUE(InitializeFieldTrials(
+        base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
+                           kRequestLimit)));
 
-TEST_F(ResourceSchedulerTest, OutstandingRequestLimitDelays) {
-  const int kRequestLimit = 3;
-  ASSERT_TRUE(InitializeFieldTrials(
-      base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
-                         kRequestLimit)));
+    InitializeScheduler();
+    std::unique_ptr<TestRequest> high(
+        NewRequest("http://host/high", net::HIGHEST));
+    std::unique_ptr<TestRequest> low(NewRequest("http://host/low",
+                                                net::LOWEST));
+    std::unique_ptr<TestRequest> low2(NewRequest("http://host/low",
+                                                 net::LOWEST));
+    EXPECT_TRUE(high->started());
+    EXPECT_FALSE(low->started());
+    EXPECT_FALSE(low2->started());
 
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_FALSE(low->started());
-  EXPECT_FALSE(low2->started());
+    high.reset();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(low->started());
+    EXPECT_FALSE(low2->started());
+  }
 
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low->started());
-  EXPECT_TRUE(low2->started());
-}
-
-// Async revalidations which are not started when the tab is closed must be
+  // Async revalidations which are not started when the tab is closed must be
 // started at some point, or they will hang around forever and prevent other
 // async revalidations to the same URL from being issued.
 TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeleted) {
@@ -797,380 +807,6 @@ TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
   delayable_requests.clear();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(lowest->started());
-}
-
-TEST_F(ResourceSchedulerTest, DefaultLayoutBlockingPriority) {
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 0;
-  const int kEnableLayoutBlockingThreshold = 0;
-  const int kLayoutBlockingThreshold = 0;
-  const int kMaxNumDelayableWhileLayoutBlocking = 1;
-  const int kMaxNumDelayableRequestsPerClient = 10;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://hosthigh/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> high2(
-      NewRequest("http://hosthigh/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> medium(
-      NewRequest("http://hostmedium/medium", net::MEDIUM));
-  std::unique_ptr<TestRequest> medium2(
-      NewRequest("http://hostmedium/medium", net::MEDIUM));
-  std::unique_ptr<TestRequest> low(NewRequest("http://hostlow/low", net::LOW));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://hostlow/low", net::LOW));
-  std::unique_ptr<TestRequest> lowest(
-      NewRequest("http://hostlowest/lowest", net::LOWEST));
-  std::unique_ptr<TestRequest> lowest2(
-      NewRequest("http://hostlowest/lowest", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(high2->started());
-  EXPECT_TRUE(medium->started());
-  EXPECT_TRUE(medium2->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_TRUE(low2->started());
-  EXPECT_TRUE(lowest->started());
-  EXPECT_FALSE(lowest2->started());
-
-  lowest.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lowest2->started());
-}
-
-TEST_F(ResourceSchedulerTest, IncreaseLayoutBlockingPriority) {
-  // Changes the level of priorities that are allowed during layout-blocking
-  // from net::LOWEST to net::LOW.
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 1;
-  const int kEnableLayoutBlockingThreshold = 0;
-  const int kLayoutBlockingThreshold = 0;
-  const int kMaxNumDelayableWhileLayoutBlocking = 1;
-  const int kMaxNumDelayableRequestsPerClient = 10;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://hosthigh/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> high2(
-      NewRequest("http://hosthigh/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> medium(
-      NewRequest("http://hostmedium/medium", net::MEDIUM));
-  std::unique_ptr<TestRequest> medium2(
-      NewRequest("http://hostmedium/medium", net::MEDIUM));
-  std::unique_ptr<TestRequest> low(NewRequest("http://hostlow/low", net::LOW));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://hostlow/low", net::LOW));
-  std::unique_ptr<TestRequest> lowest(
-      NewRequest("http://hostlowest/lowest", net::LOWEST));
-  std::unique_ptr<TestRequest> lowest2(
-      NewRequest("http://hostlowest/lowest", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(high2->started());
-  EXPECT_TRUE(medium->started());
-  EXPECT_TRUE(medium2->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-  EXPECT_FALSE(lowest->started());
-  EXPECT_FALSE(lowest2->started());
-
-  low.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-  EXPECT_FALSE(lowest->started());
-  EXPECT_FALSE(lowest2->started());
-
-  low2.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lowest->started());
-  EXPECT_FALSE(lowest2->started());
-
-  lowest.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lowest2->started());
-}
-
-TEST_F(ResourceSchedulerTest, UseLayoutBlockingThresholdOne) {
-  // Prevents any low priority requests from starting while more than
-  // N high priority requests are pending (before body).
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 0;
-  const int kEnableLayoutBlockingThreshold = 1;
-  const int kLayoutBlockingThreshold = 1;
-  const int kMaxNumDelayableWhileLayoutBlocking = 1;
-  const int kMaxNumDelayableRequestsPerClient = 10;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> high2(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(high2->started());
-  EXPECT_FALSE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high2.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(low2->started());
-
-  scheduler()->OnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-}
-
-TEST_F(ResourceSchedulerTest, UseLayoutBlockingThresholdTwo) {
-  // Prevents any low priority requests from starting while more than
-  // N high priority requests are pending (before body).
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 0;
-  const int kEnableLayoutBlockingThreshold = 1;
-  const int kLayoutBlockingThreshold = 2;
-  const int kMaxNumDelayableWhileLayoutBlocking = 1;
-  const int kMaxNumDelayableRequestsPerClient = 10;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> high2(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> high3(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(high2->started());
-  EXPECT_TRUE(high3->started());
-  EXPECT_FALSE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high2.reset();
-  high3.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(low2->started());
-
-  scheduler()->OnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-}
-
-TEST_F(ResourceSchedulerTest, TwoDelayableLoadsUntilBodyInserted) {
-  // Allow for two low priority requests to be in flight at any point in time
-  // during the layout-blocking phase of loading.
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 0;
-  const int kEnableLayoutBlockingThreshold = 0;
-  const int kLayoutBlockingThreshold = 0;
-  const int kMaxNumDelayableWhileLayoutBlocking = 2;
-  const int kMaxNumDelayableRequestsPerClient = 10;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low3(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_TRUE(low2->started());
-  EXPECT_FALSE(low3->started());
-
-  high.reset();
-  scheduler()->OnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low3->started());
-}
-
-TEST_F(ResourceSchedulerTest,
-    UseLayoutBlockingThresholdOneAndTwoDelayableLoadsUntilBodyInserted) {
-  // Allow for two low priority requests to be in flight during the
-  // layout-blocking phase of loading but only when there is not more than one
-  // in-flight high priority request.
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 0;
-  const int kEnableLayoutBlockingThreshold = 1;
-  const int kLayoutBlockingThreshold = 1;
-  const int kMaxNumDelayableWhileLayoutBlocking = 2;
-  const int kMaxNumDelayableRequestsPerClient = 10;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> high2(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low3(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(high2->started());
-  EXPECT_FALSE(low->started());
-  EXPECT_FALSE(low2->started());
-  EXPECT_FALSE(low3->started());
-
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low->started());
-  EXPECT_TRUE(low2->started());
-  EXPECT_FALSE(low3->started());
-
-  high2.reset();
-  scheduler()->OnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low3->started());
-}
-
-TEST_F(ResourceSchedulerTest, TwentyMaxNumDelayableRequestsPerClient) {
-  // Do not exceed 20 low-priority requests to be in flight across all hosts
-  // at any point in time.
-  const int kDeferLateScripts = 0;
-  const int kIncreaseFontPriority = 0;
-  const int kIncreaseAsyncScriptPriority = 0;
-  const int kEnablePriorityIncrease = 0;
-  const int kEnableLayoutBlockingThreshold = 0;
-  const int kLayoutBlockingThreshold = 0;
-  const int kMaxNumDelayableWhileLayoutBlocking = 1;
-  const int kMaxNumDelayableRequestsPerClient = 20;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-
-  // Only load low priority resources if there's a body.
-  scheduler()->OnWillInsertBody(kChildId, kRouteId);
-
-  // Queue requests from different hosts until the total limit is reached.
-  ScopedVector<TestRequest> lows_different_host;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
-    lows_different_host.push_back(NewRequest(url.c_str(), net::LOWEST));
-    EXPECT_TRUE(lows_different_host[i]->started());
-  }
-
-  std::unique_ptr<TestRequest> last_different_host(
-      NewRequest("http://host_new/last", net::LOWEST));
-  EXPECT_FALSE(last_different_host->started());
-}
-
-TEST_F(ResourceSchedulerTest,
-    TwentyMaxNumDelayableRequestsPerClientWithEverythingEnabled) {
-  // Do not exceed 20 low-priority requests to be in flight across all hosts
-  // at any point in time and make sure it still works correctly when the other
-  // options are toggled.
-  const int kDeferLateScripts = 1;
-  const int kIncreaseFontPriority = 1;
-  const int kIncreaseAsyncScriptPriority = 1;
-  const int kEnablePriorityIncrease = 1;
-  const int kEnableLayoutBlockingThreshold = 1;
-  const int kLayoutBlockingThreshold = 1;
-  const int kMaxNumDelayableWhileLayoutBlocking = 1;
-  const int kMaxNumDelayableRequestsPerClient = 20;
-  ASSERT_TRUE(InitializeFieldTrials(base::StringPrintf(
-      "ResourcePriorities/LayoutBlocking_%d%d%d%d%d_%d_%d_%d/",
-      kDeferLateScripts,
-      kIncreaseFontPriority,
-      kIncreaseAsyncScriptPriority,
-      kEnablePriorityIncrease,
-      kEnableLayoutBlockingThreshold,
-      kLayoutBlockingThreshold,
-      kMaxNumDelayableWhileLayoutBlocking,
-      kMaxNumDelayableRequestsPerClient)));
-  InitializeScheduler();
-
-  // Only load low priority resources if there's a body.
-  scheduler()->OnWillInsertBody(kChildId, kRouteId);
-
-  // Queue requests from different hosts until the total limit is reached.
-  ScopedVector<TestRequest> lows_different_host;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
-    lows_different_host.push_back(NewRequest(url.c_str(), net::LOWEST));
-    EXPECT_TRUE(lows_different_host[i]->started());
-  }
-
-  std::unique_ptr<TestRequest> last_different_host(
-      NewRequest("http://host_new/last", net::LOWEST));
-  EXPECT_FALSE(last_different_host->started());
 }
 
 }  // unnamed namespace

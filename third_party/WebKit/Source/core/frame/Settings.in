@@ -378,18 +378,6 @@ mainResourceOnlyProgress initial=false
 # the volume slider / mute button?
 preferHiddenVolumeControls initial=false
 
-# Controls for resource fetch prioritization.
-# Overall rationale and details here: https://docs.google.com/document/d/1bCDuq9H1ih9iNjgzyAL0gpwNFiEP4TZS-YLRp_RuMlc/edit?usp=sharing
-fetchDeferLateScripts initial=false
-fetchIncreaseFontPriority initial=false
-fetchIncreaseAsyncScriptPriority initial=false
-# Increases the priorities for CSS, Scripts, Fonts and Images all by one level
-# and parser-blocking scripts and visible images by 2.
-# This is used in conjunction with logic on the Chrome side to raise the threshold
-# of "layout-blocking" resources and provide a boost to resources that are needed
-# as soon as possible for something currently on the screen.
-fetchIncreasePriorities initial=false
-
 # Whether to disallow network fetches for parser blocking scripts in the main
 # frame inserted via document.write, for users on slow connections.
 disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections initial=false

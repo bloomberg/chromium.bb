@@ -104,23 +104,27 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
 {
     switch (type) {
     case Resource::MainResource:
+    case Resource::CSSStyleSheet:
+    case Resource::Font:
+        // Also parser-blocking scripts (set explicitly in loadPriority)
         return ResourceLoadPriorityVeryHigh;
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    case Resource::CSSStyleSheet:
-        return ResourceLoadPriorityHigh;
     case Resource::Raw:
-    case Resource::Script:
-    case Resource::Font:
     case Resource::ImportResource:
+    case Resource::Script:
+        // Also visible resources/images (set explicitly in loadPriority)
+        return ResourceLoadPriorityHigh;
     case Resource::Manifest:
+        // Also late-body scripts discovered by the preload scanner (set explicitly in loadPriority)
         return ResourceLoadPriorityMedium;
+    case Resource::Image:
     case Resource::LinkPreload:
     case Resource::TextTrack:
     case Resource::Media:
     case Resource::SVGDocument:
+        // Also async scripts (set explicitly in loadPriority)
         return ResourceLoadPriorityLow;
-    case Resource::Image:
     case Resource::LinkPrefetch:
         return ResourceLoadPriorityVeryLow;
     }
@@ -139,7 +143,31 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
     if (request.options().synchronousPolicy == RequestSynchronously)
         return ResourceLoadPriorityHighest;
 
-    return context().modifyPriorityForExperiments(typeToPriority(type), type, request, visibility);
+    ResourceLoadPriority priority = typeToPriority(type);
+
+    // Visible resources (images in practice) get a boost to High priority.
+    if (visibility == ResourcePriority::Visible)
+        priority = ResourceLoadPriorityHigh;
+
+    // Resources before the first image are considered "early" in the document
+    // and resources after the first image are "late" in the document.  Important to
+    // note that this is based on when the preload scanner discovers a resource
+    // for the most part so the main parser may not have reached the image element yet.
+    if (type == Resource::Image)
+        m_imageFetched = true;
+
+    // Special handling for scripts.
+    // Default/Parser-Blocking/Preload early in document: High (set in typeToPriority)
+    // Async/Defer: Low Priority (applies to both preload and parser-inserted)
+    // Preload late in document: Medium
+    if (type == Resource::Script) {
+        if (FetchRequest::LazyLoad == request.defer())
+            priority = ResourceLoadPriorityLow;
+        else if (request.forPreload() && m_imageFetched)
+            priority = ResourceLoadPriorityMedium;
+    }
+
+    return context().modifyPriorityForExperiments(priority);
 }
 
 static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource)
@@ -194,6 +222,7 @@ ResourceFetcher::ResourceFetcher(FetchContext* newContext)
     , m_autoLoadImages(true)
     , m_imagesEnabled(true)
     , m_allowStaleResources(false)
+    , m_imageFetched(false)
 {
     ThreadState::current()->registerPreFinalizer(this);
 }

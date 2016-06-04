@@ -5,6 +5,9 @@
     header("Link: <http://127.0.0.1:8000/resources/square.png>;rel=preload;as=image", false);
 ?>
 <!DOCTYPE html>
+<html>
+<head></head>
+<body>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script>
@@ -18,3 +21,5 @@
         t.done();
     }));
 </script>
+</body>
+</html>

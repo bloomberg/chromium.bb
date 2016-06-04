@@ -42,8 +42,6 @@ enum StartMode {
 const char kRequestLimitFieldTrial[] = "OutstandingRequestLimiting";
 const char kRequestLimitFieldTrialGroupPrefix[] = "Limit";
 
-const char kResourcePrioritiesFieldTrial[] = "ResourcePriorities";
-
 // Flags identifying various attributes of the request that are used
 // when making scheduling decisions.
 using RequestAttributes = uint8_t;
@@ -54,11 +52,30 @@ const RequestAttributes kAttributeLayoutBlocking = 0x04;
 
 }  // namespace
 
-static const size_t kDefaultMaxNumDelayableRequestsPerClient = 10;
-static const size_t kMaxNumDelayableRequestsPerHost = 6;
-static const size_t kDefaultMaxNumDelayableWhileLayoutBlocking = 1;
+// The maximum number of delayable requests to allow to be in-flight at any
+// point in time (across all hosts).
+static const size_t kMaxNumDelayableRequestsPerClient = 10;
+
+// The maximum number of requests to allow be in-flight at any point in time per
+// host.
+static const size_t kMaxNumDelayableRequestsPerHostPerClient = 6;
+
+// The maximum number of delayable requests to allow to be in-flight at any
+// point in time while in the layout-blocking phase of loading.
+static const size_t kMaxNumDelayableWhileLayoutBlockingPerClient = 1;
+
+// The priority level above which resources are considered layout-blocking if
+// the html_body has not started.
 static const net::RequestPriority
-    kDefaultLayoutBlockingPriorityThreshold = net::LOW;
+    kLayoutBlockingPriorityThreshold = net::MEDIUM;
+
+// The priority level below which resources are considered to be delayable.
+static const net::RequestPriority
+    kDelayablePriorityThreshold = net::MEDIUM;
+
+// The number of in-flight layout-blocking requests above which all delayable
+// requests should be blocked.
+static const size_t kInFlightNonDelayableRequestCountPerClientThreshold = 1;
 
 struct ResourceScheduler::RequestPriorityParams {
   RequestPriorityParams()
@@ -330,8 +347,9 @@ class ResourceScheduler::Client {
     // First start any pending requests so that they will be moved into
     // in_flight_requests_. This may exceed the limits
     // kDefaultMaxNumDelayableRequestsPerClient and
-    // kMaxNumDelayableRequestsPerHost, so this method must not do anything that
-    // depends on those limits before calling ClearInFlightRequests() below.
+    // kMaxNumDelayableRequestsPerHostPerClient, so this method must not do
+    // anything that depends on those limits before calling
+    // ClearInFlightRequests() below.
     while (!pending_requests_.IsEmpty()) {
       ScheduledResourceRequest* request =
           *pending_requests_.GetNextHighestIterator();
@@ -496,14 +514,14 @@ class ResourceScheduler::Client {
       attributes |= kAttributeLayoutBlocking;
     } else if (!has_html_body_ &&
                request->url_request()->priority() >
-               scheduler_->non_delayable_threshold()) {
+               kLayoutBlockingPriorityThreshold) {
       // Requests that are above the non_delayable threshold before the HTML
       // body has been parsed are inferred to be layout-blocking.
       attributes |= kAttributeLayoutBlocking;
     } else if (request->url_request()->priority() <
-               scheduler_->non_delayable_threshold()) {
-      // Resources below the non_delayable_threshold that are being requested
-      // from a server that does not support native prioritization are
+               kDelayablePriorityThreshold) {
+      // Resources below the delayable priority threshold that are being
+      // requested from a server that does not support native prioritization are
       // considered delayable.
       url::SchemeHostPort scheme_host_port(request->url_request()->url());
       net::HttpServerProperties& http_server_properties =
@@ -524,7 +542,7 @@ class ResourceScheduler::Client {
           net::HostPortPair::FromURL((*it)->url_request()->url());
       if (active_request_host.Equals(host_port_pair)) {
         same_host_count++;
-        if (same_host_count >= kMaxNumDelayableRequestsPerHost)
+        if (same_host_count >= kMaxNumDelayableRequestsPerHostPerClient)
           return true;
       }
     }
@@ -564,10 +582,11 @@ class ResourceScheduler::Client {
   //   * Non-delayable, High-priority and request-priority capable requests are
   //     issued immediately.
   //   * Low priority requests are delayable.
-  //   * While layout-blocking requests are loading or the body tag has not
-  //     yet been parsed, limit the number of delayable requests that may be
-  //     in flight (to 1 by default, or to zero if there's an outstanding
-  //     request limit in place).
+  //   * While kInFlightNonDelayableRequestCountPerClientThreshold
+  //     layout-blocking requests are loading or the body tag has not yet been
+  //     parsed, limit the number of delayable requests that may be in flight
+  //     (to kMaxNumDelayableWhileLayoutBlockingPerClient by default, or to zero
+  //     if there's an outstanding request limit in place).
   //   * If no high priority or layout-blocking requests are in flight, start
   //     loading delayable requests.
   //   * Never exceed 10 delayable requests in flight per client.
@@ -611,10 +630,8 @@ class ResourceScheduler::Client {
     if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
       return START_REQUEST;
 
-    if (in_flight_delayable_count_ >=
-        scheduler_->max_num_delayable_requests()) {
+    if (in_flight_delayable_count_ >= kMaxNumDelayableRequestsPerClient)
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
-    }
 
     if (ShouldKeepSearching(host_port_pair)) {
       // There may be other requests for other hosts that may be allowed,
@@ -630,30 +647,19 @@ class ResourceScheduler::Client {
     if (!has_html_body_ || total_layout_blocking_count_ != 0) {
       size_t non_delayable_requests_in_flight_count =
           in_flight_requests_.size() - in_flight_delayable_count_;
-      if (scheduler_->enable_in_flight_non_delayable_threshold()) {
-        if (non_delayable_requests_in_flight_count >
-            scheduler_->in_flight_non_delayable_threshold()) {
-          // Too many higher priority in-flight requests to allow lower priority
-          // requests through.
-          return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
-        }
-        if (in_flight_requests_.size() > 0 &&
-            (scheduler_->limit_outstanding_requests() ||
-             in_flight_delayable_count_ >=
-             scheduler_->max_num_delayable_while_layout_blocking())) {
-          // Block the request if at least one request is in flight and the
-          // number of in-flight delayable requests has hit the configured
-          // limit.
-          return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
-        }
-      } else if (non_delayable_requests_in_flight_count > 0 &&
+      if (non_delayable_requests_in_flight_count >
+          kInFlightNonDelayableRequestCountPerClientThreshold) {
+        // Too many higher priority in-flight requests to allow lower priority
+        // requests through.
+        return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
+      }
+      if (in_flight_requests_.size() > 0 &&
           (scheduler_->limit_outstanding_requests() ||
            in_flight_delayable_count_ >=
-           scheduler_->max_num_delayable_while_layout_blocking())) {
-        // If there are no high-priority requests in flight the floodgates open.
-        // If there are high-priority requests in-flight then limit the number
-        // of lower-priority requests (or zero if a limit field trial is
-        // active).
+           kMaxNumDelayableWhileLayoutBlockingPerClient)) {
+        // Block the request if at least one request is in flight and the
+        // number of in-flight delayable requests has hit the configured
+        // limit.
         return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
       }
     }
@@ -714,13 +720,7 @@ class ResourceScheduler::Client {
 
 ResourceScheduler::ResourceScheduler()
     : limit_outstanding_requests_(false),
-      outstanding_request_limit_(0),
-      non_delayable_threshold_(kDefaultLayoutBlockingPriorityThreshold),
-      enable_in_flight_non_delayable_threshold_(false),
-      in_flight_non_delayable_threshold_(0),
-      max_num_delayable_while_layout_blocking_(
-          kDefaultMaxNumDelayableWhileLayoutBlocking),
-      max_num_delayable_requests_(kDefaultMaxNumDelayableRequestsPerClient) {
+      outstanding_request_limit_(0) {
   std::string outstanding_limit_trial_group =
       base::FieldTrialList::FindFullName(kRequestLimitFieldTrial);
   std::vector<std::string> split_group(
@@ -733,42 +733,6 @@ ResourceScheduler::ResourceScheduler()
       outstanding_limit > 0) {
     limit_outstanding_requests_ = true;
     outstanding_request_limit_ = outstanding_limit;
-  }
-
-  // Set up the ResourceScheduling field trial options.
-  // The field trial parameters are also encoded into the group name since
-  // the variations component is not available from here and plumbing the
-  // options through the code is overkill for a short experiment.
-  //
-  // The group name encoding looks like this:
-  //  <descriptiveName>_ABCDE_E2_F_G
-  //    A - fetchDeferLateScripts (1 for true, 0 for false)
-  //    B - fetchIncreaseFontPriority (1 for true, 0 for false)
-  //    C - fetchIncreaseAsyncScriptPriority (1 for true, 0 for false)
-  //    D - fetchIncreasePriorities (1 for true, 0 for false)
-  //    E - fetchEnableLayoutBlockingThreshold (1 for true, 0 for false)
-  //    E2 - fetchLayoutBlockingThreshold (Numeric)
-  //    F - fetchMaxNumDelayableWhileLayoutBlocking (Numeric)
-  //    G - fetchMaxNumDelayableRequests (Numeric)
-  std::string resource_priorities_trial_group =
-      base::FieldTrialList::FindFullName(kResourcePrioritiesFieldTrial);
-  std::vector<std::string> resource_priorities_split_group(
-      base::SplitString(resource_priorities_trial_group, "_",
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL));
-  if (resource_priorities_split_group.size() == 5 &&
-      resource_priorities_split_group[1].length() == 5) {
-    // fetchIncreasePriorities
-    if (resource_priorities_split_group[1].at(3) == '1')
-      non_delayable_threshold_ = net::MEDIUM;
-    enable_in_flight_non_delayable_threshold_ =
-        resource_priorities_split_group[1].at(4) == '1';
-    size_t numeric_value = 0;
-    if (base::StringToSizeT(resource_priorities_split_group[2], &numeric_value))
-      in_flight_non_delayable_threshold_ = numeric_value;
-    if (base::StringToSizeT(resource_priorities_split_group[3], &numeric_value))
-      max_num_delayable_while_layout_blocking_ = numeric_value;
-    if (base::StringToSizeT(resource_priorities_split_group[4], &numeric_value))
-      max_num_delayable_requests_ = numeric_value;
   }
 }
 

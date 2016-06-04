@@ -106,7 +106,7 @@ public:
 
     MHTMLArchive* archive() const override;
 
-    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) override;
+    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority) override;
 
     void countClientHintsDPR() override;
     void countClientHintsResourceWidth() override;
@@ -129,8 +129,6 @@ private:
     // See crbug.com/383860 for details.
     WeakMember<Document> m_document;
     Member<DocumentLoader> m_documentLoader;
-
-    bool m_imageFetched : 1;
 };
 
 } // namespace blink

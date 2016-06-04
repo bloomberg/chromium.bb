@@ -326,14 +326,6 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
-    "ResourcePriorities": [
-        {
-            "group_name": "Launch50pct_11011_1_1_10"
-        },
-        {
-            "group_name": "Control50pct"
-        }
-    ],
     "SafeBrowsingAndroid": [
         {
             "group_name": "Enabled",

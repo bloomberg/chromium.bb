@@ -10,7 +10,7 @@ Initiator: timeline-network-resource-details.html:22
 URL: anImage.png
 Duration: string
 Request Method: GET
-Priority: Lowest
+Priority: Low
 Mime Type: string
 Preview: 
 

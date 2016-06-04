@@ -110,7 +110,7 @@ public:
 
     virtual MHTMLArchive* archive() const { return nullptr; }
 
-    virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority, Resource::Type, const FetchRequest&, ResourcePriority::VisibilityStatus) { return priority; }
+    virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority) { return priority; }
 
     virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
 

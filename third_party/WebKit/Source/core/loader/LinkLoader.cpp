@@ -290,7 +290,6 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
     ResourceFetcher::determineRequestContext(resourceRequest, resourceType, false);
     FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link, document.encodingName());
 
-    linkRequest.setPriority(document.fetcher()->loadPriority(resourceType, linkRequest));
     if (crossOrigin != CrossOriginAttributeNotSet)
         linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(), crossOrigin);
     Settings* settings = document.settings();
@@ -298,6 +297,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
     linkRequest.setForPreload(true, monotonicallyIncreasingTime());
     linkRequest.setLinkPreload(true);
+    linkRequest.setPriority(document.fetcher()->loadPriority(resourceType, linkRequest));
     return document.loader()->startPreload(resourceType, linkRequest);
 }
 
