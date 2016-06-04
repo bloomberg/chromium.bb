@@ -82,7 +82,7 @@ class WebUIDataSource {
   virtual void DisableContentSecurityPolicy() = 0;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) = 0;
-  virtual void OverrideContentSecurityPolicyFrameSrc(
+  virtual void OverrideContentSecurityPolicyChildSrc(
       const std::string& data) = 0;
   virtual void DisableDenyXFrameOptions() = 0;
 };

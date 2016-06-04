@@ -270,8 +270,8 @@ bool LocalNtpSource::ShouldServiceRequest(
   return false;
 }
 
-std::string LocalNtpSource::GetContentSecurityPolicyFrameSrc() const {
+std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
   // Allow embedding of most visited iframes.
-  return base::StringPrintf("frame-src %s;",
+  return base::StringPrintf("child-src %s;",
                             chrome::kChromeSearchMostVisitedUrl);
 }

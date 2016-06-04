@@ -158,9 +158,9 @@ class URLRequestChromeJob : public net::URLRequestJob {
     content_security_policy_script_source_ = data;
   }
 
-  void set_content_security_policy_frame_source(
+  void set_content_security_policy_child_source(
       const std::string& data) {
-    content_security_policy_frame_source_ = data;
+    content_security_policy_child_source_ = data;
   }
 
   void set_content_security_policy_style_source(
@@ -230,7 +230,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // These are used with the CSP.
   std::string content_security_policy_script_source_;
   std::string content_security_policy_object_source_;
-  std::string content_security_policy_frame_source_;
+  std::string content_security_policy_child_source_;
   std::string content_security_policy_style_source_;
   std::string content_security_policy_image_source_;
 
@@ -331,7 +331,7 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
     std::string base = kChromeURLContentSecurityPolicyHeaderBase;
     base.append(content_security_policy_script_source_);
     base.append(content_security_policy_object_source_);
-    base.append(content_security_policy_frame_source_);
+    base.append(content_security_policy_child_source_);
     base.append(content_security_policy_style_source_);
     base.append(content_security_policy_image_source_);
     info->headers->AddHeader(base);
@@ -625,8 +625,8 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
       source->source()->GetContentSecurityPolicyScriptSrc());
   job->set_content_security_policy_object_source(
       source->source()->GetContentSecurityPolicyObjectSrc());
-  job->set_content_security_policy_frame_source(
-      source->source()->GetContentSecurityPolicyFrameSrc());
+  job->set_content_security_policy_child_source(
+      source->source()->GetContentSecurityPolicyChildSrc());
   job->set_content_security_policy_style_source(
       source->source()->GetContentSecurityPolicyStyleSrc());
   job->set_content_security_policy_image_source(

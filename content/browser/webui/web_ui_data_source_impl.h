@@ -42,7 +42,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void DisableReplaceExistingSource() override;
   void DisableContentSecurityPolicy() override;
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyFrameSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
 
  protected:

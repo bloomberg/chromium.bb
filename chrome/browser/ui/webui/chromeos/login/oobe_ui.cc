@@ -152,9 +152,9 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                             IDR_CUSTOM_ELEMENTS_LOGIN_JS);
   }
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
-  source->OverrideContentSecurityPolicyFrameSrc(
+  source->OverrideContentSecurityPolicyChildSrc(
       base::StringPrintf(
-          "frame-src chrome://terms/ %s/;",
+          "child-src chrome://terms/ %s/;",
           extensions::kGaiaAuthExtensionOrigin));
   source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
   source->AddResourcePath("gaia_auth_host.js",

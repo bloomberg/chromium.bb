@@ -245,9 +245,9 @@ std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyImgSrc()
   return "img-src chrome-search://thumb chrome-search://thumb2 data:;";
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyFrameSrc()
+std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicyChildSrc()
     const {
-  return "frame-src chrome-search://most-visited;";
+  return "child-src chrome-search://most-visited;";
 }
 
 void NewTabUI::NewTabHTMLSource::AddResource(const char* resource,

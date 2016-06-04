@@ -285,8 +285,8 @@ std::string DomDistillerViewerSource::GetContentSecurityPolicyStyleSrc()
   return "style-src 'self' https://fonts.googleapis.com;";
 }
 
-std::string DomDistillerViewerSource::GetContentSecurityPolicyFrameSrc() const {
-  return "frame-src *;";
+std::string DomDistillerViewerSource::GetContentSecurityPolicyChildSrc() const {
+  return "child-src *;";
 }
 
 }  // namespace dom_distiller

@@ -107,8 +107,8 @@ class CONTENT_EXPORT URLDataSource {
 
   // By default, "object-src 'none';" is added to CSP. Override to change this.
   virtual std::string GetContentSecurityPolicyObjectSrc() const;
-  // By default, "frame-src 'none';" is added to CSP. Override to change this.
-  virtual std::string GetContentSecurityPolicyFrameSrc() const;
+  // By default, "child-src 'none';" is added to CSP. Override to change this.
+  virtual std::string GetContentSecurityPolicyChildSrc() const;
   // By default empty. Override to change this.
   virtual std::string GetContentSecurityPolicyStyleSrc() const;
   // By default empty. Override to change this.

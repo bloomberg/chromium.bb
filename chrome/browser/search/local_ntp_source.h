@@ -29,7 +29,7 @@ class LocalNtpSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
-  std::string GetContentSecurityPolicyFrameSrc() const override;
+  std::string GetContentSecurityPolicyChildSrc() const override;
 
   Profile* profile_;
 

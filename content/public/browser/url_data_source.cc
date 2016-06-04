@@ -44,8 +44,8 @@ std::string URLDataSource::GetContentSecurityPolicyObjectSrc() const {
   return "object-src 'none';";
 }
 
-std::string URLDataSource::GetContentSecurityPolicyFrameSrc() const {
-  return "frame-src 'none';";
+std::string URLDataSource::GetContentSecurityPolicyChildSrc() const {
+  return "child-src 'none';";
 }
 
 std::string URLDataSource::GetContentSecurityPolicyStyleSrc() const {

@@ -71,7 +71,7 @@ class NewTabUI : public content::WebUIController {
     std::string GetContentSecurityPolicyScriptSrc() const override;
     std::string GetContentSecurityPolicyStyleSrc() const override;
     std::string GetContentSecurityPolicyImgSrc() const override;
-    std::string GetContentSecurityPolicyFrameSrc() const override;
+    std::string GetContentSecurityPolicyChildSrc() const override;
 
     // Adds |resource| to the source. |resource_id| is resource id or 0,
     // which means return empty data set. |mime_type| is mime type of the
