@@ -46,6 +46,15 @@ void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
                             NUMBER_OF_BACKGROUND_TRACING_METRICS);
 }
 
+// Tracing enabled callback for BENCHMARK_MEMORY_LIGHT category preset.
+// TODO(ssid): Remove this when background tracing supports trace config strings
+// and memory-infra supports peak detection crbug.com/609935.
+void BenchmarkMemoryLight_TracingEnabledCallback() {
+  base::trace_event::MemoryDumpManager::GetInstance()->RequestGlobalDump(
+      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
+}
+
 }  // namespace
 
 BackgroundTracingManagerImpl::TracingTimer::TracingTimer(
@@ -210,9 +219,8 @@ void BackgroundTracingManagerImpl::StartTracingIfConfigNeedsIt() {
     return;
 
   if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
-    StartTracing(
-        GetCategoryFilterStringForCategoryPreset(config_->category_preset()),
-        base::trace_event::RECORD_CONTINUOUSLY);
+    StartTracing(config_->category_preset(),
+                 base::trace_event::RECORD_CONTINUOUSLY);
   }
   // There is nothing to do in case of reactive tracing.
 }
@@ -313,8 +321,7 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
 
     if (!is_tracing_) {
       // It was not already tracing, start a new trace.
-      StartTracing(GetCategoryFilterStringForCategoryPreset(
-                       triggered_rule->category_preset()),
+      StartTracing(triggered_rule->category_preset(),
                    base::trace_event::RECORD_UNTIL_FULL);
     } else {
       // Reactive configs that trigger again while tracing should just
@@ -388,14 +395,28 @@ void BackgroundTracingManagerImpl::FireTimerForTesting() {
 }
 
 void BackgroundTracingManagerImpl::StartTracing(
-    std::string category_filter_str,
+    BackgroundTracingConfigImpl::CategoryPreset preset,
     base::trace_event::TraceRecordMode record_mode) {
-  base::trace_event::TraceConfig trace_config(category_filter_str, record_mode);
+  base::trace_event::TraceConfig trace_config(
+      GetCategoryFilterStringForCategoryPreset(preset), record_mode);
   if (requires_anonymized_data_)
     trace_config.EnableArgumentFilter();
 
+  base::Closure tracing_enabled_callback;
+  if (!tracing_enabled_callback_for_testing_.is_null()) {
+    tracing_enabled_callback = tracing_enabled_callback_for_testing_;
+  } else if (preset == BackgroundTracingConfigImpl::CategoryPreset::
+                           BENCHMARK_MEMORY_LIGHT) {
+    // On memory light mode, the periodic memory dumps are disabled and a single
+    // memory dump is requested after tracing is enabled in all the processes.
+    trace_config.ResetMemoryDumpConfig(
+        base::trace_event::TraceConfig::MemoryDumpConfig());
+    tracing_enabled_callback =
+        base::Bind(&BenchmarkMemoryLight_TracingEnabledCallback);
+  }
+
   is_tracing_ = TracingController::GetInstance()->StartTracing(
-      trace_config, tracing_enabled_callback_for_testing_);
+      trace_config, tracing_enabled_callback);
   RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }
 
@@ -519,6 +540,7 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_BLINK_GC:
       return "blink_gc,disabled-by-default-blink_gc";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_MEMORY_HEAVY:
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_MEMORY_LIGHT:
       return "-*,disabled-by-default-memory-infra";
     case BackgroundTracingConfigImpl::CategoryPreset::
         BENCHMARK_EXECUTION_METRIC:
