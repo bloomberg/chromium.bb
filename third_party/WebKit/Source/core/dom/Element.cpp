@@ -2615,7 +2615,7 @@ Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionStat
 
 NodeIntersectionObserverData* Element::intersectionObserverData() const
 {
-    if (elementRareData())
+    if (hasRareData())
         return elementRareData()->intersectionObserverData();
     return nullptr;
 }
