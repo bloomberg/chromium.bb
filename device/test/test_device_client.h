@@ -21,10 +21,10 @@ class TestDeviceClient : public DeviceClient {
   TestDeviceClient(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~TestDeviceClient() override;
 
- private:
   HidService* GetHidService() override;
   UsbService* GetUsbService() override;
 
+ private:
   std::unique_ptr<HidService> hid_service_;
   std::unique_ptr<UsbService> usb_service_;
   scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner_;

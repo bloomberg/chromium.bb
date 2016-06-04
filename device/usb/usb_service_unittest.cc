@@ -4,13 +4,15 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_io_thread.h"
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_device_handle.h"
+#include "device/usb/usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -30,6 +32,23 @@ class UsbServiceTest : public ::testing::Test {
   std::unique_ptr<base::TestIOThread> io_thread_;
   std::unique_ptr<TestDeviceClient> device_client_;
 };
+
+void OnGetDevices(const base::Closure& quit_closure,
+                  const std::vector<scoped_refptr<UsbDevice>>& devices) {
+  quit_closure.Run();
+}
+
+TEST_F(UsbServiceTest, GetDevices) {
+  // Since there's no guarantee that any devices are connected at the moment
+  // this test doesn't assume anything about the result but it at least verifies
+  // that devices can be enumerated without the application crashing.
+  UsbService* service = device_client_->GetUsbService();
+  if (service) {
+    base::RunLoop loop;
+    service->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
+    loop.Run();
+  }
+}
 
 TEST_F(UsbServiceTest, ClaimGadget) {
   if (!UsbTestGadget::IsTestEnabled()) return;
