@@ -7,6 +7,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -29,12 +30,12 @@ bool InstallerCrashReporterClient::ShouldCreatePipeName(
 }
 
 bool InstallerCrashReporterClient::GetAlternativeCrashDumpLocation(
-    base::FilePath* crash_dir) {
+    base::string16* crash_dir) {
   return false;
 }
 
 void InstallerCrashReporterClient::GetProductNameAndVersion(
-    const base::FilePath& exe_path,
+    const base::string16& exe_path,
     base::string16* product_name,
     base::string16* version,
     base::string16* special_build,
@@ -44,7 +45,7 @@ void InstallerCrashReporterClient::GetProductNameAndVersion(
   *product_name = base::ASCIIToUTF16(PRODUCT_SHORTNAME_STRING);
 
   std::unique_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfo(exe_path));
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(exe_path)));
   if (version_info) {
     *version = version_info->product_version();
     *special_build = version_info->special_build();
@@ -76,7 +77,7 @@ bool InstallerCrashReporterClient::GetDeferredUploadsSupported(
 }
 
 bool InstallerCrashReporterClient::GetIsPerUserInstall(
-    const base::FilePath& exe_path) {
+    const base::string16& exe_path) {
   return is_per_user_install_;
 }
 
@@ -96,8 +97,12 @@ int InstallerCrashReporterClient::GetResultCodeRespawnFailed() {
 }
 
 bool InstallerCrashReporterClient::GetCrashDumpLocation(
-    base::FilePath* crash_dir) {
-  return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
+    base::string16* crash_dir) {
+  base::FilePath crash_directory_path;
+  bool ret = PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_directory_path);
+  if (ret)
+    *crash_dir = crash_directory_path.value();
+  return ret;
 }
 
 size_t InstallerCrashReporterClient::RegisterCrashKeys() {

@@ -18,8 +18,8 @@ class InstallerCrashReporterClient
 
   // crash_reporter::CrashReporterClient methods:
   bool ShouldCreatePipeName(const base::string16& process_type) override;
-  bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir) override;
-  void GetProductNameAndVersion(const base::FilePath& exe_path,
+  bool GetAlternativeCrashDumpLocation(base::string16* crash_dir) override;
+  void GetProductNameAndVersion(const base::string16& exe_path,
                                 base::string16* product_name,
                                 base::string16* version,
                                 base::string16* special_build,
@@ -29,10 +29,10 @@ class InstallerCrashReporterClient
                                bool* is_rtl_locale) override;
   bool AboutToRestart() override;
   bool GetDeferredUploadsSupported(bool is_per_user_install) override;
-  bool GetIsPerUserInstall(const base::FilePath& exe_path) override;
+  bool GetIsPerUserInstall(const base::string16& exe_path) override;
   bool GetShouldDumpLargerDumps(bool is_per_user_install) override;
   int GetResultCodeRespawnFailed() override;
-  bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
+  bool GetCrashDumpLocation(base::string16* crash_dir) override;
   size_t RegisterCrashKeys() override;
   bool IsRunningUnattended() override;
   bool GetCollectStatsConsent() override;

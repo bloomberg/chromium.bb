@@ -8,7 +8,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -69,10 +68,10 @@ void CrashKeysWin::SetPluginPath(const std::wstring& path) {
 
 // Appends the breakpad dump path to |g_custom_entries|.
 void CrashKeysWin::SetBreakpadDumpPath(CrashReporterClient* crash_client) {
-  base::FilePath crash_dumps_dir_path;
+  base::string16 crash_dumps_dir_path;
   if (crash_client->GetAlternativeCrashDumpLocation(&crash_dumps_dir_path)) {
     custom_entries_->push_back(google_breakpad::CustomInfoEntry(
-        L"breakpad-dump-location", crash_dumps_dir_path.value().c_str()));
+        L"breakpad-dump-location", crash_dumps_dir_path.c_str()));
   }
 }
 
@@ -89,7 +88,7 @@ CrashKeysWin::GetCustomInfo(const std::wstring& exe_path,
   base::string16 channel_name;
 
   crash_client->GetProductNameAndVersion(
-      base::FilePath(exe_path),
+      exe_path,
       &product,
       &version,
       &special_build,

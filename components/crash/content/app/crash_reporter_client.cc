@@ -4,9 +4,17 @@
 
 #include "components/crash/content/app/crash_reporter_client.h"
 
+#include "build/build_config.h"
+
+// On Windows don't use FilePath and logging.h.
+// http://crbug.com/604923
+#if !defined(OS_WIN)
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "build/build_config.h"
+#else
+#include <assert.h>
+#define DCHECK assert
+#endif
 
 namespace crash_reporter {
 
@@ -40,12 +48,12 @@ bool CrashReporterClient::ShouldCreatePipeName(
 }
 
 bool CrashReporterClient::GetAlternativeCrashDumpLocation(
-    base::FilePath* crash_dir) {
+    base::string16* crash_dir) {
   return false;
 }
 
 void CrashReporterClient::GetProductNameAndVersion(
-    const base::FilePath& exe_path,
+    const base::string16& exe_path,
     base::string16* product_name,
     base::string16* version,
     base::string16* special_build,
@@ -62,11 +70,12 @@ bool CrashReporterClient::AboutToRestart() {
   return false;
 }
 
-bool CrashReporterClient::GetDeferredUploadsSupported(bool is_per_usr_install) {
+bool CrashReporterClient::GetDeferredUploadsSupported(
+    bool is_per_usr_install) {
   return false;
 }
 
-bool CrashReporterClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
+bool CrashReporterClient::GetIsPerUserInstall(const base::string16& exe_path) {
   return true;
 }
 
@@ -93,7 +102,11 @@ bool CrashReporterClient::HandleCrashDump(const char* crashdump_filename) {
 }
 #endif
 
+#if defined(OS_WIN)
+bool CrashReporterClient::GetCrashDumpLocation(base::string16* crash_dir) {
+#else
 bool CrashReporterClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
+#endif
   return false;
 }
 

@@ -66,6 +66,19 @@ TEST(InstallStaticTest, TokenizeString) {
   results = TokenizeString("one|two||four", '|', false);
   ASSERT_EQ(4u, results.size());
   EXPECT_THAT(results, ElementsAre("one", "two", "", "four"));
+
+  // TokenizeString16 tests.
+  // Test if the string is tokenized correctly with all tokens stripped of
+  // leading and trailing spaces.
+  std::vector<base::string16> results16 =
+      TokenizeString16(L"un |deux\t|trois\n|quatre", L'|', true);
+  ASSERT_EQ(4u, results16.size());
+  EXPECT_THAT(results16, ElementsAre(L"un", L"deux", L"trois", L"quatre"));
+
+  // Test string with spaces separated by delimiters.
+  results16 = TokenizeString16(L"one|two||four", L'|', false);
+  ASSERT_EQ(4u, results16.size());
+  EXPECT_THAT(results16, ElementsAre(L"one", L"two", L"", L"four"));
 }
 
 // Tests the CompareVersionString function in the install_static library.

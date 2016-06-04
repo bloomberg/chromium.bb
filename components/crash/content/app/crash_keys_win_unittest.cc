@@ -24,8 +24,8 @@ using testing::SetArgPointee;
 class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   MOCK_METHOD1(GetAlternativeCrashDumpLocation,
-               bool(base::FilePath* crash_dir));
-  MOCK_METHOD5(GetProductNameAndVersion, void(const base::FilePath& exe_path,
+               bool(base::string16* crash_dir));
+  MOCK_METHOD5(GetProductNameAndVersion, void(const base::string16& exe_path,
                                               base::string16* product_name,
                                               base::string16* version,
                                               base::string16* special_build,
@@ -35,7 +35,7 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
                                              bool* is_rtl_locale));
   MOCK_METHOD0(AboutToRestart, bool());
   MOCK_METHOD1(GetDeferredUploadsSupported, bool(bool is_per_user_install));
-  MOCK_METHOD1(GetIsPerUserInstall, bool(const base::FilePath& exe_path));
+  MOCK_METHOD1(GetIsPerUserInstall, bool(const base::string16& exe_path));
   MOCK_METHOD1(GetShouldDumpLargerDumps, bool(bool is_per_user_install));
   MOCK_METHOD0(GetResultCodeRespawnFailed, int());
   MOCK_METHOD0(InitBrowserCrashDumpsRegKey, void());
@@ -44,7 +44,7 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
   MOCK_METHOD2(GetProductNameAndVersion, void(std::string* product_name,
                                                 std::string* version));
   MOCK_METHOD0(GetReporterLogFilename, base::FilePath());
-  MOCK_METHOD1(GetCrashDumpLocation, bool(base::FilePath* crash_dir));
+  MOCK_METHOD1(GetCrashDumpLocation, bool(base::string16* crash_dir));
   MOCK_METHOD0(RegisterCrashKeys, size_t());
   MOCK_METHOD0(IsRunningUnattended, bool());
   MOCK_METHOD0(GetCollectStatsConsent, bool());
@@ -96,7 +96,7 @@ TEST_F(CrashKeysWinTest, RecordsSelf) {
 TEST_F(CrashKeysWinTest, OfficialLikeKeys) {
   CrashKeysWin crash_keys;
 
-  const base::FilePath kExePath(L"C:\\temp\\exe_path.exe");
+  const base::string16 kExePath(L"C:\\temp\\exe_path.exe");
   // The exe path ought to get passed through to the breakpad client.
   EXPECT_CALL(crash_client_, GetProductNameAndVersion(kExePath, _, _, _, _))
       .WillRepeatedly(DoAll(
@@ -107,7 +107,7 @@ TEST_F(CrashKeysWinTest, OfficialLikeKeys) {
 
   EXPECT_CALL(crash_client_, GetAlternativeCrashDumpLocation(_))
       .WillRepeatedly(DoAll(
-          SetArgPointee<0>(base::FilePath(L"C:\\temp")),
+          SetArgPointee<0>(L"C:\\temp"),
           Return(false)));
 
   EXPECT_CALL(crash_client_, ReportingIsEnforcedByPolicy(_))
@@ -119,7 +119,7 @@ TEST_F(CrashKeysWinTest, OfficialLikeKeys) {
   // Provide an empty command line.
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   google_breakpad::CustomClientInfo* info =
-      crash_keys.GetCustomInfo(kExePath.value(),
+      crash_keys.GetCustomInfo(kExePath,
                                L"made_up_type",
                                L"temporary",
                                &cmd_line,

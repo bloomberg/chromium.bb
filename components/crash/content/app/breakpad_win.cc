@@ -29,9 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/win/pe_image.h"
-#include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
@@ -539,7 +537,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   GetModuleFileNameW(NULL, exe_path, MAX_PATH);
 
   bool is_per_user_install =
-      GetCrashReporterClient()->GetIsPerUserInstall(base::FilePath(exe_path));
+      GetCrashReporterClient()->GetIsPerUserInstall(exe_path);
 
   // This is intentionally leaked.
   CrashKeysWin* keeper = new CrashKeysWin();

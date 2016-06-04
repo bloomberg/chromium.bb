@@ -57,6 +57,16 @@ const wchar_t kAppGuidGoogleChrome[] =
 const wchar_t kAppGuidGoogleBinaries[] =
     L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 
+const wchar_t kHeadless[] = L"CHROME_HEADLESS";
+const wchar_t kShowRestart[] = L"CHROME_CRASHED";
+const wchar_t kRestartInfo[] = L"CHROME_RESTART";
+const wchar_t kRtlLocale[] = L"RIGHT_TO_LEFT";
+
+const char kGpuProcess[] = "gpu-process";
+const char kPpapiPluginProcess[] = "ppapi";
+const char kRendererProcess[] = "renderer";
+const char kUtilityProcess[] = "utility";
+
 namespace {
 
 // TODO(ananta)
@@ -389,17 +399,46 @@ bool MatchPatternImpl(const base::string16& source,
 
 // Defines the type of whitespace characters typically found in strings.
 constexpr char kWhiteSpaces[] = " \t\n\r\f\v";
+constexpr base::char16 kWhiteSpaces16[] = L" \t\n\r\f\v";
+
+// Define specializations for white spaces based on the type of the string.
+template<class StringType> StringType GetWhiteSpacesForType();
+template<>
+base::string16 GetWhiteSpacesForType() {
+  return kWhiteSpaces16;
+}
+template<>
+std::string GetWhiteSpacesForType() {
+  return kWhiteSpaces;
+}
 
 // Trim whitespaces from left & right
-void Trim(std::string* str) {
-  str->erase(str->find_last_not_of(kWhiteSpaces) + 1);
-  str->erase(0, str->find_first_not_of(kWhiteSpaces));
+template<class StringType>
+void TrimT(StringType* str) {
+  str->erase(str->find_last_not_of(GetWhiteSpacesForType<StringType>()) + 1);
+  str->erase(0, str->find_first_not_of(GetWhiteSpacesForType<StringType>()));
 }
 
 bool IsValidNumber(const std::string& str) {
   if (str.empty())
     return false;
   return std::all_of(str.begin(), str.end(), ::isdigit);
+}
+
+// Tokenizes a string based on a single character delimiter.
+template<class StringType>
+std::vector<StringType> TokenizeStringT(
+    const StringType& str,
+    typename StringType::value_type delimiter,
+    bool trim_spaces) {
+  std::vector<StringType> tokens;
+  std::basic_istringstream<typename StringType::value_type> buffer(str);
+  for (StringType token; std::getline(buffer, token, delimiter);) {
+    if (trim_spaces)
+      TrimT<StringType>(&token);
+    tokens.push_back(token);
+  }
+  return tokens;
 }
 
 }  // namespace
@@ -558,25 +597,36 @@ bool GetDefaultCrashDumpLocation(base::string16* crash_dir) {
 
 
 std::string GetEnvironmentString(const std::string& variable_name) {
+  return UTF16ToUTF8(GetEnvironmentString16(UTF8ToUTF16(variable_name)));
+}
+
+base::string16 GetEnvironmentString16(const base::string16& variable_name) {
   DWORD value_length =
-      ::GetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(), nullptr, 0);
+      ::GetEnvironmentVariable(variable_name.c_str(), nullptr, 0);
   if (value_length == 0)
-    return std::string();
+    return base::string16();
   std::unique_ptr<wchar_t[]> value(new wchar_t[value_length]);
-  ::GetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(), value.get(),
-                           value_length);
-  return UTF16ToUTF8(value.get());
+  ::GetEnvironmentVariable(variable_name.c_str(), value.get(), value_length);
+  return value.get();
 }
 
 bool SetEnvironmentString(const std::string& variable_name,
                           const std::string& new_value) {
-  return !!SetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(),
-                                  UTF8ToUTF16(new_value).c_str());
+  return SetEnvironmentString16(UTF8ToUTF16(variable_name),
+                                UTF8ToUTF16(new_value));
+}
+
+bool SetEnvironmentString16(const base::string16& variable_name,
+                            const base::string16& new_value) {
+  return !!SetEnvironmentVariable(variable_name.c_str(), new_value.c_str());
 }
 
 bool HasEnvironmentVariable(const std::string& variable_name) {
-  return !!::GetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(), nullptr,
-                                    0);
+  return HasEnvironmentVariable16(UTF8ToUTF16(variable_name));
+}
+
+bool HasEnvironmentVariable16(const base::string16& variable_name) {
+  return !!::GetEnvironmentVariable(variable_name.c_str(), nullptr, 0);
 }
 
 bool GetExecutableVersionDetails(const base::string16& exe_path,
@@ -764,14 +814,13 @@ base::string16 UTF8ToUTF16(const std::string& source) {
 std::vector<std::string> TokenizeString(const std::string& str,
                                         char delimiter,
                                         bool trim_spaces) {
-  std::vector<std::string> tokens;
-  std::istringstream buffer(str);
-  for (std::string token; std::getline(buffer, token, delimiter);) {
-    if (trim_spaces)
-      Trim(&token);
-    tokens.push_back(token);
-  }
-  return tokens;
+  return TokenizeStringT<std::string>(str, delimiter, trim_spaces);
+}
+
+std::vector<base::string16> TokenizeString16(const base::string16& str,
+                                             base::char16 delimiter,
+                                             bool trim_spaces) {
+  return TokenizeStringT<base::string16>(str, delimiter, trim_spaces);
 }
 
 bool CompareVersionStrings(const std::string& version1,

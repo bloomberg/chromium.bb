@@ -38,7 +38,8 @@ void GetPlatformCrashpadAnnotations(
   CHECK(PathService::Get(base::FILE_EXE, &exe_file));
   base::string16 product_name, version, special_build, channel_name;
   crash_reporter_client->GetProductNameAndVersion(
-      exe_file, &product_name, &version, &special_build, &channel_name);
+      exe_file.value(), &product_name, &version, &special_build,
+      &channel_name);
   (*annotations)["prod"] = base::UTF16ToUTF8(product_name);
   (*annotations)["ver"] = base::UTF16ToUTF8(version);
   (*annotations)["channel"] = base::UTF16ToUTF8(channel_name);
@@ -63,7 +64,10 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 
   if (initial_client) {
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
-    crash_reporter_client->GetCrashDumpLocation(&database_path);
+
+    base::string16 database_path_str;
+    if (crash_reporter_client->GetCrashDumpLocation(&database_path_str))
+      database_path = base::FilePath(database_path_str);
 
     std::map<std::string, std::string> process_annotations;
     GetPlatformCrashpadAnnotations(&process_annotations);
@@ -82,7 +86,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     CHECK(PathService::Get(base::FILE_EXE, &exe_file));
 
     bool is_per_user_install =
-        crash_reporter_client->GetIsPerUserInstall(exe_file);
+        crash_reporter_client->GetIsPerUserInstall(exe_file.value());
     if (crash_reporter_client->GetShouldDumpLargerDumps(is_per_user_install)) {
       const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;
       crashpad::CrashpadInfo::GetCrashpadInfo()
