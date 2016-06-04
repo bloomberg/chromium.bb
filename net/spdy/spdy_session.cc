@@ -2483,6 +2483,61 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   }
 }
 
+void SpdySession::OnAltSvc(
+    SpdyStreamId stream_id,
+    base::StringPiece origin,
+    const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {
+  if (!is_secure_)
+    return;
+
+  url::SchemeHostPort scheme_host_port;
+  if (stream_id == 0) {
+    if (origin.empty())
+      return;
+    const GURL gurl(origin);
+    if (!gurl.SchemeIs("https"))
+      return;
+    SSLInfo ssl_info;
+    bool was_npn_negotiated;
+    NextProto protocol_negotiated = kProtoUnknown;
+    if (!GetSSLInfo(&ssl_info, &was_npn_negotiated, &protocol_negotiated))
+      return;
+    if (!CanPool(transport_security_state_, ssl_info, host_port_pair().host(),
+                 gurl.host())) {
+      return;
+    }
+    scheme_host_port = url::SchemeHostPort(gurl);
+  } else {
+    if (!origin.empty())
+      return;
+    const ActiveStreamMap::iterator it = active_streams_.find(stream_id);
+    if (it == active_streams_.end())
+      return;
+    const GURL& gurl(it->second.stream->url());
+    if (!gurl.SchemeIs("https"))
+      return;
+    scheme_host_port = url::SchemeHostPort(gurl);
+  }
+
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  alternative_service_info_vector.reserve(altsvc_vector.size());
+  const base::Time now(base::Time::Now());
+  for (const SpdyAltSvcWireFormat::AlternativeService& altsvc : altsvc_vector) {
+    const AlternateProtocol protocol =
+        AlternateProtocolFromString(altsvc.protocol_id);
+    if (protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+      continue;
+    const AlternativeService alternative_service(protocol, altsvc.host,
+                                                 altsvc.port);
+    const base::Time expiration =
+        now + base::TimeDelta::FromSeconds(altsvc.max_age);
+    alternative_service_info_vector.push_back(
+        AlternativeServiceInfo(alternative_service, expiration));
+  }
+  http_server_properties_->SetAlternativeServices(
+      scheme_host_port, alternative_service_info_vector);
+}
+
 bool SpdySession::OnUnknownFrame(SpdyStreamId stream_id, int frame_type) {
   // Validate stream id.
   // Was the frame sent on a stream id that has not been used in this session?

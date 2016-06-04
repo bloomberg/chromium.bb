@@ -326,6 +326,13 @@ void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
   InitHeaderStreaming(stream_id);
 }
 
+void BufferedSpdyFramer::OnAltSvc(
+    SpdyStreamId stream_id,
+    base::StringPiece origin,
+    const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {
+  visitor_->OnAltSvc(stream_id, origin, altsvc_vector);
+}
+
 void BufferedSpdyFramer::OnContinuation(SpdyStreamId stream_id, bool end) {
 }
 

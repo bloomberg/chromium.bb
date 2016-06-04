@@ -513,6 +513,9 @@ class SpdyTestUtil {
       const std::unique_ptr<SpdySerializedFrame>& frame,
       int stream_id);
 
+  // Serialize a SpdyFrameIR with |headerless_spdy_framer_|.
+  SpdySerializedFrame SerializeFrame(const SpdyFrameIR& frame_ir);
+
   // Called when necessary (when it will affect stream dependency specification
   // when setting dependencies based on priorioties) to notify the utility
   // class of stream destruction.

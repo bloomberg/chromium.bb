@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/balsa/balsa_visitor_interface.h"
@@ -139,6 +140,12 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      const SpdyHeaderBlock& headers) override {}
+
+  // Called when an ALTSVC frame has been parsed.
+  void OnAltSvc(SpdyStreamId stream_id,
+                base::StringPiece origin,
+                const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                    altsvc_vector) override {}
 
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
 

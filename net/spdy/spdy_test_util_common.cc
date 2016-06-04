@@ -25,6 +25,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
@@ -228,6 +229,10 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      const SpdyHeaderBlock& headers) override {}
+  void OnAltSvc(SpdyStreamId stream_id,
+                base::StringPiece origin,
+                const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                    altsvc_vector) override {}
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     return false;
   }
@@ -1233,6 +1238,10 @@ SpdySerializedFrame* SpdyTestUtil::ConstructWrappedSpdyFrame(
     int stream_id) {
   return ConstructSpdyBodyFrame(stream_id, frame->data(),
                                 frame->size(), false);
+}
+
+SpdySerializedFrame SpdyTestUtil::SerializeFrame(const SpdyFrameIR& frame_ir) {
+  return headerless_spdy_framer_.SerializeFrame(frame_ir);
 }
 
 void SpdyTestUtil::UpdateWithStreamDestruction(int stream_id) {

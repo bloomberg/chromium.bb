@@ -23,6 +23,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         headers_frame_count_(0),
         push_promise_frame_count_(0),
         goaway_count_(0),
+        altsvc_count_(0),
         header_stream_id_(static_cast<SpdyStreamId>(-1)),
         promised_stream_id_(static_cast<SpdyStreamId>(-1)) {}
 
@@ -132,6 +133,16 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     headers_ = headers;
   }
 
+  void OnAltSvc(SpdyStreamId stream_id,
+                base::StringPiece origin,
+                const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                    altsvc_vector) override {
+    altsvc_count_++;
+    altsvc_stream_id_ = stream_id;
+    origin.CopyToString(&altsvc_origin_);
+    altsvc_vector_ = altsvc_vector;
+  }
+
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
     return true;
   }
@@ -166,6 +177,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   int headers_frame_count_;
   int push_promise_frame_count_;
   int goaway_count_;
+  int altsvc_count_;
 
   // Header block streaming state:
   SpdyStreamId header_stream_id_;
@@ -179,6 +191,11 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   SpdyStreamId goaway_last_accepted_stream_id_;
   SpdyGoAwayStatus goaway_status_;
   std::string goaway_debug_data_;
+
+  // OnAltSvc parameters.
+  SpdyStreamId altsvc_stream_id_;
+  std::string altsvc_origin_;
+  SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector_;
 };
 
 }  // namespace
@@ -361,6 +378,33 @@ TEST_P(BufferedSpdyFramerTest, GoAwayDebugData) {
   EXPECT_EQ(2u, visitor.goaway_last_accepted_stream_id_);
   EXPECT_EQ(GOAWAY_FRAME_SIZE_ERROR, visitor.goaway_status_);
   EXPECT_EQ("foo", visitor.goaway_debug_data_);
+}
+
+TEST_P(BufferedSpdyFramerTest, OnAltSvc) {
+  if (spdy_version() < HTTP2)
+    return;
+
+  const SpdyStreamId altsvc_stream_id(1);
+  const char altsvc_origin[] = "https://www.example.org";
+  SpdyAltSvcIR altsvc_ir(altsvc_stream_id);
+  SpdyAltSvcWireFormat::AlternativeService alternative_service(
+      "quic", "alternative.example.org", 443, 86400,
+      SpdyAltSvcWireFormat::VersionVector());
+  altsvc_ir.add_altsvc(alternative_service);
+  altsvc_ir.set_origin(altsvc_origin);
+  BufferedSpdyFramer framer(spdy_version());
+  SpdySerializedFrame altsvc_frame(framer.SerializeFrame(altsvc_ir));
+
+  TestBufferedSpdyVisitor visitor(spdy_version());
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(altsvc_frame.data()),
+      altsvc_frame.size());
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1, visitor.altsvc_count_);
+  EXPECT_EQ(altsvc_stream_id, visitor.altsvc_stream_id_);
+  EXPECT_EQ(altsvc_origin, visitor.altsvc_origin_);
+  ASSERT_EQ(1u, visitor.altsvc_vector_.size());
+  EXPECT_EQ(alternative_service, visitor.altsvc_vector_[0]);
 }
 
 }  // namespace net

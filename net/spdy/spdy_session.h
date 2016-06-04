@@ -33,6 +33,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/http2_priority_dependencies.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
@@ -908,6 +909,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                  bool exclusive,
                  bool fin,
                  const SpdyHeaderBlock& headers) override;
+  void OnAltSvc(SpdyStreamId stream_id,
+                base::StringPiece origin,
+                const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                    altsvc_vector) override;
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;
 
   // SpdyFramerDebugVisitorInterface

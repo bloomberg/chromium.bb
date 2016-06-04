@@ -81,6 +81,10 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId, int));
   MOCK_METHOD3(OnPushPromise,
                void(SpdyStreamId, SpdyStreamId, const SpdyHeaderBlock&));
+  MOCK_METHOD3(OnAltSvc,
+               void(SpdyStreamId,
+                    base::StringPiece,
+                    const SpdyAltSvcWireFormat::AlternativeServiceVector&));
   MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));
 };
 

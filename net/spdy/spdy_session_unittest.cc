@@ -2394,7 +2394,7 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
-  //   www.example.com
+  //   mail.example.com
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
@@ -2423,7 +2423,7 @@ TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
-  //   www.example.com
+  //   mail.example.com
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
@@ -5319,6 +5319,282 @@ TEST_P(SpdySessionTest, RejectInvalidUnknownFrames) {
   EXPECT_FALSE(session_->OnUnknownFrame(8, 0));
 }
 
+class AltSvcFrameTest : public SpdySessionTest {
+ public:
+  AltSvcFrameTest()
+      : alternative_service_("quic",
+                             "alternative.example.org",
+                             443,
+                             86400,
+                             SpdyAltSvcWireFormat::VersionVector()),
+        ssl_(SYNCHRONOUS, OK) {}
+
+  void AddSocketData(const SpdyAltSvcIR& altsvc_ir) {
+    altsvc_frame_ = spdy_util_.SerializeFrame(altsvc_ir);
+    reads_.push_back(CreateMockRead(altsvc_frame_, 0));
+    reads_.push_back(MockRead(ASYNC, 0, 1));
+
+    data_.reset(
+        new SequencedSocketData(reads_.data(), reads_.size(), nullptr, 0));
+    session_deps_.socket_factory->AddSocketDataProvider(data_.get());
+  }
+
+  void AddSSLSocketData() {
+    // Load a cert that is valid for
+    // www.example.org, mail.example.org, and mail.example.com.
+    cert_ = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(cert_);
+    ssl_.cert = cert_;
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
+  }
+
+  void CreateSecureSpdySession() {
+    session_ = ::net::CreateSecureSpdySession(http_session_.get(), key_,
+                                              BoundNetLog());
+  }
+
+  SpdyAltSvcWireFormat::AlternativeService alternative_service_;
+
+ private:
+  SpdySerializedFrame altsvc_frame_;
+  std::vector<MockRead> reads_;
+  std::unique_ptr<SequencedSocketData> data_;
+  scoped_refptr<X509Certificate> cert_;
+  SSLSocketDataProvider ssl_;
+};
+
+INSTANTIATE_TEST_CASE_P(HTTP2,
+                        AltSvcFrameTest,
+                        testing::Values(kTestCaseHTTP2PriorityDependencies));
+
+TEST_P(AltSvcFrameTest, ProcessAltSvcFrame) {
+  const char origin[] = "https://mail.example.org";
+  SpdyAltSvcIR altsvc_ir(0);
+  altsvc_ir.add_altsvc(alternative_service_);
+  altsvc_ir.set_origin(origin);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+
+  altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          url::SchemeHostPort(GURL(origin)));
+  ASSERT_EQ(1u, altsvc_vector.size());
+  EXPECT_EQ(QUIC, altsvc_vector[0].protocol);
+  EXPECT_EQ("alternative.example.org", altsvc_vector[0].host);
+  EXPECT_EQ(443u, altsvc_vector[0].port);
+}
+
+TEST_P(AltSvcFrameTest, DoNotProcessAltSvcFrameOnInsecureSession) {
+  const char origin[] = "https://mail.example.org";
+  SpdyAltSvcIR altsvc_ir(0);
+  altsvc_ir.add_altsvc(alternative_service_);
+  altsvc_ir.set_origin(origin);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateInsecureSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+
+  altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          url::SchemeHostPort(GURL(origin)));
+  ASSERT_TRUE(altsvc_vector.empty());
+}
+
+TEST_P(AltSvcFrameTest, DoNotProcessAltSvcFrameForOriginNotCoveredByCert) {
+  const char origin[] = "https://invalid.example.org";
+  SpdyAltSvcIR altsvc_ir(0);
+  altsvc_ir.add_altsvc(alternative_service_);
+  altsvc_ir.set_origin(origin);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+
+  altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          url::SchemeHostPort(GURL(origin)));
+  ASSERT_TRUE(altsvc_vector.empty());
+}
+
+TEST_P(AltSvcFrameTest, DoNotProcessAltSvcFrameWithEmptyOriginOnZeroStream) {
+  SpdyAltSvcIR altsvc_ir(0);
+  altsvc_ir.add_altsvc(alternative_service_);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+}
+
+TEST_P(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
+  SpdyAltSvcIR altsvc_ir(1);
+  altsvc_ir.add_altsvc(alternative_service_);
+
+  SpdySerializedFrame altsvc_frame(spdy_util_.SerializeFrame(altsvc_ir));
+  std::unique_ptr<SpdySerializedFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
+  MockRead reads[] = {
+      CreateMockRead(altsvc_frame, 1), CreateMockRead(*rst, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  const char request_origin[] = "https://mail.example.org";
+  std::unique_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructSpdyGet(request_origin, 1, MEDIUM));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),
+  };
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::WeakPtr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                GURL(request_origin), MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  std::unique_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(request_origin));
+
+  spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+
+  altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          url::SchemeHostPort(GURL(request_origin)));
+  ASSERT_EQ(1u, altsvc_vector.size());
+  EXPECT_EQ(QUIC, altsvc_vector[0].protocol);
+  EXPECT_EQ("alternative.example.org", altsvc_vector[0].host);
+  EXPECT_EQ(443u, altsvc_vector[0].port);
+}
+
+TEST_P(AltSvcFrameTest, DoNotProcessAltSvcFrameOnStreamWithInsecureOrigin) {
+  SpdyAltSvcIR altsvc_ir(1);
+  altsvc_ir.add_altsvc(alternative_service_);
+
+  SpdySerializedFrame altsvc_frame(spdy_util_.SerializeFrame(altsvc_ir));
+  std::unique_ptr<SpdySerializedFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
+  MockRead reads[] = {
+      CreateMockRead(altsvc_frame, 1), CreateMockRead(*rst, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  const char request_origin[] = "http://mail.example.org";
+  std::unique_ptr<SpdySerializedFrame> req(
+      spdy_util_.ConstructSpdyGet(request_origin, 1, MEDIUM));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),
+  };
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::WeakPtr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                GURL(request_origin), MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  std::unique_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(request_origin));
+
+  spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+
+  altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          url::SchemeHostPort(GURL(request_origin)));
+  ASSERT_TRUE(altsvc_vector.empty());
+}
+
+TEST_P(AltSvcFrameTest, DoNotProcessAltSvcFrameOnNonExistentStream) {
+  SpdyAltSvcIR altsvc_ir(1);
+  altsvc_ir.add_altsvc(alternative_service_);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSecureSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceVector altsvc_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServices(
+          session_origin);
+  ASSERT_TRUE(altsvc_vector.empty());
+}
+
 TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(
       SPDY_ERROR_INVALID_CONTROL_FRAME,
@@ -5376,7 +5652,7 @@ TEST(CanPoolTest, CanPool) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
-  //   www.example.com
+  //   mail.example.com
 
   TransportSecurityState tss;
   SSLInfo ssl_info;
@@ -5397,7 +5673,7 @@ TEST(CanPoolTest, CanNotPoolWithCertErrors) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
-  //   www.example.com
+  //   mail.example.com
 
   TransportSecurityState tss;
   SSLInfo ssl_info;
@@ -5413,7 +5689,7 @@ TEST(CanPoolTest, CanNotPoolWithClientCerts) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
-  //   www.example.com
+  //   mail.example.com
 
   TransportSecurityState tss;
   SSLInfo ssl_info;
@@ -5429,7 +5705,7 @@ TEST(CanPoolTest, CanNotPoolAcrossETLDsWithChannelID) {
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
-  //   www.example.com
+  //   mail.example.com
 
   TransportSecurityState tss;
   SSLInfo ssl_info;

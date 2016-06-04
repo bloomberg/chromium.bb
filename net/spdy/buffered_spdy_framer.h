@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/header_coalescer.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
@@ -117,6 +118,12 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                              SpdyStreamId promised_stream_id,
                              const SpdyHeaderBlock& headers) = 0;
 
+  // Called when an ALTSVC frame has been parsed.
+  virtual void OnAltSvc(
+      SpdyStreamId stream_id,
+      base::StringPiece origin,
+      const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) = 0;
+
   // Called when a frame type we don't recognize is received.
   // Return true if this appears to be a valid extension frame, false otherwise.
   // We distinguish between extension frames and nonsense by checking
@@ -186,6 +193,10 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      bool end) override;
+  void OnAltSvc(SpdyStreamId stream_id,
+                base::StringPiece origin,
+                const SpdyAltSvcWireFormat::AlternativeServiceVector&
+                    altsvc_vector) override;
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override;
