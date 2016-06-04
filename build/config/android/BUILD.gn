@@ -21,6 +21,9 @@ config("compiler") {
     # The NDK has these things, but doesn't define the constants to say that it
     # does. Define them here instead.
     "HAVE_SYS_UIO_H",
+
+    # Forces full rebuilds on NDK rolls.
+    "ANDROID_NDK_VERSION=${android_ndk_version}",
   ]
 
   if (is_clang) {

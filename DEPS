@@ -114,7 +114,7 @@ allowed_hosts = [
 
 deps = {
   'src/breakpad/src':
-   Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '5aac5eabb0fd7cbd3bf7805fb922fe2f90e80155',
+   Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '8573429523f71677a57bd89a89235a3ab9aa4fbd',
 
   'src/buildtools':
    Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
@@ -435,7 +435,7 @@ deps_os = {
      Var('chromium_git') + '/external/android_protobuf.git' + '@' + '999188d0dc72e97f7fe08bb756958a2cf090f4e7',
 
     'src/third_party/android_tools':
-     Var('chromium_git') + '/android_tools.git' + '@' + '5b5f2f60b78198eaef25d442ac60f823142a8a6e',
+     Var('chromium_git') + '/android_tools.git' + '@' + '04c2c06fe3ef3d93343feb6e83cd932725740d7f',
 
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
@@ -505,6 +505,7 @@ deps_os = {
   },
 }
 
+recursedeps = [ 'src/third_party/android_tools' ]
 
 include_rules = [
   # Everybody can use some things.
