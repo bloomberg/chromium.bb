@@ -239,6 +239,10 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static bool IsIntegerFormat(uint32_t internal_format);
   static bool IsFloatFormat(uint32_t internal_format);
 
+  static bool IsSizedColorFormat(uint32_t internal_format);
+  static void GetColorFormatComponentSizes(
+      uint32_t internal_format, uint32_t type, int* r, int* g, int* b, int* a);
+
   // Computes the data size for certain gl commands like glUniform.
   static bool ComputeDataSize(uint32_t count,
                               size_t size,

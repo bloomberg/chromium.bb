@@ -910,7 +910,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei height,
       GLenum format,
       GLsizei imageSize,
-      const void * data);
+      const void* data);
 
   // Wrapper for CompressedTexSubImage3D.
   void DoCompressedTexSubImage3D(
@@ -925,6 +925,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLenum format,
       GLsizei image_size,
       const void* data);
+
+  // Validate if |format| is valid for CopyTex{Sub}Image functions.
+  // If not, generate a GL error and return false.
+  bool ValidateCopyTexFormat(const char* func_name, GLenum internal_format,
+                             GLenum read_format, GLenum read_type);
 
   // Wrapper for CopyTexImage2D.
   void DoCopyTexImage2D(
@@ -12124,59 +12129,23 @@ static void Clip(
   *out_range = range;
 }
 
-void GLES2DecoderImpl::DoCopyTexImage2D(
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLint x,
-    GLint y,
-    GLsizei width,
-    GLsizei height,
-    GLint border) {
-  DCHECK(!ShouldDeferReads());
-  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
-      &state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCopyTexImage2D", "unknown texture for target");
-    return;
-  }
-  Texture* texture = texture_ref->texture();
-  if (texture->IsImmutable()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glCopyTexImage2D", "texture is immutable");
-    return;
-  }
-  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
-      border != 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCopyTexImage2D", "dimensions out of range");
-    return;
-  }
-
-  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D",
-                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
-    return;
-  }
-
-  GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+bool GLES2DecoderImpl::ValidateCopyTexFormat(
+    const char* func_name, GLenum internal_format,
+    GLenum read_format, GLenum read_type) {
   if (read_format == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopyTexImage2D",
-        "no valid color image");
-    return;
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "no valid color image");
+    return false;
   }
-
   // Check we have compatible formats.
   uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
   uint32_t channels_needed = GLES2Util::GetChannelsForFormat(internal_format);
-
-  if ((channels_needed & channels_exist) != channels_needed) {
+  if (!channels_needed ||
+      (channels_needed & channels_exist) != channels_needed) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glCopyTexImage2D", "incompatible format");
-    return;
+        GL_INVALID_OPERATION, func_name, "incompatible format");
+    return false;
   }
-
   if (feature_info_->IsES3Enabled()) {
     GLint color_encoding = GetColorEncodingFromInternalFormat(read_format);
     if (color_encoding != GetColorEncodingFromInternalFormat(internal_format) ||
@@ -12186,15 +12155,80 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=
          GLES2Util::IsUnsignedIntegerFormat(read_format))) {
       LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION, "glCopyTexImage2D", "incompatible format");
-      return;
+          GL_INVALID_OPERATION, func_name, "incompatible format");
+      return false;
     }
   }
-
   if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glCopyTexImage2D", "can not be used with depth or stencil textures");
+        func_name, "can not be used with depth or stencil textures");
+    return false;
+  }
+  if (feature_info_->IsES3Enabled()) {
+    if (GLES2Util::IsSizedColorFormat(internal_format)) {
+      int sr, sg, sb, sa;
+      GLES2Util::GetColorFormatComponentSizes(
+          read_format, read_type, &sr, &sg, &sb, &sa);
+      DCHECK(sr > 0 || sg > 0 || sb > 0 || sa > 0);
+      int dr, dg, db, da;
+      GLES2Util::GetColorFormatComponentSizes(
+          internal_format, 0, &dr, &dg, &db, &da);
+      DCHECK(dr > 0 || dg > 0 || db > 0 || da > 0);
+      if ((dr > 0 && sr != dr) ||
+          (dg > 0 && sg != dg) ||
+          (db > 0 && sb != db) ||
+          (da > 0 && sa != da)) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION,
+            func_name, "imcompatible color component sizes");
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+void GLES2DecoderImpl::DoCopyTexImage2D(
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLint border) {
+  const char* func_name = "glCopyTexImage2D";
+  DCHECK(!ShouldDeferReads());
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "unknown texture for target");
+    return;
+  }
+  Texture* texture = texture_ref->texture();
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "texture is immutable");
+    return;
+  }
+  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
+      border != 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, func_name, "dimensions out of range");
+    return;
+  }
+
+  if (!CheckBoundReadFramebufferValid(func_name,
+                                      GL_INVALID_FRAMEBUFFER_OPERATION)) {
+    return;
+  }
+
+  GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+  GLenum read_type = GetBoundReadFrameBufferTextureType();
+  if (!ValidateCopyTexFormat(func_name, internal_format,
+                             read_format, read_type)) {
     return;
   }
 
@@ -12206,24 +12240,23 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   if (!GLES2Util::ComputeImageDataSizes(
       width, height, 1, format, type,
       state_.unpack_alignment, &pixels_size, NULL, NULL)) {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too large");
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "dimensions too large");
     return;
   }
 
   if (!EnsureGPUMemoryAvailable(pixels_size)) {
-    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopyTexImage2D", "out of memory");
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "out of memory");
     return;
   }
 
   if (FormsTextureCopyingFeedbackLoop(texture_ref, level)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glCopyTexImage2D", "source and destination textures are the same");
+        func_name, "source and destination textures are the same");
     return;
   }
 
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopyTexImage2D");
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(func_name);
   ScopedResolvedFrameBufferBinder binder(this, false, true);
   gfx::Size size = GetBoundReadFrameBufferSize();
 
@@ -12265,6 +12298,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // The service id and target of the texture attached to READ_FRAMEBUFFER.
     GLuint source_texture_service_id = 0;
     GLenum source_texture_target = 0;
+    uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
     bool use_workaround = NeedsCopyTextureImageWorkaround(
         final_internal_format, channels_exist, &source_texture_service_id,
         &source_texture_target);
@@ -12313,7 +12347,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                        copyWidth, copyHeight, border);
     }
   }
-  GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTexImage2D");
+  GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
                                     width, height, 1, border, format,
@@ -12335,59 +12369,41 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     GLint y,
     GLsizei width,
     GLsizei height) {
+  const char* func_name = "glCopyTexSubImage2D";
   DCHECK(!ShouldDeferReads());
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCopyTexSubImage2D", "unknown texture for target");
+        GL_INVALID_OPERATION, func_name, "unknown texture for target");
     return;
   }
   Texture* texture = texture_ref->texture();
   GLenum type = 0;
-  GLenum format = 0;
-  if (!texture->GetLevelType(target, level, &type, &format) ||
+  GLenum internal_format = 0;
+  if (!texture->GetLevelType(target, level, &type, &internal_format) ||
       !texture->ValidForTexture(
           target, level, xoffset, yoffset, 0, width, height, 1)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCopyTexSubImage2D", "bad dimensions.");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "bad dimensions.");
     return;
   }
 
-  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D",
+  if (!CheckBoundReadFramebufferValid(func_name,
                                       GL_INVALID_FRAMEBUFFER_OPERATION)) {
     return;
   }
 
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
-  if (read_format == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopyTexImage2D",
-        "no valid color image");
-    return;
-  }
-  // Check we have compatible formats.
-  uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
-  uint32_t channels_needed = GLES2Util::GetChannelsForFormat(format);
-
-  if (!channels_needed ||
-      (channels_needed & channels_exist) != channels_needed) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glCopyTexSubImage2D", "incompatible format");
-    return;
-  }
-
-  if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCopySubImage2D", "can not be used with depth or stencil textures");
+  GLenum read_type = GetBoundReadFrameBufferTextureType();
+  if (!ValidateCopyTexFormat(func_name, internal_format,
+                             read_format, read_type)) {
     return;
   }
 
   if (FormsTextureCopyingFeedbackLoop(texture_ref, level)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glCopyTexSubImage2D", "source and destination textures are the same");
+        func_name, "source and destination textures are the same");
     return;
   }
 
@@ -12418,8 +12434,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
       // Otherwise clear part of texture level that is not already cleared.
       if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
                                                 level)) {
-        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopyTexSubImage2D",
-                           "dimensions too big");
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "dimensions too big");
         return;
       }
     }

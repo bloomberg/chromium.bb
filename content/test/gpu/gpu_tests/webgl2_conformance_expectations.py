@@ -67,8 +67,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
     # All platforms when running ANGLE
-    self.Skip('conformance2/textures/misc/copy-texture-image.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=577144) # crash on debug
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
 
@@ -78,24 +76,43 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Failing because the tests are using invalid combinations of source and
     # destination formats, see https://github.com/KhronosGroup/WebGL/issues/1628
+    self.Fail('conformance2/textures/misc/copy-texture-image.html', bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgba4-rgba-unsigned_byte.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+        bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+        bug=483282)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        bug=483282)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
+        bug=483282)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
+        bug=483282)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
+        bug=483282)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgba4-rgba-unsigned_byte.html',
+        bug=483282)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
+        bug=483282)
 
     # Windows only.
 
@@ -104,25 +121,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
-        ['win'], bug=483282)
-
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['win'], bug=483282)
 
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win'], bug=587601)
