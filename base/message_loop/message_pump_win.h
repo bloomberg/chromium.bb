@@ -172,6 +172,10 @@ class BASE_EXPORT MessagePumpForGpu : public MessagePumpWin {
   bool ProcessNextMessage();
 
   const HANDLE event_;
+
+  // Used to help diagnose hangs.
+  // TODO(stanisc): crbug.com/596190: Remove these once the bug is fixed.
+  TimeTicks last_set_event_timeticks_;
 };
 
 //-----------------------------------------------------------------------------

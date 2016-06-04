@@ -449,6 +449,10 @@ void MessagePumpForGpu::ScheduleWork() {
   if (InterlockedExchange(&work_state_, HAVE_WORK) != READY)
     return;  // Someone else continued the pumping.
 
+  // TODO(stanisc): crbug.com/596190: Preserve for crash dump analysis.
+  // Remove this when the bug is fixed.
+  last_set_event_timeticks_ = TimeTicks::Now();
+
   // Make sure the MessagePump does some work for us.
   SetEvent(event_);
 }
@@ -520,19 +524,19 @@ void MessagePumpForGpu::WaitForWork() {
     if (delay < 0)  // Negative value means no timers waiting.
       delay = INFINITE;
 
+    // TODO(stanisc): crbug.com/596190: Preserve for crash dump analysis.
+    // Remove this when the bug is fixed.
+    TimeTicks wait_for_work_timeticks = TimeTicks::Now();
+    debug::Alias(&wait_for_work_timeticks);
+    debug::Alias(&delay);
+
     DWORD result =
         MsgWaitForMultipleObjectsEx(1, &event_, delay, QS_ALLINPUT, 0);
-    if (result == WAIT_OBJECT_0) {
-      // Work available.
-      return;
-    } else if (result == WAIT_OBJECT_0 + 1) {
-      // Message available. Keep waiting if this message isn't for this thread.
-      MSG msg;
-      if (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
-        return;
-    }
-
     DCHECK_NE(WAIT_FAILED, result) << GetLastError();
+    if (result != WAIT_TIMEOUT) {
+      // Either work or message available.
+      return;
+    }
   }
 }
 
