@@ -23,7 +23,7 @@ var startTest = function() {
   webview.style.padding = '0px';
   webview.style.position = 'absolute';
   webview.style.left = '50px';
-  webview.style.top = '100px'
+  webview.style.top = '100px';
   webview.src = 'guest.html';
   document.querySelector('#webview-tag-container').appendChild(webview);
 };

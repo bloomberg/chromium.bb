@@ -74,6 +74,9 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(platform_view) {
+  gfx::NativeView view = GetNativeView();
+  if (view)
+    UpdateScreenInfo(view);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {}

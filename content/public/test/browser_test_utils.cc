@@ -523,6 +523,37 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
   widget_host->ForwardGestureEvent(scroll_end);
 }
 
+void SimulateGestureFlingSequence(WebContents* web_contents,
+                                  const gfx::Point& point,
+                                  const gfx::Vector2dF& velocity) {
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      web_contents->GetRenderViewHost()->GetWidget());
+
+  blink::WebGestureEvent scroll_begin;
+  scroll_begin.type = blink::WebGestureEvent::GestureScrollBegin;
+  scroll_begin.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_begin.x = point.x();
+  scroll_begin.y = point.y();
+  widget_host->ForwardGestureEvent(scroll_begin);
+
+  blink::WebGestureEvent scroll_end;
+  scroll_end.type = blink::WebGestureEvent::GestureScrollEnd;
+  scroll_end.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_end.x = point.x();
+  scroll_end.y = point.y();
+  widget_host->ForwardGestureEvent(scroll_end);
+
+  blink::WebGestureEvent fling_start;
+  fling_start.type = blink::WebGestureEvent::GestureFlingStart;
+  fling_start.sourceDevice = blink::WebGestureDeviceTouchpad;
+  fling_start.x = point.x();
+  fling_start.y = point.y();
+  fling_start.data.flingStart.targetViewport = false;
+  fling_start.data.flingStart.velocityX = velocity.x();
+  fling_start.data.flingStart.velocityY = velocity.y();
+  widget_host->ForwardGestureEvent(fling_start);
+}
+
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap;
   tap.type = blink::WebGestureEvent::GestureTap;

@@ -20,7 +20,7 @@ window.onAppCommand = function(command) {
   LOG('guest::onAppCommand: ' + command);
   switch (command) {
     case 'set_overflow_hidden':
-      document.body.style.overflow = 'hidden';
+      document.getElementById('root').style.overflow = 'hidden';
       sendMessageToEmbedder('overflow_is_hidden');
       break;
   };

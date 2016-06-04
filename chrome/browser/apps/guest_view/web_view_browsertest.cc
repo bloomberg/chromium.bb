@@ -3416,6 +3416,79 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   }
 }
 
+class WebViewScrollGuestContentTest : public WebViewTest {
+ public:
+  ~WebViewScrollGuestContentTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebViewTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kTouchEvents,
+                                    switches::kTouchEventsEnabled);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(WebViewScrollGuestContent,
+                        WebViewScrollGuestContentTest,
+                        testing::Values(false));
+
+IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest, ScrollGuestContent) {
+  LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
+
+  content::WebContents* embedder_contents = GetEmbedderWebContents();
+
+  std::vector<content::WebContents*> guest_web_contents_list;
+  GetGuestViewManager()->WaitForNumGuestsCreated(1u);
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
+  ASSERT_EQ(1u, guest_web_contents_list.size());
+
+  content::WebContents* guest_contents = guest_web_contents_list[0];
+  content::RenderWidgetHostView* guest_host_view =
+      guest_contents->GetRenderWidgetHostView();
+
+  gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
+  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
+  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
+
+  content::RenderWidgetHostView* embedder_host_view =
+      embedder_contents->GetRenderWidgetHostView();
+  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+
+  gfx::Point guest_scroll_location(guest_rect.x() + guest_rect.width() / 2,
+                                   guest_rect.y());
+
+  float gesture_distance = 15.f;
+  {
+    gfx::Vector2dF expected_offset(0.f, gesture_distance);
+
+    ScrollWaiter waiter(guest_host_view);
+
+    content::SimulateGestureScrollSequence(
+        embedder_contents, guest_scroll_location,
+        gfx::Vector2dF(0, -gesture_distance));
+
+    waiter.WaitForScrollChange(expected_offset);
+  }
+  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+
+  // Use fling gesture to scroll back, velocity should be big enough to scroll
+  // content back.
+  float fling_velocity = 300.f;
+  {
+    ScrollWaiter waiter(guest_host_view);
+
+    content::SimulateGestureFlingSequence(
+        embedder_contents, guest_scroll_location,
+        gfx::Vector2dF(0, fling_velocity));
+
+    waiter.WaitForScrollChange(gfx::Vector2dF());
+  }
+
+  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+}
+
 #if defined(USE_AURA)
 // TODO(wjmaclean): when WebViewTest is re-enabled on the site-isolation
 // bots, then re-enable this test class as well.
