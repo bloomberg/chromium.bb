@@ -448,7 +448,7 @@ void V8Console::memoryGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     if (V8DebuggerClient* client = ConsoleHelper(info).ensureDebuggerClient()) {
         v8::Local<v8::Value> memoryValue;
-        if (!client->memoryInfo(info.GetIsolate(), info.GetIsolate()->GetCurrentContext(), info.Holder()).ToLocal(&memoryValue))
+        if (!client->memoryInfo(info.GetIsolate(), info.GetIsolate()->GetCurrentContext()).ToLocal(&memoryValue))
             return;
         info.GetReturnValue().Set(memoryValue);
     }

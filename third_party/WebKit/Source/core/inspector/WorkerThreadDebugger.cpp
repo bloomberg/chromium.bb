@@ -106,7 +106,7 @@ void WorkerThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context
     executionContext->addConsoleMessage(message);
 }
 
-v8::MaybeLocal<v8::Value> WorkerThreadDebugger::memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object>)
+v8::MaybeLocal<v8::Value> WorkerThreadDebugger::memoryInfo(v8::Isolate*, v8::Local<v8::Context>)
 {
     ASSERT_NOT_REACHED();
     return v8::MaybeLocal<v8::Value>();

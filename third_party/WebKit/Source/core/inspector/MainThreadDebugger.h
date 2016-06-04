@@ -71,7 +71,7 @@ public:
     static bool isCommandLineAPIMethod(const String& name);
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
 
-    v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object> creationContext) override;
+    v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
 protected:
     void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*) override;
 

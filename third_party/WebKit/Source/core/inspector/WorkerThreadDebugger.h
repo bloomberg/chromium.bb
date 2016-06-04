@@ -59,7 +59,7 @@ public:
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     int ensureDefaultContextInGroup(int contextGroupId) override;
 
-    v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object>) override;
+    v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
 protected:
     void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*);
 

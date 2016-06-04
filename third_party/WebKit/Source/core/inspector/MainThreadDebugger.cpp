@@ -229,12 +229,12 @@ void MainThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, 
     frame->console().addMessage(consoleMessage);
 }
 
-v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v8::Local<v8::Context> context, v8::Local<v8::Object> creationContext)
+v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v8::Local<v8::Context> context)
 {
     ExecutionContext* executionContext = toExecutionContext(context);
     ASSERT_UNUSED(executionContext, executionContext);
     ASSERT(executionContext->isDocument());
-    return toV8(MemoryInfo::create(), creationContext, isolate);
+    return toV8(MemoryInfo::create(), context->Global(), isolate);
 }
 
 bool MainThreadDebugger::isCommandLineAPIMethod(const String& name)

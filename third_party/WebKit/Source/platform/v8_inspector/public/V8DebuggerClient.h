@@ -40,7 +40,7 @@ public:
     virtual void consoleTimeEnd(const String16& title) = 0;
     virtual void consoleTimeStamp(const String16& title) = 0;
 
-    virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object> creationContext) = 0;
+    virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) = 0;
 
     typedef void (*TimerCallback)(void*);
     virtual void startRepeatingTimer(double, TimerCallback, void* data) = 0;
