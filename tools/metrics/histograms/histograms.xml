@@ -37550,8 +37550,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Pepper.InterfaceUsed" enum="PepperInterface">
-  <owner>mackinlay@google.com</owner>
-  <owner>teravest@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
+  <owner>bbudge@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
   <summary>
     The number of out-of-process plugin processes that have loaded a particular
     PPB interface version.
