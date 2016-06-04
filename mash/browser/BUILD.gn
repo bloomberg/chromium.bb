@@ -13,6 +13,8 @@ source_set("lib") {
   sources = [
     "browser.cc",
     "browser.h",
+    "debug_view.cc",
+    "debug_view.h",
   ]
 
   deps = [

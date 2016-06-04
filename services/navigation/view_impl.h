@@ -44,6 +44,8 @@ class ViewImpl : public mojom::View,
   void Stop() override;
   void GetWindowTreeClient(
       mus::mojom::WindowTreeClientRequest request) override;
+  void ShowInterstitial(const mojo::String& html) override;
+  void HideInterstitial() override;
 
   // content::WebContentsDelegate:
   void AddNewContents(content::WebContents* source,

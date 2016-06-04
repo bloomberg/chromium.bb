@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "mash/browser/debug_view.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
@@ -130,8 +131,11 @@ class UI : public views::WidgetDelegateView,
         reload_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Reload"))),
         prompt_(new views::Textfield),
+        debug_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("DV"))),
         throbber_(new Throbber),
         progress_bar_(new ProgressBar),
+        debug_view_(new DebugView),
         view_(std::move(view)),
         view_client_binding_(this, std::move(request)) {
     set_background(views::Background::CreateStandardPanelBackground());
@@ -143,8 +147,11 @@ class UI : public views::WidgetDelegateView,
     AddChildView(forward_button_);
     AddChildView(reload_button_);
     AddChildView(prompt_);
+    AddChildView(debug_button_);
     AddChildView(throbber_);
     AddChildView(progress_bar_);
+    AddChildView(debug_view_);
+    debug_view_->set_view(view_.get());
   }
   ~UI() override { browser_->RemoveWindow(GetWidget()); }
 
@@ -177,6 +184,8 @@ class UI : public views::WidgetDelegateView,
         view_->Stop();
       else
         view_->Reload(false);
+    } else if (sender == debug_button_) {
+      ToggleDebugView();
     }
   }
 
@@ -199,20 +208,35 @@ class UI : public views::WidgetDelegateView,
                   ps.height()));
 
     ps = prompt_->GetPreferredSize();
+    int throbber_size = ps.height();
+    gfx::Size debug_ps = debug_button_->GetPreferredSize();
     int prompt_y =
         bounds.y() + (reload_button_->bounds().height() - ps.height()) / 2;
     int width =
-        bounds.width() - reload_button_->bounds().right() - ps.height() - 10;
+        bounds.width() - reload_button_->bounds().right() - throbber_size - 15 -
+        debug_ps.width();
     prompt_->SetBoundsRect(gfx::Rect(reload_button_->bounds().right() + 5,
                                      prompt_y, width, ps.height()));
-    throbber_->SetBoundsRect(gfx::Rect(prompt_->bounds().right() + 5,
-                                       prompt_->bounds().y(), ps.height(),
-                                       ps.height()));
+
+    debug_button_->SetBoundsRect(
+        gfx::Rect(prompt_->bounds().right() + 5,
+                  prompt_->bounds().y(), debug_ps.width(), debug_ps.height()));
+
+    throbber_->SetBoundsRect(gfx::Rect(debug_button_->bounds().right() + 5,
+                                       prompt_->bounds().y(), throbber_size,
+                                       throbber_size));
 
     gfx::Rect progress_bar_rect(local_bounds.x(),
                                 back_button_->bounds().bottom() + 5,
                                 local_bounds.width(), 2);
     progress_bar_->SetBoundsRect(progress_bar_rect);
+
+    int debug_view_height = 0;
+    if (showing_debug_view_)
+      debug_view_height = debug_view_->GetPreferredSize().height();
+    debug_view_->SetBoundsRect(
+        gfx::Rect(local_bounds.x(), local_bounds.height() - debug_view_height,
+                  local_bounds.width(), debug_view_height));
 
     if (content_area_) {
       int x = local_bounds.x();
@@ -220,7 +244,7 @@ class UI : public views::WidgetDelegateView,
       gfx::Point offset(x, y);
       ConvertPointToWidget(this, &offset);
       int width = local_bounds.width();
-      int height = local_bounds.height() - y;
+      int height = local_bounds.height() - y - debug_view_height;
       content_area_->SetBounds(
           gfx::Rect(offset.x(), offset.y(), width, height));
     }
@@ -290,6 +314,11 @@ class UI : public views::WidgetDelegateView,
   }
   void Close() override { GetWidget()->Close(); }
 
+  void ToggleDebugView() {
+    showing_debug_view_ = !showing_debug_view_;
+    Layout();
+  }
+
   Browser* browser_;
 
   Type type_;
@@ -298,16 +327,21 @@ class UI : public views::WidgetDelegateView,
   views::LabelButton* forward_button_;
   views::LabelButton* reload_button_;
   views::Textfield* prompt_;
+  views::LabelButton* debug_button_;
   Throbber* throbber_;
   ProgressBar* progress_bar_;
 
   mus::Window* content_area_ = nullptr;
+
+  DebugView* debug_view_;
 
   navigation::mojom::ViewPtr view_;
   mojo::Binding<navigation::mojom::ViewClient> view_client_binding_;
 
   bool is_loading_ = false;
   base::string16 current_title_;
+
+  bool showing_debug_view_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UI);
 };

@@ -6,6 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
@@ -14,6 +16,26 @@
 #include "url/gurl.h"
 
 namespace navigation {
+namespace {
+
+class InterstitialPageDelegate : public content::InterstitialPageDelegate {
+ public:
+  explicit InterstitialPageDelegate(const std::string& html) : html_(html) {}
+  ~InterstitialPageDelegate() override {}
+  InterstitialPageDelegate(const InterstitialPageDelegate&) = delete;
+  void operator=(const InterstitialPageDelegate&) = delete;
+
+ private:
+
+  // content::InterstitialPageDelegate:
+  std::string GetHTMLContents() override {
+    return html_;
+  }
+
+  const std::string html_;
+};
+
+}  // namespace
 
 ViewImpl::ViewImpl(shell::Connector* connector,
                    content::BrowserContext* browser_context,
@@ -56,6 +78,21 @@ void ViewImpl::Stop() {
 void ViewImpl::GetWindowTreeClient(
     mus::mojom::WindowTreeClientRequest request) {
   new mus::WindowTreeClient(this, nullptr, std::move(request));
+}
+
+void ViewImpl::ShowInterstitial(const mojo::String& html) {
+  content::InterstitialPage* interstitial =
+      content::InterstitialPage::Create(web_view_->GetWebContents(),
+                                        false,
+                                        GURL(),
+                                        new InterstitialPageDelegate(html));
+  interstitial->Show();
+}
+
+void ViewImpl::HideInterstitial() {
+  // TODO(beng): this is not quite right.
+  if (web_view_->GetWebContents()->ShowingInterstitialPage())
+    web_view_->GetWebContents()->GetInterstitialPage()->Proceed();
 }
 
 void ViewImpl::AddNewContents(content::WebContents* source,
