@@ -66,7 +66,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
-    self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
+    self.Fail('conformance2/rendering/draw-buffers.html', bug=617410)
 
     # All platforms when running ANGLE
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
@@ -151,137 +151,137 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/svg_image/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/svg_image/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/video/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/video/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_blob/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_blob/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
 
     self.Fail('conformance2/textures/video/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/video/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_data/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_data/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/svg_image/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/svg_image/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/canvas/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/canvas/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=560555)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_blob/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_blob/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
     self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
         'tex-3d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win8'], bug=483282)
+        ['win8'], bug=616176)
 
     # Windows Debug. Causing assertions in the GPU process which raise
     # a dialog box, so have to skip them rather than mark them as
