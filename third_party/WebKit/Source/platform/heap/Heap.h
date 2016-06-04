@@ -205,8 +205,7 @@ public:
         // TODO(keishi): some tests create CrossThreadPersistent on non attached threads.
         if (!ThreadState::current())
             return true;
-        if (&ThreadState::current()->heap() != &pageFromObject(object)->arena()->getThreadState()->heap())
-            return true;
+        DCHECK(&ThreadState::current()->heap() == &pageFromObject(object)->arena()->getThreadState()->heap());
         return ObjectAliveTrait<T>::isHeapObjectAlive(object);
     }
     template<typename T>

@@ -215,7 +215,6 @@ Database::Database(DatabaseContext* databaseContext, const String& name, const S
     , m_transactionInProgress(false)
     , m_isTransactionQueueEnabled(true)
 {
-    DCHECK(isMainThread());
     m_contextThreadSecurityOrigin = m_databaseContext->getSecurityOrigin()->isolatedCopy();
 
     m_databaseAuthorizer = DatabaseAuthorizer::create(infoTableName);

@@ -87,8 +87,6 @@ SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
     , m_resultSet(SQLResultSet::create())
     , m_permissions(permissions)
 {
-    DCHECK(isMainThread());
-
     m_frontend->setBackend(this);
 }
 

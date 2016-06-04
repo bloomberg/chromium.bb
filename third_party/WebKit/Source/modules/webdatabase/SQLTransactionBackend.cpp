@@ -356,7 +356,6 @@ SQLTransactionBackend::SQLTransactionBackend(Database* db, SQLTransaction* front
     , m_readOnly(readOnly)
     , m_hasVersionMismatch(false)
 {
-    DCHECK(isMainThread());
     ASSERT(m_database);
     m_frontend->setBackend(this);
     m_requestedState = SQLTransactionState::AcquireLock;

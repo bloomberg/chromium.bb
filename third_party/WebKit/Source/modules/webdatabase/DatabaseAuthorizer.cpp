@@ -39,8 +39,6 @@ DatabaseAuthorizer::DatabaseAuthorizer(const String& databaseInfoTableName)
     : m_securityEnabled(false)
     , m_databaseInfoTableName(databaseInfoTableName)
 {
-    DCHECK(isMainThread());
-
     reset();
     addWhitelistedFunctions();
 }

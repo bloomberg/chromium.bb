@@ -41,10 +41,10 @@ namespace blink {
 
 DatabaseThread::DatabaseThread()
     : m_transactionClient(adoptPtr(new SQLTransactionClient()))
+    , m_transactionCoordinator(new SQLTransactionCoordinator())
     , m_cleanupSync(nullptr)
     , m_terminationRequested(false)
 {
-    DCHECK(isMainThread());
 }
 
 DatabaseThread::~DatabaseThread()
@@ -55,6 +55,8 @@ DatabaseThread::~DatabaseThread()
 
 DEFINE_TRACE(DatabaseThread)
 {
+    visitor->trace(m_openDatabaseSet);
+    visitor->trace(m_transactionCoordinator);
 }
 
 void DatabaseThread::start()
@@ -62,14 +64,13 @@ void DatabaseThread::start()
     ASSERT(isMainThread());
     if (m_thread)
         return;
-    m_thread = WebThreadSupportingGC::create("WebCore: Database", true);
+    m_thread = WebThreadSupportingGC::create("WebCore: Database");
     m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseThread::setupDatabaseThread, wrapCrossThreadPersistent(this)));
 }
 
 void DatabaseThread::setupDatabaseThread()
 {
     m_thread->initialize();
-    m_transactionCoordinator = new SQLTransactionCoordinator();
 }
 
 void DatabaseThread::terminate()
@@ -93,8 +94,6 @@ void DatabaseThread::terminate()
 
 void DatabaseThread::cleanupDatabaseThread()
 {
-    DCHECK(isDatabaseThread());
-
     WTF_LOG(StorageAPI, "Cleaning up DatabaseThread %p", this);
 
     // Clean up the list of all pending transactions on this database thread
@@ -104,10 +103,10 @@ void DatabaseThread::cleanupDatabaseThread()
     // inconsistent or locked state.
     if (m_openDatabaseSet.size() > 0) {
         // As the call to close will modify the original set, we must take a copy to iterate over.
-        HashSet<CrossThreadPersistent<Database>> openSetCopy;
+        HeapHashSet<Member<Database>> openSetCopy;
         openSetCopy.swap(m_openDatabaseSet);
-        HashSet<CrossThreadPersistent<Database>>::iterator end = openSetCopy.end();
-        for (HashSet<CrossThreadPersistent<Database>>::iterator it = openSetCopy.begin(); it != end; ++it)
+        HeapHashSet<Member<Database>>::iterator end = openSetCopy.end();
+        for (HeapHashSet<Member<Database>>::iterator it = openSetCopy.begin(); it != end; ++it)
             (*it)->close();
     }
     m_openDatabaseSet.clear();

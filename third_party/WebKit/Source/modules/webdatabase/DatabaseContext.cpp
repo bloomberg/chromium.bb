@@ -100,8 +100,6 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
     , m_hasOpenDatabases(false)
     , m_hasRequestedTermination(false)
 {
-    DCHECK(isMainThread());
-
     // ActiveDOMObject expects this to be called to set internal flags.
     suspendIfNeeded();
 
