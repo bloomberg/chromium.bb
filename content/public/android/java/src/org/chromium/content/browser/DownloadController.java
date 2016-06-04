@@ -39,7 +39,7 @@ public class DownloadController {
 
         /**
          * Notify the host application that a download is cancelled.
-         * @param downloadId Id of the download.
+         * @param downloadInfo Information about the cancelled download.
          */
         void onDownloadCancelled(final DownloadInfo downloadInfo);
 
