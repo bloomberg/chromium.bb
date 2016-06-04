@@ -67,6 +67,7 @@ private:
 #if ENABLE(ASSERT)
         void clear();
 #endif
+        void reset();
         void decommit();
 
         Block* next() const { return m_next; }

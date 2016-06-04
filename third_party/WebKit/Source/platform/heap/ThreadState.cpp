@@ -964,6 +964,7 @@ void ThreadState::preGC()
     makeConsistentForGC();
     flushHeapDoesNotContainCacheIfNeeded();
     clearArenaAges();
+    m_threadLocalWeakCallbackStack->clear();
 }
 
 void ThreadState::postGC(BlinkGC::GCType gcType)
