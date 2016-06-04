@@ -608,6 +608,67 @@ TEST(HashMapTest, UniquePtrAsValue)
     }
 }
 
+TEST(HashMapTest, MoveOnlyPairKeyType)
+{
+    using Pair = std::pair<MoveOnly, int>;
+    using TheMap = HashMap<Pair, int>;
+    TheMap map;
+    {
+        TheMap::AddResult addResult = map.add(Pair(MoveOnly(1), -1), 10);
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(1, addResult.storedValue->key.first.value());
+        EXPECT_EQ(-1, addResult.storedValue->key.second);
+        EXPECT_EQ(10, addResult.storedValue->value);
+    }
+    auto iter = map.find(Pair(MoveOnly(1), -1));
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(1, iter->key.first.value());
+    EXPECT_EQ(-1, iter->key.second);
+    EXPECT_EQ(10, iter->value);
+
+    iter = map.find(Pair(MoveOnly(1), 0));
+    EXPECT_TRUE(iter == map.end());
+
+    for (int i = 2; i < 32; ++i) {
+        TheMap::AddResult addResult = map.add(Pair(MoveOnly(i), -i), i * 10);
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(i, addResult.storedValue->key.first.value());
+        EXPECT_EQ(-i, addResult.storedValue->key.second);
+        EXPECT_EQ(i * 10, addResult.storedValue->value);
+    }
+
+    iter = map.find(Pair(MoveOnly(1), -1));
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(1, iter->key.first.value());
+    EXPECT_EQ(-1, iter->key.second);
+    EXPECT_EQ(10, iter->value);
+
+    iter = map.find(Pair(MoveOnly(7), -7));
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(7, iter->key.first.value());
+    EXPECT_EQ(-7, iter->key.second);
+    EXPECT_EQ(70, iter->value);
+
+    {
+        TheMap::AddResult addResult = map.set(Pair(MoveOnly(9), -9), 999);
+        EXPECT_FALSE(addResult.isNewEntry);
+        EXPECT_EQ(9, addResult.storedValue->key.first.value());
+        EXPECT_EQ(-9, addResult.storedValue->key.second);
+        EXPECT_EQ(999, addResult.storedValue->value);
+    }
+
+    map.remove(Pair(MoveOnly(11), -11));
+    iter = map.find(Pair(MoveOnly(11), -11));
+    EXPECT_TRUE(iter == map.end());
+
+    int oneThirty = map.take(Pair(MoveOnly(13), -13));
+    EXPECT_EQ(130, oneThirty);
+    iter = map.find(Pair(MoveOnly(13), -13));
+    EXPECT_TRUE(iter == map.end());
+
+    map.clear();
+}
+
 } // anonymous namespace
 
 } // namespace WTF

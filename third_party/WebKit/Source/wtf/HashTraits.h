@@ -245,6 +245,9 @@ struct PairHashTraits : GenericHashTraits<std::pair<typename FirstTraitsArg::Tra
     static const bool emptyValueIsZero = FirstTraits::emptyValueIsZero && SecondTraits::emptyValueIsZero;
     static EmptyValueType emptyValue() { return std::make_pair(FirstTraits::emptyValue(), SecondTraits::emptyValue()); }
 
+    static const bool hasIsEmptyValueFunction = FirstTraits::hasIsEmptyValueFunction || SecondTraits::hasIsEmptyValueFunction;
+    static bool isEmptyValue(const TraitType& value) { return isHashTraitsEmptyValue<FirstTraits>(value.first) && isHashTraitsEmptyValue<SecondTraits>(value.second); }
+
     static const unsigned minimumTableSize = FirstTraits::minimumTableSize;
 
     static void constructDeletedValue(TraitType& slot, bool zeroValue)
