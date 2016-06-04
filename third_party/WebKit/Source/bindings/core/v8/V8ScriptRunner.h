@@ -62,6 +62,7 @@ public:
     static v8::MaybeLocal<v8::Value> runCompiledScript(v8::Isolate*, v8::Local<v8::Script>, ExecutionContext*);
     static v8::MaybeLocal<v8::Value> compileAndRunInternalScript(v8::Local<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
     static v8::MaybeLocal<v8::Value> runCompiledInternalScript(v8::Isolate*, v8::Local<v8::Script>);
+    static v8::MaybeLocal<v8::Value> callAsConstructor(v8::Isolate*, v8::Local<v8::Object>, ExecutionContext*, int argc = 0, v8::Local<v8::Value> argv[] = 0);
     static v8::MaybeLocal<v8::Value> callInternalFunction(v8::Local<v8::Function>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[], v8::Isolate*);
     static v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, ExecutionContext*, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[], v8::Isolate*);
     static v8::MaybeLocal<v8::Object> instantiateObject(v8::Isolate*, v8::Local<v8::ObjectTemplate>);

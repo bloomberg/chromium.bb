@@ -6,8 +6,14 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8CustomElementsRegistry.h"
+#include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/V8ThrowException.h"
+#include "core/dom/ExceptionCode.h"
+#include "v8.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -118,6 +124,45 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     // ScriptCustomElementDefinition::create.
     m_constructor.setPhantom();
     m_prototype.setPhantom();
+}
+
+// https://html.spec.whatwg.org/multipage/scripting.html#upgrades
+bool ScriptCustomElementDefinition::runConstructor(Element* element)
+{
+    if (!m_scriptState->contextIsValid())
+        return false;
+    ScriptState::Scope scope(m_scriptState.get());
+    v8::Isolate* isolate = m_scriptState->isolate();
+
+    // Step 5 says to rethrow the exception; but there is no one to
+    // catch it. The side effect is to report the error.
+    v8::TryCatch tryCatch(isolate);
+    tryCatch.SetVerbose(true);
+
+    ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+    v8::Local<v8::Value> result;
+    if (!v8Call(V8ScriptRunner::callAsConstructor(
+        isolate,
+        constructor(),
+        executionContext,
+        0,
+        nullptr),
+        result))
+        return false;
+
+    if (V8Element::toImplWithTypeCheck(isolate, result) != element) {
+        V8ThrowException::throwException(
+            V8ThrowException::createDOMException(
+                m_scriptState->isolate(),
+                InvalidStateError,
+                "custom element constructors must call super() first and must "
+                "not return a different object",
+                constructor()),
+            m_scriptState->isolate());
+        return false;
+    }
+
+    return true;
 }
 
 v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const

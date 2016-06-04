@@ -44,9 +44,7 @@ public:
     void upgrade(Element*);
 
 protected:
-    // TODO(dominicc): Make this pure virtual when the script side is
-    // implemented.
-    virtual bool runConstructor(Element*);
+    virtual bool runConstructor(Element*) = 0;
 
 private:
     const CustomElementDescriptor m_descriptor;
