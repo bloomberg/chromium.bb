@@ -24,8 +24,8 @@ class ServiceWorkerMicroBenchmarkPageSet(story.StorySet):
 
     # pylint: disable=line-too-long
     # The latest code of localhost:8091 is from:
-    # https://github.com/horo-t/Service-Worker-Performance/tree/fix-flakyness
-    # (rev: 0cc35c2398526665399ca99fe53147ff81101408)
+    # https://github.com/amiq11/Service-Worker-Performance/tree/fix-flakyness
+    # (rev: e6b3f604674209a30e4cf416a18cb8be3b991abd)
     # TODO(falken): House the code in GoogleChrome's GitHub repository.
     # pylint: enable=C0301
     # Why: to measure performance of many concurrent fetches
