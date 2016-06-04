@@ -66,6 +66,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
+    self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
+
     # All platforms when running ANGLE
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
@@ -74,9 +76,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
 
+    # All platforms with AMD GPU.
+    self.Fail('deqp/functional/gles3/multisample.html',
+        ['amd'], bug=617290)
+
     # Failing because the tests are using invalid combinations of source and
     # destination formats, see https://github.com/KhronosGroup/WebGL/issues/1628
-    self.Fail('conformance2/textures/misc/copy-texture-image.html', bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         bug=483282)
@@ -380,8 +385,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=604053)
 
     # Mac Retina NVIDIA
-    self.Fail('conformance2/rendering/draw-buffers.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
@@ -478,8 +481,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux'], bug=483282)
-    self.Fail('conformance2/rendering/draw-buffers.html',
-        ['linux'], bug=483282)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
@@ -542,6 +543,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/3d*',
         ['linux', 'amd'], bug=606114)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/lifetime.html',
         ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
