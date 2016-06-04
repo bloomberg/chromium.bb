@@ -17,7 +17,9 @@ class WebTestSuite : public base::TestSuite {
   ~WebTestSuite() override;
 
  protected:
+  // base::TestSuite overrides.
   void Initialize() override;
+  void Shutdown() override;
 
  private:
   // Sets web client on construction and restores the original on destruction.

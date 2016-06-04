@@ -58,4 +58,9 @@ void WebTestSuite::Initialize() {
       resources_pack_path, ui::SCALE_FACTOR_NONE);
 }
 
+void WebTestSuite::Shutdown() {
+  ResourceBundle::CleanupSharedInstance();
+  base::TestSuite::Shutdown();
+}
+
 }  // namespace web
