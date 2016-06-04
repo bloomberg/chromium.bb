@@ -18,11 +18,15 @@
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
 namespace {
+
+#define OFFLINE_PAGES_TABLE_V1 "offlinepages_v1"
 
 const char kTestClientNamespace[] = "CLIENT_NAMESPACE";
 const char kTestURL[] = "https://example.com";
@@ -30,17 +34,73 @@ const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const ClientId kTestClientId2(kTestClientNamespace, "5678");
 const base::FilePath::CharType kFilePath[] =
     FILE_PATH_LITERAL("/offline_pages/example_com.mhtml");
-int64_t kFileSize = 234567;
+int64_t kFileSize = 234567LL;
+int64_t kOfflineId = 12345LL;
+
+// Build a store with outdated schema to simulate the upgrading process.
+// TODO(romax): move it to sql_unittests.
+void BuildTestStoreWithOutdatedSchema(const base::FilePath& file) {
+  sql::Connection connection;
+  ASSERT_TRUE(
+      connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
+  ASSERT_TRUE(connection.is_open());
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute("CREATE TABLE " OFFLINE_PAGES_TABLE_V1
+                                 "(offline_id INTEGER PRIMARY KEY NOT NULL, "
+                                 "creation_time INTEGER NOT NULL, "
+                                 "file_size INTEGER NOT NULL, "
+                                 "version INTEGER NOT NULL, "
+                                 "last_access_time INTEGER NOT NULL, "
+                                 "access_count INTEGER NOT NULL, "
+                                 "status INTEGER NOT NULL DEFAULT 0, "
+                                 "user_initiated INTEGER, "
+                                 "client_namespace VARCHAR NOT NULL, "
+                                 "client_id VARCHAR NOT NULL, "
+                                 "online_url VARCHAR NOT NULL, "
+                                 "offline_url VARCHAR NOT NULL DEFAULT '', "
+                                 "file_path VARCHAR NOT NULL "
+                                 ")"));
+  ASSERT_TRUE(connection.CommitTransaction());
+  sql::Statement statement(connection.GetUniqueStatement(
+      "INSERT INTO " OFFLINE_PAGES_TABLE_V1
+      "(offline_id, creation_time, file_size, version, "
+      "last_access_time, access_count, client_namespace, "
+      "client_id, online_url, file_path) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+  statement.BindInt64(0, kOfflineId);
+  statement.BindInt(1, 0);
+  statement.BindInt64(2, kFileSize);
+  statement.BindInt(3, 0);
+  statement.BindInt(4, 0);
+  statement.BindInt(5, 1);
+  statement.BindCString(6, kTestClientNamespace);
+  statement.BindString(7, kTestClientId2.id);
+  statement.BindCString(8, kTestURL);
+  statement.BindString(9, base::FilePath(kFilePath).MaybeAsASCII());
+  ASSERT_TRUE(statement.Run());
+  ASSERT_TRUE(connection.DoesTableExist(OFFLINE_PAGES_TABLE_V1));
+  ASSERT_FALSE(
+      connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "expiration_time"));
+}
 
 class OfflinePageMetadataStoreFactory {
  public:
   virtual OfflinePageMetadataStore* BuildStore(const base::FilePath& file) = 0;
+  virtual OfflinePageMetadataStore* BuildStoreV1(
+      const base::FilePath& file) = 0;
 };
 
 class OfflinePageMetadataStoreSQLFactory
     : public OfflinePageMetadataStoreFactory {
  public:
   OfflinePageMetadataStore* BuildStore(const base::FilePath& file) override {
+    OfflinePageMetadataStoreSQL* store = new OfflinePageMetadataStoreSQL(
+        base::ThreadTaskRunnerHandle::Get(), file);
+    return store;
+  }
+
+  OfflinePageMetadataStore* BuildStoreV1(const base::FilePath& file) override {
+    BuildTestStoreWithOutdatedSchema(file);
     OfflinePageMetadataStoreSQL* store = new OfflinePageMetadataStoreSQL(
         base::ThreadTaskRunnerHandle::Get(), file);
     return store;
@@ -119,6 +179,8 @@ template <typename T>
 class OfflinePageMetadataStoreTest : public OfflinePageMetadataStoreTestBase {
  public:
   std::unique_ptr<OfflinePageMetadataStore> BuildStore();
+  std::unique_ptr<OfflinePageMetadataStore>
+  BuildStoreWithUpgradeFromOutdatedSchema();
 
  protected:
   T factory_;
@@ -135,6 +197,17 @@ OfflinePageMetadataStoreTest<T>::BuildStore() {
   return store;
 }
 
+template <typename T>
+std::unique_ptr<OfflinePageMetadataStore>
+OfflinePageMetadataStoreTest<T>::BuildStoreWithUpgradeFromOutdatedSchema() {
+  std::unique_ptr<OfflinePageMetadataStore> store(
+      factory_.BuildStoreV1(temp_directory_.path()));
+  store->Load(base::Bind(&OfflinePageMetadataStoreTestBase::LoadCallback,
+                         base::Unretained(this)));
+  PumpLoop();
+  return store;
+}
+
 typedef testing::Types<OfflinePageMetadataStoreSQLFactory> MyTypes;
 TYPED_TEST_CASE(OfflinePageMetadataStoreTest, MyTypes);
 
@@ -145,6 +218,53 @@ TYPED_TEST(OfflinePageMetadataStoreTest, LoadEmptyStore) {
   EXPECT_EQ(LOAD, this->last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, this->last_status_);
   EXPECT_EQ(0U, this->offline_pages_.size());
+}
+
+// Loads a store which has an outdated schema.
+// This test case would crash if it's not handling correctly when we're loading
+// old version stores.
+// TODO(romax): Move this to sql_unittest.
+TYPED_TEST(OfflinePageMetadataStoreTest, LoadPreviousVersionStore) {
+  std::unique_ptr<OfflinePageMetadataStore> store(
+      this->BuildStoreWithUpgradeFromOutdatedSchema());
+  EXPECT_EQ(LOAD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+  EXPECT_EQ(1U, this->offline_pages_.size());
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
+                               base::FilePath(kFilePath), kFileSize);
+  base::Time expiration_time = base::Time::Now();
+  offline_page.expiration_time = expiration_time;
+  store->AddOrUpdateOfflinePage(
+      offline_page,
+      base::Bind(&OfflinePageMetadataStoreTestBase::UpdateCallback,
+                 base::Unretained(this), ADD));
+  this->PumpLoop();
+  EXPECT_EQ(ADD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+  this->ClearResults();
+
+  // Close the store first to ensure file lock is removed.
+  store.reset();
+  store = this->BuildStore();
+  this->PumpLoop();
+
+  EXPECT_EQ(LOAD, this->last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, this->last_status_);
+  ASSERT_EQ(2U, this->offline_pages_.size());
+  if (this->offline_pages_[0].offline_id != offline_page.offline_id) {
+    std::swap(this->offline_pages_[0], this->offline_pages_[1]);
+  }
+  EXPECT_EQ(offline_page.url, this->offline_pages_[0].url);
+  EXPECT_EQ(offline_page.offline_id, this->offline_pages_[0].offline_id);
+  EXPECT_EQ(offline_page.file_path, this->offline_pages_[0].file_path);
+  EXPECT_EQ(offline_page.last_access_time,
+            this->offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.expiration_time,
+            this->offline_pages_[0].expiration_time);
+  EXPECT_EQ(offline_page.client_id, this->offline_pages_[0].client_id);
+  EXPECT_EQ(kOfflineId, this->offline_pages_[1].offline_id);
+  EXPECT_EQ(kFileSize, this->offline_pages_[1].file_size);
+  EXPECT_EQ(kTestClientId2, this->offline_pages_[1].client_id);
 }
 
 // Adds metadata of an offline page into a store and then opens the store
@@ -170,7 +290,7 @@ TYPED_TEST(OfflinePageMetadataStoreTest, AddOfflinePage) {
 
   EXPECT_EQ(LOAD, this->last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, this->last_status_);
-  EXPECT_EQ(1U, this->offline_pages_.size());
+  ASSERT_EQ(1U, this->offline_pages_.size());
   EXPECT_EQ(offline_page.url, this->offline_pages_[0].url);
   EXPECT_EQ(offline_page.offline_id, this->offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, this->offline_pages_[0].version);
@@ -305,7 +425,7 @@ TYPED_TEST(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
 
   EXPECT_EQ(LOAD, this->last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, this->last_status_);
-  EXPECT_EQ(1U, this->offline_pages_.size());
+  ASSERT_EQ(1U, this->offline_pages_.size());
   EXPECT_EQ(offline_page_2.url, this->offline_pages_[0].url);
   EXPECT_EQ(offline_page_2.offline_id, this->offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page_2.version, this->offline_pages_[0].version);
@@ -343,7 +463,7 @@ TYPED_TEST(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
 
   EXPECT_EQ(LOAD, this->last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, this->last_status_);
-  EXPECT_EQ(1U, this->offline_pages_.size());
+  ASSERT_EQ(1U, this->offline_pages_.size());
   EXPECT_EQ(offline_page.url, this->offline_pages_[0].url);
   EXPECT_EQ(offline_page.offline_id, this->offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, this->offline_pages_[0].version);
@@ -376,7 +496,7 @@ TYPED_TEST(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
 
   EXPECT_EQ(LOAD, this->last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, this->last_status_);
-  EXPECT_EQ(1U, this->offline_pages_.size());
+  ASSERT_EQ(1U, this->offline_pages_.size());
   EXPECT_EQ(offline_page.url, this->offline_pages_[0].url);
   EXPECT_EQ(offline_page.offline_id, this->offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, this->offline_pages_[0].version);

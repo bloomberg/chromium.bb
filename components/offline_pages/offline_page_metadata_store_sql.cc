@@ -26,6 +26,8 @@ namespace {
 // it can be used inline in other SQL statements below.
 #define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
 
+// New columns should be added at the end of the list in order to avoid
+// complicated table upgrade.
 const char kOfflinePagesColumns[] =
     "(offline_id INTEGER PRIMARY KEY NOT NULL,"
     " creation_time INTEGER NOT NULL,"
@@ -38,7 +40,7 @@ const char kOfflinePagesColumns[] =
     // later use.  We will treat NULL as "Unknown" in any subsequent queries
     // for user_initiated values.
     " user_initiated INTEGER,"  // this is actually a boolean
-    " expiration_time INTEGER NOT NULL,"
+    " expiration_time INTEGER NOT NULL DEFAULT 0,"
     " client_namespace VARCHAR NOT NULL,"
     " client_id VARCHAR NOT NULL,"
     " online_url VARCHAR NOT NULL,"
@@ -81,17 +83,47 @@ bool CreateTable(sql::Connection* db, const TableInfo& table_info) {
   return db->Execute(sql.c_str());
 }
 
+bool RefreshColumns(sql::Connection* db) {
+  if (!db->Execute("ALTER TABLE " OFFLINE_PAGES_TABLE_NAME
+                   " RENAME TO temp_" OFFLINE_PAGES_TABLE_NAME)) {
+    return false;
+  }
+  if (!CreateTable(db, kOfflinePagesTable))
+    return false;
+  if (!db->Execute(
+          "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
+          " (offline_id, creation_time, file_size, version, last_access_time, "
+          "access_count, status, user_initiated, client_namespace, client_id, "
+          "online_url, offline_url, file_path) "
+          "SELECT offline_id, creation_time, file_size, version, "
+          "last_access_time, "
+          "access_count, status, user_initiated, client_namespace, client_id, "
+          "online_url, offline_url, file_path "
+          "FROM temp_" OFFLINE_PAGES_TABLE_NAME)) {
+    return false;
+  }
+  if (!db->Execute("DROP TABLE IF EXISTS temp_" OFFLINE_PAGES_TABLE_NAME))
+    return false;
+
+  return true;
+}
+
 bool CreateSchema(sql::Connection* db) {
   // If you create a transaction but don't Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
-  if (db->DoesTableExist(kOfflinePagesTable.table_name))
-    return true;
 
-  if (!CreateTable(db, kOfflinePagesTable))
-    return false;
+  if (!db->DoesTableExist(kOfflinePagesTable.table_name)) {
+    if (!CreateTable(db, kOfflinePagesTable))
+      return false;
+  }
+
+  if (!db->DoesColumnExist(kOfflinePagesTable.table_name, "expiration_time")) {
+    if (!RefreshColumns(db))
+      return false;
+  }
 
   // TODO(bburns): Add indices here.
   return transaction.Commit();
