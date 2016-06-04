@@ -8,12 +8,6 @@ function InjectedScriptHostClass()
 }
 
 /**
- * @param {*} objectId
- * @param {!Object} hints
- */
-InjectedScriptHostClass.prototype.inspect = function(objectId, hints) {}
-
-/**
  * @param {*} obj
  * @return {string}
  */
@@ -57,13 +51,6 @@ InjectedScriptHostClass.prototype.getInternalProperties = function(obj) {}
  * @return {*}
  */
 InjectedScriptHostClass.prototype.suppressWarningsAndCallFunction = function(fn, receiver, argv) {}
-
-/**
- * @param {!Object} obj
- * @param {string} key
- * @param {*} value
- */
-InjectedScriptHostClass.prototype.setNonEnumProperty = function(obj, key, value) {}
 
 /**
  * @param {*} value
