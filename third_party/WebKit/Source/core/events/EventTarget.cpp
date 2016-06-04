@@ -95,6 +95,10 @@ void reportBlockedEvent(ExecutionContext* context, const Event* event, Registere
 
     V8AbstractEventListener* v8Listener = V8AbstractEventListener::cast(registeredListener->listener());
     v8::HandleScope handles(v8Listener->isolate());
+    v8::Local<v8::Context> v8Context = toV8Context(context, v8Listener->world());
+    if (v8Context.IsEmpty())
+        return;
+    v8::Context::Scope contextScope(v8Context);
     v8::Local<v8::Object> handler = v8Listener->getListenerObject(context);
 
     String messageText = String::format(
