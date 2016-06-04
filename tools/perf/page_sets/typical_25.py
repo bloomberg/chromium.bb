@@ -50,6 +50,8 @@ class Typical25Page(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     if self._run_no_page_interactions:
+      action_runner.WaitForJavaScriptCondition(
+          'performance.timing.loadEventStart > 0')
       return
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollPage()
