@@ -6,8 +6,8 @@
 #define ASH_SHELF_SHELF_UTIL_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/shelf/shelf_item_types.h"
-#include "ash/shelf/shelf_types.h"
 #include "base/strings/string16.h"
 #include "ui/aura/window.h"
 

@@ -4,9 +4,9 @@
 
 #include "ash/sysui/context_menu_mus.h"
 
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
 

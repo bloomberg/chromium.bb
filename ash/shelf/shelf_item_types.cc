@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_item_types.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_constants.h"
 
 namespace ash {
 

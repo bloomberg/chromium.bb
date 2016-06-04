@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_types.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
@@ -31,7 +31,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   // Sets the focus cycler.
   void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
 
-  void set_alignment(wm::ShelfAlignment alignment) { alignment_ = alignment; }
+  void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
   // Overridden from views::AccessiblePaneView.
   View* GetDefaultFocusableChild() override;
@@ -56,7 +56,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   void UpdateWidgetSize();
 
   const FocusCycler* focus_cycler_for_testing_;
-  wm::ShelfAlignment alignment_;
+  ShelfAlignment alignment_;
 
   ShelfGestureHandler gesture_handler_;
 

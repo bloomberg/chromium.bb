@@ -5,7 +5,7 @@
 #include "ash/system/chromeos/network/tray_network.h"
 
 #include "ash/ash_switches.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
@@ -92,8 +92,8 @@ class NetworkTrayView : public TrayItemView,
     }
   }
 
-  void UpdateAlignment(wm::ShelfAlignment alignment) {
-    SetLayoutManager(new views::BoxLayout(wm::IsHorizontalAlignment(alignment)
+  void UpdateAlignment(ShelfAlignment alignment) {
+    SetLayoutManager(new views::BoxLayout(IsHorizontalAlignment(alignment)
                                               ? views::BoxLayout::kHorizontal
                                               : views::BoxLayout::kVertical,
                                           0, 0, 0));
@@ -304,8 +304,7 @@ void TrayNetwork::DestroyDetailedView() {
 void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayNetwork::UpdateAfterShelfAlignmentChange(
-    wm::ShelfAlignment alignment) {
+void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (tray_) {
     SetTrayImageItemBorder(tray_, alignment);
     tray_->UpdateAlignment(alignment);

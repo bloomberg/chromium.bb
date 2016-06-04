@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
@@ -16,7 +17,6 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -977,12 +977,12 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 
   // Test that any two successive visible icons never overlap in all shelf
   // alignment types.
-  const wm::ShelfAlignment kAlignments[] = {
-      wm::SHELF_ALIGNMENT_LEFT, wm::SHELF_ALIGNMENT_RIGHT,
-      wm::SHELF_ALIGNMENT_BOTTOM, wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  const ShelfAlignment kAlignments[] = {
+      SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM,
+      SHELF_ALIGNMENT_BOTTOM_LOCKED,
   };
 
-  for (wm::ShelfAlignment alignment : kAlignments) {
+  for (ShelfAlignment alignment : kAlignments) {
     shelf_view_->shelf()->SetAlignment(alignment);
     // For every 2 successive visible icons, expect that their bounds don't
     // intersect.
@@ -1001,9 +1001,9 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 
 // Making sure the overflow bubble arrow correctly tracks with shelf position.
 TEST_P(ShelfViewTextDirectionTest, OverflowArrowForShelfPosition) {
-  const wm::ShelfAlignment kAlignments[] = {
-      wm::SHELF_ALIGNMENT_BOTTOM, wm::SHELF_ALIGNMENT_LEFT,
-      wm::SHELF_ALIGNMENT_RIGHT, wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  const ShelfAlignment kAlignments[] = {
+      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT,
+      SHELF_ALIGNMENT_BOTTOM_LOCKED,
   };
 
   // These must match what is expected for each alignment above.
@@ -1430,7 +1430,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Change the shelf layout. This should not crash.
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
 }
 
 // Changing the shelf alignment closes any open tooltip.
@@ -1446,7 +1446,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Changing shelf alignment hides the tooltip.
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
@@ -1787,8 +1787,8 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   aura::Window* second_root = Shell::GetAllRootWindows()[1];
   Shelf* secondary_shelf = Shelf::ForWindow(second_root);
 
-  secondary_shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
-  ASSERT_EQ(wm::SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
+  secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
 
   // Initially, app list and browser shortcut are added.
   EXPECT_EQ(2, model_->item_count());

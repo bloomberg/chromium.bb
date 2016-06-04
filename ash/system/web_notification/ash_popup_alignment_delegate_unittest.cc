@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -15,7 +16,6 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -137,14 +137,14 @@ TEST_F(AshPopupAlignmentDelegateTest, MAYBE_ShelfAlignment) {
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_RIGHT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
   toast_point.set_y(alignment_delegate()->GetBaseLine());
   EXPECT_EQ(BOTTOM_RIGHT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
   toast_point.set_y(alignment_delegate()->GetBaseLine());
   EXPECT_EQ(BOTTOM_LEFT, GetPositionInDisplay(toast_point));
@@ -158,7 +158,7 @@ TEST_F(AshPopupAlignmentDelegateTest, LockScreen) {
 
   const gfx::Rect toast_size(0, 0, 10, 10);
 
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   gfx::Point toast_point;
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
   toast_point.set_y(alignment_delegate()->GetBaseLine());
@@ -207,8 +207,8 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
   // Force dock to right-side
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
 
   // Right-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));

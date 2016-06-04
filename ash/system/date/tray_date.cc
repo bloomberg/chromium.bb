@@ -4,7 +4,7 @@
 
 #include "ash/system/date/tray_date.h"
 
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_default_view.h"
@@ -55,7 +55,7 @@ views::View* TrayDate::CreateDefaultViewForTesting(user::LoginStatus status) {
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   CHECK(time_tray_ == NULL);
   ClockLayout clock_layout =
-      system_tray()->shelf_alignment() == wm::SHELF_ALIGNMENT_BOTTOM
+      system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM
           ? HORIZONTAL_CLOCK
           : VERTICAL_CLOCK;
   time_tray_ = new tray::TimeView(clock_layout);
@@ -94,11 +94,10 @@ void TrayDate::DestroyDetailedView() {
 void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayDate::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
+void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (time_tray_) {
-    ClockLayout clock_layout = wm::IsHorizontalAlignment(alignment)
-                                   ? HORIZONTAL_CLOCK
-                                   : VERTICAL_CLOCK;
+    ClockLayout clock_layout =
+        IsHorizontalAlignment(alignment) ? HORIZONTAL_CLOCK : VERTICAL_CLOCK;
     time_tray_->UpdateClockLayout(clock_layout);
   }
 }

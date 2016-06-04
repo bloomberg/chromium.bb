@@ -39,7 +39,7 @@
 #include "extensions/common/constants.h"
 
 #if defined(USE_ASH)
-#include "ash/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_constants.h"
 #endif
 
 #if defined(ENABLE_PRINTING)

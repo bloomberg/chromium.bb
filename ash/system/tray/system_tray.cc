@@ -5,8 +5,8 @@
 #include "ash/system/tray/system_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
@@ -315,14 +315,14 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 
   // Items default to SHELF_ALIGNMENT_BOTTOM. Update them if the initial
   // position of the shelf differs.
-  if (!wm::IsHorizontalAlignment(shelf_alignment()))
+  if (!IsHorizontalAlignment(shelf_alignment()))
     UpdateAfterShelfAlignmentChange(shelf_alignment());
 
   SetVisible(true);
   PreferredSizeChanged();
 }
 
-void SystemTray::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
+void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   for (SystemTrayItem* item : items_)
     item->UpdateAfterShelfAlignmentChange(alignment);
 }
@@ -415,7 +415,7 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
-  if (!wm::IsHorizontalAlignment(shelf_alignment()))
+  if (!IsHorizontalAlignment(shelf_alignment()))
     return TrayBubbleView::InitParams::kArrowDefaultOffset;
 
   std::map<SystemTrayItem*, views::View*>::const_iterator it =
@@ -613,7 +613,7 @@ base::string16 SystemTray::GetAccessibleTimeString(
       now, hour_type, base::kKeepAmPm);
 }
 
-void SystemTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
+void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   TrayBackgroundView::SetShelfAlignment(alignment);
@@ -716,7 +716,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const ui::LocatedEvent& located_event =
           static_cast<const ui::LocatedEvent&>(event);
-      if (wm::IsHorizontalAlignment(shelf_alignment())) {
+      if (IsHorizontalAlignment(shelf_alignment())) {
         gfx::Point point(located_event.x(), 0);
         ConvertPointToWidget(this, &point);
         arrow_offset = point.x();

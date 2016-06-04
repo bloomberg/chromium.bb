@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/tray_utils.h"
 
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
@@ -27,9 +27,8 @@ void SetupLabelForTray(views::Label* label) {
       gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
 }
 
-void SetTrayImageItemBorder(views::View* tray_view,
-                            wm::ShelfAlignment alignment) {
-  if (wm::IsHorizontalAlignment(alignment)) {
+void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment) {
+  if (IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
         0, kTrayImageItemHorizontalPaddingBottomAlignment, 0,
         kTrayImageItemHorizontalPaddingBottomAlignment));
@@ -42,9 +41,8 @@ void SetTrayImageItemBorder(views::View* tray_view,
   }
 }
 
-void SetTrayLabelItemBorder(TrayItemView* tray_view,
-                            wm::ShelfAlignment alignment) {
-  if (wm::IsHorizontalAlignment(alignment)) {
+void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment) {
+  if (IsHorizontalAlignment(alignment)) {
     tray_view->SetBorder(views::Border::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
         kTrayLabelItemHorizontalPaddingBottomAlignment));

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm/shelf/wm_shelf_constants.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 
 namespace ash {
-namespace wm {
 
-const int kShelfBackgroundAlpha = 204;
-const int kTimeToSwitchBackgroundMs = 1000;
+bool IsHorizontalAlignment(ShelfAlignment alignment) {
+  return alignment == SHELF_ALIGNMENT_BOTTOM ||
+         alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED;
+}
 
-}  // namespace wm
 }  // namespace ash

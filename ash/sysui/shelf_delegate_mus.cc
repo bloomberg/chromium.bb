@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_menu_model.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
@@ -284,7 +284,7 @@ void ShelfDelegateMus::AddObserver(
 }
 
 void ShelfDelegateMus::SetAlignment(mash::shelf::mojom::Alignment alignment) {
-  wm::ShelfAlignment value = static_cast<wm::ShelfAlignment>(alignment);
+  ShelfAlignment value = static_cast<ShelfAlignment>(alignment);
   Shelf::ForPrimaryDisplay()->SetAlignment(value);
 }
 

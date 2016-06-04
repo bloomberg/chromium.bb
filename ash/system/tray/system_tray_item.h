@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_ITEM_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_types.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -63,7 +63,7 @@ class ASH_EXPORT SystemTrayItem {
 
   // Updates the tray view (if applicable) when shelf's alignment changes.
   // The default implementation does nothing.
-  virtual void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment);
+  virtual void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
 
   // Shows the detailed view for this item. If the main popup for the tray is
   // currently visible, then making this call would use the existing window to

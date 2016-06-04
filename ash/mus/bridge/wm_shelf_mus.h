@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "ash/common/wm/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -19,24 +19,24 @@ namespace mus {
 class ShelfLayoutManager;
 
 // WmShelf implementation for mus.
-class WmShelfMus : public wm::WmShelf {
+class WmShelfMus : public WmShelf {
  public:
   explicit WmShelfMus(ShelfLayoutManager* shelf_layout_manager);
   ~WmShelfMus() override;
 
-  // wm::WmShelf:
+  // WmShelf:
   WmWindow* GetWindow() override;
-  wm::ShelfAlignment GetAlignment() const override;
-  wm::ShelfBackgroundType GetBackgroundType() const override;
+  ShelfAlignment GetAlignment() const override;
+  ShelfBackgroundType GetBackgroundType() const override;
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;
   void UpdateIconPositionForWindow(WmWindow* window) override;
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
-  void AddObserver(wm::WmShelfObserver* observer) override;
-  void RemoveObserver(wm::WmShelfObserver* observer) override;
+  void AddObserver(WmShelfObserver* observer) override;
+  void RemoveObserver(WmShelfObserver* observer) override;
 
  private:
-  base::ObserverList<wm::WmShelfObserver> observers_;
+  base::ObserverList<WmShelfObserver> observers_;
 
   ShelfLayoutManager* shelf_layout_manager_;
 

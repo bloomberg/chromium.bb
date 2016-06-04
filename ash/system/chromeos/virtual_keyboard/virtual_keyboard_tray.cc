@@ -4,10 +4,10 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -47,7 +47,7 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
     Shell::GetInstance()->keyboard_ui()->RemoveObserver(this);
 }
 
-void VirtualKeyboardTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
+void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
 
@@ -62,7 +62,7 @@ void VirtualKeyboardTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   // Square up the padding if horizontally aligned. Avoid extra padding when
   // vertically aligned as the button would violate the width constraint on the
   // shelf.
-  if (wm::IsHorizontalAlignment(alignment)) {
+  if (IsHorizontalAlignment(alignment)) {
     gfx::Insets insets = button_->GetInsets();
     int additional_padding = std::max(0, top_padding - left_padding);
     left_padding += additional_padding;

@@ -6,13 +6,12 @@
 
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/shelf/wm_shelf_constants.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -183,9 +182,9 @@ void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia shelf_background =
       *rb->GetImageNamed(IDR_ASH_SHELF_DIMMING).ToImageSkia();
 
-  if (!wm::IsHorizontalAlignment(shelf_->GetAlignment())) {
+  if (!IsHorizontalAlignment(shelf_->GetAlignment())) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT
+        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
                               ? SkBitmapOperations::ROTATION_90_CW
                               : SkBitmapOperations::ROTATION_270_CW);
   }
@@ -255,11 +254,10 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
   }
 
  private:
-  gfx::Insets GetInsetsForAlignment(int distance,
-                                    wm::ShelfAlignment alignment) {
-    if (alignment == wm::SHELF_ALIGNMENT_LEFT)
+  gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
+    if (alignment == SHELF_ALIGNMENT_LEFT)
       return gfx::Insets(0, 0, 0, distance);
-    if (alignment == wm::SHELF_ALIGNMENT_RIGHT)
+    if (alignment == SHELF_ALIGNMENT_RIGHT)
       return gfx::Insets(0, distance, 0, 0);
     return gfx::Insets(distance, 0, 0, 0);
   }
@@ -453,10 +451,10 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
       *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
   if (!horizontal) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT
+        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
                               ? SkBitmapOperations::ROTATION_90_CW
                               : SkBitmapOperations::ROTATION_270_CW);
   }
@@ -561,7 +559,7 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
                          WmWindow* wm_status_container,
                          WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
-      background_animator_(delegate_view_, 0, wm::kShelfBackgroundAlpha),
+      background_animator_(delegate_view_, 0, kShelfBackgroundAlpha),
       activating_as_fallback_(false) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -616,17 +614,17 @@ ShelfWidget::~ShelfWidget() {
 }
 
 void ShelfWidget::SetPaintsBackground(
-    wm::ShelfBackgroundType background_type,
+    ShelfBackgroundType background_type,
     BackgroundAnimatorChangeType change_type) {
   ui::Layer* opaque_background = delegate_view_->opaque_background();
   float target_opacity =
-      (background_type == wm::SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
+      (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
   std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
   if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
     opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
         opaque_background->GetAnimator()));
     opaque_background_animation->SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(wm::kTimeToSwitchBackgroundMs));
+        base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
   }
   opaque_background->SetOpacity(target_opacity);
 
@@ -634,16 +632,16 @@ void ShelfWidget::SetPaintsBackground(
   // retire background_animator_ at all. It would be simpler.
   // See also DockedBackgroundWidget::SetPaintsBackground.
   background_animator_.SetPaintsBackground(
-      background_type != wm::SHELF_BACKGROUND_DEFAULT, change_type);
+      background_type != SHELF_BACKGROUND_DEFAULT, change_type);
 }
 
-wm::ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
+ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
   if (delegate_view_->opaque_background()->GetTargetOpacity() == 1.0f)
-    return wm::SHELF_BACKGROUND_MAXIMIZED;
+    return SHELF_BACKGROUND_MAXIMIZED;
   if (background_animator_.paints_background())
-    return wm::SHELF_BACKGROUND_OVERLAP;
+    return SHELF_BACKGROUND_OVERLAP;
 
-  return wm::SHELF_BACKGROUND_DEFAULT;
+  return SHELF_BACKGROUND_DEFAULT;
 }
 
 void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
@@ -694,9 +692,9 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
   return false;
 }
 
-wm::ShelfAlignment ShelfWidget::GetAlignment() const {
+ShelfAlignment ShelfWidget::GetAlignment() const {
   // TODO(msw): This should not be called before |shelf_| is created.
-  return shelf_ ? shelf_->alignment() : wm::SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  return shelf_ ? shelf_->alignment() : SHELF_ALIGNMENT_BOTTOM_LOCKED;
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {

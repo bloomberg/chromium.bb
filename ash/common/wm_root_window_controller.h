@@ -16,13 +16,10 @@ class Point;
 namespace ash {
 
 class AlwaysOnTopController;
+class WmShelf;
 class WmShell;
 class WmRootWindowControllerObserver;
 class WmWindow;
-
-namespace wm {
-class WmShelf;
-}
 
 // Provides state associated with a root of a window hierarchy.
 class ASH_EXPORT WmRootWindowController {
@@ -37,7 +34,7 @@ class ASH_EXPORT WmRootWindowController {
 
   virtual AlwaysOnTopController* GetAlwaysOnTopController() = 0;
 
-  virtual wm::WmShelf* GetShelf() = 0;
+  virtual WmShelf* GetShelf() = 0;
 
   // Returns the window associated with this WmRootWindowController.
   virtual WmWindow* GetWindow() = 0;

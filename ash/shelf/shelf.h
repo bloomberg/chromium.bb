@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/shelf/shelf_locking_manager.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
@@ -40,10 +40,7 @@ class FocusCycler;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
-
-namespace wm {
 class WmShelfAura;
-}
 
 namespace test {
 class ShelfTestAPI;
@@ -72,8 +69,8 @@ class ASH_EXPORT Shelf {
   // does not exist or does not have a shelf.
   static Shelf* ForDisplayId(int64_t display_id);
 
-  void SetAlignment(wm::ShelfAlignment alignment);
-  wm::ShelfAlignment alignment() const { return alignment_; }
+  void SetAlignment(ShelfAlignment alignment);
+  ShelfAlignment alignment() const { return alignment_; }
   bool IsHorizontalAlignment() const;
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
@@ -90,12 +87,12 @@ class ASH_EXPORT Shelf {
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (alignment_) {
-      case wm::SHELF_ALIGNMENT_BOTTOM:
-      case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
-      case wm::SHELF_ALIGNMENT_LEFT:
+      case SHELF_ALIGNMENT_LEFT:
         return left;
-      case wm::SHELF_ALIGNMENT_RIGHT:
+      case SHELF_ALIGNMENT_RIGHT:
         return right;
     }
     NOTREACHED();
@@ -158,18 +155,18 @@ class ASH_EXPORT Shelf {
   // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
-  wm::WmShelfAura* wm_shelf() { return wm_shelf_.get(); }
+  WmShelfAura* wm_shelf() { return wm_shelf_.get(); }
 
  private:
   friend class test::ShelfTestAPI;
 
-  std::unique_ptr<wm::WmShelfAura> wm_shelf_;
+  std::unique_ptr<WmShelfAura> wm_shelf_;
   ShelfDelegate* delegate_;
   ShelfWidget* shelf_widget_;
   ShelfView* shelf_view_;
   ShelfLockingManager shelf_locking_manager_;
 
-  wm::ShelfAlignment alignment_ = wm::SHELF_ALIGNMENT_BOTTOM;
+  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM;
   ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);

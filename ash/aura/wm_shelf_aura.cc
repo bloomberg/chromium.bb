@@ -5,14 +5,13 @@
 #include "ash/aura/wm_shelf_aura.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/wm/shelf/wm_shelf_observer.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace wm {
 
 WmShelfAura::WmShelfAura(Shelf* shelf)
     : shelf_(shelf), shelf_layout_manager_(shelf->shelf_layout_manager()) {
@@ -75,7 +74,7 @@ void WmShelfAura::WillDeleteShelfLayoutManager() {
 }
 
 void WmShelfAura::OnBackgroundUpdated(
-    wm::ShelfBackgroundType background_type,
+    ShelfBackgroundType background_type,
     BackgroundAnimatorChangeType change_type) {
   FOR_EACH_OBSERVER(WmShelfObserver, observers_,
                     OnBackgroundUpdated(background_type, change_type));
@@ -90,5 +89,4 @@ void WmShelfAura::OnShelfIconPositionsChanged() {
   FOR_EACH_OBSERVER(WmShelfObserver, observers_, OnShelfIconPositionsChanged());
 }
 
-}  // namespace wm
 }  // namespace ash

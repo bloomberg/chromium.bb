@@ -5,8 +5,8 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
@@ -249,7 +249,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
           true);
 
   int max_height;
-  if (wm::IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())) {
+  if (IsHorizontalAlignment(GetShelfLayoutManager()->GetAlignment())) {
     max_height = GetShelfLayoutManager()->GetIdealBounds().y();
   } else {
     // Assume the status area and bubble bottoms are aligned when vertical.
@@ -341,7 +341,7 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
   OnMessageCenterTrayChanged();
 }
 
-void WebNotificationTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
+void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   TrayBackgroundView::SetShelfAlignment(alignment);

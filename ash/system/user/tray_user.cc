@@ -5,7 +5,7 @@
 #include "ash/system/user/tray_user.h"
 
 #include "ash/ash_switches.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
@@ -187,11 +187,11 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   UpdateLayoutOfItem();
 }
 
-void TrayUser::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
+void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
-  if (wm::IsHorizontalAlignment(alignment)) {
+  if (IsHorizontalAlignment(alignment)) {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
       avatar_->SetCornerRadii(

@@ -4,10 +4,10 @@
 
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
+#include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/shelf/wm_shelf.h"
-#include "ash/common/wm/shelf/wm_shelf_constants.h"
-#include "ash/common/wm/shelf/wm_shelf_observer.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_resizer.h"
@@ -47,12 +47,12 @@ const int kMinimizeDurationMs = 720;
 
 class DockedBackgroundWidget : public views::Widget,
                                public BackgroundAnimatorDelegate,
-                               public wm::WmShelfObserver {
+                               public WmShelfObserver {
  public:
   explicit DockedBackgroundWidget(DockedWindowLayoutManager* manager)
       : manager_(manager),
         alignment_(DOCKED_ALIGNMENT_NONE),
-        background_animator_(this, 0, wm::kShelfBackgroundAlpha),
+        background_animator_(this, 0, kShelfBackgroundAlpha),
         alpha_(0),
         opaque_background_(ui::LAYER_SOLID_COLOR),
         visible_background_type_(manager_->shelf()->GetBackgroundType()),
@@ -111,7 +111,7 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   // ShelfLayoutManagerObserver:
-  void OnBackgroundUpdated(wm::ShelfBackgroundType background_type,
+  void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type) override {
     // Sets the background type. Starts an animation to transition to
     // |background_type| if the widget is visible. If the widget is not visible,
@@ -159,21 +159,21 @@ class DockedBackgroundWidget : public views::Widget,
   // Transitions to |visible_background_type_| if the widget is visible and to
   // SHELF_BACKGROUND_DEFAULT if it is not.
   void UpdateBackground() {
-    wm::ShelfBackgroundType background_type =
-        IsVisible() ? visible_background_type_ : wm::SHELF_BACKGROUND_DEFAULT;
+    ShelfBackgroundType background_type =
+        IsVisible() ? visible_background_type_ : SHELF_BACKGROUND_DEFAULT;
     BackgroundAnimatorChangeType change_type =
         IsVisible() ? visible_background_change_type_
                     : BACKGROUND_CHANGE_IMMEDIATE;
 
     float target_opacity =
-        (background_type == wm::SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
+        (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
     std::unique_ptr<ui::ScopedLayerAnimationSettings>
         opaque_background_animation;
     if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
       opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
           opaque_background_.GetAnimator()));
       opaque_background_animation->SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(wm::kTimeToSwitchBackgroundMs));
+          base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
     }
     opaque_background_.SetOpacity(target_opacity);
 
@@ -181,7 +181,7 @@ class DockedBackgroundWidget : public views::Widget,
     // background retire background_animator_ at all. It would be simpler.
     // See also ShelfWidget::SetPaintsBackground.
     background_animator_.SetPaintsBackground(
-        background_type != wm::SHELF_BACKGROUND_DEFAULT, change_type);
+        background_type != SHELF_BACKGROUND_DEFAULT, change_type);
     SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
   }
 
@@ -204,7 +204,7 @@ class DockedBackgroundWidget : public views::Widget,
 
   // The background type to use when the widget is visible. When not visible,
   // the widget uses SHELF_BACKGROUND_DEFAULT.
-  wm::ShelfBackgroundType visible_background_type_;
+  ShelfBackgroundType visible_background_type_;
 
   // Whether the widget should animate to |visible_background_type_|.
   BackgroundAnimatorChangeType visible_background_change_type_;
@@ -537,7 +537,7 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
   RecordUmaAction(action, source);
 }
 
-void DockedWindowLayoutManager::SetShelf(wm::WmShelf* shelf) {
+void DockedWindowLayoutManager::SetShelf(WmShelf* shelf) {
   DCHECK(!shelf_);
   shelf_ = shelf;
   shelf_observer_.reset(new ShelfWindowObserver(this));
@@ -625,12 +625,12 @@ bool DockedWindowLayoutManager::CanDockWindow(
 
 bool DockedWindowLayoutManager::IsDockedAlignmentValid(
     DockedAlignment alignment) const {
-  wm::ShelfAlignment shelf_alignment =
-      shelf_ ? shelf_->GetAlignment() : wm::SHELF_ALIGNMENT_BOTTOM;
+  ShelfAlignment shelf_alignment =
+      shelf_ ? shelf_->GetAlignment() : SHELF_ALIGNMENT_BOTTOM;
   if ((alignment == DOCKED_ALIGNMENT_LEFT &&
-       shelf_alignment == wm::SHELF_ALIGNMENT_LEFT) ||
+       shelf_alignment == SHELF_ALIGNMENT_LEFT) ||
       (alignment == DOCKED_ALIGNMENT_RIGHT &&
-       shelf_alignment == wm::SHELF_ALIGNMENT_RIGHT)) {
+       shelf_alignment == SHELF_ALIGNMENT_RIGHT)) {
     return false;
   }
   return true;
@@ -792,12 +792,12 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged() {
 
   // Do not allow shelf and dock on the same side. Switch side that
   // the dock is attached to and move all dock windows to that new side.
-  wm::ShelfAlignment shelf_alignment = shelf_->GetAlignment();
+  ShelfAlignment shelf_alignment = shelf_->GetAlignment();
   if (alignment_ == DOCKED_ALIGNMENT_LEFT &&
-      shelf_alignment == wm::SHELF_ALIGNMENT_LEFT) {
+      shelf_alignment == SHELF_ALIGNMENT_LEFT) {
     alignment_ = DOCKED_ALIGNMENT_RIGHT;
   } else if (alignment_ == DOCKED_ALIGNMENT_RIGHT &&
-             shelf_alignment == wm::SHELF_ALIGNMENT_RIGHT) {
+             shelf_alignment == SHELF_ALIGNMENT_RIGHT) {
     alignment_ = DOCKED_ALIGNMENT_LEFT;
   }
   Relayout();

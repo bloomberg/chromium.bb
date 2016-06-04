@@ -120,24 +120,24 @@ void SetPerDisplayPref(PrefService* prefs,
   pref_dictionary->SetStringWithoutPathExpansion(pref_key, value);
 }
 
-wm::ShelfAlignment AlignmentFromPref(const std::string& value) {
+ShelfAlignment AlignmentFromPref(const std::string& value) {
   if (value == kShelfAlignmentLeft)
-    return wm::SHELF_ALIGNMENT_LEFT;
+    return SHELF_ALIGNMENT_LEFT;
   else if (value == kShelfAlignmentRight)
-    return wm::SHELF_ALIGNMENT_RIGHT;
+    return SHELF_ALIGNMENT_RIGHT;
   // Default to bottom.
-  return wm::SHELF_ALIGNMENT_BOTTOM;
+  return SHELF_ALIGNMENT_BOTTOM;
 }
 
-const char* AlignmentToPref(wm::ShelfAlignment alignment) {
+const char* AlignmentToPref(ShelfAlignment alignment) {
   switch (alignment) {
-    case wm::SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM:
       return kShelfAlignmentBottom;
-    case wm::SHELF_ALIGNMENT_LEFT:
+    case SHELF_ALIGNMENT_LEFT:
       return kShelfAlignmentLeft;
-    case wm::SHELF_ALIGNMENT_RIGHT:
+    case SHELF_ALIGNMENT_RIGHT:
       return kShelfAlignmentRight;
-    case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       // This should not be a valid preference option for now. We only want to
       // lock the shelf during login or when adding a user.
       return nullptr;
@@ -267,8 +267,7 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
   }
 }
 
-wm::ShelfAlignment GetShelfAlignmentPref(PrefService* prefs,
-                                         int64_t display_id) {
+ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
   DCHECK_GE(display_id, 0);
 
   // See comment in |kShelfAlignment| as to why we consider two prefs.
@@ -278,7 +277,7 @@ wm::ShelfAlignment GetShelfAlignmentPref(PrefService* prefs,
 
 void SetShelfAlignmentPref(PrefService* prefs,
                            int64_t display_id,
-                           wm::ShelfAlignment alignment) {
+                           ShelfAlignment alignment) {
   DCHECK_GE(display_id, 0);
 
   const char* value = AlignmentToPref(alignment);

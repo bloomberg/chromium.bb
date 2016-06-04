@@ -7,10 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"

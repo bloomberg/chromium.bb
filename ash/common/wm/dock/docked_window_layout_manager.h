@@ -28,10 +28,7 @@ class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
 class Shelf;
 class WmRootWindowController;
-
-namespace wm {
 class WmShelf;
-}
 
 // DockedWindowLayoutManager is responsible for organizing windows when they are
 // docked to the side of a screen. It is associated with a specific container
@@ -93,8 +90,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   // the current shelf alignment conflicts. Never clears the |alignment_|.
   void MaybeSetDesiredDockedAlignment(DockedAlignment alignment);
 
-  wm::WmShelf* shelf() { return shelf_; }
-  void SetShelf(wm::WmShelf* shelf);
+  WmShelf* shelf() { return shelf_; }
+  void SetShelf(WmShelf* shelf);
 
   // Calculates if a window is touching the screen edges and returns edge.
   DockedAlignment GetAlignmentOfWindow(const WmWindow* window) const;
@@ -267,7 +264,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   bool is_dragged_from_dock_;
 
   // The shelf to respond to alignment changes.
-  wm::WmShelf* shelf_;
+  WmShelf* shelf_;
 
   // Tracks if any window in the same root window is in fullscreen mode.
   bool in_fullscreen_;

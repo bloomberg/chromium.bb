@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm/background_animator.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -36,10 +36,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // auto-resizes the widget when necessary.
   class TrayContainer : public views::View {
    public:
-    explicit TrayContainer(wm::ShelfAlignment alignment);
+    explicit TrayContainer(ShelfAlignment alignment);
     ~TrayContainer() override {}
 
-    void SetAlignment(wm::ShelfAlignment alignment);
+    void SetAlignment(ShelfAlignment alignment);
 
     void set_size(const gfx::Size& size) { size_ = size; }
 
@@ -56,7 +56,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
    private:
     void UpdateLayout();
 
-    wm::ShelfAlignment alignment_;
+    ShelfAlignment alignment_;
     gfx::Size size_;
 
     DISALLOW_COPY_AND_ASSIGN(TrayContainer);
@@ -89,7 +89,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void UpdateBackground(int alpha) override;
 
   // Called whenever the shelf alignment changes.
-  virtual void SetShelfAlignment(wm::ShelfAlignment alignment);
+  virtual void SetShelfAlignment(ShelfAlignment alignment);
 
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
@@ -144,7 +144,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     return status_area_widget_;
   }
   TrayContainer* tray_container() const { return tray_container_; }
-  wm::ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
   TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
 
   ShelfLayoutManager* GetShelfLayoutManager();
@@ -174,7 +174,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   TrayContainer* tray_container_;
 
   // Shelf alignment.
-  wm::ShelfAlignment shelf_alignment_;
+  ShelfAlignment shelf_alignment_;
 
   // Owned by the view passed to SetContents().
   TrayBackground* background_;

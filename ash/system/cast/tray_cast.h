@@ -43,7 +43,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
-  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from ShellObserver.
   void OnCastingSessionStartedOrStopped(bool started) override;

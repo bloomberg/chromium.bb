@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model_observer.h"
-#include "ash/shelf/shelf_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"

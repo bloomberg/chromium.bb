@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/shelf/wm_shelf_observer.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
@@ -40,10 +40,10 @@ namespace ash {
 class PanelCalloutWidget;
 class Shelf;
 class ShelfLayoutManager;
+class WmShelf;
 
 namespace wm {
 class WmRootWindowController;
-class WmShelf;
 }
 
 // PanelLayoutManager is responsible for organizing panels within the
@@ -64,7 +64,7 @@ class ASH_EXPORT PanelLayoutManager
       public WmRootWindowControllerObserver,
       public WmWindowObserver,
       public keyboard::KeyboardControllerObserver,
-      public wm::WmShelfObserver {
+      public WmShelfObserver {
  public:
   explicit PanelLayoutManager(WmWindow* panel_container);
   ~PanelLayoutManager() override;
@@ -87,8 +87,8 @@ class ASH_EXPORT PanelLayoutManager
   // Returns the callout widget (arrow) for |panel|.
   views::Widget* GetCalloutWidgetForPanel(WmWindow* panel);
 
-  wm::WmShelf* shelf() { return shelf_; }
-  void SetShelf(wm::WmShelf* shelf);
+  WmShelf* shelf() { return shelf_; }
+  void SetShelf(WmShelf* shelf);
 
   // Overridden from WmLayoutManager
   void OnWindowResized() override;
@@ -120,7 +120,7 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
 
-  // Overridden from wm::WmShelfObserver
+  // Overridden from WmShelfObserver
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnShelfIconPositionsChanged() override;
 
@@ -192,7 +192,7 @@ class ASH_EXPORT PanelLayoutManager
   // The panel being dragged.
   WmWindow* dragged_panel_;
   // The shelf we are observing for shelf icon changes.
-  wm::WmShelf* shelf_;
+  WmShelf* shelf_;
 
   // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
   // set of panel windows which have been temporarily hidden and need to be

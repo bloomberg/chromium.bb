@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/session/session_state_observer.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/system/status_area_widget.h"
@@ -183,21 +183,19 @@ class ASH_EXPORT ShelfLayoutManager
   void SessionStateChanged(SessionStateDelegate::SessionState state) override;
 
   // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
-  wm::ShelfAlignment GetAlignment() const {
-    return shelf_widget_->GetAlignment();
-  }
+  ShelfAlignment GetAlignment() const { return shelf_widget_->GetAlignment(); }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (GetAlignment()) {
-      case wm::SHELF_ALIGNMENT_BOTTOM:
-      case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
-      case wm::SHELF_ALIGNMENT_LEFT:
+      case SHELF_ALIGNMENT_LEFT:
         return left;
-      case wm::SHELF_ALIGNMENT_RIGHT:
+      case SHELF_ALIGNMENT_RIGHT:
         return right;
     }
     NOTREACHED();
@@ -292,7 +290,7 @@ class ASH_EXPORT ShelfLayoutManager
   void UpdateShelfBackground(BackgroundAnimatorChangeType type);
 
   // Returns how the shelf background is painted.
-  wm::ShelfBackgroundType GetShelfBackgroundType() const;
+  ShelfBackgroundType GetShelfBackgroundType() const;
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

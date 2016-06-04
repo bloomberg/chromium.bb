@@ -12,9 +12,9 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
-#include "ash/common/wm/shelf/wm_shelf.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_user_metrics_action.h"

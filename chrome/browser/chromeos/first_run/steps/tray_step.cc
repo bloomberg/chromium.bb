@@ -27,10 +27,9 @@ void TrayStep::DoShow() {
       bounds.height());
   FirstRunActor::StepPosition position;
   position.SetTop(bounds.y());
-  ash::wm::ShelfAlignment alignment =
-      ash::Shelf::ForPrimaryDisplay()->alignment();
-  if ((!base::i18n::IsRTL() && alignment != ash::wm::SHELF_ALIGNMENT_LEFT) ||
-      alignment == ash::wm::SHELF_ALIGNMENT_RIGHT)
+  ash::ShelfAlignment alignment = ash::Shelf::ForPrimaryDisplay()->alignment();
+  if ((!base::i18n::IsRTL() && alignment != ash::SHELF_ALIGNMENT_LEFT) ||
+      alignment == ash::SHELF_ALIGNMENT_RIGHT)
     position.SetRight(GetOverlaySize().width() - bounds.x());
   else
     position.SetLeft(bounds.right());

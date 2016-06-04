@@ -4,9 +4,9 @@
 
 #include "ash/system/cast/tray_cast.h"
 
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
@@ -339,7 +339,7 @@ class CastTrayView : public TrayItemView {
 
   // Called when the tray alignment changes so that the icon can recenter
   // itself.
-  void UpdateAlignment(wm::ShelfAlignment alignment);
+  void UpdateAlignment(ShelfAlignment alignment);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastTrayView);
@@ -357,9 +357,9 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
 CastTrayView::~CastTrayView() {
 }
 
-void CastTrayView::UpdateAlignment(wm::ShelfAlignment alignment) {
+void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = wm::IsHorizontalAlignment(alignment)
+  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
                                              ? views::BoxLayout::kVertical
                                              : views::BoxLayout::kHorizontal;
   SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
@@ -674,7 +674,7 @@ void TrayCast::OnCastingSessionStartedOrStopped(bool started) {
   UpdatePrimaryView();
 }
 
-void TrayCast::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
+void TrayCast::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (tray_)
     tray_->UpdateAlignment(alignment);
 }

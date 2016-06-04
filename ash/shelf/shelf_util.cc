@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_util.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfItemDetails*);

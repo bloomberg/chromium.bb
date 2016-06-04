@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/shelf/shelf_types.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -109,7 +109,7 @@ LogoutButtonTray::~LogoutButtonTray() {
       RemoveLogoutButtonObserver(this);
 }
 
-void LogoutButtonTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
+void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
 }

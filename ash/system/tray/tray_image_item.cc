@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/tray_image_item.h"
 
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_item_view.h"
@@ -58,8 +58,7 @@ views::View* TrayImageItem::CreateDetailedView(user::LoginStatus status) {
 void TrayImageItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayImageItem::UpdateAfterShelfAlignmentChange(
-    wm::ShelfAlignment alignment) {
+void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayImageItemBorder(tray_view_, alignment);
   SetItemAlignment(alignment);
 }
@@ -74,9 +73,9 @@ void TrayImageItem::DestroyDefaultView() {
 void TrayImageItem::DestroyDetailedView() {
 }
 
-void TrayImageItem::SetItemAlignment(wm::ShelfAlignment alignment) {
+void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
-  views::BoxLayout::Orientation layout = wm::IsHorizontalAlignment(alignment)
+  views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
                                              ? views::BoxLayout::kHorizontal
                                              : views::BoxLayout::kVertical;
   tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));

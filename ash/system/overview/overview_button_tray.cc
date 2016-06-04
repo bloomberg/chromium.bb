@@ -4,9 +4,9 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/common/wm/shelf/wm_shelf_util.h"
+#include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -96,7 +96,7 @@ void OverviewButtonTray::HideBubbleWithView(
   // This class has no bubbles to hide.
 }
 
-void OverviewButtonTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
+void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
 
@@ -105,7 +105,7 @@ void OverviewButtonTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  if (wm::IsHorizontalAlignment(shelf_alignment())) {
+  if (IsHorizontalAlignment(shelf_alignment())) {
     icon_->SetBorder(views::Border::CreateEmptyBorder(
         kHorizontalShelfVerticalPadding,
         kHorizontalShelfHorizontalPadding,

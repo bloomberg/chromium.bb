@@ -5,10 +5,10 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"

@@ -5,6 +5,7 @@
 #include "ash/common/wm/panels/panel_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -12,7 +13,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -239,7 +239,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
  if (!SupportsHostWindowResize())
     return;
 
- Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+ Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
  DetachReattachTest(window.get(), 1, 0);
 }
@@ -248,7 +248,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
   if (!SupportsHostWindowResize())
     return;
 
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_RIGHT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), -1, 0);
 }
@@ -488,7 +488,7 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
   if (!SupportsHostWindowResize())
     return;
 
-  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   DragAlongShelfReorder(0, -1);
 }
 

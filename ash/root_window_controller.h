@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_types.h"
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"

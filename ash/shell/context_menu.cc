@@ -4,8 +4,8 @@
 
 #include "ash/shell/context_menu.h"
 
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_types.h"
 #include "grit/ash_strings.h"
 
 namespace ash {

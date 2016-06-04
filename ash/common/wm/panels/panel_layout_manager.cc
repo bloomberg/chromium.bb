@@ -8,9 +8,9 @@
 #include <map>
 #include <utility>
 
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/shelf/wm_shelf.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -52,24 +52,24 @@ const int kArrowHeight = 9;
 
 class CalloutWidgetBackground : public views::Background {
  public:
-  CalloutWidgetBackground() : alignment_(wm::SHELF_ALIGNMENT_BOTTOM) {}
+  CalloutWidgetBackground() : alignment_(SHELF_ALIGNMENT_BOTTOM) {}
 
   void Paint(gfx::Canvas* canvas, views::View* view) const override {
     SkPath path;
     switch (alignment_) {
-      case wm::SHELF_ALIGNMENT_BOTTOM:
-      case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
         path.moveTo(SkIntToScalar(0), SkIntToScalar(0));
         path.lineTo(SkIntToScalar(kArrowWidth / 2),
                     SkIntToScalar(kArrowHeight));
         path.lineTo(SkIntToScalar(kArrowWidth), SkIntToScalar(0));
         break;
-      case wm::SHELF_ALIGNMENT_LEFT:
+      case SHELF_ALIGNMENT_LEFT:
         path.moveTo(SkIntToScalar(kArrowHeight), SkIntToScalar(kArrowWidth));
         path.lineTo(SkIntToScalar(0), SkIntToScalar(kArrowWidth / 2));
         path.lineTo(SkIntToScalar(kArrowHeight), SkIntToScalar(0));
         break;
-      case wm::SHELF_ALIGNMENT_RIGHT:
+      case SHELF_ALIGNMENT_RIGHT:
         path.moveTo(SkIntToScalar(0), SkIntToScalar(0));
         path.lineTo(SkIntToScalar(kArrowHeight),
                     SkIntToScalar(kArrowWidth / 2));
@@ -83,12 +83,12 @@ class CalloutWidgetBackground : public views::Background {
     canvas->DrawPath(path, paint);
   }
 
-  wm::ShelfAlignment alignment() { return alignment_; }
+  ShelfAlignment alignment() { return alignment_; }
 
-  void set_alignment(wm::ShelfAlignment alignment) { alignment_ = alignment; }
+  void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
  private:
-  wm::ShelfAlignment alignment_;
+  ShelfAlignment alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(CalloutWidgetBackground);
 };
@@ -160,11 +160,11 @@ bool BoundsAdjacent(const gfx::Rect& bounds1, const gfx::Rect& bounds2) {
          bounds1.right() == bounds2.x() || bounds1.bottom() == bounds2.y();
 }
 
-gfx::Vector2d GetSlideInAnimationOffset(wm::ShelfAlignment alignment) {
+gfx::Vector2d GetSlideInAnimationOffset(ShelfAlignment alignment) {
   gfx::Vector2d offset;
-  if (alignment == wm::SHELF_ALIGNMENT_LEFT)
+  if (alignment == SHELF_ALIGNMENT_LEFT)
     offset.set_x(-kPanelSlideInOffset);
-  else if (alignment == wm::SHELF_ALIGNMENT_RIGHT)
+  else if (alignment == SHELF_ALIGNMENT_RIGHT)
     offset.set_x(kPanelSlideInOffset);
   else
     offset.set_y(kPanelSlideInOffset);
@@ -179,9 +179,9 @@ class PanelCalloutWidget : public views::Widget {
     InitWidget(container);
   }
 
-  void SetAlignment(wm::ShelfAlignment alignment) {
+  void SetAlignment(ShelfAlignment alignment) {
     gfx::Rect callout_bounds = GetWindowBoundsInScreen();
-    if (wm::IsHorizontalAlignment(alignment)) {
+    if (IsHorizontalAlignment(alignment)) {
       callout_bounds.set_width(kArrowWidth);
       callout_bounds.set_height(kArrowHeight);
     } else {
@@ -292,7 +292,7 @@ void PanelLayoutManager::FinishDragging() {
   Relayout();
 }
 
-void PanelLayoutManager::SetShelf(wm::WmShelf* shelf) {
+void PanelLayoutManager::SetShelf(WmShelf* shelf) {
   DCHECK(!shelf_);
   shelf_ = shelf;
   shelf_->AddObserver(this);
@@ -587,8 +587,8 @@ void PanelLayoutManager::Relayout() {
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  const wm::ShelfAlignment alignment = shelf_->GetAlignment();
-  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
+  const ShelfAlignment alignment = shelf_->GetAlignment();
+  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
   gfx::Rect shelf_bounds = panel_container_->ConvertRectFromScreen(
       shelf_->GetWindow()->GetBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
@@ -679,9 +679,9 @@ void PanelLayoutManager::Relayout() {
       continue;
     bool slide_in = visible_panels[i].slide_in;
     gfx::Rect bounds = visible_panels[i].window->GetTargetBounds();
-    if (alignment == wm::SHELF_ALIGNMENT_LEFT)
+    if (alignment == SHELF_ALIGNMENT_LEFT)
       bounds.set_x(shelf_bounds.right());
-    else if (alignment == wm::SHELF_ALIGNMENT_RIGHT)
+    else if (alignment == SHELF_ALIGNMENT_RIGHT)
       bounds.set_x(shelf_bounds.x() - bounds.width());
     else
       bounds.set_y(shelf_bounds.y() - bounds.height());
@@ -746,7 +746,7 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
   // the titlebar--even though it doesn't update the shelf icon positions, we
   // still want the visual effect.
   std::map<int, WmWindow*> window_ordering;
-  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
     gfx::Rect bounds = it->window->GetBounds();
@@ -780,7 +780,7 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
 }
 
 void PanelLayoutManager::UpdateCallouts() {
-  const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
+  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     WmWindow* panel = iter->window;
@@ -817,9 +817,9 @@ void PanelLayoutManager::UpdateCallouts() {
           std::max(current_bounds.y() - callout_bounds.y(),
                    callout_bounds.bottom() - current_bounds.bottom());
     }
-    if (shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_LEFT)
+    if (shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT)
       callout_bounds.set_x(bounds.x() - callout_bounds.width());
-    else if (shelf_->GetAlignment() == wm::SHELF_ALIGNMENT_RIGHT)
+    else if (shelf_->GetAlignment() == SHELF_ALIGNMENT_RIGHT)
       callout_bounds.set_x(bounds.right());
     else
       callout_bounds.set_y(bounds.bottom());

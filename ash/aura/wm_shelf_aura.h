@@ -6,7 +6,7 @@
 #define ASH_AURA_WM_SHELF_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/macros.h"
@@ -16,8 +16,6 @@ namespace ash {
 
 class Shelf;
 class ShelfLayoutManager;
-
-namespace wm {
 
 // Aura implementation of WmShelf.
 class ASH_EXPORT WmShelfAura : public WmShelf,
@@ -43,7 +41,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
-  void OnBackgroundUpdated(wm::ShelfBackgroundType background_type,
+  void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type) override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
 
@@ -59,7 +57,6 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   DISALLOW_COPY_AND_ASSIGN(WmShelfAura);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_AURA_WM_SHELF_AURA_H_

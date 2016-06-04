@@ -8,9 +8,9 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/material_design/material_design_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
@@ -395,7 +395,7 @@ void ShelfButton::Layout() {
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
-  if (wm::SHELF_ALIGNMENT_LEFT == shelf->alignment())
+  if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
     x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
   // Center icon with respect to the secondary axis, and ensure
@@ -519,7 +519,7 @@ void ShelfButton::UpdateBar() {
     }
     if (!shelf->IsHorizontalAlignment()) {
       image = gfx::ImageSkiaOperations::CreateRotatedImage(
-          image, shelf->alignment() == wm::SHELF_ALIGNMENT_LEFT
+          image, shelf->alignment() == SHELF_ALIGNMENT_LEFT
                      ? SkBitmapOperations::ROTATION_90_CW
                      : SkBitmapOperations::ROTATION_270_CW);
     }

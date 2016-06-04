@@ -96,7 +96,7 @@ AlwaysOnTopController* WmRootWindowControllerMus::GetAlwaysOnTopController() {
   return root_window_controller_->always_on_top_controller();
 }
 
-wm::WmShelf* WmRootWindowControllerMus::GetShelf() {
+WmShelf* WmRootWindowControllerMus::GetShelf() {
   return root_window_controller_->wm_shelf();
 }
 

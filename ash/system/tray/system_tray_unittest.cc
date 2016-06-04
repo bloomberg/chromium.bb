@@ -184,7 +184,7 @@ TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
   Shelf* shelf = Shelf::ForPrimaryDisplay();
-  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   // At the beginning the tray coloring is not active.
   ASSERT_FALSE(tray->draw_background_as_active());
 
@@ -194,7 +194,7 @@ TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
 
   // Changing the alignment should close the system bubble and change the
   // background color.
-  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_FALSE(tray->draw_background_as_active());
   RunAllPendingInMessageLoop();
   // The bubble should already be closed by now.
@@ -359,7 +359,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   SystemTray* tray = widget->system_tray();
 
   // Test in bottom alignment.
-  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect window_bounds = widget->GetWindowBoundsInScreen();
   gfx::Rect tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
@@ -368,7 +368,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
   // Test in locked alignment.
-  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM_LOCKED);
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM_LOCKED);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
@@ -377,7 +377,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
   // Test in the left alignment.
-  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
@@ -386,7 +386,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
   // Test in the right alignment.
-  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());

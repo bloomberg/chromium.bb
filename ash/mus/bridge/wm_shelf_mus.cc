@@ -24,22 +24,22 @@ WmWindow* WmShelfMus::GetWindow() {
   return WmWindowMus::Get(shelf_layout_manager_->GetShelfWindow());
 }
 
-wm::ShelfAlignment WmShelfMus::GetAlignment() const {
+ShelfAlignment WmShelfMus::GetAlignment() const {
   switch (shelf_layout_manager_->alignment()) {
     case mash::shelf::mojom::Alignment::BOTTOM:
-      return wm::SHELF_ALIGNMENT_BOTTOM;
+      return SHELF_ALIGNMENT_BOTTOM;
     case mash::shelf::mojom::Alignment::LEFT:
-      return wm::SHELF_ALIGNMENT_LEFT;
+      return SHELF_ALIGNMENT_LEFT;
     case mash::shelf::mojom::Alignment::RIGHT:
-      return wm::SHELF_ALIGNMENT_RIGHT;
+      return SHELF_ALIGNMENT_RIGHT;
   }
   NOTREACHED();
-  return wm::SHELF_ALIGNMENT_BOTTOM;
+  return SHELF_ALIGNMENT_BOTTOM;
 }
 
-wm::ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
+ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
   NOTIMPLEMENTED();
-  return wm::SHELF_BACKGROUND_DEFAULT;
+  return SHELF_BACKGROUND_DEFAULT;
 }
 
 void WmShelfMus::UpdateVisibilityState() {
@@ -60,11 +60,11 @@ gfx::Rect WmShelfMus::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
   return gfx::Rect();
 }
 
-void WmShelfMus::AddObserver(wm::WmShelfObserver* observer) {
+void WmShelfMus::AddObserver(WmShelfObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void WmShelfMus::RemoveObserver(wm::WmShelfObserver* observer) {
+void WmShelfMus::RemoveObserver(WmShelfObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

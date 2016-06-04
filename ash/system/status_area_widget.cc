@@ -174,7 +174,7 @@ void StatusAreaWidget::AddOverviewButtonTray() {
   status_area_widget_delegate_->AddTray(overview_button_tray_);
 }
 
-void StatusAreaWidget::SetShelfAlignment(wm::ShelfAlignment alignment) {
+void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   status_area_widget_delegate_->set_alignment(alignment);
   if (system_tray_)
     system_tray_->SetShelfAlignment(alignment);

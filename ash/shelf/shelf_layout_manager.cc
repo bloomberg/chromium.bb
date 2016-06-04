@@ -13,8 +13,9 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_root_window_controller_observer.h"
@@ -23,7 +24,6 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_util.h"
@@ -461,12 +461,12 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     } else {
       bool correct_direction = false;
       switch (GetAlignment()) {
-        case wm::SHELF_ALIGNMENT_BOTTOM:
-        case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        case wm::SHELF_ALIGNMENT_RIGHT:
+        case SHELF_ALIGNMENT_BOTTOM:
+        case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        case SHELF_ALIGNMENT_RIGHT:
           correct_direction = gesture_drag_amount_ < 0;
           break;
-        case wm::SHELF_ALIGNMENT_LEFT:
+        case SHELF_ALIGNMENT_LEFT:
           correct_direction = gesture_drag_amount_ > 0;
           break;
       }
@@ -569,7 +569,7 @@ void ShelfLayoutManager::OnWindowActivated(
 }
 
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
-  return wm::IsHorizontalAlignment(GetAlignment());
+  return ::ash::IsHorizontalAlignment(GetAlignment());
 }
 
 void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
@@ -932,7 +932,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   } else {
     // Move and size the shelf with the gesture.
     int shelf_width = target_bounds->shelf_bounds_in_root.width();
-    bool right_aligned = GetAlignment() == wm::SHELF_ALIGNMENT_RIGHT;
+    bool right_aligned = GetAlignment() == SHELF_ALIGNMENT_RIGHT;
     if (right_aligned)
       shelf_width -= translate;
     else
@@ -955,26 +955,26 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
 void ShelfLayoutManager::UpdateShelfBackground(
     BackgroundAnimatorChangeType type) {
-  const wm::ShelfBackgroundType background_type(GetShelfBackgroundType());
+  const ShelfBackgroundType background_type(GetShelfBackgroundType());
   shelf_widget_->SetPaintsBackground(background_type, type);
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnBackgroundUpdated(background_type, type));
 }
 
-wm::ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
+ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
-    return wm::SHELF_BACKGROUND_MAXIMIZED;
+    return SHELF_BACKGROUND_MAXIMIZED;
   }
 
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       (!state_.is_screen_locked && !state_.is_adding_user_screen &&
        window_overlaps_shelf_) ||
       (state_.visibility_state == SHELF_AUTO_HIDE)) {
-    return wm::SHELF_BACKGROUND_OVERLAP;
+    return SHELF_BACKGROUND_OVERLAP;
   }
 
-  return wm::SHELF_BACKGROUND_DEFAULT;
+  return SHELF_BACKGROUND_DEFAULT;
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
@@ -1081,13 +1081,11 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       IsVisible()) {
     // Increase the the hit test area to prevent the shelf from disappearing
     // when the mouse is over the bubble gap.
-    wm::ShelfAlignment alignment = GetAlignment();
+    ShelfAlignment alignment = GetAlignment();
     shelf_region.Inset(
-        alignment == wm::SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight
-                                               : 0,
+        alignment == SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight : 0,
         IsHorizontalAlignment() ? -kNotificationBubbleGapHeight : 0,
-        alignment == wm::SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight
-                                              : 0,
+        alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
         0);
   }
 

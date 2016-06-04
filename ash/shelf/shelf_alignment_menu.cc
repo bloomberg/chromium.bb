@@ -4,9 +4,9 @@
 
 #include "ash/shelf/shelf_alignment_menu.h"
 
+#include "ash/common/shelf/shelf_types.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
@@ -52,15 +52,15 @@ void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
       shell->metrics()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_LEFT);
-      shelf_->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+      shelf_->SetAlignment(SHELF_ALIGNMENT_LEFT);
       break;
     case MENU_ALIGN_BOTTOM:
       shell->metrics()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_BOTTOM);
-      shelf_->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+      shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
       break;
     case MENU_ALIGN_RIGHT:
       shell->metrics()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_RIGHT);
-      shelf_->SetAlignment(wm::SHELF_ALIGNMENT_RIGHT);
+      shelf_->SetAlignment(SHELF_ALIGNMENT_RIGHT);
       break;
   }
 }
