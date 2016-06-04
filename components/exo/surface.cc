@@ -194,7 +194,6 @@ Surface::Surface()
       pending_only_visible_on_secure_output_(false),
       pending_blend_mode_(SkXfermode::kSrcOver_Mode),
       pending_alpha_(1.0f),
-      alpha_(0.0f),
       input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
@@ -461,7 +460,6 @@ void Surface::CommitLayerContents() {
       // to produce a texture mailbox for the currently attached buffer.
       layer()->SetShowSolidColorContent();
       layer()->SetColor(SK_ColorBLACK);
-      alpha_ = 1.0f;
     }
 
     // Schedule redraw of the damage region.
@@ -494,7 +492,6 @@ void Surface::CommitLayerContents() {
                                  contents_size.height());
     layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
     layer()->SetTextureAlpha(pending_alpha_);
-    alpha_ = pending_alpha_;
   }
 
   // Move pending frame callbacks to the end of |frame_callbacks_|.
@@ -578,8 +575,7 @@ void Surface::CommitSurfaceContents() {
         render_pass->CreateAndAppendSharedQuadState();
     quad_state->quad_layer_bounds = contents_surface_size;
     quad_state->visible_quad_layer_rect = quad_rect;
-    quad_state->opacity = alpha_;
-    alpha_ = pending_alpha_;
+    quad_state->opacity = pending_alpha_;
 
     bool frame_is_opaque = false;
 
@@ -645,7 +641,7 @@ void Surface::CommitSurfaceContents() {
         base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
         contents_surface_size, contents_surface_to_layer_scale, layer_size);
     layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), layer_size));
-    layer()->SetFillsBoundsOpaquely(alpha_ == 1.0f && frame_is_opaque);
+    layer()->SetFillsBoundsOpaquely(pending_alpha_ == 1.0f && frame_is_opaque);
 
     // Reset damage.
     pending_damage_.setEmpty();
@@ -724,22 +720,6 @@ bool Surface::HasHitTestMask() const {
 
 void Surface::GetHitTestMask(gfx::Path* mask) const {
   input_region_.getBoundaryPath(mask);
-}
-
-gfx::Rect Surface::GetNonTransparentBounds() const {
-  gfx::Rect non_transparent_bounds;
-  if (alpha_)
-    non_transparent_bounds = gfx::Rect(layer()->size());
-
-  for (auto& sub_surface_entry : pending_sub_surfaces_) {
-    Surface* sub_surface = sub_surface_entry.first;
-    if (!sub_surface->has_contents())
-      continue;
-    non_transparent_bounds.Union(sub_surface->GetNonTransparentBounds() +
-                                 sub_surface->bounds().OffsetFromOrigin());
-  }
-
-  return non_transparent_bounds;
 }
 
 void Surface::RegisterCursorProvider(Pointer* provider) {

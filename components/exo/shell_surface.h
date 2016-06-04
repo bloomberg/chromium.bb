@@ -216,10 +216,6 @@ class ShellSurface : public SurfaceDelegate,
   // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
 
-  // Updates the transparent insets for the purposes of darkening the shelf
-  // appropriately.
-  void UpdateTransparentInsets();
-
   views::Widget* widget_;
   Surface* surface_;
   aura::Window* parent_;

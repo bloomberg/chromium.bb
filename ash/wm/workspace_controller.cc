@@ -71,10 +71,7 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   const aura::Window* topmost_fullscreen_window = GetRootWindowController(
       viewport_->GetRootWindow())->GetWindowForFullscreenMode();
   if (topmost_fullscreen_window &&
-      !wm::GetWindowState(topmost_fullscreen_window)->ignored_by_shelf() &&
-      wm::GetWindowState(topmost_fullscreen_window)
-          ->transparent_insets()
-          .IsEmpty()) {
+      !wm::GetWindowState(topmost_fullscreen_window)->ignored_by_shelf()) {
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
   }
 
@@ -96,13 +93,11 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
       ui::Layer* layer = (*i)->layer();
       if (!layer->GetTargetVisibility())
         continue;
-      if (window_state->IsMaximized() &&
-          window_state->transparent_insets().IsEmpty()) {
+      if (window_state->IsMaximized()) {
         return wm::WORKSPACE_WINDOW_STATE_MAXIMIZED;
       }
-      gfx::Rect bounds((*i)->bounds());
-      bounds.Inset(window_state->transparent_insets());
-      if (!window_overlaps_launcher && bounds.Intersects(shelf_bounds)) {
+      if (!window_overlaps_launcher &&
+          ((*i)->bounds().Intersects(shelf_bounds))) {
         window_overlaps_launcher = true;
       }
     }

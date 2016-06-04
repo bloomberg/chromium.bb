@@ -431,8 +431,6 @@ void ShellSurface::OnSurfaceCommit() {
         activation_client->DeactivateWindow(widget_->GetNativeWindow());
     }
 
-    UpdateTransparentInsets();
-
     // Update surface bounds.
     surface_->SetBounds(gfx::Rect(surface_origin, surface_->layer()->size()));
 
@@ -576,8 +574,6 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
     gfx::Vector2d origin_offset = new_bounds.origin() - old_bounds.origin();
     pending_origin_config_offset_ += origin_offset;
     origin_ -= origin_offset;
-
-    UpdateTransparentInsets();
 
     surface_->SetBounds(
         gfx::Rect(GetSurfaceOrigin(), surface_->layer()->size()));
@@ -731,11 +727,6 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
       ash::wm::ToWindowShowState(ash::wm::WINDOW_STATE_TYPE_AUTO_POSITIONED) ==
           show_state &&
       initial_bounds_.IsEmpty());
-
-  // The transparent insets cover the whole window until we have some initial
-  // contents.
-  ash::wm::GetWindowState(window)->set_transparent_insets(gfx::Insets(
-      window->bounds().size().width(), window->bounds().size().height()));
 }
 
 void ShellSurface::Configure() {
@@ -948,26 +939,8 @@ void ShellSurface::UpdateWidgetBounds() {
   widget_->SetBounds(new_widget_bounds);
   ignore_window_bounds_changes_ = false;
 
-  UpdateTransparentInsets();
-
   // A change to the widget size requires surface bounds to be re-adjusted.
   surface_->SetBounds(gfx::Rect(GetSurfaceOrigin(), surface_->layer()->size()));
-}
-
-void ShellSurface::UpdateTransparentInsets() {
-  DCHECK(widget_);
-
-  gfx::Rect non_transparent_bounds = surface_->GetNonTransparentBounds() +
-                                     GetSurfaceOrigin().OffsetFromOrigin();
-  gfx::Size window_size = widget_->GetNativeWindow()->bounds().size();
-  gfx::Insets transparent_insets =
-      gfx::Rect(window_size).InsetsFrom(non_transparent_bounds);
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget_->GetNativeWindow());
-  if (window_state->transparent_insets() != transparent_insets) {
-    window_state->set_transparent_insets(transparent_insets);
-    ash::Shell::GetInstance()->UpdateShelfVisibility();
-  }
 }
 
 }  // namespace exo
