@@ -58,7 +58,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
 #else
     return persistent_license_support_ ? EmeSessionTypeSupport::SUPPORTED
-        : EmeSessionType::NOT_SUPPORTED;
+        : EmeSessionTypeSupport::NOT_SUPPORTED;
 #endif
   }
 
