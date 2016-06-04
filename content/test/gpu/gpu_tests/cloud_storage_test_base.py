@@ -24,25 +24,36 @@ default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 
 error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 
-def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio,
+def _CompareScreenshotSamples(tab, screenshot, expectations, device_pixel_ratio,
                               test_machine_name):
   # First scan through the expectations and see if there are any scale
   # factor overrides that would preempt the device pixel ratio. This
   # is mainly a workaround for complex tests like the Maps test.
-  if test_machine_name:
-    for expectation in expectations:
-      if "scale_factor_overrides" in expectation:
-        for override in expectation["scale_factor_overrides"]:
-          # Require exact match to avoid confusion, because some
-          # machine models and names might be subsets of others
-          # (e.g. Nexus 5 vs Nexus 5X).
-          if override["machine_name"] == test_machine_name:
-            logging.warning('Overriding device_pixel_ratio ' +
-                            str(device_pixel_ratio) + ' with scale factor ' +
-                            str(override["scale_factor"]))
-            device_pixel_ratio = override["scale_factor"]
-            break
-        break
+  for expectation in expectations:
+    if 'scale_factor_overrides' in expectation:
+      for override in expectation['scale_factor_overrides']:
+        # Require exact matches to avoid confusion, because some
+        # machine models and names might be subsets of others
+        # (e.g. Nexus 5 vs Nexus 5X).
+        if ('device_type' in override and
+            (tab.browser.platform.GetDeviceTypeName() ==
+             override['device_type'])):
+          logging.warning('Overriding device_pixel_ratio ' +
+                          str(device_pixel_ratio) + ' with scale factor ' +
+                          str(override['scale_factor']) + ' for device type ' +
+                          override['device_type'])
+          device_pixel_ratio = override['scale_factor']
+          break
+        if (test_machine_name and 'machine_name' in override and
+            override["machine_name"] == test_machine_name):
+          logging.warning('Overriding device_pixel_ratio ' +
+                          str(device_pixel_ratio) + ' with scale factor ' +
+                          str(override['scale_factor']) + ' for machine name ' +
+                          test_machine_name)
+          device_pixel_ratio = override['scale_factor']
+          break
+      # Only support one "scale_factor_overrides" in the expectation format.
+      break
   for expectation in expectations:
     if "scale_factor_overrides" in expectation:
       continue
@@ -233,7 +244,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
 
-  def _ValidateScreenshotSamples(self, url,
+  def _ValidateScreenshotSamples(self, tab, url,
                                  screenshot, expectations, device_pixel_ratio):
     """Samples the given screenshot and verifies pixel color values.
        The sample locations and expected color values are given in expectations.
@@ -241,7 +252,8 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
        a Failure and dumps the screenshot locally or cloud storage depending on
        what machine the test is being run."""
     try:
-      _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio,
+      _CompareScreenshotSamples(tab, screenshot, expectations,
+                                device_pixel_ratio,
                                 self.options.test_machine_name)
     except page_test.Failure:
       image_name = self._UrlToImageName(url)

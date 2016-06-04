@@ -54,7 +54,7 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
     # line.
     expected = self._ReadPixelExpectations(page)
     self._ValidateScreenshotSamples(
-        page.display_name, screenshot, expected, dpr)
+        tab, page.display_name, screenshot, expected, dpr)
 
   @staticmethod
   def SpinWaitOnRAF(tab, iterations, timeout=60):

@@ -79,7 +79,7 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
           os.path.dirname(__file__), page.expected_colors))
       expected_colors = self._ReadPixelExpectations(expected_colors_file)
       self._ValidateScreenshotSamples(
-          page.display_name, screenshot, expected_colors, dpr)
+          tab, page.display_name, screenshot, expected_colors, dpr)
       return
 
     image_name = self._UrlToImageName(page.display_name)
