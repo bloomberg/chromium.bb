@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui/zoom/test/zoom_test_utils.h"
+#include "components/zoom/test/zoom_test_utils.h"
 
 #include "content/public/test/test_utils.h"
 
-namespace ui_zoom {
+namespace zoom {
 
 bool operator==(const ZoomController::ZoomChangedEventData& lhs,
                 const ZoomController::ZoomChangedEventData& rhs) {
@@ -23,8 +23,8 @@ ZoomChangedWatcher::ZoomChangedWatcher(
     : zoom_controller_(zoom_controller),
       expected_event_data_(expected_event_data),
       message_loop_runner_(new content::MessageLoopRunner) {
-    zoom_controller_->AddObserver(this);
-  }
+  zoom_controller_->AddObserver(this);
+}
 
 ZoomChangedWatcher::~ZoomChangedWatcher() {
   zoom_controller_->RemoveObserver(this);
@@ -40,4 +40,4 @@ void ZoomChangedWatcher::OnZoomChanged(
     message_loop_runner_->Quit();
 }
 
-}  // namespace ui_zoom
+}  // namespace zoom

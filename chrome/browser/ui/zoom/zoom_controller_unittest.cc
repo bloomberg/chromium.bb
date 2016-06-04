@@ -8,9 +8,9 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "components/ui/zoom/test/zoom_test_utils.h"
-#include "components/ui/zoom/zoom_controller.h"
-#include "components/ui/zoom/zoom_observer.h"
+#include "components/zoom/test/zoom_test_utils.h"
+#include "components/zoom/zoom_controller.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -20,8 +20,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ui_zoom::ZoomChangedWatcher;
-using ui_zoom::ZoomController;
+using zoom::ZoomChangedWatcher;
+using zoom::ZoomController;
 
 class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -100,7 +100,7 @@ TEST_F(ZoomControllerTest, ObserveManualZoomCanShowBubble) {
   double new_zoom_level1 = old_zoom_level + 0.5;
   double new_zoom_level2 = old_zoom_level + 1.0;
 
-  zoom_controller_->SetZoomMode(ui_zoom::ZoomController::ZOOM_MODE_MANUAL);
+  zoom_controller_->SetZoomMode(zoom::ZoomController::ZOOM_MODE_MANUAL);
   // By default, the zoom controller will send 'true' for can_show_bubble.
   ZoomController::ZoomChangedEventData zoom_change_data1(
       web_contents(),

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_OBSERVER_H_
-#define COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_OBSERVER_H_
+#ifndef COMPONENTS_ZOOM_ZOOM_EVENT_MANAGER_OBSERVER_H_
+#define COMPONENTS_ZOOM_ZOOM_EVENT_MANAGER_OBSERVER_H_
 
-namespace ui_zoom {
+namespace zoom {
 
 class ZoomEventManagerObserver {
  public:
@@ -18,6 +18,6 @@ class ZoomEventManagerObserver {
   virtual ~ZoomEventManagerObserver() {}
 };
 
-}  // namespace ui_zoom
+}  // namespace zoom
 
-#endif  // COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_OBSERVER_H_
+#endif  // COMPONENTS_ZOOM_ZOOM_EVENT_MANAGER_OBSERVER_H_

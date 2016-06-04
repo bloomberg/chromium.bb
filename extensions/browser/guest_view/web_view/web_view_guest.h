@@ -81,7 +81,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   double GetZoom() const;
 
   // Get the current zoom mode.
-  ui_zoom::ZoomController::ZoomMode GetZoomMode();
+  zoom::ZoomController::ZoomMode GetZoomMode();
 
   // Request navigating the guest to the provided |src| URL.
   void NavigateGuest(const std::string& src, bool force_navigation);
@@ -97,7 +97,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void SetZoom(double zoom_factor);
 
   // Set the zoom mode.
-  void SetZoomMode(ui_zoom::ZoomController::ZoomMode zoom_mode);
+  void SetZoomMode(zoom::ZoomController::ZoomMode zoom_mode);
 
   void SetAllowScaling(bool allow);
   bool allow_scaling() const { return allow_scaling_; }

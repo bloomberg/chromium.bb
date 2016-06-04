@@ -74,7 +74,7 @@ using content::WebContents;
 using guest_view::GuestViewBase;
 using guest_view::GuestViewEvent;
 using guest_view::GuestViewManager;
-using ui_zoom::ZoomController;
+using zoom::ZoomController;
 
 namespace extensions {
 

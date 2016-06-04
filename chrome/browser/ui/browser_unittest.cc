@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -95,8 +95,8 @@ TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
   WebContents* contents = CreateTestWebContents();
   tab_strip_model->AppendWebContents(contents, true);
   WebContentsTester::For(contents)->NavigateAndCommit(GURL("about:blank"));
-  ui_zoom::ZoomController* zoom_controller =
-    ui_zoom::ZoomController::FromWebContents(contents);
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(contents);
   EXPECT_TRUE(zoom_controller->SetZoomLevel(zoom_controller->
                                             GetDefaultZoomLevel()));
 

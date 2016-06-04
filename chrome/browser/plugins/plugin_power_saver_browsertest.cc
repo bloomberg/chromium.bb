@@ -20,7 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -651,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
-  ui_zoom::ZoomController::FromWebContents(GetActiveWebContents())
+  zoom::ZoomController::FromWebContents(GetActiveWebContents())
       ->SetZoomLevel(4.0);
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "

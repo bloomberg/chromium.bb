@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
-namespace ui_zoom {
+namespace zoom {
 class ZoomController;
 }
 
@@ -25,7 +25,7 @@ class ZoomView : public BubbleIconView {
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
-  void Update(ui_zoom::ZoomController* zoom_controller);
+  void Update(zoom::ZoomController* zoom_controller);
 
  protected:
   // BubbleIconView:

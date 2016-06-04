@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -29,10 +29,9 @@ ZoomDecoration::~ZoomDecoration() {
   bubble_.delegate = nil;
 }
 
-bool ZoomDecoration::UpdateIfNecessary(
-    ui_zoom::ZoomController* zoom_controller,
-    bool default_zoom_changed,
-    bool location_bar_is_dark) {
+bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
+                                       bool default_zoom_changed,
+                                       bool location_bar_is_dark) {
   if (!ShouldShowDecoration()) {
     if (!IsVisible() && !bubble_)
       return false;
@@ -91,28 +90,27 @@ void ZoomDecoration::HideUI() {
   SetVisible(false);
 }
 
-void ZoomDecoration::ShowAndUpdateUI(ui_zoom::ZoomController* zoom_controller,
+void ZoomDecoration::ShowAndUpdateUI(zoom::ZoomController* zoom_controller,
                                      NSString* tooltip_string,
                                      bool location_bar_is_dark) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     vector_icon_id_ = gfx::VectorIconId::VECTOR_ICON_NONE;
-    ui_zoom::ZoomController::RelativeZoom relative_zoom =
+    zoom::ZoomController::RelativeZoom relative_zoom =
         zoom_controller->GetZoomRelativeToDefault();
-    if (relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
+    if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
       vector_icon_id_ = gfx::VectorIconId::ZOOM_MINUS;
-    } else if (relative_zoom ==
-               ui_zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
+    } else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
       vector_icon_id_ = gfx::VectorIconId::ZOOM_PLUS;
     }
 
     SetImage(GetMaterialIcon(location_bar_is_dark));
   } else {
     int image_id = IDR_ZOOM_NORMAL;
-    ui_zoom::ZoomController::RelativeZoom relative_zoom =
+    zoom::ZoomController::RelativeZoom relative_zoom =
         zoom_controller->GetZoomRelativeToDefault();
-    if (relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM)
+    if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM)
       image_id = IDR_ZOOM_MINUS;
-    else if (relative_zoom == ui_zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM)
+    else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM)
       image_id = IDR_ZOOM_PLUS;
 
     SetImage(OmniboxViewMac::ImageForResource(image_id));
@@ -133,8 +131,8 @@ bool ZoomDecoration::IsAtDefaultZoom() const {
   if (!web_contents)
     return false;
 
-  ui_zoom::ZoomController* zoomController =
-      ui_zoom::ZoomController::FromWebContents(web_contents);
+  zoom::ZoomController* zoomController =
+      zoom::ZoomController::FromWebContents(web_contents);
   return zoomController && zoomController->IsAtDefaultZoom();
 }
 

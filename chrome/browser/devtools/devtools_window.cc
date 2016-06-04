@@ -33,8 +33,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/ui/zoom/page_zoom.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/page_zoom.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -725,8 +725,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   bindings_->SetDelegate(this);
   // DevTools uses PageZoom::Zoom(), so main_web_contents_ requires a
   // ZoomController.
-  ui_zoom::ZoomController::CreateForWebContents(main_web_contents_);
-  ui_zoom::ZoomController::FromWebContents(main_web_contents_)
+  zoom::ZoomController::CreateForWebContents(main_web_contents_);
+  zoom::ZoomController::FromWebContents(main_web_contents_)
       ->SetShowsNotificationBubble(false);
 
   g_instances.Get().push_back(this);
@@ -960,8 +960,8 @@ void DevToolsWindow::CloseContents(WebContents* source) {
 
 void DevToolsWindow::ContentsZoomChange(bool zoom_in) {
   DCHECK(is_docked_);
-  ui_zoom::PageZoom::Zoom(main_web_contents_, zoom_in ? content::PAGE_ZOOM_IN
-                                                      : content::PAGE_ZOOM_OUT);
+  zoom::PageZoom::Zoom(main_web_contents_, zoom_in ? content::PAGE_ZOOM_IN
+                                                   : content::PAGE_ZOOM_OUT);
 }
 
 void DevToolsWindow::BeforeUnloadFired(WebContents* tab,

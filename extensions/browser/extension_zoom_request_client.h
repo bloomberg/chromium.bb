@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -19,7 +19,7 @@ class Extension;
 // back to an extension requesting a zoom level change. This is important so
 // that zoom event observers can determine if an extension made the request
 // as opposed to direct user input.
-class ExtensionZoomRequestClient : public ui_zoom::ZoomRequestClient {
+class ExtensionZoomRequestClient : public zoom::ZoomRequestClient {
  public:
   explicit ExtensionZoomRequestClient(scoped_refptr<const Extension> extension);
 

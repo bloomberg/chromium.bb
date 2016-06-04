@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 
 #include "base/macros.h"
 #include "base/process/kill.h"
@@ -27,8 +27,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using ui_zoom::ZoomController;
-using ui_zoom::ZoomObserver;
+using zoom::ZoomController;
+using zoom::ZoomObserver;
 
 bool operator==(const ZoomController::ZoomChangedEventData& lhs,
                 const ZoomController::ZoomChangedEventData& rhs) {

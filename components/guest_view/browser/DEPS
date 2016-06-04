@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/ui/zoom",
+  "+components/zoom",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",

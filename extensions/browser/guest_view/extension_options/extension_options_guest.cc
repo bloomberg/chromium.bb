@@ -227,9 +227,9 @@ void ExtensionOptionsGuest::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   if (attached()) {
     auto guest_zoom_controller =
-        ui_zoom::ZoomController::FromWebContents(web_contents());
+        zoom::ZoomController::FromWebContents(web_contents());
     guest_zoom_controller->SetZoomMode(
-        ui_zoom::ZoomController::ZOOM_MODE_ISOLATED);
+        zoom::ZoomController::ZOOM_MODE_ISOLATED);
     SetGuestZoomLevelToMatchEmbedder();
 
     if (!url::IsSameOriginWith(params.url, options_page_)) {

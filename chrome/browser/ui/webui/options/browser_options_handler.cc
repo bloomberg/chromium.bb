@@ -83,8 +83,8 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ui/zoom/page_zoom.h"
 #include "components/user_manager/user_type.h"
+#include "components/zoom/page_zoom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1987,7 +1987,7 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
   // Generate a vector of zoom factors from an array of known presets along with
   // the default factor added if necessary.
   std::vector<double> zoom_factors =
-      ui_zoom::PageZoom::PresetZoomFactors(default_zoom_factor);
+      zoom::PageZoom::PresetZoomFactors(default_zoom_factor);
 
   // Iterate through the zoom factors and and build the contents of the
   // selector that will be sent to the javascript handler.

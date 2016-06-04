@@ -30,9 +30,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/ui/zoom/page_zoom.h"
-#include "components/ui/zoom/test/zoom_test_utils.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/page_zoom.h"
+#include "components/zoom/test/zoom_test_utils.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithEmbeddedPdf) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
-  using namespace ui_zoom;
+  using namespace zoom;
 
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);

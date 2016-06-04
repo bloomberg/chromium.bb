@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/favicon/core/favicon_driver_observer.h"
-#include "components/ui/zoom/zoom_observer.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/event_router.h"
 
@@ -39,7 +39,7 @@ class TabsEventRouter : public TabStripModelObserver,
                         public BrowserTabStripTrackerDelegate,
                         public chrome::BrowserListObserver,
                         public favicon::FaviconDriverObserver,
-                        public ui_zoom::ZoomObserver {
+                        public zoom::ZoomObserver {
  public:
   explicit TabsEventRouter(Profile* profile);
   ~TabsEventRouter() override;
@@ -79,7 +79,7 @@ class TabsEventRouter : public TabStripModelObserver,
 
   // ZoomObserver:
   void OnZoomChanged(
-      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
+      const zoom::ZoomController::ZoomChangedEventData& data) override;
 
   // favicon::FaviconDriverObserver:
   void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,

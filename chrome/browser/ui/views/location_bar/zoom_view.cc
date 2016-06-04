@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/toolbar/toolbar_model.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
@@ -26,7 +26,7 @@ ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
 ZoomView::~ZoomView() {
 }
 
-void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
+void ZoomView::Update(zoom::ZoomController* zoom_controller) {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
       location_bar_delegate_->GetToolbarModel()->input_in_progress()) {
     SetVisible(false);
@@ -40,7 +40,7 @@ void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
 
   // The icon is hidden when the zoom level is default.
   image_id_ = zoom_controller->GetZoomRelativeToDefault() ==
-                      ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
+                      zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
                   ? gfx::VectorIconId::ZOOM_MINUS
                   : gfx::VectorIconId::ZOOM_PLUS;
   if (GetNativeTheme())

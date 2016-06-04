@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
-#define COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
+#ifndef COMPONENTS_ZOOM_ZOOM_CONTROLLER_H_
+#define COMPONENTS_ZOOM_ZOOM_CONTROLLER_H_
 
 #include <memory>
 
@@ -22,7 +22,7 @@ namespace content {
 class WebContents;
 }
 
-namespace ui_zoom {
+namespace zoom {
 class ZoomObserver;
 
 class ZoomRequestClient : public base::RefCounted<ZoomRequestClient> {
@@ -199,6 +199,6 @@ class ZoomController : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };
 
-}  // namespace ui_zoom
+}  // namespace zoom
 
-#endif  // COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
+#endif  // COMPONENTS_ZOOM_ZOOM_CONTROLLER_H_

@@ -197,11 +197,11 @@ test("components_unittests") {
       "//components/scheduler:unit_tests",
       "//components/test_runner:test_runner",
       "//components/tracing:unit_tests",
-      "//components/ui/zoom:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/wallpaper:unit_tests",
       "//components/web_cache/browser:unit_tests",
       "//components/webcrypto:unit_tests",
+      "//components/zoom:unit_tests",
 
       # These are the deps required by the code in this target.
       "//components/policy:policy_component",

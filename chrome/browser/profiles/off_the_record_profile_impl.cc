@@ -47,8 +47,8 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/ui/zoom/zoom_event_manager.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
@@ -244,7 +244,7 @@ std::unique_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return base::WrapUnique(new ChromeZoomLevelOTRDelegate(
-      ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
+      zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
 
 scoped_refptr<base::SequencedTaskRunner>
@@ -541,7 +541,7 @@ void OffTheRecordProfileImpl::UpdateDefaultZoomLevel() {
   host_zoom_map->SetDefaultZoomLevel(default_zoom_level);
   // HostZoomMap does not trigger zoom notification events when the default
   // zoom level is set, so we need to do it here.
-  ui_zoom::ZoomEventManager::GetForBrowserContext(this)
+  zoom::ZoomEventManager::GetForBrowserContext(this)
       ->OnDefaultZoomLevelChanged();
 }
 

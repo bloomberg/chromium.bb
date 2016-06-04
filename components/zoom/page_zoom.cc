@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui/zoom/page_zoom.h"
+#include "components/zoom/page_zoom.h"
 
 #include <stddef.h>
 
@@ -10,8 +10,8 @@
 #include <cmath>
 
 #include "components/prefs/pref_service.h"
-#include "components/ui/zoom/page_zoom_constants.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/page_zoom_constants.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -35,8 +35,8 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
   // sorted order.
   std::vector<double> zoom_values;
   bool found_custom = false;
-  for (size_t i = 0; i < ui_zoom::kPresetZoomFactorsSize; i++) {
-    double zoom_value = ui_zoom::kPresetZoomFactors[i];
+  for (size_t i = 0; i < zoom::kPresetZoomFactorsSize; i++) {
+    double zoom_value = zoom::kPresetZoomFactors[i];
     if (value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL)
       zoom_value = content::ZoomFactorToZoomLevel(zoom_value);
     if (content::ZoomValuesEqual(zoom_value, custom_value))
@@ -45,12 +45,12 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
   }
   // If the preset array did not contain the custom value, append it to the
   // vector and then sort.
-  double min = value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL ?
-      content::ZoomFactorToZoomLevel(content::kMinimumZoomFactor) :
-      content::kMinimumZoomFactor;
-  double max = value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL ?
-      content::ZoomFactorToZoomLevel(content::kMaximumZoomFactor) :
-      content::kMaximumZoomFactor;
+  double min = value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL
+                   ? content::ZoomFactorToZoomLevel(content::kMinimumZoomFactor)
+                   : content::kMinimumZoomFactor;
+  double max = value_type == PAGE_ZOOM_VALUE_TYPE_LEVEL
+                   ? content::ZoomFactorToZoomLevel(content::kMaximumZoomFactor)
+                   : content::kMaximumZoomFactor;
   if (!found_custom && custom_value > min && custom_value < max) {
     zoom_values.push_back(custom_value);
     std::sort(zoom_values.begin(), zoom_values.end());
@@ -60,7 +60,7 @@ std::vector<double> PresetZoomValues(PageZoomValueType value_type,
 
 }  // namespace anonymous
 
-namespace ui_zoom {
+namespace zoom {
 
 // static
 std::vector<double> PageZoom::PresetZoomFactors(double custom_factor) {
@@ -75,8 +75,8 @@ std::vector<double> PageZoom::PresetZoomLevels(double custom_level) {
 // static
 void PageZoom::Zoom(content::WebContents* web_contents,
                     content::PageZoom zoom) {
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents);
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
   if (!zoom_controller)
     return;
 
@@ -127,4 +127,4 @@ void PageZoom::Zoom(content::WebContents* web_contents,
   }
 }
 
-}  // namespace ui_zoom
+}  // namespace zoom

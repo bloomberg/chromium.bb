@@ -31,9 +31,9 @@
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/ui/zoom/page_zoom.h"
-#include "components/ui/zoom/zoom_controller.h"
-#include "components/ui/zoom/zoom_event_manager.h"
+#include "components/zoom/page_zoom.h"
+#include "components/zoom/zoom_controller.h"
+#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -490,8 +490,7 @@ class AppMenu::ZoomView : public AppMenuView {
         zoom_label_max_width_(0),
         zoom_label_max_width_valid_(false) {
     browser_zoom_subscription_ =
-        ui_zoom::ZoomEventManager::GetForBrowserContext(
-            menu->browser_->profile())
+        zoom::ZoomEventManager::GetForBrowserContext(menu->browser_->profile())
             ->AddZoomLevelChangedCallback(
                 base::Bind(&AppMenu::ZoomView::OnZoomLevelChanged,
                            base::Unretained(this)));
@@ -634,8 +633,7 @@ class AppMenu::ZoomView : public AppMenuView {
     WebContents* contents = GetActiveWebContents();
     int zoom = 100;
     if (contents) {
-      auto zoom_controller =
-          ui_zoom::ZoomController::FromWebContents(contents);
+      auto zoom_controller = zoom::ZoomController::FromWebContents(contents);
       if (zoom_controller)
         zoom = zoom_controller->GetZoomPercent();
       increment_button_->SetEnabled(zoom <
@@ -660,10 +658,10 @@ class AppMenu::ZoomView : public AppMenuView {
       WebContents* selected_tab = GetActiveWebContents();
       if (selected_tab) {
         auto zoom_controller =
-            ui_zoom::ZoomController::FromWebContents(selected_tab);
+            zoom::ZoomController::FromWebContents(selected_tab);
         DCHECK(zoom_controller);
         // Enumerate all zoom factors that can be used in PageZoom::Zoom.
-        std::vector<double> zoom_factors = ui_zoom::PageZoom::PresetZoomFactors(
+        std::vector<double> zoom_factors = zoom::PageZoom::PresetZoomFactors(
             zoom_controller->GetZoomPercent());
         for (auto zoom : zoom_factors) {
           int w = gfx::GetStringWidth(

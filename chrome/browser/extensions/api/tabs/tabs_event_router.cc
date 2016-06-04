@@ -28,7 +28,7 @@ using base::DictionaryValue;
 using base::ListValue;
 using base::FundamentalValue;
 using content::WebContents;
-using ui_zoom::ZoomController;
+using zoom::ZoomController;
 
 namespace extensions {
 

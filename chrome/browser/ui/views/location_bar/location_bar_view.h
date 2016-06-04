@@ -22,7 +22,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/security_state/security_state_model.h"
-#include "components/ui/zoom/zoom_event_manager_observer.h"
+#include "components/zoom/zoom_event_manager_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
@@ -74,7 +74,7 @@ class LocationBarView : public LocationBar,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
-                        public ui_zoom::ZoomEventManagerObserver {
+                        public zoom::ZoomEventManagerObserver {
  public:
   class Delegate {
    public:

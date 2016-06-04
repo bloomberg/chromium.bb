@@ -36,7 +36,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/ui/zoom/zoom_event_manager.h"
+#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -94,7 +94,7 @@ class AcceleratorDelegate : public ui::AcceleratorProvider {
 class ZoomLevelObserver {
  public:
   ZoomLevelObserver(AppMenuController* controller,
-                    ui_zoom::ZoomEventManager* manager)
+                    zoom::ZoomEventManager* manager)
       : controller_(controller) {
     subscription_ = manager->AddZoomLevelChangedCallback(
         base::Bind(&ZoomLevelObserver::OnZoomLevelChanged,
@@ -351,11 +351,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 - (void)menuWillOpen:(NSMenu*)menu {
   [super menuWillOpen:menu];
 
-  zoom_level_observer_.reset(
-      new AppMenuControllerInternal::ZoomLevelObserver(
-          self,
-          ui_zoom::ZoomEventManager::GetForBrowserContext(
-              browser_->profile())));
+  zoom_level_observer_.reset(new AppMenuControllerInternal::ZoomLevelObserver(
+      self, zoom::ZoomEventManager::GetForBrowserContext(browser_->profile())));
   NSString* title = base::SysUTF16ToNSString(
       [self appMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[[buttonViewController_ zoomItem] viewWithTag:IDC_ZOOM_PERCENT_DISPLAY]

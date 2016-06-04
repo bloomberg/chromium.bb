@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_ZOOM_PAGE_ZOOM_CONSTANTS_H_
-#define COMPONENTS_UI_ZOOM_PAGE_ZOOM_CONSTANTS_H_
+#ifndef COMPONENTS_ZOOM_PAGE_ZOOM_CONSTANTS_H_
+#define COMPONENTS_ZOOM_PAGE_ZOOM_CONSTANTS_H_
 
 #include <stddef.h>
 
 #include <vector>
 
-namespace ui_zoom {
+namespace zoom {
 
 // Default zoom factors supported by ui_zoom.
 extern const double kPresetZoomFactors[];
@@ -19,4 +19,4 @@ extern const std::size_t kPresetZoomFactorsSize;
 
 }  // namespace ui_zoom
 
-#endif  // COMPONENTS_UI_ZOOM_PAGE_ZOOM_CONSTANTS_H_
+#endif  // COMPONENTS_ZOOM_PAGE_ZOOM_CONSTANTS_H_

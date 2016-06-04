@@ -40,7 +40,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
-#include "components/ui/zoom/page_zoom.h"
+#include "components/zoom/page_zoom.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/invalidate_type.h"
@@ -678,15 +678,15 @@ void DevToolsUIBindings::SetWhitelistedShortcuts(const std::string& message) {
 }
 
 void DevToolsUIBindings::ZoomIn() {
-  ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
+  zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
 }
 
 void DevToolsUIBindings::ZoomOut() {
-  ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
+  zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
 }
 
 void DevToolsUIBindings::ResetZoom() {
-  ui_zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
+  zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
 }
 
 void DevToolsUIBindings::SetDevicesDiscoveryConfig(

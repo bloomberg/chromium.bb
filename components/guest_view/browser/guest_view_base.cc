@@ -14,8 +14,8 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"
-#include "components/ui/zoom/page_zoom.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/page_zoom.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -218,7 +218,7 @@ void GuestViewBase::InitWithWebContents(
   // in DidNavigateMainFrame, but since ZoomController always resets to default
   // zoom mode on this event, GuestViewBase would need to do so after
   // ZoomController::DidNavigateMainFrame has completed.
-  ui_zoom::ZoomController::CreateForWebContents(guest_web_contents);
+  zoom::ZoomController::CreateForWebContents(guest_web_contents);
 
   // At this point, we have just created the guest WebContents, we need to add
   // an observer to the owner WebContents. This observer will be responsible
@@ -240,8 +240,7 @@ void GuestViewBase::InitWithWebContents(
     SetUpSizing(create_params);
 
   // Observe guest zoom changes.
-  auto zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents());
+  auto zoom_controller = zoom::ZoomController::FromWebContents(web_contents());
   zoom_controller->AddObserver(this);
 
   // Give the derived class an opportunity to perform additional initialization.
@@ -624,9 +623,9 @@ void GuestViewBase::ContentsMouseEvent(WebContents* source,
 }
 
 void GuestViewBase::ContentsZoomChange(bool zoom_in) {
-  ui_zoom::PageZoom::Zoom(
-      embedder_web_contents(),
-      zoom_in ? content::PAGE_ZOOM_IN : content::PAGE_ZOOM_OUT);
+  zoom::PageZoom::Zoom(embedder_web_contents(), zoom_in
+                                                    ? content::PAGE_ZOOM_IN
+                                                    : content::PAGE_ZOOM_OUT);
 }
 
 void GuestViewBase::HandleKeyboardEvent(
@@ -726,11 +725,11 @@ void GuestViewBase::FindReply(WebContents* source,
 }
 
 void GuestViewBase::OnZoomChanged(
-    const ui_zoom::ZoomController::ZoomChangedEventData& data) {
+    const zoom::ZoomController::ZoomChangedEventData& data) {
   if (data.web_contents == embedder_web_contents()) {
     // The embedder's zoom level has changed.
     auto guest_zoom_controller =
-        ui_zoom::ZoomController::FromWebContents(web_contents());
+        zoom::ZoomController::FromWebContents(web_contents());
     if (content::ZoomValuesEqual(data.new_zoom_level,
                                  guest_zoom_controller->GetZoomLevel())) {
       return;
@@ -793,7 +792,7 @@ double GuestViewBase::GetEmbedderZoomFactor() const {
     return 1.0;
 
   return content::ZoomLevelToZoomFactor(
-      ui_zoom::ZoomController::GetZoomLevelForWebContents(
+      zoom::ZoomController::GetZoomLevelForWebContents(
           embedder_web_contents()));
 }
 
@@ -847,11 +846,11 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
 
 void GuestViewBase::SetGuestZoomLevelToMatchEmbedder() {
   auto embedder_zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(owner_web_contents());
+      zoom::ZoomController::FromWebContents(owner_web_contents());
   if (!embedder_zoom_controller)
     return;
 
-  ui_zoom::ZoomController::FromWebContents(web_contents())
+  zoom::ZoomController::FromWebContents(web_contents())
       ->SetZoomLevel(embedder_zoom_controller->GetZoomLevel());
 }
 
@@ -860,7 +859,7 @@ void GuestViewBase::StartTrackingEmbedderZoomLevel() {
     return;
 
   auto embedder_zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(owner_web_contents());
+      zoom::ZoomController::FromWebContents(owner_web_contents());
   // Chrome Apps do not have a ZoomController.
   if (!embedder_zoom_controller)
     return;
@@ -876,7 +875,7 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
     return;
 
   auto embedder_zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(owner_web_contents());
+      zoom::ZoomController::FromWebContents(owner_web_contents());
   // Chrome Apps do not have a ZoomController.
   if (!embedder_zoom_controller)
     return;

@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
-#include "components/ui/zoom/zoom_observer.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -36,7 +36,7 @@ class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
       public content::WebContentsObserver,
-      public ui_zoom::ZoomObserver {
+      public zoom::ZoomObserver {
  public:
   ~ChromeAutofillClient() override;
 
@@ -86,7 +86,7 @@ class ChromeAutofillClient
 
   // ZoomObserver implementation.
   void OnZoomChanged(
-      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
+      const zoom::ZoomController::ZoomChangedEventData& data) override;
 
  private:
   explicit ChromeAutofillClient(content::WebContents* web_contents);

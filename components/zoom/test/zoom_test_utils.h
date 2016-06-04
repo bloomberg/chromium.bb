@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_ZOOM_ZOOM_TEST_UTILS_H_
-#define COMPONENTS_UI_ZOOM_ZOOM_TEST_UTILS_H_
+#ifndef COMPONENTS_ZOOM_ZOOM_TEST_UTILS_H_
+#define COMPONENTS_ZOOM_ZOOM_TEST_UTILS_H_
 
 #include "base/macros.h"
-#include "components/ui/zoom/zoom_controller.h"
-#include "components/ui/zoom/zoom_observer.h"
+#include "components/zoom/zoom_controller.h"
+#include "components/zoom/zoom_observer.h"
 
 namespace content {
 class MessageLoopRunner;
 }
 
-namespace ui_zoom {
+namespace zoom {
 
 bool operator==(const ZoomController::ZoomChangedEventData& lhs,
                 const ZoomController::ZoomChangedEventData& rhs);
 
-class ZoomChangedWatcher : public ui_zoom::ZoomObserver {
+class ZoomChangedWatcher : public zoom::ZoomObserver {
  public:
   ZoomChangedWatcher(
       ZoomController* zoom_controller,
@@ -38,5 +38,5 @@ class ZoomChangedWatcher : public ui_zoom::ZoomObserver {
   DISALLOW_COPY_AND_ASSIGN(ZoomChangedWatcher);
 };
 
-}  // namespace ui_zoom
-#endif  // COMPONENTS_UI_ZOOM_ZOOM_TEST_UTILS_H_
+}  // namespace zoom
+#endif  // COMPONENTS_ZOOM_ZOOM_TEST_UTILS_H_

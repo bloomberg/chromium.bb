@@ -64,10 +64,10 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/translate/core/browser/language_state.h"
-#include "components/ui/zoom/page_zoom.h"
-#include "components/ui/zoom/zoom_controller.h"
 #include "components/version_info/version_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/zoom/page_zoom.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -580,19 +580,19 @@ void CloseTab(Browser* browser) {
 
 bool CanZoomIn(content::WebContents* contents) {
   return contents && !contents->IsCrashed() &&
-         ui_zoom::ZoomController::FromWebContents(contents)->GetZoomPercent() !=
+         zoom::ZoomController::FromWebContents(contents)->GetZoomPercent() !=
              contents->GetMaximumZoomPercent();
 }
 
 bool CanZoomOut(content::WebContents* contents) {
   return contents && !contents->IsCrashed() &&
-         ui_zoom::ZoomController::FromWebContents(contents)->GetZoomPercent() !=
+         zoom::ZoomController::FromWebContents(contents)->GetZoomPercent() !=
              contents->GetMinimumZoomPercent();
 }
 
 bool CanResetZoom(content::WebContents* contents) {
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(contents);
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(contents);
   return !zoom_controller->IsAtDefaultZoom() ||
          !zoom_controller->PageScaleFactorIsOne();
 }
@@ -989,8 +989,8 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
 }
 
 void Zoom(Browser* browser, content::PageZoom zoom) {
-  ui_zoom::PageZoom::Zoom(browser->tab_strip_model()->GetActiveWebContents(),
-                          zoom);
+  zoom::PageZoom::Zoom(browser->tab_strip_model()->GetActiveWebContents(),
+                       zoom);
 }
 
 void FocusToolbar(Browser* browser) {

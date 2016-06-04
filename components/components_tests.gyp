@@ -852,8 +852,8 @@
       'translate/ios/browser/language_detection_controller_unittest.mm',
       'translate/ios/browser/translate_controller_unittest.mm',
     ],
-    'ui_unittest_sources': [
-      'ui/zoom/page_zoom_unittests.cc',
+    'zoom_unittest_sources': [
+      'zoom/page_zoom_unittests.cc',
     ],
     'update_client_unittest_sources': [
       'update_client/component_patcher_unittest.cc',
@@ -1270,12 +1270,12 @@
             '<@(scheduler_unittest_sources)',
             '<@(storage_monitor_unittest_sources)',
             '<@(tracing_unittest_sources)',
-            '<@(ui_unittest_sources)',
             '<@(visitedlink_unittest_sources)',
             '<@(wallpaper_unittest_sources)',
             '<@(web_cache_unittest_sources)',
             '<@(webcrypto_unittest_sources)',
             '<@(web_modal_unittest_sources)',
+            '<@(zoom_unittest_sources)',
           ],
           'dependencies': [
             '../content/content_shell_and_tests.gyp:test_support_content',
@@ -1315,7 +1315,6 @@
             'components.gyp:storage_monitor',
             'components.gyp:storage_monitor_test_support',
             'components.gyp:test_database_manager',
-            'components.gyp:ui_zoom',
             'components.gyp:url_matcher',
             'components.gyp:visitedlink_browser',
             'components.gyp:visitedlink_renderer',
@@ -1323,6 +1322,7 @@
             'components.gyp:web_cache_browser',
             'components.gyp:web_modal',
             'components.gyp:web_modal_test_support',
+            'components.gyp:zoom',
             'scheduler/scheduler.gyp:scheduler',
             'test_runner/test_runner.gyp:test_runner',
             'tracing.gyp:tracing',

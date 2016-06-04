@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 
 namespace {
 
@@ -16,7 +16,7 @@ class MockZoomDecoration : public ZoomDecoration {
   explicit MockZoomDecoration(LocationBarViewMac* owner)
       : ZoomDecoration(owner), update_ui_count_(0) {}
   bool ShouldShowDecoration() const override { return true; }
-  void ShowAndUpdateUI(ui_zoom::ZoomController* zoom_controller,
+  void ShowAndUpdateUI(zoom::ZoomController* zoom_controller,
                        NSString* tooltip_string,
                        bool location_bar_is_dark) override {
     ++update_ui_count_;
@@ -31,10 +31,10 @@ class MockZoomDecoration : public ZoomDecoration {
   DISALLOW_COPY_AND_ASSIGN(MockZoomDecoration);
 };
 
-class MockZoomController : public ui_zoom::ZoomController {
+class MockZoomController : public zoom::ZoomController {
  public:
   explicit MockZoomController(content::WebContents* web_contents)
-      : ui_zoom::ZoomController(web_contents) {}
+      : zoom::ZoomController(web_contents) {}
   int GetZoomPercent() const override { return zoom_percent_; }
 
   int zoom_percent_;

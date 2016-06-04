@@ -72,8 +72,8 @@
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "components/ui/zoom/zoom_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/zoom/zoom_controller.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -135,7 +135,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   // ZoomController comes before common tab helpers since ChromeAutofillClient
   // may want to register as a ZoomObserver with it.
-  ui_zoom::ZoomController::CreateForWebContents(web_contents);
+  zoom::ZoomController::CreateForWebContents(web_contents);
 #endif
 
   // --- Common tab helpers ---

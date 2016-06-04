@@ -11,8 +11,8 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/ui/zoom/page_zoom.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/page_zoom.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/common/page_zoom.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/hover_button.h"
@@ -143,8 +143,8 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   if (!contents)
     return;
 
-  ui_zoom::ZoomController* zoomController =
-      ui_zoom::ZoomController::FromWebContents(contents);
+  zoom::ZoomController* zoomController =
+      zoom::ZoomController::FromWebContents(contents);
   if (!zoomController)
     return;
 
@@ -325,7 +325,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   // there haven't been associated crashes in the wild, so it seems
   // fine in practice.  It might make sense to close the bubble in
   // that case, though.
-  ui_zoom::PageZoom::Zoom(webContents, alterPageZoom);
+  zoom::PageZoom::Zoom(webContents, alterPageZoom);
 }
 
 @end

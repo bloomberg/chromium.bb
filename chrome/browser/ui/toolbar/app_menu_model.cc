@@ -51,8 +51,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/ui/zoom/zoom_controller.h"
-#include "components/ui/zoom/zoom_event_manager.h"
+#include "components/zoom/zoom_controller.h"
+#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -299,7 +299,7 @@ AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
   UpdateZoomControls();
 
   browser_zoom_subscription_ =
-      ui_zoom::ZoomEventManager::GetForBrowserContext(browser->profile())
+      zoom::ZoomEventManager::GetForBrowserContext(browser->profile())
           ->AddZoomLevelChangedCallback(base::Bind(
               &AppMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
@@ -935,7 +935,7 @@ void AppMenuModel::UpdateZoomControls() {
   int zoom_percent = 100;
   if (browser_->tab_strip_model() &&
       browser_->tab_strip_model()->GetActiveWebContents()) {
-    zoom_percent = ui_zoom::ZoomController::FromWebContents(
+    zoom_percent = zoom::ZoomController::FromWebContents(
                        browser_->tab_strip_model()->GetActiveWebContents())
                        ->GetZoomPercent();
   }

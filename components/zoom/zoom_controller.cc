@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 
-#include "components/ui/zoom/zoom_event_manager.h"
-#include "components/ui/zoom/zoom_observer.h"
+#include "components/zoom/zoom_event_manager.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -16,9 +16,9 @@
 #include "content/public/common/page_zoom.h"
 #include "net/base/url_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ui_zoom::ZoomController);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(zoom::ZoomController);
 
-namespace ui_zoom {
+namespace zoom {
 
 double ZoomController::GetZoomLevelForWebContents(
     const content::WebContents* web_contents) {
@@ -47,8 +47,7 @@ ZoomController::ZoomController(content::WebContents* web_contents)
   UpdateState(std::string());
 }
 
-ZoomController::~ZoomController() {
-}
+ZoomController::~ZoomController() {}
 
 bool ZoomController::IsAtDefaultZoom() const {
   return content::ZoomValuesEqual(GetZoomLevel(), GetDefaultZoomLevel());
@@ -267,14 +266,14 @@ void ZoomController::ResetZoomModeOnNavigationIfNeeded(const GURL& url) {
   int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();
   content::HostZoomMap* zoom_map =
-    content::HostZoomMap::GetForWebContents(web_contents());
+      content::HostZoomMap::GetForWebContents(web_contents());
   zoom_level_ = zoom_map->GetDefaultZoomLevel();
   double old_zoom_level = zoom_map->GetZoomLevel(web_contents());
   double new_zoom_level = zoom_map->GetZoomLevelForHostAndScheme(
       url.scheme(), net::GetHostOrSpecFromURL(url));
-  event_data_.reset(new ZoomChangedEventData(
-      web_contents(), old_zoom_level, new_zoom_level, ZOOM_MODE_DEFAULT,
-      false /* can_show_bubble */));
+  event_data_.reset(new ZoomChangedEventData(web_contents(), old_zoom_level,
+                                             new_zoom_level, ZOOM_MODE_DEFAULT,
+                                             false /* can_show_bubble */));
   // The call to ClearTemporaryZoomLevel() doesn't generate any events from
   // HostZoomMap, but the call to UpdateState() at the end of this function
   // will notify our observers.
@@ -365,12 +364,12 @@ void ZoomController::UpdateState(const std::string& host) {
 void ZoomController::SetPageScaleFactorIsOneForTesting(bool is_one) {
   int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();
-  host_zoom_map_->SetPageScaleFactorIsOneForView(
-      render_process_id, render_view_id, is_one);
+  host_zoom_map_->SetPageScaleFactorIsOneForView(render_process_id,
+                                                 render_view_id, is_one);
 }
 
 bool ZoomController::PageScaleFactorIsOne() const {
   return content::HostZoomMap::PageScaleFactorIsOne(web_contents());
 }
 
-}  // namespace ui_zoom
+}  // namespace zoom

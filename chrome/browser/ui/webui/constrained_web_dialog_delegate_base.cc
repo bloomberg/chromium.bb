@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
-#include "components/ui/zoom/zoom_controller.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
@@ -34,7 +34,7 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   CHECK(delegate);
   web_contents_.reset(
       WebContents::Create(WebContents::CreateParams(browser_context)));
-  ui_zoom::ZoomController::CreateForWebContents(web_contents_.get());
+  zoom::ZoomController::CreateForWebContents(web_contents_.get());
   if (tab_delegate) {
     override_tab_delegate_.reset(tab_delegate);
     web_contents_->SetDelegate(tab_delegate);

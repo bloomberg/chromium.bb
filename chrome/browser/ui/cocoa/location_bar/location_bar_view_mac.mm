@@ -59,8 +59,8 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/security_state/security_state_model.h"
 #include "components/translate/core/browser/language_state.h"
-#include "components/ui/zoom/zoom_controller.h"
-#include "components/ui/zoom/zoom_event_manager.h"
+#include "components/zoom/zoom_controller.h"
+#include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -285,7 +285,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       base::Bind(&LocationBarViewMac::OnEditBookmarksEnabledChanged,
                  base::Unretained(this)));
 
-  ui_zoom::ZoomEventManager::GetForBrowserContext(profile)
+  zoom::ZoomEventManager::GetForBrowserContext(profile)
       ->AddZoomEventManagerObserver(this);
 
   [[field_ cell] setIsPopupMode:
@@ -300,7 +300,7 @@ LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
   [[field_ cell] clearDecorations];
 
-  ui_zoom::ZoomEventManager::GetForBrowserContext(profile())
+  zoom::ZoomEventManager::GetForBrowserContext(profile())
       ->RemoveZoomEventManagerObserver(this);
 }
 
@@ -968,8 +968,8 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
     return false;
 
   return zoom_decoration_->UpdateIfNecessary(
-      ui_zoom::ZoomController::FromWebContents(web_contents),
-      default_zoom_changed, IsLocationBarDark());
+      zoom::ZoomController::FromWebContents(web_contents), default_zoom_changed,
+      IsLocationBarDark());
 }
 
 void LocationBarViewMac::OnDefaultZoomLevelChanged() {

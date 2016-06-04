@@ -1504,7 +1504,7 @@ content::WebContents* ExtensionTabsZoomTest::OpenUrlAndWaitForLoad(
 namespace {
 
 double GetZoomLevel(const content::WebContents* web_contents) {
-  return ui_zoom::ZoomController::FromWebContents(web_contents)->GetZoomLevel();
+  return zoom::ZoomController::FromWebContents(web_contents)->GetZoomLevel();
 }
 
 content::OpenURLParams GetOpenParams(const char* url) {
@@ -1544,8 +1544,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetDefaultZoom) {
   content::WebContents* web_contents = OpenUrlAndWaitForLoad(params.url);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents);
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
   double default_zoom_factor = -1.0;
   EXPECT_TRUE(RunGetDefaultZoom(tab_id, &default_zoom_factor));
   EXPECT_TRUE(content::ZoomValuesEqual(
@@ -1574,8 +1574,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetToDefaultZoom) {
   content::WebContents* web_contents = OpenUrlAndWaitForLoad(params.url);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(web_contents);
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
   double default_zoom_level = zoom_controller->GetDefaultZoomLevel();
   double new_default_zoom_level = default_zoom_level + 0.42;
 

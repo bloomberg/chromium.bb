@@ -33,7 +33,7 @@ using extensions::api::web_view_internal::InjectionItems;
 using extensions::api::web_view_internal::SetPermission::Params;
 using extensions::api::extension_types::InjectDetails;
 using extensions::UserScript;
-using ui_zoom::ZoomController;
+using zoom::ZoomController;
 // error messages for content scripts:
 namespace errors = extensions::manifest_errors;
 namespace web_view_internal = extensions::api::web_view_internal;

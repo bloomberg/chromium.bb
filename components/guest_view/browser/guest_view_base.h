@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/guest_view/common/guest_view_constants.h"
-#include "components/ui/zoom/zoom_observer.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/guest_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -51,7 +51,7 @@ struct SetSizeParams {
 class GuestViewBase : public content::BrowserPluginGuestDelegate,
                       public content::WebContentsDelegate,
                       public content::WebContentsObserver,
-                      public ui_zoom::ZoomObserver {
+                      public zoom::ZoomObserver {
  public:
   // Returns a *ViewGuest if this GuestView is of the given view type.
   template <typename T>
@@ -379,7 +379,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // ui_zoom::ZoomObserver implementation.
   void OnZoomChanged(
-      const ui_zoom::ZoomController::ZoomChangedEventData& data) final;
+      const zoom::ZoomController::ZoomChangedEventData& data) final;
 
   void SendQueuedEvents();
 

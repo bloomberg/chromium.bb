@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_ZOOM_PAGE_ZOOM_H_
-#define COMPONENTS_UI_ZOOM_PAGE_ZOOM_H_
+#ifndef COMPONENTS_ZOOM_PAGE_ZOOM_H_
+#define COMPONENTS_ZOOM_PAGE_ZOOM_H_
 
 #include <vector>
 
@@ -14,7 +14,7 @@ namespace content {
 class WebContents;
 }
 
-namespace ui_zoom {
+namespace zoom {
 
 // This class provides a means of zooming pages according to a predetermined
 // set of zoom levels/factors. In future, the static methods in this class
@@ -41,6 +41,6 @@ class PageZoom {
   DISALLOW_COPY_AND_ASSIGN(PageZoom);
 };
 
-}  // namespace ui_zoom
+}  // namespace zoom
 
-#endif  // COMPONENTS_UI_ZOOM_PAGE_ZOOM_H_
+#endif  // COMPONENTS_ZOOM_PAGE_ZOOM_H_

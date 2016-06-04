@@ -2176,7 +2176,7 @@
         '../components/components.gyp:ssl_config',
         '../components/components.gyp:test_database_manager',
         '../components/components.gyp:translate_core_common',
-        '../components/components.gyp:ui_zoom_test_support',
+        '../components/components.gyp:zoom_test_support',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../content/content.gyp:common_features',
