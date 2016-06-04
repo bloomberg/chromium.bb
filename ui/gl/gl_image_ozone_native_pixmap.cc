@@ -19,13 +19,18 @@
 namespace gl {
 namespace {
 
-bool ValidInternalFormat(unsigned internalformat) {
+bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
   switch (internalformat) {
     case GL_RGB:
+      return format == gfx::BufferFormat::BGR_565 ||
+             format == gfx::BufferFormat::RGBX_8888 ||
+             format == gfx::BufferFormat::BGRX_8888;
     case GL_RGBA:
+      return format == gfx::BufferFormat::RGBA_8888;
     case GL_BGRA_EXT:
+      return format == gfx::BufferFormat::BGRA_8888;
     case GL_RED_EXT:
-      return true;
+      return format == gfx::BufferFormat::R_8;
     default:
       return false;
   }
@@ -106,13 +111,15 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
       return false;
     }
   } else if (pixmap->AreDmaBufFdsValid()) {
-    if (!ValidInternalFormat(internalformat_)) {
-      LOG(ERROR) << "Invalid internalformat: " << internalformat_;
-      return false;
-    }
 
     if (!ValidFormat(format)) {
       LOG(ERROR) << "Invalid format: " << static_cast<int>(format);
+      return false;
+    }
+
+    if (!ValidInternalFormat(internalformat_, format)) {
+      LOG(ERROR) << "Invalid internalformat: " << internalformat_
+                 << " for format: " << static_cast<int>(format);
       return false;
     }
 
@@ -186,6 +193,36 @@ void GLImageOzoneNativePixmap::OnMemoryDump(
     uint64_t process_tracing_id,
     const std::string& dump_name) {
   // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
+}
+
+// static
+unsigned GLImageOzoneNativePixmap::GetInternalFormatForTesting(
+    gfx::BufferFormat format) {
+  DCHECK(ValidFormat(format));
+  switch (format) {
+    case gfx::BufferFormat::R_8:
+      return GL_RED_EXT;
+    case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+      return GL_RGBA;
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
+      NOTREACHED();
+      return GL_NONE;
+  }
+
+  NOTREACHED();
+  return GL_NONE;
 }
 
 }  // namespace gl

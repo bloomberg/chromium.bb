@@ -33,6 +33,8 @@ class GL_EXPORT GLImageOzoneNativePixmap : public GLImageEGL {
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
 
+  static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
+
  protected:
   ~GLImageOzoneNativePixmap() override;
 
