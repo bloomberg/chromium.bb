@@ -78,8 +78,8 @@ class AudioWaitingExtensionTest : public ExtensionApiTest {
 class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
  public:
   WebrtcAudioPrivateTest()
-      : enumeration_event_(false, false) {
-  }
+      : enumeration_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void SetUpOnMainThread() override {
     AudioWaitingExtensionTest::SetUpOnMainThread();

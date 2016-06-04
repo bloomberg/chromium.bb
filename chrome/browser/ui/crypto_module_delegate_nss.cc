@@ -36,7 +36,8 @@ ChromeNSSCryptoModuleDelegate::ChromeNSSCryptoModuleDelegate(
     crypto::ScopedPK11Slot slot)
     : reason_(reason),
       server_(server),
-      event_(false, false),
+      event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+             base::WaitableEvent::InitialState::NOT_SIGNALED),
       cancelled_(false),
       slot_(std::move(slot)) {}
 

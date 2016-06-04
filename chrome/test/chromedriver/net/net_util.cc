@@ -24,7 +24,11 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
   SyncUrlFetcher(const GURL& url,
                  URLRequestContextGetter* getter,
                  std::string* response)
-      : url_(url), getter_(getter), response_(response), event_(false, false) {}
+      : url_(url),
+        getter_(getter),
+        response_(response),
+        event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+               base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   ~SyncUrlFetcher() override {}
 

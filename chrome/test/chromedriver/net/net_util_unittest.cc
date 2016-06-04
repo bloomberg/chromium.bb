@@ -36,7 +36,8 @@ class FetchUrlTest : public testing::Test,
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
     context_getter_ = new URLRequestContextGetter(io_thread_.task_runner());
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&FetchUrlTest::InitOnIO, base::Unretained(this), &event));
@@ -44,7 +45,8 @@ class FetchUrlTest : public testing::Test,
   }
 
   ~FetchUrlTest() override {
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&FetchUrlTest::DestroyServerOnIO,
                               base::Unretained(this), &event));

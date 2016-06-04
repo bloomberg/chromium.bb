@@ -120,7 +120,8 @@ void PrepareRestartOnCrashEnviroment(
 }  // namespace
 
 ServiceProcess::ServiceProcess()
-    : shutdown_event_(true /* manual_reset */, false /* initially_signaled */),
+    : shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       main_message_loop_(NULL),
       enabled_services_(0),
       update_available_(false) {

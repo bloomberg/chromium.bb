@@ -344,7 +344,8 @@ bool NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus) {
   // succeeds, but later, we'll want to do most work on the DB thread. So we
   // have to do the initialization on the DB thread here too, and wait for it.
   bool success = false;
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   // NativeBackendKWallet isn't reference counted, but we wait for InitWithBus
   // to finish, so we can safely use base::Unretained here.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,

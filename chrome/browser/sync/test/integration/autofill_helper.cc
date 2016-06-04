@@ -71,7 +71,8 @@ void RunOnDBThreadAndSignal(base::Closure task,
 }
 
 void RunOnDBThreadAndBlock(base::Closure task) {
-  WaitableEvent done_event(false, false);
+  WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   BrowserThread::PostTask(BrowserThread::DB,
                           FROM_HERE,
                           Bind(&RunOnDBThreadAndSignal, task, &done_event));
@@ -79,7 +80,8 @@ void RunOnDBThreadAndBlock(base::Closure task) {
 }
 
 void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
-  WaitableEvent done_event(false, false);
+  WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   MockWebDataServiceObserver mock_observer;
   EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
@@ -200,7 +202,8 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
     form_fields.push_back(field);
   }
 
-  WaitableEvent done_event(false, false);
+  WaitableEvent done_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   MockWebDataServiceObserver mock_observer;
   EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
       .WillOnce(SignalEvent(&done_event));

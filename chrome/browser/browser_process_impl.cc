@@ -404,8 +404,9 @@ class RundownTaskCounter :
 };
 
 RundownTaskCounter::RundownTaskCounter()
-    : count_(1), waitable_event_(true, false) {
-}
+    : count_(1),
+      waitable_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
   // As the count starts off at one, it should never get to zero unless

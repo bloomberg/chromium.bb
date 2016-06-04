@@ -1035,7 +1035,8 @@ void PostBackToThread(base::MessageLoop* message_loop,
 TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
   base::CancelableTaskTracker cancelable_task_tracker;
   base::RunLoop run_loop;
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   helper_.RunTaskOnBackendThread(FROM_HERE,
                                  base::Bind(&base::WaitableEvent::Wait,
                                             base::Unretained(&event)));

@@ -404,8 +404,8 @@ void GetCookies(const GURL& url,
     scoped_refptr<net::URLRequestContextGetter> context_getter =
         contents->GetRenderProcessHost()->GetStoragePartition()->
             GetURLRequestContext();
-    base::WaitableEvent event(true /* manual reset */,
-                              false /* not initially signaled */);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     CHECK(content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&GetCookiesOnIOThread, url, context_getter, &event, value)));

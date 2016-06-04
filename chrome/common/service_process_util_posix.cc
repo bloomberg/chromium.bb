@@ -182,7 +182,9 @@ bool ServiceProcessState::SignalReady(base::SingleThreadTaskRunner* task_runner,
     DPLOG(ERROR) << "pipe";
     return false;
   }
-  base::WaitableEvent signal_ready(true, false);
+  base::WaitableEvent signal_ready(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool success = false;
 
   task_runner->PostTask(FROM_HERE,

@@ -317,7 +317,8 @@ void WaitForHistoryToProcessPendingTasks() {
     Profile* profile = profiles_which_need_to_wait[i];
     history::HistoryService* history_service =
         HistoryServiceFactory::GetForProfileWithoutCreating(profile);
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::CancelableTaskTracker task_tracker;
     history_service->ScheduleDBTask(
         std::unique_ptr<history::HistoryDBTask>(new HistoryEmptyTask(&done)),

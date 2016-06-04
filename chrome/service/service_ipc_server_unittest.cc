@@ -116,8 +116,8 @@ class ServiceIPCServerTest : public ::testing::Test {
 ServiceIPCServerTest::ServiceIPCServerTest()
     : channel_handle_(IPC::Channel::GenerateUniqueRandomChannelID()),
       io_thread_("ServiceIPCServerTest IO"),
-      shutdown_event_(true /* manual_reset */, false /* initially_signaled */) {
-}
+      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 void ServiceIPCServerTest::SetUp() {
   base::Thread::Options options;

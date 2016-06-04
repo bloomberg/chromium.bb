@@ -281,7 +281,10 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
 // be used in parallel.
 class GKRMethod : public GnomeKeyringLoader {
  public:
-  GKRMethod() : event_(false, false), result_(GNOME_KEYRING_RESULT_CANCELLED) {}
+  GKRMethod()
+      : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+               base::WaitableEvent::InitialState::NOT_SIGNALED),
+        result_(GNOME_KEYRING_RESULT_CANCELLED) {}
 
   // Action methods. These call gnome_keyring_* functions. Call from UI thread.
   // See GetProfileSpecificAppString() for more information on the app string.

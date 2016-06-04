@@ -165,7 +165,8 @@ class MojoTestState : public content::TestState {
 
   void Init(base::CommandLine* command_line,
             base::TestLauncher::LaunchOptions* test_launch_options) {
-    base::WaitableEvent signal(true, false);
+    base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     background_shell_->ExecuteOnShellThread(base::Bind(
         &MojoTestState::BindOnBackgroundThread, base::Unretained(this), &signal,
         command_line, test_launch_options));
@@ -180,7 +181,8 @@ class MojoTestState : public content::TestState {
     // is only called on the background thread, and we wait for
     // ChildProcessLaunchedOnBackgroundThread() to be run before continuing so
     // that |handle| is still valid.
-    base::WaitableEvent signal(true, false);
+    base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     background_shell_->ExecuteOnShellThread(
         base::Bind(&MojoTestState::ChildProcessLaunchedOnBackgroundThread,
                    base::Unretained(this), handle, pid, &signal));

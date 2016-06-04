@@ -130,7 +130,8 @@ void CheckChromeVersion(Profile *profile, bool is_new) {
 
 void FlushTaskRunner(base::SequencedTaskRunner* runner) {
   ASSERT_TRUE(runner);
-  base::WaitableEvent unblock(false, false);
+  base::WaitableEvent unblock(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   runner->PostTask(FROM_HERE,
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&unblock)));

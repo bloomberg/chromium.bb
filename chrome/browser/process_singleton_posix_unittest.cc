@@ -69,8 +69,10 @@ class ProcessSingletonPosixTest : public testing::Test {
   ProcessSingletonPosixTest()
       : kill_callbacks_(0),
         io_thread_(BrowserThread::IO),
-        wait_event_(true, false),
-        signal_event_(true, false),
+        wait_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED),
+        signal_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
         process_singleton_on_thread_(NULL) {
     io_thread_.StartIOThread();
   }

@@ -22,15 +22,15 @@ using extensions::ResultCatcher;
 
 namespace {
 
-const std::string kHostname = "127.0.0.1";
+const char kHostname[] = "127.0.0.1";
 const int kPort = 8888;
 
 class SocketApiTest : public ExtensionApiTest {
  public:
-  SocketApiTest() : resolver_event_(true, false),
-                    resolver_creator_(
-                        new extensions::MockHostResolverCreator()) {
-  }
+  SocketApiTest()
+      : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        resolver_creator_(new extensions::MockHostResolverCreator()) {}
 
   void SetUpOnMainThread() override {
     extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
@@ -116,8 +116,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("tcp_server:%s:%d", kHostname.c_str(), kPort));
+  listener.Reply(base::StringPrintf("tcp_server:%s:%d", kHostname, kPort));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -142,8 +141,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketMulticast) {
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("multicast:%s:%d", kHostname.c_str(), kPort));
+  listener.Reply(base::StringPrintf("multicast:%s:%d", kHostname, kPort));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

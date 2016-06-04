@@ -128,7 +128,9 @@ class PortServerTest : public testing::Test {
   void RunServer(const std::string& path,
                  const std::string& response,
                  std::string* request) {
-    base::WaitableEvent listen_event(false, false);
+    base::WaitableEvent listen_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&RunServerOnThread, path, response, &listen_event, request));

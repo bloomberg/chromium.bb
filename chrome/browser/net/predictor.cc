@@ -752,7 +752,9 @@ void Predictor::SaveStateForNextStartupAndTrim() {
   if (!CanPreresolveAndPreconnect())
     return;
 
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   ListPrefUpdate update_startup_list(user_prefs_,
                                      prefs::kDnsPrefetchingStartupList);

@@ -43,10 +43,11 @@ using content::BrowserThread;
 class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
  public:
   SSLClientCertificateSelectorTest()
-      : io_loop_finished_event_(false, false),
+      : io_loop_finished_event_(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED),
         url_request_(NULL),
-        selector_(NULL) {
-  }
+        selector_(NULL) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     base::FilePath certs_dir = net::GetTestCertsDirectory();

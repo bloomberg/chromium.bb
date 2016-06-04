@@ -275,7 +275,8 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
 
   // Attach an event to the SpellcheckService object so we can receive its
   // status updates.
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   SpellcheckService::AttachStatusEvent(&event);
 
   BrowserContext* context = GetContext();

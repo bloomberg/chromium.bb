@@ -76,7 +76,9 @@ TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {
 
   // The server might reply too quickly so that the response will be received
   // before we call ReceiveNextMessage; we must prevent it.
-  base::WaitableEvent server_reply_allowed(false, false);
+  base::WaitableEvent server_reply_allowed(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   server_.SetMessageCallback(base::Bind(
       &base::WaitableEvent::Wait, base::Unretained(&server_reply_allowed)));
 

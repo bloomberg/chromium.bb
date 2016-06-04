@@ -27,7 +27,9 @@ namespace {
 // callback is run, even if the function that creates the buffer times out.
 class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
  public:
-  ResponseBuffer() : ready_(true, false) {}
+  ResponseBuffer()
+      : ready_(base::WaitableEvent::ResetPolicy::MANUAL,
+               base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void OnResponse(int result, const std::string& response) {
     response_ = response;

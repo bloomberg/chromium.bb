@@ -714,7 +714,9 @@ class HTML5FileWriter {
     }
     // Invoke the fileapi to copy it into the sandboxed filesystem.
     bool result = false;
-    base::WaitableEvent done_event(true, false);
+    base::WaitableEvent done_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&CreateFileForTestingOnIOThread,

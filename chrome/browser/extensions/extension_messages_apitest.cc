@@ -1022,8 +1022,9 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
   public ExternallyConnectableMessagingTest {
  public:
   ExternallyConnectableMessagingWithTlsChannelIdTest()
-      : tls_channel_id_created_(false, false) {
-  }
+      : tls_channel_id_created_(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   std::string CreateTlsChannelId() {
     scoped_refptr<net::URLRequestContextGetter> request_context_getter(

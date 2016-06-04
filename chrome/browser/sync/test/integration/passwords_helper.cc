@@ -75,7 +75,9 @@ namespace passwords_helper {
 
 void AddLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
-  base::WaitableEvent wait_event(true, false);
+  base::WaitableEvent wait_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   store->AddLogin(form);
   store->ScheduleTask(base::Bind(&PasswordStoreCallback, &wait_event));
   wait_event.Wait();
@@ -83,7 +85,9 @@ void AddLogin(PasswordStore* store, const PasswordForm& form) {
 
 void UpdateLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
-  base::WaitableEvent wait_event(true, false);
+  base::WaitableEvent wait_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   store->UpdateLogin(form);
   store->ScheduleTask(base::Bind(&PasswordStoreCallback, &wait_event));
   wait_event.Wait();
@@ -101,7 +105,9 @@ ScopedVector<PasswordForm> GetLogins(PasswordStore* store) {
 
 void RemoveLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
-  base::WaitableEvent wait_event(true, false);
+  base::WaitableEvent wait_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   store->RemoveLogin(form);
   store->ScheduleTask(base::Bind(&PasswordStoreCallback, &wait_event));
   wait_event.Wait();

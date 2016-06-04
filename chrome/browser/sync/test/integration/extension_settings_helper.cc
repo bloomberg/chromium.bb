@@ -47,7 +47,8 @@ void GetAllSettingsOnFileThread(base::DictionaryValue* out,
 
 std::unique_ptr<base::DictionaryValue> GetAllSettings(Profile* profile,
                                                       const std::string& id) {
-  base::WaitableEvent signal(false, false);
+  base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
@@ -99,7 +100,8 @@ void SetExtensionSettings(
     Profile* profile,
     const std::string& id,
     const base::DictionaryValue& settings) {
-  base::WaitableEvent signal(false, false);
+  base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,

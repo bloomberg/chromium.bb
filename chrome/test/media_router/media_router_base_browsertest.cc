@@ -31,7 +31,8 @@ const char kExtensionUnpacked[] = "extension-unpacked";
 namespace media_router {
 
 MediaRouterBaseBrowserTest::MediaRouterBaseBrowserTest()
-    : extension_load_event_(false, false),
+    : extension_load_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED),
       extension_host_created_(false),
       feature_override_(extensions::FeatureSwitch::media_router(), true) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

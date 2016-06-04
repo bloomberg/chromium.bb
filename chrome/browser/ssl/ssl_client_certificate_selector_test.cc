@@ -27,7 +27,8 @@ using ::testing::StrictMock;
 using content::BrowserThread;
 
 SSLClientCertificateSelectorTestBase::SSLClientCertificateSelectorTestBase()
-    : io_loop_finished_event_(false, false) {
+    : io_loop_finished_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED) {
 }
 
 SSLClientCertificateSelectorTestBase::~SSLClientCertificateSelectorTestBase() {

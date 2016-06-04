@@ -282,7 +282,8 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
 
   // Let the DB thread run to completion of all current tasks.
   void RunDBThread() {
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                             base::Bind(ThreadDone, &event));
     event.Wait();
