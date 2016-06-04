@@ -769,22 +769,25 @@ Background.prototype = {
     }
 
     if (pred) {
-      var node = AutomationUtil.findNextNode(
-          current.getBound(dir).node, dir, pred, {skipInitialAncestry: true});
+      var bound = current.getBound(dir).node;
+      if (bound) {
+        var node = AutomationUtil.findNextNode(
+            bound, dir, pred, {skipInitialAncestry: true});
 
-      if (node) {
-        node = AutomationUtil.findNodePre(
-            node, dir, AutomationPredicate.object) || node;
-      }
-
-      if (node) {
-        current = cursors.Range.fromNode(node);
-      } else {
-        if (predErrorMsg) {
-          cvox.ChromeVox.tts.speak(Msgs.getMsg(predErrorMsg),
-                                   cvox.QueueMode.FLUSH);
+        if (node) {
+          node = AutomationUtil.findNodePre(
+              node, dir, AutomationPredicate.object) || node;
         }
-        return false;
+
+        if (node) {
+          current = cursors.Range.fromNode(node);
+        } else {
+          if (predErrorMsg) {
+            cvox.ChromeVox.tts.speak(Msgs.getMsg(predErrorMsg),
+                                     cvox.QueueMode.FLUSH);
+          }
+          return false;
+        }
       }
     }
 

@@ -1254,6 +1254,9 @@ Output.prototype = {
    * @private
    */
   range_: function(range, prevRange, type, rangeBuff) {
+    if (!range.start.node || !range.end.node)
+      return;
+
     if (!prevRange)
       prevRange = cursors.Range.fromNode(range.start.node.root);
     var cursor = cursors.Cursor.fromNode(range.start.node);
@@ -1386,6 +1389,9 @@ Output.prototype = {
     var dir = cursors.Range.getDirection(prevRange, range);
     var node = range.start.node;
     var prevNode = prevRange.getBound(dir).node;
+    if (!node || !prevNode)
+      return;
+
     var options = {annotation: ['name'], isUnique: true};
     var startIndex = range.start.index;
     var endIndex = range.end.index;

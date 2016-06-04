@@ -12,6 +12,7 @@ goog.provide('cursors.Movement');
 goog.provide('cursors.Range');
 goog.provide('cursors.Unit');
 
+goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
 goog.require('StringUtil');
 goog.require('constants');
@@ -71,10 +72,17 @@ var Unit = cursors.Unit;
  * is pointed to and covers the case where the accessible text is empty.
  */
 cursors.Cursor = function(node, index) {
-  /** @type {!AutomationNode} @private */
-  this.node_ = node;
   /** @type {number} @private */
   this.index_ = index;
+  /** @type {Array<AutomationNode>} @private */
+  this.ancestry_ = [];
+  var nodeWalker = node;
+  while (nodeWalker) {
+    this.ancestry_.push(nodeWalker);
+    nodeWalker = nodeWalker.parent;
+    if (nodeWalker && AutomationPredicate.root(nodeWalker))
+      break;
+  }
 };
 
 /**
@@ -93,15 +101,26 @@ cursors.Cursor.prototype = {
    * @return {boolean}
    */
   equals: function(rhs) {
-    return this.node_ === rhs.node &&
-        this.index_ === rhs.index;
+    return this.node === rhs.node &&
+        this.index === rhs.index;
   },
 
   /**
-   * @return {!AutomationNode}
+   * Returns the node. If the node is invalid since the last time it
+   * was accessed, moves the cursor to the nearest valid ancestor first.
+   * @return {AutomationNode}
    */
   get node() {
-    return this.node_;
+    for (var i = 0; i < this.ancestry_.length; i++) {
+      var firstValidNode = this.ancestry_[i];
+      if (firstValidNode != null && firstValidNode.role !== undefined &&
+          firstValidNode.root !== undefined) {
+        return firstValidNode;
+      }
+      // If we have to walk up to an ancestor, reset the index to NODE_INDEX.
+      this.index_ = cursors.NODE_INDEX;
+    }
+    return null;
   },
 
   /**
@@ -141,7 +160,7 @@ cursors.Cursor.prototype = {
    * @return {string}
    */
   getText: function(opt_node) {
-    var node = opt_node || this.node_;
+    var node = opt_node || this.node;
     if (node.role === RoleType.textField)
       return node.value;
     return node.name || '';
@@ -156,7 +175,11 @@ cursors.Cursor.prototype = {
    * @return {!cursors.Cursor} The moved cursor.
    */
   move: function(unit, movement, dir) {
-    var newNode = this.node_;
+    var originalNode = this.node;
+    if (!originalNode)
+      return this;
+
+    var newNode = originalNode;
     var newIndex = this.index_;
 
     if ((unit != Unit.NODE || unit != Unit.DOM_NODE) &&
@@ -257,7 +280,7 @@ cursors.Cursor.prototype = {
             var pred = unit == Unit.NODE ?
                 AutomationPredicate.leaf : AutomationPredicate.object;
             newNode = AutomationUtil.findNextNode(
-                newNode, dir, pred) || this.node_;
+                newNode, dir, pred) || originalNode;
             newIndex = cursors.NODE_INDEX;
             break;
         }
@@ -268,7 +291,7 @@ cursors.Cursor.prototype = {
           case Movement.BOUND:
             newNode = AutomationUtil.findNodeUntil(newNode, dir,
                 AutomationPredicate.linebreak, true);
-            newNode = newNode || this.node_;
+            newNode = newNode || originalNode;
             newIndex =
                 dir == Dir.FORWARD ? this.getText(newNode).length : 0;
             break;
@@ -281,7 +304,7 @@ cursors.Cursor.prototype = {
       default:
         throw Error('Unrecognized unit: ' + unit);
     }
-    newNode = newNode || this.node_;
+    newNode = newNode || originalNode;
     newIndex = goog.isDef(newIndex) ? newIndex : this.index_;
     return new cursors.Cursor(newNode, newIndex);
   },
@@ -291,7 +314,7 @@ cursors.Cursor.prototype = {
    * @return {boolean}
    */
   isValid: function() {
-    return !!this.node.root;
+    return !!this.node && !!this.node.root;
   }
 };
 
@@ -324,6 +347,8 @@ cursors.WrappingCursor.prototype = {
   /** @override */
   move: function(unit, movement, dir) {
     var result = this;
+    if (!result.node)
+      return this;
 
     // Regular movement.
     if (!AutomationPredicate.root(this.node) || dir == Dir.FORWARD)
@@ -340,6 +365,8 @@ cursors.WrappingCursor.prototype = {
       var pred = unit == Unit.DOM_NODE ?
           AutomationPredicate.object : AutomationPredicate.leaf;
       var endpoint = this.node;
+      if (!endpoint)
+        return this;
 
       // Case 1: forwards (find the root-like node).
       while (!AutomationPredicate.root(endpoint) && endpoint.parent)
@@ -349,7 +376,7 @@ cursors.WrappingCursor.prototype = {
       var playEarcon = dir == Dir.FORWARD;
 
       // Case 2: backward (sync downwards to a leaf), if already on the root.
-      if (dir == Dir.BACKWARD && endpoint == this.node_) {
+      if (dir == Dir.BACKWARD && endpoint == this.node) {
         playEarcon = true;
         endpoint = AutomationUtil.findNodePre(endpoint,
             dir,
@@ -401,6 +428,10 @@ cursors.Range.fromNode = function(node) {
  */
 cursors.Range.getDirection = function(rangeA, rangeB) {
   if (!rangeA || !rangeB)
+    return Dir.FORWARD;
+
+  if (!rangeA.start.node || !rangeA.end.node ||
+      !rangeB.start.node || !rangeB.end.node)
     return Dir.FORWARD;
 
   // They are the same range.
@@ -482,6 +513,9 @@ cursors.Range.prototype = {
    */
   move: function(unit, dir) {
     var newStart = this.start_;
+    if (!newStart.node)
+      return this;
+
     var newEnd;
     switch (unit) {
       case Unit.CHARACTER:
@@ -514,6 +548,9 @@ cursors.Range.prototype = {
   select: function() {
     var start = this.start.node;
     var end = this.end.node;
+
+    if (!start || !end)
+      return;
 
     // Find the most common root.
     var uniqueAncestors = AutomationUtil.getUniqueAncestors(start, end);
