@@ -40,6 +40,7 @@ mojom("interfaces") {
     "begin_frame_args.mojom",
     "render_pass_id.mojom",
     "returned_resource.mojom",
+    "selection.mojom",
     "shared_quad_state.mojom",
     "surface_id.mojom",
     "transferable_resource.mojom",

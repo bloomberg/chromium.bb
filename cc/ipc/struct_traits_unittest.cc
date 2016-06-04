@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "cc/input/selection.h"
 #include "cc/ipc/traits_test_service.mojom.h"
 #include "cc/quads/render_pass_id.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -37,6 +38,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
       const ReturnedResource& r,
       const EchoReturnedResourceCallback& callback) override {
     callback.Run(r);
+  }
+
+  void EchoSelection(const Selection<gfx::SelectionBound>& s,
+                     const EchoSelectionCallback& callback) override {
+    callback.Run(s);
   }
 
   void EchoSharedQuadState(
@@ -119,6 +125,31 @@ TEST_F(StructTraitsTest, ReturnedResource) {
   EXPECT_EQ(sync_token, output.sync_token);
   EXPECT_EQ(count, output.count);
   EXPECT_EQ(lost, output.lost);
+}
+
+TEST_F(StructTraitsTest, Selection) {
+  gfx::SelectionBound start;
+  start.SetEdge(gfx::PointF(1234.5f, 67891.f), gfx::PointF(5432.1f, 1987.6f));
+  start.set_visible(true);
+  start.set_type(gfx::SelectionBound::CENTER);
+  gfx::SelectionBound end;
+  end.SetEdge(gfx::PointF(1337.5f, 52124.f), gfx::PointF(1234.3f, 8765.6f));
+  end.set_visible(false);
+  end.set_type(gfx::SelectionBound::RIGHT);
+  const bool is_editable = true;
+  const bool is_empty_text_form_control = true;
+  Selection<gfx::SelectionBound> input;
+  input.start = start;
+  input.end = end;
+  input.is_editable = is_editable;
+  input.is_empty_text_form_control = is_empty_text_form_control;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  Selection<gfx::SelectionBound> output;
+  proxy->EchoSelection(input, &output);
+  EXPECT_EQ(start, output.start);
+  EXPECT_EQ(end, output.end);
+  EXPECT_EQ(is_editable, output.is_editable);
+  EXPECT_EQ(is_empty_text_form_control, output.is_empty_text_form_control);
 }
 
 TEST_F(StructTraitsTest, SurfaceId) {
