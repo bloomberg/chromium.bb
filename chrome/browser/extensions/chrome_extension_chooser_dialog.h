@@ -22,11 +22,7 @@ class ChromeExtensionChooserDialog {
 
   content::WebContents* web_contents() const { return web_contents_; }
 
-// TODO(juncai): remove this preprocessor directive once the non-Mac
-// implementation is done.
-#if defined(OS_MACOSX)
   void ShowDialog(ChooserController* chooser_controller) const;
-#endif  // defined(OS_MACOSX)
 
  private:
   content::WebContents* web_contents_;

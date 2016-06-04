@@ -15,9 +15,7 @@ ChromeExtensionBluetoothChooser::ChromeExtensionBluetoothChooser(
       new BluetoothChooserController(frame, event_handler));
   chooser_dialog_.reset(new ChromeExtensionChooserDialog(
       content::WebContents::FromRenderFrameHost(frame)));
-#if defined(OS_MACOSX)
   chooser_dialog_->ShowDialog(bluetooth_chooser_controller_.get());
-#endif  // defined(OS_MACOSX)
 }
 
 ChromeExtensionBluetoothChooser::~ChromeExtensionBluetoothChooser() {}

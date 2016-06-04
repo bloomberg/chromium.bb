@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
+#include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/views/new_task_manager_view.h"
@@ -39,6 +40,12 @@ ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
 
 void ChromeDevicePermissionsPrompt::ShowDialog() {
   ShowDialogViews();
+}
+
+// TODO(juncai): Move this to the toolkit-views implementation file of this
+// dialog when it is implemented.
+void ChromeExtensionChooserDialog::ShowDialog(
+    ChooserController* chooser_controller) const {
 }
 
 namespace chrome {
