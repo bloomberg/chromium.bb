@@ -74,7 +74,7 @@ TrackDefault* TrackDefault::create(const AtomicString& type, const String& langu
             }
         }
     } else {
-        ASSERT_NOT_REACHED(); // IDL enforcement should prevent this case.
+        NOTREACHED(); // IDL enforcement should prevent this case.
         return nullptr;
     }
 

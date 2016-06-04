@@ -59,6 +59,8 @@
 
 using blink::WebSourceBuffer;
 
+#define SOURCE_BUFFER_LOG_LEVEL 3
+
 namespace blink {
 
 namespace {
@@ -77,7 +79,6 @@ static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, E
     return false;
 }
 
-#if !LOG_DISABLED
 WTF::String webTimeRangesToString(const WebTimeRanges& ranges)
 {
     StringBuilder stringBuilder;
@@ -92,7 +93,6 @@ WTF::String webTimeRangesToString(const WebTimeRanges& ranges)
     stringBuilder.append(" }");
     return stringBuilder.toString();
 }
-#endif
 
 } // namespace
 
@@ -125,9 +125,11 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
     , m_streamMaxSize(0)
     , m_appendStreamAsyncPartRunner(AsyncMethodRunner<SourceBuffer>::create(this, &SourceBuffer::appendStreamAsyncPart))
 {
-    ASSERT(m_webSourceBuffer);
-    ASSERT(m_source);
-    ASSERT(m_source->mediaElement());
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+
+    DCHECK(m_webSourceBuffer);
+    DCHECK(m_source);
+    DCHECK(m_source->mediaElement());
     ThreadState::current()->registerPreFinalizer(this);
     m_audioTracks = AudioTrackList::create(*m_source->mediaElement());
     m_videoTracks = VideoTrackList::create(*m_source->mediaElement());
@@ -136,7 +138,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
 
 SourceBuffer::~SourceBuffer()
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::~SourceBuffer", this);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
 }
 
 void SourceBuffer::dispose()
@@ -160,7 +162,7 @@ const AtomicString& SourceBuffer::sequenceKeyword()
 
 void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::setMode %p newMode=%s", this, newMode.utf8().data());
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") newMode=" << newMode;
     // Section 3.1 On setting mode attribute steps.
     // 1. Let new mode equal the new value being assigned to this attribute.
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
@@ -209,7 +211,7 @@ double SourceBuffer::timestampOffset() const
 
 void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::setTimestampOffset %p offset=%f", this, offset);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") offset=" << offset;
     // Section 3.1 timestampOffset attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-timestampOffset
     // 1. Let new timestamp offset equal the new value being assigned to this attribute.
@@ -237,13 +239,13 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionSt
 
 AudioTrackList& SourceBuffer::audioTracks()
 {
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
     return *m_audioTracks;
 }
 
 VideoTrackList& SourceBuffer::videoTracks()
 {
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
     return *m_videoTracks;
 }
 
@@ -254,7 +256,7 @@ double SourceBuffer::appendWindowStart() const
 
 void SourceBuffer::setAppendWindowStart(double start, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::setAppendWindowStart %p start=%f", this, start);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") start=" << start;
     // Section 3.1 appendWindowStart attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowStart
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -283,7 +285,7 @@ double SourceBuffer::appendWindowEnd() const
 
 void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::setAppendWindowEnd %p end=%f", this, end);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") end=" << end;
     // Section 3.1 appendWindowEnd attribute setter steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-SourceBuffer-appendWindowEnd
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
@@ -312,7 +314,7 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
 
 void SourceBuffer::appendBuffer(DOMArrayBuffer* data, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::appendBuffer size=%u", this, data->byteLength());
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") size=" << data->byteLength();
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->data()), data->byteLength(), exceptionState);
@@ -320,7 +322,7 @@ void SourceBuffer::appendBuffer(DOMArrayBuffer* data, ExceptionState& exceptionS
 
 void SourceBuffer::appendBuffer(DOMArrayBufferView* data, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::appendBuffer size=%u", this, data->byteLength());
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") size=" << data->byteLength();
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->baseAddress()), data->byteLength(), exceptionState);
@@ -334,7 +336,7 @@ void SourceBuffer::appendStream(Stream* stream, ExceptionState& exceptionState)
 
 void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::appendStream maxSize=%llu", this, maxSize);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") maxSize=" << maxSize;
     m_streamMaxSizeValid = maxSize > 0;
     if (m_streamMaxSizeValid)
         m_streamMaxSize = maxSize;
@@ -343,7 +345,7 @@ void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, Exce
 
 void SourceBuffer::abort(ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer::abort %p", this);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
     // Section 3.2 abort() method steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-abort-void
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source
@@ -374,7 +376,7 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
 
 void SourceBuffer::remove(double start, double end, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::remove start=%f end=%f", this, start, end);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") start=" << start << " end=" << end;
 
     // Section 3.2 remove() method steps.
     // 1. If duration equals NaN, then throw an InvalidAccessError exception and abort these steps.
@@ -449,7 +451,7 @@ void SourceBuffer::abortIfUpdating()
     } else if (m_pendingRemoveStart != -1) {
         traceEventName = "SourceBuffer::remove";
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
@@ -481,11 +483,11 @@ void SourceBuffer::removedFromMediaSource()
     if (isRemoved())
         return;
 
-    WTF_LOG(Media, "SourceBuffer(%p)::removedFromMediaSource", this);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
     abortIfUpdating();
 
     if (RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
-        ASSERT(m_source);
+        DCHECK(m_source);
         if (m_source->mediaElement()->audioTracks().length() > 0
             || m_source->mediaElement()->videoTracks().length() > 0) {
             removeMediaTracks();
@@ -500,12 +502,12 @@ void SourceBuffer::removedFromMediaSource()
 
 void SourceBuffer::removeMediaTracks()
 {
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
     // Spec: http://w3c.github.io/media-source/#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
-    ASSERT(m_source);
+    DCHECK(m_source);
 
     HTMLMediaElement* mediaElement = m_source->mediaElement();
-    ASSERT(mediaElement);
+    DCHECK(mediaElement);
     // 3. Let SourceBuffer audioTracks list equal the AudioTrackList object returned by sourceBuffer.audioTracks.
     // 4. If the SourceBuffer audioTracks list is not empty, then run the following steps:
     // 4.1 Let HTMLMediaElement audioTracks list equal the AudioTrackList object returned by the audioTracks attribute on the HTMLMediaElement.
@@ -577,10 +579,10 @@ T* findExistingTrackById(const TrackListBase<T>& trackList, const String& id)
 
 WebVector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>& newTracks)
 {
-    WTF_LOG(Media, "SourceBuffer::initializationSegmentReceived %p tracks=%zu", this, newTracks.size());
-    ASSERT(m_source);
-    ASSERT(m_source->mediaElement());
-    ASSERT(m_updating);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") tracks=" << newTracks.size();
+    DCHECK(m_source);
+    DCHECK(m_source->mediaElement());
+    DCHECK(m_updating);
 
     // TODO(servolk): Implement proper 'initialization segment received' algorithm according to MSE spec:
     // https://w3c.github.io/media-source/#sourcebuffer-init-segment-received
@@ -603,7 +605,7 @@ WebVector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(c
                 m_source->mediaElement()->audioTracks().add(audioTrack);
             } else {
                 audioTrack = findExistingTrackById(audioTracks(), trackInfo.byteStreamTrackId);
-                ASSERT(audioTrack);
+                DCHECK(audioTrack);
             }
             trackBase = audioTrack;
             result[resultIdx++] = audioTrack->trackId();
@@ -616,7 +618,7 @@ WebVector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(c
                 m_source->mediaElement()->videoTracks().add(videoTrack);
             } else {
                 videoTrack = findExistingTrackById(videoTracks(), trackInfo.byteStreamTrackId);
-                ASSERT(videoTrack);
+                DCHECK(videoTrack);
             }
             trackBase = videoTrack;
             result[resultIdx++] = videoTrack->trackId();
@@ -627,7 +629,9 @@ WebVector<WebMediaPlayer::TrackId> SourceBuffer::initializationSegmentReceived(c
 #if !LOG_DISABLED
         const char* logActionStr = m_firstInitializationSegmentReceived ? "using existing" : "added";
         const char* logTrackTypeStr = (trackInfo.trackType == WebMediaPlayer::AudioTrack) ? "audio" : "video";
-        WTF_LOG(Media, "Tracks (sb=%p): %s %sTrack %p trackId=%d id=%s label=%s lang=%s", this, logActionStr, logTrackTypeStr, trackBase, trackBase->trackId(), trackBase->id().utf8().data(), trackBase->label().utf8().data(), trackBase->language().utf8().data());
+        DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") " << logActionStr << " "
+            << logTrackTypeStr << " Track " << trackBase << "trackId=" << trackBase->trackId() << " id="
+            << trackBase->id() << " label=" << trackBase->label() << " lang=" << trackBase->language();
 #endif
     }
 
@@ -688,7 +692,7 @@ bool SourceBuffer::isRemoved() const
 
 void SourceBuffer::scheduleEvent(const AtomicString& eventName)
 {
-    ASSERT(m_asyncEventQueue);
+    DCHECK(m_asyncEventQueue);
 
     Event* event = Event::create(eventName);
     event->setTarget(this);
@@ -709,8 +713,8 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
     }
 
     // 3. If the HTMLMediaElement.error attribute is not null, then throw an InvalidStateError exception and abort these steps.
-    ASSERT(m_source);
-    ASSERT(m_source->mediaElement());
+    DCHECK(m_source);
+    DCHECK(m_source->mediaElement());
     if (m_source->mediaElement()->error()) {
         MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The HTMLMediaElement.error attribute is not null.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
@@ -725,7 +729,7 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
     // 5. Run the coded frame eviction algorithm.
     if (!evictCodedFrames(newDataSize)) {
         // 6. If the buffer full flag equals true, then throw a QUOTA_EXCEEDED_ERR exception and abort these steps.
-        WTF_LOG(Media, "SourceBuffer(%p)::prepareAppend -> throw QuotaExceededError", this);
+        DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") -> throw QuotaExceededError";
         MediaSource::logAndThrowDOMException(exceptionState, QuotaExceededError, "The SourceBuffer is full, and cannot free space to append additional buffers.");
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
         return false;
@@ -737,13 +741,12 @@ bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionSt
 
 bool SourceBuffer::evictCodedFrames(size_t newDataSize)
 {
-    ASSERT(m_source);
-    ASSERT(m_source->mediaElement());
+    DCHECK(m_source);
+    DCHECK(m_source->mediaElement());
     double currentTime = m_source->mediaElement()->currentTime();
     bool result = m_webSourceBuffer->evictCodedFrames(currentTime, newDataSize);
-    if (!result) {
-        WTF_LOG(Media, "SourceBuffer(%p)::evictCodedFrames failed. newDataSize=%zu currentTime=%f buffered=%s", this, newDataSize, currentTime, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
-    }
+    DVLOG_IF(SOURCE_BUFFER_LOG_LEVEL, !result) << __FUNCTION__ << "(" << this << ") failed. newDataSize=" << newDataSize
+        << " currentTime=" << currentTime << " buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
     return result;
 }
 
@@ -761,7 +764,7 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "prepareAppend");
 
     // 2. Add data to the end of the input buffer.
-    ASSERT(data || size == 0);
+    DCHECK(data || size == 0);
     if (data)
         m_pendingAppendData.append(data, size);
     m_pendingAppendDataOffset = 0;
@@ -780,14 +783,14 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
 
 void SourceBuffer::appendBufferAsyncPart()
 {
-    ASSERT(m_updating);
+    DCHECK(m_updating);
 
     // Section 3.5.4 Buffer Append Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-buffer-append
 
     // 1. Run the segment parser loop algorithm.
     // Step 2 doesn't apply since we run Step 1 synchronously here.
-    ASSERT(m_pendingAppendData.size() >= m_pendingAppendDataOffset);
+    DCHECK_GE(m_pendingAppendData.size(), m_pendingAppendDataOffset);
     size_t appendSize = m_pendingAppendData.size() - m_pendingAppendDataOffset;
 
     // Impose an arbitrary max size for a single append() call so that an append
@@ -830,14 +833,14 @@ void SourceBuffer::appendBufferAsyncPart()
     // 5. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
-    WTF_LOG(Media, "SourceBuffer(%p)::appendBuffer ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") ended. buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
 }
 
 void SourceBuffer::removeAsyncPart()
 {
-    ASSERT(m_updating);
-    ASSERT(m_pendingRemoveStart >= 0);
-    ASSERT(m_pendingRemoveStart < m_pendingRemoveEnd);
+    DCHECK(m_updating);
+    DCHECK_GE(m_pendingRemoveStart, 0);
+    DCHECK_LT(m_pendingRemoveStart, m_pendingRemoveEnd);
 
     // Section 3.2 remove() method steps
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-remove-void-double-start-double-end
@@ -892,9 +895,9 @@ void SourceBuffer::appendStreamInternal(Stream* stream, ExceptionState& exceptio
 
 void SourceBuffer::appendStreamAsyncPart()
 {
-    ASSERT(m_updating);
-    ASSERT(m_loader);
-    ASSERT(m_stream);
+    DCHECK(m_updating);
+    DCHECK(m_loader);
+    DCHECK(m_stream);
     TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendStream", this, "appendStreamAsyncPart");
 
     // Section 3.5.6 Stream Append Loop
@@ -914,9 +917,9 @@ void SourceBuffer::appendStreamAsyncPart()
 
 void SourceBuffer::appendStreamDone(bool success)
 {
-    ASSERT(m_updating);
-    ASSERT(m_loader);
-    ASSERT(m_stream);
+    DCHECK(m_updating);
+    DCHECK(m_loader);
+    DCHECK(m_stream);
 
     clearAppendStreamState();
 
@@ -938,7 +941,7 @@ void SourceBuffer::appendStreamDone(bool success)
     // 14. Queue a task to fire a simple event named updateend at this SourceBuffer object.
     scheduleEvent(EventTypeNames::updateend);
     TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
-    WTF_LOG(Media, "SourceBuffer(%p)::appendStream ended. buffered=%s", this, webTimeRangesToString(m_webSourceBuffer->buffered()).utf8().data());
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") ended. buffered=" << webTimeRangesToString(m_webSourceBuffer->buffered());
 }
 
 void SourceBuffer::clearAppendStreamState()
@@ -951,7 +954,7 @@ void SourceBuffer::clearAppendStreamState()
 
 void SourceBuffer::appendError(bool decodeError)
 {
-    WTF_LOG(Media, "SourceBuffer::appendError %p decodeError=%d", this, decodeError);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") decodeError=" << decodeError;
     // Section 3.5.3 Append Error Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
 
@@ -975,14 +978,14 @@ void SourceBuffer::appendError(bool decodeError)
 
 void SourceBuffer::didStartLoading()
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::didStartLoading", this);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
 }
 
 void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength)
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::didReceiveDataForClient dataLength=%u", this, dataLength);
-    ASSERT(m_updating);
-    ASSERT(m_loader);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") dataLength=" << dataLength;
+    DCHECK(m_updating);
+    DCHECK(m_loader);
 
     // Section 3.5.6 Stream Append Loop
     // http://w3c.github.io/media-source/#sourcebuffer-stream-append-loop
@@ -999,14 +1002,14 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
 
 void SourceBuffer::didFinishLoading()
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::didFinishLoading", this);
-    ASSERT(m_loader);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DCHECK(m_loader);
     appendStreamDone(true);
 }
 
 void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
-    WTF_LOG(Media, "SourceBuffer(%p)::didFail errorCode=%d", this, errorCode);
+    DVLOG(SOURCE_BUFFER_LOG_LEVEL) << __FUNCTION__ << "(" << this << ") errorCode=" << errorCode;
     // m_loader might be already released, in case appendStream has failed due
     // to evictCodedFrames failing in didReceiveDataForClient. In that case
     // appendStreamDone will be invoked from there, no need to repeat it here.

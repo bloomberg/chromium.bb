@@ -37,15 +37,15 @@ namespace blink {
 
 MediaSourceRegistry& MediaSourceRegistry::registry()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     DEFINE_STATIC_LOCAL(MediaSourceRegistry, instance, ());
     return instance;
 }
 
 void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegistrable* registrable)
 {
-    ASSERT(&registrable->registry() == this);
-    ASSERT(isMainThread());
+    DCHECK_EQ(&registrable->registry(), this);
+    DCHECK(isMainThread());
 
     MediaSource* source = static_cast<MediaSource*>(registrable);
     source->addedToRegistry();
@@ -54,7 +54,7 @@ void MediaSourceRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegis
 
 void MediaSourceRegistry::unregisterURL(const KURL& url)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     PersistentHeapHashMap<String, Member<MediaSource>>::iterator iter = m_mediaSources.find(url.getString());
     if (iter == m_mediaSources.end())
         return;
@@ -66,7 +66,7 @@ void MediaSourceRegistry::unregisterURL(const KURL& url)
 
 URLRegistrable* MediaSourceRegistry::lookup(const String& url)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return m_mediaSources.get(url);
 }
 

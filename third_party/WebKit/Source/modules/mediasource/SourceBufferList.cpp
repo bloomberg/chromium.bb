@@ -76,7 +76,7 @@ void SourceBufferList::clear()
 
 void SourceBufferList::scheduleEvent(const AtomicString& eventName)
 {
-    ASSERT(m_asyncEventQueue);
+    DCHECK(m_asyncEventQueue);
 
     Event* event = Event::create(eventName);
     event->setTarget(this);
