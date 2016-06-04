@@ -33,18 +33,19 @@ sys.path.insert(1, third_party_dir)
 import jinja2
 
 cmdline_parser = optparse.OptionParser()
-cmdline_parser.add_option("--domains")
-cmdline_parser.add_option("--output_dir")
-cmdline_parser.add_option("--output_package")
+cmdline_parser.add_option("--protocol")
+cmdline_parser.add_option("--include")
 cmdline_parser.add_option("--string_type")
 cmdline_parser.add_option("--export_macro")
-
-generate_domains = set()
+cmdline_parser.add_option("--output_dir")
+cmdline_parser.add_option("--output_package")
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
-    if (len(arg_values) == 0):
-        raise Exception("At least one plain argument expected (found %s)" % len(arg_values))
+    protocol_file = arg_options.protocol
+    if not protocol_file:
+        raise Exception("Protocol directory must be specified")
+    include_file = arg_options.include
     output_dirname = arg_options.output_dir
     if not output_dirname:
         raise Exception("Output directory must be specified")
@@ -57,27 +58,41 @@ try:
     export_macro = arg_options.export_macro
     if not export_macro:
         raise Exception("Export macro must be specified")
-    output_domains = arg_options.domains
-    if output_domains and len(output_domains):
-        for domain in output_domains.split(","):
-            generate_domains.add(domain)
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
     sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> --output_dir <output_dir> protocol.json ...\n")
     exit(1)
 
-json_api = {"domains": []}
 
-json_timestamp = 0
+input_file = open(protocol_file, "r")
+json_string = input_file.read()
+parsed_json = json.loads(json_string)
 
-for filename in arg_values:
-    json_timestamp = max(os.path.getmtime(filename), json_timestamp)
-    input_file = open(filename, "r")
-    json_string = input_file.read()
-    parsed_json = json.loads(json_string)
-    json_api["domains"] += parsed_json["domains"]
+
+# Make gyp / make generatos happy, otherwise make rebuilds world.
+def up_to_date():
+    template_ts = max(
+        os.path.getmtime(__file__),
+        os.path.getmtime(os.path.join(templates_dir, "TypeBuilder_h.template")),
+        os.path.getmtime(os.path.join(templates_dir, "TypeBuilder_cpp.template")),
+        os.path.getmtime(protocol_file))
+
+    for domain in parsed_json["domains"]:
+        name = domain["domain"]
+        h_path = os.path.join(output_dirname, name)
+        cpp_path = os.path.join(output_dirname, name)
+        if not os.path.exists(h_path) or not os.path.exists(cpp_path):
+            return False
+        generated_ts = max(os.path.getmtime(h_path), os.path.getmtime(cpp_path))
+        if generated_ts < template_ts:
+            return False
+    return True
+
+
+if up_to_date():
+    sys.exit()
+
 
 def to_title_case(name):
     return name[:1].upper() + name[1:]
@@ -212,6 +227,7 @@ type_definitions["boolean"] = create_primitive_type_definition("boolean")
 type_definitions["object"] = create_object_type_definition()
 type_definitions["any"] = create_any_type_definition()
 
+
 def wrap_array_definition(type):
     return {
         "return_type": "std::unique_ptr<protocol::Array<%s>>" % type["raw_type"],
@@ -244,9 +260,6 @@ def create_type_definitions():
             else:
                 type_definitions[domain["domain"] + "." + type["id"]] = create_primitive_type_definition(type["type"])
 
-patch_full_qualified_refs()
-create_type_definitions()
-
 
 def type_definition(name):
     return type_definitions[name]
@@ -275,18 +288,22 @@ def has_disable(commands):
     return False
 
 
-if os.path.exists(__file__):
-    current_script_timestamp = os.path.getmtime(__file__)
-else:
-    current_script_timestamp = 0
+generate_domains = []
+json_api = {}
+json_api["domains"] = parsed_json["domains"]
+
+for domain in parsed_json["domains"]:
+    generate_domains.append(domain["domain"])
+
+if include_file:
+    input_file = open(include_file, "r")
+    json_string = input_file.read()
+    parsed_json = json.loads(json_string)
+    json_api["domains"] += parsed_json["domains"]
 
 
-def is_up_to_date(file, template):
-    if not os.path.exists(file):
-        return False
-    timestamp = os.path.getmtime(file)
-    return timestamp > max(os.path.getmtime(module_path + template),
-                           current_script_timestamp, json_timestamp)
+patch_full_qualified_refs()
+create_type_definitions()
 
 if not os.path.exists(output_dirname):
     os.mkdir(output_dirname)
@@ -302,10 +319,6 @@ def generate(domain):
     class_name = domain["domain"]
     h_file_name = output_dirname + "/" + class_name + ".h"
     cpp_file_name = output_dirname + "/" + class_name + ".cpp"
-
-    if (is_up_to_date(cpp_file_name, cpp_template_name) and
-            is_up_to_date(h_file_name, h_template_name)):
-        return
 
     template_context = {
         "domain": domain,

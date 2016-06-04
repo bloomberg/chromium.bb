@@ -5,8 +5,6 @@
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
-visibility = [ "//third_party/WebKit/Source/*" ]
-
 action("instrumentation_sources") {
   script = "CodeGeneratorInstrumentation.py"
 
@@ -32,17 +30,19 @@ action("instrumentation_sources") {
 
 # inspector protocol -----------------------------------------------------------
 
-protocol_file = "../../devtools/protocol.json"
-
 action("protocol_sources") {
   script = "../../platform/inspector_protocol/CodeGenerator.py"
+  deps = [
+    ":protocol_version",
+  ]
   sources = [
     "../../platform/inspector_protocol/CodeGenerator.py",
+    "../../platform/inspector_protocol/TypeBuilder_cpp.template",
+    "../../platform/inspector_protocol/TypeBuilder_h.template",
   ]
   inputs = [
-    protocol_file,
-    "../../platform/inspector_protocol/TypeBuilder_h.template",
-    "../../platform/inspector_protocol/TypeBuilder_cpp.template",
+    "browser_protocol.json",
+    "../../platform/v8_inspector/js_protocol.json",
   ]
   outputs = [
     "$blink_core_output_dir/inspector/protocol/Accessibility.cpp",
@@ -100,9 +100,10 @@ action("protocol_sources") {
   ]
 
   args = [
-    rebase_path(protocol_file, root_build_dir),
-    "--domains",
-    "Accessibility,Animation,ApplicationCache,CacheStorage,Console,CSS,Database,DeviceOrientation,DOM,DOMDebugger,DOMStorage,Emulation,IndexedDB,Input,Inspector,IO,LayerTree,Memory,Network,Page,Rendering,Security,ServiceWorker,Storage,Tracing,Worker",
+    "--protocol",
+    rebase_path("browser_protocol.json", root_build_dir),
+    "--include",
+    rebase_path("../../platform/v8_inspector/js_protocol.json", root_build_dir),
     "--string_type",
     "String",
     "--export_macro",
@@ -111,5 +112,25 @@ action("protocol_sources") {
     rebase_path(blink_core_output_dir + "/inspector/protocol", root_build_dir),
     "--output_package",
     "core/inspector/protocol",
+  ]
+}
+
+action("protocol_version") {
+  script =
+      "../../platform/inspector_protocol/generate-inspector-protocol-version"
+
+  inputs = [
+    "browser_protocol.json",
+  ]
+  output_file = "$blink_core_output_dir/inspector/protocol.json"
+  outputs = [
+    output_file,
+  ]
+
+  args = [
+    "--o",
+    rebase_path(output_file, root_build_dir),
+    rebase_path("browser_protocol.json", root_build_dir),
+    rebase_path("../../platform/v8_inspector/js_protocol.json", root_build_dir),
   ]
 }

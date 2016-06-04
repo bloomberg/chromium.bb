@@ -56,6 +56,7 @@
       # GN version: //third_party/WebKit/Source/platform:inspector_protocol_sources
       'target_name': 'protocol_sources',
       'type': 'none',
+      'dependencies': ['protocol_version'],
       'actions': [
         {
           'action_name': 'generateV8InspectorProtocolBackendSources',
@@ -63,10 +64,11 @@
             '<@(jinja_module_files)',
             # The python script in action below.
             '../inspector_protocol/CodeGenerator.py',
-            # Input files for the script.
-            '../../devtools/protocol.json',
+            # Source code templates.
             '../inspector_protocol/TypeBuilder_h.template',
             '../inspector_protocol/TypeBuilder_cpp.template',
+            # Protocol definitions
+            'js_protocol.json',
           ],
           'outputs': [
             '<(blink_platform_output_dir)/v8_inspector/protocol/Debugger.cpp',
@@ -81,14 +83,38 @@
           'action': [
             'python',
             '../inspector_protocol/CodeGenerator.py',
-            '../../devtools/protocol.json',
-            '--domains', 'Debugger,HeapProfiler,Profiler,Runtime',
+            '--protocol', 'js_protocol.json',
             '--string_type', 'String16',
             '--export_macro', 'PLATFORM_EXPORT',
             '--output_dir', '<(blink_platform_output_dir)/v8_inspector/protocol',
             '--output_package', 'platform/v8_inspector/protocol',
           ],
-          'message': 'Generating protocol backend sources from protocol.json',
+          'message': 'Generating protocol backend sources from json definitions.',
+        },
+      ]
+    },
+    {
+      # GN version: //third_party/WebKit/Source/core/inspector:protocol_version
+      'target_name': 'protocol_version',
+      'type': 'none',
+      'actions': [
+         {
+          'action_name': 'generateV8InspectorProtocolVersion',
+          'inputs': [
+            '../inspector_protocol/generate-inspector-protocol-version',
+            'js_protocol.json',
+          ],
+          'outputs': [
+            '<(blink_platform_output_dir)/v8_inspector/protocol.json',
+          ],
+          'action': [
+            'python',
+            '../inspector_protocol/generate-inspector-protocol-version',
+            '--o',
+            '<@(_outputs)',
+            'js_protocol.json',
+          ],
+          'message': 'Validate v8_inspector protocol for backwards compatibility and generate version file',
         },
       ]
     },

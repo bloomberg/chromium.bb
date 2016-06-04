@@ -53,7 +53,6 @@
       'type': 'none',
       'hard_dependency': 1,
       'dependencies': [
-        'inspector_protocol/protocol.gyp:protocol_version',
         'v8_inspector/v8_inspector.gyp:inspector_debugger_script',
         'v8_inspector/v8_inspector.gyp:inspector_injected_script',
         'v8_inspector/v8_inspector.gyp:protocol_sources',

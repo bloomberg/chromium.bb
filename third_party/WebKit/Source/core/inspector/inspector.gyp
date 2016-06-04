@@ -17,7 +17,6 @@
       # GN version: //third_party/WebKit/Source/core/inspector:instrumentation_sources
       'target_name': 'instrumentation_sources',
       'type': 'none',
-      'dependencies': [],
       'actions': [
         {
           'action_name': 'generateInspectorInstrumentation',
@@ -45,9 +44,10 @@
       ]
     },
     {
-      # GN version: //third_party/WebKit/Source/core:inspector_protocol_sources
+      # GN version: //third_party/WebKit/Source/core/inspector:protocol_sources
       'target_name': 'protocol_sources',
       'type': 'none',
+      'dependencies': ['protocol_version'],
       'actions': [
         {
           'action_name': 'generateInspectorProtocolBackendSources',
@@ -55,10 +55,12 @@
             '<@(jinja_module_files)',
             # The python script in action below.
             '../../platform/inspector_protocol/CodeGenerator.py',
-            # Input files for the script.
-            '../../devtools/protocol.json',
+            # Source code templates.
             '../../platform/inspector_protocol/TypeBuilder_h.template',
             '../../platform/inspector_protocol/TypeBuilder_cpp.template',
+            # Protocol definition
+            'browser_protocol.json',
+            '../../platform/v8_inspector/js_protocol.json',
           ],
           'outputs': [
             '<(blink_core_output_dir)/inspector/protocol/Accessibility.cpp',
@@ -117,14 +119,40 @@
           'action': [
             'python',
             '../../platform/inspector_protocol/CodeGenerator.py',
-            '../../devtools/protocol.json',
-            '--domains', 'Accessibility,Animation,ApplicationCache,CacheStorage,Console,CSS,Database,DeviceOrientation,DOM,DOMDebugger,DOMStorage,Emulation,IndexedDB,Input,Inspector,IO,LayerTree,Memory,Network,Page,Rendering,Security,ServiceWorker,Storage,Tracing,Worker',
+            '--protocol', 'browser_protocol.json',
+            '--include', '../../platform/v8_inspector/js_protocol.json',
             '--string_type', 'String',
             '--export_macro', 'CORE_EXPORT',
             '--output_dir', '<(blink_core_output_dir)/inspector/protocol',
             '--output_package', 'core/inspector/protocol',
           ],
-          'message': 'Generating Inspector protocol backend sources from protocol.json',
+          'message': 'Generating Inspector protocol backend sources from json definitions',
+        },
+      ]
+    },
+    {
+      # GN version: //third_party/WebKit/Source/core/inspector:protocol_version
+      'target_name': 'protocol_version',
+      'type': 'none',
+      'actions': [
+         {
+          'action_name': 'generateInspectorProtocolVersion',
+          'inputs': [
+            '../../platform/inspector_protocol/generate-inspector-protocol-version',
+            'browser_protocol.json',
+          ],
+          'outputs': [
+            '<(blink_core_output_dir)/inspector/protocol.json',
+          ],
+          'action': [
+            'python',
+            '../../platform/inspector_protocol/generate-inspector-protocol-version',
+            '--o',
+            '<@(_outputs)',
+            'browser_protocol.json',
+            '../../platform/v8_inspector/js_protocol.json'
+          ],
+          'message': 'Validate inspector protocol for backwards compatibility and generate version file',
         },
       ]
     },

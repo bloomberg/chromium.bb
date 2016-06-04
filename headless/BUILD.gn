@@ -56,9 +56,11 @@ grit("headless_lib_resources_grit") {
 
 action("gen_devtools_client_api") {
   script = "//headless/lib/browser/client_api_generator.py"
-
+  deps = [
+    "//third_party/WebKit/Source/core/inspector:protocol_version",
+  ]
   inputs = [
-    "//third_party/WebKit/Source/devtools/protocol.json",
+    "$root_gen_dir/blink/core/inspector/protocol.json",
   ]
 
   outputs = [
