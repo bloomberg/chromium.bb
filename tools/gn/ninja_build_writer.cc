@@ -23,6 +23,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file_manager.h"
 #include "tools/gn/ninja_utils.h"
+#include "tools/gn/pool.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/switches.h"
 #include "tools/gn/target.h"
@@ -129,24 +130,26 @@ NinjaBuildWriter::NinjaBuildWriter(
     const std::vector<const Settings*>& all_settings,
     const Toolchain* default_toolchain,
     const std::vector<const Target*>& default_toolchain_targets,
+    const std::vector<const Pool*>& all_pools,
     std::ostream& out,
     std::ostream& dep_out)
     : build_settings_(build_settings),
       all_settings_(all_settings),
       default_toolchain_(default_toolchain),
       default_toolchain_targets_(default_toolchain_targets),
+      all_pools_(all_pools),
       out_(out),
       dep_out_(dep_out),
       path_output_(build_settings->build_dir(),
-                   build_settings->root_path_utf8(), ESCAPE_NINJA) {
-}
+                   build_settings->root_path_utf8(),
+                   ESCAPE_NINJA) {}
 
 NinjaBuildWriter::~NinjaBuildWriter() {
 }
 
 bool NinjaBuildWriter::Run(Err* err) {
   WriteNinjaRules();
-  WriteLinkPool();
+  WriteAllPools();
   WriteSubninjas();
   return WritePhonyAndAllRules(err);
 }
@@ -157,13 +160,14 @@ bool NinjaBuildWriter::RunAndWriteFile(
     const std::vector<const Settings*>& all_settings,
     const Toolchain* default_toolchain,
     const std::vector<const Target*>& default_toolchain_targets,
+    const std::vector<const Pool*>& all_pools,
     Err* err) {
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, "build.ninja");
 
   std::stringstream file;
   std::stringstream depfile;
   NinjaBuildWriter gen(build_settings, all_settings, default_toolchain,
-                       default_toolchain_targets, file, depfile);
+                       default_toolchain_targets, all_pools, file, depfile);
   if (!gen.Run(err))
     return false;
 
@@ -224,10 +228,17 @@ void NinjaBuildWriter::WriteNinjaRules() {
   out_ << std::endl;
 }
 
-void NinjaBuildWriter::WriteLinkPool() {
+void NinjaBuildWriter::WriteAllPools() {
   out_ << "pool link_pool\n"
        << "  depth = " << default_toolchain_->concurrent_links() << std::endl
        << std::endl;
+
+  for (const Pool* pool : all_pools_) {
+    std::string pool_name = pool->GetNinjaName(default_toolchain_->label());
+    out_ << "pool " << pool_name << std::endl
+         << "  depth = " << pool->depth() << std::endl
+         << std::endl;
+  }
 }
 
 void NinjaBuildWriter::WriteSubninjas() {

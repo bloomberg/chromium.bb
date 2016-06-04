@@ -222,6 +222,14 @@ Value RunLoadableModule(Scope* scope,
                         BlockNode* block,
                         Err* err);
 
+extern const char kPool[];
+extern const char kPool_HelpShort[];
+extern const char kPool_Help[];
+Value RunPool(const FunctionCallNode* function,
+              const std::vector<Value>& args,
+              Scope* block_scope,
+              Err* err);
+
 extern const char kPrint[];
 extern const char kPrint_HelpShort[];
 extern const char kPrint_Help[];

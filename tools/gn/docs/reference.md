@@ -2143,6 +2143,47 @@
 
 
 ```
+## **pool**: Defines a pool object.
+
+```
+  Pool objects can be applied to a tool to limit the parallelism of the
+  build. This object has a single property "depth" corresponding to
+  the number of tasks that may run simultaneously.
+
+  As the file containing the pool definition may be executed in the
+  of more than one toolchain it is recommended to specify an explicit
+  toolchain when definining and referencing a pool.
+
+  A pool is referenced by its label just like a target.
+
+```
+
+### **Variables**
+
+```
+  depth*
+  * = required
+
+```
+
+### **Example**
+
+```
+  if (current_toolchain == default_toolchain) {
+    pool("link_pool") {
+      depth = 1
+    }
+  }
+
+  toolchain("toolchain") {
+    tool("link") {
+      command = "..."
+      pool = ":link_pool($default_toolchain)")
+    }
+  }
+
+
+```
 ## **print**: Prints to the console.
 
 ```
@@ -2912,6 +2953,14 @@
             "{{output_dir}}/{{target_output_name}}{{output_extension}}",
             "{{output_dir}}/{{target_output_name}}.lib",
           ]
+
+    pool [label, optional]
+
+        Label of the pool to use for the tool. Pools are used to limit
+        the number of tasks that can execute concurrently during the
+        build.
+
+        See also "gn help pool".
 
     link_output  [string with substitutions]
     depend_output  [string with substitutions]

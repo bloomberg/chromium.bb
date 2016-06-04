@@ -86,6 +86,11 @@ std::string Toolchain::ToolTypeToName(ToolType type) {
   }
 }
 
+Tool* Toolchain::GetTool(ToolType type) {
+  DCHECK(type != TYPE_NONE);
+  return tools_[static_cast<size_t>(type)].get();
+}
+
 const Tool* Toolchain::GetTool(ToolType type) const {
   DCHECK(type != TYPE_NONE);
   return tools_[static_cast<size_t>(type)].get();

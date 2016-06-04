@@ -20,6 +20,12 @@ Config* Item::AsConfig() {
 const Config* Item::AsConfig() const {
   return nullptr;
 }
+Pool* Item::AsPool() {
+  return nullptr;
+}
+const Pool* Item::AsPool() const {
+  return nullptr;
+}
 Target* Item::AsTarget() {
   return nullptr;
 }
@@ -40,6 +46,8 @@ std::string Item::GetItemTypeName() const {
     return "target";
   if (AsToolchain())
     return "toolchain";
+  if (AsPool())
+    return "pool";
   NOTREACHED();
   return "this thing that I have no idea what it is";
 }

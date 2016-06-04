@@ -78,6 +78,7 @@ class Toolchain : public Item {
   static std::string ToolTypeToName(ToolType type);
 
   // Returns null if the tool hasn't been defined.
+  Tool* GetTool(ToolType type);
   const Tool* GetTool(ToolType type) const;
 
   // Set a tool. When all tools are configured, you should call

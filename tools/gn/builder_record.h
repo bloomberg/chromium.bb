@@ -35,7 +35,8 @@ class BuilderRecord {
     ITEM_UNKNOWN,
     ITEM_TARGET,
     ITEM_CONFIG,
-    ITEM_TOOLCHAIN
+    ITEM_TOOLCHAIN,
+    ITEM_POOL
   };
 
   BuilderRecord(ItemType type, const Label& label);

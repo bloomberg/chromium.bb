@@ -11,6 +11,7 @@
 #include "tools/gn/build_settings.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/ninja_utils.h"
+#include "tools/gn/pool.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
@@ -113,6 +114,10 @@ void NinjaToolchainWriter::WriteToolRule(const Toolchain::ToolType type,
       type == Toolchain::TYPE_SOLINK_MODULE ||
       type == Toolchain::TYPE_LINK) {
     out_ << kIndent << "pool = link_pool\n";
+  } else if (tool->pool().ptr) {
+    std::string pool_name =
+        tool->pool().ptr->GetNinjaName(settings_->default_toolchain_label());
+    out_ << kIndent << "pool = " << pool_name << std::endl;
   }
 
   if (tool->restat())

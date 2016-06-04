@@ -26,6 +26,8 @@ const char* BuilderRecord::GetNameForType(ItemType type) {
       return "config";
     case ITEM_TOOLCHAIN:
       return "toolchain";
+    case ITEM_POOL:
+      return "pool";
     case ITEM_UNKNOWN:
     default:
       return "unknown";
@@ -41,6 +43,8 @@ bool BuilderRecord::IsItemOfType(const Item* item, ItemType type) {
       return !!item->AsConfig();
     case ITEM_TOOLCHAIN:
       return !!item->AsToolchain();
+    case ITEM_POOL:
+      return !!item->AsPool();
     case ITEM_UNKNOWN:
     default:
       return false;
@@ -55,6 +59,8 @@ BuilderRecord::ItemType BuilderRecord::TypeOfItem(const Item* item) {
     return ITEM_CONFIG;
   if (item->AsToolchain())
     return ITEM_TOOLCHAIN;
+  if (item->AsPool())
+    return ITEM_POOL;
 
   NOTREACHED();
   return ITEM_UNKNOWN;

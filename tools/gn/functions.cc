@@ -15,6 +15,7 @@
 #include "tools/gn/err.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
+#include "tools/gn/pool.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
@@ -678,6 +679,94 @@ Value RunSetSourcesAssignmentFilter(Scope* scope,
   return Value();
 }
 
+// pool ------------------------------------------------------------------------
+
+const char kPool[] = "pool";
+const char kPool_HelpShort[] =
+    "pool: Defines a pool object.";
+const char kPool_Help[] =
+    "pool: Defines a pool object.\n"
+    "\n"
+    "  Pool objects can be applied to a tool to limit the parallelism of the\n"
+    "  build. This object has a single property \"depth\" corresponding to\n"
+    "  the number of tasks that may run simultaneously.\n"
+    "\n"
+    "  As the file containing the pool definition may be executed in the\n"
+    "  of more than one toolchain it is recommended to specify an explicit\n"
+    "  toolchain when definining and referencing a pool.\n"
+    "\n"
+    "  A pool is referenced by its label just like a target.\n"
+    "\n"
+    "Variables\n"
+    "\n"
+    "  depth*\n"
+    "  * = required\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  if (current_toolchain == default_toolchain) {\n"
+    "    pool(\"link_pool\") {\n"
+    "      depth = 1\n"
+    "    }\n"
+    "  }\n"
+    "\n"
+    "  toolchain(\"toolchain\") {\n"
+    "    tool(\"link\") {\n"
+    "      command = \"...\"\n"
+    "      pool = \":link_pool($default_toolchain)\")\n"
+    "    }\n"
+    "  }\n";
+
+const char kDepth[] = "depth";
+
+Value RunPool(const FunctionCallNode* function,
+              const std::vector<Value>& args,
+              Scope* scope,
+              Err* err) {
+  NonNestableBlock non_nestable(scope, function, "pool");
+  if (!non_nestable.Enter(err))
+    return Value();
+
+  if (!EnsureSingleStringArg(function, args, err) ||
+      !EnsureNotProcessingImport(function, scope, err))
+    return Value();
+
+  Label label(MakeLabelForScope(scope, function, args[0].string_value()));
+
+  if (g_scheduler->verbose_logging())
+    g_scheduler->Log("Defining pool", label.GetUserVisibleName(true));
+
+  // Get the pool depth. It is an error to define a pool without a depth,
+  // so check first for the presence of the value.
+  const Value* depth = scope->GetValue(kDepth, true);
+  if (!depth) {
+    *err = Err(function, "Can't define a pool without depth.");
+    return Value();
+  }
+
+  if (!depth->VerifyTypeIs(Value::INTEGER, err))
+    return Value();
+
+  if (depth->int_value() < 0) {
+    *err = Err(function, "depth must be positive or nul.");
+    return Value();
+  }
+
+  // Create the new pool.
+  std::unique_ptr<Pool> pool(new Pool(scope->settings(), label));
+  pool->set_depth(depth->int_value());
+
+  // Save the generated item.
+  Scope::ItemVector* collector = scope->GetItemCollector();
+  if (!collector) {
+    *err = Err(function, "Can't define a pool in this context.");
+    return Value();
+  }
+  collector->push_back(pool.release());
+
+  return Value();
+}
+
 // print -----------------------------------------------------------------------
 
 const char kPrint[] = "print";
@@ -826,6 +915,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(GetPathInfo, false)
     INSERT_FUNCTION(GetTargetOutputs, false)
     INSERT_FUNCTION(Import, false)
+    INSERT_FUNCTION(Pool, false)
     INSERT_FUNCTION(Print, false)
     INSERT_FUNCTION(ProcessFileTemplate, false)
     INSERT_FUNCTION(ReadFile, false)

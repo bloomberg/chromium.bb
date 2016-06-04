@@ -12,6 +12,7 @@
 
 class Config;
 class ParseNode;
+class Pool;
 class Settings;
 class Target;
 class Toolchain;
@@ -38,6 +39,8 @@ class Item {
   // Manual RTTI.
   virtual Config* AsConfig();
   virtual const Config* AsConfig() const;
+  virtual Pool* AsPool();
+  virtual const Pool* AsPool() const;
   virtual Target* AsTarget();
   virtual const Target* AsTarget() const;
   virtual Toolchain* AsToolchain();

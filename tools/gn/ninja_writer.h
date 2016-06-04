@@ -14,6 +14,7 @@
 class Builder;
 class BuildSettings;
 class Err;
+class Pool;
 class Settings;
 class Target;
 
@@ -36,12 +37,13 @@ class NinjaWriter {
   NinjaWriter(const BuildSettings* build_settings, Builder* builder);
   ~NinjaWriter();
 
-  bool WriteToolchains(
-      std::vector<const Settings*>* all_settings,
-      std::vector<const Target*>* default_targets,
-      Err* err);
+  bool WriteToolchains(std::vector<const Settings*>* all_settings,
+                       std::vector<const Target*>* default_targets,
+                       std::vector<const Pool*>* all_pools,
+                       Err* err);
   bool WriteRootBuildfiles(const std::vector<const Settings*>& all_settings,
                            const std::vector<const Target*>& default_targets,
+                           const std::vector<const Pool*>& all_pools,
                            Err* err);
 
   const BuildSettings* build_settings_;

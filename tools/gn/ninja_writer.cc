@@ -29,9 +29,11 @@ bool NinjaWriter::RunAndWriteFiles(const BuildSettings* build_settings,
 
   std::vector<const Settings*> all_settings;
   std::vector<const Target*> default_targets;
-  if (!writer.WriteToolchains(&all_settings, &default_targets, err))
+  std::vector<const Pool*> all_pools;
+  if (!writer.WriteToolchains(&all_settings, &default_targets, &all_pools, err))
     return false;
-  return writer.WriteRootBuildfiles(all_settings, default_targets, err);
+  return writer.WriteRootBuildfiles(all_settings, default_targets, all_pools,
+                                    err);
 }
 
 // static
@@ -42,11 +44,14 @@ bool NinjaWriter::RunAndWriteToolchainFiles(
     Err* err) {
   NinjaWriter writer(build_settings, builder);
   std::vector<const Target*> default_targets;
-  return writer.WriteToolchains(all_settings, &default_targets, err);
+  std::vector<const Pool*> all_pools;
+  return writer.WriteToolchains(all_settings, &default_targets, &all_pools,
+                                err);
 }
 
 bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
                                   std::vector<const Target*>* default_targets,
+                                  std::vector<const Pool*>* all_pools,
                                   Err* err) {
   // Categorize all targets by toolchain.
   typedef std::map<Label, std::vector<const Target*> > CategorizedMap;
@@ -79,6 +84,7 @@ bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
 
   // Write out the toolchain buildfiles, and also accumulate the set of
   // all settings and find the list of targets in the default toolchain.
+  UniqueVector<const Pool*> pools;
   for (const auto& i : categorized) {
     const Settings* settings =
         builder_->loader()->GetToolchainSettings(i.first);
@@ -91,8 +97,16 @@ bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
           "Couldn't open toolchain buildfile(s) for writing").PrintToStdout();
       return false;
     }
+
+    for (int j = Toolchain::TYPE_NONE + 1; j < Toolchain::TYPE_NUMTYPES; j++) {
+      Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(j);
+      const Tool* tool = toolchain->GetTool(tool_type);
+      if (tool && tool->pool().ptr)
+        pools.push_back(tool->pool().ptr);
+    }
   }
 
+  *all_pools = pools.vector();
   *default_targets = categorized[default_label];
   return true;
 }
@@ -100,6 +114,7 @@ bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
 bool NinjaWriter::WriteRootBuildfiles(
     const std::vector<const Settings*>& all_settings,
     const std::vector<const Target*>& default_targets,
+    const std::vector<const Pool*>& all_pools,
     Err* err) {
   // All Settings objects should have the same default toolchain, and there
   // should always be at least one settings object in the build.
@@ -110,5 +125,5 @@ bool NinjaWriter::WriteRootBuildfiles(
   // Write the root buildfile.
   return NinjaBuildWriter::RunAndWriteFile(build_settings_, all_settings,
                                            default_toolchain, default_targets,
-                                           err);
+                                           all_pools, err);
 }

@@ -14,6 +14,7 @@
 
 class BuildSettings;
 class Err;
+class Pool;
 class Settings;
 class Target;
 class Toolchain;
@@ -28,12 +29,14 @@ class NinjaBuildWriter {
       const std::vector<const Settings*>& all_settings,
       const Toolchain* default_toolchain,
       const std::vector<const Target*>& default_toolchain_targets,
+      const std::vector<const Pool*>& all_pools,
       Err* err);
 
   NinjaBuildWriter(const BuildSettings* settings,
                    const std::vector<const Settings*>& all_settings,
                    const Toolchain* default_toolchain,
                    const std::vector<const Target*>& default_toolchain_targets,
+                   const std::vector<const Pool*>& all_pools,
                    std::ostream& out,
                    std::ostream& dep_out);
   ~NinjaBuildWriter();
@@ -42,7 +45,7 @@ class NinjaBuildWriter {
 
  private:
   void WriteNinjaRules();
-  void WriteLinkPool();
+  void WriteAllPools();
   void WriteSubninjas();
   bool WritePhonyAndAllRules(Err* err);
 
@@ -52,6 +55,7 @@ class NinjaBuildWriter {
   std::vector<const Settings*> all_settings_;
   const Toolchain* default_toolchain_;
   std::vector<const Target*> default_toolchain_targets_;
+  std::vector<const Pool*> all_pools_;
   std::ostream& out_;
   std::ostream& dep_out_;
   PathOutput path_output_;
