@@ -39,6 +39,14 @@ private:
     // dirtiedRows and dirtiedColumns.
     const LayoutTableCell* primaryCellToPaint(unsigned row, unsigned column, const CellSpan& dirtiedRows, const CellSpan& dirtiedColumns) const;
 
+    enum ItemToPaint {
+        PaintCollapsedBorders,
+        PaintSection
+    };
+    void paintRepeatingHeaderGroup(const PaintInfo&, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue, ItemToPaint);
+    void paintSection(const PaintInfo&, const LayoutPoint&);
+    void paintCollapsedSectionBorders(const PaintInfo&, const LayoutPoint&, const CollapsedBorderValue&);
+
     const LayoutTableSection& m_layoutTableSection;
 };
 

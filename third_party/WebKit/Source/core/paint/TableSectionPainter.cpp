@@ -35,7 +35,43 @@ inline const LayoutTableCell* TableSectionPainter::primaryCellToPaint(unsigned r
     return cell;
 }
 
+void TableSectionPainter::paintRepeatingHeaderGroup(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue, ItemToPaint itemToPaint)
+{
+    if (m_layoutTableSection.getPaginationBreakability() == LayoutBox::AllowAnyBreaks)
+        return;
+    // TODO(rhogan): Should we paint a header repeatedly if it's self-painting?
+    if (m_layoutTableSection.hasSelfPaintingLayer())
+        return;
+    LayoutTable* table = m_layoutTableSection.table();
+    LayoutUnit pageHeight = table->pageLogicalHeightForOffset(LayoutUnit());
+    if (!pageHeight)
+        return;
+
+    LayoutPoint paginationOffset = paintOffset;
+    // Move paginationOffset to the top of the second page.
+    paginationOffset.move(0, pageHeight - table->pageLogicalOffset());
+    // Now move paginationOffset to the top of the page the cull rect starts on.
+    if (paintInfo.cullRect().m_rect.y() > paginationOffset.y())
+        paginationOffset.move(0, pageHeight * static_cast<int>((paintInfo.cullRect().m_rect.y() - paginationOffset.y()) / pageHeight));
+    LayoutUnit bottomBound = std::min(LayoutUnit(paintInfo.cullRect().m_rect.maxY()), paintOffset.y() + table->logicalHeight());
+    while (paginationOffset.y() < bottomBound) {
+        if (itemToPaint == PaintCollapsedBorders)
+            paintCollapsedSectionBorders(paintInfo, paginationOffset, currentBorderValue);
+        else
+            paintSection(paintInfo, paginationOffset);
+        paginationOffset.move(0, pageHeight);
+    }
+}
+
 void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    paintSection(paintInfo, paintOffset);
+    LayoutTable* table = m_layoutTableSection.table();
+    if (table->header() == m_layoutTableSection)
+        paintRepeatingHeaderGroup(paintInfo, paintOffset, CollapsedBorderValue(), PaintSection);
+}
+
+void TableSectionPainter::paintSection(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     DCHECK(!m_layoutTableSection.needsLayout());
     // avoid crashing on bugs that cause us to paint with dirty layout
@@ -77,6 +113,14 @@ static inline bool compareCellPositionsWithOverflowingCells(LayoutTableCell* ele
 }
 
 void TableSectionPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue)
+{
+    paintCollapsedSectionBorders(paintInfo, paintOffset, currentBorderValue);
+    LayoutTable* table = m_layoutTableSection.table();
+    if (table->header() == m_layoutTableSection)
+        paintRepeatingHeaderGroup(paintInfo, paintOffset, currentBorderValue, PaintCollapsedBorders);
+}
+
+void TableSectionPainter::paintCollapsedSectionBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue)
 {
     if (!m_layoutTableSection.numRows() || !m_layoutTableSection.table()->effectiveColumns().size())
         return;

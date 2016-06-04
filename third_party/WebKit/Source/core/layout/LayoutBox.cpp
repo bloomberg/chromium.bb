@@ -4835,7 +4835,7 @@ LayoutUnit LayoutBox::pageLogicalHeightForOffset(LayoutUnit offset) const
     LayoutView* layoutView = view();
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
     if (!flowThread)
-        return layoutView->layoutState()->pageLogicalHeight();
+        return layoutView->pageLogicalHeight();
     return flowThread->pageLogicalHeightForOffset(offset + offsetFromLogicalTopOfFirstPage());
 }
 

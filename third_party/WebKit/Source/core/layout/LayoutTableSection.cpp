@@ -984,6 +984,11 @@ void LayoutTableSection::layoutRows()
             if (isPaginated) {
                 paginationStrutOnRow = paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
                 if (paginationStrutOnRow) {
+                    LayoutTableSection* header = table()->header();
+                    // If we have a header group we will paint it at the top of each page, move the rows
+                    // down to accomodate it.
+                    if (header && header != this)
+                        paginationStrutOnRow += header->logicalHeight().toInt();
                     for (unsigned rowIndex = r; rowIndex <= totalRows; rowIndex++)
                         m_rowPos[rowIndex] += paginationStrutOnRow;
                 }
@@ -1111,7 +1116,10 @@ void LayoutTableSection::layoutRows()
 
 int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row, LayoutUnit logicalOffset) const
 {
-    if (row->getPaginationBreakability() == AllowAnyBreaks)
+    // Even if the row allows us to break-inside, we will want to put a strut on the row if we have a header
+    // group that wants to appear at the top of each page.
+    bool tableHeaderForcesStrut = table()->header() ? table()->header()->getPaginationBreakability() != AllowAnyBreaks : false;
+    if (row->getPaginationBreakability() == AllowAnyBreaks && !tableHeaderForcesStrut)
         return 0;
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
     if (!pageLogicalHeight)
