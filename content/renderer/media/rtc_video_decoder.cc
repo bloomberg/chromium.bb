@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/base/bind.h"
 #include "third_party/webrtc/base/refcount.h"
+#include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/video_frame.h"
 
 #if defined(OS_WIN)
@@ -180,7 +181,10 @@ int32_t RTCVideoDecoder::Decode(
   if (state_ == DECODE_ERROR) {
     LOG(ERROR) << "Decoding error occurred.";
     // Try reseting the session up to |kNumVDAErrorsHandled| times.
-    if (vda_error_counter_ > kNumVDAErrorsBeforeSWFallback) {
+    // Check if SW H264 implementation is available before falling back.
+    if (vda_error_counter_ > kNumVDAErrorsBeforeSWFallback &&
+        (video_codec_type_ != webrtc::kVideoCodecH264 ||
+         webrtc::H264Decoder::IsSupported())) {
       DLOG(ERROR) << vda_error_counter_
                   << " errors reported by VDA, falling back to software decode";
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
