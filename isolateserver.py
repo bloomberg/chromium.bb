@@ -1192,6 +1192,15 @@ class IsolateServer(StorageApi):
     return response is not None
 
 
+class CacheMiss(Exception):
+  """Raised when an item is not in cache."""
+
+  def __init__(self, digest):
+    self.digest = digest
+    super(CacheMiss, self).__init__(
+        'Item with digest %r is not found in cache' % digest)
+
+
 class LocalCache(object):
   """Local cache that stores objects fetched via Storage.
 
@@ -1312,7 +1321,10 @@ class MemoryCache(LocalCache):
 
   def read(self, digest):
     with self._lock:
-      return self._contents[digest]
+      try:
+        return self._contents[digest]
+      except KeyError:
+        raise CacheMiss(digest)
 
   def write(self, digest, content):
     # Assemble whole stream before taking the lock.
@@ -1459,8 +1471,11 @@ class DiskCache(LocalCache):
       self._delete_file(digest, UNKNOWN_FILE_SIZE)
 
   def read(self, digest):
-    with fs.open(self._path(digest), 'rb') as f:
-      return f.read()
+    try:
+      with fs.open(self._path(digest), 'rb') as f:
+        return f.read()
+    except IOError:
+      raise CacheMiss(digest)
 
   def write(self, digest, content):
     assert content is not None
