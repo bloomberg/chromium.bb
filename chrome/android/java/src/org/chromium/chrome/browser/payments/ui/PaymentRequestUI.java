@@ -166,22 +166,22 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private final Dialog mDialog;
     private final ViewGroup mFullContainer;
-    private final ViewGroup mBottomSheetContainer;
-    private final PaymentResultUI mResultUI;
+    private final ViewGroup mRequestView;
+    private final PaymentResultUIManager mResultView;
 
-    private final ScrollView mPaymentContainer;
-    private final LinearLayout mPaymentContainerLayout;
-    private final DualControlLayout mButtonBar;
-    private final Button mEditButton;
-    private final Button mPayButton;
-    private final View mCloseButton;
+    private ScrollView mPaymentContainer;
+    private LinearLayout mPaymentContainerLayout;
+    private DualControlLayout mButtonBar;
+    private Button mEditButton;
+    private Button mPayButton;
+    private View mCloseButton;
 
-    private final LineItemBreakdownSection mOrderSummarySection;
-    private final ExtraTextSection mShippingSummarySection;
-    private final OptionSection mShippingAddressSection;
-    private final OptionSection mShippingOptionSection;
-    private final OptionSection mPaymentMethodSection;
-    private final List<SectionSeparator> mSectionSeparators;
+    private LineItemBreakdownSection mOrderSummarySection;
+    private ExtraTextSection mShippingSummarySection;
+    private OptionSection mShippingAddressSection;
+    private OptionSection mShippingOptionSection;
+    private OptionSection mPaymentMethodSection;
+    private List<SectionSeparator> mSectionSeparators;
 
     private ViewGroup mSelectedSection;
     private boolean mIsShowingEditDialog;
@@ -229,68 +229,22 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
-        // Inflate the layout.
+        mResultView = new PaymentResultUIManager(mContext, title, origin);
+        mRequestView =
+                (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
+        prepareRequestView(activity, title, origin);
+
+        // To handle the specced animations, the dialog is entirely contained within a translucent
+        // FrameLayout.  This could eventually be converted to a real BottomSheetDialog, but that
+        // requires exploration of how interactions would work when the dialog can be sent back and
+        // forth between the peeking and expanded state.
         mFullContainer = new FrameLayout(mContext);
         mFullContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.payments_ui_scrim));
-        LayoutInflater.from(mContext).inflate(R.layout.payment_request, mFullContainer);
-
-        mBottomSheetContainer =
-                (ViewGroup) mFullContainer.findViewById(R.id.payment_request_layout);
-        mResultUI = new PaymentResultUI(mContext, title, origin);
-
-        mPaymentContainer = (ScrollView) mBottomSheetContainer.findViewById(R.id.paymentContainer);
-        ((TextView) mBottomSheetContainer.findViewById(R.id.pageTitle)).setText(title);
-        ((TextView) mBottomSheetContainer.findViewById(R.id.hostname)).setText(origin);
-
-        // Set up the buttons.
-        mCloseButton = mBottomSheetContainer.findViewById(R.id.close_button);
-        mCloseButton.setOnClickListener(this);
-        mPayButton = DualControlLayout.createButtonForLayout(
-                activity, true, activity.getString(R.string.payments_pay_button), this);
-        mEditButton = DualControlLayout.createButtonForLayout(
-                activity, false, activity.getString(R.string.payments_edit_button), this);
-        mButtonBar = (DualControlLayout) mBottomSheetContainer.findViewById(R.id.buttonBar);
-        mButtonBar.setAlignment(DualControlLayout.ALIGN_END);
-        mButtonBar.setStackedMargin(activity.getResources().getDimensionPixelSize(
-                R.dimen.infobar_margin_between_stacked_buttons));
-        mButtonBar.addView(mPayButton);
-        mButtonBar.addView(mEditButton);
-
-        // Create all the possible sections.
-        mSectionSeparators = new ArrayList<SectionSeparator>();
-        mPaymentContainerLayout =
-                (LinearLayout) mBottomSheetContainer.findViewById(R.id.paymentContainerLayout);
-        mOrderSummarySection = new LineItemBreakdownSection(activity,
-                activity.getString(R.string.payments_order_summary_label), this);
-        mShippingSummarySection = new ExtraTextSection(activity,
-                activity.getString(R.string.payments_shipping_summary_label), this);
-        mShippingAddressSection = new OptionSection(activity,
-                activity.getString(R.string.payments_shipping_address_label),
-                activity.getString(R.string.payments_select_shipping_address_prompt), this);
-        mShippingOptionSection = new OptionSection(activity,
-                activity.getString(R.string.payments_shipping_option_label),
-                activity.getString(R.string.payments_select_shipping_option_prompt), this);
-        mPaymentMethodSection = new OptionSection(activity,
-                activity.getString(R.string.payments_method_of_payment_label), null, this);
-
-        // Add the necessary sections to the layout.
-        mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
-        if (mRequestShipping) {
-            // The shipping breakout sections are only added if they are needed.
-            mPaymentContainerLayout.addView(mShippingSummarySection, new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
-        }
-        mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        mBottomSheetContainer.addOnLayoutChangeListener(new FadeInAnimator());
-        mBottomSheetContainer.addOnLayoutChangeListener(new PeekingAnimator());
-
-        // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
-        mPayButton.setEnabled(false);
+        FrameLayout.LayoutParams bottomSheetParams = new FrameLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        bottomSheetParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        mFullContainer.addView(mRequestView, bottomSheetParams);
 
         // Set up the dialog.
         mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
@@ -343,13 +297,84 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 // Hide the loading indicators and show the real sections.
                 mPaymentContainer.setVisibility(View.VISIBLE);
                 mButtonBar.setVisibility(View.VISIBLE);
-                mBottomSheetContainer.removeView(
-                        mBottomSheetContainer.findViewById(R.id.waiting_progress));
-                mBottomSheetContainer.removeView(
-                        mBottomSheetContainer.findViewById(R.id.waiting_message));
-                mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
+                mRequestView.removeView(mRequestView.findViewById(R.id.waiting_progress));
+                mRequestView.removeView(mRequestView.findViewById(R.id.message));
+                mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
             }
         });
+    }
+
+    /**
+     * Prepares the PaymentRequestUI for initial display.
+     *
+     * TODO(dfalcantara): Ideally, everything related to the request and its views would just be put
+     *                    into its own class but that'll require yanking out a lot of this class.
+     *
+     * @param activity Activity displaying the UI.
+     * @param title    Title of the page.
+     * @param origin   Host of the page.
+     */
+    private void prepareRequestView(Activity activity, String title, String origin) {
+        // Remove views specific to the result dialog.
+        View okButton = mRequestView.findViewById(R.id.ok_button);
+        ((ViewGroup) okButton.getParent()).removeView(okButton);
+
+        // Indicate that we're preparing the dialog for display.
+        TextView messageView = (TextView) mRequestView.findViewById(R.id.message);
+        messageView.setText(R.string.payments_loading_message);
+
+        ((TextView) mRequestView.findViewById(R.id.page_title)).setText(title);
+        ((TextView) mRequestView.findViewById(R.id.hostname)).setText(origin);
+
+        // Set up the buttons.
+        mCloseButton = mRequestView.findViewById(R.id.close_button);
+        mCloseButton.setOnClickListener(this);
+        mPayButton = DualControlLayout.createButtonForLayout(
+                activity, true, activity.getString(R.string.payments_pay_button), this);
+        mEditButton = DualControlLayout.createButtonForLayout(
+                activity, false, activity.getString(R.string.payments_edit_button), this);
+        mButtonBar = (DualControlLayout) mRequestView.findViewById(R.id.button_bar);
+        mButtonBar.setAlignment(DualControlLayout.ALIGN_END);
+        mButtonBar.setStackedMargin(activity.getResources().getDimensionPixelSize(
+                R.dimen.infobar_margin_between_stacked_buttons));
+        mButtonBar.addView(mPayButton);
+        mButtonBar.addView(mEditButton);
+
+        // Create all the possible sections.
+        mSectionSeparators = new ArrayList<SectionSeparator>();
+        mPaymentContainer = (ScrollView) mRequestView.findViewById(R.id.option_container);
+        mPaymentContainerLayout =
+                (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
+        mOrderSummarySection = new LineItemBreakdownSection(activity,
+                activity.getString(R.string.payments_order_summary_label), this);
+        mShippingSummarySection = new ExtraTextSection(activity,
+                activity.getString(R.string.payments_shipping_summary_label), this);
+        mShippingAddressSection = new OptionSection(activity,
+                activity.getString(R.string.payments_shipping_address_label),
+                activity.getString(R.string.payments_select_shipping_address_prompt), this);
+        mShippingOptionSection = new OptionSection(activity,
+                activity.getString(R.string.payments_shipping_option_label),
+                activity.getString(R.string.payments_select_shipping_option_prompt), this);
+        mPaymentMethodSection = new OptionSection(activity,
+                activity.getString(R.string.payments_method_of_payment_label), null, this);
+
+        // Add the necessary sections to the layout.
+        mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
+        if (mRequestShipping) {
+            // The shipping breakout sections are only added if they are needed.
+            mPaymentContainerLayout.addView(mShippingSummarySection, new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
+        }
+        mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mRequestView.addOnLayoutChangeListener(new FadeInAnimator());
+        mRequestView.addOnLayoutChangeListener(new PeekingAnimator());
+
+        // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
+        mPayButton.setEnabled(false);
     }
 
     /**
@@ -370,7 +395,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void close(boolean paymentSuccess, final Runnable callback) {
         mIsClientClosing = true;
-        mResultUI.update(paymentSuccess, new Runnable() {
+        mResultView.update(paymentSuccess, new Runnable() {
             @Override
             public void run() {
                 dismissDialog(false);
@@ -388,8 +413,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param bitmap The bitmap to show next to the title.
      */
     public void setTitleBitmap(Bitmap bitmap) {
-        ((ImageView) mBottomSheetContainer.findViewById(R.id.pageFavIcon)).setImageBitmap(bitmap);
-        mResultUI.setBitmap(bitmap);
+        ((ImageView) mRequestView.findViewById(R.id.icon_view)).setImageBitmap(bitmap);
+        mResultView.setBitmap(bitmap);
     }
 
     /**
@@ -518,12 +543,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Animate the bottom sheet going away, but keep the scrim visible.
         new DisappearingAnimator(false);
 
-        int floatingDialogWidth = PaymentResultUI.computeMaxWidth(
+        int floatingDialogWidth = PaymentResultUIManager.computeMaxWidth(
                 mContext, mFullContainer.getMeasuredWidth(), mFullContainer.getMeasuredHeight());
         FrameLayout.LayoutParams overlayParams =
                 new FrameLayout.LayoutParams(floatingDialogWidth, LayoutParams.WRAP_CONTENT);
         overlayParams.gravity = Gravity.CENTER;
-        mFullContainer.addView(mResultUI.getView(), overlayParams);
+        mFullContainer.addView(mResultView.getView(), overlayParams);
     }
 
     private void updatePayButtonEnabled() {
@@ -556,8 +581,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private void expand(ViewGroup section) {
         if (!mIsShowingEditDialog) {
             // Container now takes the full height of the screen, animating towards it.
-            mBottomSheetContainer.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-            mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator(true));
+            mRequestView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
+            mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(true));
 
             // Swap out Views that combine multiple fields with individual fields.
             if (mRequestShipping && mShippingSummarySection.getParent() != null) {
@@ -681,7 +706,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom,
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            mBottomSheetContainer.removeOnLayoutChangeListener(this);
+            mRequestView.removeOnLayoutChangeListener(this);
 
             Animator scrimFader = ObjectAnimator.ofInt(mFullContainer.getBackground(),
                     AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 0, 127);
@@ -703,10 +728,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom,
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            mBottomSheetContainer.removeOnLayoutChangeListener(this);
+            mRequestView.removeOnLayoutChangeListener(this);
 
             mSheetAnimator = ObjectAnimator.ofFloat(
-                    mBottomSheetContainer, View.TRANSLATION_Y, mAnimatorTranslation, 0);
+                    mRequestView, View.TRANSLATION_Y, mAnimatorTranslation, 0);
             mSheetAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
             mSheetAnimator.setInterpolator(new LinearOutSlowInInterpolator());
             mSheetAnimator.start();
@@ -732,7 +757,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             // The dialog container initially starts off translated downward, gradually decreasing
             // the translation until it is in the right place on screen.
             float containerTranslation = mContainerHeightDifference * progress;
-            mBottomSheetContainer.setTranslationY(containerTranslation);
+            mRequestView.setTranslationY(containerTranslation);
 
             if (mIsButtonBarLockedInPlace) {
                 // The button bar is translated along the dialog so that is looks like it stays in
@@ -754,7 +779,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
             if (mSheetAnimator != null) mSheetAnimator.cancel();
 
-            mBottomSheetContainer.removeOnLayoutChangeListener(this);
+            mRequestView.removeOnLayoutChangeListener(this);
             mContainerHeightDifference = (bottom - top) - (oldBottom - oldTop);
 
             ValueAnimator containerAnimator = ValueAnimator.ofFloat(1f, 0f);
@@ -776,9 +801,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         @Override
         public void onAnimationEnd(Animator animation) {
             // Reset the layout so that everything is in the expected place.
-            mBottomSheetContainer.setTranslationY(0);
+            mRequestView.setTranslationY(0);
             mButtonBar.setTranslationY(0);
-            mBottomSheetContainer.requestLayout();
+            mRequestView.requestLayout();
 
             // Indicate that the dialog is ready to use.
             mSheetAnimator = null;
@@ -797,9 +822,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mIsDialogClosing = removeDialog;
 
             Animator sheetFader = ObjectAnimator.ofFloat(
-                    mBottomSheetContainer, View.ALPHA, mBottomSheetContainer.getAlpha(), 0f);
+                    mRequestView, View.ALPHA, mRequestView.getAlpha(), 0f);
             Animator sheetTranslator = ObjectAnimator.ofFloat(
-                    mBottomSheetContainer, View.TRANSLATION_Y, 0f, mAnimatorTranslation);
+                    mRequestView, View.TRANSLATION_Y, 0f, mAnimatorTranslation);
 
             AnimatorSet current = new AnimatorSet();
             current.setDuration(DIALOG_EXIT_ANIMATION_MS);
@@ -820,7 +845,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         @Override
         public void onAnimationEnd(Animator animation) {
             mSheetAnimator = null;
-            mFullContainer.removeView(mBottomSheetContainer);
+            mFullContainer.removeView(mRequestView);
             if (mIsDialogClosing && mDialog.isShowing()) mDialog.dismiss();
         }
     }

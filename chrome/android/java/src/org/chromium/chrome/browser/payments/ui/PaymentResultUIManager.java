@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,7 +20,7 @@ import org.chromium.chrome.R;
 /**
  * Displays the status of a payment request to the user.
  */
-public class PaymentResultUI {
+public class PaymentResultUIManager {
     private final ViewGroup mResultLayout;
 
     /**
@@ -31,11 +32,32 @@ public class PaymentResultUI {
      * @param title   Title of the webpage.
      * @param origin  Origin of the webpage.
      */
-    public PaymentResultUI(Context context, String title, String origin) {
+    public PaymentResultUIManager(Context context, String title, String origin) {
         mResultLayout =
-                (ViewGroup) LayoutInflater.from(context).inflate(R.layout.payment_result, null);
+                (ViewGroup) LayoutInflater.from(context).inflate(R.layout.payment_request, null);
         ((TextView) mResultLayout.findViewById(R.id.page_title)).setText(title);
         ((TextView) mResultLayout.findViewById(R.id.hostname)).setText(origin);
+
+        // In lieu of being able to set the elevation, use a drop shadow background.
+        mResultLayout.setBackgroundResource(R.drawable.menu_bg);
+
+        // Remove views specific to the request dialog.
+        int[] viewsToRemove = {R.id.option_container, R.id.button_bar, R.id.close_button};
+        for (int i = 0; i < viewsToRemove.length; i++) {
+            View toRemove = mResultLayout.findViewById(viewsToRemove[i]);
+            ((ViewGroup) toRemove.getParent()).removeView(toRemove);
+        }
+
+        // Expand the page information to take up the space formerly occupied by the X.
+        int titleEndMargin = context.getResources().getDimensionPixelSize(
+                R.dimen.payments_section_large_spacing);
+        View pageInfoGroup = mResultLayout.findViewById(R.id.page_info);
+        ApiCompatibilityUtils.setMarginEnd(
+                (MarginLayoutParams) pageInfoGroup.getLayoutParams(), titleEndMargin);
+
+        // Indicate that we're processing the data.
+        TextView messageView = (TextView) mResultLayout.findViewById(R.id.message);
+        messageView.setText(R.string.payments_processing_message);
     }
 
     /**
@@ -49,18 +71,17 @@ public class PaymentResultUI {
             // Dismiss the dialog immediately.
             callback.run();
         } else {
-            // Show the result of the payment.
+            // Describe the error.
             Context context = mResultLayout.getContext();
-            TextView resultMessage = (TextView) mResultLayout.findViewById(R.id.waiting_message);
+            TextView resultMessage = (TextView) mResultLayout.findViewById(R.id.message);
+            resultMessage.setText(context.getString(R.string.payments_error_message));
+            resultMessage.setTextColor(ApiCompatibilityUtils.getColor(
+                    context.getResources(), R.color.error_text_color));
+            ApiCompatibilityUtils.setTextAlignment(resultMessage, View.TEXT_ALIGNMENT_VIEW_START);
 
             // Hide the progress bar.
             View progressBar = mResultLayout.findViewById(R.id.waiting_progress);
             progressBar.setVisibility(View.GONE);
-
-            // Describe the error.
-            resultMessage.setText(context.getString(R.string.payments_error_message));
-            resultMessage.setTextColor(ApiCompatibilityUtils.getColor(
-                    context.getResources(), R.color.error_text_color));
 
             // Make the user explicitly click on the OK button to dismiss the dialog.
             View confirmButton = mResultLayout.findViewById(R.id.ok_button);
