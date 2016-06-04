@@ -324,6 +324,14 @@ NET_EXPORT bool ParseExtensions(
     const der::Input& extensions_tlv,
     std::map<der::Input, ParsedExtension>* extensions) WARN_UNUSED_RESULT;
 
+// Removes the extension with OID |oid| from |unconsumed_extensions| and fills
+// |extension| with the matching extension value. If there was no extension
+// matching |oid| then returns |false|.
+NET_EXPORT bool ConsumeExtension(
+    const der::Input& oid,
+    std::map<der::Input, ParsedExtension>* unconsumed_extensions,
+    ParsedExtension* extension) WARN_UNUSED_RESULT;
+
 struct ParsedBasicConstraints {
   bool is_ca = false;
   bool has_path_len = false;

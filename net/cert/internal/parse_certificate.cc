@@ -508,6 +508,19 @@ NET_EXPORT bool ParseExtensions(
   return true;
 }
 
+NET_EXPORT bool ConsumeExtension(
+    const der::Input& oid,
+    std::map<der::Input, ParsedExtension>* unconsumed_extensions,
+    ParsedExtension* extension) {
+  auto it = unconsumed_extensions->find(oid);
+  if (it == unconsumed_extensions->end())
+    return false;
+
+  *extension = it->second;
+  unconsumed_extensions->erase(it);
+  return true;
+}
+
 bool ParseBasicConstraints(const der::Input& basic_constraints_tlv,
                            ParsedBasicConstraints* out) {
   der::Parser parser(basic_constraints_tlv);
