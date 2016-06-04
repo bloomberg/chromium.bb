@@ -52,12 +52,6 @@ class SynchronousCompositorFilter
   void UnregisterOutputSurface(
       int routing_id,
       SynchronousCompositorOutputSurface* output_surface) override;
-  void RegisterBeginFrameSource(int routing_id,
-                                SynchronousCompositorExternalBeginFrameSource*
-                                    begin_frame_source) override;
-  void UnregisterBeginFrameSource(int routing_id,
-                                  SynchronousCompositorExternalBeginFrameSource*
-                                      begin_frame_source) override;
 
   // SynchronousInputHandlerProxyClient overrides.
   void DidAddSynchronousHandlerProxy(
@@ -94,7 +88,6 @@ class SynchronousCompositorFilter
 
   bool filter_ready_;
   struct Entry {
-    SynchronousCompositorExternalBeginFrameSource* begin_frame_source;
     SynchronousCompositorOutputSurface* output_surface;
     ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy;
 

@@ -8,7 +8,6 @@
 
 namespace content {
 
-class SynchronousCompositorExternalBeginFrameSource;
 class SynchronousCompositorOutputSurface;
 
 class SynchronousCompositorRegistry {
@@ -19,12 +18,6 @@ class SynchronousCompositorRegistry {
   virtual void UnregisterOutputSurface(
       int routing_id,
       SynchronousCompositorOutputSurface* output_surface) = 0;
-  virtual void RegisterBeginFrameSource(
-      int routing_id,
-      SynchronousCompositorExternalBeginFrameSource* begin_frame_source) = 0;
-  virtual void UnregisterBeginFrameSource(
-      int routing_id,
-      SynchronousCompositorExternalBeginFrameSource* begin_frame_source) = 0;
 
  protected:
   virtual ~SynchronousCompositorRegistry() {}

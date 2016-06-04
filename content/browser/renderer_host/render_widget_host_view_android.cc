@@ -1459,22 +1459,17 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
                "frame_time_us", frame_time.ToInternalValue());
 
-  if (using_browser_compositor_) {
-    // TODO(brianderson): Replace this hardcoded deadline after Android
-    // switches to Surfaces and the Browser's commit isn't in the critcal path.
-    base::TimeTicks deadline = frame_time + (vsync_period * 0.6);
-
-    host_->Send(new ViewMsg_BeginFrame(
-        host_->GetRoutingID(),
-        cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
-                                   vsync_period, cc::BeginFrameArgs::NORMAL)));
-  } else if (sync_compositor_) {
-    // The synchronous compositor synchronously does it's work in this call.
-    // It does not use a deadline.
-    sync_compositor_->BeginFrame(cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks(), vsync_period,
-        cc::BeginFrameArgs::NORMAL));
-  }
+  // Synchronous compositor does not use deadline-based scheduling.
+  // TODO(brianderson): Replace this hardcoded deadline after Android
+  // switches to Surfaces and the Browser's commit isn't in the critcal path.
+  base::TimeTicks deadline =
+      sync_compositor_ ? base::TimeTicks() : frame_time + (vsync_period * 0.6);
+  host_->Send(new ViewMsg_BeginFrame(
+      host_->GetRoutingID(),
+      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                 vsync_period, cc::BeginFrameArgs::NORMAL)));
+  if (sync_compositor_)
+    sync_compositor_->DidSendBeginFrame();
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {

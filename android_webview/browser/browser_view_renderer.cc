@@ -378,7 +378,6 @@ void BrowserViewRenderer::SetIsPaused(bool paused) {
                        "paused",
                        paused);
   is_paused_ = paused;
-  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::SetViewVisibility(bool view_visible) {
@@ -397,7 +396,6 @@ void BrowserViewRenderer::SetWindowVisibility(bool window_visible) {
                        "window_visible",
                        window_visible);
   window_visible_ = window_visible;
-  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::OnSizeChanged(int width, int height) {
@@ -424,14 +422,12 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
   size_.SetSize(width, height);
   if (offscreen_pre_raster_)
     UpdateMemoryPolicy();
-  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
   attached_to_window_ = false;
   ReleaseHardware();
-  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::ZoomBy(float delta) {
@@ -508,7 +504,6 @@ void BrowserViewRenderer::DidDestroyCompositor(
   DCHECK(compositor_);
   if (compositor_ == compositor)
     compositor_ = nullptr;
-  compositor->SetIsActive(false);
   compositor_map_.erase(GetCompositorID(compositor));
 }
 
@@ -519,11 +514,7 @@ void BrowserViewRenderer::DidBecomeCurrent(
                        TRACE_EVENT_SCOPE_THREAD);
   DCHECK(compositor);
   DCHECK(GetCompositorID(compositor));
-  if (compositor_)
-    compositor_->SetIsActive(false);
-
   compositor_ = compositor;
-  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
@@ -704,13 +695,6 @@ void BrowserViewRenderer::PostInvalidate() {
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(compositor_);
   return compositor_->DemandDrawSw(canvas);
-}
-
-void BrowserViewRenderer::UpdateCompositorIsActive() {
-  if (compositor_) {
-    compositor_->SetIsActive(!is_paused_ &&
-                             (!attached_to_window_ || window_visible_));
-  }
 }
 
 std::string BrowserViewRenderer::ToString() const {

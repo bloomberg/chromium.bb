@@ -90,11 +90,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   virtual void SynchronouslyZoomBy(float zoom_delta,
                                    const gfx::Point& anchor) = 0;
 
-  // Called by the embedder to notify that the compositor is active. The
-  // compositor won't ask for vsyncs when it's inactive. NOTE: The compositor
-  // starts off as inactive and needs a SetActive(true) call to begin.
-  virtual void SetIsActive(bool is_active) = 0;
-
   // Called by the embedder to notify that the OnComputeScroll step is happening
   // and if any input animation is active, it should tick now.
   virtual void OnComputeScroll(base::TimeTicks animation_time) = 0;

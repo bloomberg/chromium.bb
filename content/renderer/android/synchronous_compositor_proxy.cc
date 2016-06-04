@@ -24,11 +24,9 @@ namespace content {
 SynchronousCompositorProxy::SynchronousCompositorProxy(
     int routing_id,
     IPC::Sender* sender,
-    SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
     ui::SynchronousInputHandlerProxy* input_handler_proxy)
     : routing_id_(routing_id),
       sender_(sender),
-      begin_frame_source_(begin_frame_source),
       input_handler_proxy_(input_handler_proxy),
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -43,17 +41,13 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       max_page_scale_factor_(0.f),
       need_animate_scroll_(false),
       need_invalidate_count_(0u),
-      need_begin_frame_(false),
       did_activate_pending_tree_count_(0u) {
-  DCHECK(begin_frame_source_);
   DCHECK(input_handler_proxy_);
-  begin_frame_source_->SetClient(this);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(this);
 }
 
 SynchronousCompositorProxy::~SynchronousCompositorProxy() {
   SetOutputSurface(nullptr);
-  begin_frame_source_->SetClient(nullptr);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(nullptr);
 }
 
@@ -98,14 +92,6 @@ void SynchronousCompositorProxy::UpdateRootLayerState(
   }
 }
 
-void SynchronousCompositorProxy::OnNeedsBeginFramesChange(
-    bool needs_begin_frames) {
-  if (need_begin_frame_ == needs_begin_frames)
-    return;
-  need_begin_frame_ = needs_begin_frames;
-  SendAsyncRendererStateIfNeeded();
-}
-
 void SynchronousCompositorProxy::Invalidate() {
   ++need_invalidate_count_;
   SendAsyncRendererStateIfNeeded();
@@ -135,7 +121,6 @@ void SynchronousCompositorProxy::PopulateCommonParams(
   params->max_page_scale_factor = max_page_scale_factor_;
   params->need_animate_scroll = need_animate_scroll_;
   params->need_invalidate_count = need_invalidate_count_;
-  params->need_begin_frame = need_begin_frame_;
   params->did_activate_pending_tree_count = did_activate_pending_tree_count_;
 }
 
@@ -145,7 +130,8 @@ void SynchronousCompositorProxy::OnMessageReceived(
     return;
 
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorProxy, message)
-    IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, BeginFrame)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SynchronizeRendererState,
+                        PopulateCommonParams)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawHw,
                                     DemandDrawHw)
@@ -153,7 +139,6 @@ void SynchronousCompositorProxy::OnMessageReceived(
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZeroSharedMemory, ZeroSharedMemory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawSw,
                                     DemandDrawSw)
-    IPC_MESSAGE_HANDLER(SyncCompositorMsg_UpdateState, ProcessCommonParams)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZoomBy, SynchronouslyZoomBy)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetScroll, SetScroll)
   IPC_END_MESSAGE_MAP()
@@ -163,29 +148,13 @@ bool SynchronousCompositorProxy::Send(IPC::Message* message) {
   return sender_->Send(message);
 }
 
-void SynchronousCompositorProxy::BeginFrame(
-    const SyncCompositorCommonBrowserParams& common_params,
-    const cc::BeginFrameArgs& args,
-    SyncCompositorCommonRendererParams* common_renderer_params) {
-  DCHECK(!inside_receive_);
-  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
-
-  ProcessCommonParams(common_params);
-  if (need_begin_frame_) {
-    begin_frame_source_->BeginFrame(args);
-  }
-  PopulateCommonParams(common_renderer_params);
-}
-
 void SynchronousCompositorProxy::DemandDrawHw(
-    const SyncCompositorCommonBrowserParams& common_params,
     const SyncCompositorDemandDrawHwParams& params,
     IPC::Message* reply_message) {
   DCHECK(!inside_receive_);
   DCHECK(reply_message);
 
   inside_receive_ = true;
-  ProcessCommonParams(common_params);
 
   if (output_surface_) {
     base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
@@ -234,7 +203,6 @@ struct SynchronousCompositorProxy::SharedMemoryWithSize {
 };
 
 void SynchronousCompositorProxy::SetSharedMemory(
-    const SyncCompositorCommonBrowserParams& common_params,
     const SyncCompositorSetSharedMemoryParams& params,
     bool* success,
     SyncCompositorCommonRendererParams* common_renderer_params) {
@@ -242,7 +210,6 @@ void SynchronousCompositorProxy::SetSharedMemory(
   base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
 
   *success = false;
-  ProcessCommonParams(common_params);
   if (!base::SharedMemory::IsHandleValid(params.shm_handle))
     return;
 
@@ -256,18 +223,21 @@ void SynchronousCompositorProxy::SetSharedMemory(
 }
 
 void SynchronousCompositorProxy::ZeroSharedMemory() {
-  DCHECK(!software_draw_shm_->zeroed);
+  // It is possible for this to get called twice, eg. if draw is called before
+  // the OutputSurface is ready. Just ignore duplicated calls rather than
+  // inventing a complicated system to avoid it.
+  if (software_draw_shm_->zeroed)
+    return;
+
   memset(software_draw_shm_->shm.memory(), 0, software_draw_shm_->buffer_size);
   software_draw_shm_->zeroed = true;
 }
 
 void SynchronousCompositorProxy::DemandDrawSw(
-    const SyncCompositorCommonBrowserParams& common_params,
     const SyncCompositorDemandDrawSwParams& params,
     IPC::Message* reply_message) {
   DCHECK(!inside_receive_);
   inside_receive_ = true;
-  ProcessCommonParams(common_params);
   if (output_surface_) {
     base::AutoReset<IPC::Message*> scoped_software_draw_reply(
         &software_draw_reply_, reply_message);
@@ -341,9 +311,7 @@ void SynchronousCompositorProxy::SwapBuffers(uint32_t output_surface_id,
 }
 
 void SynchronousCompositorProxy::OnComputeScroll(
-    const SyncCompositorCommonBrowserParams& common_params,
     base::TimeTicks animation_time) {
-  ProcessCommonParams(common_params);
   if (need_animate_scroll_) {
     need_animate_scroll_ = false;
     input_handler_proxy_->SynchronouslyAnimate(animation_time);
@@ -351,13 +319,11 @@ void SynchronousCompositorProxy::OnComputeScroll(
 }
 
 void SynchronousCompositorProxy::SynchronouslyZoomBy(
-    const SyncCompositorCommonBrowserParams& common_params,
     float zoom_delta,
     const gfx::Point& anchor,
     SyncCompositorCommonRendererParams* common_renderer_params) {
   DCHECK(!inside_receive_);
   base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
-  ProcessCommonParams(common_params);
   input_handler_proxy_->SynchronouslyZoomBy(zoom_delta, anchor);
   PopulateCommonParams(common_renderer_params);
 }
@@ -368,12 +334,6 @@ void SynchronousCompositorProxy::SetScroll(
     return;
   total_scroll_offset_ = new_total_scroll_offset;
   input_handler_proxy_->SynchronouslySetRootScrollOffset(total_scroll_offset_);
-}
-
-void SynchronousCompositorProxy::ProcessCommonParams(
-    const SyncCompositorCommonBrowserParams& common_params) {
-  begin_frame_source_->SetBeginFrameSourcePaused(
-      common_params.begin_frame_source_paused);
 }
 
 }  // namespace content

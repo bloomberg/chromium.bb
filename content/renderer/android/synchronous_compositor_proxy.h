@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -34,7 +33,6 @@ class CompositorFrame;
 namespace content {
 
 class SynchronousCompositorOutputSurface;
-struct SyncCompositorCommonBrowserParams;
 struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
 struct SyncCompositorDemandDrawSwParams;
@@ -42,13 +40,11 @@ struct SyncCompositorSetSharedMemoryParams;
 
 class SynchronousCompositorProxy
     : public ui::SynchronousInputHandler,
-      public SynchronousCompositorExternalBeginFrameSourceClient,
       public SynchronousCompositorOutputSurfaceClient {
  public:
   SynchronousCompositorProxy(
       int routing_id,
       IPC::Sender* sender,
-      SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
       ui::SynchronousInputHandlerProxy* input_handler_proxy);
   ~SynchronousCompositorProxy() override;
 
@@ -60,9 +56,6 @@ class SynchronousCompositorProxy
                             float page_scale_factor,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
-
-  // SynchronousCompositorExternalBeginFrameSourceClient overrides.
-  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // SynchronousCompositorOutputSurfaceClient overrides.
   void DidActivatePendingTree() override;
@@ -77,30 +70,19 @@ class SynchronousCompositorProxy
  private:
   struct SharedMemoryWithSize;
 
-  void ProcessCommonParams(
-      const SyncCompositorCommonBrowserParams& common_params);
-  void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
-
   // IPC handlers.
-  void BeginFrame(const SyncCompositorCommonBrowserParams& common_params,
-                  const cc::BeginFrameArgs& args,
-                  SyncCompositorCommonRendererParams* common_renderer_params);
-  void OnComputeScroll(const SyncCompositorCommonBrowserParams& common_params,
-                       base::TimeTicks animation_time);
-  void DemandDrawHw(const SyncCompositorCommonBrowserParams& common_params,
-                    const SyncCompositorDemandDrawHwParams& params,
+  void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
+  void OnComputeScroll(base::TimeTicks animation_time);
+  void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
                     IPC::Message* reply_message);
   void SetSharedMemory(
-      const SyncCompositorCommonBrowserParams& common_params,
       const SyncCompositorSetSharedMemoryParams& params,
       bool* success,
       SyncCompositorCommonRendererParams* common_renderer_params);
   void ZeroSharedMemory();
-  void DemandDrawSw(const SyncCompositorCommonBrowserParams& common_params,
-                    const SyncCompositorDemandDrawSwParams& params,
+  void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
                     IPC::Message* reply_message);
   void SynchronouslyZoomBy(
-      const SyncCompositorCommonBrowserParams& common_params,
       float zoom_delta,
       const gfx::Point& anchor,
       SyncCompositorCommonRendererParams* common_renderer_params);
@@ -119,7 +101,6 @@ class SynchronousCompositorProxy
 
   const int routing_id_;
   IPC::Sender* const sender_;
-  SynchronousCompositorExternalBeginFrameSource* const begin_frame_source_;
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
   const bool use_in_process_zero_copy_software_draw_;
   SynchronousCompositorOutputSurface* output_surface_;
@@ -140,7 +121,6 @@ class SynchronousCompositorProxy
   float max_page_scale_factor_;
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
-  bool need_begin_frame_;
   uint32_t did_activate_pending_tree_count_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorProxy);

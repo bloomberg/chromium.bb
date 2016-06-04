@@ -38,7 +38,6 @@ class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
 class WebContents;
 struct DidOverscrollParams;
-struct SyncCompositorCommonBrowserParams;
 struct SyncCompositorCommonRendererParams;
 
 class SynchronousCompositorHost : public SynchronousCompositor {
@@ -64,11 +63,10 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float zoom_delta, const gfx::Point& anchor) override;
-  void SetIsActive(bool is_active) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
   void DidOverscroll(const DidOverscrollParams& over_scroll_params);
-  void BeginFrame(const cc::BeginFrameArgs& args);
+  void DidSendBeginFrame();
   bool OnMessageReceived(const IPC::Message& message);
   void DidBecomeCurrent();
 
@@ -81,13 +79,9 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client,
                             bool use_in_proc_software_draw);
-  void PopulateCommonParams(SyncCompositorCommonBrowserParams* params);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
-  void UpdateNeedsBeginFrames();
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_metadata);
   void OutputSurfaceCreated();
-  void SendAsyncCompositorStateIfNeeded();
-  void UpdateStateTask();
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
@@ -99,7 +93,6 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   IPC::Sender* const sender_;
   const bool use_in_process_zero_copy_software_draw_;
 
-  bool is_active_;
   size_t bytes_limit_;
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
@@ -110,10 +103,8 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   uint32_t renderer_param_version_;
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
-  bool need_begin_frame_;
   uint32_t did_activate_pending_tree_count_;
 
-  base::WeakPtrFactory<SynchronousCompositorHost> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorHost);
 };
 

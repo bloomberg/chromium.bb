@@ -117,8 +117,6 @@
       'renderer/android/phone_number_detector.h',
       'renderer/android/renderer_date_time_picker.cc',
       'renderer/android/renderer_date_time_picker.h',
-      'renderer/android/synchronous_compositor_external_begin_frame_source.cc',
-      'renderer/android/synchronous_compositor_external_begin_frame_source.h',
       'renderer/android/synchronous_compositor_filter.cc',
       'renderer/android/synchronous_compositor_filter.h',
       'renderer/android/synchronous_compositor_output_surface.cc',

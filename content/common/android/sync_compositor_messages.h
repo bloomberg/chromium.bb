@@ -22,13 +22,6 @@
 
 namespace content {
 
-struct SyncCompositorCommonBrowserParams {
-  SyncCompositorCommonBrowserParams();
-  ~SyncCompositorCommonBrowserParams();
-
-  bool begin_frame_source_paused;
-};
-
 struct SyncCompositorDemandDrawHwParams {
   SyncCompositorDemandDrawHwParams();
   SyncCompositorDemandDrawHwParams(
@@ -77,7 +70,6 @@ struct SyncCompositorCommonRendererParams {
   float max_page_scale_factor;
   bool need_animate_scroll;
   uint32_t need_invalidate_count;
-  bool need_begin_frame;
   uint32_t did_activate_pending_tree_count;
 };
 
@@ -90,10 +82,6 @@ struct SyncCompositorCommonRendererParams {
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START SyncCompositorMsgStart
-
-IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonBrowserParams)
-  IPC_STRUCT_TRAITS_MEMBER(begin_frame_source_paused)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorDemandDrawHwParams)
   IPC_STRUCT_TRAITS_MEMBER(surface_size)
@@ -125,7 +113,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonRendererParams)
   IPC_STRUCT_TRAITS_MEMBER(max_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(need_animate_scroll)
   IPC_STRUCT_TRAITS_MEMBER(need_invalidate_count)
-  IPC_STRUCT_TRAITS_MEMBER(need_begin_frame)
   IPC_STRUCT_TRAITS_MEMBER(did_activate_pending_tree_count)
 IPC_STRUCT_TRAITS_END()
 
@@ -133,42 +120,32 @@ IPC_STRUCT_TRAITS_END()
 // Synchronous IPCs are allowed here to the renderer compositor thread. See
 // design doc https://goo.gl/Tn81FW and crbug.com/526842 for details.
 
-IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_BeginFrame,
-                           content::SyncCompositorCommonBrowserParams,
-                           cc::BeginFrameArgs,
+IPC_SYNC_MESSAGE_ROUTED0_1(SyncCompositorMsg_SynchronizeRendererState,
                            content::SyncCompositorCommonRendererParams)
 
-IPC_MESSAGE_ROUTED2(SyncCompositorMsg_ComputeScroll,
-                    content::SyncCompositorCommonBrowserParams,
+IPC_MESSAGE_ROUTED1(SyncCompositorMsg_ComputeScroll,
                     base::TimeTicks);
 
-IPC_SYNC_MESSAGE_ROUTED2_3(SyncCompositorMsg_DemandDrawHw,
-                           content::SyncCompositorCommonBrowserParams,
+IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorDemandDrawHwParams,
                            content::SyncCompositorCommonRendererParams,
                            uint32_t /* output_surface_id */,
                            cc::CompositorFrame)
 
-IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_SetSharedMemory,
-                           content::SyncCompositorCommonBrowserParams,
+IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_SetSharedMemory,
                            content::SyncCompositorSetSharedMemoryParams,
                            bool /* success */,
                            content::SyncCompositorCommonRendererParams);
 
 IPC_MESSAGE_ROUTED0(SyncCompositorMsg_ZeroSharedMemory);
 
-IPC_SYNC_MESSAGE_ROUTED2_3(SyncCompositorMsg_DemandDrawSw,
-                           content::SyncCompositorCommonBrowserParams,
+IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawSw,
                            content::SyncCompositorDemandDrawSwParams,
                            bool /* result */,
                            content::SyncCompositorCommonRendererParams,
                            cc::CompositorFrame)
 
-IPC_MESSAGE_ROUTED1(SyncCompositorMsg_UpdateState,
-                    content::SyncCompositorCommonBrowserParams)
-
-IPC_SYNC_MESSAGE_ROUTED3_1(SyncCompositorMsg_ZoomBy,
-                           content::SyncCompositorCommonBrowserParams,
+IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_ZoomBy,
                            float /* delta */,
                            gfx::Point /* anchor */,
                            content::SyncCompositorCommonRendererParams)
