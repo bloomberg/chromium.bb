@@ -2432,6 +2432,9 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_ADD_PAYMENT_INSTRUMENT" desc="Text on a button that lets a user add a new payment method, like a credit card.">
         Add card
       </message>
+      <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS" desc="Text implying that a user needs to pick a shipping address to see the shipping methods.">
+        Select a shipping address to check shipping methods.
+      </message>
 
       <!-- Migration strings -->
       <message name="IDS_TAB_SWITCHER_CALLOUT_HEADER" desc="Header for the Tab Switcher callout.">

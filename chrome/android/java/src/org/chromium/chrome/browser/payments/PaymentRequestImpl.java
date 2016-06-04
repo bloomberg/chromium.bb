@@ -583,6 +583,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         closeUI(false);
     }
 
+    @Override
+    public boolean merchantNeedsShippingAddress() {
+        return mMerchantNeedsShippingAddress;
+    }
+
     /**
      * Called by the merchant website to abort the payment.
      */

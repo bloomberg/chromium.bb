@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
  * .............................................................................................
  * . TITLE                                                          |                |         .
  * .................................................................|                |         .
- * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |    ADD or LOGO | CHEVRON .
+ * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |           LOGO | CHEVRON .
  * .................................................................|                |         .
  * . MAIN SECTION CONTENT                                           |                |         .
  * .............................................................................................
@@ -48,9 +48,9 @@ import javax.annotation.Nullable;
  *    two bits of optional summary text.  Subclasses may extend this class to append more controls
  *    via the {@link #createMainSectionContent} function.
  *
- * 2) ADD or LOGO
+ * 2) LOGO
  *    Displays an optional logo (e.g. a credit card image) that floats to the right of the main
- *    content.  May eventually be used to show an "ADD" button.
+ *    content.
  *
  * 3) CHEVRON
  *    Drawn to indicate that the current section may be expanded.  Displayed only when the view is
@@ -59,13 +59,16 @@ import javax.annotation.Nullable;
  * There are three states that the UI may flip between; see {@link #DISPLAY_MODE_NORMAL},
  * {@link #DISPLAY_MODE_EXPANDABLE}, and {@link #DISPLAY_MODE_FOCUSED} for details.
  *
- * TODO(dfalcantara): Replace this with a RelativeLayout once mocks are finalized.
+ * TODO(dfalcantara): Figure out what kind of Layout we should really be using here now that mocks
+ *                    have stabilized, somewhat.  A RelativeLayout is gross because it doesn't
+ *                    automatically account for Views being removed, meaning we'd have to twiddle
+ *                    with each View's LayoutParams as their visibility was toggled.
  */
 public abstract class PaymentRequestSection extends LinearLayout {
     public static final String TAG = "PaymentRequestUI";
 
-    /** Handles clicking on the widgets. */
-    public static interface PaymentsSectionDelegate extends View.OnClickListener {
+    /** Handles clicks on the widgets and providing data to the PaymentsRequestSection. */
+    public static interface SectionDelegate extends View.OnClickListener {
         /**
          * Called when the user selects a radio button option from an {@link OptionSection}.
          *
@@ -79,6 +82,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         /** Checks whether or not the user should be allowed to click on controls. */
         boolean isAcceptingUserInput();
+
+        /** Returns any additional text that needs to be displayed. */
+        @Nullable String getAdditionalText(OptionSection section);
     }
 
     /** Normal mode: White background, displays the item assuming the user accepts it as is. */
@@ -90,7 +96,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     /** Focused mode: Gray background, more padding, no edit chevron. */
     static final int DISPLAY_MODE_FOCUSED = 2;
 
-    protected final PaymentsSectionDelegate mDelegate;
+    protected final SectionDelegate mDelegate;
     protected final int mLargeSpacing;
 
     private final int mVerticalSpacing;
@@ -109,14 +115,13 @@ public abstract class PaymentRequestSection extends LinearLayout {
     private boolean mIsSummaryAllowed = true;
 
     /**
-     * Constructs an PaymentRequestSection.
+     * Constructs a PaymentRequestSection.
      *
      * @param context     Context to pull resources from.
      * @param sectionName Title of the section to display.
      * @param delegate    Delegate to alert when something changes in the dialog.
      */
-    private PaymentRequestSection(
-            Context context, String sectionName, PaymentsSectionDelegate delegate) {
+    private PaymentRequestSection(Context context, String sectionName, SectionDelegate delegate) {
         super(context);
         mDelegate = delegate;
         setOnClickListener(delegate);
@@ -338,8 +343,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     public static class ExtraTextSection extends PaymentRequestSection {
         private TextView mExtraTextView;
 
-        public ExtraTextSection(
-                Context context, String sectionName, PaymentsSectionDelegate delegate) {
+        public ExtraTextSection(Context context, String sectionName, SectionDelegate delegate) {
             super(context, sectionName, delegate);
             setExtraText(null);
         }
@@ -350,7 +354,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
             mExtraTextView = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
-                    mExtraTextView, R.style.PaymentsUiSectionDescriptiveText);
+                    mExtraTextView, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
             mainSectionLayout.addView(mExtraTextView, new LinearLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
@@ -388,7 +392,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private GridLayout mBreakdownLayout;
 
         public LineItemBreakdownSection(
-                Context context, String sectionName, PaymentsSectionDelegate delegate) {
+                Context context, String sectionName, SectionDelegate delegate) {
             super(context, sectionName, delegate);
         }
 
@@ -429,12 +433,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
                 TextView description = new TextView(context);
                 ApiCompatibilityUtils.setTextAppearance(
-                        description, R.style.PaymentsUiSectionDescriptiveText);
+                        description, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
                 description.setText(item.getLabel());
 
                 TextView amount = new TextView(context);
                 ApiCompatibilityUtils.setTextAppearance(
-                        amount, R.style.PaymentsUiSectionDescriptiveText);
+                        amount, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
                 amount.setText(createValueString(item.getCurrency(), item.getPrice(), false));
 
                 // Each item is represented by a row in the GridLayout.
@@ -499,7 +503,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
      * . TITLE                                                          |                |         .
      * .................................................................|                |         .
      * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |                |         .
-     * .................................................................|    ADD or LOGO | CHEVRON .
+     * .................................................................|                |         .
+     * . DESCRIPTIVE TEXT                                               |                |         .
+     * .................................................................|           LOGO | CHEVRON .
      * . O Option 1                                              ICON 1 |                |         .
      * . O Option 2                                              ICON 2 |                |         .
      * . O Option 3                                              ICON 3 |                |         .
@@ -639,6 +645,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** Width that the icon takes. */
         private final int mIconMaxWidth;
 
+        /** TextView for displaying additional text. */
+        private TextView mDescriptionView;
+
         /** Layout containing all the {@link OptionRow}s. */
         private GridLayout mOptionLayout;
 
@@ -651,7 +660,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
          * @param delegate    Delegate to alert when something changes in the dialog.
          */
         public OptionSection(Context context, String sectionName, @Nullable CharSequence emptyLabel,
-                PaymentsSectionDelegate delegate) {
+                SectionDelegate delegate) {
             super(context, sectionName, delegate);
             mVerticalMargin = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_small_spacing);
@@ -692,6 +701,10 @@ public abstract class PaymentRequestSection extends LinearLayout {
         protected void createMainSectionContent(LinearLayout mainSectionLayout) {
             Context context = mainSectionLayout.getContext();
 
+            mDescriptionView = new TextView(getContext());
+            ApiCompatibilityUtils.setTextAppearance(
+                    mDescriptionView, R.style.PaymentsUiSectionDescriptiveText);
+
             mOptionLayout = new GridLayout(context);
             mOptionLayout.setColumnCount(3);
             mainSectionLayout.addView(mOptionLayout, new LinearLayout.LayoutParams(
@@ -712,9 +725,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
             if (displayMode == DISPLAY_MODE_FOCUSED) {
                 setIsSummaryAllowed(false);
                 mOptionLayout.setVisibility(VISIBLE);
+                setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
             } else {
                 setIsSummaryAllowed(true);
                 mOptionLayout.setVisibility(GONE);
+                setDescriptionVisibility(false);
             }
         }
 
@@ -732,7 +747,31 @@ public abstract class PaymentRequestSection extends LinearLayout {
             }
         }
 
+        /**
+         * Shows or hides the description by adding or removing it from the layout.
+         * @param visible True if the description should be visible, false otherwise.
+         */
+        private void setDescriptionVisibility(boolean visible) {
+            if (visible && mDescriptionView.getParent() == null) {
+                // Put it right above the GridLayout with all the PaymentOptions.
+                ViewGroup mainSectionLayout = (ViewGroup) mOptionLayout.getParent();
+                int optionLayoutIndex = mainSectionLayout.indexOfChild(mOptionLayout);
+
+                LinearLayout.LayoutParams descriptionParams = new LinearLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+                descriptionParams.topMargin = mVerticalMargin;
+                descriptionParams.bottomMargin = mVerticalMargin;
+                mainSectionLayout.addView(
+                        mDescriptionView, optionLayoutIndex, descriptionParams);
+            } else if (!visible && mDescriptionView.getParent() != null) {
+                ((ViewGroup) mDescriptionView.getParent()).removeView(mDescriptionView);
+            }
+        }
+
         private void updateOptionList(SectionInformation information, PaymentOption selectedItem) {
+            mDescriptionView.setText(mDelegate.getAdditionalText(this));
+            setDescriptionVisibility(!TextUtils.isEmpty(mDescriptionView.getText()));
+
             mOptionLayout.removeAllViews();
             mOptionRows.clear();
 

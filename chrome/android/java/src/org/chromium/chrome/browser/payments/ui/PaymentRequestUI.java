@@ -57,7 +57,7 @@ import java.util.List;
  * The PaymentRequest UI.
  */
 public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
-        PaymentRequestSection.PaymentsSectionDelegate {
+        PaymentRequestSection.SectionDelegate {
     public static final int TYPE_SHIPPING_ADDRESSES = 1;
     public static final int TYPE_SHIPPING_OPTIONS = 2;
     public static final int TYPE_PAYMENT_METHODS = 3;
@@ -119,6 +119,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * or the “X” button in UI.
          */
         void onDismiss();
+
+        /**
+         * Checks if the merchant needs a shipping address to provide the shipping options.
+         * @return Whether or not the merchant needs a shipping address.
+         */
+        boolean merchantNeedsShippingAddress();
     }
 
     /**
@@ -695,6 +701,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public void onDismiss(DialogInterface dialog) {
         if (mObserverForTest != null) mObserverForTest.onPaymentRequestDismiss();
         if (!mIsClientClosing) mClient.onDismiss();
+    }
+
+    @Override
+    public String getAdditionalText(OptionSection section) {
+        if (section == mShippingAddressSection) {
+            int selectedItemIndex = mShippingAddressSectionInformation.getSelectedItemIndex();
+            boolean isNecessary = mClient.merchantNeedsShippingAddress()
+                    && selectedItemIndex == SectionInformation.NO_SELECTION;
+            return isNecessary ? mContext.getString(
+                    R.string.payments_select_shipping_address_for_shipping_methods) : null;
+        }
+        return null;
     }
 
     /**

@@ -458,6 +458,8 @@
     <style name="PaymentsUiSectionDescriptiveText">
         <item name="android:textColor">@color/descriptive_text_color</item>
         <item name="android:textSize">14sp</item>
+    </style>
+    <style name="PaymentsUiSectionDescriptiveTextEndAligned" parent="PaymentsUiSectionDescriptiveText">
         <item name="android:textAlignment">viewEnd</item>
     </style>
     <style name="PaymentsUiSectionAddButtonLabel">
