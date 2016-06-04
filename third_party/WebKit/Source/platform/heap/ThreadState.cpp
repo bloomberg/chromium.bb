@@ -421,30 +421,6 @@ bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor)
     // we might have an off-heap collection. We assert it in
     // ThreadHeap::pushThreadLocalWeakCallback.
     if (CallbackStack::Item* item = m_threadLocalWeakCallbackStack->pop()) {
-        // Note that the thread-local weak processing can be called for
-        // an already dead object (for which isHeapObjectAlive(object) can
-        // return false). This can happen in the following scenario:
-        //
-        // 1) Marking runs. A weak callback for an object X is registered
-        //    to the thread that created the object X (say, thread P).
-        // 2) Marking finishes. All other threads are resumed.
-        // 3) The object X becomes unreachable.
-        // 4) A next GC hits before the thread P wakes up.
-        // 5) Marking runs. The object X is not marked.
-        // 6) Marking finishes. All other threads are resumed.
-        // 7) The thread P wakes up and invokes pending weak callbacks.
-        //    The weak callback for the object X is called, but the object X
-        //    is already dead.
-        //
-        // Even in this case, it is safe to access the object X in the weak
-        // callback because it is not yet swept. It is completely wasteful
-        // to invoke the weak callback for dead objects but it is just
-        // wasteful and safe.
-        //
-        // TODO(Oilpan): Avoid calling weak callbacks for dead objects.
-        // We can do that by checking isHeapObjectAlive(object) before
-        // calling the weak callback, but in that case Callback::Item
-        // needs to understand T*.
         item->call(visitor);
         return true;
     }
@@ -964,6 +940,20 @@ void ThreadState::preGC()
     makeConsistentForGC();
     flushHeapDoesNotContainCacheIfNeeded();
     clearArenaAges();
+
+    // It is possible, albeit rare, for a thread to be kept
+    // at a safepoint across multiple GCs, as resuming all attached
+    // threads after the "global" GC phases will contend for the shared
+    // safepoint barrier mutexes etc, which can additionally delay
+    // a thread. Enough so that another thread may initiate
+    // a new GC before this has happened.
+    //
+    // In which case the parked thread's ThreadState will have unprocessed
+    // entries on its local weak callback stack when that later GC goes
+    // ahead. Clear out and invalidate the stack now, as the thread
+    // should only process callbacks that's found to be reachable by
+    // the latest GC, when it eventually gets to next perform
+    // thread-local weak processing.
     m_threadLocalWeakCallbackStack->clear();
 }
 
