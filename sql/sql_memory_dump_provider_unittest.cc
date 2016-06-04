@@ -13,9 +13,9 @@ using SQLMemoryDumpProviderTest = sql::SQLTestBase;
 }
 
 TEST_F(SQLMemoryDumpProviderTest, OnMemoryDump) {
-  base::trace_event::ProcessMemoryDump pmd(nullptr);
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  base::trace_event::ProcessMemoryDump pmd(nullptr, args);
   ASSERT_TRUE(
       sql::SqlMemoryDumpProvider::GetInstance()->OnMemoryDump(args, &pmd));
   ASSERT_TRUE(pmd.GetAllocatorDump("sqlite"));

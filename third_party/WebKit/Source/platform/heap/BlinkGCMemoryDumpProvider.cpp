@@ -115,7 +115,7 @@ void BlinkGCMemoryDumpProvider::clearProcessDumpForCurrentGC()
 }
 
 BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
-    : m_currentProcessMemoryDump(new base::trace_event::ProcessMemoryDump(nullptr))
+    : m_currentProcessMemoryDump(new base::trace_event::ProcessMemoryDump(nullptr, { base::trace_event::MemoryDumpLevelOfDetail::DETAILED }))
     , m_isHeapProfilingEnabled(false)
 {
 }

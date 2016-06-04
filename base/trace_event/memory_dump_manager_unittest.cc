@@ -23,6 +23,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
@@ -1112,7 +1113,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoonDuringDump) {
 
 TEST_F(MemoryDumpManagerTest, TestWhitelistingMDP) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
-  mdm_->set_dump_provider_whitelist_for_testing(kTestMDPWhitelist);
+  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
   std::unique_ptr<MockMemoryDumpProvider> mdp1(new MockMemoryDumpProvider);
   RegisterDumpProvider(mdp1.get());
   std::unique_ptr<MockMemoryDumpProvider> mdp2(new MockMemoryDumpProvider);

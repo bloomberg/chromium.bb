@@ -16,7 +16,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
@@ -24,6 +23,7 @@
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
+#include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -48,15 +48,6 @@ const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 
 StaticAtomicSequenceNumber g_next_guid;
 MemoryDumpManager* g_instance_for_testing = nullptr;
-
-// The names of dump providers whitelisted for background tracing. Dump
-// providers can be added here only if the background mode dump has very
-// less performance and memory overhead.
-const char* const kDumpProviderWhitelist[] = {
-    // TODO(ssid): Fill this list with dump provider names which support
-    // background mode, crbug.com/613198.
-    nullptr,  // End of list marker.
-};
 
 // Callback wrapper to hook upon the completion of RequestGlobalDump() and
 // inject trace markers.
@@ -100,16 +91,6 @@ struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
   GetterFunctPtr const getter_function;
 };
 
-// Checks if the name is in the given |list|. Last element of the list should be
-// an empty string.
-bool IsNameInList(const char* name, const char* const* list) {
-  for (size_t i = 0; list[i] != nullptr; ++i) {
-    if (strcmp(name, list[i]) == 0)
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 // static
@@ -150,7 +131,6 @@ MemoryDumpManager::MemoryDumpManager()
     : delegate_(nullptr),
       is_coordinator_(false),
       memory_tracing_enabled_(0),
-      dump_provider_whitelist_(kDumpProviderWhitelist),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
       heap_profiling_enabled_(false) {
@@ -274,8 +254,7 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
   if (dumper_registrations_ignored_for_testing_)
     return;
 
-  bool whitelisted_for_background_mode =
-      IsNameInList(name, dump_provider_whitelist_);
+  bool whitelisted_for_background_mode = IsMemoryDumpProviderWhitelisted(name);
   scoped_refptr<MemoryDumpProviderInfo> mdpinfo =
       new MemoryDumpProviderInfo(mdp, name, std::move(task_runner), options,
                                  whitelisted_for_background_mode);
@@ -561,9 +540,10 @@ void MemoryDumpManager::InvokeOnMemoryDump(
     // process), non-zero when the coordinator process creates dumps on behalf
     // of child processes (see crbug.com/461788).
     ProcessId target_pid = mdpinfo->options.target_pid;
-    ProcessMemoryDump* pmd =
-        pmd_async_state->GetOrCreateMemoryDumpContainerForProcess(target_pid);
     MemoryDumpArgs args = {pmd_async_state->req_args.level_of_detail};
+    ProcessMemoryDump* pmd =
+        pmd_async_state->GetOrCreateMemoryDumpContainerForProcess(target_pid,
+                                                                  args);
     bool dump_successful = mdpinfo->dump_provider->OnMemoryDump(args, pmd);
     mdpinfo->consecutive_failures =
         dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
@@ -770,11 +750,12 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() {
 }
 
 ProcessMemoryDump* MemoryDumpManager::ProcessMemoryDumpAsyncState::
-    GetOrCreateMemoryDumpContainerForProcess(ProcessId pid) {
+    GetOrCreateMemoryDumpContainerForProcess(ProcessId pid,
+                                             const MemoryDumpArgs& dump_args) {
   auto iter = process_dumps.find(pid);
   if (iter == process_dumps.end()) {
     std::unique_ptr<ProcessMemoryDump> new_pmd(
-        new ProcessMemoryDump(session_state));
+        new ProcessMemoryDump(session_state, dump_args));
     iter = process_dumps.insert(std::make_pair(pid, std::move(new_pmd))).first;
   }
   return iter->second.get();

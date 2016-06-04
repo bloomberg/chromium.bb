@@ -127,9 +127,9 @@ TEST(ProcessMetricsMemoryDumpProviderTest, DumpRSS) {
   std::unique_ptr<ProcessMetricsMemoryDumpProvider> pmtdp(
       new ProcessMetricsMemoryDumpProvider(base::kNullProcessId));
   std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd_before(
-      new base::trace_event::ProcessMemoryDump(nullptr));
+      new base::trace_event::ProcessMemoryDump(nullptr, high_detail_args));
   std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd_after(
-      new base::trace_event::ProcessMemoryDump(nullptr));
+      new base::trace_event::ProcessMemoryDump(nullptr, high_detail_args));
 
   ProcessMetricsMemoryDumpProvider::rss_bytes_for_testing = 1024;
   pmtdp->OnMemoryDump(high_detail_args, pmd_before.get());
@@ -170,7 +170,8 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
       new ProcessMetricsMemoryDumpProvider(base::kNullProcessId));
 
   // Emulate an empty /proc/self/smaps.
-  base::trace_event::ProcessMemoryDump pmd_invalid(nullptr /* session_state */);
+  base::trace_event::ProcessMemoryDump pmd_invalid(nullptr /* session_state */,
+                                                   dump_args);
   base::ScopedFILE empty_file(OpenFile(base::FilePath("/dev/null"), "r"));
   ASSERT_TRUE(empty_file.get());
   ProcessMetricsMemoryDumpProvider::proc_smaps_for_testing = empty_file.get();
@@ -178,7 +179,8 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   ASSERT_FALSE(pmd_invalid.has_process_mmaps());
 
   // Parse the 1st smaps file.
-  base::trace_event::ProcessMemoryDump pmd_1(nullptr /* session_state */);
+  base::trace_event::ProcessMemoryDump pmd_1(nullptr /* session_state */,
+                                             dump_args);
   base::ScopedFILE temp_file1;
   CreateAndSetSmapsFileForTesting(kTestSmaps1, temp_file1);
   ProcessMetricsMemoryDumpProvider::proc_smaps_for_testing = temp_file1.get();
@@ -210,7 +212,8 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   EXPECT_EQ(0 * 1024UL, regions_1[1].byte_stats_swapped);
 
   // Parse the 2nd smaps file.
-  base::trace_event::ProcessMemoryDump pmd_2(nullptr /* session_state */);
+  base::trace_event::ProcessMemoryDump pmd_2(nullptr /* session_state */,
+                                             dump_args);
   base::ScopedFILE temp_file2;
   CreateAndSetSmapsFileForTesting(kTestSmaps2, temp_file2);
   ProcessMetricsMemoryDumpProvider::proc_smaps_for_testing = temp_file2.get();

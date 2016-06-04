@@ -60,6 +60,13 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
   MemoryDumpLevelOfDetail level_of_detail;
 };
 
+// Args for ProcessMemoryDump and passed to OnMemoryDump calls for memory dump
+// providers. Dump providers are expected to read the args for creating dumps.
+struct MemoryDumpArgs {
+  // Specifies how detailed the dumps should be.
+  MemoryDumpLevelOfDetail level_of_detail;
+};
+
 using MemoryDumpCallback = Callback<void(uint64_t dump_guid, bool success)>;
 
 BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);

@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
+#include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,14 +18,20 @@ namespace base {
 namespace trace_event {
 
 namespace {
+
+const MemoryDumpArgs kDetailedDumpArgs = {MemoryDumpLevelOfDetail::DETAILED};
+const char* const kTestDumpNameWhitelist[] = {"Whitelisted/TestName", nullptr};
+
 TracedValue* GetHeapDump(const ProcessMemoryDump& pmd, const char* name) {
   auto it = pmd.heap_dumps().find(name);
   return it == pmd.heap_dumps().end() ? nullptr : it->second.get();
 }
+
 }  // namespace
 
 TEST(ProcessMemoryDumpTest, Clear) {
-  std::unique_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(nullptr));
+  std::unique_ptr<ProcessMemoryDump> pmd1(
+      new ProcessMemoryDump(nullptr, kDetailedDumpArgs));
   pmd1->CreateAllocatorDump("mad1");
   pmd1->CreateAllocatorDump("mad2");
   ASSERT_FALSE(pmd1->allocator_dumps().empty());
@@ -92,7 +99,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   session_state->SetTypeNameDeduplicator(
       WrapUnique(new TypeNameDeduplicator));
   std::unique_ptr<ProcessMemoryDump> pmd1(
-      new ProcessMemoryDump(session_state.get()));
+      new ProcessMemoryDump(session_state.get(), kDetailedDumpArgs));
   auto mad1_1 = pmd1->CreateAllocatorDump("pmd1/mad1");
   auto mad1_2 = pmd1->CreateAllocatorDump("pmd1/mad2");
   pmd1->AddOwnershipEdge(mad1_1->guid(), mad1_2->guid());
@@ -100,7 +107,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   pmd1->DumpHeapUsage(metrics_by_context, overhead, "pmd1/heap_dump2");
 
   std::unique_ptr<ProcessMemoryDump> pmd2(
-      new ProcessMemoryDump(session_state.get()));
+      new ProcessMemoryDump(session_state.get(), kDetailedDumpArgs));
   auto mad2_1 = pmd2->CreateAllocatorDump("pmd2/mad1");
   auto mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
   pmd2->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
@@ -156,7 +163,8 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
 }
 
 TEST(ProcessMemoryDumpTest, Suballocations) {
-  std::unique_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump(nullptr));
+  std::unique_ptr<ProcessMemoryDump> pmd(
+      new ProcessMemoryDump(nullptr, kDetailedDumpArgs));
   const std::string allocator_dump_name = "fakealloc/allocated_objects";
   pmd->CreateAllocatorDump(allocator_dump_name);
 
@@ -200,7 +208,8 @@ TEST(ProcessMemoryDumpTest, Suballocations) {
 }
 
 TEST(ProcessMemoryDumpTest, GlobalAllocatorDumpTest) {
-  std::unique_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump(nullptr));
+  std::unique_ptr<ProcessMemoryDump> pmd(
+      new ProcessMemoryDump(nullptr, kDetailedDumpArgs));
   MemoryAllocatorDumpGuid shared_mad_guid(1);
   auto shared_mad1 = pmd->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid);
   ASSERT_EQ(shared_mad_guid, shared_mad1->guid());
@@ -221,6 +230,53 @@ TEST(ProcessMemoryDumpTest, GlobalAllocatorDumpTest) {
   auto shared_mad5 = pmd->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid);
   ASSERT_EQ(shared_mad1, shared_mad5);
   ASSERT_EQ(MemoryAllocatorDump::Flags::DEFAULT, shared_mad1->flags());
+}
+
+TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
+  MemoryDumpArgs background_args = {MemoryDumpLevelOfDetail::BACKGROUND};
+  std::unique_ptr<ProcessMemoryDump> pmd(
+      new ProcessMemoryDump(nullptr, background_args));
+  ProcessMemoryDump::is_black_hole_non_fatal_for_testing_ = true;
+  SetAllocatorDumpNameWhitelistForTesting(kTestDumpNameWhitelist);
+  MemoryAllocatorDump* black_hole_mad = pmd->GetBlackHoleMad();
+
+  // Invalid dump names.
+  EXPECT_EQ(black_hole_mad,
+            pmd->CreateAllocatorDump("NotWhitelisted/TestName"));
+  EXPECT_EQ(black_hole_mad, pmd->CreateAllocatorDump("TestName"));
+  EXPECT_EQ(black_hole_mad, pmd->CreateAllocatorDump("Whitelisted/Test"));
+  EXPECT_EQ(black_hole_mad,
+            pmd->CreateAllocatorDump("Not/Whitelisted/TestName"));
+  EXPECT_EQ(black_hole_mad,
+            pmd->CreateAllocatorDump("Whitelisted/TestName/Google"));
+  EXPECT_EQ(black_hole_mad,
+            pmd->CreateAllocatorDump("Whitelisted/TestName/0x1a2Google"));
+  EXPECT_EQ(black_hole_mad,
+            pmd->CreateAllocatorDump("Whitelisted/TestName/__12/Google"));
+
+  // Global dumps.
+  MemoryAllocatorDumpGuid guid(1);
+  EXPECT_EQ(black_hole_mad, pmd->CreateSharedGlobalAllocatorDump(guid));
+  EXPECT_EQ(black_hole_mad, pmd->CreateWeakSharedGlobalAllocatorDump(guid));
+  EXPECT_EQ(black_hole_mad, pmd->GetSharedGlobalAllocatorDump(guid));
+
+  // Suballocations.
+  pmd->AddSuballocation(guid, "malloc/allocated_objects");
+  EXPECT_EQ(0u, pmd->allocator_dumps_edges_.size());
+  EXPECT_EQ(0u, pmd->allocator_dumps_.size());
+
+  // Valid dump names.
+  EXPECT_NE(black_hole_mad, pmd->CreateAllocatorDump("Whitelisted/TestName"));
+  EXPECT_NE(black_hole_mad,
+            pmd->CreateAllocatorDump("Whitelisted/TestName0xA1b2"));
+  EXPECT_NE(black_hole_mad,
+            pmd->CreateAllocatorDump("Whitelisted/TestName_123"));
+  EXPECT_NE(black_hole_mad,
+            pmd->CreateAllocatorDump("Whitelisted_12/0xaB/TestName"));
+
+  // GetAllocatorDump is consistent.
+  EXPECT_EQ(black_hole_mad, pmd->GetAllocatorDump("NotWhitelisted/TestName"));
+  EXPECT_NE(black_hole_mad, pmd->GetAllocatorDump("Whitelisted/TestName"));
 }
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)

@@ -141,11 +141,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     dumper_registrations_ignored_for_testing_ = ignored;
   }
 
-  // Resets the dump provider whitelist to the list given.
-  void set_dump_provider_whitelist_for_testing(const char* const* list) {
-    dump_provider_whitelist_ = list;
-  }
-
  private:
   friend std::default_delete<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -230,7 +225,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     ~ProcessMemoryDumpAsyncState();
 
     // Gets or creates the memory dump container for the given target process.
-    ProcessMemoryDump* GetOrCreateMemoryDumpContainerForProcess(ProcessId pid);
+    ProcessMemoryDump* GetOrCreateMemoryDumpContainerForProcess(
+        ProcessId pid,
+        const MemoryDumpArgs& dump_args);
 
     // A map of ProcessId -> ProcessMemoryDump, one for each target process
     // being dumped from the current process. Typically each process dumps only
@@ -364,9 +361,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // Thread used for MemoryDumpProviders which don't specify a task runner
   // affinity.
   std::unique_ptr<Thread> dump_thread_;
-
-  // List of names of the dump providers whitelisted for background mode.
-  const char* const* dump_provider_whitelist_;
 
   // The unique id of the child process. This is created only for tracing and is
   // expected to be valid only when tracing is enabled.
