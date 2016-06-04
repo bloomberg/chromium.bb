@@ -20,7 +20,29 @@ message PrecacheManifest {
   // List of resources that we predict that the user will need if they are
   // likely to fetch the host.
   repeated PrecacheResource resource = 1;
+
+  // Experiments running on this manifest.
+  optional PrecacheExperiments experiments = 2;
 };
+
+message PrecacheExperiments {
+  // A mapping between experiment groups and the resources that should be
+  // considered for the experiment.
+  map<fixed32, PrecacheResourceSelection> resources_by_experiment_group = 1;
+}
+
+message PrecacheResourceSelection {
+  // Select the resources as a std::bitset over the resources listed in the
+  // manifest.
+  //
+  // The bitset should be loaded as:
+  //   std::bitset selection(resource_selection.bitset());
+  // Then manifest.resource(i) is selected for the experiment iff
+  // selection.test(i).
+  //
+  // A missing bitset means that the experiment applies to all the resources.
+  optional fixed64 bitset = 1 [default = 0xFFFFFFFFFFFFFFFF];
+}
 
 message PrecacheConfigurationSettings {
   // The maximum rank of the user's most visited hosts to consider precaching

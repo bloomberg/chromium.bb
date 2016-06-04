@@ -105,12 +105,12 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
   // prioritized list of hosts that the user commonly visits. These hosts are
   // used by a server side component to construct a list of resource URLs that
   // the user is likely to fetch. Takes ownership of |unfinished_work|.
-  PrecacheFetcher(
-      net::URLRequestContextGetter* request_context,
-      const GURL& config_url,
-      const std::string& manifest_url_prefix,
-      std::unique_ptr<PrecacheUnfinishedWork> unfinished_work,
-      PrecacheDelegate* precache_delegate);
+  PrecacheFetcher(net::URLRequestContextGetter* request_context,
+                  const GURL& config_url,
+                  const std::string& manifest_url_prefix,
+                  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work,
+                  uint32_t experiment_id,
+                  PrecacheDelegate* precache_delegate);
 
   virtual ~PrecacheFetcher();
 
@@ -178,6 +178,9 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
   FetcherPool<Fetcher> pool_;
 
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work_;
+
+  // The fieldtrial experiment ID.
+  uint32_t experiment_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheFetcher);
 };

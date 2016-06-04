@@ -123,6 +123,21 @@ bool ParseProtoFromFetchResponse(const net::URLFetcher& source,
   return true;
 }
 
+// Returns the resource selection bitset from the |manifest| for the given
+// |experiment_id|. By default all resource will be selected if the experiment
+// group is not found.
+uint64_t GetResourceBitset(const PrecacheManifest& manifest,
+                           uint32_t experiment_id) {
+  if (manifest.has_experiments()) {
+    const auto& resource_bitset_map =
+        manifest.experiments().resources_by_experiment_group();
+    const auto& resource_bitset_it = resource_bitset_map.find(experiment_id);
+    if (resource_bitset_it != resource_bitset_map.end())
+      return resource_bitset_it->second.bitset();
+  }
+  return ~0ULL;
+}
+
 // URLFetcherResponseWriter that ignores the response body, in order to avoid
 // the unnecessary memory usage. Use it rather than the default if you don't
 // care about parsing the response body. We use it below as a means to populate
@@ -306,12 +321,14 @@ PrecacheFetcher::PrecacheFetcher(
     const GURL& config_url,
     const std::string& manifest_url_prefix,
     std::unique_ptr<PrecacheUnfinishedWork> unfinished_work,
+    uint32_t experiment_id,
     PrecacheFetcher::PrecacheDelegate* precache_delegate)
     : request_context_(request_context),
       config_url_(config_url),
       manifest_url_prefix_(manifest_url_prefix),
       precache_delegate_(precache_delegate),
-      pool_(kMaxParallelFetches) {
+      pool_(kMaxParallelFetches),
+      experiment_id_(experiment_id) {
   DCHECK(request_context_.get());  // Request context must be non-NULL.
   DCHECK(precache_delegate_);  // Precache delegate must be non-NULL.
 
@@ -521,8 +538,10 @@ void PrecacheFetcher::OnManifestFetchComplete(const Fetcher& source) {
       const int32_t len =
           std::min(manifest.resource_size(),
                    unfinished_work_->config_settings().top_resources_count());
+      const uint64_t resource_bitset =
+          GetResourceBitset(manifest, experiment_id_);
       for (int i = 0; i < len; ++i) {
-        if (manifest.resource(i).has_url())
+        if (((0x1ULL << i) & resource_bitset) && manifest.resource(i).has_url())
           resource_urls_to_fetch_.push_back(GURL(manifest.resource(i).url()));
       }
     }

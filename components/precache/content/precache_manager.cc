@@ -20,6 +20,7 @@
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_driver/sync_service.h"
+#include "components/variations/metrics_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -315,13 +316,15 @@ void PrecacheManager::InitializeAndStartFetcher() {
   }
   // Start precaching.
   precache_fetcher_.reset(new PrecacheFetcher(
-      content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-            GetURLRequestContext(),
-      GURL(variations::GetVariationParamValue(
-          kPrecacheFieldTrialName, kConfigURLParam)),
-      variations::GetVariationParamValue(
-          kPrecacheFieldTrialName, kManifestURLPrefixParam),
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+          ->GetURLRequestContext(),
+      GURL(variations::GetVariationParamValue(kPrecacheFieldTrialName,
+                                              kConfigURLParam)),
+      variations::GetVariationParamValue(kPrecacheFieldTrialName,
+                                         kManifestURLPrefixParam),
       std::move(unfinished_work_),
+      metrics::HashName(
+          base::FieldTrialList::FindFullName(kPrecacheFieldTrialName)),
       this));
   precache_fetcher_->Start();
 }
