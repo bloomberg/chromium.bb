@@ -32,7 +32,8 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public void getInstruments(List<PaymentItem> unusedItems, final InstrumentsCallback callback) {
+    public void getInstruments(PaymentItem unusedTotal, List<PaymentItem> unusedCart,
+            final InstrumentsCallback callback) {
         List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCardsToSuggest();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());
         for (int i = 0; i < cards.size(); i++) {

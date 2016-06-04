@@ -14,18 +14,9 @@
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     var details = {
-      displayItems: [
-        {
-          id: 'sub',
-          label: 'Subtotal',
-          amount: {currency: 'USD', value: '5.00'}
-        },
-        {
-          id: 'total',
-          label: 'Total',
-          amount: {currency: 'USD', value: '5.00'}
-        }
-      ]
+      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+      displayItems:
+          [{label: 'Subtotal', amount: {currency: 'USD', value: '5.00'}}]
     };
 
     var request =
@@ -76,18 +67,17 @@ function updateDetails(details, addr) {
     if (addr.administrativeArea === 'CA') {
       shippingOption.id = 'ca';
       shippingOption.label = 'Free shipping in California';
-      details.displayItems[details.displayItems.length - 1].amount.value =
-          '5.00';
+      details.total.amount.value = '5.00';
     } else {
       shippingOption.id = 'us';
       shippingOption.label = 'Standard shipping in US';
       shippingOption.amount.value = '5.00';
-      details.items[details.items.length - 1].amount.value = '10.00';
+      details.total.amount.value = '10.00';
     }
-    if (details.items.length === 3) {
-      details.items.splice(-1, 0, shippingOption);
+    if (details.displayItems.length === 1) {
+      details.displayItems.splice(0, 0, shippingOption);
     } else {
-      details.items.splice(-2, 1, shippingOption);
+      details.displayItems.splice(0, 1, shippingOption);
     }
     details.shippingOptions = [shippingOption];
   } else {

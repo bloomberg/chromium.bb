@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
+import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileEditor;
@@ -53,6 +54,7 @@ import java.util.regex.Pattern;
  */
 public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Client,
         PaymentApp.InstrumentsCallback, PaymentInstrument.DetailsCallback {
+
     /**
      * The size for the favicon in density-independent pixels.
      */
@@ -69,10 +71,38 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private List<PaymentApp> mApps;
     private PaymentRequestClient mClient;
     private Set<String> mSupportedMethods;
-    private List<LineItem> mLineItems;
-    private List<PaymentItem> mDisplayItems;
-    private List<ShippingOption> mShippingOptions;
-    private SectionInformation mShippingOptionsSection;
+
+    /**
+     * The raw total amount being charged, as it was received from the website. This data is passed
+     * to the payment app.
+     */
+    private PaymentItem mRawTotal;
+
+    /**
+     * The raw items in the shopping cart, as they were received from the website. This data is
+     * passed to the payment app.
+     */
+    private List<PaymentItem> mRawLineItems;
+
+    /**
+     * The UI model of the shopping cart, including the total. Each item includes a label and a
+     * price string. This data is passed to the UI.
+     */
+    private ShoppingCart mUiShoppingCart;
+
+    /**
+     * The raw shipping options, as they were received from the website. This data is compared to
+     * updated payment options from the website to determine whether shipping options have changed
+     * due to user selecting a shipping address.
+     */
+    private List<ShippingOption> mRawShippingOptions;
+
+    /**
+     * The UI model for the shipping options. Includes the label and sublabel for each shipping
+     * option. Also keeps track of the selected shipping option. This data is passed to the UI.
+     */
+    private SectionInformation mUiShippingOptions;
+
     private JSONObject mData;
     private SectionInformation mShippingAddressesSection;
     private List<PaymentApp> mPendingApps;
@@ -160,12 +190,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        if (!setLineItemsAndShippingOptionsOrDisconnectFromClient(details)) return;
+        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
         // If the merchant requests shipping and does not provide shipping options here, then the
         // merchant needs the shipping address to calculate shipping price and availability.
         boolean requestShipping = options != null && options.requestShipping;
-        mMerchantNeedsShippingAddress = requestShipping && mShippingOptionsSection.isEmpty();
+        mMerchantNeedsShippingAddress = requestShipping && mUiShippingOptions.isEmpty();
 
         mData = getValidatedData(mSupportedMethods, stringifiedData);
         if (mData == null) {
@@ -188,7 +218,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         int selectedIndex = SectionInformation.NO_SELECTION;
-        if (!addresses.isEmpty() && mShippingOptionsSection.getSelectedItem() != null) {
+        if (!addresses.isEmpty() && mUiShippingOptions.getSelectedItem() != null) {
             selectedIndex = 0;
         }
         mShippingAddressesSection = new SectionInformation(
@@ -206,7 +236,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 mPendingApps.remove(app);
             } else {
                 isGettingInstruments = true;
-                app.getInstruments(mDisplayItems, this);
+                app.getInstruments(mRawTotal, mRawLineItems, this);
             }
         }
 
@@ -217,52 +247,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mUI = PaymentRequestUI.show(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
         mFavicon = null;
-    }
-
-    /**
-     * Called by merchant to update the shipping options and line items after the user has selected
-     * their shipping address or shipping option.
-     */
-    @Override
-    public void updateWith(PaymentDetails details) {
-        if (mClient == null) return;
-
-        if (mUI == null) {
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
-            return;
-        }
-
-        if (!setLineItemsAndShippingOptionsOrDisconnectFromClient(details)) return;
-
-        // Empty shipping options means the merchant cannot ship to the user's selected shipping
-        // address.
-        if (mShippingOptionsSection.isEmpty() && !mMerchantNeedsShippingAddress) {
-            disconnectFromClientWithDebugMessage("Merchant indicates inablity to ship although "
-                    + "originally indicated that can ship anywhere");
-        }
-
-        mUI.updateOrderSummarySection(mLineItems);
-        mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, mShippingOptionsSection);
-    }
-
-    private boolean setLineItemsAndShippingOptionsOrDisconnectFromClient(PaymentDetails details) {
-        mLineItems = getValidatedLineItems(details);
-        if (mLineItems == null) {
-            disconnectFromClientWithDebugMessage("Invalid line items");
-            return false;
-        }
-        mDisplayItems = Arrays.asList(details.displayItems);
-
-        mShippingOptionsSection =
-                getValidatedShippingOptions(details.displayItems[0].amount.currencyCode, details);
-        if (mShippingOptionsSection == null) {
-            disconnectFromClientWithDebugMessage("Invalid shipping options");
-            return false;
-        }
-        mShippingOptions = Arrays.asList(details.shippingOptions);
-
-        return true;
     }
 
     private HashSet<String> getValidatedSupportedMethods(String[] methods) {
@@ -279,96 +263,196 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         return result;
     }
 
-    private List<LineItem> getValidatedLineItems(PaymentDetails details) {
-        // Line items are required.
-        if (details == null || details.displayItems == null || details.displayItems.length == 0) {
-            return null;
+    /**
+     * Called by merchant to update the shipping options and line items after the user has selected
+     * their shipping address or shipping option.
+     */
+    @Override
+    public void updateWith(PaymentDetails details) {
+        if (mClient == null) return;
+
+        if (mUI == null) {
+            disconnectFromClientWithDebugMessage(
+                    "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
+            return;
         }
 
-        for (int i = 0; i < details.displayItems.length; i++) {
-            PaymentItem item = details.displayItems[i];
-            // "id", "label", "currencyCode", and "value" should be non-empty.
-            if (item == null || TextUtils.isEmpty(item.label) || item.amount == null
-                    || TextUtils.isEmpty(item.amount.currencyCode)
-                    || TextUtils.isEmpty(item.amount.value)) {
-                return null;
-            }
+        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+
+        // Empty shipping options means the merchant cannot ship to the user's selected shipping
+        // address.
+        if (mUiShippingOptions.isEmpty() && !mMerchantNeedsShippingAddress) {
+            disconnectFromClientWithDebugMessage("Merchant indicates inability to ship although "
+                    + "originally indicated that can ship anywhere");
+            return;
         }
 
-        CurrencyStringFormatter formatter = new CurrencyStringFormatter(
-                details.displayItems[0].amount.currencyCode, Locale.getDefault());
+        mUI.updateOrderSummarySection(mUiShoppingCart);
+        mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, mUiShippingOptions);
+    }
 
-        // Currency codes should be in correct format.
-        if (!formatter.isValidAmountCurrencyCode(details.displayItems[0].amount.currencyCode)) {
-            return null;
+    /**
+     * Sets the total, display line items, and shipping options based on input and returns the
+     * status boolean. That status is true for valid data, false for invalid data. If the input is
+     * invalid, disconnects from the client. Both raw and UI versions of data are updated.
+     *
+     * @param details The total, line items, and shipping options to parse, validate, and save in
+     *                member variables.
+     * @return True if the data is valid. False if the data is invalid.
+     */
+    private boolean parseAndValidateDetailsOrDisconnectFromClient(PaymentDetails details) {
+        if (details == null) {
+            disconnectFromClientWithDebugMessage("Payment details required");
+            return false;
         }
 
-        List<LineItem> result = new ArrayList<>(details.displayItems.length);
-        for (int i = 0; i < details.displayItems.length; i++) {
-            PaymentItem item = details.displayItems[i];
+        if (!hasAllPaymentItemFields(details.total)) {
+            disconnectFromClientWithDebugMessage("Invalid total");
+            return false;
+        }
+
+        String totalCurrency = details.total.amount.currencyCode;
+        CurrencyStringFormatter formatter =
+                new CurrencyStringFormatter(totalCurrency, Locale.getDefault());
+
+        if (!formatter.isValidAmountCurrencyCode(details.total.amount.currencyCode)) {
+            disconnectFromClientWithDebugMessage("Invalid total amount currency");
+            return false;
+        }
+
+        if (!formatter.isValidAmountValue(details.total.amount.value)
+                || details.total.amount.value.startsWith("-")) {
+            disconnectFromClientWithDebugMessage("Invalid total amount value");
+            return false;
+        }
+
+        LineItem uiTotal = new LineItem(
+                details.total.label, totalCurrency, formatter.format(details.total.amount.value));
+
+        List<LineItem> uiLineItems = getValidatedLineItems(details.displayItems, totalCurrency,
+                formatter);
+        if (uiLineItems == null) {
+            disconnectFromClientWithDebugMessage("Invalid line items");
+            return false;
+        }
+
+        mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
+        mRawTotal = details.total;
+        mRawLineItems = Arrays.asList(details.displayItems);
+
+        mUiShippingOptions = getValidatedShippingOptions(details.shippingOptions, totalCurrency,
+                formatter, mRawShippingOptions, mUiShippingOptions);
+        if (mUiShippingOptions == null) {
+            disconnectFromClientWithDebugMessage("Invalid shipping options");
+            return false;
+        }
+
+        mRawShippingOptions = Arrays.asList(details.shippingOptions);
+
+        return true;
+    }
+
+    /**
+     * Returns true if all fields in the payment item are non-null and non-empty.
+     *
+     * @param item The payment item to examine.
+     * @return True if all fields are present and non-empty.
+     */
+    private static boolean hasAllPaymentItemFields(PaymentItem item) {
+        // "label", "currencyCode", and "value" should be non-empty.
+        return item != null && !TextUtils.isEmpty(item.label) && item.amount != null
+                && !TextUtils.isEmpty(item.amount.currencyCode)
+                && !TextUtils.isEmpty(item.amount.value);
+    }
+
+    /**
+     * Validates a list of payment items and returns their parsed representation or null if invalid.
+     *
+     * @param items The payment items to parse and validate.
+     * @param totalCurrency The currency code for the total amount of payment.
+     * @param formatter A formatter and validator for the currency amount value.
+     * @return A list of valid line items or null if invalid.
+     */
+    private static List<LineItem> getValidatedLineItems(
+            PaymentItem[] items, String totalCurrency, CurrencyStringFormatter formatter) {
+        // Line items are optional.
+        if (items == null) return new ArrayList<LineItem>();
+
+        List<LineItem> result = new ArrayList<>(items.length);
+        for (int i = 0; i < items.length; i++) {
+            PaymentItem item = items[i];
+
+            if (!hasAllPaymentItemFields(item)) return null;
 
             // All currency codes must match.
-            if (!item.amount.currencyCode.equals(details.displayItems[0].amount.currencyCode)) {
-                return null;
-            }
+            if (!item.amount.currencyCode.equals(totalCurrency)) return null;
 
             // Value should be in correct format.
             if (!formatter.isValidAmountValue(item.amount.value)) return null;
 
-            result.add(new LineItem(item.label,
-                    i == details.displayItems.length - 1 ? item.amount.currencyCode : "",
-                    formatter.format(item.amount.value)));
+            result.add(new LineItem(item.label, "", formatter.format(item.amount.value)));
         }
 
         return result;
     }
 
-    private SectionInformation getValidatedShippingOptions(
-            String itemsCurrencyCode, PaymentDetails details) {
+    /**
+     * Validates a list of shipping options and returns their parsed representation or null if
+     * invalid. Preserves the selected shipping option by comparing the raw options to the previous
+     * raw options and returning the previous UI options if the raw versions are the same.
+     *
+     * @param options The raw shipping options to parse and validate.
+     * @param totalCurrency The currency code for the total amount of payment.
+     * @param formatter A formatter and validator for the currency amount value.
+     * @param previousRawOptions The raw previous shipping options that have been parsed and
+     *                           validated. Can be null.
+     * @param previousUiOptions The UI representation of the previous shipping options.
+     * @return The UI representation of the shipping options or null if invalid.
+     */
+    private static SectionInformation getValidatedShippingOptions(ShippingOption[] options,
+            String totalCurrency, CurrencyStringFormatter formatter,
+            List<ShippingOption> previousRawOptions, SectionInformation previousUiOptions) {
         // Shipping options are optional.
-        if (details.shippingOptions == null || details.shippingOptions.length == 0) {
+        if (options == null || options.length == 0) {
             return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);
         }
 
-        CurrencyStringFormatter formatter =
-                new CurrencyStringFormatter(itemsCurrencyCode, Locale.getDefault());
-
-        for (int i = 0; i < details.shippingOptions.length; i++) {
-            ShippingOption option = details.shippingOptions[i];
+        for (int i = 0; i < options.length; i++) {
+            ShippingOption option = options[i];
 
             // Each "id", "label", "currencyCode", and "value" should be non-empty.
             // Each "value" should be a valid amount value.
-            // Each "currencyCode" should match the line items' currency codes.
+            // Each "currencyCode" should match the total currency code.
             if (option == null || TextUtils.isEmpty(option.id) || TextUtils.isEmpty(option.label)
                     || option.amount == null || TextUtils.isEmpty(option.amount.currencyCode)
                     || TextUtils.isEmpty(option.amount.value)
-                    || !itemsCurrencyCode.equals(option.amount.currencyCode)
+                    || !totalCurrency.equals(option.amount.currencyCode)
                     || !formatter.isValidAmountValue(option.amount.value)) {
                 return null;
             }
         }
 
-        boolean isSameAsCurrentOptions = true;
-        if (mShippingOptions == null || mShippingOptions.size() != details.shippingOptions.length) {
-            isSameAsCurrentOptions = false;
+        boolean isSameAsPreviousOptions = true;
+        if (previousRawOptions == null || previousRawOptions.size() != options.length) {
+            isSameAsPreviousOptions = false;
         } else {
-            for (int i = 0; i < details.shippingOptions.length; i++) {
-                ShippingOption newOption = details.shippingOptions[i];
-                ShippingOption currentOption = mShippingOptions.get(i);
-                if (!newOption.id.equals(currentOption.id)
-                        || !newOption.label.equals(currentOption.label)
-                        || !newOption.amount.currencyCode.equals(currentOption.amount.currencyCode)
-                        || !newOption.amount.value.equals(currentOption.amount.value)) {
-                    isSameAsCurrentOptions = false;
+            for (int i = 0; i < options.length; i++) {
+                ShippingOption newOption = options[i];
+                ShippingOption previousOption = previousRawOptions.get(i);
+                if (!newOption.id.equals(previousOption.id)
+                        || !newOption.label.equals(previousOption.label)
+                        || !newOption.amount.currencyCode.equals(previousOption.amount.currencyCode)
+                        || !newOption.amount.value.equals(previousOption.amount.value)) {
+                    isSameAsPreviousOptions = false;
                     break;
                 }
             }
         }
-        if (isSameAsCurrentOptions) return mShippingOptionsSection;
+        if (isSameAsPreviousOptions) return previousUiOptions;
 
         List<PaymentOption> result = new ArrayList<>();
-        for (int i = 0; i < details.shippingOptions.length; i++) {
-            ShippingOption option = details.shippingOptions[i];
+        for (int i = 0; i < options.length; i++) {
+            ShippingOption option = options[i];
             result.add(new PaymentOption(option.id, option.label,
                     formatter.format(option.amount.value), PaymentOption.NO_ICON));
         }
@@ -419,18 +503,17 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private void provideDefaultPaymentInformation() {
         mPaymentInformationCallback.onResult(new PaymentInformation(
-                mLineItems.get(mLineItems.size() - 1), mShippingAddressesSection.getSelectedItem(),
-                mShippingOptionsSection.getSelectedItem(),
-                mPaymentMethodsSection.getSelectedItem()));
+                mUiShoppingCart.getTotal(), mShippingAddressesSection.getSelectedItem(),
+                mUiShippingOptions.getSelectedItem(), mPaymentMethodsSection.getSelectedItem()));
         mPaymentInformationCallback = null;
     }
 
     @Override
-    public void getLineItems(final Callback<List<LineItem>> callback) {
+    public void getShoppingCart(final Callback<ShoppingCart> callback) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(mLineItems);
+                callback.onResult(mUiShoppingCart);
             }
         });
     }
@@ -444,7 +527,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
                     callback.onResult(mShippingAddressesSection);
                 } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
-                    callback.onResult(mShippingOptionsSection);
+                    callback.onResult(mUiShippingOptions);
                 } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
                     assert mPaymentMethodsSection != null;
                     callback.onResult(mPaymentMethodsSection);
@@ -465,7 +548,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
             // This may update the line items.
-            mShippingOptionsSection.setSelectedItem(option);
+            mUiShippingOptions.setSelectedItem(option);
             mClient.onShippingOptionChange(option.getIdentifier());
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
             assert option instanceof PaymentInstrument;
@@ -490,7 +573,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
-        instrument.getDetails(mMerchantName, mOrigin, mDisplayItems,
+        instrument.getDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
                 mData.optJSONObject(instrument.getMethodName()), this);
     }
 
@@ -580,7 +663,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     ((AutofillAddress) selectedShippingAddress).toPaymentAddress();
         }
 
-        PaymentOption selectedShippingOption = mShippingOptionsSection.getSelectedItem();
+        PaymentOption selectedShippingOption = mUiShippingOptions.getSelectedItem();
         if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
             response.shippingOptionId = selectedShippingOption.getIdentifier();
         }

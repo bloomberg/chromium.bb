@@ -65,6 +65,12 @@ ShippingOption buildShippingOptionForTest(PaymentTestDataToChange data, PaymentT
 
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
+    PaymentItem total;
+    if (detail == PaymentTestDetailTotal)
+        total = buildPaymentItemForTest(data, modificationType, valueToUse);
+    else
+        total = buildPaymentItemForTest();
+
     PaymentItem item;
     if (detail == PaymentTestDetailItem)
         item = buildPaymentItemForTest(data, modificationType, valueToUse);
@@ -78,6 +84,7 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
         shippingOption = buildShippingOptionForTest();
 
     PaymentDetails result;
+    result.setTotal(total);
     result.setDisplayItems(HeapVector<PaymentItem>(1, item));
     result.setShippingOptions(HeapVector<ShippingOption>(2, shippingOption));
 

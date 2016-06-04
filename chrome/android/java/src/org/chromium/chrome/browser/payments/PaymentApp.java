@@ -32,11 +32,13 @@ public interface PaymentApp {
      * cards for the current profile. Can return null or empty list, e.g., if user has no locally
      * stored credit cards.
      *
-     * @param items The line items in the payment request. Can be used to filter out instruments
+     * @param total The total value of the payment request. Can be used to filter out instruments
      *              that, for example, do not have enough funds.
+     * @param cart The line items in the payment request. Can be used to filter out instruments
+     *             that, for example, require the cart total to match the payment request total.
      * @param callback The object that will receive the list of instruments.
      */
-    void getInstruments(List<PaymentItem> items, InstrumentsCallback callback);
+    void getInstruments(PaymentItem total, List<PaymentItem> cart, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",

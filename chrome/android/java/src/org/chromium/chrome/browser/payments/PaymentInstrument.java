@@ -50,12 +50,13 @@ public abstract class PaymentInstrument extends PaymentOption {
      *
      * @param merchantName The name of the merchant.
      * @param origin The origin of this merchant.
-     * @param items The line items, the last of which is the total.
+     * @param total The total amount.
+     * @param items The shopping cart items.
      * @param details The payment-method specific data.
      * @param callback The object that will receive the instrument details.
      */
-    public abstract void getDetails(String merchantName, String origin, List<PaymentItem> items,
-            JSONObject details, DetailsCallback callback);
+    public abstract void getDetails(String merchantName, String origin, PaymentItem total,
+            List<PaymentItem> cart, JSONObject details, DetailsCallback callback);
 
     /**
      * Cleans up any resources held by the payment instrument. For example, closes server

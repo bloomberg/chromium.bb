@@ -5,16 +5,11 @@
 <script src="resources/payment-request-mock.js"></script>
 <script>
 var details = {
-  displayItems: [
+  total:
     {
-      label: 'Sub-total',
-      amount: { currency: 'USD', value : '55.00' }, // US$55.00
-    },
-    {
-      label: 'Sales Tax',
-      amount: { currency: 'USD', value : '5.00' }, // US$5.00
+      label: 'Total',
+      amount: {currency: 'USD', value: '55.00'}, // US$55.00
     }
-  ]
 };
 
 var response_data = {

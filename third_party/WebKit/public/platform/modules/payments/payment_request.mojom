@@ -79,6 +79,7 @@ struct ShippingOption {
 };
 
 struct PaymentDetails {
+  PaymentItem total;
   array<PaymentItem> display_items;
   array<ShippingOption> shipping_options;
 };

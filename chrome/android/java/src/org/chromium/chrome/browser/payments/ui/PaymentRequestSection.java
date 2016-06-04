@@ -28,7 +28,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -408,30 +407,25 @@ public abstract class PaymentRequestSection extends LinearLayout {
         }
 
         /**
-         * Updates the breakdown, with the last item representing the full total.
+         * Updates the total and how it's broken down.
          *
-         * @param lineItems List of {@link LineItem}s.  The last item is assumed to be the total,
-         *                  while the others show how the total is broken down.
+         * @param cart The shopping cart contents and the total.
          */
-        public void update(List<LineItem> lineItems) {
+        public void update(ShoppingCart cart) {
             Context context = mBreakdownLayout.getContext();
 
             // Update the summary to display information about the total.
-            CharSequence totalLabel = null;
-            CharSequence totalValue = null;
-            if (lineItems.size() != 0) {
-                LineItem totalItem = lineItems.get(lineItems.size() - 1);
-                totalLabel = totalItem.getLabel();
-                totalValue = createValueString(totalItem.getCurrency(), totalItem.getPrice(), true);
-            }
-            setSummaryText(totalLabel, totalValue);
+            setSummaryText(cart.getTotal().getLabel(), createValueString(
+                    cart.getTotal().getCurrency(), cart.getTotal().getPrice(), true));
+
+            mBreakdownLayout.removeAllViews();
+            if (cart.getContents() == null) return;
 
             // Update the breakdown, using one row per {@link LineItem}.
-            int numItems = lineItems.size() - 1;
-            mBreakdownLayout.removeAllViews();
+            int numItems = cart.getContents().size();
             mBreakdownLayout.setRowCount(numItems);
             for (int i = 0; i < numItems; i++) {
-                LineItem item = lineItems.get(i);
+                LineItem item = cart.getContents().get(i);
 
                 TextView description = new TextView(context);
                 ApiCompatibilityUtils.setTextAppearance(

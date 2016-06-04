@@ -14,6 +14,7 @@ namespace blink {
 
 enum PaymentTestDetailToChange {
     PaymentTestDetailNone,
+    PaymentTestDetailTotal,
     PaymentTestDetailItem,
     PaymentTestDetailShippingOption
 };

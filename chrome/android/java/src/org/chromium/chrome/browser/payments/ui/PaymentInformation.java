@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
-import java.util.ArrayList;
-
 /**
  * The data to show in the PaymentRequest UI when first showing the UI.
  */
 public class PaymentInformation {
-    private final ArrayList<LineItem> mLineItems;
+    private final LineItem mTotal;
     private final SectionInformation mShippingAddresses;
     private final SectionInformation mShippingOptions;
     private final SectionInformation mPaymentMethods;
@@ -25,8 +23,7 @@ public class PaymentInformation {
     */
     public PaymentInformation(LineItem totalPrice, PaymentOption defaultShippingAddress,
             PaymentOption defaultShippingOption, PaymentOption defaultPaymentMethod) {
-        mLineItems = new ArrayList<LineItem>(1);
-        mLineItems.add(totalPrice);
+        mTotal = totalPrice;
         mShippingAddresses = new SectionInformation(
                 PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, defaultShippingAddress);
         mShippingOptions = new SectionInformation(
@@ -36,12 +33,12 @@ public class PaymentInformation {
     }
 
     /**
-     * Returns the line items on the bill.
+     * Returns the total price on the bill.
      *
-     * @return The line items on the bill.
+     * @return The total price on the bill.
      */
-    public ArrayList<LineItem> getLineItems() {
-        return mLineItems;
+    public LineItem getTotal() {
+        return mTotal;
     }
 
     /**

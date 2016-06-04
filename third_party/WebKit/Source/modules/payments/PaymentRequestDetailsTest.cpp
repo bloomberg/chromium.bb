@@ -12,6 +12,7 @@
 #include "modules/payments/PaymentDetailsTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
+#include <ostream> // NOLINT
 
 namespace blink {
 namespace {
@@ -46,6 +47,7 @@ public:
     }
 
 private:
+    friend std::ostream& operator<<(std::ostream&, DetailsTestCase);
     PaymentTestDetailToChange m_detail;
     PaymentTestDataToChange m_data;
     PaymentTestModificationType m_modType;
@@ -53,6 +55,62 @@ private:
     bool m_expectException;
     ExceptionCode m_expectedExceptionCode;
 };
+
+std::ostream& operator<<(std::ostream& out, DetailsTestCase testCase)
+{
+    if (testCase.m_expectException)
+        out << "Expecting an exception when ";
+    else
+        out << "Not expecting an exception when ";
+
+    switch (testCase.m_detail) {
+    case PaymentTestDetailTotal:
+        out << "total ";
+        break;
+    case PaymentTestDetailItem:
+        out << "displayItem ";
+        break;
+    case PaymentTestDetailShippingOption:
+        out << "shippingOption ";
+        break;
+    case PaymentTestDetailNone:
+        NOTREACHED();
+        break;
+    }
+
+    switch (testCase.m_data) {
+    case PaymentTestDataId:
+        out << "id ";
+        break;
+    case PaymentTestDataLabel:
+        out << "label ";
+        break;
+    case PaymentTestDataAmount:
+        out << "amount ";
+        break;
+    case PaymentTestDataCurrencyCode:
+        out << "currency ";
+        break;
+    case PaymentTestDataValue:
+        out << "value ";
+        break;
+    case PaymentTestDataNone:
+        NOTREACHED();
+        break;
+    }
+
+    switch (testCase.m_modType) {
+    case PaymentTestOverwriteValue:
+        out << "is overwritten by ";
+        out << testCase.m_valueToUse;
+        break;
+    case PaymentTestRemoveKey:
+        out << "is removed";
+        break;
+    }
+
+    return out;
+}
 
 class PaymentRequestDetailsTest : public testing::TestWithParam<DetailsTestCase> {
 public:
@@ -89,6 +147,10 @@ TEST_P(PaymentRequestDetailsTest, ValidatesDetails)
 INSTANTIATE_TEST_CASE_P(MissingData,
     PaymentRequestDetailsTest,
     testing::Values(
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataAmount, PaymentTestRemoveKey, "", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestRemoveKey, "", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestRemoveKey, "", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataLabel, PaymentTestRemoveKey, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataAmount, PaymentTestRemoveKey, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestRemoveKey, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataCurrencyCode, PaymentTestRemoveKey, "", true, V8TypeError),
@@ -102,6 +164,9 @@ INSTANTIATE_TEST_CASE_P(MissingData,
 INSTANTIATE_TEST_CASE_P(EmptyData,
     PaymentRequestDetailsTest,
     testing::Values(
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataLabel, PaymentTestOverwriteValue, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataLabel, PaymentTestOverwriteValue, "", true, V8TypeError),
@@ -113,12 +178,18 @@ INSTANTIATE_TEST_CASE_P(EmptyData,
 INSTANTIATE_TEST_CASE_P(ValidCurrencyCodeFormat,
     PaymentRequestDetailsTest,
     testing::Values(
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "USD"),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "USD"),
         DetailsTestCase(PaymentTestDetailShippingOption, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "USD")));
 
 INSTANTIATE_TEST_CASE_P(InvalidCurrencyCodeFormat,
     PaymentRequestDetailsTest,
     testing::Values(
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "US1", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "US", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "USDO", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "usd", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "US1", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "US", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataCurrencyCode, PaymentTestOverwriteValue, "USDO", true, V8TypeError),
@@ -133,6 +204,13 @@ INSTANTIATE_TEST_CASE_P(InvalidCurrencyCodeFormat,
 INSTANTIATE_TEST_CASE_P(ValidValueFormat,
     PaymentRequestDetailsTest,
     testing::Values(
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "0"),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "1"),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "10"),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "10.99"),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "01234567890123456789.0123456789"),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "01234567890123456789012345678.9"),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "012345678901234567890123456789"),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "0"),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "-0"),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "1"),
@@ -163,6 +241,23 @@ INSTANTIATE_TEST_CASE_P(ValidValueFormat,
 INSTANTIATE_TEST_CASE_P(InvalidValueFormat,
     PaymentRequestDetailsTest,
     testing::Values(
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-0", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-3", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-3.00", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "notdigits", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "ALSONOTDIGITS", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "10.", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, ".99", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-10.", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "10-", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "1-0", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "1.0.0", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "1/3", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-01234567890123456789.0123456789", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-01234567890123456789012345678.9", true, V8TypeError),
+        DetailsTestCase(PaymentTestDetailTotal, PaymentTestDataValue, PaymentTestOverwriteValue, "-012345678901234567890123456789", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "-", true, V8TypeError),
         DetailsTestCase(PaymentTestDetailItem, PaymentTestDataValue, PaymentTestOverwriteValue, "notdigits", true, V8TypeError),

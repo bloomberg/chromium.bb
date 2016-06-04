@@ -14,11 +14,7 @@ function buy() {  // eslint-disable-line no-unused-vars
   try {
     var request = new PaymentRequest(
         ['visa'], {
-          displayItems: [{
-            id: 'total',
-            label: 'Total',
-            amount: {currency: 'USD', value: '5.00'}
-          }],
+          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
           shippingOptions: [{
             id: 'freeShippingOption',
             label: 'Free global shipping',

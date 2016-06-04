@@ -79,11 +79,18 @@ struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
     static PaymentDetailsPtr Convert(const blink::PaymentDetails& input)
     {
         PaymentDetailsPtr output = PaymentDetails::New();
-        output->display_items = mojo::WTFArray<PaymentItemPtr>::From(input.displayItems());
+        output->total = PaymentItem::From(input.total());
+
+        if (input.hasDisplayItems())
+            output->display_items = mojo::WTFArray<PaymentItemPtr>::From(input.displayItems());
+        else
+            output->display_items = mojo::WTFArray<PaymentItemPtr>::New(0);
+
         if (input.hasShippingOptions())
             output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::From(input.shippingOptions());
         else
             output->shipping_options = mojo::WTFArray<ShippingOptionPtr>::New(0);
+
         return output;
     }
 };
@@ -103,74 +110,90 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
 namespace blink {
 namespace {
 
-// Validates ShippingOption and PaymentItem dictionaries, which happen to have identical fields,
+// Validates ShippingOption or PaymentItem, which happen to have identical fields,
 // except for "id", which is present only in ShippingOption.
 template <typename T>
-void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& exceptionState)
+void validateShippingOptionOrPaymentItem(const T& item, ExceptionState& exceptionState)
 {
+    if (!item.hasLabel() || item.label().isEmpty()) {
+        exceptionState.throwTypeError("Item label required");
+        return;
+    }
+
+    if (!item.hasAmount()) {
+        exceptionState.throwTypeError("Currency amount required");
+        return;
+    }
+
+    if (!item.amount().hasCurrency()) {
+        exceptionState.throwTypeError("Currency code required");
+        return;
+    }
+
+    if (!item.amount().hasValue()) {
+        exceptionState.throwTypeError("Currency value required");
+        return;
+    }
+
     String errorMessage;
-    for (const auto& item : items) {
-        if (!item.hasLabel() || item.label().isEmpty()) {
-            exceptionState.throwTypeError("Item label required");
-            return;
-        }
+    if (!PaymentsValidators::isValidCurrencyCodeFormat(item.amount().currency(), &errorMessage)) {
+        exceptionState.throwTypeError(errorMessage);
+        return;
+    }
 
-        if (!item.hasAmount()) {
-            exceptionState.throwTypeError("Currency amount required");
-            return;
-        }
-
-        if (!item.amount().hasCurrency()) {
-            exceptionState.throwTypeError("Currency code required");
-            return;
-        }
-
-        if (!item.amount().hasValue()) {
-            exceptionState.throwTypeError("Currency value required");
-            return;
-        }
-
-        if (!PaymentsValidators::isValidCurrencyCodeFormat(item.amount().currency(), &errorMessage)) {
-            exceptionState.throwTypeError(errorMessage);
-            return;
-        }
-
-        if (!PaymentsValidators::isValidAmountFormat(item.amount().value(), &errorMessage)) {
-            exceptionState.throwTypeError(errorMessage);
-            return;
-        }
+    if (!PaymentsValidators::isValidAmountFormat(item.amount().value(), &errorMessage)) {
+        exceptionState.throwTypeError(errorMessage);
+        return;
     }
 }
 
-void validateShippingOptionsIds(HeapVector<ShippingOption> options, ExceptionState& exceptionState)
+void validateDisplayItems(const HeapVector<PaymentItem>& items, ExceptionState& exceptionState)
+{
+    for (const auto& item : items) {
+        validateShippingOptionOrPaymentItem(item, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    }
+}
+
+void validateShippingOptions(const HeapVector<ShippingOption>& options, ExceptionState& exceptionState)
 {
     for (const auto& option : options) {
         if (!option.hasId() || option.id().isEmpty()) {
             exceptionState.throwTypeError("ShippingOption id required");
             return;
         }
+
+        validateShippingOptionOrPaymentItem(option, exceptionState);
+        if (exceptionState.hadException())
+            return;
     }
 }
 
 void validatePaymentDetails(const PaymentDetails& details, ExceptionState& exceptionState)
 {
-    if (!details.hasDisplayItems()) {
-        exceptionState.throwTypeError("Must specify display items");
+    if (!details.hasTotal()) {
+        exceptionState.throwTypeError("Must specify total");
         return;
     }
 
-    if (details.displayItems().isEmpty()) {
-        exceptionState.throwTypeError("Must specify at least one item");
-        return;
-    }
-
-    validateShippingOptionsOrPaymentItems(details.displayItems(), exceptionState);
+    validateShippingOptionOrPaymentItem(details.total(), exceptionState);
     if (exceptionState.hadException())
         return;
 
+    if (details.total().amount().value()[0] == '-') {
+        exceptionState.throwTypeError("Total amount value should be non-negative");
+        return;
+    }
+
+    if (details.hasDisplayItems()) {
+        validateDisplayItems(details.displayItems(), exceptionState);
+        if (exceptionState.hadException())
+            return;
+    }
+
     if (details.hasShippingOptions()) {
-        validateShippingOptionsOrPaymentItems(details.shippingOptions(), exceptionState);
-        validateShippingOptionsIds(details.shippingOptions(), exceptionState);
+        validateShippingOptions(details.shippingOptions(), exceptionState);
     }
 }
 

@@ -11,13 +11,9 @@
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
-    new PaymentRequest(['visa'], {
-      displayItems: [{
-        id: 'total',
-        label: 'Total',
-        amount: {currency: 'USD', value: '5.00'}
-      }]
-    })
+    new PaymentRequest(
+        ['visa'],
+        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .show()
         .then(function(resp) {
           resp.complete(true)

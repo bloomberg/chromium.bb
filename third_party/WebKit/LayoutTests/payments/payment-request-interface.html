@@ -25,15 +25,23 @@ function buildItem(optionalSubstituteKeyValuePair) {
 
 function buildDetails(optionalDetailName, optionalSubstituteKeyValuePair) {
     var details = {};
-    var detailNames = ['displayItems', 'shippingOptions'];
+    var detailNames = ['total', 'displayItems', 'shippingOptions'];
 
-    assert_true(!optionalDetailName || detailNames.indexOf(optionalDetailName) >= 0, 'Detail name "' + optionalDetailName + '" should be either "displayItems" or "shippingOptions".');
+    assert_true(!optionalDetailName || detailNames.indexOf(optionalDetailName) >= 0, 'Detail name "' + optionalDetailName + '" should be either "total", "displayItems", or "shippingOptions".');
 
     for (var i in detailNames) {
         if (optionalDetailName == detailNames[i]) {
-            details[detailNames[i]] = [buildItem(optionalSubstituteKeyValuePair)];
+            if (detailNames[i] == 'total') {
+                details[detailNames[i]] = buildItem(optionalSubstituteKeyValuePair);
+            } else {
+                details[detailNames[i]] = [buildItem(optionalSubstituteKeyValuePair)];
+            }
         } else {
-            details[detailNames[i]] = [buildItem()];
+            if (detailNames[i] == 'total') {
+                details[detailNames[i]] = buildItem();
+            } else {
+                details[detailNames[i]] = [buildItem()];
+            }
         }
     }
 
@@ -106,15 +114,42 @@ test(function() {
 }, 'Shipping option identifier should default to the single provided option.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {'displayItems': [buildItem()]}, {'requestShipping': true});
+    var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null when no shipping options are provided.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {'displayItems': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]}, {'requestShipping': true});
+    var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
 }, 'Shipping option identifier should be null at first when multiple shipping options are provided.');
 
+test(function() {
+    new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': undefined});
+}, 'Undefined display items should not throw.');
+
+test(function() {
+    new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': []});
+}, 'Empty display items should not throw.');
+
+test(function() {
+    new PaymentRequest(['foo'], buildDetails('total', {'value': '0'}));
+}, 'Non-negative total value should not throw.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest(['foo'], buildDetails('total', {'value': '-0.01'}));
+    });
+}, 'Negative total value should throw a TypeError.');
+
+test(function() {
+    new PaymentRequest(['foo'], buildDetails('displayItems', {'value': '-0.01'}));
+}, 'Negative line item value should not throw.');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        new PaymentRequest(['foo'], {'displayItems': [buildItem()]});
+    });
+}, 'Absence of total should throw TypeError.');
 
 generate_tests(assert_throws, [
     ['PaymentRequest constructor should throw for incorrect parameter types.', null, function() {
@@ -135,8 +170,11 @@ generate_tests(assert_throws, [
     ['Empty details should throw', null, function() {
         new PaymentRequest(['foo'], {})
     }],
-    ['Empty items should throw', null, function() {
-        new PaymentRequest(['foo'], {'displayItems': []})
+    ['Null items should throw', new TypeError(), function() {
+        new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': null});
+    }],
+    ['Null shipping options should throw', new TypeError(), function() {
+        new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': null});
     }],
     ['Aborting before showing should throw.', null, function() {
         new PaymentRequest(['foo'], buildDetails()).abort()
@@ -170,7 +208,7 @@ generate_tests(assert_throws, [
     }],
 ]);
 
-var detailNames = ['displayItems', 'shippingOptions'];
+var detailNames = ['total', 'displayItems', 'shippingOptions'];
 for (var i in detailNames) {
     generate_tests(assert_throws, [
         // Invalid currency code formats.

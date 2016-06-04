@@ -46,8 +46,8 @@ public class AutofillPaymentInstrument
     }
 
     @Override
-    public void getDetails(String unusedMerchantName, String unusedOrigin,
-            List<PaymentItem> unusedItems, JSONObject unusedDetails, DetailsCallback callback) {
+    public void getDetails(String unusedMerchantName, String unusedOrigin, PaymentItem unusedTotal,
+            List<PaymentItem> unusedCart, JSONObject unusedDetails, DetailsCallback callback) {
         assert mCallback == null;
         mCallback = callback;
         PersonalDataManager.getInstance().getFullCard(mWebContents, mCard.getGUID(), this);

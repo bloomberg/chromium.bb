@@ -80,9 +80,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void getDefaultPaymentInformation(Callback<PaymentInformation> callback);
 
         /**
-         * Asynchronously returns the full bill. The last line item is the total.
+         * Asynchronously returns the full bill. Includes the total price and its breakdown into
+         * individual line items.
          */
-        void getLineItems(Callback<List<LineItem>> callback);
+        void getShoppingCart(Callback<ShoppingCart> callback);
 
         /**
          * Asynchronously returns the full list of options for the given type.
@@ -186,7 +187,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private boolean mIsShowingEditDialog;
     private boolean mIsClientClosing;
 
-    private List<LineItem> mLineItems;
+    private ShoppingCart mShoppingCart;
     private SectionInformation mPaymentMethodSectionInformation;
     private SectionInformation mShippingAddressSectionInformation;
     private SectionInformation mShippingOptionsSectionInformation;
@@ -306,7 +307,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
             @Override
             public void onResult(PaymentInformation result) {
-                updateOrderSummarySection(result.getLineItems());
+                updateOrderSummarySection(new ShoppingCart(result.getTotal(), null));
 
                 if (mRequestShipping) {
                     updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
@@ -394,16 +395,16 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     /**
      * Updates the line items in response to a changed shipping address or option.
      *
-     * @param lineItems The full bill. The last line item is the total.
+     * @param cart The shopping cart, including the line items and the total.
      */
-    public void updateOrderSummarySection(List<LineItem> lineItems) {
-        mLineItems = lineItems;
+    public void updateOrderSummarySection(ShoppingCart cart) {
+        mShoppingCart = cart;
 
-        if (mLineItems == null || mLineItems.isEmpty()) {
+        if (cart == null || cart.getTotal() == null) {
             mOrderSummarySection.setVisibility(View.GONE);
         } else {
             mOrderSummarySection.setVisibility(View.VISIBLE);
-            mOrderSummarySection.update(lineItems);
+            mOrderSummarySection.update(cart);
         }
     }
 
@@ -594,9 +595,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mSelectedSection = section;
         assert mSelectedSection != mShippingSummarySection;
         if (mSelectedSection == mOrderSummarySection) {
-            mClient.getLineItems(new Callback<List<LineItem>>() {
+            mClient.getShoppingCart(new Callback<ShoppingCart>() {
                 @Override
-                public void onResult(List<LineItem> result) {
+                public void onResult(ShoppingCart result) {
                     updateOrderSummarySection(result);
                     updateSectionVisibility();
                 }
