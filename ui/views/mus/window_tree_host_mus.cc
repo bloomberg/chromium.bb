@@ -54,6 +54,8 @@ WindowTreeHostMus::WindowTreeHostMus(shell::Connector* connector,
   }
 
   SetPlatformWindow(base::WrapUnique(new ui::StubWindow(nullptr)));
+  // Initialize the stub platform window bounds to those of the mus::Window.
+  platform_window()->SetBounds(window->bounds());
 
   // The location of events is already transformed, and there is no way to
   // correctly determine the reverse transform. So, don't attempt to transform
