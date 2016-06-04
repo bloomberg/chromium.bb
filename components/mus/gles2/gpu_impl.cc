@@ -4,8 +4,8 @@
 
 #include "components/mus/gles2/gpu_impl.h"
 
+#include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/gles2/command_buffer_impl.h"
-#include "components/mus/gles2/command_buffer_type_conversions.h"
 
 namespace mus {
 

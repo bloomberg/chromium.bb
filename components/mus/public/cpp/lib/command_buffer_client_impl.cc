@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/mus/gles2/command_buffer_type_conversions.h"
+#include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"

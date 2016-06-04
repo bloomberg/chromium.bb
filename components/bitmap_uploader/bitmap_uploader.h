@@ -16,7 +16,6 @@
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_surface_client.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
-#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
@@ -73,7 +72,6 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
       mojo::Array<cc::ReturnedResource> resources) override;
 
   mus::Window* window_;
-  mus::mojom::GpuPtr gpu_service_;
   std::unique_ptr<mus::WindowSurface> surface_;
   std::unique_ptr<mus::GLES2Context> gles2_context_;
 

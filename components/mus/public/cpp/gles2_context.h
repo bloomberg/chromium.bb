@@ -11,33 +11,44 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/lib/command_buffer_client_impl.h"
+#include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 namespace gpu {
+class CommandBufferProxyImpl;
 class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
-class GLES2Implementation;
 }
+}
+
+namespace shell {
+class Connector;
 }
 
 namespace mus {
 
+class CommandBufferClientImpl;
+
 class GLES2Context {
  public:
-  explicit GLES2Context(const std::vector<int32_t>& attribs,
-                        mus::mojom::CommandBufferPtr command_buffer_ptr);
-  virtual ~GLES2Context();
-  bool Initialize();
-
+  ~GLES2Context();
   gpu::gles2::GLES2Interface* interface() const {
     return implementation_.get();
   }
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
 
+  static std::unique_ptr<GLES2Context> CreateOffscreenContext(
+      const std::vector<int32_t>& attribs,
+      shell::Connector* connector);
+
  private:
-  CommandBufferClientImpl command_buffer_;
+  GLES2Context();
+  bool Initialize(const std::vector<int32_t>& attribs,
+                  shell::Connector* connector);
+
+  std::unique_ptr<CommandBufferClientImpl> command_buffer_client_impl_;
+  std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> implementation_;

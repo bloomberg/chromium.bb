@@ -18,6 +18,7 @@
 
 namespace gpu {
 
+class CommandBufferProxyImpl;
 class TransferBuffer;
 
 namespace gles2 {
@@ -69,6 +70,8 @@ class SurfacesContextProvider : public cc::ContextProvider,
   void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
   void GpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
+  bool use_chrome_gpu_command_buffer_;
+
   // From GLES2Context:
   // Initialized in BindToCurrentThread.
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
@@ -81,6 +84,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
   SurfacesContextProviderDelegate* delegate_;
   gfx::AcceleratedWidget widget_;
   CommandBufferLocal* command_buffer_local_;
+  std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
 
   gl::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
 

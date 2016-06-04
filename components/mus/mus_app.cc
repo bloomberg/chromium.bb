@@ -15,6 +15,8 @@
 #include "components/mus/clipboard/clipboard_impl.h"
 #include "components/mus/common/switches.h"
 #include "components/mus/gles2/gpu_impl.h"
+#include "components/mus/gpu/gpu_service_impl.h"
+#include "components/mus/gpu/gpu_service_mus.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
@@ -76,6 +78,7 @@ struct MusApp::UserState {
 
 MusApp::MusApp()
     : test_config_(false),
+      use_chrome_gpu_command_buffer_(false),
       platform_screen_(ws::PlatformScreen::Create()),
       weak_ptr_factory_(this) {}
 
@@ -141,6 +144,9 @@ void MusApp::Initialize(shell::Connector* connector,
 
   test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseTestConfig);
+  use_chrome_gpu_command_buffer_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseChromeGpuCommandBufferInMus);
 #if defined(USE_X11)
   XInitThreads();
   if (test_config_)
@@ -174,9 +180,13 @@ void MusApp::Initialize(shell::Connector* connector,
   event_source_ = ui::PlatformEventSource::CreateDefault();
 #endif
 
-  // TODO(rjkroege): It is possible that we might want to generalize the
-  // GpuState object.
-  platform_display_init_params_.gpu_state = new GpuState();
+  if (use_chrome_gpu_command_buffer_) {
+    GpuServiceMus::GetInstance();
+  } else {
+    // TODO(rjkroege): It is possible that we might want to generalize the
+    // GpuState object.
+    platform_display_init_params_.gpu_state = new GpuState();
+  }
 
   // Gpu must be running before the PlatformScreen can be initialized.
   platform_screen_->Init();
@@ -194,6 +204,13 @@ bool MusApp::AcceptConnection(Connection* connection) {
   connection->AddInterface<mojom::WindowTreeFactory>(this);
   if (test_config_)
     connection->AddInterface<WindowServerTest>(this);
+
+  if (use_chrome_gpu_command_buffer_) {
+    connection->AddInterface<mojom::GpuService>(this);
+  } else {
+    connection->AddInterface<Gpu>(this);
+  }
+
   return true;
 }
 
@@ -237,8 +254,17 @@ void MusApp::Create(shell::Connection* connection,
 }
 
 void MusApp::Create(shell::Connection* connection, mojom::GpuRequest request) {
+  if (use_chrome_gpu_command_buffer_)
+    return;
   DCHECK(platform_display_init_params_.gpu_state);
   new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
+}
+
+void MusApp::Create(shell::Connection* connection,
+                    mojom::GpuServiceRequest request) {
+  if (!use_chrome_gpu_command_buffer_)
+    return;
+  new GpuServiceImpl(std::move(request), connection);
 }
 
 void MusApp::Create(shell::Connection* connection,

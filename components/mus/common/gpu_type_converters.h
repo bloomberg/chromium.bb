@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "components/mus/common/mus_common_export.h"
 #include "components/mus/public/interfaces/channel_handle.mojom.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/gpu_memory_buffer.mojom.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -16,6 +17,10 @@ struct GpuMemoryBufferHandle;
 class GenericSharedMemoryId;
 using GpuMemoryBufferId = GenericSharedMemoryId;
 struct NativePixmapHandle;
+}
+
+namespace gpu {
+struct GPUInfo;
 }
 
 namespace IPC {
@@ -78,6 +83,11 @@ struct MUS_COMMON_EXPORT TypeConverter<gfx::GpuMemoryBufferHandle,
                                        mus::mojom::GpuMemoryBufferHandlePtr> {
   static gfx::GpuMemoryBufferHandle Convert(
       const mus::mojom::GpuMemoryBufferHandlePtr& handle);
+};
+
+template <>
+struct MUS_COMMON_EXPORT TypeConverter<mus::mojom::GpuInfoPtr, gpu::GPUInfo> {
+  static mus::mojom::GpuInfoPtr Convert(const gpu::GPUInfo& input);
 };
 
 }  // namespace mojo

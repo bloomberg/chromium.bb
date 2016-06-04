@@ -27,6 +27,7 @@ component("mus_common") {
 
   deps = [
     "//components/mus/public/interfaces",
+    "//gpu/config",
     "//gpu/ipc/common:command_buffer_traits",
     "//ipc:ipc",
     "//mojo/public/c/system:for_component",

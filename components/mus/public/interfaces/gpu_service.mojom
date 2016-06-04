@@ -14,10 +14,8 @@ interface GpuService {
   // Tells the GPU service to create a new channel for communication with a
   // client. The GPU service responds asynchronously with IPC handle and
   // GPUInfo.
-  EstablishGpuChannel(bool prempts,
-                      bool allow_view_command_buffers,
-                      bool allow_real_time_streams)
-      => (ChannelHandle channel_handle, GpuInfo gpu_info);
+  EstablishGpuChannel()
+      => (int32 client_id, ChannelHandle channel_handle, GpuInfo gpu_info);
 
   // Tells the GPU service to create a new GPU memory buffer.
   CreateGpuMemoryBuffer(GpuMemoryBufferId id,

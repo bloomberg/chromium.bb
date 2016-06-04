@@ -5,6 +5,7 @@
 #include "components/mus/common/gpu_type_converters.h"
 
 #include "build/build_config.h"
+#include "gpu/config/gpu_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -143,6 +144,20 @@ gfx::GpuMemoryBufferHandle TypeConverter<gfx::GpuMemoryBufferHandle,
 #else
   DCHECK(handle->native_pixmap_handle.is_null());
 #endif
+  return result;
+}
+
+// static
+mus::mojom::GpuInfoPtr
+TypeConverter<mus::mojom::GpuInfoPtr, gpu::GPUInfo>::Convert(
+    const gpu::GPUInfo& input) {
+  mus::mojom::GpuInfoPtr result(mus::mojom::GpuInfo::New());
+  result->vendor_id = input.gpu.vendor_id;
+  result->device_id = input.gpu.device_id;
+  result->vendor_info = mojo::String::From<std::string>(input.gl_vendor);
+  result->renderer_info = mojo::String::From<std::string>(input.gl_renderer);
+  result->driver_version =
+      mojo::String::From<std::string>(input.driver_version);
   return result;
 }
 

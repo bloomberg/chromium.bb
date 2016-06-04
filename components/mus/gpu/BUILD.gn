@@ -9,17 +9,25 @@ source_set("gpu") {
   output_name = "mus_gpu"
 
   sources = [
+    "gpu_memory_buffer_manager_mus_local.cc",
+    "gpu_memory_buffer_manager_mus_local.h",
+    "gpu_service_impl.cc",
+    "gpu_service_impl.h",
     "gpu_service_mus.cc",
     "gpu_service_mus.h",
   ]
 
   deps = [
+    "//components/mus/common:mus_common",
     "//components/mus/public/interfaces",
     "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//ipc",
+    "//media/gpu/ipc/service",
     "//mojo/public/cpp/system",
+    "//services/shell/public/cpp",
     "//ui/gfx:memory_buffer",
+    "//ui/gl/init",
   ]
 }
 

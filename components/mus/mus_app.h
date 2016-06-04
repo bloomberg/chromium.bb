@@ -16,6 +16,7 @@
 #include "components/mus/public/interfaces/clipboard.mojom.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
+#include "components/mus/public/interfaces/gpu_service.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_server_test.mojom.h"
@@ -58,6 +59,7 @@ class MusApp
       public shell::InterfaceFactory<mojom::Clipboard>,
       public shell::InterfaceFactory<mojom::DisplayManager>,
       public shell::InterfaceFactory<mojom::Gpu>,
+      public shell::InterfaceFactory<mojom::GpuService>,
       public shell::InterfaceFactory<mojom::UserAccessManager>,
       public shell::InterfaceFactory<mojom::WindowManagerFactoryService>,
       public shell::InterfaceFactory<mojom::WindowTreeFactory>,
@@ -109,6 +111,10 @@ class MusApp
   void Create(shell::Connection* connection,
               mojom::GpuRequest request) override;
 
+  // shell::InterfaceFactory<mojom::GpuService> implementation.
+  void Create(shell::Connection* connection,
+              mojom::GpuServiceRequest request) override;
+
   // shell::InterfaceFactory<mojom::UserAccessManager> implementation.
   void Create(shell::Connection* connection,
               mojom::UserAccessManagerRequest request) override;
@@ -145,6 +151,7 @@ class MusApp
   UserIdToUserState user_id_to_user_state_;
 
   bool test_config_;
+  bool use_chrome_gpu_command_buffer_;
 #if defined(USE_OZONE)
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif

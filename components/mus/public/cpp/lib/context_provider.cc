@@ -8,23 +8,20 @@
 
 #include "base/logging.h"
 #include "components/mus/public/cpp/gles2_context.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace mus {
 
-ContextProvider::ContextProvider(
-    mojo::ScopedMessagePipeHandle command_buffer_handle)
-    : command_buffer_handle_(std::move(command_buffer_handle)),
-      context_(nullptr) {
-}
+ContextProvider::ContextProvider(shell::Connector* connector)
+    : connector_(connector->Clone()) {}
 
 bool ContextProvider::BindToCurrentThread() {
-  mojom::CommandBufferPtr command_buffer_ptr;
-  command_buffer_ptr.Bind(mojo::InterfacePtrInfo<mus::mojom::CommandBuffer>(
-      std::move(command_buffer_handle_), 0u));
-  std::unique_ptr<GLES2Context> context(
-      new GLES2Context(std::vector<int32_t>(), std::move(command_buffer_ptr)));
-  if (context->Initialize())
-    context_ = std::move(context);
+  if (connector_) {
+    context_ = GLES2Context::CreateOffscreenContext(std::vector<int32_t>(),
+                                                    connector_.get());
+    // We don't need the connector anymore, so release it.
+    connector_.reset();
+  }
   return !!context_;
 }
 

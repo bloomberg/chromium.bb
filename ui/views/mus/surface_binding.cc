@@ -24,9 +24,7 @@
 #include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
-#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/cpp/connector.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 
 namespace views {
@@ -56,16 +54,11 @@ class SurfaceBinding::PerClientState : public base::RefCounted<PerClientState> {
                  mus::WindowTreeClient* client);
   ~PerClientState();
 
-  void Init();
-
   static base::LazyInstance<
       base::ThreadLocalPointer<ClientToStateMap>>::Leaky window_states;
 
   shell::Connector* connector_;
   mus::WindowTreeClient* client_;
-
-  // Set of state needed to create an OutputSurface.
-  mus::mojom::GpuPtr gpu_;
 
   DISALLOW_COPY_AND_ASSIGN(PerClientState);
 };
@@ -84,10 +77,8 @@ SurfaceBinding::PerClientState* SurfaceBinding::PerClientState::Get(
     window_map = new ClientToStateMap;
     window_states.Pointer()->Set(window_map);
   }
-  if (!(*window_map)[client]) {
+  if (!(*window_map)[client])
     (*window_map)[client] = new PerClientState(connector, client);
-    (*window_map)[client]->Init();
-  }
   return (*window_map)[client];
 }
 
@@ -95,15 +86,8 @@ std::unique_ptr<cc::OutputSurface>
 SurfaceBinding::PerClientState::CreateOutputSurface(
     mus::Window* window,
     mus::mojom::SurfaceType surface_type) {
-  if (gpu_.encountered_error())
-    return nullptr;
-  // TODO(sky): figure out lifetime here. Do I need to worry about the return
-  // value outliving this?
-  mus::mojom::CommandBufferPtr cb;
-  gpu_->CreateOffscreenGLES2Context(GetProxy(&cb));
-
   scoped_refptr<cc::ContextProvider> context_provider(
-      new mus::ContextProvider(cb.PassInterface().PassHandle()));
+      new mus::ContextProvider(connector_));
   return base::WrapUnique(new mus::OutputSurface(
       context_provider, window->RequestSurface(surface_type)));
 }
@@ -122,16 +106,6 @@ SurfaceBinding::PerClientState::~PerClientState() {
     delete window_map;
     window_states.Pointer()->Set(nullptr);
   }
-}
-
-void SurfaceBinding::PerClientState::Init() {
-  connector_->ConnectToInterface("mojo:mus", &gpu_);
-
-  // TODO(sad): If service connection is lost (e.g. if gpu crashes), then the
-  // clients need to be restored. https://crbug.com/613366
-  // TODO(rockot|yzshen): It is necessary to install a connection-error handler,
-  // even if the handler doesn't actually do anything. https://crbug.com/613371
-  gpu_.set_connection_error_handler([]{});
 }
 
 // SurfaceBinding --------------------------------------------------------------

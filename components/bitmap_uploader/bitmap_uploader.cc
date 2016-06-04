@@ -14,7 +14,6 @@
 #include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
-#include "services/shell/public/cpp/connector.h"
 
 namespace bitmap_uploader {
 namespace {
@@ -43,13 +42,9 @@ void BitmapUploader::Init(shell::Connector* connector) {
   surface_->BindToThread();
   surface_->set_client(this);
 
-  connector->ConnectToInterface("mojo:mus", &gpu_service_);
-  mus::mojom::CommandBufferPtr command_buffer_ptr;
-  gpu_service_->CreateOffscreenGLES2Context(GetProxy(&command_buffer_ptr));
-  gles2_context_.reset(new mus::GLES2Context(std::vector<int32_t>(),
-                                             std::move(command_buffer_ptr)));
-  bool initialized = gles2_context_->Initialize();
-  DCHECK(initialized);
+  gles2_context_ = mus::GLES2Context::CreateOffscreenContext(
+      std::vector<int32_t>(), connector);
+  DCHECK(gles2_context_);
 }
 
 // Sets the color which is RGBA.
@@ -75,11 +70,6 @@ void BitmapUploader::SetBitmap(int width,
 }
 
 void BitmapUploader::Upload() {
-  // If the |gpu_service_| has errored than we won't get far. Do nothing,
-  // assuming we are in shutdown.
-  if (gpu_service_.encountered_error())
-    return;
-
   const gfx::Rect bounds(window_->bounds());
   mus::mojom::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
   mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();

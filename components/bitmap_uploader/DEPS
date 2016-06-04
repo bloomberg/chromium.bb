@@ -1,7 +1,6 @@
 include_rules = [
   "+components/mus/public",
   "+gpu/GLES2",
-  "+services/shell/public",
   "+mojo/common",
   "+mojo/public",
   "+ui/gfx/geometry",

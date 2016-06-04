@@ -1,4 +1,9 @@
 include_rules = [
+  "+gpu/command_buffer",
+  "+gpu/config",
   "+gpu/ipc/common",
+  # a GpuChannelHost is used by mus locally.
+  "+gpu/ipc/client/gpu_channel_host.h",
   "+gpu/ipc/service",
+  "+media/gpu/ipc/service",
 ]

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "components/mus/common/gpu_type_converters.h"
 #include "components/mus/gles2/command_buffer_driver.h"
-#include "components/mus/gles2/command_buffer_type_conversions.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 

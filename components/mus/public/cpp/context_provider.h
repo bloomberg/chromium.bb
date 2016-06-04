@@ -11,7 +11,12 @@
 
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
+#include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "mojo/public/cpp/system/core.h"
+
+namespace shell {
+class Connector;
+}
 
 namespace mus {
 
@@ -19,7 +24,7 @@ class GLES2Context;
 
 class ContextProvider : public cc::ContextProvider {
  public:
-  explicit ContextProvider(mojo::ScopedMessagePipeHandle command_buffer_handle);
+  explicit ContextProvider(shell::Connector* connector);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -38,7 +43,7 @@ class ContextProvider : public cc::ContextProvider {
   ~ContextProvider() override;
 
  private:
-  mojo::ScopedMessagePipeHandle command_buffer_handle_;
+  std::unique_ptr<shell::Connector> connector_;
   std::unique_ptr<GLES2Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);
