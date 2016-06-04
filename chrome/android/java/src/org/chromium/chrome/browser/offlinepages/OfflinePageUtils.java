@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Environment;
-import android.os.SystemClock;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -206,7 +205,7 @@ public class OfflinePageUtils {
      * Records UMA data when the Offline Pages Background Load service awakens.
      * @param context android context
      */
-    public static void recordWakeupUMA(Context context, long millisSinceBootTask) {
+    public static void recordWakeupUMA(Context context, long taskScheduledTimeMillis) {
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         // Note this is a sticky intent, so we aren't really registering a receiver, just getting
         // the sticky intent.  That means that we don't need to unregister the filter later.
@@ -228,8 +227,8 @@ public class OfflinePageUtils {
                 connectionType, ConnectionType.CONNECTION_LAST + 1);
 
         // Collect UMA on the time since the request started.
-        long milliSinceBootNow = SystemClock.elapsedRealtime();
-        long delayInMilliseconds = milliSinceBootNow - millisSinceBootTask;
+        long nowMillis = System.currentTimeMillis();
+        long delayInMilliseconds = nowMillis - taskScheduledTimeMillis;
         if (delayInMilliseconds <= 0) {
             return;
         }
