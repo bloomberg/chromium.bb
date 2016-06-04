@@ -376,6 +376,19 @@ source_set("test_support") {
   ]
 }
 
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+  ]
+}
+
 bundle_data("ios_web_unittests_bundle_data") {
   testonly = true
   sources = [
@@ -394,6 +407,7 @@ test("ios_web_unittests") {
   deps = [
     ":core",
     ":ios_web_unittests_bundle_data",
+    ":run_all_unittests",
     ":test_support",
     ":web",
     "//base",
@@ -435,7 +449,6 @@ test("ios_web_unittests") {
     "public/web_state/page_viewport_state_unittest.mm",
     "string_util_unittest.cc",
     "test/crw_fake_web_controller_observer_unittest.mm",
-    "test/run_all_unittests.cc",
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
     "web_state/crw_pass_kit_downloader_unittest.mm",

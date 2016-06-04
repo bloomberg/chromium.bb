@@ -34,3 +34,15 @@ source_set("test") {
     "//url",
   ]
 }
+
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [
+    "run_all_unittests.cc",
+  ]
+  deps = [
+    ":test",
+    "//base",
+    "//base/test:test_support",
+  ]
+}
