@@ -288,6 +288,7 @@ public:
     // flipped for right-to-left text.
     void logicalRectToPhysicalRect(LayoutRect&) const;
 
+    // TODO(szager): The Rect versions should return a rect, not modify the argument.
     void flipForWritingMode(FloatRect&) const;
     FloatPoint flipForWritingMode(const FloatPoint&) const;
     void flipForWritingMode(LayoutRect&) const;

@@ -336,25 +336,22 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
     LayoutUnit previousHeight = logicalHeight();
     setLogicalHeight(borderAndPaddingLogicalHeight() + scrollbarLogicalHeight());
 
+    PaintLayerScrollableArea::DelayScrollPositionClampScope delayClampScope;
+
     {
         TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
         LayoutState state(*this, locationOffset());
 
         m_numberOfInFlowChildrenOnFirstLine = -1;
 
-        LayoutBlock::startDelayUpdateScrollInfo();
-
         prepareOrderIteratorAndMargins();
 
         layoutFlexItems(relayoutChildren, layoutScope);
-
-        ScrollPositionMap scrollMap;
-        if (LayoutBlock::finishDelayUpdateScrollInfo(&layoutScope, &scrollMap)) {
+        if (PaintLayerScrollableArea::PreventRelayoutScope::relayoutNeeded()) {
+            PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbarsScope;
             prepareOrderIteratorAndMargins();
-            layoutFlexItems(false, layoutScope);
-            for (auto& entry : scrollMap) {
-                entry.key->scrollToPosition(entry.value, ScrollOffsetClamped);
-            }
+            layoutFlexItems(true, layoutScope);
+            PaintLayerScrollableArea::PreventRelayoutScope::resetRelayoutNeeded();
         }
 
         if (logicalHeight() != previousHeight)
@@ -850,6 +847,8 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
     LayoutUnit sumHypotheticalMainSize;
 
     Vector<LayoutUnit, 16> childSizes;
+
+    PaintLayerScrollableArea::PreventRelayoutScope preventRelayoutScope(layoutScope);
 
     dirtyForLayoutFromPercentageHeightDescendants(layoutScope);
 

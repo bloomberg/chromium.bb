@@ -136,13 +136,6 @@ private:
 
         void dispose();
 
-        // When canDetachScrollbars is true, calls to setHas*Scrollbar(false) will NOT destroy
-        // an existing scrollbar, but instead detach it without destroying it.  If, subsequently,
-        // setHas*Scrollbar(true) is called, the existing scrollbar will be reattached.  When
-        // setCanDetachScrollbars(false) is called, any detached scrollbars will be destructed.
-        bool canDetachScrollbars() const { return m_canDetachScrollbars; }
-        void setCanDetachScrollbars(bool);
-
         Scrollbar* horizontalScrollbar() const { return m_hBarIsAttached ? m_hBar.get(): nullptr; }
         Scrollbar* verticalScrollbar() const { return m_vBarIsAttached ? m_vBar.get() : nullptr; }
         bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
@@ -150,6 +143,7 @@ private:
 
         void setHasHorizontalScrollbar(bool hasScrollbar);
         void setHasVerticalScrollbar(bool hasScrollbar);
+        void destroyDetachedScrollbars();
 
         DECLARE_TRACE();
 
@@ -164,12 +158,66 @@ private:
         Member<Scrollbar> m_hBar;
         Member<Scrollbar> m_vBar;
 
-        unsigned m_canDetachScrollbars: 1;
         unsigned m_hBarIsAttached: 1;
         unsigned m_vBarIsAttached: 1;
     };
 
 public:
+
+    // If a PreventRelayoutScope object is alive, updateAfterLayout() will not
+    // re-run box layout as a result of adding or removing scrollbars.
+    class PreventRelayoutScope {
+        STACK_ALLOCATED();
+    public:
+        PreventRelayoutScope(SubtreeLayoutScope&);
+        ~PreventRelayoutScope();
+
+        static bool relayoutIsPrevented() { return s_count; }
+        static void setNeedsLayout(LayoutObject&);
+        static bool relayoutNeeded() { return s_count == 0 && s_relayoutNeeded; }
+        static void resetRelayoutNeeded();
+
+    private:
+        static int s_count;
+        static SubtreeLayoutScope* s_layoutScope;
+        static bool s_relayoutNeeded;
+        static WTF::Vector<LayoutObject*>* s_needsRelayout;
+    };
+
+    // If a FreezeScrollbarScope object is alive, updateAfterLayout() will not
+    // recompute the existence of overflow:auto scrollbars.
+    class FreezeScrollbarsScope {
+        STACK_ALLOCATED();
+    public:
+        FreezeScrollbarsScope() { s_count++; }
+        ~FreezeScrollbarsScope() { s_count--; }
+
+        static bool scrollbarsAreFrozen() { return s_count; }
+
+    private:
+        static int s_count;
+    };
+
+    // If a DelayScrollPositionClampScope object is alive, updateAfterLayout() will not
+    // clamp scroll positions to ensure they are in the valid range.  When
+    // the last DelayScrollPositionClampScope object is destructed, all PaintLayerScrollableArea's
+    // that delayed clamping their positions will immediately clamp them.
+    class DelayScrollPositionClampScope {
+        STACK_ALLOCATED();
+    public:
+        DelayScrollPositionClampScope();
+        ~DelayScrollPositionClampScope();
+
+        static bool clampingIsDelayed() { return s_count; }
+        static void setNeedsClamp(PaintLayerScrollableArea*);
+
+    private:
+        static void clampScrollableAreas();
+
+        static int s_count;
+        static PersistentHeapVector<Member<PaintLayerScrollableArea>>* s_needsClamp;
+    };
+
     // FIXME: We should pass in the LayoutBox but this opens a window
     // for crashers during PaintLayer setup (see crbug.com/368062).
     static PaintLayerScrollableArea* create(PaintLayer& layer)
@@ -268,9 +316,12 @@ public:
         scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior, scrollType);
     }
 
-    // Returns true if a layout object was marked for layout. In such a case, the layout scope's root
-    // should be laid out again.
-    bool updateAfterLayout(SubtreeLayoutScope* = nullptr);
+    // TODO(szager): Actually run these after all of layout is finished.  Currently, they
+    // run at the end of box()'es layout (or after all flexbox layout has finished) but while
+    // document layout is still happening.
+    void updateAfterLayout();
+    void clampScrollPositionsAfterLayout();
+
     void updateAfterStyleChange(const ComputedStyle*);
     void updateAfterOverflowRecalc();
 
@@ -355,6 +406,9 @@ public:
     bool shouldRebuildVerticalScrollbarLayer() const { return m_rebuildVerticalScrollbarLayer; }
     void resetRebuildScrollbarLayerFlags();
 
+    bool needsScrollPositionClamp() const { return m_needsScrollPositionClamp; }
+    void setNeedsScrollPositionClamp(bool val) { m_needsScrollPositionClamp = val; }
+
     StickyConstraintsMap& stickyConstraintsMap() { return ensureRareData().m_stickyConstraintsMap; }
     void invalidateAllStickyConstraints();
     void invalidateStickyConstraintsFor(PaintLayer*, bool needsCompositingUpdate = true);
@@ -372,7 +426,8 @@ private:
 
     bool needsScrollbarReconstruction() const;
 
-    void computeScrollDimensions();
+    void updateScrollOrigin();
+    void updateScrollDimensions();
 
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
@@ -429,6 +484,8 @@ private:
     // instance has been reconstructed.
     unsigned m_rebuildHorizontalScrollbarLayer : 1;
     unsigned m_rebuildVerticalScrollbarLayer : 1;
+
+    unsigned m_needsScrollPositionClamp : 1;
 
     // The width/height of our scrolled area.
     // This is OverflowModel's layout overflow translated to physical

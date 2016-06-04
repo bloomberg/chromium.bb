@@ -294,24 +294,6 @@ protected:
     bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
-    // Delay update scrollbar until finishDelayUpdateScrollInfo() will be
-    // called. This function is used when a flexbox is laying out its
-    // descendant. If multiple calls are made to startDelayUpdateScrollInfo(),
-    // finishDelayUpdateScrollInfo() will do nothing until finishDelayUpdateScrollInfo()
-    // is called the same number of times.
-    // finishDelayUpdateScrollInfo returns true when it marked something for layout.
-    // It will also return a map of saved scroll positions that the caller should restore
-    // on the given scrollable areas after performing the layout.
-    // This can be necessary because Flexbox's multi-pass layout can lose the scroll position.
-    // TODO(cbiesinger): This is a temporary hack. The right solution is to delay the scroll
-    // clamping that currently happens in PaintLayerScrollableArea::updateAfterLayout to only
-    // happen after all layout is done, i.e. during updateLayerPositionsAfterLayout. However,
-    // that currently fails a layout test. To fix this bug in time for M50, we use this temporary
-    // hack. The real fix is tracked in crbug.com/600036
-    typedef PersistentHeapHashMap<Member<PaintLayerScrollableArea>, DoublePoint> ScrollPositionMap;
-    static void startDelayUpdateScrollInfo();
-    static bool finishDelayUpdateScrollInfo(SubtreeLayoutScope*, ScrollPositionMap*);
-
     void updateAfterLayout();
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;

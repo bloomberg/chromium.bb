@@ -423,7 +423,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
     bool haveFlex = false, flexingChildren = false;
     gatherFlexChildrenInfo(iterator, relayoutChildren, highestFlexGroup, lowestFlexGroup, haveFlex);
 
-    LayoutBlock::startDelayUpdateScrollInfo();
+    PaintLayerScrollableArea::DelayScrollPositionClampScope delayClampScope;
 
     // We do 2 passes.  The first pass is simply to lay everyone out at
     // their preferred widths.  The second pass handles flexing the children.
@@ -646,8 +646,6 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         }
     } while (haveFlex);
 
-    LayoutBlock::finishDelayUpdateScrollInfo(nullptr, nullptr);
-
     if (remainingSpace > 0 && ((style()->isLeftToRightDirection() && style()->boxPack() != BoxPackStart)
         || (!style()->isLeftToRightDirection() && style()->boxPack() != BoxPackEnd))) {
         // Children must be repositioned.
@@ -723,7 +721,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
     if (haveLineClamp)
         applyLineClamp(iterator, relayoutChildren);
 
-    LayoutBlock::startDelayUpdateScrollInfo();
+    PaintLayerScrollableArea::DelayScrollPositionClampScope delayClampScope;
 
     // We do 2 passes.  The first pass is simply to lay everyone out at
     // their preferred widths.  The second pass handles flexing the children.
@@ -896,8 +894,6 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 haveFlex = false;
         }
     } while (haveFlex);
-
-    LayoutBlock::finishDelayUpdateScrollInfo(nullptr, nullptr);
 
     if (style()->boxPack() != BoxPackStart && remainingSpace > 0) {
         // Children must be repositioned.

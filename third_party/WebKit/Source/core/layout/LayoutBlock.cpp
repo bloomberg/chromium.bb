@@ -83,10 +83,6 @@ static TrackedContainerMap* gPositionedContainerMap = nullptr;
 // for every layout (see the comment above about why).
 static TrackedDescendantsMap* gPercentHeightDescendantsMap = nullptr;
 
-typedef WTF::HashSet<LayoutBlock*> DelayedUpdateScrollInfoSet;
-static int gDelayUpdateScrollInfo = 0;
-static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = nullptr;
-
 LayoutBlock::LayoutBlock(ContainerNode* node)
     : LayoutBox(node)
     , m_hasMarginBeforeQuirk(false)
@@ -133,9 +129,6 @@ void LayoutBlock::willBeDestroyed()
 {
     if (!documentBeingDestroyed() && parent())
         parent()->dirtyLinesFromChangedChild(this);
-
-    if (UNLIKELY(gDelayedUpdateScrollInfoSet != 0))
-        gDelayedUpdateScrollInfoSet->remove(this);
 
     if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->destroy(this);
@@ -343,61 +336,14 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
     child->destroy();
 }
 
-void LayoutBlock::startDelayUpdateScrollInfo()
-{
-    if (gDelayUpdateScrollInfo == 0) {
-        ASSERT(!gDelayedUpdateScrollInfoSet);
-        gDelayedUpdateScrollInfoSet = new DelayedUpdateScrollInfoSet;
-    }
-    ASSERT(gDelayedUpdateScrollInfoSet);
-    ++gDelayUpdateScrollInfo;
-}
-
-bool LayoutBlock::finishDelayUpdateScrollInfo(SubtreeLayoutScope* layoutScope, ScrollPositionMap* scrollMap)
-{
-    bool childrenMarkedForRelayout = false;
-
-    --gDelayUpdateScrollInfo;
-    ASSERT(gDelayUpdateScrollInfo >= 0);
-    if (gDelayUpdateScrollInfo == 0) {
-        ASSERT(gDelayedUpdateScrollInfoSet);
-
-        OwnPtr<DelayedUpdateScrollInfoSet> infoSet(adoptPtr(gDelayedUpdateScrollInfoSet));
-        gDelayedUpdateScrollInfoSet = nullptr;
-
-        for (auto* block : *infoSet) {
-            if (block->hasOverflowClip()) {
-                PaintLayerScrollableArea* scrollableArea = block->layer()->getScrollableArea();
-                if (scrollMap)
-                    scrollMap->add(scrollableArea, scrollableArea->scrollPositionDouble());
-                childrenMarkedForRelayout |= scrollableArea->updateAfterLayout(layoutScope);
-            }
-        }
-    }
-    return childrenMarkedForRelayout;
-}
-
 void LayoutBlock::updateAfterLayout()
 {
     invalidateStickyConstraints();
 
     // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
     // we overflow or not.
-    if (hasOverflowClip()) {
-        if (style()->isFlippedBlocksWritingMode()) {
-            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=97937
-            // Workaround for now. We cannot delay the scroll info for overflow
-            // for items with opposite writing directions, as the contents needs
-            // to overflow in that direction
-            layer()->getScrollableArea()->updateAfterLayout();
-            return;
-        }
-
-        if (gDelayUpdateScrollInfo)
-            gDelayedUpdateScrollInfoSet->add(this);
-        else
-            layer()->getScrollableArea()->updateAfterLayout();
-    }
+    if (hasOverflowClip())
+        layer()->getScrollableArea()->updateAfterLayout();
 }
 
 void LayoutBlock::layout()
