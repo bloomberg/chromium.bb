@@ -98,7 +98,6 @@
       'common/wm/root_window_finder.h',
       'common/wm/root_window_layout_manager.cc',
       'common/wm/root_window_layout_manager.h',
-      'common/wm/shelf/wm_shelf_types.h',
       'common/wm/switchable_windows.cc',
       'common/wm/switchable_windows.h',
       'common/wm/window_animation_types.h',
