@@ -84,8 +84,8 @@ bool AVDACodecImage::CopyTexImage(unsigned target) {
   // CopyTexImage() is called each time the surface texture is used for drawing.
   // It would be nice if we could do this via asking for the currently bound
   // Texture, but the active unit never seems to change.
-  texture_->SetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
-                                       gpu::gles2::Texture::UNBOUND);
+  texture_->SetLevelImageState(GL_TEXTURE_EXTERNAL_OES, 0,
+                               gpu::gles2::Texture::UNBOUND);
 
   return true;
 }

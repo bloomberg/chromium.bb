@@ -145,26 +145,23 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
       state_provider_->GetGlDecoder()->GetContextGroup()->texture_manager();
   RETURN_IF_NULL(texture_manager);
 
+  // Default to zero which will clear the stream texture service id if one was
+  // previously set.
+  GLuint stream_texture_service_id = 0;
   if (image) {
-    // Also set the parameters for the level if we're not clearing
-    // the image.
+    // Override the texture's service_id, so that it will use the one that is
+    // attached to the SurfaceTexture.
+    stream_texture_service_id = shared_state_->surface_texture_service_id();
+    DCHECK_NE(stream_texture_service_id, 0u);
+
+    // Also set the parameters for the level if we're not clearing the image.
     const gfx::Size size = state_provider_->GetSize();
     texture_manager->SetLevelInfo(texture_ref, GetTextureTarget(), 0, GL_RGBA,
                                   size.width(), size.height(), 1, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, gfx::Rect());
 
-    // Override the texture's service_id, so that it will use the one that
-    // will be / is attached to the SurfaceTexture.
-    DCHECK(shared_state_->surface_texture_service_id());
-    texture_ref->texture()->SetUnownedServiceId(
-        shared_state_->surface_texture_service_id());
-
     static_cast<AVDACodecImage*>(image.get())
         ->set_texture(texture_ref->texture());
-  } else {
-    // Clear the unowned service_id, so that this texture is no longer going
-    // to depend on the surface texture at all.
-    texture_ref->texture()->SetUnownedServiceId(0);
   }
 
   // For SurfaceTexture we set the image to UNBOUND so that the implementation
@@ -178,7 +175,8 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
       surface_texture_ ? gpu::gles2::Texture::UNBOUND
                        : gpu::gles2::Texture::BOUND;
   texture_manager->SetLevelStreamTextureImage(texture_ref, GetTextureTarget(),
-                                              0, image.get(), image_state);
+                                              0, image.get(), image_state,
+                                              stream_texture_service_id);
 }
 
 void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(

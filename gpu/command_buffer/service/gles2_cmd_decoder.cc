@@ -8177,9 +8177,9 @@ void GLES2DecoderImpl::DoCopyTexImage(Texture* texture,
   // as that allows the GLImage implemenatation to set it back to UNBOUND
   // and ensure that CopyTexImage() is called each time the texture is
   // used.
-  texture->SetLevelImage(textarget, 0, image, Texture::COPIED);
+  texture->SetLevelImageState(textarget, 0, Texture::COPIED);
   bool rv = image->CopyTexImage(textarget);
-  DCHECK(rv) << "Both BindTexImage() and CopyTexImage() failed";
+  DCHECK(rv) << "CopyTexImage() failed";
 }
 
 void GLES2DecoderImpl::DoCopyTexImageIfNeeded(Texture* texture,

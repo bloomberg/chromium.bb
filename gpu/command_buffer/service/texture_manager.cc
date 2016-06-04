@@ -1004,6 +1004,27 @@ void Texture::SetLevelInfo(GLenum target,
   }
 }
 
+void Texture::SetStreamTextureServiceId(GLuint service_id) {
+  GLuint new_service_id = service_id ? service_id : owned_service_id_;
+
+  // Take no action if this isn't an OES_EXTERNAL texture.
+  if (target_ && target_ != GL_TEXTURE_EXTERNAL_OES)
+    return;
+
+  if (service_id_ != new_service_id) {
+    service_id_ = new_service_id;
+    IncrementManagerServiceIdGeneration();
+    if (gl::GLContext* context = gl::GLContext::GetCurrent()) {
+      // It would be preferable to pass in the decoder, and ask it to do this
+      // instead.  However, there are several cases, such as TextureDefinition,
+      // that show up without a clear context owner.  So, instead, we use the
+      // current state's state restorer.
+      if (gl::GLStateRestorer* restorer = context->GetGLStateRestorer())
+        restorer->RestoreAllExternalTextureBindingsIfNeeded();
+    }
+  }
+}
+
 void Texture::MarkLevelAsInternalWorkaround(GLenum target, GLint level) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
@@ -1477,14 +1498,13 @@ void Texture::SetLevelImageInternal(GLenum target,
                                     gl::GLImage* image,
                                     GLStreamTextureImage* stream_texture_image,
                                     ImageState state) {
+  DCHECK(!stream_texture_image || stream_texture_image == image);
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(static_cast<size_t>(face_index),
-            face_infos_.size());
+  DCHECK_LT(static_cast<size_t>(face_index), face_infos_.size());
   DCHECK_LT(static_cast<size_t>(level),
             face_infos_[face_index].level_infos.size());
-  Texture::LevelInfo& info =
-      face_infos_[face_index].level_infos[level];
+  Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
   info.image = image;
@@ -1500,14 +1520,29 @@ void Texture::SetLevelImage(GLenum target,
                             GLint level,
                             gl::GLImage* image,
                             ImageState state) {
+  SetStreamTextureServiceId(0);
   SetLevelImageInternal(target, level, image, nullptr, state);
 }
 
 void Texture::SetLevelStreamTextureImage(GLenum target,
                                          GLint level,
                                          GLStreamTextureImage* image,
-                                         ImageState state) {
+                                         ImageState state,
+                                         GLuint service_id) {
+  SetStreamTextureServiceId(service_id);
   SetLevelImageInternal(target, level, image, image, state);
+}
+
+void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
+  DCHECK_GE(level, 0);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK_LT(static_cast<size_t>(face_index), face_infos_.size());
+  DCHECK_LT(static_cast<size_t>(level),
+            face_infos_[face_index].level_infos.size());
+  Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
+  DCHECK_EQ(info.target, target);
+  DCHECK_EQ(info.level, level);
+  info.image_state = state;
 }
 
 const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
@@ -1617,30 +1652,6 @@ bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
   bool stencil_renderable = feature_info->validators()->
       texture_stencil_renderable_internal_format.IsValid(internal_format);
   return (color_renderable || depth_renderable || stencil_renderable);
-}
-
-void Texture::SetUnownedServiceId(GLuint service_id) {
-  GLuint new_service_id = service_id;
-
-  // Take no action if this isn't an OES_EXTERNAL texture.
-  if (target_ && target_ != GL_TEXTURE_EXTERNAL_OES)
-    return;
-
-  if (!service_id)
-    new_service_id = owned_service_id_;
-
-  if (service_id_ != new_service_id) {
-    service_id_ = new_service_id;
-    IncrementManagerServiceIdGeneration();
-    if (gl::GLContext* context = gl::GLContext::GetCurrent()) {
-      // It would be preferable to pass in the decoder, and ask it to do this
-      // instead.  However, there are several cases, such as TextureDefinition,
-      // that show up without a clear context owner.  So, instead, we use the
-      // current state's state restorer.
-      if (gl::GLStateRestorer* restorer = context->GetGLStateRestorer())
-        restorer->RestoreAllExternalTextureBindingsIfNeeded();
-    }
-  }
 }
 
 GLenum Texture::GetCompatibilitySwizzleForChannel(GLenum channel) {
@@ -2100,9 +2111,19 @@ void TextureManager::SetLevelStreamTextureImage(TextureRef* ref,
                                                 GLenum target,
                                                 GLint level,
                                                 GLStreamTextureImage* image,
-                                                Texture::ImageState state) {
+                                                Texture::ImageState state,
+                                                GLuint service_id) {
   DCHECK(ref);
-  ref->texture()->SetLevelStreamTextureImage(target, level, image, state);
+  ref->texture()->SetLevelStreamTextureImage(target, level, image, state,
+                                             service_id);
+}
+
+void TextureManager::SetLevelImageState(TextureRef* ref,
+                                        GLenum target,
+                                        GLint level,
+                                        Texture::ImageState state) {
+  DCHECK(ref);
+  ref->texture()->SetLevelImageState(target, level, state);
 }
 
 size_t TextureManager::GetSignatureSize() const {

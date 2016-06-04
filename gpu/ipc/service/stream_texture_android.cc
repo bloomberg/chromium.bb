@@ -51,7 +51,7 @@ bool StreamTexture::Create(GpuCommandBufferStub* owner_stub,
                                   GL_UNSIGNED_BYTE, gfx::Rect(size));
     texture_manager->SetLevelStreamTextureImage(
         texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get(),
-        gles2::Texture::UNBOUND);
+        gles2::Texture::UNBOUND, 0);
     return true;
   }
 
@@ -198,7 +198,7 @@ bool StreamTexture::CopyTexImage(unsigned target) {
     // CopyTexImage() is called each time the surface texture is used for
     // drawing.
     texture->SetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
-                                        gles2::Texture::UNBOUND);
+                                        gles2::Texture::UNBOUND, 0);
   }
 
   return true;

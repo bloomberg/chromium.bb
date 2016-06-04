@@ -535,48 +535,6 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   manager.Destroy(false);
 }
 
-TEST_F(TextureManagerTest, OverrideServiceID) {
-  // Create a texture.
-  const GLuint kClientId = 1;
-  const GLuint kServiceId = 11;
-  manager_->CreateTexture(kClientId, kServiceId);
-  scoped_refptr<TextureRef> texture_ref(manager_->GetTexture(kClientId));
-  manager_->SetTarget(texture_ref.get(), GL_TEXTURE_EXTERNAL_OES);
-
-  Texture* texture = texture_ref->texture();
-  GLuint owned_service_id = TextureTestHelper::owned_service_id(texture);
-  GLuint service_id = texture->service_id();
-  // Initially, the texture should use the same service id that it owns.
-  EXPECT_EQ(owned_service_id, service_id);
-
-  // Override the service_id.
-  GLuint unowned_service_id = service_id + 1;
-  texture->SetUnownedServiceId(unowned_service_id);
-
-  // Make sure that service_id() changed but owned_service_id() didn't.
-  EXPECT_EQ(unowned_service_id, texture->service_id());
-  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
-
-  // Undo the override.
-  texture->SetUnownedServiceId(0);
-
-  // The service IDs should be back as they were.
-  EXPECT_EQ(service_id, texture->service_id());
-  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
-
-  // Override again, so that we can check delete behavior.
-  texture->SetUnownedServiceId(unowned_service_id);
-  EXPECT_EQ(unowned_service_id, texture->service_id());
-  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
-
-  // Remove the texture.  It should delete the texture id that it owns, even
-  // though it is overridden.
-  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(owned_service_id)))
-      .Times(1)
-      .RetiresOnSaturation();
-  manager_->RemoveTexture(kClientId);
-}
-
 TEST_F(TextureManagerTest, AlphaLuminanceCompatibilityProfile) {
   const GLuint kClientId = 1;
   const GLuint kServiceId = 11;
@@ -1751,13 +1709,15 @@ TEST_F(TextureTest, GetLevelStreamTextureImage) {
   scoped_refptr<GLStreamTextureImage> image(new GLStreamTextureImageStub);
   manager_->SetLevelStreamTextureImage(texture_ref_.get(),
                                        GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
-                                       Texture::BOUND);
+                                       Texture::BOUND, 0);
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
   EXPECT_FALSE(
       texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
+
   // Replace it as a normal image.
+  scoped_refptr<gl::GLImage> image2(new gl::GLImageStub);
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
-                          image.get(), Texture::BOUND);
+                          image2.get(), Texture::BOUND);
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
   EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) ==
               NULL);
@@ -1765,13 +1725,77 @@ TEST_F(TextureTest, GetLevelStreamTextureImage) {
   // Image should be reset when SetLevelInfo is called.
   manager_->SetLevelStreamTextureImage(texture_ref_.get(),
                                        GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
-                                       Texture::UNBOUND);
+                                       Texture::UNBOUND, 0);
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
                          GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          gfx::Rect(2, 2));
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
   EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) ==
               NULL);
+}
+
+TEST_F(TextureTest, SetLevelImageState) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
+  Texture* texture = texture_ref_->texture();
+  // Set image, initially BOUND.
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
+  manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 0, image.get(),
+                          Texture::BOUND);
+  Texture::ImageState state;
+  texture->GetLevelImage(GL_TEXTURE_2D, 0, &state);
+  EXPECT_EQ(state, Texture::BOUND);
+  // Change the state.
+  texture->SetLevelImageState(GL_TEXTURE_2D, 0, Texture::COPIED);
+  texture->GetLevelImage(GL_TEXTURE_2D, 0, &state);
+  EXPECT_EQ(state, Texture::COPIED);
+}
+
+TEST_F(TextureTest, SetStreamTextureImageServiceID) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
+                         GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(2, 2));
+  Texture* texture = texture_ref_->texture();
+
+  GLuint owned_service_id = TextureTestHelper::owned_service_id(texture);
+  GLuint service_id = texture->service_id();
+  // Initially, the texture should use the same service id that it owns.
+  EXPECT_EQ(owned_service_id, service_id);
+
+  // Override the service_id.
+  GLuint stream_texture_service_id = service_id + 1;
+  scoped_refptr<GLStreamTextureImage> image(new GLStreamTextureImageStub);
+  manager_->SetLevelStreamTextureImage(
+      texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
+      Texture::BOUND, stream_texture_service_id);
+
+  // Make sure that service_id() changed but owned_service_id() didn't.
+  EXPECT_EQ(stream_texture_service_id, texture->service_id());
+  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
+
+  // Undo the override.
+  manager_->SetLevelStreamTextureImage(texture_ref_.get(),
+                                       GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
+                                       Texture::BOUND, 0);
+
+  // The service IDs should be back as they were.
+  EXPECT_EQ(service_id, texture->service_id());
+  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
+
+  // Override again, so that we can check delete behavior.
+  manager_->SetLevelStreamTextureImage(
+      texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
+      Texture::BOUND, stream_texture_service_id);
+
+  // Remove the Texture.  It should delete the texture id that it owns, even
+  // though it is overridden.
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(owned_service_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_->RemoveTexture(kClient1Id);
+  texture_ref_ = nullptr;
 }
 
 namespace {
