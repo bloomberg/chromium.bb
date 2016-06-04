@@ -7,12 +7,12 @@
     {
       'target_name': 'devtools_protocol_constants',
       'type': 'none',
+      'dependencies': [
+        '../../../third_party/WebKit/Source/core/inspector/inspector.gyp:protocol_version'
+      ],
       'actions': [
         {
           'action_name': 'devtools_protocol_constants',
-          'dependencies': [
-            '//third_party/WebKit/Source/core/inspector:protocol_version'
-          ],
           'variables': {
             'blink_protocol': '<(SHARED_INTERMEDIATE_DIR)/blink/core/inspector/protocol.json',
             'browser_protocol': '../../../content/browser/devtools/browser_protocol.json',

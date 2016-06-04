@@ -12,8 +12,7 @@ action("devtools_protocol_constants") {
   deps = [
     "//third_party/WebKit/Source/core/inspector:protocol_version",
   ]
-  blink_protocol =
-      "$target_gen_dir/../../../blink/core/inspector/protocol.json"
+  blink_protocol = "$root_gen_dir/blink/core/inspector/protocol.json"
   browser_protocol = "//content/browser/devtools/browser_protocol.json"
   inputs = [
     blink_protocol,
