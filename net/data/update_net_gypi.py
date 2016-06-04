@@ -16,6 +16,7 @@ DATA_SOURCES_PATH_FOR_VARIABLES = {
     "net/data/ssl/certificates",
   ],
   "net_unittests_data_sources": [
+    "net/data/cert_issuer_source_static_unittest",
     "net/data/certificate_policies_unittest",
     "net/data/name_constraints_unittest",
     "net/data/parse_certificate_unittest",
