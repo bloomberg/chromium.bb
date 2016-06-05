@@ -2222,8 +2222,9 @@
       'gyp_defines': 'test_isolation_mode=prepare',
     },
 
+    # TODO(dpranke): Remove the symbolized config after the bots are  gone.
     'symbolized': {
-      'gn_args': 'error', # TODO(GYP): add an equivalent flag for this
+      'gn_args': 'symbolized=true',
       'gyp_defines':
         'release_extra_cflags="-O1 -fno-inline-functions -fno-inline"',
     },

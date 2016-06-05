@@ -38,6 +38,21 @@ group("deps_no_options") {
       ":default_sanitizer_ldflags",
     ]
     deps = []
+
+    data = [
+      "//tools/valgrind/asan/",
+    ]
+    if (is_win) {
+      exe = ".exe"
+    } else {
+      exe = ""
+    }
+    data += [ "//third_party//llvm-build/Release+Asserts/bin/llvm-symbolizer${exe}" ]
+    if (is_linux) {
+      # llvm-symbolizer needs this.
+      data += [ "//third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6" ]
+    }
+
     if (use_prebuilt_instrumented_libraries) {
       deps += [ "//third_party/instrumented_libraries:deps" ]
     }
@@ -45,6 +60,7 @@ group("deps_no_options") {
       public_deps = [
         "//buildtools/third_party/libc++:libcxx_proxy",
       ]
+      data += [ "$root_out_dir/libc++.so" ]
     }
     if (is_mac) {
       data_deps = [

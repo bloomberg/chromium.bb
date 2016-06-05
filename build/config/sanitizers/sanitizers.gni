@@ -100,6 +100,9 @@ using_sanitizer = is_asan || is_lsan || is_tsan || is_msan || is_ubsan ||
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
 
+prebuilt_instrumented_libraries_available =
+    is_msan && (msan_track_origins == 0 || msan_track_origins == 2)
+
 # MSan only links Chrome properly in release builds (brettw -- 9/1/2015). The
 # same is possibly true for the other non-ASan sanitizers. But regardless of
 # whether it links, one would normally never run a sanitizer in debug mode.

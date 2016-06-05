@@ -632,8 +632,7 @@
       #                  http://crbug.com/105550
       'use_canvas_skia%': 0,
 
-      # Set to "tsan", "memcheck", or "drmemory" to configure the build to work
-      # with one of those tools.
+      # Set to "drmemory" to configure the build to work with DrMemory.
       'build_for_tool%': '',
 
       'wix_path%': '<(DEPTH)/third_party/wix',
@@ -2287,27 +2286,6 @@
         # that allows the tool to see the memory accesses from JITted code.
         # Without this flag, JS code causes false positive reports from MSan.
         'v8_target_arch': 'arm64',
-      }],
-
-      # On valgrind bots, override the optimizer settings so we don't inline too
-      # much and make the stacks harder to figure out.
-      #
-      # TODO(rnk): Kill off variables that no one else uses and just implement
-      # them under a build_for_tool== condition.
-      ['build_for_tool=="memcheck" or build_for_tool=="tsan"', {
-        # gcc flags
-        'mac_debug_optimization': '1',
-        'mac_release_optimization': '1',
-        'release_optimize': '1',
-        'no_gc_sections': 1,
-        'debug_extra_cflags': '-g -fno-inline -fno-omit-frame-pointer '
-                              '-fno-builtin -fno-optimize-sibling-calls',
-        'release_extra_cflags': '-g -fno-inline -fno-omit-frame-pointer '
-                                '-fno-builtin -fno-optimize-sibling-calls',
-
-        'release_valgrind_build': 1,
-        'werror': '',
-        'component': 'static_library',
       }],
 
       # Build tweaks for DrMemory.

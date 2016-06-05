@@ -483,7 +483,17 @@ template("gcc_toolchain") {
       is_tsan = false
       is_ubsan = false
       is_ubsan_null = false
+      is_ubsan_no_recover = false
+      is_ubsan_security = false
       is_ubsan_vptr = false
+      msan_track_origins = 0
+      sanitizer_coverage_flags = ""
+      use_cfi_diag = false
+      use_custom_libcxx = false
+      use_drfuzz = false
+      use_libfuzzer = false
+      use_prebuilt_instrumented_libraries = false
+      use_sanitizer_coverage = false
     }
 
     forward_variables_from(invoker, [ "deps" ])
