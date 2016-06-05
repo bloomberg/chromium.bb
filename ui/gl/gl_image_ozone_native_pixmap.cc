@@ -203,11 +203,13 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormatForTesting(
     case gfx::BufferFormat::R_8:
       return GL_RED_EXT;
     case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
+      return GL_RGB;
+    case gfx::BufferFormat::RGBA_8888:
       return GL_RGBA;
+    case gfx::BufferFormat::BGRA_8888:
+      return GL_BGRA_EXT;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
