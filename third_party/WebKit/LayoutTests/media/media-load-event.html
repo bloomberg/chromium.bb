@@ -1,58 +1,26 @@
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that media file is not reloaded when an element is inserted into the DOM.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<div id="parent"></div>
+<script>
+async_test(function(t) {
+    var audio = document.createElement("audio");
 
-        <script>
+    audio.oncanplaythrough = t.step_func(function() {
+        audio.onloadstart = t.unreached_func("Should not fire 'loadstart' event");
+        document.getElementById("parent").appendChild(audio);
+        audio.play();
+    });
 
-            function playing()
-            {
-                consoleWrite("EVENT(playing)<br>");
-                endTest();
-            }
+    audio.onplaying = t.step_func_done();
+    audio.onloadstart = t.step_func(function() {});
+    audio.ondurationchange = t.step_func(function() {});
+    audio.onplay = t.step_func(function() {});
+    audio.onloadeddata = t.step_func(function() {});
 
-            function canplaythrough()
-            {
-                consoleWrite("EVENT(canplaythrough)");
-                consoleWrite("");
-                run("document.getElementById('parent').appendChild(mediaElement)");
-                run("mediaElement.play()");
-                consoleWrite("");
-            }
-
-            function start()
-            {
-                run("mediaElement = document.createElement('audio')");
-
-                mediaElement.setAttribute('oncanplaythrough', "canplaythrough()");
-                mediaElement.setAttribute('onplaying', "playing()");
-
-                waitForEvent("loadstart");
-                waitForEvent("waiting");
-                waitForEvent("ratechange");
-                waitForEvent("durationchange");
-                waitForEvent("pause");
-                waitForEvent("play");
-                waitForEvent("canplaythrough");
-                waitForEvent('loadeddata');
-
-                var mediaFile = findMediaFile("audio", "content/test");
-                run("mediaElement.src = '" + mediaFile + "'");
-                run("mediaElement.load()");
-
-                consoleWrite("");
-            }
-
-        </script>
-    </head>
-
-    <body onload="start()">
-
-    <p>Test that media file is not reloaded when an element is inserted into the DOM.</p>
-
-    <div id="parent"></div>
-
-    </body>
-</html>
+    audio.src = findMediaFile("audio", "content/test");
+    audio.load();
+})
+</script>

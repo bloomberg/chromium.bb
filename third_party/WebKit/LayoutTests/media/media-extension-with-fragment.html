@@ -1,32 +1,14 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            function finish()
-            {
-                logResult(event.type == "loadeddata", "MediaPlayer extracted extension from src url.");
-                consoleWrite("");
-                endTest();
-            }
-
-
-            function start()
-            {
-                findMediaElement();
-                waitForEventAndEnd('loadeddata', finish);
-                waitForEvent('error', finish);
-                video.src = findMediaFile("video", "content/test") + "#01.00.xyz";
-            }
-        </script>
-
-    </head>
-    <body onload="start()">
-
-        <video controls ></video>
-
-    </body>
-</html>
+<title>Test that a media url with fragment loads properly</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.onloadeddata = t.step_func_done();
+    video.onerror = t.unreached_func();
+    video.src = findMediaFile("video", "content/test") + "#01.00.xyz";
+});
+</script>
