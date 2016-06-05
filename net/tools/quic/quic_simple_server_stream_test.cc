@@ -85,11 +85,13 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
   explicit MockQuicSimpleServerSession(
       QuicConnection* connection,
       MockQuicServerSessionVisitor* owner,
+      MockQuicServerSessionHelper* helper,
       QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache)
       : QuicSimpleServerSession(DefaultQuicConfig(),
                                 connection,
                                 owner,
+                                helper,
                                 crypto_config,
                                 compressed_certs_cache) {
     set_max_open_incoming_streams(kMaxStreamsForTest);
@@ -160,6 +162,7 @@ class QuicSimpleServerStreamTest
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         session_(connection_,
                  &session_owner_,
+                 &session_helper_,
                  crypto_config_.get(),
                  &compressed_certs_cache_),
         body_("hello world") {
@@ -206,6 +209,7 @@ class QuicSimpleServerStreamTest
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
   StrictMock<MockQuicServerSessionVisitor> session_owner_;
+  StrictMock<MockQuicServerSessionHelper> session_helper_;
   std::unique_ptr<QuicCryptoServerConfig> crypto_config_;
   QuicCompressedCertsCache compressed_certs_cache_;
   StrictMock<MockQuicSimpleServerSession> session_;

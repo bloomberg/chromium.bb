@@ -660,11 +660,8 @@ bool QuicSession::ShouldYield(QuicStreamId stream_id) {
 
 ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
     const QuicStreamId stream_id) {
-  if (ContainsKey(static_stream_map_, stream_id)) {
-    DLOG(FATAL)
-        << "Attempt to call GetOrCreateDynamicStream for a static stream";
-    return nullptr;
-  }
+  DCHECK(!ContainsKey(static_stream_map_, stream_id))
+      << "Attempt to call GetOrCreateDynamicStream for a static stream";
 
   StreamMap::iterator it = dynamic_stream_map_.find(stream_id);
   if (it != dynamic_stream_map_.end()) {

@@ -1201,16 +1201,17 @@ QuicConsumedData QuicConnection::SendStreamData(
   // which decrypter will be used on an ack packet following a handshake
   // packet (a handshake packet from client to server could result in a REJ or a
   // SHLO from the server, leading to two different decrypters at the server.)
-  //
-  // TODO(jri): Note that ConsumeData may cause a response packet to be sent.
-  // We may end up sending stale ack information if there are undecryptable
-  // packets hanging around and/or there are revivable packets which may get
-  // handled after this packet is sent. Change ScopedPacketBundler to do the
-  // right thing: check ack_queued_, and then check undecryptable packets and
-  // also if there is possibility of revival. Only bundle an ack if there's no
-  // processing left that may cause received_info_ to change.
   ScopedRetransmissionScheduler alarm_delayer(this);
   ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
+  // The optimized path may be used for data only packets which fit into a
+  // standard buffer and don't need padding.
+  if (FLAGS_quic_use_optimized_write_path && id != kCryptoStreamId &&
+      !packet_generator_.HasQueuedFrames() &&
+      iov.total_length > kMaxPacketSize) {
+    // Use the fast path to send full data packets.
+    return packet_generator_.ConsumeDataFastPath(id, iov, offset, fin,
+                                                 listener);
+  }
   return packet_generator_.ConsumeData(id, iov, offset, fin, listener);
 }
 

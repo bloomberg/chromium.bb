@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_server_session_base.h"
+#include "net/quic/quic_server_session_base.h"
 
 #include <cstdint>
 #include <memory>
@@ -75,12 +75,14 @@ class TestServerSession : public QuicServerSessionBase {
  public:
   TestServerSession(const QuicConfig& config,
                     QuicConnection* connection,
-                    QuicServerSessionVisitor* visitor,
+                    QuicServerSessionBase::Visitor* visitor,
+                    QuicServerSessionBase::Helper* helper,
                     const QuicCryptoServerConfig* crypto_config,
                     QuicCompressedCertsCache* compressed_certs_cache)
       : QuicServerSessionBase(config,
                               connection,
                               visitor,
+                              helper,
                               crypto_config,
                               compressed_certs_cache) {}
 
@@ -138,7 +140,7 @@ class QuicServerSessionBaseTest : public ::testing::TestWithParam<QuicVersion> {
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
         SupportedVersions(GetParam()));
     session_.reset(new TestServerSession(config_, connection_, &owner_,
-                                         &crypto_config_,
+                                         &session_helper_, &crypto_config_,
                                          &compressed_certs_cache_));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
@@ -149,6 +151,7 @@ class QuicServerSessionBaseTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   StrictMock<MockQuicServerSessionVisitor> owner_;
+  StrictMock<MockQuicServerSessionHelper> session_helper_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
@@ -368,7 +371,7 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
   explicit MockQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache,
-      QuicSession* session)
+      QuicServerSessionBase* session)
       : QuicCryptoServerStream(crypto_config,
                                compressed_certs_cache,
                                FLAGS_enable_quic_stateless_reject_support,

@@ -35,7 +35,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_connection_defer_ack_response;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_reply_to_rej;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_lower_bw_resumption_limit;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_sslr_limit_reduction;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_max_pacing_rate;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_avoid_empty_nonfin_writes;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_auto_tune_receive_window;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_adaptive_loss_recovery;
@@ -48,5 +47,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_old_public_reset_packets;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_ignore_srbf;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_noprr;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disallow_multi_packet_chlo;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_optimized_write_path;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_dispatcher_creates_id;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

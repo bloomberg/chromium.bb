@@ -381,9 +381,13 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     : QuicServerSessionBase(config,
                             connection,
                             &visitor_,
+                            &helper_,
                             crypto_config,
                             compressed_certs_cache) {
   Initialize();
+  ON_CALL(helper_, GenerateConnectionIdForReject(_))
+      .WillByDefault(
+          testing::Return(connection->random_generator()->RandUint64()));
 }
 
 TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {}

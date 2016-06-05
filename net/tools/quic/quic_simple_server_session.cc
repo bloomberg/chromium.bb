@@ -23,12 +23,14 @@ namespace net {
 QuicSimpleServerSession::QuicSimpleServerSession(
     const QuicConfig& config,
     QuicConnection* connection,
-    QuicServerSessionVisitor* visitor,
+    QuicServerSessionBase::Visitor* visitor,
+    QuicServerSessionBase::Helper* helper,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache)
     : QuicServerSessionBase(config,
                             connection,
                             visitor,
+                            helper,
                             crypto_config,
                             compressed_certs_cache),
       highest_promised_stream_id_(0) {}

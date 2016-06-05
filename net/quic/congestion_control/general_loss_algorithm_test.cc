@@ -315,7 +315,7 @@ TEST_F(GeneralLossAlgorithmTest, NoSpuriousLossesFromLargeReordering) {
 TEST_F(GeneralLossAlgorithmTest, IncreaseThresholdUponSpuriousLoss) {
   FLAGS_quic_adaptive_loss_recovery = true;
   loss_algorithm_.SetLossDetectionType(kAdaptiveTime);
-  EXPECT_EQ(16, loss_algorithm_.reordering_fraction());
+  EXPECT_EQ(4, loss_algorithm_.reordering_shift());
   const size_t kNumSentPackets = 10;
   // Transmit 2 packets at 1/10th an RTT interval.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
@@ -346,13 +346,13 @@ TEST_F(GeneralLossAlgorithmTest, IncreaseThresholdUponSpuriousLoss) {
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(1.0f / 4));
   loss_algorithm_.SpuriousRetransmitDetected(unacked_packets_, clock_.Now(),
                                              rtt_stats_, 11);
-  EXPECT_EQ(2, loss_algorithm_.reordering_fraction());
+  EXPECT_EQ(1, loss_algorithm_.reordering_shift());
 
   // Detect another spurious retransmit and ensure the threshold doesn't
   // increase again.
   loss_algorithm_.SpuriousRetransmitDetected(unacked_packets_, clock_.Now(),
                                              rtt_stats_, 12);
-  EXPECT_EQ(2, loss_algorithm_.reordering_fraction());
+  EXPECT_EQ(1, loss_algorithm_.reordering_shift());
 }
 
 }  // namespace

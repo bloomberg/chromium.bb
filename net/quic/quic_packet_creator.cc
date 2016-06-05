@@ -391,6 +391,79 @@ void QuicPacketCreator::ClearPacket() {
   packet_.listeners.clear();
 }
 
+void QuicPacketCreator::CreateAndSerializeStreamFrame(
+    QuicStreamId id,
+    const QuicIOVector& iov,
+    QuicStreamOffset iov_offset,
+    QuicStreamOffset stream_offset,
+    bool fin,
+    QuicAckListenerInterface* listener,
+    char* encrypted_buffer,
+    size_t encrypted_buffer_len,
+    size_t* num_bytes_consumed) {
+  DCHECK(queued_frames_.empty());
+  // Write out the packet header
+  QuicPacketHeader header;
+  FillPacketHeader(&header);
+  QuicDataWriter writer(kMaxPacketSize, encrypted_buffer);
+  if (!framer_->AppendPacketHeader(header, &writer)) {
+    QUIC_BUG << "AppendPacketHeader failed";
+    return;
+  }
+
+  // Create a Stream frame with the remaining space.
+  QUIC_BUG_IF(iov_offset == iov.total_length && !fin)
+      << "Creating a stream frame with no data or fin.";
+  const size_t remaining_data_size = iov.total_length - iov_offset;
+  const size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
+      id, stream_offset, /* last_frame_in_packet= */ true);
+  const size_t available_size =
+      max_plaintext_size_ - writer.length() - min_frame_size;
+  const size_t bytes_consumed =
+      min<size_t>(available_size, remaining_data_size);
+
+  const bool set_fin = fin && (bytes_consumed == remaining_data_size);
+  UniqueStreamBuffer stream_buffer =
+      NewStreamBuffer(buffer_allocator_, bytes_consumed);
+  CopyToBuffer(iov, iov_offset, bytes_consumed, stream_buffer.get());
+  std::unique_ptr<QuicStreamFrame> frame(new QuicStreamFrame(
+      id, set_fin, stream_offset, bytes_consumed, std::move(stream_buffer)));
+
+  // TODO(ianswett): AppendTypeByte and AppendStreamFrame could be optimized
+  // into one method that takes a QuicStreamFrame, if warranted.
+  if (!framer_->AppendTypeByte(QuicFrame(frame.get()),
+                               /* no stream frame length */ true, &writer)) {
+    QUIC_BUG << "AppendTypeByte failed";
+    return;
+  }
+  if (!framer_->AppendStreamFrame(*frame, /* no stream frame length */ true,
+                                  &writer)) {
+    QUIC_BUG << "AppendStreamFrame failed";
+    return;
+  }
+
+  size_t encrypted_length = framer_->EncryptInPlace(
+      packet_.encryption_level, packet_.path_id, packet_.packet_number,
+      GetStartOfEncryptedData(framer_->version(), header), writer.length(),
+      encrypted_buffer_len, encrypted_buffer);
+  if (encrypted_length == 0) {
+    QUIC_BUG << "Failed to encrypt packet number " << header.packet_number;
+    return;
+  }
+  // TODO(ianswett): Optimize the storage so RetransmitableFrames can be
+  // unioned with a QuicStreamFrame and a UniqueStreamBuffer.
+  *num_bytes_consumed = bytes_consumed;
+  packet_size_ = 0;
+  packet_.entropy_hash = QuicFramer::GetPacketEntropyHash(header);
+  packet_.encrypted_buffer = encrypted_buffer;
+  packet_.encrypted_length = encrypted_length;
+  if (listener != nullptr) {
+    packet_.listeners.emplace_back(listener, bytes_consumed);
+  }
+  packet_.retransmittable_frames.push_back(QuicFrame(frame.release()));
+  OnSerializedPacket();
+}
+
 bool QuicPacketCreator::HasPendingFrames() const {
   return !queued_frames_.empty();
 }

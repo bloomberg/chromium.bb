@@ -23,10 +23,6 @@ using std::pair;
 
 namespace net {
 
-// The length of the recent min rtt window in seconds. Windowing is disabled for
-// values less than or equal to 0.
-int32_t FLAGS_quic_recent_min_rtt_window_s = 60;
-
 namespace {
 static const int64_t kDefaultRetransmissionTimeMs = 500;
 static const int64_t kMaxRetransmissionTimeMs = 60000;
@@ -118,10 +114,6 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   // TODO(ianswett): BBR is currently a server only feature.
   if (FLAGS_quic_allow_bbr && config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTBBR)) {
-    if (FLAGS_quic_recent_min_rtt_window_s > 0) {
-      rtt_stats_.set_recent_min_rtt_window(
-          QuicTime::Delta::FromSeconds(FLAGS_quic_recent_min_rtt_window_s));
-    }
     send_algorithm_.reset(SendAlgorithmInterface::Create(
         clock_, &rtt_stats_, kBBR, stats_, initial_congestion_window_));
   }
@@ -209,7 +201,7 @@ void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
 }
 
 void QuicSentPacketManager::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
-  if (FLAGS_quic_max_pacing_rate && using_pacing_) {
+  if (using_pacing_) {
     static_cast<PacingSender*>(send_algorithm_.get())
         ->SetMaxPacingRate(max_pacing_rate);
   }

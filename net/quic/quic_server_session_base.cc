@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_server_session_base.h"
+#include "net/quic/quic_server_session_base.h"
 
 #include "base/logging.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
@@ -19,13 +19,15 @@ namespace net {
 QuicServerSessionBase::QuicServerSessionBase(
     const QuicConfig& config,
     QuicConnection* connection,
-    QuicServerSessionVisitor* visitor,
+    Visitor* visitor,
+    Helper* helper,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache)
     : QuicSpdySession(connection, config),
       crypto_config_(crypto_config),
       compressed_certs_cache_(compressed_certs_cache),
       visitor_(visitor),
+      helper_(helper),
       bandwidth_resumption_enabled_(false),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
       last_scup_time_(QuicTime::Zero()),
@@ -193,6 +195,11 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
 
   last_scup_time_ = now;
   last_scup_packet_number_ = connection()->packet_number_of_last_sent_packet();
+}
+
+QuicConnectionId QuicServerSessionBase::GenerateConnectionIdForReject(
+    QuicConnectionId connection_id) {
+  return helper_->GenerateConnectionIdForReject(connection_id);
 }
 
 bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {

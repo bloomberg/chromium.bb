@@ -1955,6 +1955,41 @@ TEST_P(QuicConnectionTest, SendingZeroBytes) {
   EXPECT_TRUE(writer_->stream_frames()[0]->fin);
 }
 
+TEST_P(QuicConnectionTest, LargeSendWithPendingAck) {
+  // Set the ack alarm by processing a ping frame.
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  // Processs a PING frame.
+  ProcessFramePacket(QuicFrame(QuicPingFrame()));
+  // Ensure that this has caused the ACK alarm to be set.
+  QuicAlarm* ack_alarm = QuicConnectionPeer::GetAckAlarm(&connection_);
+  EXPECT_TRUE(ack_alarm->IsSet());
+
+  // Send data and ensure the ack is bundled.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(8);
+  size_t len = 10000;
+  std::unique_ptr<char[]> data_array(new char[len]);
+  memset(data_array.get(), '?', len);
+  struct iovec iov;
+  iov.iov_base = data_array.get();
+  iov.iov_len = len;
+  QuicIOVector iovector(&iov, 1, len);
+  QuicConsumedData consumed =
+      connection_.SendStreamData(kHeadersStreamId, iovector, 0, true, nullptr);
+  EXPECT_EQ(len, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_EQ(0u, connection_.NumQueuedPackets());
+  EXPECT_FALSE(connection_.HasQueuedData());
+
+  // Parse the last packet and ensure it's one stream frame with a fin.
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->stream_frames().size());
+  EXPECT_EQ(kHeadersStreamId, writer_->stream_frames()[0]->stream_id);
+  EXPECT_TRUE(writer_->stream_frames()[0]->fin);
+  // Ensure the ack alarm was cancelled when the ack was sent.
+  EXPECT_FALSE(ack_alarm->IsSet());
+}
+
 TEST_P(QuicConnectionTest, OnCanWrite) {
   // Visitor's OnCanWrite will send data, but will have more pending writes.
   EXPECT_CALL(visitor_, OnCanWrite())

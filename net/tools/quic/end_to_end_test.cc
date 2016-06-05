@@ -287,6 +287,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
+    FLAGS_quic_reply_to_rej = false;  // b/28374708
 
     VLOG(1) << "Using Configuration: " << GetParam();
 
@@ -2690,7 +2691,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
     client_->SendData(string(body.data(), kSizeBytes), fin);
     client_->client()->WaitForEvents();
   }
-  VerifyCleanConnection(false);
+  VerifyCleanConnection(true);
 }
 
 // TODO(fayang): this test seems to cause net_unittests timeouts :|

@@ -155,7 +155,7 @@ QuicTime::Delta PacingSender::TimeUntilSend(
 }
 
 QuicBandwidth PacingSender::PacingRate() const {
-  if (FLAGS_quic_max_pacing_rate && !max_pacing_rate_.IsZero()) {
+  if (!max_pacing_rate_.IsZero()) {
     return QuicBandwidth::FromBitsPerSecond(
         min(max_pacing_rate_.ToBitsPerSecond(),
             sender_->PacingRate().ToBitsPerSecond()));

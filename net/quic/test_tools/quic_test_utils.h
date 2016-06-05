@@ -25,6 +25,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager_interface.h"
+#include "net/quic/quic_server_session_base.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -32,7 +33,6 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
-#include "net/tools/quic/quic_server_session_base.h"
 #include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -639,6 +639,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
 
  private:
   MockQuicServerSessionVisitor visitor_;
+  MockQuicServerSessionHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };

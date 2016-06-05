@@ -99,9 +99,6 @@ bool FLAGS_quic_no_lower_bw_resumption_limit = true;
 // the initial flight has been acked.
 bool FLAGS_quic_sslr_limit_reduction = true;
 
-// If true, respect any configured max pacing rate.
-bool FLAGS_quic_max_pacing_rate = true;
-
 // If true, QuicWriter avoids calling HttpWriter::Write with 0 bytes when
 // last_data == false.
 bool FLAGS_quic_avoid_empty_nonfin_writes = true;
@@ -121,8 +118,8 @@ bool FLAGS_quic_enable_autotune_by_default = true;
 bool FLAGS_quic_loss_recovery_use_largest_acked = true;
 
 // Only set one alarm for sending at once, either the send alarm or
-// retransmission alarm.
-bool FLAGS_quic_only_one_sending_alarm = true;
+// retransmission alarm.  Disabled because it breaks QUIC time loss detection.
+bool FLAGS_quic_only_one_sending_alarm = false;
 
 // If true, the hash of the CHLO message will be used in the proof generated for
 // an SCUP message.
@@ -146,3 +143,10 @@ bool FLAGS_quic_allow_noprr = true;
 
 // If true, multi-packet CHLOs are explicitly disallowed.
 bool FLAGS_quic_disallow_multi_packet_chlo = true;
+
+// Use a write path optimized for StreamFrames.
+bool FLAGS_quic_use_optimized_write_path = true;
+
+// If true, the dispatcher is responsible for generating server designated
+// connection IDs.
+bool FLAGS_quic_dispatcher_creates_id = true;

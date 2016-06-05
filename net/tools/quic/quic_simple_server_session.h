@@ -20,9 +20,9 @@
 #include "base/macros.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_server_session_base.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
-#include "net/tools/quic/quic_server_session_base.h"
 #include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
@@ -60,7 +60,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
 
   QuicSimpleServerSession(const QuicConfig& config,
                           QuicConnection* connection,
-                          QuicServerSessionVisitor* visitor,
+                          QuicServerSessionBase::Visitor* visitor,
+                          QuicServerSessionBase::Helper* helper,
                           const QuicCryptoServerConfig* crypto_config,
                           QuicCompressedCertsCache* compressed_certs_cache);
 

@@ -4,8 +4,8 @@
 //
 // A server specific QuicSession subclass.
 
-#ifndef NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_
-#define NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_
+#ifndef NET_QUIC_QUIC_SERVER_SESSION_BASE_H_
+#define NET_QUIC_QUIC_SERVER_SESSION_BASE_H_
 
 #include <stdint.h>
 
@@ -29,34 +29,49 @@ class QuicConnection;
 class QuicCryptoServerConfig;
 class ReliableQuicStream;
 
-
 namespace test {
 class QuicServerSessionBasePeer;
 class QuicSimpleServerSessionPeer;
 }  // namespace test
 
-// An interface from the session to the entity owning the session.
-// This lets the session notify its owner (the Dispatcher) when the connection
-// is closed, blocked, or added/removed from the time-wait list.
-class QuicServerSessionVisitor {
+class NET_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
  public:
-  virtual ~QuicServerSessionVisitor() {}
+  // An interface from the session to the entity owning the session.
+  // This lets the session notify its owner (the Dispatcher) when the connection
+  // is closed, blocked, or added/removed from the time-wait std::list.
+  class Visitor {
+   public:
+    virtual ~Visitor() {}
 
-  virtual void OnConnectionClosed(QuicConnectionId connection_id,
-                                  QuicErrorCode error,
-                                  const std::string& error_details) = 0;
-  virtual void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) = 0;
-  // Called after the given connection is added to the time-wait list.
-  virtual void OnConnectionAddedToTimeWaitList(
-      QuicConnectionId connection_id) = 0;
-};
+    // Called when the connection is closed.
+    virtual void OnConnectionClosed(QuicConnectionId connection_id,
+                                    QuicErrorCode error,
+                                    const std::string& error_details) = 0;
 
-class QuicServerSessionBase : public QuicSpdySession {
- public:
+    // Called when the session has become write blocked.
+    virtual void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) = 0;
+
+    // Called after the given connection is added to the time-wait std::list.
+    virtual void OnConnectionAddedToTimeWaitList(
+        QuicConnectionId connection_id) = 0;
+  };
+
+  // Provides helper functions for the session.
+  class Helper {
+   public:
+    virtual ~Helper() {}
+
+    // Given the current connection_id, generates a new ConnectionId to
+    // be returned with a stateless reject.
+    virtual QuicConnectionId GenerateConnectionIdForReject(
+        QuicConnectionId connection_id) const = 0;
+  };
+
   // |crypto_config| must outlive the session.
   QuicServerSessionBase(const QuicConfig& config,
                         QuicConnection* connection,
-                        QuicServerSessionVisitor* visitor,
+                        Visitor* visitor,
+                        Helper* helper,
                         const QuicCryptoServerConfig* crypto_config,
                         QuicCompressedCertsCache* compressed_certs_cache);
 
@@ -87,6 +102,10 @@ class QuicServerSessionBase : public QuicSpdySession {
   }
 
   bool server_push_enabled() const { return server_push_enabled_; }
+
+  // Delegates to the helper's GenerateConnectionIdForReject method.
+  QuicConnectionId GenerateConnectionIdForReject(
+      QuicConnectionId connection_id);
 
  protected:
   // QuicSession methods(override them with return type of QuicSpdyStream*):
@@ -122,7 +141,8 @@ class QuicServerSessionBase : public QuicSpdySession {
   QuicCompressedCertsCache* compressed_certs_cache_;
 
   std::unique_ptr<QuicCryptoServerStreamBase> crypto_stream_;
-  QuicServerSessionVisitor* visitor_;
+  Visitor* visitor_;
+  Helper* helper_;
 
   // Whether bandwidth resumption is enabled for this connection.
   bool bandwidth_resumption_enabled_;
@@ -155,4 +175,4 @@ class QuicServerSessionBase : public QuicSpdySession {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_
+#endif  // NET_QUIC_QUIC_SERVER_SESSION_BASE_H_
