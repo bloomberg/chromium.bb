@@ -1,71 +1,35 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests cue text position from settings.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc015-positioning.vtt", testTrack);
+check_cues_from_track("captions-webvtt/tc015-positioning-ltr.vtt", testTrack);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+check_cues_from_track("captions-webvtt/tc015-positioning-bad.vtt", function(track) {
+    var expected = [
+        { position: "auto" },
+        { position: "auto" },
+        { position: "auto" },
+        { position: "auto" },
+        { position: "auto" },
+        { position: "auto" },
+        { position: "auto" },
+        { position: "auto" }
+    ];    
 
-            var numberOfTrackTests = 3;
+    assert_cues_match(track.cues, expected);
+});
 
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrack(1);
-                    testTrackError(2);
-                }
-            }
+function testTrack(track) {
+    var expected = [
+        { position: 0 },
+        { position: 50 },
+        { position: "auto" },
+        { position: 100 }
+    ];
 
-            function testTrack(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 4,
-                    tests:
-                    [
-                        {
-                            property : "position",
-                            values : [0, 50, "auto", 100],
-                        },
-                    ],
-                };
-                testCues(i, expected);
-
-                allTestsEnded();
-            }
-
-            function testTrackError(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 8,
-                    tests:
-                    [
-                        {
-                            property : "position",
-                            values : ["auto", "auto", "auto", "auto", "auto", "auto", "auto", "auto"],
-                        },
-                    ],
-                };
-                testCues(i, expected);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests cue text position from settings.</p>
-        <video>
-            <track src="captions-webvtt/tc015-positioning.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc015-positioning-ltr.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc015-positioning-bad.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    assert_cues_match(track.cues, expected);
+}
+</script>

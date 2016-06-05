@@ -1,86 +1,28 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests WebVTT settings.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc013-settings.vtt", function(track) {
+    var expected = [
+        { line: 100, position: "auto", align: "start", vertical: "" },
+        { line: 15, position: 40, align: "middle", vertical: "rl" },
+        { line: "auto", position: 10, align: "middle", vertical: "" },
+        { line: 95, position: "auto", align: "end", vertical: "lr" }
+    ];
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    assert_cues_match(track.cues, expected);
+});
 
-            numberOfTrackTests = 2;
+check_cues_from_track("captions-webvtt/tc013-settings-bad-separation.vtt", function(track) {
+    var expected = [
+        { line: 43, position: 10, align: "middle", vertical: "" },
+        { line: "auto", position: 50, align: "end", vertical: "" },
+        { line: "auto", position: "auto", align: "middle", vertical: "" },
+        { line: "auto", position: 90, align: "middle", vertical: "lr" }
+    ];
 
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    for (var i = 0; i <= numberOfTrackTests; ++i)
-                        testTrack(i);
-                }
-            }
-
-            function testTrack(i)
-            {
-                findMediaElement();
-                var expected =
-                [
-                    {
-                        length : 4,
-                        tests:
-                        [
-                            {
-                                property : "line",
-                                values : [100, 15, "auto", 95],
-                            },
-                            {
-                                property : "position",
-                                values : ["auto", 40, 10, "auto"],
-                            },
-                            {
-                                property : "align",
-                                values : ["start", "middle", "middle", "end"],
-                            },
-                            {
-                                property : "vertical",
-                                values : ["", "rl", "", "lr"],
-                            },
-                        ],
-                    },
-                    {
-                        length : 4,
-                        tests:
-                        [
-                            {
-                                property : "line",
-                                values : [43, "auto", "auto", "auto"],
-                            },
-                            {
-                                property : "position",
-                                values : [10, 50, "auto", 90],
-                            },
-                            {
-                                property : "align",
-                                values : ["middle", "end", "middle", "middle"],
-                            },
-                            {
-                                property : "vertical",
-                                values : ["", "", "", "lr"],
-                            },
-                        ],
-                    }
-                ]
-                testCues(i, expected[i]);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-    <p>Tests WebVTT settings.</p>
-        <video>
-            <track src="captions-webvtt/tc013-settings.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc013-settings-bad-separation.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    assert_cues_match(track.cues, expected);
+});
+</script>
