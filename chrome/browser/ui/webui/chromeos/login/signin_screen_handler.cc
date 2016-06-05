@@ -1451,7 +1451,7 @@ void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
 void SigninScreenHandler::OnFeedbackFinished() {
   CallJS("login.UnrecoverableCryptohomeErrorScreen.resumeAfterFeedbackUI");
 
-  // Recreate user's cryptohome after the feedkback is attempted.
+  // Recreate user's cryptohome after the feedback is attempted.
   HandleResyncUserData();
 }
 
