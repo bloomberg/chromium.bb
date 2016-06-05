@@ -29,7 +29,7 @@ function mockResults()
         "layout_tests_dir": "/WEBKITROOT",
         "has_pretty_patch": false,
         "has_wdiff": false,
-        "revision": 12345,
+        "chromium_revision": 12345,
         "pixel_tests_enabled": true
     };
 }
@@ -421,16 +421,16 @@ function runTests()
     var subtree = results.tests['fullscreen'] = {}
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
-        var expectedHref = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/fullscreen/full-screen-api.html?pathrev=' + results.revision +'#l1';
+        var expectedHref = 'https://crrev.com/' + results.chromium_revision + '/third_party/WebKit/LayoutTests/fullscreen/full-screen-api.html';
         assertTrue(document.querySelector('tbody td:first-child a').href == expectedHref);
     });
 
     results = mockResults();
     var subtree = results.tests['fullscreen'] = {}
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
-    results.revision = '';
+    results.chromium_revision = '';
     runTest(results, function() {
-        var expectedHref = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/fullscreen/full-screen-api.html#l1';
+        var expectedHref = 'https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests/fullscreen/full-screen-api.html';
         assertTrue(document.querySelector('tbody td:first-child a').href == expectedHref);
     });
 

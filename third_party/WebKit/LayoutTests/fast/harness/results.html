@@ -432,11 +432,12 @@ function testLinkTarget(test)
 {
     var target;
     if (shouldUseTracLinks()) {
-        var revision = globalState().results.revision;
-        target = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/' + test;
+        var revision = globalState().results.chromium_revision;
         if (revision)
-            target += '?pathrev=' + revision;
-        target += '#l1';
+            target = 'https://crrev.com/' + revision;
+        else
+            target = 'https://chromium.googlesource.com/chromium/src/+/master';
+        target += '/third_party/WebKit/LayoutTests/' + test;
     } else
         target = globalState().results.layout_tests_dir + '/' + test;
     return target;
