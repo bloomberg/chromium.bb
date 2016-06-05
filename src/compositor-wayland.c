@@ -1005,7 +1005,7 @@ wayland_output_create(struct wayland_backend *b, int x, int y,
 		return NULL;
 
 	output->name = name ? strdup(name) : NULL;
-	output->base.make = "waywayland";
+	output->base.make = "wayland";
 	output->base.model = "none";
 
 	output_width = width * scale;
