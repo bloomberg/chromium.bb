@@ -48,8 +48,10 @@ const TestNameInfo kTestNameInfo[] = {
     {"SQLiteIntegrityHistory", "History database"},
     {"SQLiteIntegrityNSSCert", "NSS certificate database"},
     {"SQLiteIntegrityNSSKey", "NSS Key database"},
-    {"SQLiteIntegrityThumbnails", "Thumbnails database"},
+    {"SQLiteIntegrityThumbnails", "Thumbnails database (obsolete)"},
     {"SQLiteIntegrityWebData", "Web Data database"},
+    {"SQLiteIntegrityFavicons", "Favicons database"},
+    {"SQLiteIntegrityTopSites", "Top Sites database"},
     // Add new entries in the same order as DiagnosticsTestId.
 };
 
@@ -100,8 +102,10 @@ std::string GetTestDescription(DiagnosticsTestId id) {
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_HISTORY_TEST);          \
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST);         \
   TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST);          \
-  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_THUMBNAILS_TEST);       \
-  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_WEB_DATA_TEST)
+  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_THUMBNAILS_TEST_OBSOLETE);\
+  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_WEB_DATA_TEST);         \
+  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_FAVICONS_TEST);         \
+  TEST_CASE(name, DIAGNOSTICS_SQLITE_INTEGRITY_TOPSITES_TEST);
 
 void RecordUMARecoveryResult(DiagnosticsTestId id, RunResultMetrics result) {
   const std::string name("Diagnostics.Recovery." +

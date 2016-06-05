@@ -23,8 +23,9 @@ enum SQLiteIntegrityOutcomeCode {
 
 // Factories for the database integrity tests we run in diagnostic mode.
 DiagnosticsTest* MakeSqliteCookiesDbTest();
+DiagnosticsTest* MakeSqliteFaviconsDbTest();
 DiagnosticsTest* MakeSqliteHistoryDbTest();
-DiagnosticsTest* MakeSqliteThumbnailsDbTest();
+DiagnosticsTest* MakeSqliteTopSitesDbTest();
 
 #if defined(OS_CHROMEOS)
 DiagnosticsTest* MakeSqliteNssCertDbTest();

@@ -32,8 +32,10 @@ enum DiagnosticsTestId {
   DIAGNOSTICS_SQLITE_INTEGRITY_HISTORY_TEST,
   DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST,
   DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST,
-  DIAGNOSTICS_SQLITE_INTEGRITY_THUMBNAILS_TEST,
+  DIAGNOSTICS_SQLITE_INTEGRITY_THUMBNAILS_TEST_OBSOLETE,
   DIAGNOSTICS_SQLITE_INTEGRITY_WEB_DATA_TEST,
+  DIAGNOSTICS_SQLITE_INTEGRITY_FAVICONS_TEST,
+  DIAGNOSTICS_SQLITE_INTEGRITY_TOPSITES_TEST,
   // Add new entries immediately above this comment. Do not reorder or renumber
   // the entries, as they are tied to historical enum values in the UMA stats.
   // If you add an entry, you will need to also add an entry to kTestNameInfo,

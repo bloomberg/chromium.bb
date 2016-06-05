@@ -25,14 +25,14 @@ namespace diagnostics {
 // This is the count of diagnostic tests on each platform.  This should
 // only be used by testing code.
 #if defined(OS_WIN)
-const int DiagnosticsModel::kDiagnosticsTestCount = 17;
+const int DiagnosticsModel::kDiagnosticsTestCount = 18;
 #elif defined(OS_MACOSX)
-const int DiagnosticsModel::kDiagnosticsTestCount = 13;
+const int DiagnosticsModel::kDiagnosticsTestCount = 14;
 #elif defined(OS_POSIX)
 #if defined(OS_CHROMEOS)
-const int DiagnosticsModel::kDiagnosticsTestCount = 17;
+const int DiagnosticsModel::kDiagnosticsTestCount = 18;
 #else
-const int DiagnosticsModel::kDiagnosticsTestCount = 15;
+const int DiagnosticsModel::kDiagnosticsTestCount = 16;
 #endif
 #endif
 
@@ -164,8 +164,9 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
     tests_.push_back(MakeBookMarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
+    tests_.push_back(MakeSqliteFaviconsDbTest());
     tests_.push_back(MakeSqliteHistoryDbTest());
-    tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteTopSitesDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
@@ -187,8 +188,9 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeBookMarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
+    tests_.push_back(MakeSqliteFaviconsDbTest());
     tests_.push_back(MakeSqliteHistoryDbTest());
-    tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteTopSitesDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
@@ -212,8 +214,9 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
     tests_.push_back(MakeBookMarksTest());
     tests_.push_back(MakeSqliteWebDataDbTest());
     tests_.push_back(MakeSqliteCookiesDbTest());
+    tests_.push_back(MakeSqliteFaviconsDbTest());
     tests_.push_back(MakeSqliteHistoryDbTest());
-    tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteTopSitesDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
 #if defined(OS_CHROMEOS)
     tests_.push_back(MakeSqliteNssCertDbTest());

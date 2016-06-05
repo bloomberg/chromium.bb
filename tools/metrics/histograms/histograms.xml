@@ -8319,7 +8319,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityCookie"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityCookie recovery
     step that runs on recovery startups.  The recovery step attempts to
@@ -8330,7 +8330,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityDatabaseTracker"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityDatabaseTracker
     recovery step that runs on recovery startups.  The recovery step attempts to
@@ -8339,9 +8339,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityFavicons"
+    enum="DiagnosticsResult">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityFavicons recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityFavicons test, which checks the integrity of
+    the Favicons database, would pass on the next startup.
+  </summary>
+</histogram>
+
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityHistory"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityHistory recovery
     step that runs on recovery startups.  The recovery step attempts to
@@ -8374,7 +8385,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityThumbnails"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 05/2016 in Issue 617226; has not been valid for many years.
+  </obsolete>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityThumbnails
     recovery step that runs on recovery startups.  The recovery step attempts to
@@ -8383,9 +8397,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Diagnostics.Recovery.SQLiteIntegrityTopSites"
+    enum="DiagnosticsResult">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityTopSites recovery
+    step that runs on recovery startups.  The recovery step attempts to
+    guarantee the SQLiteIntegrityTopSites test, which checks the integrity of
+    the TopSites database, would pass on the next startup.
+  </summary>
+</histogram>
+
 <histogram name="Diagnostics.Recovery.SQLiteIntegrityWebData"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityWebData recovery
     step that runs on recovery startups.  The recovery step attempts to
@@ -8549,7 +8574,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Test.SQLiteIntegrityCookie"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityCookie test that
     runs on recovery startups.  The test checks the integrity of the Cookie
@@ -8559,7 +8584,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Test.SQLiteIntegrityDatabaseTracker"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityDatabaseTracker
     test that runs on recovery startups.  The test checks the integrity of the
@@ -8567,9 +8592,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Diagnostics.Test.SQLiteIntegrityFavicons"
+    enum="DiagnosticsResult">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityFavicons test that
+    runs on recovery startups.  The test checks the integrity of the Favicons
+    database.
+  </summary>
+</histogram>
+
 <histogram name="Diagnostics.Test.SQLiteIntegrityHistory"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityHistory test that
     runs on recovery startups.  The test checks the integrity of the History
@@ -8599,7 +8634,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Diagnostics.Test.SQLiteIntegrityThumbnails"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated 05/2016 in Issue 617226; has not been valid for many years.
+  </obsolete>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityThumbnails test
     that runs on recovery startups.  The test checks the integrity of the
@@ -8607,9 +8645,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Diagnostics.Test.SQLiteIntegrityTopSites"
+    enum="DiagnosticsResult">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Shows the success and failure rates of the SQLiteIntegrityTopSites test that
+    runs on recovery startups.  The test checks the integrity of the TopSites
+    database.
+  </summary>
+</histogram>
+
 <histogram name="Diagnostics.Test.SQLiteIntegrityWebData"
     enum="DiagnosticsResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Shows the success and failure rates of the SQLiteIntegrityWebData test that
     runs on recovery startups.  The test checks the integrity of the Web Data
@@ -8627,7 +8675,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Diagnostics.TestFailures" enum="DiagnosticsTestName">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     Histogram comparing the various types of diagnostic test failures when
     diagnostic tests are run.  Note that some types of test failures cause the
@@ -68482,8 +68530,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="16" label="SQLite Integrity History Test"/>
   <int value="17" label="SQLite Integrity Nss Cert Test"/>
   <int value="18" label="SQLite Integrity Nss Key Test"/>
-  <int value="19" label="SQLite Integrity Thumbnails Test"/>
+  <int value="19" label="SQLite Integrity Thumbnails Test (obsolete)"/>
   <int value="20" label="SQLite Integrity Web Data Test"/>
+  <int value="21" label="SQLite Integrity Favicons Test"/>
+  <int value="22" label="SQLite Integrity Top Sites Test"/>
 </enum>
 
 <enum name="DifferentPrimaryAccounts" type="int">
