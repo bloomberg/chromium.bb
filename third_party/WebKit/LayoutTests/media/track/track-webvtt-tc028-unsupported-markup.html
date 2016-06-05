@@ -1,47 +1,32 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that unsupported markup is properly ignored.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+// TODO(srirama.m): Rewrite the test in a better way.
+// See https://codereview.chromium.org/2030383002/ for details.
+check_cues_from_track("captions-webvtt/tc028-unsupported-markup.vtt", function(track) {
+    var expected = [
+        {
+            innerHTML: "Bear is Coming!!!!!\nAnd what kind of a bear it is - just have look.",
+            text: "<h1>Bear is Coming!!!!!</h1>\n<p>And what kind of a bear it is - just have <a href=\"webpage.html\">look</a>.</p>"
+        },
+        {
+            innerHTML: "\n  I said Bear is coming!!!!\n  I said Bear is still coming!!!!\n",
+            text: "<ul>\n  <li>I said Bear is coming!!!!</li>\n  <li>I said Bear is still coming!!!!</li>\n</ul>"
+        },
+        {
+            innerHTML: "\n  I said Bear is coming now!!!!\n  \n  \n",
+            text: "<ol>\n  <li>I said Bear is coming now!!!!</li>\n  <li><img src=\"bear.png\" alt=\"mighty bear\"></li>\n  <li><video src=\"bear_ad.webm\" controls></video></li>\n</ol>"
+        }
+    ];
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-
-            function trackLoaded()
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 3,
-                    tests:
-                    [
-                        {
-                            property : "getCueAsHTML().textContent",
-                            values : ["Bear is Coming!!!!!\nAnd what kind of a bear it is - just have look.",
-                                      "\n  I said Bear is coming!!!!\n  I said Bear is still coming!!!!\n",
-                                      "\n  I said Bear is coming now!!!!\n  \n  \n"],
-                        },
-                        {
-                            property : "text",
-                            values : ["<h1>Bear is Coming!!!!!</h1>\n<p>And what kind of a bear it is - just have <a href=\"webpage.html\">look</a>.</p>",
-                                      "<ul>\n  <li>I said Bear is coming!!!!</li>\n  <li>I said Bear is still coming!!!!</li>\n</ul>",
-                                      "<ol>\n  <li>I said Bear is coming now!!!!</li>\n  <li><img src=\"bear.png\" alt=\"mighty bear\"></li>\n  <li><video src=\"bear_ad.webm\" controls></video></li>\n</ol>"],
-                        },
-                    ],
-                };
-                testCues(0, expected);
-
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-        <p>Tests that unsupported markup is properly ignored.</p>
-        <video>
-            <track src="captions-webvtt/tc028-unsupported-markup.vtt" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+    var cues = track.cues;
+    assert_equals(cues.length, expected.length);
+    for (var i = 0; i < cues.length; i++) {
+        assert_equals(cues[i].getCueAsHTML().textContent, expected[i].innerHTML);
+        assert_equals(cues[i].text, expected[i].text);
+    }
+});
+</script>
