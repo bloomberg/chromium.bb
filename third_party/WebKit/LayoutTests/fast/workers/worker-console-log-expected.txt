@@ -6,7 +6,7 @@ CONSOLE WARNING: line 6: warn
 CONSOLE INFO: line 7: info
 CONSOLE DEBUG: line 8: debug
 CONSOLE DEBUG: line 9: count: 1
-CONSOLE ERROR: line 16: 
+CONSOLE ERROR: line 16: console.assert
 CONSOLE WARNING: line 17: 'console.markTimeline' is deprecated. Please use 'console.timeStamp' instead.
 This tests that 'console.log' and friends function correctly from workers.
 

@@ -41,21 +41,6 @@
 
 namespace blink {
 
-static const HashSet<int>& allClientReportingMessageTypes()
-{
-    DEFINE_STATIC_LOCAL(HashSet<int>, types, ());
-    if (types.isEmpty()) {
-        types.add(LogMessageType);
-        types.add(DirMessageType);
-        types.add(DirXMLMessageType);
-        types.add(TableMessageType);
-        types.add(TraceMessageType);
-        types.add(ClearMessageType);
-        types.add(AssertMessageType);
-    }
-    return types;
-}
-
 namespace {
 
 int muteCount = 0;
@@ -93,9 +78,7 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
     String url = consoleMessage->location()->url();
     String stackTrace;
     if (consoleMessage->source() == ConsoleAPIMessageSource) {
-        if (!frame().host() || (consoleMessage->scriptArguments() && !consoleMessage->scriptArguments()->argumentCount()))
-            return;
-        if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
+        if (!frame().host())
             return;
         if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), url)) {
             OwnPtr<SourceLocation> location = SourceLocation::captureWithFullStackTrace();

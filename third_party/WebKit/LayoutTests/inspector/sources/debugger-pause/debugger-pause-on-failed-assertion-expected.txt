@@ -1,3 +1,4 @@
+CONSOLE ERROR: line 9: console.assert
 Tests that debugger breaks on failed assertion when pause on exception mode is enabled.
 
 Script source was shown.

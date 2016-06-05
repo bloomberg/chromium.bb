@@ -8,7 +8,12 @@ CONSOLE MESSAGE: line 15: repeated
 CONSOLE MESSAGE: line 15: repeated
 CONSOLE MESSAGE: line 15: repeated
 CONSOLE MESSAGE: line 15: repeated
+CONSOLE DEBUG: line 17: count: 1
+CONSOLE DEBUG: line 17: count: 2
+CONSOLE MESSAGE: line 18: group
+CONSOLE MESSAGE: line 19: console.groupEnd
 CONSOLE MESSAGE: line 20: 1
+CONSOLE MESSAGE: line 21: groupCollapsed
 CONSOLE MESSAGE: line 22: [object Object]
 CONSOLE MESSAGE: line 23: 42
 CONSOLE MESSAGE: line 24: true
@@ -19,6 +24,13 @@ CONSOLE MESSAGE: line 28: function () { }
 CONSOLE MESSAGE: line 29: function f() { }
 CONSOLE MESSAGE: line 30: 1,2,3
 CONSOLE MESSAGE: line 31: /regexp.*/
+CONSOLE MESSAGE: line 32: console.groupEnd
+CONSOLE DEBUG: line 33: : 1
+CONSOLE DEBUG: line 34: : 1
+CONSOLE DEBUG: line 35: : 1
+CONSOLE DEBUG: line 36: title: 1
+CONSOLE DEBUG: line 37: title: 2
+CONSOLE DEBUG: line 38: title: 3
 Tests that console logging dumps proper messages.
 
 console-tests.html:9 log console-message-wrapper console-log-level > console-message

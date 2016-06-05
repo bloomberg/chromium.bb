@@ -1,6 +1,16 @@
+CONSOLE MESSAGE: line 9: outer group
+CONSOLE MESSAGE: line 10: inner group
 CONSOLE MESSAGE: line 11: Message inside inner group
+CONSOLE MESSAGE: line 12: console.groupEnd
+CONSOLE MESSAGE: line 13: console.groupEnd
 CONSOLE MESSAGE: line 14: Message that must not be in any group
+CONSOLE MESSAGE: line 19: One of several groups which shouldn't be coalesced.
+CONSOLE MESSAGE: line 19: One of several groups which shouldn't be coalesced.
+CONSOLE MESSAGE: line 19: One of several groups which shouldn't be coalesced.
 CONSOLE MESSAGE: line 21: Message inside third group
+CONSOLE MESSAGE: line 23: console.groupEnd
+CONSOLE MESSAGE: line 23: console.groupEnd
+CONSOLE MESSAGE: line 23: console.groupEnd
 Tests that console.group/groupEnd messages won't be coalesced. Bug 56114. Bug 63521.
 
 console-nested-group.html:9 outer group console-message-wrapper console-log-level > console-message console-group-title

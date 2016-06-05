@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: line 11: console.clear
 CONSOLE ERROR: line 25: Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.
 CONSOLE ERROR: line 20: Uncaught TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
 CONSOLE ERROR: line 25: Uncaught TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'.

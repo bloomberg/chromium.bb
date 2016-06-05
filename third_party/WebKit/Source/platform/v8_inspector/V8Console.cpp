@@ -76,12 +76,12 @@ public:
         return m_debuggerClient;
     }
 
-    void addMessage(MessageType type, MessageLevel level, bool allowEmptyArguments, int skipArgumentCount)
+    void addMessage(MessageType type, MessageLevel level, String16 emptyText, int skipArgumentCount)
     {
-        if (!allowEmptyArguments && !m_info.Length())
+        if (emptyText.isEmpty() && !m_info.Length())
             return;
         if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, type, level, String16(), &m_info, skipArgumentCount);
+            debuggerClient->reportMessageToConsole(m_context, type, level, m_info.Length() <= skipArgumentCount ? emptyText : String16(), &m_info, skipArgumentCount);
     }
 
     void addMessage(MessageType type, MessageLevel level, const String16& message)
@@ -266,67 +266,67 @@ void createBoundFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::O
 
 void V8Console::debugCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(LogMessageType, DebugMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(LogMessageType, DebugMessageLevel, String16(), 0);
 }
 
 void V8Console::errorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(LogMessageType, ErrorMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(LogMessageType, ErrorMessageLevel, String16(), 0);
 }
 
 void V8Console::infoCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(LogMessageType, InfoMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(LogMessageType, InfoMessageLevel, String16(), 0);
 }
 
 void V8Console::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(LogMessageType, LogMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(LogMessageType, LogMessageLevel, String16(), 0);
 }
 
 void V8Console::warnCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(LogMessageType, WarningMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(LogMessageType, WarningMessageLevel, String16(), 0);
 }
 
 void V8Console::dirCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(DirMessageType, LogMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(DirMessageType, LogMessageLevel, String16(), 0);
 }
 
 void V8Console::dirxmlCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(DirXMLMessageType, LogMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(DirXMLMessageType, LogMessageLevel, String16(), 0);
 }
 
 void V8Console::tableCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(TableMessageType, LogMessageLevel, false, 0);
+    ConsoleHelper(info).addMessage(TableMessageType, LogMessageLevel, String16(), 0);
 }
 
 void V8Console::traceCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(TraceMessageType, LogMessageLevel, true, 0);
+    ConsoleHelper(info).addMessage(TraceMessageType, LogMessageLevel, String16("console.trace"), 0);
 }
 
 void V8Console::groupCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(StartGroupMessageType, LogMessageLevel, true, 0);
+    ConsoleHelper(info).addMessage(StartGroupMessageType, LogMessageLevel, String16("console.group"), 0);
 }
 
 void V8Console::groupCollapsedCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(StartGroupCollapsedMessageType, LogMessageLevel, true, 0);
+    ConsoleHelper(info).addMessage(StartGroupCollapsedMessageType, LogMessageLevel, String16("console.groupCollapsed"), 0);
 }
 
 void V8Console::groupEndCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(EndGroupMessageType, LogMessageLevel, true, 0);
+    ConsoleHelper(info).addMessage(EndGroupMessageType, LogMessageLevel, String16("console.groupEnd"), 0);
 }
 
 void V8Console::clearCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ClearMessageType, LogMessageLevel, true, 0);
+    ConsoleHelper(info).addMessage(ClearMessageType, LogMessageLevel, String16("console.clear"), 0);
 }
 
 void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -356,7 +356,7 @@ void V8Console::assertCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     ConsoleHelper helper(info);
     if (helper.firstArgToBoolean(false))
         return;
-    helper.addMessage(AssertMessageType, ErrorMessageLevel, true, 1);
+    helper.addMessage(AssertMessageType, ErrorMessageLevel, String16("console.assert"), 1);
     if (V8DebuggerAgentImpl* debuggerAgent = helper.debuggerAgent())
         debuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::Assert, nullptr);
 }

@@ -8,6 +8,7 @@ CONSOLE MESSAGE: line 9: 6topGroup
 CONSOLE MESSAGE: line 3: 7topGroup
 CONSOLE MESSAGE: line 9: 8topGroup
 CONSOLE MESSAGE: line 3: 9topGroup
+CONSOLE MESSAGE: line 22: outerGroup
 CONSOLE MESSAGE: line 9: 10outerGroup
 CONSOLE MESSAGE: line 3: 11outerGroup
 CONSOLE MESSAGE: line 9: 12outerGroup
@@ -18,6 +19,7 @@ CONSOLE MESSAGE: line 9: 16outerGroup
 CONSOLE MESSAGE: line 3: 17outerGroup
 CONSOLE MESSAGE: line 9: 18outerGroup
 CONSOLE MESSAGE: line 3: 19outerGroup
+CONSOLE MESSAGE: line 29: innerGroup
 CONSOLE MESSAGE: line 9: 20innerGroup
 CONSOLE MESSAGE: line 3: 21innerGroup
 CONSOLE MESSAGE: line 9: 22innerGroup
@@ -28,6 +30,8 @@ CONSOLE MESSAGE: line 9: 26innerGroup
 CONSOLE MESSAGE: line 3: 27innerGroup
 CONSOLE MESSAGE: line 9: 28innerGroup
 CONSOLE MESSAGE: line 3: 29innerGroup
+CONSOLE MESSAGE: line 36: console.groupEnd
+CONSOLE MESSAGE: line 37: console.groupEnd
 CONSOLE MESSAGE: line 39: end
 Tests that console can filter messages by source.
 

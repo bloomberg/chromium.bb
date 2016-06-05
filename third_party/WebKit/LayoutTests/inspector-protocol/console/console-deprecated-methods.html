@@ -3,6 +3,8 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
+testRunner.setDumpConsoleMessages(false);
+
 function test()
 {
     InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
@@ -20,6 +22,10 @@ function test()
     var messagesLeft = 3;
     function messageAdded(data)
     {
+        var text = data.params.message.text;
+        if (text.indexOf("deprecated") === -1)
+            return;
+        InspectorTest.log(text);
         if (!--messagesLeft)
             InspectorTest.completeTest();
     }
