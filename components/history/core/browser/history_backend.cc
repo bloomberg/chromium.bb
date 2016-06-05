@@ -280,10 +280,6 @@ void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
   tracker_.ClearCachedDataForContextID(context_id);
 }
 
-base::FilePath HistoryBackend::GetThumbnailFileName() const {
-  return history_dir_.Append(kThumbnailsFilename);
-}
-
 base::FilePath HistoryBackend::GetFaviconsFileName() const {
   return history_dir_.Append(kFaviconsFilename);
 }
@@ -2572,9 +2568,6 @@ bool HistoryBackend::ClearAllThumbnailHistory(
     // fix the error if it exists. This may fail, in which case either the
     // file doesn't exist or there's no more we can do.
     sql::Connection::Delete(GetFaviconsFileName());
-
-    // Older version of the database.
-    sql::Connection::Delete(GetThumbnailFileName());
     return true;
   }
 

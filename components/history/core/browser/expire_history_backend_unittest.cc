@@ -125,7 +125,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
     if (main_db_->Init(history_name) != sql::INIT_OK)
       main_db_.reset();
 
-    base::FilePath thumb_name = path().Append(kThumbnailsFilename);
+    base::FilePath thumb_name = path().Append(kFaviconsFilename);
     thumb_db_.reset(new ThumbnailDatabase(nullptr));
     if (thumb_db_->Init(thumb_name) != sql::INIT_OK)
       thumb_db_.reset();

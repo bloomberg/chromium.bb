@@ -12,7 +12,6 @@ namespace history {
 // filenames
 extern const base::FilePath::CharType kFaviconsFilename[];
 extern const base::FilePath::CharType kHistoryFilename[];
-extern const base::FilePath::CharType kThumbnailsFilename[];
 extern const base::FilePath::CharType kTopSitesFilename[];
 
 // The maximum size of the list returned by history::HistoryService::TopHosts().
