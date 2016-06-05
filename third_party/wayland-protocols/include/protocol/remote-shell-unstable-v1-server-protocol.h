@@ -129,6 +129,10 @@ zwp_remote_shell_v1_send_activated(struct wl_resource *resource_, struct wl_reso
  * @set_app_id: set application ID
  * @set_window_geometry: set the new window geometry
  * @set_scale: set scale
+ * @fullscreen: fullscreen
+ * @maximize: maximize
+ * @minimize: minimize
+ * @restore: restore
  *
  * An interface that may be implemented by a wl_surface, for
  * implementations that provide a desktop-style user interface and allows
@@ -206,11 +210,71 @@ struct zwp_remote_surface_v1_interface {
 	void (*set_scale)(struct wl_client *client,
 			  struct wl_resource *resource,
 			  wl_fixed_t scale);
+	/**
+	 * fullscreen - fullscreen
+	 *
+	 * Request that surface is made fullscreen.
+	 *
+	 * This is only a request that the window should be made
+	 * fullscreen. The compositor may choose to ignore this request.
+	 * The client should listen to set_fullscreen events to determine
+	 * if the window was made fullscreen or not.
+	 * @since: 2
+	 */
+	void (*fullscreen)(struct wl_client *client,
+			   struct wl_resource *resource);
+	/**
+	 * maximize - maximize
+	 *
+	 * Request that surface is maximized. The window geometry will be
+	 * updated to whatever the compositor finds appropriate for a
+	 * maximized window.
+	 *
+	 * This is only a request that the window should be maximized. The
+	 * compositor may choose to ignore this request. The client should
+	 * listen to set_maximized events to determine if the window was
+	 * maximized or not.
+	 * @since: 2
+	 */
+	void (*maximize)(struct wl_client *client,
+			 struct wl_resource *resource);
+	/**
+	 * minimize - minimize
+	 *
+	 * Request that surface is minimized.
+	 *
+	 * This is only a request that the window should be minimized. The
+	 * compositor may choose to ignore this request. The client should
+	 * listen to set_minimized events to determine if the window was
+	 * minimized or not.
+	 * @since: 2
+	 */
+	void (*minimize)(struct wl_client *client,
+			 struct wl_resource *resource);
+	/**
+	 * restore - restore
+	 *
+	 * Request that surface is restored. This restores the window
+	 * geometry to what it was before the window was minimized,
+	 * maximized or made fullscreen.
+	 *
+	 * This is only a request that the window should be restored. The
+	 * compositor may choose to ignore this request. The client should
+	 * listen to unset_maximized, unset_minimize and unset_fullscreen
+	 * events to determine if the window was restored or not.
+	 * @since: 2
+	 */
+	void (*restore)(struct wl_client *client,
+			struct wl_resource *resource);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0
 #define ZWP_REMOTE_SURFACE_V1_UNSET_FULLSCREEN	1
 #define ZWP_REMOTE_SURFACE_V1_CLOSE	2
+#define ZWP_REMOTE_SURFACE_V1_SET_MAXIMIZED	3
+#define ZWP_REMOTE_SURFACE_V1_UNSET_MAXIMIZED	4
+#define ZWP_REMOTE_SURFACE_V1_SET_MINIMIZED	5
+#define ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED	6
 
 static inline void
 zwp_remote_surface_v1_send_set_fullscreen(struct wl_resource *resource_)
@@ -228,6 +292,30 @@ static inline void
 zwp_remote_surface_v1_send_close(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_CLOSE);
+}
+
+static inline void
+zwp_remote_surface_v1_send_set_maximized(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_SET_MAXIMIZED);
+}
+
+static inline void
+zwp_remote_surface_v1_send_unset_maximized(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_MAXIMIZED);
+}
+
+static inline void
+zwp_remote_surface_v1_send_set_minimized(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_SET_MINIMIZED);
+}
+
+static inline void
+zwp_remote_surface_v1_send_unset_minimized(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED);
 }
 
 #ifdef  __cplusplus

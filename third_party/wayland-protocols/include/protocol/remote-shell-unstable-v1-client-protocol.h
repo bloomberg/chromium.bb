@@ -154,6 +154,10 @@ zwp_remote_shell_v1_get_remote_surface(struct zwp_remote_shell_v1 *zwp_remote_sh
  * @set_fullscreen: surface wants to be fullscreen
  * @unset_fullscreen: surface wants to be non-fullscreen
  * @close: surface wants to be closed
+ * @set_maximized: surface wants to be maximized
+ * @unset_maximized: surface wants to be restored
+ * @set_minimized: surface wants to be minimized
+ * @unset_minimized: surface wants to be restored
  *
  * An interface that may be implemented by a wl_surface, for
  * implementations that provide a desktop-style user interface and allows
@@ -205,6 +209,54 @@ struct zwp_remote_surface_v1_listener {
 	 */
 	void (*close)(void *data,
 		      struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * set_maximized - surface wants to be maximized
+	 *
+	 * The set_maximized event is sent by the compositor when the
+	 * user wants the surface to be maximized.
+	 *
+	 * This is only a request that the user intends to maximized the
+	 * window. The client may choose to ignore this request.
+	 * @since: 2
+	 */
+	void (*set_maximized)(void *data,
+			      struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * unset_maximized - surface wants to be restored
+	 *
+	 * The unset_maximized event is sent by the compositor when the
+	 * user wants the surface to be made visible.
+	 *
+	 * This is only a request that the user intends to make your window
+	 * visible. The client may choose to ignore this request.
+	 * @since: 2
+	 */
+	void (*unset_maximized)(void *data,
+				struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * set_minimized - surface wants to be minimized
+	 *
+	 * The set_minimized event is sent by the compositor when the
+	 * user wants the surface to be minimized.
+	 *
+	 * This is only a request that the user intends to minimize the
+	 * window. The client may choose to ignore this request.
+	 * @since: 2
+	 */
+	void (*set_minimized)(void *data,
+			      struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * unset_minimized - surface wants to be restored
+	 *
+	 * The unset_minimized event is sent by the compositor when the
+	 * user wants the surface to be made visible.
+	 *
+	 * This is only a request that the user intends to make your window
+	 * visible. The client may choose to ignore this request.
+	 * @since: 2
+	 */
+	void (*unset_minimized)(void *data,
+				struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
 };
 
 static inline int
@@ -219,6 +271,10 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_SET_APP_ID	1
 #define ZWP_REMOTE_SURFACE_V1_SET_WINDOW_GEOMETRY	2
 #define ZWP_REMOTE_SURFACE_V1_SET_SCALE	3
+#define ZWP_REMOTE_SURFACE_V1_FULLSCREEN	4
+#define ZWP_REMOTE_SURFACE_V1_MAXIMIZE	5
+#define ZWP_REMOTE_SURFACE_V1_MINIMIZE	6
+#define ZWP_REMOTE_SURFACE_V1_RESTORE	7
 
 static inline void
 zwp_remote_surface_v1_set_user_data(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, void *user_data)
@@ -260,6 +316,34 @@ zwp_remote_surface_v1_set_scale(struct zwp_remote_surface_v1 *zwp_remote_surface
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_SET_SCALE, scale);
+}
+
+static inline void
+zwp_remote_surface_v1_fullscreen(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_FULLSCREEN);
+}
+
+static inline void
+zwp_remote_surface_v1_maximize(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_MAXIMIZE);
+}
+
+static inline void
+zwp_remote_surface_v1_minimize(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_MINIMIZE);
+}
+
+static inline void
+zwp_remote_surface_v1_restore(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_RESTORE);
 }
 
 #ifdef  __cplusplus

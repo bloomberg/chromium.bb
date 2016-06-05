@@ -55,7 +55,7 @@ static const struct wl_message zwp_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 1,
+	"zwp_remote_shell_v1", 2,
 	2, zwp_remote_shell_v1_requests,
 	2, zwp_remote_shell_v1_events,
 };
@@ -65,17 +65,25 @@ static const struct wl_message zwp_remote_surface_v1_requests[] = {
 	{ "set_app_id", "s", types + 0 },
 	{ "set_window_geometry", "iiii", types + 0 },
 	{ "set_scale", "f", types + 0 },
+	{ "fullscreen", "2", types + 0 },
+	{ "maximize", "2", types + 0 },
+	{ "minimize", "2", types + 0 },
+	{ "restore", "2", types + 0 },
 };
 
 static const struct wl_message zwp_remote_surface_v1_events[] = {
 	{ "set_fullscreen", "", types + 0 },
 	{ "unset_fullscreen", "", types + 0 },
 	{ "close", "", types + 0 },
+	{ "set_maximized", "2", types + 0 },
+	{ "unset_maximized", "2", types + 0 },
+	{ "set_minimized", "2", types + 0 },
+	{ "unset_minimized", "2", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 1,
-	4, zwp_remote_surface_v1_requests,
-	3, zwp_remote_surface_v1_events,
+	"zwp_remote_surface_v1", 2,
+	8, zwp_remote_surface_v1_requests,
+	7, zwp_remote_surface_v1_events,
 };
 
