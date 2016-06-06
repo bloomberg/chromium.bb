@@ -49,9 +49,6 @@ class GpuServiceImpl : public mojom::GpuService {
  private:
   mojo::StrongBinding<GpuService> binding_;
 
-  // A unique client id for constructing the GpuChannel.
-  const int32_t client_id_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
 };
 

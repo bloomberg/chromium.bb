@@ -9,8 +9,8 @@
 
 #include <utility>
 
+#include "components/mus/common/gpu_service.h"
 #include "components/mus/public/cpp/lib/command_buffer_client_impl.h"
-#include "components/mus/public/cpp/lib/gpu_service.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "components/mus/public/interfaces/gpu_service.mojom.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"

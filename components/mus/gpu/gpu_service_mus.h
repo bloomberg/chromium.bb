@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -41,18 +42,18 @@ class MediaService;
 
 namespace mus {
 
-class GpuMemoryBufferManagerMusLocal;
+class MojoGpuMemoryBufferManager;
 
 // TODO(fsamuel): GpuServiceMus is intended to be the Gpu thread within Mus.
 // Similar to GpuChildThread, it is a GpuChannelManagerDelegate and will have a
 // GpuChannelManager.
 class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
-                      public gpu::GpuChannelHostFactory {
+                      public gpu::GpuChannelHostFactory,
+                      public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(const IPC::ChannelHandle&)>
+  typedef base::Callback<void(int client_id, const IPC::ChannelHandle&)>
       EstablishGpuChannelCallback;
-  void EstablishGpuChannel(int client_id,
-                           uint64_t client_tracing_id,
+  void EstablishGpuChannel(uint64_t client_tracing_id,
                            bool preempts,
                            bool allow_view_command_buffers,
                            bool allow_real_time_streams,
@@ -122,6 +123,9 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
                                       bool allow_real_time_streams,
                                       IPC::ChannelHandle* channel_handle);
 
+  // The next client id.
+  int next_client_id_;
+
   // The main thread message loop.
   base::MessageLoop* main_message_loop_;
 
@@ -143,8 +147,7 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   // A GPU memory buffer manager used locally.
-  std::unique_ptr<GpuMemoryBufferManagerMusLocal>
-      gpu_memory_buffer_manager_mus_local_;
+  std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_local_;
 
   // A GPU channel used locally.
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_local_;

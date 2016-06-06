@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/gles2/gpu_memory_buffer_impl.h"
+#include "components/mus/common/gpu_memory_buffer_impl.h"
 
 namespace mus {
 

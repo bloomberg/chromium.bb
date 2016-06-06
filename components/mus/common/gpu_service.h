@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_GPU_SERVICE_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_LIB_GPU_SERVICE_H_
+#ifndef COMPONENTS_MUS_COMMON_GPU_SERVICE_H_
+#define COMPONENTS_MUS_COMMON_GPU_SERVICE_H_
 
 #include <stdint.h>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "components/mus/common/mus_common_export.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 
 namespace shell {
@@ -19,9 +21,9 @@ class Connector;
 
 namespace mus {
 
-class GpuMemoryBufferManagerMus;
+class MojoGpuMemoryBufferManager;
 
-class GpuService : public gpu::GpuChannelHostFactory {
+class MUS_COMMON_EXPORT GpuService : public gpu::GpuChannelHostFactory {
  public:
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannel(
       shell::Connector* connector);
@@ -44,7 +46,10 @@ class GpuService : public gpu::GpuChannelHostFactory {
   base::MessageLoop* main_message_loop_;
   base::WaitableEvent shutdown_event_;
   base::Thread io_thread_;
-  std::unique_ptr<GpuMemoryBufferManagerMus> gpu_memory_buffer_manager_;
+  std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+
+  // Lock for |gpu_channel_|.
+  base::Lock lock_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuService);

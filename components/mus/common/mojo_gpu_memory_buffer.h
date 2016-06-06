@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_H_
-#define COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_H_
+#ifndef COMPONENTS_MUS_COMMON_MOJO_GPU_MEMORY_BUFFER_H_
+#define COMPONENTS_MUS_COMMON_MOJO_GPU_MEMORY_BUFFER_H_
 
 #include <stddef.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/mus/gles2/gpu_memory_buffer_impl.h"
+#include "components/mus/common/gpu_memory_buffer_impl.h"
+#include "components/mus/common/mus_common_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace mus {
 
-class MojoGpuMemoryBufferImpl : public mus::GpuMemoryBufferImpl {
+class MUS_COMMON_EXPORT MojoGpuMemoryBufferImpl
+    : public mus::GpuMemoryBufferImpl {
  public:
   MojoGpuMemoryBufferImpl(const gfx::Size& size,
                           gfx::BufferFormat format,
@@ -49,4 +51,4 @@ class MojoGpuMemoryBufferImpl : public mus::GpuMemoryBufferImpl {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_H_
+#endif  // COMPONENTS_MUS_COMMON_MOJO_GPU_MEMORY_BUFFER_H_

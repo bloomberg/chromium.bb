@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_GLES2_MOJO_BUFFER_BACKING_H_
-#define COMPONENTS_MUS_GLES2_MOJO_BUFFER_BACKING_H_
+#ifndef COMPONENTS_MUS_COMMON_MOJO_BUFFER_BACKING_H_
+#define COMPONENTS_MUS_COMMON_MOJO_BUFFER_BACKING_H_
 
 #include <stddef.h>
 
 #include <memory>
 
 #include "base/macros.h"
+#include "components/mus/common/mus_common_export.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mus {
 
-class MojoBufferBacking : public gpu::BufferBacking {
+class MUS_COMMON_EXPORT MojoBufferBacking : public gpu::BufferBacking {
  public:
   MojoBufferBacking(mojo::ScopedSharedBufferHandle handle,
                     void* memory,
@@ -39,4 +40,4 @@ class MojoBufferBacking : public gpu::BufferBacking {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_GLES2_MOJO_BUFFER_BACKING_H_
+#endif  // COMPONENTS_MUS_COMMON_MOJO_BUFFER_BACKING_H_

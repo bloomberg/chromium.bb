@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/mus/gles2/gpu_memory_buffer_impl.h"
+#include "components/mus/common/gpu_memory_buffer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"

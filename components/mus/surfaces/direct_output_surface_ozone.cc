@@ -11,7 +11,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "components/display_compositor/buffer_queue.h"
-#include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
+#include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

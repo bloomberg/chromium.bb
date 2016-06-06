@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/lib/gpu_service.h"
+#include "components/mus/common/gpu_service.h"
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "components/mus/common/gpu_type_converters.h"
+#include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/common/switches.h"
-#include "components/mus/public/cpp/lib/gpu_memory_buffer_manager_mus.h"
 #include "components/mus/public/interfaces/gpu_service.mojom.h"
 #include "services/shell/public/cpp/connector.h"
 
@@ -32,7 +32,7 @@ GpuService::GpuService()
     : main_message_loop_(base::MessageLoop::current()),
       shutdown_event_(false, false),
       io_thread_("GPUIOThread"),
-      gpu_memory_buffer_manager_(new mus::GpuMemoryBufferManagerMus) {
+      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager) {
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
   CHECK(io_thread_.StartWithOptions(thread_options));
@@ -54,6 +54,7 @@ GpuService* GpuService::GetInstance() {
 
 scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannel(
     shell::Connector* connector) {
+  base::AutoLock auto_lock(lock_);
   if (gpu_channel_ && gpu_channel_->IsLost()) {
     gpu_channel_->DestroyChannel();
     gpu_channel_ = nullptr;

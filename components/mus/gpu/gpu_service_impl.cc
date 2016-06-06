@@ -13,8 +13,8 @@ namespace mus {
 namespace {
 
 void EstablishGpuChannelDone(
-    int32_t client_id,
     const mojom::GpuService::EstablishGpuChannelCallback& callback,
+    int32_t client_id,
     const IPC::ChannelHandle& channel_handle) {
   // TODO(penghuang): Send the real GPUInfo to the client.
   callback.Run(client_id, mojom::ChannelHandle::From(channel_handle),
@@ -25,29 +25,24 @@ void EstablishGpuChannelDone(
 GpuServiceImpl::GpuServiceImpl(
     mojo::InterfaceRequest<mojom::GpuService> request,
     shell::Connection* connection)
-    : binding_(this, std::move(request)),
-      client_id_(connection->GetRemoteInstanceID() + 1) {
-  // Use remote instead id + 1 as client id, so every GpuServiceImpl instances
-  // for a same client will have the same client id.
-  // Make sure client_id_ is greater than 1, because 1 is used for the local
-  // GpuChannel.
-  DCHECK_GT(client_id_, 1);
-}
+    : binding_(this, std::move(request)) {}
 
 GpuServiceImpl::~GpuServiceImpl() {}
 
 void GpuServiceImpl::EstablishGpuChannel(
     const mojom::GpuService::EstablishGpuChannelCallback& callback) {
   GpuServiceMus* service = GpuServiceMus::GetInstance();
+  // TODO(penghuang): crbug.com/617415 figure out how to generate a meaningful
+  // tracing id.
+  const uint64_t client_tracing_id = 0;
   // TODO(penghuang): windows server may want to control those flags.
   // Add a private interface for windows server.
   const bool preempts = false;
   const bool allow_view_command_buffers = false;
   const bool allow_real_time_streams = false;
   service->EstablishGpuChannel(
-      client_id_, client_id_, preempts, allow_view_command_buffers,
-      allow_real_time_streams,
-      base::Bind(&EstablishGpuChannelDone, client_id_, callback));
+      client_tracing_id, preempts, allow_view_command_buffers,
+      allow_real_time_streams, base::Bind(&EstablishGpuChannelDone, callback));
 }
 
 void GpuServiceImpl::CreateGpuMemoryBuffer(

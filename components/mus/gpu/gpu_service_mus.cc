@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/mus/gpu/gpu_memory_buffer_manager_mus_local.h"
+#include "components/mus/common/mojo_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -36,14 +36,16 @@ const int kLocalGpuChannelClientId = 1;
 const uint64_t kLocalGpuChannelClientTracingId = 1;
 
 void EstablishGpuChannelDone(
+    int client_id,
     std::unique_ptr<IPC::ChannelHandle> channel_handle,
     const GpuServiceMus::EstablishGpuChannelCallback& callback) {
-  callback.Run(*channel_handle);
+  callback.Run(channel_handle ? client_id : -1, *channel_handle);
 }
 }
 
 GpuServiceMus::GpuServiceMus()
-    : main_message_loop_(base::MessageLoop::current()),
+    : next_client_id_(kLocalGpuChannelClientId),
+      main_message_loop_(base::MessageLoop::current()),
       shutdown_event_(true, false),
       gpu_thread_("GpuThread"),
       io_thread_("GpuIOThread") {
@@ -60,19 +62,19 @@ GpuServiceMus::~GpuServiceMus() {
 }
 
 void GpuServiceMus::EstablishGpuChannel(
-    int client_id,
     uint64_t client_tracing_id,
     bool preempts,
     bool allow_view_command_buffers,
     bool allow_real_time_streams,
     const EstablishGpuChannelCallback& callback) {
-  DCHECK_GT(client_id, kLocalGpuChannelClientId);
+  DCHECK(CalledOnValidThread());
 
   if (!gpu_channel_manager_) {
-    callback.Run(IPC::ChannelHandle());
+    callback.Run(-1, IPC::ChannelHandle());
     return;
   }
 
+  const int client_id = ++next_client_id_;
   std::unique_ptr<IPC::ChannelHandle> channel_handle(new IPC::ChannelHandle);
   gpu_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
@@ -80,8 +82,8 @@ void GpuServiceMus::EstablishGpuChannel(
                  base::Unretained(this), client_id, client_tracing_id, preempts,
                  allow_view_command_buffers, allow_real_time_streams,
                  base::Unretained(channel_handle.get())),
-      base::Bind(&EstablishGpuChannelDone, base::Passed(&channel_handle),
-                 callback));
+      base::Bind(&EstablishGpuChannelDone, client_id,
+                 base::Passed(&channel_handle), callback));
 }
 
 gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBuffer(
@@ -91,6 +93,7 @@ gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     int client_id,
     gpu::SurfaceHandle surface_handle) {
+  DCHECK(CalledOnValidThread());
   return gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle);
 }
@@ -101,6 +104,8 @@ gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBufferFromeHandle(
     const gfx::Size& size,
     gfx::BufferFormat format,
     int client_id) {
+  DCHECK(CalledOnValidThread());
+
   return gpu_memory_buffer_factory_->CreateGpuMemoryBufferFromHandle(
       buffer_handle, id, size, format, client_id);
 }
@@ -108,6 +113,8 @@ gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBufferFromeHandle(
 void GpuServiceMus::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                            int client_id,
                                            const gpu::SyncToken& sync_token) {
+  DCHECK(CalledOnValidThread());
+
   if (gpu_channel_manager_)
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
@@ -154,6 +161,7 @@ void GpuServiceMus::SetActiveURL(const GURL& url) {
 }
 
 void GpuServiceMus::Initialize() {
+  DCHECK(CalledOnValidThread());
   base::Thread::Options thread_options(base::MessageLoop::TYPE_DEFAULT, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
   CHECK(gpu_thread_.StartWithOptions(thread_options));
@@ -176,11 +184,10 @@ void GpuServiceMus::Initialize() {
                             base::Unretained(this), &channel_handle, &event));
   event.Wait();
 
-  gpu_memory_buffer_manager_mus_local_.reset(new GpuMemoryBufferManagerMusLocal(
-      kLocalGpuChannelClientId, kLocalGpuChannelClientTracingId));
+  gpu_memory_buffer_manager_local_.reset(new MojoGpuMemoryBufferManager);
   gpu_channel_local_ = gpu::GpuChannelHost::Create(
       this, kLocalGpuChannelClientId, gpu_info_, channel_handle,
-      &shutdown_event_, gpu_memory_buffer_manager_mus_local_.get());
+      &shutdown_event_, gpu_memory_buffer_manager_local_.get());
 }
 
 void GpuServiceMus::InitializeOnGpuThread(IPC::ChannelHandle* channel_handle,

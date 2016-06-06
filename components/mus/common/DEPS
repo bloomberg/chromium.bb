@@ -1,5 +1,7 @@
 include_rules = [
   "+gpu/config",
+  "+gpu/command_buffer",
+  "+gpu/ipc/client",
   "+gpu/ipc/common",
 ]
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/gles2/mojo_buffer_backing.h"
+#include "components/mus/common/mojo_buffer_backing.h"
 
 #include "base/logging.h"
 
