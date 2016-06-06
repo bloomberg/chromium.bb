@@ -25,7 +25,7 @@ extern "C" {
 #define AOMINNERBORDERINPIXELS 96
 #define AOM_INTERP_EXTEND 4
 #define AOM_ENC_BORDER_IN_PIXELS 160
-#define AOM_DEC_BORDER_IN_PIXELS 32
+#define AOM_DEC_BORDER_IN_PIXELS 160
 
 typedef struct yv12_buffer_config {
   int y_width;

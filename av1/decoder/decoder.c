@@ -366,6 +366,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   swap_frame_buffers(pbi);
 
+  aom_extend_frame_inner_borders(cm->frame_to_show);
+
   aom_clear_system_state();
 
   if (!cm->show_existing_frame) {
