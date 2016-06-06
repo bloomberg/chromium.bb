@@ -132,6 +132,11 @@ typedef uint8_t PREDICTION_MODE;
 
 #define INTER_MODES (1 + NEWMV - NEARESTMV)
 
+#if CONFIG_EXT_INTRA
+// all intra modes except DC and TM
+#define DIRECTIONAL_MODES (INTRA_MODES - 2)
+#endif  // CONFIG_EXT_INTRA
+
 #if CONFIG_MOTION_VAR
 typedef enum {
   SIMPLE_TRANSLATION = 0,  // regular block based motion compensation

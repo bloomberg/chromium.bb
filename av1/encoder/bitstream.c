@@ -421,6 +421,38 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
+#if CONFIG_EXT_INTRA
+static INLINE void write_uniform(aom_writer *w, int n, int v) {
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
+
+  if (l == 0) return;
+  if (v < m) {
+    aom_write_literal(w, v, l - 1);
+  } else {
+    aom_write_literal(w, m + ((v - m) >> 1), l - 1);
+    aom_write_literal(w, (v - m) & 1, 1);
+  }
+}
+
+static void write_intra_angle_info(const MB_MODE_INFO *const mbmi,
+                                   aom_writer *w) {
+  if (mbmi->sb_type < BLOCK_8X8) return;
+
+  if (is_directional_mode(mbmi->mode)) {
+    const TX_SIZE max_tx_size = max_txsize_lookup[mbmi->sb_type];
+    const int max_angle_delta = av1_max_angle_delta_y[max_tx_size][mbmi->mode];
+    write_uniform(w, 2 * max_angle_delta + 1,
+                  max_angle_delta + mbmi->intra_angle_delta[0]);
+  }
+
+  if (is_directional_mode(mbmi->uv_mode)) {
+    write_uniform(w, 2 * MAX_ANGLE_DELTA_UV + 1,
+                  MAX_ANGLE_DELTA_UV + mbmi->intra_angle_delta[1]);
+  }
+}
+#endif  // CONFIG_EXT_INTRA
+
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
                                 aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
@@ -481,6 +513,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     }
     write_intra_mode(w, mbmi->uv_mode, cm->fc->uv_mode_prob[mode]);
+#if CONFIG_EXT_INTRA
+    write_intra_angle_info(mbmi, w);
+#endif  // CONFIG_EXT_INTRA
   } else {
     int16_t mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
     write_ref_frames(cm, xd, w);
@@ -620,6 +655,9 @@ static void write_mb_modes_kf(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   write_intra_mode(w, mbmi->uv_mode, cm->fc->uv_mode_prob[mbmi->mode]);
+#if CONFIG_EXT_INTRA
+  write_intra_angle_info(mbmi, w);
+#endif  // CONFIG_EXT_INTRA
 
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {

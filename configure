@@ -253,6 +253,7 @@ EXPERIMENT_LIST="
     clpf
     dering
     ref_mv
+    ext_intra
     ext_interp
     motion_var
     ext_refs

@@ -329,6 +329,35 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   }
 }
 
+#if CONFIG_EXT_INTRA
+static INLINE int read_uniform(aom_reader *r, int n) {
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
+  const int v = aom_read_literal(r, l - 1);
+
+  assert(l != 0);
+  return (v < m) ? v : ((v << 1) - m + aom_read_literal(r, 1));
+}
+
+static void read_intra_angle_info(MB_MODE_INFO *const mbmi, aom_reader *r) {
+  mbmi->intra_angle_delta[0] = 0;
+  mbmi->intra_angle_delta[1] = 0;
+  if (mbmi->sb_type < BLOCK_8X8) return;
+
+  if (is_directional_mode(mbmi->mode)) {
+    const TX_SIZE max_tx_size = max_txsize_lookup[mbmi->sb_type];
+    const int max_angle_delta = av1_max_angle_delta_y[max_tx_size][mbmi->mode];
+    mbmi->intra_angle_delta[0] =
+        read_uniform(r, 2 * max_angle_delta + 1) - max_angle_delta;
+  }
+
+  if (is_directional_mode(mbmi->uv_mode)) {
+    mbmi->intra_angle_delta[1] =
+        read_uniform(r, 2 * MAX_ANGLE_DELTA_UV + 1) - MAX_ANGLE_DELTA_UV;
+  }
+}
+#endif  // CONFIG_EXT_INTRA
+
 static void read_intra_frame_mode_info(AV1_COMMON *const cm,
                                        MACROBLOCKD *const xd, int mi_row,
                                        int mi_col, aom_reader *r) {
@@ -377,6 +406,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   }
 
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#if CONFIG_EXT_INTRA
+  read_intra_angle_info(mbmi, r);
+#endif  // CONFIG_EXT_INTRA
 
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
@@ -542,6 +574,9 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
   }
 
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#if CONFIG_EXT_INTRA
+  read_intra_angle_info(mbmi, r);
+#endif  // CONFIG_EXT_INTRA
 }
 
 static INLINE int is_mv_valid(const MV *mv) {

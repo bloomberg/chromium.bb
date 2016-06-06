@@ -35,6 +35,48 @@ extern "C" {
 
 #define MAX_MB_PLANE 3
 
+#if CONFIG_EXT_INTRA
+#define MAX_ANGLE_DELTA 3
+#define MAX_ANGLE_DELTA_UV 2
+#define ANGLE_STEP_UV 4
+
+static const uint8_t av1_angle_step_y[TX_SIZES][INTRA_MODES] = {
+  {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      0, 4, 4, 4, 4, 4, 4, 4, 4, 0,
+  },
+  {
+      0, 3, 3, 3, 3, 3, 3, 3, 3, 0,
+  },
+  {
+      0, 3, 3, 3, 3, 3, 3, 3, 3, 0,
+  },
+};
+static const uint8_t av1_max_angle_delta_y[TX_SIZES][INTRA_MODES] = {
+  {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      0, 2, 2, 2, 2, 2, 2, 2, 2, 0,
+  },
+  {
+      0, 3, 3, 3, 3, 3, 3, 3, 3, 0,
+  },
+  {
+      0, 3, 3, 3, 3, 3, 3, 3, 3, 0,
+  },
+};
+static const uint8_t mode_to_angle_map[INTRA_MODES] = {
+  0, 90, 180, 45, 135, 111, 157, 203, 67, 0,
+};
+
+static INLINE int is_directional_mode(PREDICTION_MODE mode) {
+  return (mode < TM_PRED && mode != DC_PRED);
+}
+#endif  // CONFIG_EXT_INTRA
+
 typedef enum {
   KEY_FRAME = 0,
   INTER_FRAME = 1,
@@ -90,6 +132,10 @@ typedef struct {
 
   // Only for INTRA blocks
   PREDICTION_MODE uv_mode;
+#if CONFIG_EXT_INTRA
+  // The actual prediction angle is the base angle + (angle_delta * step).
+  int8_t intra_angle_delta[2];
+#endif  // CONFIG_EXT_INTRA
 
   // Only for INTER blocks
   InterpFilter interp_filter;

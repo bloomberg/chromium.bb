@@ -213,6 +213,201 @@ static void av1_init_intra_predictors_internal(void) {
 #undef intra_pred_allsizes
 }
 
+#if CONFIG_EXT_INTRA
+// 2-D array to store dx and dy used for directional intra prediction.
+// First index is angle in range of [0, 269].
+// t is the value of tangent(angle).
+// If angle > 0 && angle < 90, dx = -((int)(256 / t)), dy = 1;
+// If angle > 90 && angle < 180, dx = (int)(256 / t), dy = (int)(256 * t);
+// If angle > 180 && angle < 270, dx = 1, dy = -((int)(256 * t));
+const int16_t dr_intra_derivative[270][2] = {
+  { 1, 1 },     { -14666, 1 }, { -7330, 1 }, { -4884, 1 }, { -3660, 1 },
+  { -2926, 1 }, { -2435, 1 },  { -2084, 1 }, { -1821, 1 }, { -1616, 1 },
+  { -1451, 1 }, { -1317, 1 },  { -1204, 1 }, { -1108, 1 }, { -1026, 1 },
+  { -955, 1 },  { -892, 1 },   { -837, 1 },  { -787, 1 },  { -743, 1 },
+  { -703, 1 },  { -666, 1 },   { -633, 1 },  { -603, 1 },  { -574, 1 },
+  { -548, 1 },  { -524, 1 },   { -502, 1 },  { -481, 1 },  { -461, 1 },
+  { -443, 1 },  { -426, 1 },   { -409, 1 },  { -394, 1 },  { -379, 1 },
+  { -365, 1 },  { -352, 1 },   { -339, 1 },  { -327, 1 },  { -316, 1 },
+  { -305, 1 },  { -294, 1 },   { -284, 1 },  { -274, 1 },  { -265, 1 },
+  { -256, 1 },  { -247, 1 },   { -238, 1 },  { -230, 1 },  { -222, 1 },
+  { -214, 1 },  { -207, 1 },   { -200, 1 },  { -192, 1 },  { -185, 1 },
+  { -179, 1 },  { -172, 1 },   { -166, 1 },  { -159, 1 },  { -153, 1 },
+  { -147, 1 },  { -141, 1 },   { -136, 1 },  { -130, 1 },  { -124, 1 },
+  { -119, 1 },  { -113, 1 },   { -108, 1 },  { -103, 1 },  { -98, 1 },
+  { -93, 1 },   { -88, 1 },    { -83, 1 },   { -78, 1 },   { -73, 1 },
+  { -68, 1 },   { -63, 1 },    { -59, 1 },   { -54, 1 },   { -49, 1 },
+  { -45, 1 },   { -40, 1 },    { -35, 1 },   { -31, 1 },   { -26, 1 },
+  { -22, 1 },   { -17, 1 },    { -13, 1 },   { -8, 1 },    { -4, 1 },
+  { 1, 1 },     { 4, 14666 },  { 8, 7330 },  { 13, 4884 }, { 17, 3660 },
+  { 22, 2926 }, { 26, 2435 },  { 31, 2084 }, { 35, 1821 }, { 40, 1616 },
+  { 45, 1451 }, { 49, 1317 },  { 54, 1204 }, { 59, 1108 }, { 63, 1026 },
+  { 68, 955 },  { 73, 892 },   { 78, 837 },  { 83, 787 },  { 88, 743 },
+  { 93, 703 },  { 98, 666 },   { 103, 633 }, { 108, 603 }, { 113, 574 },
+  { 119, 548 }, { 124, 524 },  { 130, 502 }, { 136, 481 }, { 141, 461 },
+  { 147, 443 }, { 153, 426 },  { 159, 409 }, { 166, 394 }, { 172, 379 },
+  { 179, 365 }, { 185, 352 },  { 192, 339 }, { 200, 327 }, { 207, 316 },
+  { 214, 305 }, { 222, 294 },  { 230, 284 }, { 238, 274 }, { 247, 265 },
+  { 255, 256 }, { 265, 247 },  { 274, 238 }, { 284, 230 }, { 294, 222 },
+  { 305, 214 }, { 316, 207 },  { 327, 200 }, { 339, 192 }, { 352, 185 },
+  { 365, 179 }, { 379, 172 },  { 394, 166 }, { 409, 159 }, { 426, 153 },
+  { 443, 147 }, { 461, 141 },  { 481, 136 }, { 502, 130 }, { 524, 124 },
+  { 548, 119 }, { 574, 113 },  { 603, 108 }, { 633, 103 }, { 666, 98 },
+  { 703, 93 },  { 743, 88 },   { 787, 83 },  { 837, 78 },  { 892, 73 },
+  { 955, 68 },  { 1026, 63 },  { 1108, 59 }, { 1204, 54 }, { 1317, 49 },
+  { 1451, 45 }, { 1616, 40 },  { 1821, 35 }, { 2084, 31 }, { 2435, 26 },
+  { 2926, 22 }, { 3660, 17 },  { 4884, 13 }, { 7330, 8 },  { 14666, 4 },
+  { 1, 1 },     { 1, -4 },     { 1, -8 },    { 1, -13 },   { 1, -17 },
+  { 1, -22 },   { 1, -26 },    { 1, -31 },   { 1, -35 },   { 1, -40 },
+  { 1, -45 },   { 1, -49 },    { 1, -54 },   { 1, -59 },   { 1, -63 },
+  { 1, -68 },   { 1, -73 },    { 1, -78 },   { 1, -83 },   { 1, -88 },
+  { 1, -93 },   { 1, -98 },    { 1, -103 },  { 1, -108 },  { 1, -113 },
+  { 1, -119 },  { 1, -124 },   { 1, -130 },  { 1, -136 },  { 1, -141 },
+  { 1, -147 },  { 1, -153 },   { 1, -159 },  { 1, -166 },  { 1, -172 },
+  { 1, -179 },  { 1, -185 },   { 1, -192 },  { 1, -200 },  { 1, -207 },
+  { 1, -214 },  { 1, -222 },   { 1, -230 },  { 1, -238 },  { 1, -247 },
+  { 1, -255 },  { 1, -265 },   { 1, -274 },  { 1, -284 },  { 1, -294 },
+  { 1, -305 },  { 1, -316 },   { 1, -327 },  { 1, -339 },  { 1, -352 },
+  { 1, -365 },  { 1, -379 },   { 1, -394 },  { 1, -409 },  { 1, -426 },
+  { 1, -443 },  { 1, -461 },   { 1, -481 },  { 1, -502 },  { 1, -524 },
+  { 1, -548 },  { 1, -574 },   { 1, -603 },  { 1, -633 },  { 1, -666 },
+  { 1, -703 },  { 1, -743 },   { 1, -787 },  { 1, -837 },  { 1, -892 },
+  { 1, -955 },  { 1, -1026 },  { 1, -1108 }, { 1, -1204 }, { 1, -1317 },
+  { 1, -1451 }, { 1, -1616 },  { 1, -1821 }, { 1, -2084 }, { 1, -2435 },
+  { 1, -2926 }, { 1, -3660 },  { 1, -4884 }, { 1, -7330 }, { 1, -14666 },
+};
+
+// Directional prediction, zone 1: 0 < angle < 90
+static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bs,
+                             const uint8_t *const above,
+                             const uint8_t *const left, int dx, int dy) {
+  int r, c, x, base, shift, val;
+
+  (void)left;
+  (void)dy;
+  assert(dy == 1);
+  assert(dx < 0);
+
+  x = -dx;
+  for (r = 0; r < bs; ++r, dst += stride, x -= dx) {
+    base = x >> 8;
+    shift = x & 0xFF;
+
+    if (base >= 2 * bs - 1) {
+      int i;
+      for (i = r; i < bs; ++i) {
+        memset(dst, above[2 * bs - 1], bs * sizeof(dst[0]));
+        dst += stride;
+      }
+      return;
+    }
+
+    for (c = 0; c < bs; ++c, ++base) {
+      if (base < 2 * bs - 1) {
+        val = above[base] * (256 - shift) + above[base + 1] * shift;
+        val = ROUND_POWER_OF_TWO(val, 8);
+        dst[c] = clip_pixel(val);
+      } else {
+        dst[c] = above[2 * bs - 1];
+      }
+    }
+  }
+}
+
+// Directional prediction, zone 2: 90 < angle < 180
+static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bs,
+                             const uint8_t *const above,
+                             const uint8_t *const left, int dx, int dy) {
+  int r, c, x, y, shift1, shift2, val, base1, base2;
+
+  assert(dx > 0);
+  assert(dy > 0);
+
+  x = -dx;
+  for (r = 0; r < bs; ++r, x -= dx, dst += stride) {
+    base1 = x >> 8;
+    y = (r << 8) - dy;
+    for (c = 0; c < bs; ++c, ++base1, y -= dy) {
+      if (base1 >= -1) {
+        shift1 = x & 0xFF;
+        val = above[base1] * (256 - shift1) + above[base1 + 1] * shift1;
+        val = ROUND_POWER_OF_TWO(val, 8);
+      } else {
+        base2 = y >> 8;
+        if (base2 >= 0) {
+          shift2 = y & 0xFF;
+          val = left[base2] * (256 - shift2) + left[base2 + 1] * shift2;
+          val = ROUND_POWER_OF_TWO(val, 8);
+        } else {
+          val = left[0];
+        }
+      }
+      dst[c] = clip_pixel(val);
+    }
+  }
+}
+
+// Directional prediction, zone 3: 180 < angle < 270
+static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bs,
+                             const uint8_t *const above,
+                             const uint8_t *const left, int dx, int dy) {
+  int r, c, y, base, shift, val;
+
+  (void)above;
+  (void)dx;
+  assert(dx == 1);
+  assert(dy < 0);
+
+  y = -dy;
+  for (c = 0; c < bs; ++c, y -= dy) {
+    base = y >> 8;
+    shift = y & 0xFF;
+
+    for (r = 0; r < bs; ++r, ++base) {
+      if (base < 2 * bs - 1) {
+        val = left[base] * (256 - shift) + left[base + 1] * shift;
+        val = ROUND_POWER_OF_TWO(val, 8);
+        dst[r * stride + c] = clip_pixel(val);
+      } else {
+        for (; r < bs; ++r) dst[r * stride + c] = left[2 * bs - 1];
+        break;
+      }
+    }
+  }
+}
+
+static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
+                         const uint8_t *const above, const uint8_t *const left,
+                         int angle) {
+  const int dx = (int)dr_intra_derivative[angle][0];
+  const int dy = (int)dr_intra_derivative[angle][1];
+  const int bs = 4 << tx_size;
+
+  assert(angle > 0 && angle < 270);
+  switch (angle) {
+    case 90: pred[V_PRED][tx_size](dst, stride, above, left); return;
+    case 180: pred[H_PRED][tx_size](dst, stride, above, left); return;
+    case 45: pred[D45_PRED][tx_size](dst, stride, above, left); return;
+    case 135: pred[D135_PRED][tx_size](dst, stride, above, left); return;
+    case 117: pred[D117_PRED][tx_size](dst, stride, above, left); return;
+    case 153: pred[D153_PRED][tx_size](dst, stride, above, left); return;
+    case 207: pred[D207_PRED][tx_size](dst, stride, above, left); return;
+    case 63: pred[D63_PRED][tx_size](dst, stride, above, left); return;
+    default: break;
+  }
+
+  if (angle > 0 && angle < 90) {
+    dr_prediction_z1(dst, stride, bs, above, left, dx, dy);
+  } else if (angle > 90 && angle < 180) {
+    dr_prediction_z2(dst, stride, bs, above, left, dx, dy);
+  } else if (angle > 180 && angle < 270) {
+    dr_prediction_z3(dst, stride, bs, above, left, dx, dy);
+  } else {
+    assert(0);
+  }
+}
+#endif  // CONFIG_EXT_INTRA
+
 #if CONFIG_AOM_HIGHBITDEPTH
 static void build_intra_predictors_high(const MACROBLOCKD *xd,
                                         const uint8_t *ref8, int ref_stride,
@@ -312,6 +507,17 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   uint8_t *above_row = above_data + 16;
   const uint8_t *const_above_row = above_row;
   const int bs = 4 << tx_size;
+  int need_left = extend_modes[mode] & NEED_LEFT;
+  int need_above = extend_modes[mode] & NEED_ABOVE;
+#if CONFIG_EXT_INTRA
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  int p_angle = 0;
+  const TX_SIZE max_tx_size = max_txsize_lookup[mbmi->sb_type];
+  const int angle_step =
+      plane ? ANGLE_STEP_UV : av1_angle_step_y[max_tx_size][mbmi->mode];
+  const int use_directional_mode =
+      is_directional_mode(mode) && mbmi->sb_type >= BLOCK_8X8;
+#endif  // CONFIG_EXT_INTRA
 
   // 127 127 127 .. 127 127 127 127 127 127
   // 129  A   B  ..  Y   Z
@@ -329,9 +535,28 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   assert(n_left_px >= 0);
   assert(n_bottomleft_px >= 0);
 
+#if CONFIG_EXT_INTRA
+  if (use_directional_mode) {
+    p_angle = mode_to_angle_map[mode] +
+              mbmi->intra_angle_delta[plane != 0] * angle_step;
+    if (p_angle <= 90)
+      need_above = 1, need_left = 0;
+    else if (p_angle < 180)
+      need_above = 1, need_left = 1;
+    else
+      need_above = 0, need_left = 1;
+  }
+#endif  // CONFIG_EXT_INTRA
+
   // NEED_LEFT
-  if (extend_modes[mode] & NEED_LEFT) {
+  if (need_left) {
+#if CONFIG_EXT_INTRA
+    const int need_bottom = use_directional_mode
+                                ? (p_angle > 180)
+                                : (!!(extend_modes[mode] & NEED_BOTTOMLEFT));
+#else
     const int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
+#endif  // CONFIG_EXT_INTRA
     i = 0;
     if (n_left_px > 0) {
       for (; i < n_left_px; i++) left_col[i] = ref[i * ref_stride - 1];
@@ -348,8 +573,14 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 
   // NEED_ABOVE
-  if (extend_modes[mode] & NEED_ABOVE) {
+  if (need_above) {
+#if CONFIG_EXT_INTRA
+    const int need_right = use_directional_mode
+                               ? (p_angle < 90)
+                               : (!!(extend_modes[mode] & NEED_ABOVERIGHT));
+#else
     const int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
+#endif  // CONFIG_EXT_INTRA
     if (n_top_px > 0) {
       memcpy(above_row, above_ref, n_top_px);
       i = n_top_px;
@@ -365,9 +596,20 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     }
   }
 
+#if CONFIG_EXT_INTRA
+  above_row[-1] = n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : 129) : 127;
+#else
   if (extend_modes[mode] & NEED_ABOVELEFT) {
     above_row[-1] = n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : 129) : 127;
   }
+#endif  // CONFIG_EXT_INTRA
+
+#if CONFIG_EXT_INTRA
+  if (use_directional_mode) {
+    dr_predictor(dst, dst_stride, tx_size, const_above_row, left_col, p_angle);
+    return;
+  }
+#endif  // CONFIG_EXT_INTRA
 
   // predict
   if (mode == DC_PRED) {
