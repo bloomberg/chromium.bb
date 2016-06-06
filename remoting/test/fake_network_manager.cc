@@ -5,8 +5,10 @@
 #include "remoting/test/fake_network_manager.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/utils.h"
 #include "third_party/webrtc/base/socketaddress.h"
 
@@ -24,10 +26,9 @@ FakeNetworkManager::~FakeNetworkManager() {
 
 void FakeNetworkManager::StartUpdating() {
   started_ = true;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeNetworkManager::SendNetworksChangedSignal,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeNetworkManager::SendNetworksChangedSignal,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void FakeNetworkManager::StopUpdating() {
