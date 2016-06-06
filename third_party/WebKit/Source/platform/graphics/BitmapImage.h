@@ -140,6 +140,12 @@ private:
     void startAnimation(CatchUpAnimation = CatchUp) override;
     void stopAnimation();
     void advanceAnimation(Timer<BitmapImage>*);
+    // Advance the animation and let the next frame get scheduled without
+    // catch-up logic. For large images with slow or heavily-loaded systems,
+    // throwing away data as we go (see destroyDecodedData()) means we can spend
+    // so much time re-decoding data that we are always behind. To prevent this,
+    // we force the next animation to skip the catch up logic.
+    void advanceAnimationWithoutCatchUp(Timer<BitmapImage>*);
 
     // Function that does the real work of advancing the animation.  When
     // skippingFrames is true, we're in the middle of a loop trying to skip over

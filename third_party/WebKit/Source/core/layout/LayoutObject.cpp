@@ -3235,6 +3235,12 @@ bool LayoutObject::isInert() const
 void LayoutObject::imageChanged(ImageResource* image, const IntRect* rect)
 {
     ASSERT(m_node);
+
+    // Image change notifications should not be received during paint because
+    // the resulting invalidations will be cleared following paint. This can also
+    // lead to modifying the tree out from under paint(), see: crbug.com/616700.
+    DCHECK(document().lifecycle().state() != DocumentLifecycle::LifecycleState::InPaint);
+
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
 

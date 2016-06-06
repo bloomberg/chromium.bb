@@ -499,29 +499,12 @@ void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary)
             nextFrame = frameAfterNext;
         }
 
-        // Draw the next frame immediately.  Note that m_desiredFrameStartTime
+        // Post a task to advance the frame immediately. m_desiredFrameStartTime
         // may be in the past, meaning the next time through this function we'll
         // kick off the next advancement sooner than this frame's duration would
         // suggest.
-        if (internalAdvanceAnimation(false)) {
-            // The image region has been marked dirty, but once we return to our
-            // caller, draw() will clear it, and nothing will cause the
-            // animation to advance again.  We need to start the timer for the
-            // next frame running, or the animation can hang.  (Compare this
-            // with when advanceAnimation() is called, and the region is dirtied
-            // while draw() is not in the callstack, meaning draw() gets called
-            // to update the region and thus startAnimation() is reached again.)
-            // NOTE: For large images with slow or heavily-loaded systems,
-            // throwing away data as we go (see destroyDecodedData()) means we
-            // can spend so much time re-decoding data above that by the time we
-            // reach here we're behind again.  If we let startAnimation() run
-            // the catch-up code again, we can get long delays without painting
-            // as we race the timer, or even infinite recursion.  In this
-            // situation the best we can do is to simply change frames as fast
-            // as possible, so force startAnimation() to set a zero-delay timer
-            // and bail out if we're not caught up.
-            startAnimation(DoNotCatchUp);
-        }
+        m_frameTimer = adoptPtr(new Timer<BitmapImage>(this, &BitmapImage::advanceAnimationWithoutCatchUp));
+        m_frameTimer->startOneShot(0, BLINK_FROM_HERE);
     }
 }
 
@@ -566,6 +549,12 @@ void BitmapImage::advanceAnimation(Timer<BitmapImage>*)
     // At this point the image region has been marked dirty, and if it's
     // onscreen, we'll soon make a call to draw(), which will call
     // startAnimation() again to keep the animation moving.
+}
+
+void BitmapImage::advanceAnimationWithoutCatchUp(Timer<BitmapImage>*)
+{
+    if (internalAdvanceAnimation(false))
+        startAnimation(DoNotCatchUp);
 }
 
 bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
