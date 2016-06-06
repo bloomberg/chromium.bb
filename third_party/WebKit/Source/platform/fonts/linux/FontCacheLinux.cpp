@@ -134,10 +134,11 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     FontPlatformData* substitutePlatformData = getFontPlatformData(description, creationParams);
     if (!substitutePlatformData)
         return nullptr;
-    FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
-    platformData.setSyntheticBold(shouldSetSyntheticBold);
-    platformData.setSyntheticItalic(shouldSetSyntheticItalic);
-    return fontDataFromFontPlatformData(&platformData, DoNotRetain);
+
+    std::unique_ptr<FontPlatformData> platformData(new FontPlatformData(*substitutePlatformData));
+    platformData->setSyntheticBold(shouldSetSyntheticBold);
+    platformData->setSyntheticItalic(shouldSetSyntheticItalic);
+    return fontDataFromFontPlatformData(platformData.get(), DoNotRetain);
 }
 
 #endif // !OS(ANDROID)

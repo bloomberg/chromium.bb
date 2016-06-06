@@ -42,35 +42,29 @@ class SimpleFontData;
 
 struct FontDataCacheKeyHash {
     STATIC_ONLY(FontDataCacheKeyHash);
-    static unsigned hash(const FontPlatformData& platformData)
+    static unsigned hash(const FontPlatformData* platformData)
     {
-        return platformData.hash();
+        return platformData->hash();
     }
 
-    static bool equal(const FontPlatformData& a, const FontPlatformData& b)
+    static bool equal(const FontPlatformData* a, const FontPlatformData* b)
     {
-        return a == b;
+        const FontPlatformData* emptyValue = reinterpret_cast<FontPlatformData*>(-1);
+
+        if (a == emptyValue)
+            return b == emptyValue;
+        if (b == emptyValue)
+            return a == emptyValue;
+
+        if (!a || !b)
+            return a == b;
+
+        CHECK(a && b);
+
+        return *a == *b;
     }
 
     static const bool safeToCompareToEmptyOrDeleted = true;
-};
-
-struct FontDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformData> {
-    STATIC_ONLY(FontDataCacheKeyTraits);
-    static const bool emptyValueIsZero = true;
-    static const FontPlatformData& emptyValue()
-    {
-        DEFINE_STATIC_LOCAL(FontPlatformData, key, (0.f, false, false));
-        return key;
-    }
-    static void constructDeletedValue(FontPlatformData& slot, bool)
-    {
-        new (NotNull, &slot) FontPlatformData(WTF::HashTableDeletedValue);
-    }
-    static bool isDeletedValue(const FontPlatformData& value)
-    {
-        return value.isHashTableDeletedValue();
-    }
 };
 
 class FontDataCache {
@@ -94,7 +88,7 @@ public:
 private:
     bool purgeLeastRecentlyUsed(int count);
 
-    typedef HashMap<FontPlatformData, std::pair<RefPtr<SimpleFontData>, unsigned>, FontDataCacheKeyHash, FontDataCacheKeyTraits> Cache;
+    typedef HashMap<const FontPlatformData*, std::pair<RefPtr<SimpleFontData>, unsigned>, FontDataCacheKeyHash> Cache;
     Cache m_cache;
     ListHashSet<RefPtr<SimpleFontData>> m_inactiveFontData;
 };
