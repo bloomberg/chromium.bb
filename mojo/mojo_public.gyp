@@ -96,6 +96,7 @@
       'target_name': 'mojo_cpp_system',
       'type': 'static_library',
       'sources': [
+        'public/cpp/system/buffer.cc',
         'public/cpp/system/buffer.h',
         'public/cpp/system/core.h',
         'public/cpp/system/data_pipe.h',
