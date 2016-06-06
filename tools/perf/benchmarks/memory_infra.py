@@ -172,6 +172,13 @@ class _MemoryV8Benchmark(_MemoryInfra):
     options.SetTimelineBasedMetric('v8AndMemoryMetrics')
     return options
 
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, _):
+    if 'memory:chrome' in value.name:
+      return ('renderer:subsystem:v8' in value.name or
+              'renderer:vmstats:overall' in value.name)
+    return 'v8' in value.name
+
 
 class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
