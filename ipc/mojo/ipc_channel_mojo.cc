@@ -27,7 +27,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
@@ -84,7 +84,7 @@ MojoResult WrapPlatformHandle(mojo::edk::ScopedPlatformHandle handle,
   return MOJO_RESULT_OK;
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
 
 base::ScopedFD TakeOrDupFile(internal::PlatformFileAttachment* attachment) {
   return attachment->Owns() ? base::ScopedFD(attachment->TakePlatformFile())
@@ -101,7 +101,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
         mojom::SerializedHandle::Type::MOJO_HANDLE);
     return MOJO_RESULT_OK;
   }
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
   if (attachment->GetType() == MessageAttachment::TYPE_PLATFORM_FILE) {
     // We dup() the handles in IPC::Message to transmit.
     // IPC::MessageAttachmentSet has intricate lifecycle semantics
@@ -379,7 +379,7 @@ void ChannelMojo::OnMessageReceived(const Message& message) {
     listener_->OnBadMessageReceived(message);
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
 int ChannelMojo::GetClientFileDescriptor() const {
   return -1;
 }
@@ -387,7 +387,7 @@ int ChannelMojo::GetClientFileDescriptor() const {
 base::ScopedFD ChannelMojo::TakeClientFileDescriptor() {
   return base::ScopedFD(GetClientFileDescriptor());
 }
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
+#endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
 // static
 MojoResult ChannelMojo::ReadFromMessageAttachmentSet(

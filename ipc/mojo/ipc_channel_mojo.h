@@ -64,10 +64,10 @@ class IPC_MOJO_EXPORT ChannelMojo
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   int GetClientFileDescriptor() const override;
   base::ScopedFD TakeClientFileDescriptor() override;
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
+#endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
