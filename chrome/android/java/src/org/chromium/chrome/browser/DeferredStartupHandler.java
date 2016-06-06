@@ -68,8 +68,10 @@ public class DeferredStartupHandler {
         if (mDeferredStartupComplete) return;
         ThreadUtils.assertOnUiThread();
 
+        long startDeferredStartupTime = SystemClock.uptimeMillis();
+
         RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.DeferredStartUptime",
-                SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
+                startDeferredStartupTime - UmaUtils.getMainEntryPointTime(),
                 TimeUnit.MILLISECONDS);
 
         // Punt all tasks that may block the UI thread off onto a background thread.
@@ -154,6 +156,11 @@ public class DeferredStartupHandler {
         PhysicalWeb.onChromeStart(application);
 
         mDeferredStartupComplete = true;
+
+        RecordHistogram.recordLongTimesHistogram(
+                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration",
+                SystemClock.uptimeMillis() - startDeferredStartupTime,
+                TimeUnit.MILLISECONDS);
     }
 
     private static void startModerateBindingManagementIfNeeded(Context context) {

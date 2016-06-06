@@ -57914,6 +57914,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUpDuration"
+    units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time it took to complete deferred startup tasks on the UI
+    thread. Only logged on Android.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime" units="ms">
   <owner>asvitkine@chromium.org</owner>
   <summary>
