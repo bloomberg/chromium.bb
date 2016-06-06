@@ -8,9 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_capture_types.h"
 #include "media/filters/jpeg_parser.h"
 
@@ -382,7 +385,7 @@ void FileVideoCaptureDevice::OnCaptureTask() {
     if (next_frame_time_ < current_time)
       next_frame_time_ = current_time;
   }
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&FileVideoCaptureDevice::OnCaptureTask,
                             base::Unretained(this)),
       next_frame_time_ - current_time);

@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_io.h"
@@ -94,15 +96,13 @@ TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
             audio_stream_handler()->duration());
 
   ASSERT_TRUE(audio_stream_handler()->Play());
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&AudioStreamHandler::Play),
-                 base::Unretained(audio_stream_handler())),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(&AudioStreamHandler::Play),
+                            base::Unretained(audio_stream_handler())),
       base::TimeDelta::FromSeconds(1));
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AudioStreamHandler::Stop,
-                 base::Unretained(audio_stream_handler())),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&AudioStreamHandler::Stop,
+                            base::Unretained(audio_stream_handler())),
       base::TimeDelta::FromSeconds(2));
 
   run_loop.Run();

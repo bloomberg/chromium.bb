@@ -9,7 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -165,7 +168,7 @@ void FakeVideoCaptureDevice::StopAndDeAllocate() {
 
 void FakeVideoCaptureDevice::TakePhoto(
     ScopedResultCallback<TakePhotoCallback> callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DoTakeFakePhoto, base::Passed(&callback), capture_format_,
                  elapsed_time_, fake_capture_rate_));
@@ -267,7 +270,7 @@ void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(
   const base::TimeTicks next_execution_time =
       std::max(current_time, expected_execution_time + frame_interval);
   const base::TimeDelta delay = next_execution_time - current_time;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(next_capture, next_execution_time), delay);
 }
 

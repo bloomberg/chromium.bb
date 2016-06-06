@@ -11,11 +11,13 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
@@ -91,15 +93,14 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (state_ == kDrainingDecoder) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &GpuVideoDecoder::Reset, weak_factory_.GetWeakPtr(), closure));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&GpuVideoDecoder::Reset,
+                              weak_factory_.GetWeakPtr(), closure));
     return;
   }
 
   if (!vda_) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
     return;
   }
 

@@ -11,10 +11,13 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
@@ -56,7 +59,7 @@ const uint8_t kEncryptedMediaInitData[] = {
 static void EosOnReadDone(bool* got_eos_buffer,
                           DemuxerStream::Status status,
                           const scoped_refptr<DecoderBuffer>& buffer) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 
   EXPECT_EQ(status, DemuxerStream::kOk);
@@ -1030,7 +1033,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
   EXPECT_EQ(status, DemuxerStream::kOk);
 
   if (buffer->end_of_stream()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     return;
   }
@@ -1047,7 +1050,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
 
   if (!is_valid) {
     LOG(ERROR) << "Buffer contains invalid Annex B data.";
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     return;
   }

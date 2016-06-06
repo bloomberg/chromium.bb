@@ -34,9 +34,11 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -763,7 +765,7 @@ void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
   }
 
   if (num_decoded_frames_ > delay_reuse_after_frame_num_) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
                               weak_vda_, picture_buffer_id),
         kReuseDelay);
@@ -1038,7 +1040,7 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   }
 
   if (decode_calls_per_second_ > 0) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&GLRenderingVDAClient::DecodeNextFragment, AsWeakPtr()),
         base::TimeDelta::FromSeconds(1) / decode_calls_per_second_);

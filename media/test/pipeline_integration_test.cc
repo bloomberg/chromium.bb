@@ -10,11 +10,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_context.h"
@@ -597,7 +600,7 @@ class MockMediaSource {
   }
 
   void DemuxerOpened() {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&MockMediaSource::DemuxerOpenedTask,
                               base::Unretained(this)));
   }

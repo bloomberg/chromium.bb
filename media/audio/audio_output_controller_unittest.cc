@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_device_description.h"
@@ -256,7 +258,7 @@ class AudioOutputControllerTest : public testing::Test {
     EXPECT_CALL(mock_sync_reader_, Close());
 
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AudioOutputController::Close, controller_,
                               run_loop.QuitClosure()));
     run_loop.Run();

@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/blink/multibuffer_reader.h"
 #include "net/base/net_errors.h"
 
@@ -146,7 +148,7 @@ void MultiBufferReader::CheckWait() {
       (Available() >= current_wait_size_ || Available() == -1)) {
     // We redirect the call through a weak pointer to ourselves to guarantee
     // there are no callbacks from us after we've been destroyed.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&MultiBufferReader::Call, weak_factory_.GetWeakPtr(),
                    base::ResetAndReturn(&cb_)));
@@ -178,7 +180,7 @@ void MultiBufferReader::NotifyAvailableRange(
   if (!progress_callback_.is_null()) {
     // We redirect the call through a weak pointer to ourselves to guarantee
     // there are no callbacks from us after we've been destroyed.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
             &MultiBufferReader::Call, weak_factory_.GetWeakPtr(),

@@ -10,9 +10,11 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/blink/active_loader.h"
 #include "media/blink/cache_util.h"
 #include "media/blink/media_blink_export.h"
@@ -404,7 +406,7 @@ void ResourceMultiBufferDataProvider::didFinishLoading(
     if (retries_ < kMaxRetries) {
       DVLOG(1) << " Partial data received.... @ pos = " << size;
       retries_++;
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Start,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kLoaderPartialRetryDelayMs));
@@ -436,7 +438,7 @@ void ResourceMultiBufferDataProvider::didFail(WebURLLoader* loader,
 
   if (retries_ < kMaxRetries && pos_ != 0) {
     retries_++;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Start,
                               weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(

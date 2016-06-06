@@ -9,9 +9,11 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/android/media_codec_util.h"
@@ -203,7 +205,7 @@ bool AndroidVideoEncodeAccelerator::Initialize(
   // Conservative upper bound for output buffer size: decoded size + 2KB.
   const size_t output_buffer_capacity =
       VideoFrame::AllocationSize(format, input_visible_size) + 2048;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::RequireBitstreamBuffers,
                  client_ptr_factory_->GetWeakPtr(), frame_input_count,
@@ -417,7 +419,7 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
   media_codec_->ReleaseOutputBuffer(buf_index, false);
   --num_buffers_at_codec_;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::BitstreamBufferReady,
                  client_ptr_factory_->GetWeakPtr(), bitstream_buffer.id(), size,
