@@ -62,9 +62,9 @@ public:
     {% else %}
     {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
     {% endif %}
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
     {
-        visitor->traceWrappers(scriptWrappable->toImpl<{{cpp_class}}>());
+        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<{{cpp_class}}>());
     }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)

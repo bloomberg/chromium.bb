@@ -68,9 +68,9 @@ public:
     void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
 
 private:
-    bool markWrapperHeader(const ScriptWrappable*, const void*) const override;
-    bool markWrapperHeader(const void* garbageCollected, const void*) const override;
-    inline void addHeaderToUnmark(HeapObjectHeader*) const;
+    bool markWrapperHeader(HeapObjectHeader*) const;
+    bool markWrapperHeader(const ScriptWrappable*) const override;
+    bool markWrapperHeader(const void* garbageCollected) const override;
     inline void traceWrappersFrom(std::pair<void*, void*> internalFields);
     bool m_tracingInProgress = false;
     /**

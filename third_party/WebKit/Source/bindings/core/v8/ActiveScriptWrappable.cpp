@@ -31,8 +31,7 @@ void ActiveScriptWrappable::traceActiveScriptWrappables(v8::Isolate* isolate, Sc
         if (!activeWrappable->hasPendingActivity())
             continue;
 
-        ScriptWrappable* wrappable = activeWrappable->toScriptWrappable();
-        wrappable->wrapperTypeInfo()->traceWrappers(visitor, wrappable);
+        activeWrappable->toScriptWrappable()->traceWrappers(visitor);
     }
 }
 

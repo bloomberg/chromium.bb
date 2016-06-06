@@ -24,9 +24,9 @@ public:
     CORE_EXPORT static TestArrayBuffer* toImpl(v8::Local<v8::Object> object);
     CORE_EXPORT static TestArrayBuffer* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
     {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestArrayBuffer>());
+        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<TestArrayBuffer>());
     }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)

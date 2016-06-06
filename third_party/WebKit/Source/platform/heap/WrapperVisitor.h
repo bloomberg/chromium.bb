@@ -108,12 +108,6 @@ public:
 
     virtual void traceWrappers(const ScopedPersistent<v8::Value>*) const = 0;
 
-    template<typename T>
-    bool markWrapperHeader(const T* object) const
-    {
-        return markWrapperHeader(object, object);
-    }
-
     virtual void dispatchTraceWrappers(const ScriptWrappable*) const = 0;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \
     virtual void dispatchTraceWrappers(const className*) const = 0;
@@ -123,9 +117,8 @@ public:
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
     virtual void dispatchTraceWrappers(const void*) const = 0;
 
-protected:
-    virtual bool markWrapperHeader(const ScriptWrappable*, const void*) const = 0;
-    virtual bool markWrapperHeader(const void*, const void*) const = 0;
+    virtual bool markWrapperHeader(const ScriptWrappable*) const = 0;
+    virtual bool markWrapperHeader(const void*) const = 0;
 };
 
 } // namespace blink

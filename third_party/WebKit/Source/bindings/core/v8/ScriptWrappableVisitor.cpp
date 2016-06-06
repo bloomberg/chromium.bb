@@ -31,8 +31,9 @@ void ScriptWrappableVisitor::TracePrologue()
 
 void ScriptWrappableVisitor::TraceEpilogue()
 {
-    for (auto header : m_headersToUnmark)
+    for (auto header : m_headersToUnmark) {
         header->unmarkWrapperHeader();
+    }
 
     m_headersToUnmark.clear();
     m_tracingInProgress = false;
@@ -58,32 +59,34 @@ void ScriptWrappableVisitor::traceWrappersFrom(std::pair<void*, void*> internalF
     ASSERT(wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::NodeClassId
         || wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::ObjectClassId);
 
-    wrapperTypeInfo->traceWrappers(this, scriptWrappable);
+    scriptWrappable->traceWrappers(this);
 }
 
-bool ScriptWrappableVisitor::markWrapperHeader(const void* garbageCollected, const void* objectTopPointer) const
+bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const
 {
-    HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectTopPointer);
     if (header->isWrapperHeaderMarked())
         return false;
 
     header->markWrapperHeader();
-    addHeaderToUnmark(header);
+    m_headersToUnmark.append(header);
     return true;
 }
 
-bool ScriptWrappableVisitor::markWrapperHeader(const ScriptWrappable* scriptWrappable, const void* objectTopPointer) const
+bool ScriptWrappableVisitor::markWrapperHeader(const void* garbageCollected) const
 {
-    if (!markWrapperHeader(objectTopPointer, objectTopPointer))
+    HeapObjectHeader* header = HeapObjectHeader::fromPayload(garbageCollected);
+    return markWrapperHeader(header);
+}
+
+bool ScriptWrappableVisitor::markWrapperHeader(const ScriptWrappable* scriptWrappable) const
+{
+    if (!markWrapperHeader(scriptWrappable->wrapperTypeInfo()->
+        getHeader(const_cast<ScriptWrappable*>(scriptWrappable)))) {
         return false;
+    }
 
     markWrappersInAllWorlds(scriptWrappable, m_isolate);
     return true;
-}
-
-void ScriptWrappableVisitor::addHeaderToUnmark(HeapObjectHeader* header) const
-{
-    m_headersToUnmark.append(header);
 }
 
 void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable, v8::Isolate* isolate)

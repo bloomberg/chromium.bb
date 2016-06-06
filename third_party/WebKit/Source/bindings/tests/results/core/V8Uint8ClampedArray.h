@@ -26,9 +26,9 @@ public:
     CORE_EXPORT static TestUint8ClampedArray* toImpl(v8::Local<v8::Object> object);
     CORE_EXPORT static TestUint8ClampedArray* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
     {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestUint8ClampedArray>());
+        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<TestUint8ClampedArray>());
     }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)

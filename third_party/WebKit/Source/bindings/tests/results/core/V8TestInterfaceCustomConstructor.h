@@ -30,9 +30,9 @@ public:
     }
     CORE_EXPORT static TestInterfaceCustomConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    static HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable)
     {
-        visitor->traceWrappers(scriptWrappable->toImpl<TestInterfaceCustomConstructor>());
+        return HeapObjectHeader::fromPayload(scriptWrappable->toImpl<TestInterfaceCustomConstructor>());
     }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
