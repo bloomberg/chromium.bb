@@ -2286,8 +2286,10 @@ static CSSValue* consumeRadialGradient(CSSParserTokenRange& args, CSSParserMode 
     if (shape && shape->getValueID() == CSSValueEllipse && horizontalSize && !verticalSize)
         return nullptr;
     // If there's only one size, it must be a length.
-    // TODO(timloh): Calcs with both lengths and percentages should be rejected.
     if (!verticalSize && horizontalSize && horizontalSize->isPercentage())
+        return nullptr;
+    if ((horizontalSize && horizontalSize->isCalculatedPercentageWithLength())
+        || (verticalSize && verticalSize->isCalculatedPercentageWithLength()))
         return nullptr;
 
     result->setShape(shape);
