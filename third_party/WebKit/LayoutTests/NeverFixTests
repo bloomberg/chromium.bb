@@ -144,6 +144,8 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 
 # See crbug.com/522326
 imported/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
+# We don't allow to access external hosts in layout tests.
+imported/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-support.htm [ WontFix ]
 
 # Some CSS2.1 tests pass but cause 1px diff due to old font-size guidelines,
 # or render colors differently for text and images on Mac.
