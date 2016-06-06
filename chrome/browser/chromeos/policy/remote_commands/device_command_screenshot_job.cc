@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/chromeos/logging.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -109,6 +110,7 @@ enterprise_management::RemoteCommand_Type DeviceCommandScreenshotJob::GetType()
 }
 
 void DeviceCommandScreenshotJob::OnSuccess() {
+  CHROMEOS_SYSLOG(WARNING) << "Upload successful.";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(succeeded_callback_,
@@ -116,6 +118,7 @@ void DeviceCommandScreenshotJob::OnSuccess() {
 }
 
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
+  CHROMEOS_SYSLOG(ERROR) << "Upload failure: " << error_code;
   ResultCode result_code = FAILURE_CLIENT;
   switch (error_code) {
     case UploadJob::AUTHENTICATION_ERROR:
@@ -190,8 +193,11 @@ void DeviceCommandScreenshotJob::RunImpl(
   succeeded_callback_ = succeeded_callback;
   failed_callback_ = failed_callback;
 
+  CHROMEOS_SYSLOG(WARNING) << "Executing screenshot command.";
+
   // Fail if the delegate says screenshots are not allowed in this session.
   if (!screenshot_delegate_->IsScreenshotAllowed()) {
+    CHROMEOS_SYSLOG(ERROR) << "Screenshots are not allowed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(base::WrapUnique(
@@ -202,7 +208,7 @@ void DeviceCommandScreenshotJob::RunImpl(
 
   // Immediately fail if the upload url is invalid.
   if (!upload_url_.is_valid()) {
-    LOG(ERROR) << upload_url_ << " is not a valid URL.";
+    CHROMEOS_SYSLOG(ERROR) << upload_url_ << " is not a valid URL.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(base::WrapUnique(
@@ -212,6 +218,7 @@ void DeviceCommandScreenshotJob::RunImpl(
 
   // Immediately fail if there are no attached screens.
   if (root_windows.size() == 0) {
+    CHROMEOS_SYSLOG(ERROR) << "No attached screens.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(base::WrapUnique(new Payload(

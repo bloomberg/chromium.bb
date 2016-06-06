@@ -117,6 +117,7 @@ void UserActivityDetector::ProcessReceivedEvent(const ui::Event* event) {
 void UserActivityDetector::HandleActivity(const ui::Event* event) {
   base::TimeTicks now = GetCurrentTime();
   last_activity_time_ = now;
+  last_activity_name_ = event->name();
   if (last_observer_notification_time_.is_null() ||
       (now - last_observer_notification_time_).InMillisecondsF() >=
       kNotifyIntervalMs) {

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/chromeos/logging.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -50,8 +51,9 @@ std::unique_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
       continue;
     std::string data = std::string();
     if (!base::ReadFileToString(base::FilePath(file_path), &data)) {
-      LOG(ERROR) << "Failed to read the system log file from the disk "
-                 << file_path << std::endl;
+      CHROMEOS_SYSLOG(ERROR)
+          << "Failed to read the system log file from the disk " << file_path
+          << std::endl;
     }
     system_logs->push_back(std::make_pair(
         file_path,
@@ -107,6 +109,8 @@ std::unique_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
       g_browser_process->system_request_context();
   std::string robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();
+
+  CHROMEOS_SYSLOG(WARNING) << "Creating upload job for system log";
   return std::unique_ptr<policy::UploadJob>(new policy::UploadJobImpl(
       upload_url, robot_account_id, device_oauth2_token_service,
       system_request_context, delegate,
@@ -192,6 +196,7 @@ SystemLogUploader::SystemLogUploader(
 SystemLogUploader::~SystemLogUploader() {}
 
 void SystemLogUploader::OnSuccess() {
+  CHROMEOS_SYSLOG(WARNING) << "Upload successful.";
   upload_job_.reset();
   last_upload_attempt_ = base::Time::NowFromSystemTime();
   retry_count_ = 0;
@@ -209,10 +214,14 @@ void SystemLogUploader::OnFailure(UploadJob::ErrorCode error_code) {
   //  attempt and schedule the next one using the normal delay. Otherwise, retry
   //  uploading after kErrorUploadDelayMs milliseconds.
   if (retry_count_++ < kMaxNumRetries) {
+    CHROMEOS_SYSLOG(ERROR) << "Upload failed with error code " << error_code
+                           << ", retrying later.";
     ScheduleNextSystemLogUpload(
         base::TimeDelta::FromMilliseconds(kErrorUploadDelayMs));
   } else {
     // No more retries.
+    CHROMEOS_SYSLOG(ERROR) << "Upload failed with error code " << error_code
+                           << ", no more retries.";
     retry_count_ = 0;
     ScheduleNextSystemLogUpload(upload_frequency_);
   }

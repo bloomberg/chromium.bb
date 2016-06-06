@@ -34,6 +34,7 @@ class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
   static UserActivityDetector* Get();
 
   base::TimeTicks last_activity_time() const { return last_activity_time_; }
+  std::string last_activity_name() const { return last_activity_name_; }
 
   void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }
 
@@ -66,6 +67,9 @@ class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
 
   // Last time at which user activity was observed.
   base::TimeTicks last_activity_time_;
+
+  // Name of the last user activity event.
+  std::string last_activity_name_;
 
   // Last time at which we notified observers that the user was active.
   base::TimeTicks last_observer_notification_time_;

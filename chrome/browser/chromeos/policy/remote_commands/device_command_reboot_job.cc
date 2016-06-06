@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/chromeos/logging.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -53,6 +54,8 @@ bool DeviceCommandRebootJob::IsExpired(base::TimeTicks now) {
 void DeviceCommandRebootJob::RunImpl(
     const CallbackWithResult& succeeded_callback,
     const CallbackWithResult& failed_callback) {
+  CHROMEOS_SYSLOG(WARNING) << "Running reboot command.";
+
   // Determines the time delta between the command having been issued and the
   // boot time of the system.
   const base::TimeDelta uptime = base::SysInfo::Uptime();
@@ -63,18 +66,25 @@ void DeviceCommandRebootJob::RunImpl(
   // performed and we invoke it. |kMinimumUptimeInMinutes| defines a lower limit
   // on the uptime to avoid uninterruptable reboot loops.
   if (delta > base::TimeDelta()) {
+    CHROMEOS_SYSLOG(WARNING) << "Ignoring reboot command issued " << delta
+                             << " before current boot time";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(succeeded_callback, nullptr));
     return;
   }
 
   const base::TimeDelta kZeroTimeDelta;
-  reboot_timer_.Start(
-      FROM_HERE,
+  base::TimeDelta reboot_delay =
       std::max(base::TimeDelta::FromMinutes(kMinimumUptimeInMinutes) - uptime,
-               kZeroTimeDelta),
-      base::Bind(&DeviceCommandRebootJob::Reboot,
-                 weak_ptr_factory_.GetWeakPtr()));
+               kZeroTimeDelta);
+  if (reboot_delay > kZeroTimeDelta) {
+    CHROMEOS_SYSLOG(WARNING) << "Rebooting in " << reboot_delay << ".";
+  } else {
+    CHROMEOS_SYSLOG(WARNING) << "Rebooting immediately.";
+  }
+  reboot_timer_.Start(FROM_HERE, reboot_delay,
+                      base::Bind(&DeviceCommandRebootJob::Reboot,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceCommandRebootJob::TerminateImpl() {

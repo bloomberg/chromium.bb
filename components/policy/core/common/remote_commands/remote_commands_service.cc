@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/chromeos/logging.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -78,7 +78,7 @@ void RemoteCommandsService::SetClockForTesting(
 void RemoteCommandsService::EnqueueCommand(
     const enterprise_management::RemoteCommand& command) {
   if (!command.has_type() || !command.has_unique_id()) {
-    LOG(WARNING) << "Invalid remote command from server.";
+    CHROMEOS_SYSLOG(ERROR) << "Invalid remote command from server.";
     return;
   }
 
@@ -94,6 +94,7 @@ void RemoteCommandsService::EnqueueCommand(
       factory_->BuildJobForType(command.type());
 
   if (!job || !job->Init(queue_.GetNowTicks(), command)) {
+    CHROMEOS_SYSLOG(ERROR) << "Initialization of remote command failed.";
     em::RemoteCommandResult ignored_result;
     ignored_result.set_result(
         em::RemoteCommandResult_ResultType_RESULT_IGNORED);
@@ -137,6 +138,9 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
   } else {
     NOTREACHED();
   }
+
+  CHROMEOS_SYSLOG(WARNING) << "Remote command " << command->unique_id()
+                           << " finished with result " << result.result();
 
   unsent_results_.push_back(result);
 
