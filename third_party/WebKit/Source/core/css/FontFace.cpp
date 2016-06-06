@@ -537,7 +537,7 @@ static CSSFontFace* createCSSFontFace(FontFace* fontFace, CSSValue* unicodeRange
     if (CSSValueList* rangeList = toCSSValueList(unicodeRange)) {
         unsigned numRanges = rangeList->length();
         for (unsigned i = 0; i < numRanges; i++) {
-            CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->item(i));
+            const CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->item(i));
             ranges.append(UnicodeRange(range->from(), range->to()));
         }
     }
@@ -559,7 +559,7 @@ void FontFace::initCSSFontFace(Document* document, CSSValue* src)
 
     for (int i = 0; i < srcLength; i++) {
         // An item in the list either specifies a string (local font name) or a URL (remote font to download).
-        CSSFontFaceSrcValue* item = toCSSFontFaceSrcValue(srcList->item(i));
+        const CSSFontFaceSrcValue* item = toCSSFontFaceSrcValue(srcList->item(i));
         CSSFontFaceSource* source = nullptr;
 
         if (!item->isLocal()) {

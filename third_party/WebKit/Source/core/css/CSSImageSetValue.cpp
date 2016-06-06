@@ -57,12 +57,12 @@ void CSSImageSetValue::fillImageSet()
     size_t length = this->length();
     size_t i = 0;
     while (i < length) {
-        CSSImageValue* imageValue = toCSSImageValue(item(i));
+        const CSSImageValue* imageValue = toCSSImageValue(item(i));
         String imageURL = imageValue->url();
 
         ++i;
         ASSERT_WITH_SECURITY_IMPLICATION(i < length);
-        CSSValue* scaleFactorValue = item(i);
+        const CSSValue* scaleFactorValue = item(i);
         float scaleFactor = toCSSPrimitiveValue(scaleFactorValue)->getFloatValue();
 
         ImageWithScale image;

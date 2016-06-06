@@ -42,7 +42,7 @@
 
 namespace blink {
 
-static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
+static Length convertToFloatLength(const CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
 {
     ASSERT(primitiveValue);
     return primitiveValue->convertToLength(conversionData);
@@ -92,7 +92,7 @@ void TransformBuilder::createTransformOperations(const CSSValue& inValue, const 
         CSSFunctionValue* transformValue = toCSSFunctionValue(value.get());
         TransformOperation::OperationType transformType = getTransformOperationType(transformValue->functionType());
 
-        CSSPrimitiveValue* firstValue = toCSSPrimitiveValue(transformValue->item(0));
+        const CSSPrimitiveValue* firstValue = toCSSPrimitiveValue(transformValue->item(0));
 
         switch (transformType) {
         case TransformOperation::Scale:
@@ -106,7 +106,7 @@ void TransformBuilder::createTransformOperations(const CSSValue& inValue, const 
                 sx = firstValue->getDoubleValue();
                 if (transformType != TransformOperation::ScaleX) {
                     if (transformValue->length() > 1) {
-                        CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
+                        const CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
                         sy = secondValue->getDoubleValue();
                     } else {
                         sy = sx;
@@ -142,7 +142,7 @@ void TransformBuilder::createTransformOperations(const CSSValue& inValue, const 
                 tx = convertToFloatLength(firstValue, conversionData);
                 if (transformType != TransformOperation::TranslateX) {
                     if (transformValue->length() > 1) {
-                        CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
+                        const CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
                         ty = convertToFloatLength(secondValue, conversionData);
                     }
                 }
@@ -178,9 +178,9 @@ void TransformBuilder::createTransformOperations(const CSSValue& inValue, const 
             break;
         }
         case TransformOperation::Rotate3D: {
-            CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
-            CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->item(2));
-            CSSPrimitiveValue* fourthValue = toCSSPrimitiveValue(transformValue->item(3));
+            const CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
+            const CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->item(2));
+            const CSSPrimitiveValue* fourthValue = toCSSPrimitiveValue(transformValue->item(3));
             double x = firstValue->getDoubleValue();
             double y = secondValue->getDoubleValue();
             double z = thirdValue->getDoubleValue();
@@ -200,7 +200,7 @@ void TransformBuilder::createTransformOperations(const CSSValue& inValue, const 
                 angleX = angle;
                 if (transformType == TransformOperation::Skew) {
                     if (transformValue->length() > 1) {
-                        CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
+                        const CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->item(1));
                         angleY = secondValue->computeDegrees();
                     }
                 }

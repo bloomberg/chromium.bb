@@ -128,7 +128,7 @@ private:
     void addFontToResources(FontResource*);
 
     void retrieveResourcesForProperties(const StylePropertySet*, Document&);
-    void retrieveResourcesForCSSValue(CSSValue*, Document&);
+    void retrieveResourcesForCSSValue(const CSSValue*, Document&);
 
     Vector<SerializedResource>* m_resources;
     HashSet<KURL> m_resourceURLs;

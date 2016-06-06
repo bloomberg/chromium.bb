@@ -53,8 +53,10 @@ public:
     const_iterator end() const { return m_values.end(); }
 
     size_t length() const { return m_values.size(); }
+    // TODO(sashab): Remove the non-const item() method.
     CSSValue* item(size_t index) { return m_values[index].get(); }
     const CSSValue* item(size_t index) const { return m_values[index].get(); }
+    // TODO(sashab): Remove these methods.
     CSSValue* itemWithBoundsCheck(size_t index) { return index < m_values.size() ? m_values[index].get() : nullptr; }
     const CSSValue* itemWithBoundsCheck(size_t index) const { return index < m_values.size() ? m_values[index].get() : nullptr; }
 

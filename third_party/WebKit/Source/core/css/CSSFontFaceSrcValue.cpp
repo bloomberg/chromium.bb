@@ -85,7 +85,7 @@ static void setCrossOriginAccessControl(FetchRequest& request, SecurityOrigin* s
     request.setCrossOriginAccessControl(securityOrigin, CrossOriginAttributeAnonymous);
 }
 
-FontResource* CSSFontFaceSrcValue::fetch(Document* document)
+FontResource* CSSFontFaceSrcValue::fetch(Document* document) const
 {
     if (!m_fetched) {
         FetchRequest request(ResourceRequest(m_absoluteResource), FetchInitiatorTypeNames::css);
@@ -105,7 +105,7 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
     return m_fetched->resource();
 }
 
-void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document)
+void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document) const
 {
     ASSERT(m_fetched);
     ASSERT(document && document->fetcher());

@@ -149,7 +149,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
             continue;
         }
 
-        CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : nullptr;
+        const CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : nullptr;
         switch (filterValue->functionType()) {
         case CSSValueGrayscale:
         case CSSValueSepia:
@@ -194,7 +194,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
             break;
         }
         case CSSValueDropShadow: {
-            CSSShadowValue* item = toCSSShadowValue(filterValue->item(0));
+            const CSSShadowValue* item = toCSSShadowValue(filterValue->item(0));
             IntPoint location(item->x->computeLength<int>(conversionData), item->y->computeLength<int>(conversionData));
             int blur = item->blur ? item->blur->computeLength<int>(conversionData) : 0;
             Color shadowColor = Color::black;

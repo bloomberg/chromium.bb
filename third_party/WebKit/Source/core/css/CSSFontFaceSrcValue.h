@@ -61,7 +61,7 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    FontResource* fetch(Document*);
+    FontResource* fetch(Document*) const;
 
     bool equals(const CSSFontFaceSrcValue&) const;
 
@@ -81,7 +81,7 @@ private:
     {
     }
 
-    void restoreCachedResourceIfNeeded(Document*);
+    void restoreCachedResourceIfNeeded(Document*) const;
 
     String m_absoluteResource;
     String m_specifiedResource;
@@ -109,7 +109,7 @@ private:
 
         String debugName() const override { return "CSSFontFaceSrcValue::FontResourceHelper"; }
     };
-    Member<FontResourceHelper> m_fetched;
+    mutable Member<FontResourceHelper> m_fetched;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, isFontFaceSrcValue());

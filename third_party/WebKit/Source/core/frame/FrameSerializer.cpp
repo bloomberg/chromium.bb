@@ -438,10 +438,10 @@ void FrameSerializer::retrieveResourcesForProperties(const StylePropertySet* sty
     }
 }
 
-void FrameSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& document)
+void FrameSerializer::retrieveResourcesForCSSValue(const CSSValue* cssValue, Document& document)
 {
     if (cssValue->isImageValue()) {
-        CSSImageValue* imageValue = toCSSImageValue(cssValue);
+        const CSSImageValue* imageValue = toCSSImageValue(cssValue);
         if (imageValue->isCachePending())
             return;
         StyleImage* styleImage = imageValue->cachedImage();
@@ -450,14 +450,14 @@ void FrameSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document&
 
         addImageToResources(styleImage->cachedImage(), styleImage->cachedImage()->url());
     } else if (cssValue->isFontFaceSrcValue()) {
-        CSSFontFaceSrcValue* fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
+        const CSSFontFaceSrcValue* fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
         if (fontFaceSrcValue->isLocal()) {
             return;
         }
 
         addFontToResources(fontFaceSrcValue->fetch(&document));
     } else if (cssValue->isValueList()) {
-        CSSValueList* cssValueList = toCSSValueList(cssValue);
+        const CSSValueList* cssValueList = toCSSValueList(cssValue);
         for (unsigned i = 0; i < cssValueList->length(); i++)
             retrieveResourcesForCSSValue(cssValueList->item(i), document);
     }
