@@ -22,7 +22,7 @@ namespace mojo {
 namespace test {
 namespace {
 
-using mojo::internal::ArrayValidateParams;
+using mojo::internal::ContainerValidateParams;
 
 // Creates an array of arrays of handles (2 X 3) for testing.
 Array<Array<ScopedHandle>> CreateTestNestedHandleArray() {
@@ -73,7 +73,7 @@ class SerializationWarningTest : public testing::Test {
   template <typename T>
   void TestArrayWarning(T obj,
                         mojo::internal::ValidationError expected_warning,
-                        const ArrayValidateParams* validate_params) {
+                        const ContainerValidateParams* validate_params) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
@@ -180,23 +180,23 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
   test_array[0] = nullptr;
   test_array[1][0] = ScopedHandle();
 
-  ArrayValidateParams validate_params_0(
-      0, true, new ArrayValidateParams(0, true, nullptr));
+  ContainerValidateParams validate_params_0(
+      0, true, new ContainerValidateParams(0, true, nullptr));
   TestArrayWarning(std::move(test_array), mojo::internal::VALIDATION_ERROR_NONE,
                    &validate_params_0);
 
   test_array = CreateTestNestedHandleArray();
   test_array[0] = nullptr;
-  ArrayValidateParams validate_params_1(
-      0, false, new ArrayValidateParams(0, true, nullptr));
+  ContainerValidateParams validate_params_1(
+      0, false, new ContainerValidateParams(0, true, nullptr));
   TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
                    &validate_params_1);
 
   test_array = CreateTestNestedHandleArray();
   test_array[1][0] = ScopedHandle();
-  ArrayValidateParams validate_params_2(
-      0, true, new ArrayValidateParams(0, false, nullptr));
+  ContainerValidateParams validate_params_2(
+      0, true, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
                    &validate_params_2);
@@ -207,23 +207,23 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = "hello";
 
-  ArrayValidateParams validate_params_0(
-      0, true, new ArrayValidateParams(0, false, nullptr));
+  ContainerValidateParams validate_params_0(
+      0, true, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning(std::move(test_array), mojo::internal::VALIDATION_ERROR_NONE,
                    &validate_params_0);
 
   test_array = Array<String>(3);
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = nullptr;
-  ArrayValidateParams validate_params_1(
-      0, false, new ArrayValidateParams(0, false, nullptr));
+  ContainerValidateParams validate_params_1(
+      0, false, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
                    &validate_params_1);
 
   test_array = Array<String>(2);
-  ArrayValidateParams validate_params_2(
-      3, true, new ArrayValidateParams(0, false, nullptr));
+  ContainerValidateParams validate_params_2(
+      3, true, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
                    &validate_params_2);

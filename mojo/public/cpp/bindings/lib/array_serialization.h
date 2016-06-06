@@ -114,7 +114,7 @@ struct ArraySerializer<MojomType,
   static void SerializeElements(UserTypeReader* input,
                                 Buffer* buf,
                                 Data* output,
-                                const ArrayValidateParams* validate_params,
+                                const ContainerValidateParams* validate_params,
                                 SerializationContext* context) {
     DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
@@ -174,7 +174,7 @@ struct ArraySerializer<MojomType,
   static void SerializeElements(UserTypeReader* input,
                                 Buffer* buf,
                                 Data* output,
-                                const ArrayValidateParams* validate_params,
+                                const ContainerValidateParams* validate_params,
                                 SerializationContext* context) {
     DCHECK(!validate_params->element_is_nullable)
         << "Primitive type should be non-nullable";
@@ -220,7 +220,7 @@ struct ArraySerializer<MojomType,
   static void SerializeElements(UserTypeReader* input,
                                 Buffer* buf,
                                 Data* output,
-                                const ArrayValidateParams* validate_params,
+                                const ContainerValidateParams* validate_params,
                                 SerializationContext* context) {
     DCHECK(!validate_params->element_validate_params)
         << "Handle type should not have array validate params";
@@ -279,7 +279,7 @@ struct ArraySerializer<MojomType,
   static void SerializeElements(UserTypeReader* input,
                                 Buffer* buf,
                                 Data* output,
-                                const ArrayValidateParams* validate_params,
+                                const ContainerValidateParams* validate_params,
                                 SerializationContext* context) {
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
@@ -321,7 +321,7 @@ struct ArraySerializer<MojomType,
     static void Run(InputElementType&& input,
                     Buffer* buf,
                     DataElement* output,
-                    const ArrayValidateParams* validate_params,
+                    const ContainerValidateParams* validate_params,
                     SerializationContext* context) {
       Serialize<T>(std::forward<InputElementType>(input), buf, output, context);
     }
@@ -333,7 +333,7 @@ struct ArraySerializer<MojomType,
     static void Run(InputElementType&& input,
                     Buffer* buf,
                     DataElement* output,
-                    const ArrayValidateParams* validate_params,
+                    const ContainerValidateParams* validate_params,
                     SerializationContext* context) {
       Serialize<T>(std::forward<InputElementType>(input), buf, output,
                    validate_params, context);
@@ -373,7 +373,7 @@ struct ArraySerializer<MojomType,
   static void SerializeElements(UserTypeReader* input,
                                 Buffer* buf,
                                 Data* output,
-                                const ArrayValidateParams* validate_params,
+                                const ContainerValidateParams* validate_params,
                                 SerializationContext* context) {
     size_t size = input->GetSize();
     for (size_t i = 0; i < size; ++i) {
@@ -425,7 +425,7 @@ struct Serializer<Array<Element>, MaybeConstUserType> {
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buf,
                         Data** output,
-                        const ArrayValidateParams* validate_params,
+                        const ContainerValidateParams* validate_params,
                         SerializationContext* context) {
     if (!CallIsNullIfExists<Traits>(input)) {
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(

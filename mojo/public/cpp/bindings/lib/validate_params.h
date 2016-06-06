@@ -14,16 +14,15 @@ namespace internal {
 
 using ValidateEnumFunc = bool (*)(int32_t);
 
-// TODO(tibell): Rename to ContainerValidateParams.
-class ArrayValidateParams {
+class ContainerValidateParams {
  public:
   // Validates a map. A map is validated as a pair of arrays, one for the keys
   // and one for the values. Both arguments must be non-null.
   //
-  // ArrayValidateParams takes ownership of |in_key_validate params| and
+  // ContainerValidateParams takes ownership of |in_key_validate params| and
   // |in_element_validate params|.
-  ArrayValidateParams(ArrayValidateParams* in_key_validate_params,
-                      ArrayValidateParams* in_element_validate_params)
+  ContainerValidateParams(ContainerValidateParams* in_key_validate_params,
+                          ContainerValidateParams* in_element_validate_params)
       : key_validate_params(in_key_validate_params),
         element_validate_params(in_element_validate_params) {
     DCHECK(in_key_validate_params)
@@ -34,21 +33,21 @@ class ArrayValidateParams {
 
   // Validates an array.
   //
-  // ArrayValidateParams takes ownership of |in_element_validate params|.
-  ArrayValidateParams(uint32_t in_expected_num_elements,
-                      bool in_element_is_nullable,
-                      ArrayValidateParams* in_element_validate_params)
+  // ContainerValidateParams takes ownership of |in_element_validate params|.
+  ContainerValidateParams(uint32_t in_expected_num_elements,
+                          bool in_element_is_nullable,
+                          ContainerValidateParams* in_element_validate_params)
       : expected_num_elements(in_expected_num_elements),
         element_is_nullable(in_element_is_nullable),
         element_validate_params(in_element_validate_params) {}
 
   // Validates an array of enums.
-  ArrayValidateParams(uint32_t in_expected_num_elements,
-                      ValidateEnumFunc in_validate_enum_func)
+  ContainerValidateParams(uint32_t in_expected_num_elements,
+                          ValidateEnumFunc in_validate_enum_func)
       : expected_num_elements(in_expected_num_elements),
         validate_enum_func(in_validate_enum_func) {}
 
-  ~ArrayValidateParams() {
+  ~ContainerValidateParams() {
     if (element_validate_params)
       delete element_validate_params;
     if (key_validate_params)
@@ -64,7 +63,7 @@ class ArrayValidateParams {
 
   // Validation information for the map key array. May contain other
   // ArrayValidateParams e.g. if the keys are strings.
-  ArrayValidateParams* key_validate_params = nullptr;
+  ContainerValidateParams* key_validate_params = nullptr;
 
   // For arrays: validation information for elements. It is either a pointer to
   // another instance of ArrayValidateParams (if elements are arrays or maps),
@@ -72,13 +71,13 @@ class ArrayValidateParams {
   //
   // For maps: validation information for the whole value array. May contain
   // other ArrayValidateParams e.g. if the values are arrays or maps.
-  ArrayValidateParams* element_validate_params = nullptr;
+  ContainerValidateParams* element_validate_params = nullptr;
 
   // Validation function for enum elements.
   ValidateEnumFunc validate_enum_func = nullptr;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);
+  DISALLOW_COPY_AND_ASSIGN(ContainerValidateParams);
 };
 
 }  // namespace internal

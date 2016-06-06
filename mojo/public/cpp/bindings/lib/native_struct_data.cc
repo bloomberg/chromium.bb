@@ -13,7 +13,7 @@ namespace internal {
 // static
 bool NativeStruct_Data::Validate(const void* data,
                                  BoundsChecker* bounds_checker) {
-  const ArrayValidateParams data_validate_params(0, false, nullptr);
+  const ContainerValidateParams data_validate_params(0, false, nullptr);
   return Array_Data<uint8_t>::Validate(data, bounds_checker,
                                        &data_validate_params);
 }

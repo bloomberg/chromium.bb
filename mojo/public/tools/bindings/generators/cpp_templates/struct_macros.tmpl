@@ -74,8 +74,8 @@
 {%-     endif %}
 
 {%-     if kind|is_array_kind or kind|is_map_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
-      {{kind|get_array_validate_params_ctor_args|indent(10)}});
+  const mojo::internal::ContainerValidateParams {{name}}_validate_params(
+      {{kind|get_container_validate_params_ctor_args|indent(10)}});
   mojo::internal::Serialize<{{serializer_type}}>(
       {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr,
       &{{name}}_validate_params, {{context}});

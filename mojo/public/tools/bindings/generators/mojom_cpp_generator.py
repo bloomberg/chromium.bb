@@ -376,7 +376,7 @@ def ShouldInlineStruct(struct):
 def ShouldInlineUnion(union):
   return not any(mojom.IsMoveOnlyKind(field.kind) for field in union.fields)
 
-def GetArrayValidateParamsCtorArgs(kind):
+def GetContainerValidateParamsCtorArgs(kind):
   if mojom.IsStringKind(kind):
     expected_num_elements = 0
     element_is_nullable = False
@@ -386,16 +386,16 @@ def GetArrayValidateParamsCtorArgs(kind):
   elif mojom.IsMapKind(kind):
     expected_num_elements = 0
     element_is_nullable = False
-    key_validate_params = GetNewArrayValidateParams(mojom.Array(
+    key_validate_params = GetNewContainerValidateParams(mojom.Array(
         kind=kind.key_kind))
-    element_validate_params = GetNewArrayValidateParams(mojom.Array(
+    element_validate_params = GetNewContainerValidateParams(mojom.Array(
         kind=kind.value_kind))
     enum_validate_func = "nullptr"
   else:  # mojom.IsArrayKind(kind)
     expected_num_elements = generator.ExpectedArraySize(kind) or 0
     element_is_nullable = mojom.IsNullableKind(kind.kind)
     key_validate_params = "nullptr"
-    element_validate_params = GetNewArrayValidateParams(kind.kind)
+    element_validate_params = GetNewContainerValidateParams(kind.kind)
     if mojom.IsEnumKind(kind.kind):
       enum_validate_func = ("%s::Validate" %
                             GetQualifiedNameForKind(kind.kind, internal=True))
@@ -412,13 +412,13 @@ def GetArrayValidateParamsCtorArgs(kind):
   else:
     return "%d, %s" % (expected_num_elements, enum_validate_func)
 
-def GetNewArrayValidateParams(kind):
+def GetNewContainerValidateParams(kind):
   if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and
       not mojom.IsStringKind(kind)):
     return "nullptr"
 
-  return "new mojo::internal::ArrayValidateParams(%s)" % (
-      GetArrayValidateParamsCtorArgs(kind))
+  return "new mojo::internal::ContainerValidateParams(%s)" % (
+      GetContainerValidateParamsCtorArgs(kind))
 
 class Generator(generator.Generator):
 
@@ -432,7 +432,8 @@ class Generator(generator.Generator):
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
-    "get_array_validate_params_ctor_args": GetArrayValidateParamsCtorArgs,
+    "get_container_validate_params_ctor_args":
+    GetContainerValidateParamsCtorArgs,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "get_qualified_name_for_kind": GetQualifiedNameForKind,

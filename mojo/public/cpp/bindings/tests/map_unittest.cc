@@ -23,7 +23,7 @@ namespace test {
 namespace {
 
 using mojo::internal::Array_Data;
-using mojo::internal::ArrayValidateParams;
+using mojo::internal::ContainerValidateParams;
 using mojo::internal::FixedBufferForTesting;
 using mojo::internal::Map_Data;
 using mojo::internal::String_Data;
@@ -299,10 +299,10 @@ TEST_F(MapTest, ArrayOfMap) {
             array, &context);
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<int32_t, int8_t>*>* data;
-    ArrayValidateParams validate_params(
-        0, false, new ArrayValidateParams(
-            new ArrayValidateParams(0, false, nullptr),
-            new ArrayValidateParams(0, false, nullptr)));
+    ContainerValidateParams validate_params(
+        0, false, new ContainerValidateParams(
+                      new ContainerValidateParams(0, false, nullptr),
+                      new ContainerValidateParams(0, false, nullptr)));
     mojo::internal::Serialize<Array<Map<int32_t, int8_t>>>(
         array, &buf, &data, &validate_params, &context);
 
@@ -328,12 +328,13 @@ TEST_F(MapTest, ArrayOfMap) {
             array, &context);
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
-    ArrayValidateParams validate_params(
-        0, false, new ArrayValidateParams(
-            new ArrayValidateParams(
-                0, false, new ArrayValidateParams(0, false, nullptr)),
-            new ArrayValidateParams(
-                0, false, new ArrayValidateParams(0, false, nullptr))));
+    ContainerValidateParams validate_params(
+        0, false,
+        new ContainerValidateParams(
+            new ContainerValidateParams(
+                0, false, new ContainerValidateParams(0, false, nullptr)),
+            new ContainerValidateParams(
+                0, false, new ContainerValidateParams(0, false, nullptr))));
     mojo::internal::Serialize<Array<Map<String, Array<bool>>>>(
         array, &buf, &data, &validate_params, &context);
 

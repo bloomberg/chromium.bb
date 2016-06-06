@@ -172,7 +172,7 @@ class ArrayCommonTest {
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<int32_t>* data;
-    mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+    mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
     mojo::internal::Serialize<Array<int32_t>>(array, &buf, &data,
                                               &validate_params, nullptr);
 
@@ -192,7 +192,7 @@ class ArrayCommonTest {
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<int32_t>* data;
-    mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+    mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
     mojo::internal::Serialize<Array<int32_t>>(array, &buf, &data,
                                               &validate_params, nullptr);
 
@@ -216,8 +216,9 @@ class ArrayCommonTest {
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<mojo::internal::Array_Data<int32_t>*>* data;
-    mojo::internal::ArrayValidateParams validate_params(
-        0, false, new mojo::internal::ArrayValidateParams(0, false, nullptr));
+    mojo::internal::ContainerValidateParams validate_params(
+        0, false,
+        new mojo::internal::ContainerValidateParams(0, false, nullptr));
     mojo::internal::Serialize<Array<Array<int32_t>>>(array, &buf, &data,
                                                      &validate_params, nullptr);
 
@@ -244,7 +245,7 @@ class ArrayCommonTest {
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<bool>* data;
-    mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+    mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
     mojo::internal::Serialize<Array<bool>>(array, &buf, &data, &validate_params,
                                            nullptr);
 
@@ -273,8 +274,9 @@ class ArrayCommonTest {
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
-    mojo::internal::ArrayValidateParams validate_params(
-        0, false, new mojo::internal::ArrayValidateParams(0, false, nullptr));
+    mojo::internal::ContainerValidateParams validate_params(
+        0, false,
+        new mojo::internal::ContainerValidateParams(0, false, nullptr));
     mojo::internal::Serialize<Array<String>>(array, &buf, &data,
                                              &validate_params, nullptr);
 

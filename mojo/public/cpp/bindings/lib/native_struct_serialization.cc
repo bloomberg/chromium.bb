@@ -30,7 +30,7 @@ void UnmappedNativeStructSerializerImpl::Serialize(
   }
 
   Array_Data<uint8_t>* data = nullptr;
-  const ArrayValidateParams params(0, false, nullptr);
+  const ContainerValidateParams params(0, false, nullptr);
   internal::Serialize<Array<uint8_t>>(input->data, buffer, &data, &params,
                                       context);
   *output = reinterpret_cast<NativeStruct_Data*>(data);

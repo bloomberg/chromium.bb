@@ -26,7 +26,7 @@ class Map_Data {
   // |element_validate_params| members.
   static bool Validate(const void* data,
                        BoundsChecker* bounds_checker,
-                       const ArrayValidateParams* validate_params) {
+                       const ContainerValidateParams* validate_params) {
     if (!data)
       return true;
 

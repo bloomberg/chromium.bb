@@ -91,7 +91,7 @@ bool ValidateInterfaceIdNonNullable(InterfaceId input,
 template <typename T>
 bool ValidateArray(const Pointer<Array_Data<T>>& input,
                    BoundsChecker* bounds_checker,
-                   const ArrayValidateParams* validate_params) {
+                   const ContainerValidateParams* validate_params) {
   if (!ValidateEncodedPointer(&input.offset)) {
     ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
     return false;
@@ -104,7 +104,7 @@ bool ValidateArray(const Pointer<Array_Data<T>>& input,
 template <typename T>
 bool ValidateMap(const Pointer<T>& input,
                  BoundsChecker* bounds_checker,
-                 const ArrayValidateParams* validate_params) {
+                 const ContainerValidateParams* validate_params) {
   if (!ValidateEncodedPointer(&input.offset)) {
     ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
     return false;

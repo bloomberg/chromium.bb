@@ -440,7 +440,7 @@ TEST(UnionTest, PodUnionInArraySerialization) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Array_Data<internal::PodUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+  mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
   mojo::internal::Serialize<Array<PodUnionPtr>>(array, &buf, &data,
                                                 &validate_params, nullptr);
 
@@ -466,7 +466,7 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Array_Data<internal::PodUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(0, true, nullptr);
+  mojo::internal::ContainerValidateParams validate_params(0, true, nullptr);
   mojo::internal::Serialize<Array<PodUnionPtr>>(array, &buf, &data,
                                                 &validate_params, nullptr);
 
@@ -495,7 +495,7 @@ TEST(UnionTest, ObjectUnionInArraySerialization) {
   mojo::internal::FixedBufferForTesting buf(size);
 
   mojo::internal::Array_Data<internal::ObjectUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+  mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
   mojo::internal::Serialize<Array<ObjectUnionPtr>>(array, &buf, &data,
                                                    &validate_params, nullptr);
 
@@ -705,9 +705,9 @@ TEST(UnionTest, PodUnionInMapSerialization) {
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Map_Data<mojo::internal::String_Data*,
                            internal::PodUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(
-      new mojo::internal::ArrayValidateParams(0, false, nullptr),
-      new mojo::internal::ArrayValidateParams(0, false, nullptr));
+  mojo::internal::ContainerValidateParams validate_params(
+      new mojo::internal::ContainerValidateParams(0, false, nullptr),
+      new mojo::internal::ContainerValidateParams(0, false, nullptr));
   mojo::internal::Serialize<Map<String, PodUnionPtr>>(
       map, &buf, &data, &validate_params, &context);
 
@@ -733,9 +733,9 @@ TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Map_Data<mojo::internal::String_Data*,
                            internal::PodUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(
-      new mojo::internal::ArrayValidateParams(0, false, nullptr),
-      new mojo::internal::ArrayValidateParams(0, true, nullptr));
+  mojo::internal::ContainerValidateParams validate_params(
+      new mojo::internal::ContainerValidateParams(0, false, nullptr),
+      new mojo::internal::ContainerValidateParams(0, true, nullptr));
   mojo::internal::Serialize<Map<String, PodUnionPtr>>(
       map, &buf, &data, &validate_params, &context);
 

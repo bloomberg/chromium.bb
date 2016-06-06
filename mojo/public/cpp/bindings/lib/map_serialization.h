@@ -107,13 +107,10 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
     return struct_overhead + keys_size + values_size;
   }
 
-  // We don't need an ArrayValidateParams instance for key validation since
-  // we can deduce it from the Key type. (which can only be primitive types or
-  // non-nullable strings.)
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buf,
                         Data** output,
-                        const ArrayValidateParams* validate_params,
+                        const ContainerValidateParams* validate_params,
                         SerializationContext* context) {
     DCHECK(validate_params->key_validate_params);
     DCHECK(validate_params->element_validate_params);

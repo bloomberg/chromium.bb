@@ -61,8 +61,8 @@ void UnionSerializerImpl<{{mojom_type}}Ptr>::Serialize(
             *(input_acc.data()->{{field.name}}), buf,
             &result->data.f_{{field.name}}.ptr, false, context);
 {%      elif field.kind|is_array_kind or field.kind|is_map_kind %}
-        const ArrayValidateParams {{field.name}}_validate_params(
-            {{field.kind|get_array_validate_params_ctor_args|indent(16)}});
+        const ContainerValidateParams {{field.name}}_validate_params(
+            {{field.kind|get_container_validate_params_ctor_args|indent(16)}});
         mojo::internal::Serialize<{{serializer_type}}>(
             *(input_acc.data()->{{field.name}}), buf,
             &result->data.f_{{field.name}}.ptr, &{{field.name}}_validate_params,
