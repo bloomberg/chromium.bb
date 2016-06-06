@@ -34,15 +34,11 @@
 // glibc) and therefore avoid doing otherwise awkward #ifdefs in the code.
 // The following quirks are currently handled by this file:
 // - i386: Use the Android NDK but alias user_fxsr_struct > user_fpxregs_struct.
-// - aarch64: Add missing <stdint.h> include.
+// - aarch64: Add missing user_regs_struct and user_fpsimd_struct structs.
 // - Other platforms: Just use the Android NDK unchanged.
 
 // TODO(primiano): remove these changes after Chromium has stably rolled to
 // an NDK with the appropriate fixes.
-
-#ifdef __aarch64__
-#include <stdint.h>
-#endif  // __aarch64__
 
 #include_next <sys/user.h>
 
@@ -55,5 +51,25 @@ typedef struct user_fxsr_struct user_fpxregs_struct;
 }  // extern "C"
 #endif  // __cplusplus
 #endif  // __i386__
+
+#ifdef __aarch64__
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+struct user_regs_struct {
+ __u64 regs[31];
+ __u64 sp;
+ __u64 pc;
+ __u64 pstate;
+};
+struct user_fpsimd_struct {
+ __uint128_t vregs[32];
+ __u32 fpsr;
+ __u32 fpcr;
+};
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+#endif  // __aarch64__
 
 #endif  // GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_SYS_USER_H
