@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -372,6 +373,12 @@ void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
   }
 }
 
+void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
+  for (const auto& observer : observers_) {
+    observer->OnUserInput(event);
+  }
+}
+
 bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
                                    const PageLoadMetadata& new_metadata) {
   // Throw away IPCs that are not relevant to the current navigation.
@@ -508,7 +515,9 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
     : content::WebContentsObserver(web_contents),
       in_foreground_(false),
       embedder_interface_(std::move(embedder_interface)),
-      has_navigated_(false) {}
+      has_navigated_(false) {
+  RegisterInputEventObserver(web_contents->GetRenderViewHost());
+}
 
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
@@ -526,6 +535,25 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
 
 MetricsWebContentsObserver::~MetricsWebContentsObserver() {
   NotifyAbortAllLoads(ABORT_CLOSE);
+}
+
+void MetricsWebContentsObserver::RegisterInputEventObserver(
+    content::RenderViewHost* host) {
+  if (host != nullptr)
+    host->GetWidget()->AddInputEventObserver(this);
+}
+
+void MetricsWebContentsObserver::UnregisterInputEventObserver(
+    content::RenderViewHost* host) {
+  if (host != nullptr)
+    host->GetWidget()->RemoveInputEventObserver(this);
+}
+
+void MetricsWebContentsObserver::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
+  UnregisterInputEventObserver(old_host);
+  RegisterInputEventObserver(new_host);
 }
 
 bool MetricsWebContentsObserver::OnMessageReceived(
@@ -661,6 +689,20 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 
 void MetricsWebContentsObserver::NavigationStopped() {
   NotifyAbortAllLoads(ABORT_STOP);
+}
+
+void MetricsWebContentsObserver::OnInputEvent(
+    const blink::WebInputEvent& event) {
+  // Ignore browser navigation or reload which comes with type Undefined.
+  if (event.type == blink::WebInputEvent::Type::Undefined)
+    return;
+
+  if (!committed_load_) {
+    RecordInternalError(ERR_USER_INPUT_WITH_NO_RELEVANT_LOAD);
+    return;
+  }
+
+  committed_load_->OnInputEvent(event);
 }
 
 void MetricsWebContentsObserver::DidRedirectNavigation(

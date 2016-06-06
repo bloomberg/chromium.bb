@@ -21,10 +21,14 @@ extern const char kHistogramFromGWSParseStartToFirstContentfulPaint[];
 extern const char kHistogramFromGWSParseDuration[];
 extern const char kHistogramFromGWSParseStart[];
 extern const char kHistogramFromGWSAbortStopBeforePaint[];
+extern const char kHistogramFromGWSAbortStopBeforeInteraction[];
 extern const char kHistogramFromGWSAbortStopBeforeCommit[];
 extern const char kHistogramFromGWSAbortCloseBeforePaint[];
+extern const char kHistogramFromGWSAbortCloseBeforeInteraction[];
 extern const char kHistogramFromGWSAbortCloseBeforeCommit[];
 extern const char kHistogramFromGWSAbortNewNavigationBeforePaint[];
+extern const char kHistogramFromGWSAbortNewNavigationBeforeInteraction[];
+extern const char kHistogramFromGWSAbortReloadBeforeInteraction[];
 extern const char kHistogramFromGWSAbortUnknownNavigationBeforeCommit[];
 
 }  // namespace internal
@@ -45,6 +49,18 @@ class FromGWSPageLoadMetricsLogger {
 
   void set_navigation_initiated_via_link(bool navigation_initiated_via_link) {
     navigation_initiated_via_link_ = navigation_initiated_via_link;
+  }
+
+  void SetNavigationStart(const base::TimeTicks navigation_start) {
+    // Should be invoked at most once
+    DCHECK(navigation_start_.is_null());
+    navigation_start_ = navigation_start;
+  }
+
+  // TODO(bmcquade): remove SetFirstPaintTriggered as part of fixing
+  // crbug.com/616901
+  void SetFirstPaintTriggered(const bool first_paint_triggered) {
+    first_paint_triggered_ = first_paint_triggered;
   }
 
   // Invoked when metrics for the given page are complete.
@@ -70,6 +86,7 @@ class FromGWSPageLoadMetricsLogger {
                     const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnParseStop(const page_load_metrics::PageLoadTiming& timing,
                    const page_load_metrics::PageLoadExtraInfo& extra_info);
+  void OnUserInput(const blink::WebInputEvent& event);
 
   // The methods below are public only for testing.
   static bool IsGoogleSearchHostname(base::StringPiece host);
@@ -102,6 +119,16 @@ class FromGWSPageLoadMetricsLogger {
   bool provisional_url_has_search_hostname_ = false;
   bool provisional_url_is_non_http_or_https_ = false;
 
+  // The state of if first paint is triggered.
+  bool first_paint_triggered_ = false;
+
+  base::TimeTicks navigation_start_;
+
+  bool has_user_interaction_after_paint_ = false;
+
+  // The time of first user interaction after paint from navigation start.
+  base::TimeDelta first_user_interaction_after_paint_;
+
   // Common helper for QueryContainsComponent and QueryContainsComponentPrefix.
   static bool QueryContainsComponentHelper(const base::StringPiece query,
                                            const base::StringPiece component,
@@ -114,6 +141,10 @@ class FromGWSPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   FromGWSPageLoadMetricsObserver();
+
+  // TODO(bmcquade): remove this as part of fixing crbug.com/616901
+  FromGWSPageLoadMetricsLogger* GetLogger() { return &logger_; }
+
   // page_load_metrics::PageLoadMetricsObserver implementation:
   void OnStart(content::NavigationHandle* navigation_handle,
                const GURL& currently_committed_url,
@@ -148,6 +179,8 @@ class FromGWSPageLoadMetricsObserver
   void OnComplete(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
+  void OnUserInput(const blink::WebInputEvent& event) override;
 
  private:
   FromGWSPageLoadMetricsLogger logger_;

@@ -17,14 +17,45 @@ class FromGWSPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(
-        base::WrapUnique(new FromGWSPageLoadMetricsObserver()));
+    FromGWSPageLoadMetricsObserver* observer =
+        new FromGWSPageLoadMetricsObserver();
+    logger_ = observer->GetLogger();
+    tracker->AddObserver(base::WrapUnique(observer));
   }
+
   void SimulateTimingWithoutPaint() {
     page_load_metrics::PageLoadTiming timing;
     timing.navigation_start = base::Time::FromDoubleT(1);
     SimulateTimingUpdate(timing);
   }
+
+  void SimulateTimingWithFirstPaint() {
+    page_load_metrics::PageLoadTiming timing;
+    timing.navigation_start = base::Time::FromDoubleT(1);
+    // Use 0 and invoke OnFirstPaint here as a hack for current time_to_abort
+    // in cases in release env are always 0
+    // TODO(bmcquade): replace it by 1
+    timing.first_paint = base::TimeDelta::FromMilliseconds(0);
+    PopulateRequiredTimingFields(&timing);
+    SimulateTimingUpdate(timing);
+    // TODO(bmcquade): remove SetFirstPaintTriggered as part of fixing
+    // crbug.com/616901
+    logger_->SetFirstPaintTriggered(true);
+  }
+
+  void SimulateMouseEvent() {
+    blink::WebMouseEvent mouse_event;
+    mouse_event.type = blink::WebInputEvent::MouseDown;
+    mouse_event.button = blink::WebMouseEvent::ButtonLeft;
+    mouse_event.x = 7;
+    mouse_event.y = 7;
+    mouse_event.clickCount = 1;
+    SimulateInputEvent(mouse_event);
+  }
+
+ protected:
+  // TODO(bmcquade): remove once crbug.com/616901 is addressed
+  FromGWSPageLoadMetricsLogger* logger_;
 };
 
 class FromGWSPageLoadMetricsLoggerTest : public testing::Test {};
@@ -571,6 +602,61 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, NoAbortNewNavigationAfterPaint) {
   NavigateAndCommit(GURL("https://example.test2"));
   histogram_tester().ExpectTotalCount(
       internal::kHistogramFromGWSAbortNewNavigationBeforePaint, 0);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, NewNavigationBeforeInteraction) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("http://example.test"));
+  SimulateTimingWithFirstPaint();
+  // Simulate the user performing another navigation before paint.
+  NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortNewNavigationBeforeInteraction, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, StopBeforeInteraction) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("http://example.test"));
+  SimulateTimingWithFirstPaint();
+  // Simulate the user pressing the stop button.
+  web_contents()->Stop();
+  // Now close the tab. This will trigger logging for the prior navigation which
+  // was stopped above.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforeInteraction, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, CloseBeforeInteraction) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingWithFirstPaint();
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeInteraction, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, CloseBeforePaintAndInteraction) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingWithoutPaint();
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeInteraction, 0);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, CloseAfterInteraction) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingWithFirstPaint();
+  // Simulate user interaction.
+  SimulateMouseEvent();
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeInteraction, 0);
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, IsGoogleSearchHostname) {

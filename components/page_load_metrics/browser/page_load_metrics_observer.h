@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_handle.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
@@ -152,6 +153,10 @@ class PageLoadMetricsObserver {
   // After this call, the object will be deleted.
   virtual void OnComplete(const PageLoadTiming& timing,
                           const PageLoadExtraInfo& extra_info) {}
+
+  // OnUserInput is triggered when a new user input is passed in to
+  // web_contents. Contains a TimeDelta from navigation start.
+  virtual void OnUserInput(const blink::WebInputEvent& event) {}
 
   // The following methods are invoked at most once, when the timing for the
   // associated event first becomes available.

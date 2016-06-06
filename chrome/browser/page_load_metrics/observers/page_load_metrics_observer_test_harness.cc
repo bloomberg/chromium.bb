@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace page_load_metrics {
 
@@ -117,6 +118,11 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
   observer_->OnMessageReceived(PageLoadMetricsMsg_TimingUpdated(
                                    observer_->routing_id(), timing, metadata),
                                web_contents()->GetMainFrame());
+}
+
+void PageLoadMetricsObserverTestHarness::SimulateInputEvent(
+    const blink::WebInputEvent& event) {
+  observer_->OnInputEvent(event);
 }
 
 const base::HistogramTester&

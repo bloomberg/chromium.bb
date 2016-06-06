@@ -10,6 +10,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "content/public/test/web_contents_tester.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace page_load_metrics {
 
@@ -40,6 +41,9 @@ class PageLoadMetricsObserverTestHarness
   void SimulateTimingUpdate(const PageLoadTiming& timing);
   void SimulateTimingAndMetadataUpdate(const PageLoadTiming& timing,
                                        const PageLoadMetadata& metadata);
+
+  // Simulates a user input.
+  void SimulateInputEvent(const blink::WebInputEvent& event);
 
   const base::HistogramTester& histogram_tester() const;
 

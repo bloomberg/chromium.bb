@@ -13,10 +13,12 @@
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 class NavigationHandle;
@@ -87,8 +89,11 @@ enum InternalErrorLoadEvent {
   // latest aborted load is used to track the chain size.
   ERR_NAVIGATION_SIGNALS_MULIPLE_ABORTED_LOADS,
 
+  // Receives user input before navigation start
+  ERR_USER_INPUT_WITH_NO_RELEVANT_LOAD,
+
   // Add values before this final count.
-  ERR_LAST_ENTRY
+  ERR_LAST_ENTRY,
 };
 
 // This class serves as a functional interface to various chrome// features.
@@ -122,6 +127,8 @@ class PageLoadTracker {
   void FailedProvisionalLoad(content::NavigationHandle* navigation_handle);
   void WebContentsHidden();
   void WebContentsShown();
+
+  void OnInputEvent(const blink::WebInputEvent& event);
 
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing,
@@ -226,7 +233,8 @@ class PageLoadTracker {
 // MetricsRenderFrameObserver.
 class MetricsWebContentsObserver
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<MetricsWebContentsObserver> {
+      public content::WebContentsUserData<MetricsWebContentsObserver>,
+      public content::RenderWidgetHost::InputEventObserver {
  public:
   // Note that the returned metrics is owned by the web contents.
   static MetricsWebContentsObserver* CreateForWebContents(
@@ -247,9 +255,12 @@ class MetricsWebContentsObserver
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
   void NavigationStopped() override;
+  void OnInputEvent(const blink::WebInputEvent& event) override;
   void WasShown() override;
   void WasHidden() override;
   void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
 
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
@@ -259,10 +270,15 @@ class MetricsWebContentsObserver
   void NotifyAbortAllLoads(UserAbortType abort_type);
   void NotifyAbortAllLoadsWithTimestamp(UserAbortType abort_type,
                                         base::TimeTicks timestamp);
+
+  // Register / Unregister input event callback to given RenderViewHost
+  void RegisterInputEventObserver(content::RenderViewHost* host);
+  void UnregisterInputEventObserver(content::RenderViewHost* host);
+
   // Notify aborted provisional loads that a new navigation occurred. This is
   // used for more consistent attribution tracking for aborted provisional
-  // loads. This method returns the provisional load that was likely aborted by
-  // this navigation, to help instantiate the new PageLoadTracker.
+  // loads. This method returns the provisional load that was likely aborted
+  // by this navigation, to help instantiate the new PageLoadTracker.
   std::unique_ptr<PageLoadTracker> NotifyAbortedProvisionalLoadsNewNavigation(
       content::NavigationHandle* new_navigation);
 
@@ -286,9 +302,9 @@ class MetricsWebContentsObserver
 
   // Tracks aborted provisional loads for a little bit longer than usual (one
   // more navigation commit at the max), in order to better understand how the
-  // navigation failed. This is because most provisional loads are destroyed and
-  // vanish before we get signal about what caused the abort (new navigation,
-  // stop button, etc.).
+  // navigation failed. This is because most provisional loads are destroyed
+  // and vanish before we get signal about what caused the abort (new
+  // navigation, stop button, etc.).
   std::vector<std::unique_ptr<PageLoadTracker>> aborted_provisional_loads_;
 
   std::unique_ptr<PageLoadTracker> committed_load_;

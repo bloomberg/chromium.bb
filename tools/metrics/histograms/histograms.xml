@@ -95586,6 +95586,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="PageLoadEventConditions" separator=".">
   <suffix name="BeforeCommit"/>
   <suffix name="AfterCommit.BeforePaint"/>
+  <suffix name="AfterPaint.BeforeInteraction"/>
+  <suffix name="AfterPaint.Before1sDelayedInteraction"/>
   <suffix name="DuringParse"/>
   <affected-histogram name="PageLoad.AbortTiming.Close"/>
   <affected-histogram name="PageLoad.AbortTiming.ForwardBackNavigation"/>
@@ -95611,15 +95613,25 @@ To add a new entry, add it with any value and run test to compute valid value.
              web search"/>
   <affected-histogram
       name="PageLoad.AbortTiming.Close.AfterCommit.BeforePaint"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.Close.AfterPaint.BeforeInteraction"/>
   <affected-histogram name="PageLoad.AbortTiming.Close.BeforeCommit"/>
   <affected-histogram
       name="PageLoad.AbortTiming.ForwardBackNavigation.AfterCommit.BeforePaint"/>
   <affected-histogram
+      name="PageLoad.AbortTiming.ForwardBackNavigation.AfterPaint.Before1sDelayedInteraction"/>
+  <affected-histogram
       name="PageLoad.AbortTiming.NewNavigation.AfterCommit.BeforePaint"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.NewNavigation.AfterPaint.BeforeInteraction"/>
   <affected-histogram name="PageLoad.AbortTiming.Other.BeforeCommit"/>
   <affected-histogram
       name="PageLoad.AbortTiming.Reload.AfterCommit.BeforePaint"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.Reload.AfterPaint.Before1sDelayedInteraction"/>
   <affected-histogram name="PageLoad.AbortTiming.Stop.AfterCommit.BeforePaint"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.Stop.AfterPaint.BeforeInteraction"/>
   <affected-histogram name="PageLoad.AbortTiming.Stop.BeforeCommit"/>
   <affected-histogram
       name="PageLoad.AbortTiming.UnknownNavigation.BeforeCommit"/>

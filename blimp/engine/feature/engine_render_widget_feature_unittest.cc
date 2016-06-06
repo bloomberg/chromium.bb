@@ -96,6 +96,8 @@ class MockRenderWidgetHost
       const KeyPressEventCallback& callback) override {}
   void AddMouseEventCallback(const MouseEventCallback& callback) override {}
   void RemoveMouseEventCallback(const MouseEventCallback& callback) override {}
+  void AddInputEventObserver(InputEventObserver* observer) override {}
+  void RemoveInputEventObserver(InputEventObserver* observer) override {}
   void GetWebScreenInfo(blink::WebScreenInfo* result) override {}
   bool GetScreenColorProfile(std::vector<char>* color_profile) override {
     return false; }

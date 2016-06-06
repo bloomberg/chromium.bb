@@ -975,7 +975,7 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
     return;
 
   MouseEventWithLatencyInfo mouse_with_latency(mouse_event, ui_latency);
-  latency_tracker_.OnInputEvent(mouse_event, &mouse_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(mouse_event, &mouse_with_latency.latency);
   input_router_->SendMouseEvent(mouse_with_latency);
 }
 
@@ -997,7 +997,7 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
     return;
 
   MouseWheelEventWithLatencyInfo wheel_with_latency(wheel_event, ui_latency);
-  latency_tracker_.OnInputEvent(wheel_event, &wheel_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(wheel_event, &wheel_with_latency.latency);
   input_router_->SendWheelEvent(wheel_with_latency);
 }
 
@@ -1053,7 +1053,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     return;
 
   GestureEventWithLatencyInfo gesture_with_latency(gesture_event, ui_latency);
-  latency_tracker_.OnInputEvent(gesture_event, &gesture_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(gesture_event,
+                                    &gesture_with_latency.latency);
   input_router_->SendGestureEvent(gesture_with_latency);
 
   if (scroll_update_needs_wrapping) {
@@ -1067,7 +1068,7 @@ void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardEmulatedTouchEvent");
 
   TouchEventWithLatencyInfo touch_with_latency(touch_event);
-  latency_tracker_.OnInputEvent(touch_event, &touch_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(touch_event, &touch_with_latency.latency);
   input_router_->SendTouchEvent(touch_with_latency);
 }
 
@@ -1089,7 +1090,7 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
     return;
   }
 
-  latency_tracker_.OnInputEvent(touch_event, &touch_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(touch_event, &touch_with_latency.latency);
   input_router_->SendTouchEvent(touch_with_latency);
 }
 
@@ -1158,7 +1159,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
   NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event);
   key_event_with_latency.event.isBrowserShortcut = is_shortcut;
-  latency_tracker_.OnInputEvent(key_event, &key_event_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
   input_router_->SendKeyboardEvent(key_event_with_latency);
 }
 
@@ -1228,6 +1229,17 @@ void RenderWidgetHostImpl::RemoveMouseEventCallback(
       return;
     }
   }
+}
+
+void RenderWidgetHostImpl::AddInputEventObserver(
+    RenderWidgetHost::InputEventObserver* observer) {
+  if (!input_event_observers_.HasObserver(observer))
+    input_event_observers_.AddObserver(observer);
+}
+
+void RenderWidgetHostImpl::RemoveInputEventObserver(
+    RenderWidgetHost::InputEventObserver* observer) {
+  input_event_observers_.RemoveObserver(observer);
 }
 
 void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
@@ -1887,6 +1899,14 @@ void RenderWidgetHostImpl::DidOverscroll(const DidOverscrollParams& params) {
 void RenderWidgetHostImpl::DidStopFlinging() {
   if (view_)
     view_->DidStopFlinging();
+}
+
+void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
+    const blink::WebInputEvent& event,
+    ui::LatencyInfo* latency) {
+  latency_tracker_.OnInputEvent(event, latency);
+  FOR_EACH_OBSERVER(InputEventObserver, input_event_observers_,
+                    OnInputEvent(event));
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
