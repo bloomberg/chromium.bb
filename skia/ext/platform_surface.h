@@ -10,7 +10,9 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/core/SkRect.h"
 
-#if defined(USE_CAIRO)
+#if defined(OS_WIN)
+#include <windows.h>
+#elif defined(USE_CAIRO)
 typedef struct _cairo cairo_t;
 typedef struct _cairo_rectangle cairo_rectangle_t;
 #elif defined(OS_MACOSX)
