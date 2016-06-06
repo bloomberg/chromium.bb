@@ -5,6 +5,7 @@
 #ifndef RemotePlaybackAvailability_h
 #define RemotePlaybackAvailability_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 
@@ -16,7 +17,10 @@ class ScriptPromiseResolver;
 // Expose whether there is a remote playback device available for a media
 // element. The object will be initialized with a default value passed via
 // ::take() and will then listen to availability changes.
-class RemotePlaybackAvailability final : public EventTargetWithInlineData, public ContextLifecycleObserver {
+class RemotePlaybackAvailability final
+    : public EventTargetWithInlineData
+    , public ActiveScriptWrappable
+    , public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);
 public:
@@ -30,6 +34,9 @@ public:
     void availabilityChanged(bool);
 
     bool value() const;
+
+    // ActiveScriptWrappable implementation.
+    bool hasPendingActivity() const final;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 

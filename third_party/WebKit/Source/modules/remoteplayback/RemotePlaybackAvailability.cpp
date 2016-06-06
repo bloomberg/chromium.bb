@@ -18,7 +18,8 @@ RemotePlaybackAvailability* RemotePlaybackAvailability::take(ScriptPromiseResolv
 }
 
 RemotePlaybackAvailability::RemotePlaybackAvailability(ExecutionContext* executionContext, bool value)
-    : ContextLifecycleObserver(executionContext)
+    : ActiveScriptWrappable(this)
+    , ContextLifecycleObserver(executionContext)
     , m_value(value)
 {
     ASSERT(executionContext->isDocument());
@@ -48,6 +49,11 @@ void RemotePlaybackAvailability::availabilityChanged(bool value)
 bool RemotePlaybackAvailability::value() const
 {
     return m_value;
+}
+
+bool RemotePlaybackAvailability::hasPendingActivity() const
+{
+    return hasEventListeners();
 }
 
 DEFINE_TRACE(RemotePlaybackAvailability)
