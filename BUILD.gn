@@ -66,6 +66,12 @@ group("gn_all") {
     ":gn_only",
     ":gn_visibility",
   ]
+
+  if (!is_ios) {
+    deps += [
+      "//v8:gn_all",
+    ]
+  }
 }
 
 # TODO(GYP_GONE): This target exists for compatibility with GYP, specifically
