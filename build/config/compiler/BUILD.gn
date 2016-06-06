@@ -1005,13 +1005,6 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/604888
         "-Wno-undefined-var-template",
       ]
-
-      if (llvm_force_head_revision) {
-        cflags += [
-          # TODO(thakis): https://crbug.com/617318
-          "-Wno-nonportable-include-path",
-        ]
-      }
     }
   }
 }
