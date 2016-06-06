@@ -44,17 +44,24 @@ class CONTENT_EXPORT ServiceRegistry {
   // representing that request. Adding a factory for an already registered
   // service will override the factory. Existing connections to the service are
   // unaffected.
+  //
+  // If a non-null |task_runner| is passed, the factory will be invoked on that
+  // TaskRunner.
   template <typename Interface>
   void AddService(const base::Callback<void(mojo::InterfaceRequest<Interface>)>&
-                      service_factory) {
+                      service_factory,
+                  const scoped_refptr<base::SingleThreadTaskRunner>&
+                      task_runner = nullptr) {
     AddService(Interface::Name_,
                base::Bind(&ServiceRegistry::ForwardToServiceFactory<Interface>,
-                          service_factory));
+                          service_factory),
+               task_runner);
   }
   virtual void AddService(
       const std::string& service_name,
       const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
-          service_factory) = 0;
+          service_factory,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
 
   // Remove future access to the service implementing Interface. Existing
   // connections to the service are unaffected.

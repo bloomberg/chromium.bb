@@ -42,9 +42,12 @@ void ServiceRegistryImpl::BindRemoteServiceProvider(
   }
 }
 
-void ServiceRegistryImpl::AddService(const std::string& service_name,
-                                     const ServiceFactory& service_factory) {
-  service_factories_[service_name] = service_factory;
+void ServiceRegistryImpl::AddService(
+    const std::string& service_name,
+    const ServiceFactory& service_factory,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  service_factories_[service_name] =
+      std::make_pair(service_factory, task_runner);
 }
 
 void ServiceRegistryImpl::RemoveService(const std::string& service_name) {
@@ -103,7 +106,21 @@ void ServiceRegistryImpl::GetInterface(
     return;
   }
 
-  it->second.Run(std::move(client_handle));
+  if (it->second.second) {
+    it->second.second->PostTask(
+        FROM_HERE,
+        base::Bind(&ServiceRegistryImpl::RunServiceFactoryOnTaskRunner,
+                   it->second.first, base::Passed(&client_handle)));
+    return;
+  }
+  it->second.first.Run(std::move(client_handle));
+}
+
+// static
+void ServiceRegistryImpl::RunServiceFactoryOnTaskRunner(
+    const ServiceRegistryImpl::ServiceFactory& factory,
+    mojo::ScopedMessagePipeHandle handle) {
+  factory.Run(std::move(handle));
 }
 
 void ServiceRegistryImpl::OnConnectionError() {

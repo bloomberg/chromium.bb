@@ -82,7 +82,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/memory/memory_message_filter.h"
 #include "content/browser/message_port_message_filter.h"
-#include "content/browser/mime_registry_message_filter.h"
+#include "content/browser/mime_registry_impl.h"
 #include "content/browser/mojo/constants.h"
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/mojo/mojo_child_connection.h"
@@ -932,7 +932,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       blob_storage_context.get(), StreamContext::GetFor(browser_context)));
   AddFilter(new BlobDispatcherHost(blob_storage_context.get()));
   AddFilter(new FileUtilitiesMessageFilter(GetID()));
-  AddFilter(new MimeRegistryMessageFilter());
   AddFilter(
       new DatabaseMessageFilter(storage_partition_impl_->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
@@ -1085,6 +1084,10 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
                  base::Unretained(this)));
+
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&MimeRegistryImpl::Create),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(

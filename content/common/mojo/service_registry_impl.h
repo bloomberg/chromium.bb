@@ -32,8 +32,10 @@ class CONTENT_EXPORT ServiceRegistryImpl
   void Bind(shell::mojom::InterfaceProviderRequest request) override;
   void BindRemoteServiceProvider(
       shell::mojom::InterfaceProviderPtr service_provider) override;
-  void AddService(const std::string& service_name,
-                  const ServiceFactory& service_factory) override;
+  void AddService(
+      const std::string& service_name,
+      const ServiceFactory& service_factory,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override;
   void RemoveService(const std::string& service_name) override;
   void ConnectToRemoteService(base::StringPiece service_name,
                               mojo::ScopedMessagePipeHandle handle) override;
@@ -51,12 +53,19 @@ class CONTENT_EXPORT ServiceRegistryImpl
   void GetInterface(const mojo::String& name,
                     mojo::ScopedMessagePipeHandle client_handle) override;
 
+  static void RunServiceFactoryOnTaskRunner(
+      const ServiceFactory& factory,
+      mojo::ScopedMessagePipeHandle handle);
+
   void OnConnectionError();
 
   mojo::Binding<shell::mojom::InterfaceProvider> binding_;
   shell::mojom::InterfaceProviderPtr remote_provider_;
 
-  std::map<std::string, ServiceFactory> service_factories_;
+  std::map<
+      std::string,
+      std::pair<ServiceFactory, scoped_refptr<base::SingleThreadTaskRunner>>>
+      service_factories_;
   std::queue<std::pair<std::string, mojo::MessagePipeHandle> >
       pending_connects_;
 

@@ -44,7 +44,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu_process_launch_causes.h"
-#include "content/common/mime_registry_messages.h"
 #include "content/common/render_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_registry.h"
@@ -86,6 +85,7 @@
 #include "media/base/mime_util.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
+#include "mojo/common/common_type_converters.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/public/platform/BlameContext.h"
@@ -101,6 +101,7 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/mime_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 #include "ui/gfx/color_profile.h"
@@ -194,6 +195,9 @@ class RendererBlinkPlatformImpl::MimeRegistry
                                    const blink::WebString& codecs) override;
   blink::WebString mimeTypeForExtension(
       const blink::WebString& file_extension) override;
+
+ private:
+  blink::mojom::MimeRegistryPtr mime_registry_;
 };
 
 class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
@@ -513,11 +517,17 @@ WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
     const WebString& file_extension) {
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
-  std::string mime_type;
-  RenderThread::Get()->Send(
-      new MimeRegistryMsg_GetMimeTypeFromExtension(
-          blink::WebStringToFilePath(file_extension).value(), &mime_type));
-  return base::ASCIIToUTF16(mime_type);
+  if (!mime_registry_) {
+    RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&mime_registry_));
+  }
+
+  mojo::String mime_type;
+  if (!mime_registry_->GetMimeTypeFromExtension(
+          mojo::String::From(base::string16(file_extension)), &mime_type)) {
+    return WebString();
+  }
+  return base::ASCIIToUTF16(mime_type.get());
 }
 
 //------------------------------------------------------------------------------

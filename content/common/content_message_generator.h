@@ -42,7 +42,6 @@
 #include "content/common/media/webrtc_identity_messages.h"
 #include "content/common/memory_messages.h"
 #include "content/common/message_port_messages.h"
-#include "content/common/mime_registry_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/common/power_monitor_messages.h"

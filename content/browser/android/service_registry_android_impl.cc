@@ -87,7 +87,8 @@ void ServiceRegistryAndroidImpl::AddService(
 
   service_registry_->AddService(
       name, base::Bind(&CreateImplAndAttach, j_scoped_service_registry,
-                       j_scoped_manager, j_scoped_factory));
+                       j_scoped_manager, j_scoped_factory),
+      nullptr);
 }
 
 void ServiceRegistryAndroidImpl::RemoveService(

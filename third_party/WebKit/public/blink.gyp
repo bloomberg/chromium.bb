@@ -34,6 +34,7 @@
     'variables': {
         # Duplicated in GN: //third_party/WebKit/public:mojo_bindings
         'blink_mojo_sources': [
+            'platform/mime_registry.mojom',
             'platform/modules/background_sync/background_sync.mojom',
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
