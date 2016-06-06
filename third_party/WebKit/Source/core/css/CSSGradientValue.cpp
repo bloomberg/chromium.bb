@@ -1033,10 +1033,10 @@ enum EndShapeType {
 FloatSize radiusToSide(const FloatPoint& point, const FloatSize& size, EndShapeType shape,
     bool (*compare)(float, float))
 {
-    float dx1 = fabs(point.x());
-    float dy1 = fabs(point.y());
-    float dx2 = fabs(point.x() - size.width());
-    float dy2 = fabs(point.y() - size.height());
+    float dx1 = clampTo<float>(fabs(point.x()));
+    float dy1 = clampTo<float>(fabs(point.y()));
+    float dx2 = clampTo<float>(fabs(point.x() - size.width()));
+    float dy2 = clampTo<float>(fabs(point.y() - size.height()));
 
     float dx = compare(dx1, dx2) ? dx1 : dx2;
     float dy = compare(dy1, dy2) ? dy1 : dy2;
@@ -1056,7 +1056,7 @@ inline FloatSize ellipseRadius(const FloatPoint& p, float aspectRatio)
     // a/b = aspectRatio, b = a/aspectRatio
     // a = sqrt(x^2 + y^2/(1/r^2))
     float a = sqrtf(p.x() * p.x() + p.y() * p.y() * aspectRatio * aspectRatio);
-    return FloatSize(a, a / aspectRatio);
+    return FloatSize(clampTo<float>(a), clampTo<float>(a / aspectRatio));
 }
 
 // Compute the radius to the closest/farthest corner (depending on the compare functor).
@@ -1152,6 +1152,10 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthCon
             break;
         }
     }
+
+    DCHECK(std::isfinite(firstRadius));
+    DCHECK(std::isfinite(secondRadius.width()));
+    DCHECK(std::isfinite(secondRadius.height()));
 
     bool isDegenerate = !secondRadius.width() || !secondRadius.height();
     RefPtr<Gradient> gradient = Gradient::create(firstPoint, firstRadius, secondPoint,
