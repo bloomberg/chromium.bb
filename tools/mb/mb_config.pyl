@@ -15,7 +15,7 @@
       'Android': 'android_without_codecs_gn_release_bot_minimal_symbols',
       'Linux x64': 'noswarming_gn_release_bot',
       'Mac': 'noswarming_gyp_release_bot_mac_strip',
-      'Win': 'noswarming_gyp_release_bot_minimal_symbols_x86',
+      'Win': 'noswarming_gn_release_bot_minimal_symbols_x86',
       'Win x64': 'noswarming_gn_release_bot_minimal_symbols_x64',
     },
 
@@ -65,7 +65,7 @@
       'Google Chrome ChromeOS': 'gyp_official_goma_chromeos',
       'Google Chrome Linux x64': 'gn_official_goma',
       'Google Chrome Mac': 'gyp_official_goma',
-      'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
+      'Google Chrome Win': 'gn_official_goma_minimal_symbols_x86',
     },
 
     'chromium.chromiumos': {
@@ -514,13 +514,13 @@
       'Win 8 Perf (3)': 'none',
       'Win 8 Perf (4)': 'none',
       'Win 8 Perf (5)': 'none',
-      'Win Builder': 'gyp_official_goma_minimal_symbols_x86',
+      'Win Builder': 'gn_official_goma_minimal_symbols_x86',
       'Win Zenbook Perf (1)': 'none',
       'Win Zenbook Perf (2)': 'none',
       'Win Zenbook Perf (3)': 'none',
       'Win Zenbook Perf (4)': 'none',
       'Win Zenbook Perf (5)': 'none',
-      'Win x64 Builder': 'gyp_official_goma_minimal_symbols_x64',
+      'Win x64 Builder': 'gn_official_goma_minimal_symbols_x64',
     },
 
     'client.skia': {
@@ -858,8 +858,8 @@
       'win8_chromium_gn_dbg': 'swarming_gn_debug_trybot_x86',
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
       'win8_chromium_ng': 'gn_release_trybot_x86',
-      'win_x64_archive': 'noswarming_gyp_release_trybot_x64',
-      'win_archive': 'noswarming_gyp_release_trybot_x86',
+      'win_x64_archive': 'noswarming_gn_release_trybot_x64',
+      'win_archive': 'noswarming_gn_release_trybot_x86',
       'win_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot_x86',
       'win_chromium_compile_rel_ng':
         'swarming_gpu_tests_gn_release_trybot_x86',
@@ -886,7 +886,7 @@
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x86',
       'win_pgo': 'gyp_official_winpgo',
       'win_upload_clang': 'gn_release_bot',
-      'win_chrome_official': 'gyp_official_goma_minimal_symbols_x86',
+      'win_chrome_official': 'gn_official_goma_minimal_symbols_x86',
     },
 
     'tryserver.v8': {
@@ -1143,6 +1143,14 @@
 
     'gn_official_goma_minimal_symbols_android_arm64': [
       'gn', 'official', 'goma', 'minimal_symbols', 'android', 'arm64',
+    ],
+
+    'gn_official_goma_minimal_symbols_x64': [
+      'gn', 'official', 'goma', 'minimal_symbols', 'x64',
+    ],
+
+    'gn_official_goma_minimal_symbols_x86': [
+      'gn', 'official', 'goma', 'minimal_symbols', 'x86',
     ],
 
     'gn_release_bot': [
@@ -1430,20 +1438,16 @@
       'noswarming', 'gyp', 'release_bot', 'mac_strip',
     ],
 
-    'noswarming_gyp_release_bot_minimal_symbols_x86': [
-      'noswarming', 'gyp', 'release_bot', 'minimal_symbols', 'x86',
-    ],
-
     'noswarming_gyp_release_trybot': [
       'noswarming', 'gyp', 'release_trybot',
     ],
 
-    'noswarming_gyp_release_trybot_x64': [
-      'noswarming', 'gyp', 'release_trybot', 'x64',
+    'noswarming_gn_release_trybot_x64': [
+      'noswarming', 'gn', 'release_trybot', 'x64',
     ],
 
-    'noswarming_gyp_release_trybot_x86': [
-      'noswarming', 'gyp', 'release_trybot', 'x86',
+    'noswarming_gn_release_trybot_x86': [
+      'noswarming', 'gn', 'release_trybot', 'x86',
     ],
 
     'swarming_android_gn_debug_static_bot': [
