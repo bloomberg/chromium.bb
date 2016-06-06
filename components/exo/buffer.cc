@@ -369,8 +369,14 @@ Buffer::~Buffer() {}
 std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
     cc::TextureMailbox* texture_mailbox,
     bool secure_output_only,
-    bool lost_context) {
-  DLOG_IF(WARNING, use_count_)
+    bool client_usage) {
+  // Non-client usage can only be allowed when the client is not allowed to
+  // use the buffer. If the buffer has been released to the client then it
+  // can no longer be used as the client might be writing to it.
+  if (!client_usage && !use_count_)
+    return nullptr;
+
+  DLOG_IF(WARNING, use_count_ && client_usage)
       << "Producing a texture mailbox for a buffer that has not been released";
 
   // Some clients think that they can reuse a buffer before it's released by
@@ -380,7 +386,7 @@ std::unique_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
   // buffer has been reused). We stop running the release callback when this
   // type of behavior is detected as having the buffer always be busy will
   // result in fewer drawing artifacts.
-  if (use_count_ && !lost_context)
+  if (use_count_ && client_usage)
     release_callback_.Reset();
 
   // Increment the use count for this buffer.

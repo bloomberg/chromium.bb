@@ -192,8 +192,10 @@ Surface::Surface()
       pending_input_region_(SkIRect::MakeLargest()),
       pending_buffer_scale_(1.0f),
       pending_only_visible_on_secure_output_(false),
+      only_visible_on_secure_output_(false),
       pending_blend_mode_(SkXfermode::kSrcOver_Mode),
       pending_alpha_(1.0f),
+      alpha_(1.0f),
       input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
@@ -203,6 +205,7 @@ Surface::Surface()
   SetName("ExoSurface");
   SetProperty(kSurfaceKey, this);
   Init(ui::LAYER_SOLID_COLOR);
+  set_layer_owner_delegate(this);
   SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   set_owned_by_parent(false);
   surface_manager_ =
@@ -426,7 +429,7 @@ void Surface::Commit() {
     CommitSurfaceHierarchy();
 }
 
-void Surface::CommitLayerContents() {
+void Surface::CommitTextureContents() {
   // We update contents if Attach() has been called since last commit.
   if (has_pending_contents_) {
     has_pending_contents_ = false;
@@ -434,17 +437,12 @@ void Surface::CommitLayerContents() {
     current_buffer_ = pending_buffer_;
     pending_buffer_.reset();
 
-    // TODO(dcastagna): Make secure_output_only a layer property instead of a
-    // texture mailbox flag so this can be changed without have to provide
-    // new contents.
-    bool secure_output_only = pending_only_visible_on_secure_output_;
-    pending_only_visible_on_secure_output_ = false;
-
     cc::TextureMailbox texture_mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
     if (current_buffer_) {
       texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, secure_output_only, false);
+          &texture_mailbox, only_visible_on_secure_output_,
+          true /* client_usage */);
     }
 
     // Update layer with the new contents.
@@ -478,20 +476,20 @@ void Surface::CommitLayerContents() {
     gfx::Size contents_size = texture_size_in_dip_;
     if (!pending_viewport_.IsEmpty()) {
       contents_size = pending_viewport_;
-    } else if (!pending_crop_.IsEmpty()) {
-      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(pending_crop_.width()) ||
-                           !gfx::IsExpressibleAsInt(pending_crop_.height()))
-          << "Crop rectangle size (" << pending_crop_.size().ToString()
+    } else if (!crop_.IsEmpty()) {
+      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(crop_.width()) ||
+                           !gfx::IsExpressibleAsInt(crop_.height()))
+          << "Crop rectangle size (" << crop_.size().ToString()
           << ") most be expressible using integers when viewport is not set";
-      contents_size = gfx::ToCeiledSize(pending_crop_.size());
+      contents_size = gfx::ToCeiledSize(crop_.size());
     }
-    layer()->SetTextureCrop(pending_crop_);
+    layer()->SetTextureCrop(crop_);
     layer()->SetTextureScale(static_cast<float>(texture_size_in_dip_.width()) /
                                  contents_size.width(),
                              static_cast<float>(texture_size_in_dip_.height()) /
                                  contents_size.height());
+    layer()->SetTextureAlpha(alpha_);
     layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
-    layer()->SetTextureAlpha(pending_alpha_);
   }
 
   // Move pending frame callbacks to the end of |frame_callbacks_|.
@@ -514,14 +512,12 @@ void Surface::CommitSurfaceContents() {
     current_buffer_ = pending_buffer_;
     pending_buffer_.reset();
 
-    bool secure_output_only = pending_only_visible_on_secure_output_;
-    pending_only_visible_on_secure_output_ = false;
-
     cc::TextureMailbox texture_mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
     if (current_buffer_) {
       texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, secure_output_only, false);
+          &texture_mailbox, only_visible_on_secure_output_,
+          true /* client_usage */);
     }
 
     cc::SurfaceId old_surface_id = surface_id_;
@@ -535,12 +531,12 @@ void Surface::CommitSurfaceContents() {
     gfx::Size layer_size;  // Size of the output layer, in DIP.
     if (!pending_viewport_.IsEmpty()) {
       layer_size = pending_viewport_;
-    } else if (!pending_crop_.IsEmpty()) {
-      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(pending_crop_.width()) ||
-                           !gfx::IsExpressibleAsInt(pending_crop_.height()))
-          << "Crop rectangle size (" << pending_crop_.size().ToString()
+    } else if (!crop_.IsEmpty()) {
+      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(crop_.width()) ||
+                           !gfx::IsExpressibleAsInt(crop_.height()))
+          << "Crop rectangle size (" << crop_.size().ToString()
           << ") most be expressible using integers when viewport is not set";
-      layer_size = gfx::ToCeiledSize(pending_crop_.size());
+      layer_size = gfx::ToCeiledSize(crop_.size());
     } else {
       layer_size = gfx::ToCeiledSize(scaled_buffer_size);
     }
@@ -552,12 +548,12 @@ void Surface::CommitSurfaceContents() {
 
     gfx::PointF uv_top_left(0.f, 0.f);
     gfx::PointF uv_bottom_right(1.f, 1.f);
-    if (!pending_crop_.IsEmpty()) {
-      uv_top_left = pending_crop_.origin();
+    if (!crop_.IsEmpty()) {
+      uv_top_left = crop_.origin();
 
       uv_top_left.Scale(1.f / scaled_buffer_size.width(),
                         1.f / scaled_buffer_size.height());
-      uv_bottom_right = pending_crop_.bottom_right();
+      uv_bottom_right = crop_.bottom_right();
       uv_bottom_right.Scale(1.f / scaled_buffer_size.width(),
                             1.f / scaled_buffer_size.height());
     }
@@ -575,7 +571,7 @@ void Surface::CommitSurfaceContents() {
         render_pass->CreateAndAppendSharedQuadState();
     quad_state->quad_layer_bounds = contents_surface_size;
     quad_state->visible_quad_layer_rect = quad_rect;
-    quad_state->opacity = pending_alpha_;
+    quad_state->opacity = alpha_;
 
     bool frame_is_opaque = false;
 
@@ -609,7 +605,7 @@ void Surface::CommitSurfaceContents() {
       texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
                            resource.id, true, uv_top_left, uv_bottom_right,
                            SK_ColorTRANSPARENT, vertex_opacity, false, false,
-                           secure_output_only);
+                           only_visible_on_secure_output_);
 
       factory_owner_->release_callbacks_[resource.id] = std::make_pair(
           factory_owner_, std::move(texture_mailbox_release_callback));
@@ -641,7 +637,7 @@ void Surface::CommitSurfaceContents() {
         base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
         contents_surface_size, contents_surface_to_layer_scale, layer_size);
     layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), layer_size));
-    layer()->SetFillsBoundsOpaquely(pending_alpha_ == 1.0f && frame_is_opaque);
+    layer()->SetFillsBoundsOpaquely(alpha_ == 1.0f && frame_is_opaque);
 
     // Reset damage.
     pending_damage_.setEmpty();
@@ -655,10 +651,22 @@ void Surface::CommitSurfaceHierarchy() {
   DCHECK(needs_commit_surface_hierarchy_);
   needs_commit_surface_hierarchy_ = false;
 
+  // TODO(dcastagna): Make secure_output_only a layer property instead of a
+  // texture mailbox flag so this can be changed without have to provide
+  // new contents.
+  only_visible_on_secure_output_ = pending_only_visible_on_secure_output_;
+  pending_only_visible_on_secure_output_ = false;
+
+  // Update current alpha.
+  alpha_ = pending_alpha_;
+
+  // Update current crop rectangle.
+  crop_ = pending_crop_;
+
   if (factory_owner_) {
     CommitSurfaceContents();
   } else {
-    CommitLayerContents();
+    CommitTextureContents();
   }
 
   // Update current input region.
@@ -780,6 +788,21 @@ void Surface::OnWindowRemovingFromRootWindow(aura::Window* window,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ui::LayerOwnerDelegate overrides:
+
+void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
+  if (!current_buffer_)
+    return;
+
+  // TODO(reveman): Give the client a chance to provide new contents.
+  if (factory_owner_) {
+    SetSurfaceLayerContents(new_layer);
+  } else {
+    SetTextureLayerContents(new_layer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ui::CompositorObserver overrides:
 
 void Surface::OnCompositingDidCommit(ui::Compositor* compositor) {
@@ -811,22 +834,8 @@ void Surface::OnCompositingEnded(ui::Compositor* compositor) {
   if (!current_buffer_)
     return;
 
-  // TODO(dcastagna): Make secure_output_only a layer property instead of a
-  // texture mailbox flag.
-  bool secure_output_only = false;
-
   // Update contents by producing a new texture mailbox for the current buffer.
-  cc::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
-      current_buffer_->ProduceTextureMailbox(&texture_mailbox,
-                                             secure_output_only, true);
-  if (texture_mailbox_release_callback) {
-    layer()->SetTextureMailbox(texture_mailbox,
-                               std::move(texture_mailbox_release_callback),
-                               layer()->bounds().size());
-    layer()->SetTextureFlipped(false);
-    layer()->SchedulePaint(gfx::Rect(texture_mailbox.size_in_pixels()));
-  }
+  SetTextureLayerContents(layer());
 }
 
 void Surface::OnCompositingAborted(ui::Compositor* compositor) {
@@ -846,6 +855,34 @@ void Surface::WillDraw(cc::SurfaceId id) {
     active_frame_callbacks_.front().Run(base::TimeTicks::Now());
     active_frame_callbacks_.pop_front();
   }
+}
+
+void Surface::SetTextureLayerContents(ui::Layer* layer) {
+  DCHECK(current_buffer_);
+
+  cc::TextureMailbox texture_mailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
+      current_buffer_->ProduceTextureMailbox(&texture_mailbox,
+                                             only_visible_on_secure_output_,
+                                             false /* client_usage */);
+  if (!texture_mailbox_release_callback)
+    return;
+
+  layer->SetTextureMailbox(texture_mailbox,
+                           std::move(texture_mailbox_release_callback),
+                           texture_size_in_dip_);
+  layer->SetTextureFlipped(false);
+  layer->SetTextureCrop(crop_);
+  layer->SetTextureScale(static_cast<float>(texture_size_in_dip_.width()) /
+                             layer->bounds().width(),
+                         static_cast<float>(texture_size_in_dip_.height()) /
+                             layer->bounds().height());
+  layer->SetTextureAlpha(alpha_);
+}
+
+void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
+  // TODO(jbauman): Implement this.
+  NOTIMPLEMENTED();
 }
 
 bool Surface::use_surface_layer_ = false;

@@ -56,11 +56,11 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // This function can be used to acquire a texture mailbox for the contents of
   // buffer. Returns a release callback on success. The release callback should
   // be called before a new texture mailbox can be acquired unless
-  // |lost_context| is true.
+  // |non_client_usage| is true.
   std::unique_ptr<cc::SingleReleaseCallback> ProduceTextureMailbox(
       cc::TextureMailbox* mailbox,
       bool secure_output_only,
-      bool lost_context);
+      bool client_usage);
 
   // Returns the size of the buffer.
   gfx::Size GetSize() const;

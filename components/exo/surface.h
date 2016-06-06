@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -81,6 +82,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 // It has a location, size and pixel contents.
 class Surface : public aura::Window,
                 public aura::WindowObserver,
+                public ui::LayerOwnerDelegate,
                 public ui::CompositorObserver {
  public:
   Surface();
@@ -202,6 +204,9 @@ class Surface : public aura::Window,
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
 
+  // Overridden from ui::LayerOwnerDelegate:
+  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
+
   // Overridden from ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
   void OnCompositingStarted(ui::Compositor* compositor,
@@ -219,10 +224,16 @@ class Surface : public aura::Window,
   }
 
   // Commit the current attached buffer to a TextureLayer.
-  void CommitLayerContents();
+  void CommitTextureContents();
 
   // Commit the current attached buffer to a SurfaceLayer.
   void CommitSurfaceContents();
+
+  // Set TextureLayer contents to the current buffer.
+  void SetTextureLayerContents(ui::Layer* layer);
+
+  // Set SurfaceLayer contents to the current buffer.
+  void SetSurfaceLayerContents(ui::Layer* layer);
 
   // This returns true when the surface has some contents assigned to it.
   bool has_contents() const { return !!current_buffer_; }
@@ -283,14 +294,23 @@ class Surface : public aura::Window,
   // The crop rectangle to take effect when Commit() is called.
   gfx::RectF pending_crop_;
 
+  // The active crop rectangle.
+  gfx::RectF crop_;
+
   // The secure output visibility state to take effect when Commit() is called.
   bool pending_only_visible_on_secure_output_;
+
+  // The active secure output visibility state.
+  bool only_visible_on_secure_output_;
 
   // The blend mode state to take effect when Commit() is called.
   SkXfermode::Mode pending_blend_mode_;
 
   // The alpha state to take effect when Commit() is called.
   float pending_alpha_;
+
+  // The active alpha state.
+  float alpha_;
 
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;
