@@ -62,7 +62,7 @@ bool CSSValueList::hasValue(const CSSValue& val) const
     return false;
 }
 
-CSSValueList* CSSValueList::copy()
+CSSValueList* CSSValueList::copy() const
 {
     CSSValueList* newList = nullptr;
     switch (m_valueListSeparator) {
