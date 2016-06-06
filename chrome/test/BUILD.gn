@@ -830,7 +830,10 @@ if (!is_android) {
             ".",
             "//chrome")
 
-    configs += [ "//build/config:precompiled_headers" ]
+    configs += [
+      "//build/config:precompiled_headers",
+      "//third_party/WebKit/public:debug_devtools",
+    ]
 
     data = [
       "data/",
@@ -1018,9 +1021,6 @@ if (!is_android) {
           "//components/nacl/loader:helper_nonsfi",
         ]
       }
-    }
-    if (debug_devtools) {
-      defines += [ "DEBUG_DEVTOOLS=1" ]
     }
     if (use_ash) {
       sources +=
