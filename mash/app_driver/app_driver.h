@@ -38,7 +38,7 @@ class AppDriver : public shell::ShellClient,
   bool ShellConnectionLost() override;
 
   // mus::mojom::AcceleratorHandler:
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
+  void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;
 
   void AddAccelerators();
 

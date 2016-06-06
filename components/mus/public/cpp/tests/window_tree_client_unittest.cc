@@ -452,14 +452,14 @@ TEST_F(WindowTreeClientTest, InputEventBasic) {
       new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
   setup.window_tree_client()->OnWindowInputEvent(
-      1, server_id(root), mojom::Event::From(*ui_event.get()), 0);
+      1, server_id(root), ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(event_handler.received_event());
   EXPECT_TRUE(setup.window_tree()->WasEventAcked(1));
   event_handler.Reset();
 
   event_handler.set_should_manually_ack();
   setup.window_tree_client()->OnWindowInputEvent(
-      33, server_id(root), mojom::Event::From(*ui_event.get()), 0);
+      33, server_id(root), ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(event_handler.received_event());
   EXPECT_FALSE(setup.window_tree()->WasEventAcked(33));
 
@@ -485,8 +485,8 @@ TEST_F(WindowTreeClientTest, OnEventObserved) {
   std::unique_ptr<ui::Event> ui_event(
       new ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0));
-  setup.window_tree_client()->OnEventObserved(
-      mojom::Event::From(*ui_event.get()), event_observer_id);
+  setup.window_tree_client()->OnEventObserved(ui::Event::Clone(*ui_event.get()),
+                                              event_observer_id);
 
   // Delegate sensed the event.
   ui::Event* last_event = setup.window_tree_delegate()->last_event_observed();
@@ -498,8 +498,8 @@ TEST_F(WindowTreeClientTest, OnEventObserved) {
   setup.client()->SetEventObserver(nullptr);
 
   // Simulate another event from the server.
-  setup.window_tree_client()->OnEventObserved(
-      mojom::Event::From(*ui_event.get()), event_observer_id);
+  setup.window_tree_client()->OnEventObserved(ui::Event::Clone(*ui_event.get()),
+                                              event_observer_id);
 
   // No event was sensed.
   EXPECT_FALSE(setup.window_tree_delegate()->last_event_observed());
@@ -523,8 +523,7 @@ TEST_F(WindowTreeClientTest, OnWindowInputEventWithEventObserver) {
       new ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0));
   setup.window_tree_client()->OnWindowInputEvent(
-      1, server_id(root), mojom::Event::From(*ui_event.get()),
-      event_observer_id);
+      1, server_id(root), std::move(ui_event), event_observer_id);
 
   // Delegate sensed the event.
   ui::Event* last_event = setup.window_tree_delegate()->last_event_observed();
@@ -558,8 +557,8 @@ TEST_F(WindowTreeClientTest, EventObserverReplaced) {
   std::unique_ptr<ui::Event> pressed_event(
       new ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
-  setup.window_tree_client()->OnEventObserved(
-      mojom::Event::From(*pressed_event.get()), event_observer_id1);
+  setup.window_tree_client()->OnEventObserved(std::move(pressed_event),
+                                              event_observer_id1);
 
   // The event was not sensed, because it does not match the current observer.
   EXPECT_FALSE(setup.window_tree_delegate()->last_event_observed());
@@ -568,8 +567,8 @@ TEST_F(WindowTreeClientTest, EventObserverReplaced) {
   std::unique_ptr<ui::Event> released_event(
       new ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0));
-  setup.window_tree_client()->OnEventObserved(
-      mojom::Event::From(*released_event.get()), event_observer_id2);
+  setup.window_tree_client()->OnEventObserved(std::move(released_event),
+                                              event_observer_id2);
 
   // The delegate sensed the event.
   ui::Event* last_event = setup.window_tree_delegate()->last_event_observed();

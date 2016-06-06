@@ -399,8 +399,10 @@ void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
 void WindowTree::OnAccelerator(uint32_t accelerator_id,
                                const ui::Event& event) {
   DCHECK(window_manager_internal_);
+  // TODO(moshayedi): crbug.com/617167. Don't clone even once we map
+  // mojom::Event directly to ui::Event.
   window_manager_internal_->OnAccelerator(accelerator_id,
-                                          mojom::Event::From(event));
+                                          ui::Event::Clone(event));
 }
 
 void WindowTree::ClientJankinessChanged(WindowTree* tree) {
@@ -964,12 +966,12 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
       event_observer_matcher_ && event_observer_matcher_->MatchesEvent(event);
   client()->OnWindowInputEvent(
       event_ack_id_, ClientWindowIdForWindow(target).id,
-      mojom::Event::From(event), matched_observer ? event_observer_id_ : 0);
+      ui::Event::Clone(event), matched_observer ? event_observer_id_ : 0);
 }
 
 void WindowTree::SendToEventObserver(const ui::Event& event) {
   if (event_observer_matcher_ && event_observer_matcher_->MatchesEvent(event))
-    client()->OnEventObserved(mojom::Event::From(event), event_observer_id_);
+    client()->OnEventObserved(ui::Event::Clone(event), event_observer_id_);
 }
 
 void WindowTree::NewWindow(

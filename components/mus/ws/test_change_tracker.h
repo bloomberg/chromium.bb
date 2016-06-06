@@ -156,9 +156,9 @@ class TestChangeTracker {
   void OnWindowOpacityChanged(Id window_id, float opacity);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id,
-                          mojom::EventPtr event,
+                          const ui::Event& event,
                           uint32_t event_observer_id);
-  void OnEventObserved(mojom::EventPtr event, uint32_t event_observer_id);
+  void OnEventObserved(const ui::Event& event, uint32_t event_observer_id);
   void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);

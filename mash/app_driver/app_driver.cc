@@ -102,7 +102,7 @@ bool AppDriver::ShellConnectionLost() {
   return true;
 }
 
-void AppDriver::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
+void AppDriver::OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) {
   struct LaunchOptions {
     uint32_t option;
     const char* app;

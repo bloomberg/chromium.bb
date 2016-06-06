@@ -161,7 +161,8 @@ void TestWindowManager::WmCreateTopLevelWindow(
 void TestWindowManager::WmClientJankinessChanged(ClientSpecificId client_id,
                                                  bool janky) {}
 
-void TestWindowManager::OnAccelerator(uint32_t id, mojom::EventPtr event) {
+void TestWindowManager::OnAccelerator(uint32_t id,
+                                      std::unique_ptr<ui::Event> event) {
   on_accelerator_called_ = true;
   on_accelerator_id_ = id;
 }
@@ -268,14 +269,14 @@ void TestWindowTreeClient::OnWindowSharedPropertyChanged(
 
 void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                               uint32_t window,
-                                              mojom::EventPtr event,
+                                              std::unique_ptr<ui::Event> event,
                                               uint32_t event_observer_id) {
-  tracker_.OnWindowInputEvent(window, std::move(event), event_observer_id);
+  tracker_.OnWindowInputEvent(window, *event.get(), event_observer_id);
 }
 
-void TestWindowTreeClient::OnEventObserved(mojom::EventPtr event,
+void TestWindowTreeClient::OnEventObserved(std::unique_ptr<ui::Event> event,
                                            uint32_t event_observer_id) {
-  tracker_.OnEventObserved(std::move(event), event_observer_id);
+  tracker_.OnEventObserved(*event.get(), event_observer_id);
 }
 
 void TestWindowTreeClient::OnWindowFocused(uint32_t focused_window_id) {

@@ -101,7 +101,7 @@ void WindowManagerApplication::OnAccelerator(uint32_t id,
                                              const ui::Event& event) {
   for (auto* registrar : accelerator_registrars_) {
     if (registrar->OwnsAccelerator(id)) {
-      registrar->ProcessAccelerator(id, ::mus::mojom::Event::From(event));
+      registrar->ProcessAccelerator(id, event);
       break;
     }
   }

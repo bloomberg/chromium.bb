@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 
 namespace ui {
@@ -34,7 +36,7 @@ class WindowTreeClientPrivate {
   void OnEmbed(mojom::WindowTree* window_tree);
 
   // Pretends that |event| has been received from the window server.
-  void CallOnWindowInputEvent(Window* window, const ui::Event& event);
+  void CallOnWindowInputEvent(Window* window, std::unique_ptr<ui::Event> event);
 
  private:
    WindowTreeClient* tree_client_impl_;

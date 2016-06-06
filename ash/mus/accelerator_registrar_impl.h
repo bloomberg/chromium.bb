@@ -40,8 +40,7 @@ class AcceleratorRegistrarImpl : public ::mus::mojom::AcceleratorRegistrar,
   // specified id.
   bool OwnsAccelerator(uint32_t accelerator_id) const;
 
-  void ProcessAccelerator(uint32_t accelerator_id,
-                          ::mus::mojom::EventPtr event);
+  void ProcessAccelerator(uint32_t accelerator_id, const ui::Event& event);
 
  private:
   struct Accelerator;

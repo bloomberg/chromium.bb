@@ -253,9 +253,9 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                                      mojo::Array<uint8_t> new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
-                          mojom::EventPtr event,
+                          std::unique_ptr<ui::Event> event,
                           uint32_t event_observer_id) override;
-  void OnEventObserved(mojom::EventPtr event,
+  void OnEventObserved(std::unique_ptr<ui::Event> event,
                        uint32_t event_observer_id) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
@@ -279,7 +279,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                                   transport_properties) override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
+  void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;
 
   // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(

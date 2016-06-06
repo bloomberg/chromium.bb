@@ -245,7 +245,7 @@ class TestWindowManager : public mojom::WindowManager {
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
-  void OnAccelerator(uint32_t id, mojom::EventPtr event) override;
+  void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;
 
   bool got_create_top_level_window_;
   uint32_t change_id_;
@@ -317,9 +317,9 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                                      mojo::Array<uint8_t> new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           uint32_t window,
-                          mojom::EventPtr event,
+                          std::unique_ptr<ui::Event> event,
                           uint32_t event_observer_id) override;
-  void OnEventObserved(mojom::EventPtr event,
+  void OnEventObserved(std::unique_ptr<ui::Event> event,
                        uint32_t event_observer_id) override;
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,

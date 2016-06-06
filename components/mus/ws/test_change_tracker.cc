@@ -350,21 +350,21 @@ void TestChangeTracker::OnWindowParentDrawnStateChanged(Id window_id,
 }
 
 void TestChangeTracker::OnWindowInputEvent(Id window_id,
-                                           mojom::EventPtr event,
+                                           const ui::Event& event,
                                            uint32_t event_observer_id) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.window_id = window_id;
-  change.event_action = static_cast<int32_t>(event->action);
+  change.event_action = static_cast<int32_t>(event.type());
   change.event_observer_id = event_observer_id;
   AddChange(change);
 }
 
-void TestChangeTracker::OnEventObserved(mojom::EventPtr event,
+void TestChangeTracker::OnEventObserved(const ui::Event& event,
                                         uint32_t event_observer_id) {
   Change change;
   change.type = CHANGE_TYPE_EVENT_OBSERVED;
-  change.event_action = static_cast<int32_t>(event->action);
+  change.event_action = static_cast<int32_t>(event.type());
   change.event_observer_id = event_observer_id;
   AddChange(change);
 }

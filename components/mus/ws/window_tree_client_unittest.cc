@@ -25,7 +25,6 @@ using mojo::InterfaceRequest;
 using shell::ShellClient;
 using mojo::String;
 using mus::mojom::ErrorCode;
-using mus::mojom::EventPtr;
 using mus::mojom::WindowDataPtr;
 using mus::mojom::WindowTree;
 using mus::mojom::WindowTreeClient;
@@ -349,7 +348,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
-                          EventPtr event,
+                          std::unique_ptr<ui::Event> event,
                           uint32_t event_observer_id) override {
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
@@ -358,7 +357,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
-  void OnEventObserved(EventPtr event, uint32_t event_observer_id) override {}
+  void OnEventObserved(std::unique_ptr<ui::Event>,
+                       uint32_t event_observer_id) override {}
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const String& name,
                                      Array<uint8_t> new_data) override {
@@ -408,7 +408,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                                 bool janky) override {
     NOTIMPLEMENTED();
   }
-  void OnAccelerator(uint32_t id, mojom::EventPtr event) override {
+  void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override {
     NOTIMPLEMENTED();
   }
 

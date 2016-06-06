@@ -139,7 +139,7 @@ TEST_F(WindowManagerStateTest, NullAccelerator) {
   WindowTree* target_tree = tree();
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   state->OnEventAck(target_tree, mojom::EventResult::UNHANDLED);
@@ -156,7 +156,7 @@ TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   window_manager_state()->OnEventAck(tree(), mojom::EventResult::UNHANDLED);
@@ -174,7 +174,7 @@ TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   window_manager_state()->OnEventAck(tree(), mojom::EventResult::HANDLED);
@@ -191,7 +191,7 @@ TEST_F(WindowManagerStateTest, AcceleratorDeleted) {
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   accelerator.reset();
@@ -211,7 +211,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   tracker->changes()->clear();
@@ -229,7 +229,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   WindowTreeTestApi(target_tree).ClearAck();
   state->OnEventAck(target_tree, mojom::EventResult::UNHANDLED);
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator->id(), window_manager()->on_accelerator_id());
@@ -244,7 +244,7 @@ TEST_F(WindowManagerStateTest, DeleteTree) {
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   window_manager_state()->OnWillDestroyTree(tree());
@@ -267,7 +267,7 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = embed_connection->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=2,1 event_action=1",
+  EXPECT_EQ("InputEvent window=2,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
   EXPECT_TRUE(wm_client()->tracker()->changes()->empty());
 
@@ -283,7 +283,7 @@ TEST_F(WindowManagerStateTest, AckTimeout) {
   DispatchInputEventToWindow(window(), true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
+  EXPECT_EQ("InputEvent window=1,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
 
   OnEventAckTimeout(window()->id().client_id);

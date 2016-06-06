@@ -874,17 +874,17 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
 }
 
 void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
-                                              Id window_id,
-                                              mojom::EventPtr event,
-                                              uint32_t event_observer_id) {
-  std::unique_ptr<ui::Event> ui_event = event.To<std::unique_ptr<ui::Event>>();
+                                          Id window_id,
+                                          std::unique_ptr<ui::Event> event,
+                                          uint32_t event_observer_id) {
+  DCHECK(event);
   Window* window = GetWindowByServerId(window_id);  // May be null.
 
   // Non-zero event_observer_id means it matched an event observer on the
   // server.
   if (event_observer_id != 0 && has_event_observer_ &&
       event_observer_id == event_observer_id_)
-    delegate_->OnEventObserved(*ui_event, window);
+    delegate_->OnEventObserved(*event.get(), window);
 
   if (!window || !window->input_event_handler_) {
     tree_->OnWindowInputEventAck(event_id, mojom::EventResult::UNHANDLED);
@@ -895,8 +895,19 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
       new base::Callback<void(mojom::EventResult)>(
           base::Bind(&mojom::WindowTree::OnWindowInputEventAck,
                      base::Unretained(tree_), event_id)));
-  window->input_event_handler_->OnWindowInputEvent(
-      window, *event.To<std::unique_ptr<ui::Event>>().get(), &ack_callback);
+
+  // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
+  // ui::TouchEvent once we have proper support for pointer events.
+  if (event->IsMousePointerEvent()) {
+    window->input_event_handler_->OnWindowInputEvent(
+        window, ui::MouseEvent(*event->AsPointerEvent()), &ack_callback);
+  } else if (event->IsTouchPointerEvent()) {
+    window->input_event_handler_->OnWindowInputEvent(
+        window, ui::TouchEvent(*event->AsPointerEvent()), &ack_callback);
+  } else {
+    window->input_event_handler_->OnWindowInputEvent(window, *event.get(),
+                                                     &ack_callback);
+  }
 
   // The handler did not take ownership of the callback, so we send the ack,
   // marking the event as not consumed.
@@ -904,13 +915,11 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
     ack_callback->Run(mojom::EventResult::UNHANDLED);
 }
 
-void WindowTreeClient::OnEventObserved(mojom::EventPtr event,
-                                           uint32_t event_observer_id) {
-  if (has_event_observer_ && event_observer_id == event_observer_id_) {
-    std::unique_ptr<ui::Event> ui_event =
-        event.To<std::unique_ptr<ui::Event>>();
-    delegate_->OnEventObserved(*ui_event, nullptr /* target */);
-  }
+void WindowTreeClient::OnEventObserved(std::unique_ptr<ui::Event> event,
+                                       uint32_t event_observer_id) {
+  DCHECK(event);
+  if (has_event_observer_ && event_observer_id == event_observer_id_)
+    delegate_->OnEventObserved(*event.get(), nullptr /* target */);
 }
 
 void WindowTreeClient::OnWindowFocused(Id focused_window_id) {
@@ -1039,9 +1048,10 @@ void WindowTreeClient::WmClientJankinessChanged(ClientSpecificId client_id,
   }
 }
 
-void WindowTreeClient::OnAccelerator(uint32_t id, mojom::EventPtr event) {
-  window_manager_delegate_->OnAccelerator(
-      id, *event.To<std::unique_ptr<ui::Event>>().get());
+void WindowTreeClient::OnAccelerator(uint32_t id,
+                                     std::unique_ptr<ui::Event> event) {
+  DCHECK(event);
+  window_manager_delegate_->OnAccelerator(id, *event.get());
 }
 
 void WindowTreeClient::SetFrameDecorationValues(

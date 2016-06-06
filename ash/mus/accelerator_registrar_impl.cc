@@ -56,12 +56,13 @@ bool AcceleratorRegistrarImpl::OwnsAccelerator(uint32_t accelerator_id) const {
   return !!accelerators_.count(accelerator_id);
 }
 
-void AcceleratorRegistrarImpl::ProcessAccelerator(
-    uint32_t accelerator_id,
-    ::mus::mojom::EventPtr event) {
+void AcceleratorRegistrarImpl::ProcessAccelerator(uint32_t accelerator_id,
+                                                  const ui::Event& event) {
   DCHECK(OwnsAccelerator(accelerator_id));
+  // TODO(moshayedi): crbug.com/617167. Don't clone even once we map
+  // mojom::Event directly to ui::Event.
   accelerator_handler_->OnAccelerator(accelerator_id & kAcceleratorIdMask,
-                                      std::move(event));
+                                      ui::Event::Clone(event));
 }
 
 AcceleratorRegistrarImpl::~AcceleratorRegistrarImpl() {

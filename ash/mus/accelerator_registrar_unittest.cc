@@ -56,7 +56,7 @@ class TestAcceleratorHandler : public AcceleratorHandler {
   }
 
   // AcceleratorHandler:
-  void OnAccelerator(uint32_t id, ::mus::mojom::EventPtr event) override {}
+  void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override {}
 
   std::set<uint32_t> installed_accelerators_;
   std::unique_ptr<base::RunLoop> run_loop_;

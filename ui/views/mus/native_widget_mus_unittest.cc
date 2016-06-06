@@ -417,7 +417,7 @@ TEST_F(NativeWidgetMusTest, WidgetReceivesEvent) {
   NativeWidgetMus* native_widget =
       static_cast<NativeWidgetMus*>(widget->native_widget_private());
   mus::WindowTreeClientPrivate test_api(native_widget->window());
-  test_api.CallOnWindowInputEvent(native_widget->window(), *mouse);
+  test_api.CallOnWindowInputEvent(native_widget->window(), std::move(mouse));
   EXPECT_EQ(1, handler.num_mouse_events());
 }
 

@@ -260,7 +260,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   EXPECT_EQ(child1, display()->GetFocusedWindow());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u)
       << SingleChangeToDescription(*wm_client()->tracker()->changes());
-  EXPECT_EQ("InputEvent window=0,3 event_action=4",
+  EXPECT_EQ("InputEvent window=0,3 event_action=16",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(tree1_client->tracker()->changes()->empty());
 }
@@ -281,7 +281,7 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   ASSERT_EQ(2u, embed_client->tracker()->changes()->size());
   EXPECT_EQ("Focused id=2,1",
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
-  EXPECT_EQ("InputEvent window=2,1 event_action=4",
+  EXPECT_EQ("InputEvent window=2,1 event_action=16",
             ChangesToDescription1(*embed_client->tracker()->changes())[1]);
 }
 
@@ -307,7 +307,7 @@ TEST_F(WindowTreeTest, SetEventObserver) {
   // Pointer-down events are sent to the client.
   DispatchEventAndAckImmediately(pointer_down);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("EventObserved event_action=4 event_observer_id=111",
+  EXPECT_EQ("EventObserved event_action=16 event_observer_id=111",
             ChangesToDescription1(*client->tracker()->changes())[0]);
   client->tracker()->changes()->clear();
 
@@ -356,7 +356,7 @@ TEST_F(WindowTreeTest, SetEventObserverSendsOnce) {
   // observer.
   DispatchEventAndAckImmediately(pointer_up);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=2,1 event_action=6 event_observer_id=111",
+  EXPECT_EQ("InputEvent window=2,1 event_action=18 event_observer_id=111",
             SingleChangeToDescription(*client->tracker()->changes()));
 }
 
@@ -377,7 +377,7 @@ TEST_F(WindowTreeTest, SetEventObserverWrongUser) {
   // An event is observed by the wm tree, but not by the other user's tree.
   DispatchEventAndAckImmediately(CreatePointerUpEvent(5, 5));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,3 event_action=6 event_observer_id=111",
+  EXPECT_EQ("InputEvent window=0,3 event_action=18 event_observer_id=111",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
   ASSERT_EQ(0u, other_binding->client()->tracker()->changes()->size());
 }
@@ -540,7 +540,7 @@ TEST_F(WindowTreeTest, EventAck) {
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,3 event_action=5",
+  EXPECT_EQ("InputEvent window=0,3 event_action=17",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   wm_client()->tracker()->changes()->clear();
 
@@ -551,7 +551,7 @@ TEST_F(WindowTreeTest, EventAck) {
   // Ack the first event. That should trigger the dispatch of the second event.
   AckPreviousEvent();
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,3 event_action=5",
+  EXPECT_EQ("InputEvent window=0,3 event_action=17",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 

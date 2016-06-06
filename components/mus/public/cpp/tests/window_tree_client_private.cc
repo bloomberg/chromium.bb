@@ -37,11 +37,11 @@ void WindowTreeClientPrivate::OnEmbed(mojom::WindowTree* window_tree) {
 
 void WindowTreeClientPrivate::CallOnWindowInputEvent(
     Window* window,
-    const ui::Event& event) {
+    std::unique_ptr<ui::Event> event) {
   const uint32_t event_id = 0u;
   const uint32_t observer_id = 0u;
   tree_client_impl_->OnWindowInputEvent(event_id, window->server_id(),
-                                        mojom::Event::From(event), observer_id);
+                                        std::move(event), observer_id);
 }
 
 }  // namespace mus
