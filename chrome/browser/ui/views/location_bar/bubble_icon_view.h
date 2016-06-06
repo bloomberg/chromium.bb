@@ -132,9 +132,6 @@ class BubbleIconView : public views::InkDropHostView,
   // prevent the bubble from reshowing.
   bool suppress_mouse_released_action_;
 
-  // Animation delegate for the ink drop ripple effect.
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(BubbleIconView);
 };
 

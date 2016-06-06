@@ -183,7 +183,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   NotifyAction notify_action_;
 
   // True when a button click should trigger an animation action on
-  // |ink_drop_delegate_|.
+  // ink_drop_delegate().
   // TODO(bruthig): Use an InkDropAction enum and drop the flag.
   bool has_ink_drop_action_on_click_;
 

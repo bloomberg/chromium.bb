@@ -31,7 +31,6 @@ class FontList;
 namespace views {
 class BubbleDialogDelegateView;
 class ImageView;
-class InkDropDelegate;
 class Label;
 }
 
@@ -98,9 +97,6 @@ class ContentSettingImageView : public IconLabelBubbleView,
   // event. If this is true then the mouse released event is ignored to prevent
   // the bubble from reshowing.
   bool suppress_mouse_released_action_;
-
-  // Animation delegate for the ink drop ripple effect.
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);
 };

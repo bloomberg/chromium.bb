@@ -31,7 +31,6 @@
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -55,6 +54,7 @@ class ThemeProvider;
 }
 
 namespace views {
+class ButtonInkDropDelegate;
 class ImageButton;
 class Label;
 class LabelButton;
@@ -279,7 +279,11 @@ class DownloadItemViewMd : public views::InkDropHostView,
   // Animation for download complete.
   std::unique_ptr<gfx::SlideAnimation> complete_animation_;
 
-  views::ButtonInkDropDelegate ink_drop_delegate_;
+  // A pointer to the InkDropDelegate owned by the base class InkDropHostView.
+  // This is kept as a ButtonInkDropDelegate pointer to avoid unnecessary casts.
+  // TODO(bruthig): Remove the need to cast and remove the
+  // |button_ink_drop_delegate_| variable.
+  views::ButtonInkDropDelegate* button_ink_drop_delegate_;
 
   // Progress animation
   base::RepeatingTimer progress_timer_;
