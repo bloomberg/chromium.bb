@@ -19,6 +19,7 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "crypto/sha2.h"
@@ -229,6 +230,18 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
   return true;
 }
 
+bool ShouldUseIgnition() {
+  if (base::FeatureList::IsEnabled(features::kV8Ignition)) return true;
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kV8IgnitionLowEnd) &&
+      base::SysInfo::IsLowEndDevice()) {
+    return true;
+  }
+#endif
+  return false;
+}
+
+
 }  // namespace
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -430,7 +443,7 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     v8::V8::SetFlagsFromString(flag, sizeof(flag) - 1);
   }
 
-  if (base::FeatureList::IsEnabled(features::kV8Ignition)) {
+  if (ShouldUseIgnition()) {
     std::string flag("--ignition");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
 
