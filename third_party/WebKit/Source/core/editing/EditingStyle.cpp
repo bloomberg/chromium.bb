@@ -254,7 +254,7 @@ bool HTMLTextDecorationEquivalent::valueIsPresentInStyle(HTMLElement* element, S
     CSSValue* styleValue = style->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
     if (!styleValue)
         styleValue = style->getPropertyCSSValue(textDecorationPropertyForEditing());
-    return matches(element) && styleValue && styleValue->isValueList() && toCSSValueList(styleValue)->hasValue(m_primitiveValue.get());
+    return matches(element) && styleValue && styleValue->isValueList() && toCSSValueList(styleValue)->hasValue(*m_primitiveValue);
 }
 
 class HTMLAttributeEquivalent : public HTMLElementEquivalent {
@@ -1159,10 +1159,10 @@ static void mergeTextDecorationValues(CSSValueList* mergedValue, const CSSValueL
 {
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-    if (valueToMerge->hasValue(&underline) && !mergedValue->hasValue(&underline))
+    if (valueToMerge->hasValue(underline) && !mergedValue->hasValue(underline))
         mergedValue->append(&underline);
 
-    if (valueToMerge->hasValue(&lineThrough) && !mergedValue->hasValue(&lineThrough))
+    if (valueToMerge->hasValue(lineThrough) && !mergedValue->hasValue(lineThrough))
         mergedValue->append(&lineThrough);
 }
 
@@ -1568,9 +1568,9 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
         DEFINE_STATIC_LOCAL(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
         DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
         CSSValueList* newTextDecoration = toCSSValueList(textDecoration)->copy();
-        if (newTextDecoration->removeAll(&underline))
+        if (newTextDecoration->removeAll(underline))
             m_applyUnderline = true;
-        if (newTextDecoration->removeAll(&lineThrough))
+        if (newTextDecoration->removeAll(lineThrough))
             m_applyLineThrough = true;
 
         // If trimTextDecorations, delete underline and line-through
@@ -1619,7 +1619,7 @@ static void diffTextDecorations(MutableStylePropertySet* style, CSSPropertyID pr
     CSSValueList* valuesInRefTextDecoration = toCSSValueList(refTextDecoration);
 
     for (size_t i = 0; i < valuesInRefTextDecoration->length(); i++)
-        newTextDecoration->removeAll(valuesInRefTextDecoration->item(i));
+        newTextDecoration->removeAll(*valuesInRefTextDecoration->item(i));
 
     setTextDecorationProperty(style, newTextDecoration, propertID);
 }

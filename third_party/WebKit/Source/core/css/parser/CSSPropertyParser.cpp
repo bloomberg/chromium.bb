@@ -1500,7 +1500,7 @@ static CSSValue* consumeTextDecorationLine(CSSParserTokenRange& range)
         CSSPrimitiveValue* ident = consumeIdent<CSSValueBlink, CSSValueUnderline, CSSValueOverline, CSSValueLineThrough>(range);
         if (!ident)
             break;
-        if (list->hasValue(ident))
+        if (list->hasValue(*ident))
             return nullptr;
         list->append(ident);
     }
@@ -1526,7 +1526,7 @@ static CSSValue* consumeContain(CSSParserTokenRange& range)
         CSSPrimitiveValue* ident = consumeIdent<CSSValuePaint, CSSValueLayout, CSSValueStyle, CSSValueSize>(range);
         if (!ident)
             break;
-        if (list->hasValue(ident))
+        if (list->hasValue(*ident))
             return nullptr;
         list->append(ident);
     }

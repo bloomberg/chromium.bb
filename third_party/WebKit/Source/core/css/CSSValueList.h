@@ -60,8 +60,8 @@ public:
 
     void append(CSSValue* value) { m_values.append(value); }
     void prepend(CSSValue* value) { m_values.prepend(value); }
-    bool removeAll(CSSValue*);
-    bool hasValue(CSSValue*) const;
+    bool removeAll(const CSSValue&);
+    bool hasValue(const CSSValue&) const;
     CSSValueList* copy();
 
     String customCSSText() const;

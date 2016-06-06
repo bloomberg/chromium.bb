@@ -38,12 +38,12 @@ CSSValueList::CSSValueList(ValueListSeparator listSeparator)
     m_valueListSeparator = listSeparator;
 }
 
-bool CSSValueList::removeAll(CSSValue* val)
+bool CSSValueList::removeAll(const CSSValue& val)
 {
     bool found = false;
     for (int index = m_values.size() - 1; index >= 0; --index) {
         Member<CSSValue>& value = m_values.at(index);
-        if (value && val && value->equals(*val)) {
+        if (value && value->equals(val)) {
             m_values.remove(index);
             found = true;
         }
@@ -52,11 +52,11 @@ bool CSSValueList::removeAll(CSSValue* val)
     return found;
 }
 
-bool CSSValueList::hasValue(CSSValue* val) const
+bool CSSValueList::hasValue(const CSSValue& val) const
 {
     for (size_t index = 0; index < m_values.size(); index++) {
         const Member<CSSValue>& value = m_values.at(index);
-        if (value && val && value->equals(*val))
+        if (value && value->equals(val))
             return true;
     }
     return false;
