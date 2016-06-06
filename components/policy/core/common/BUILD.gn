@@ -76,8 +76,6 @@ source_set("common") {
       "external_data_fetcher.cc",
       "external_data_fetcher.h",
       "external_data_manager.h",
-      "mac_util.cc",
-      "mac_util.h",
       "policy_bundle.cc",
       "policy_bundle.h",
       "policy_details.h",
@@ -192,8 +190,8 @@ source_set("common") {
     if (is_mac) {
       libs = [ "CoreFoundation.framework" ]
     }
-    if (!is_ios && !is_mac) {
-      sources -= [
+    if (is_ios || is_mac) {
+      sources += [
         "mac_util.cc",
         "mac_util.h",
       ]
@@ -227,7 +225,6 @@ if (enable_configuration_policy) {
   source_set("unit_tests") {
     testonly = true
     sources = [
-      "async_policy_provider_unittest.cc",
       "cloud/cloud_policy_client_unittest.cc",
       "cloud/cloud_policy_constants_unittest.cc",
       "cloud/cloud_policy_core_unittest.cc",
@@ -235,19 +232,10 @@ if (enable_configuration_policy) {
       "cloud/cloud_policy_refresh_scheduler_unittest.cc",
       "cloud/cloud_policy_service_unittest.cc",
       "cloud/cloud_policy_validator_unittest.cc",
-      "cloud/component_cloud_policy_service_unittest.cc",
-      "cloud/component_cloud_policy_store_unittest.cc",
-      "cloud/component_cloud_policy_updater_unittest.cc",
       "cloud/device_management_service_unittest.cc",
-      "cloud/external_policy_data_fetcher_unittest.cc",
-      "cloud/external_policy_data_updater_unittest.cc",
       "cloud/policy_header_io_helper_unittest.cc",
       "cloud/policy_header_service_unittest.cc",
-      "cloud/resource_cache_unittest.cc",
-      "cloud/user_cloud_policy_manager_unittest.cc",
-      "cloud/user_cloud_policy_store_unittest.cc",
       "cloud/user_info_fetcher_unittest.cc",
-      "config_dir_policy_loader_unittest.cc",
       "generate_policy_source_unittest.cc",
       "policy_bundle_unittest.cc",
       "policy_loader_ios_unittest.mm",
@@ -265,20 +253,17 @@ if (enable_configuration_policy) {
       "schema_registry_unittest.cc",
       "schema_unittest.cc",
     ]
-
-    if (is_chromeos) {
-      sources -= [
+    if (!is_chromeos) {
+      sources += [
         "cloud/user_cloud_policy_manager_unittest.cc",
         "cloud/user_cloud_policy_store_unittest.cc",
       ]
     }
-
-    if (is_android) {
-      sources -= [ "async_policy_provider_unittest.cc" ]
+    if (!is_android) {
+      sources += [ "async_policy_provider_unittest.cc" ]
     }
-
-    if (is_android || is_ios) {
-      sources -= [
+    if (!is_android && !is_ios) {
+      sources += [
         "cloud/component_cloud_policy_service_unittest.cc",
         "cloud/component_cloud_policy_store_unittest.cc",
         "cloud/component_cloud_policy_updater_unittest.cc",
@@ -288,6 +273,10 @@ if (enable_configuration_policy) {
         "config_dir_policy_loader_unittest.cc",
       ]
     }
+    if (is_mac || is_ios) {
+      sources += [ "mac_util_unittest.cc" ]
+    }
+
     if (is_win) {
       # Needed by policy_loader_win_unittest.cc and preg_parser_win_unittest.cc
       data = [

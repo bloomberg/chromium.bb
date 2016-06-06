@@ -639,6 +639,7 @@
     ],
     'prefs_unittest_sources': [
       'prefs/default_pref_store_unittest.cc',
+      'prefs/in_memory_pref_store_unittest.cc',
       'prefs/json_pref_store_unittest.cc',
       'prefs/overlay_user_pref_store_unittest.cc',
       'prefs/pref_change_registrar_unittest.cc',
@@ -720,6 +721,7 @@
     ],
     'search_engines_unittest_sources': [
       'search_engines/default_search_manager_unittest.cc',
+      'search_engines/default_search_policy_handler_unittest.cc',
       'search_engines/default_search_pref_migration_unittest.cc',
       'search_engines/keyword_table_unittest.cc',
       'search_engines/search_engine_data_type_controller_unittest.cc',
