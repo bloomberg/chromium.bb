@@ -14,10 +14,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
@@ -155,7 +156,7 @@ VpnService::VpnService(
   extension_registry_->AddObserver(this);
   network_state_handler_->AddObserver(this, FROM_HERE);
   network_configuration_handler_->AddObserver(this);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&VpnService::NetworkListChanged, weak_factory_.GetWeakPtr()));
 }

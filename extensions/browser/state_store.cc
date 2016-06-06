@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -167,9 +169,8 @@ void StateStore::InitAfterDelay() {
   if (IsInitialized())
     return;
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&StateStore::Init, AsWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&StateStore::Init, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kInitDelaySeconds));
 }
 

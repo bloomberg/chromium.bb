@@ -5,8 +5,10 @@
 #include "extensions/renderer/render_frame_observer_natives.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -34,8 +36,8 @@ class LoadWatcher : public content::RenderFrameObserver {
   void DidFailProvisionalLoad(const blink::WebURLError& error) override {
     // Use PostTask to avoid running user scripts while handling this
     // DidFailProvisionalLoad notification.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback_, false));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback_, false));
     delete this;
   }
 
@@ -85,8 +87,8 @@ void RenderFrameObserverNatives::OnDocumentElementCreated(
     // If the document element is already created, then we can call the callback
     // immediately (though use PostTask to ensure that the callback is called
     // asynchronously).
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, true));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, true));
   } else {
     new LoadWatcher(frame, callback);
   }

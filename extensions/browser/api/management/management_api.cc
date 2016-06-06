@@ -12,13 +12,16 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -548,7 +551,7 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
     uninstall_dialog_ = delegate->UninstallFunctionDelegate(
         this, target_extension, show_programmatic_uninstall_ui);
   } else {  // No confirm dialog.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ManagementUninstallFunctionBase::UninstallExtension, this));
   }

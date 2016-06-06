@@ -5,8 +5,10 @@
 #include "extensions/browser/serial_extension_host_queue.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/variations/variations_associated_data.h"
 #include "extensions/browser/deferred_start_render_host.h"
@@ -61,7 +63,7 @@ void SerialExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
 
 void SerialExtensionHostQueue::PostTask() {
   if (!pending_create_) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&SerialExtensionHostQueue::ProcessOneHost,
                               ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(GetDelayMs()));

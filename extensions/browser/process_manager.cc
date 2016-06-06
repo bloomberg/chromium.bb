@@ -7,11 +7,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -555,12 +558,10 @@ void ProcessManager::OnShouldSuspendAck(const std::string& extension_id,
 void ProcessManager::OnSuspendAck(const std::string& extension_id) {
   background_page_data_[extension_id].is_closing = true;
   uint64_t sequence_id = background_page_data_[extension_id].close_sequence_id;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ProcessManager::CloseLazyBackgroundPageNow,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 extension_id,
-                 sequence_id),
+                 weak_ptr_factory_.GetWeakPtr(), extension_id, sequence_id),
       base::TimeDelta::FromMilliseconds(g_event_page_suspending_time_msec));
 }
 
@@ -787,12 +788,10 @@ void ProcessManager::DecrementLazyKeepaliveCount(
   if (--count == 0 && !background_page_data_[extension_id].is_closing) {
     background_page_data_[extension_id].close_sequence_id =
         ++last_background_close_sequence_id_;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   extension_id,
-                   last_background_close_sequence_id_),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
+                              weak_ptr_factory_.GetWeakPtr(), extension_id,
+                              last_background_close_sequence_id_),
         base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
   }
 }
@@ -824,10 +823,9 @@ void ProcessManager::OnKeepaliveImpulseCheck() {
   // OnKeepaliveImpulseCheck() is always called in constructor, but in unit
   // tests there will be no message loop. In that event don't schedule tasks.
   if (base::MessageLoop::current()) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ProcessManager::OnKeepaliveImpulseCheck,
-                   weak_ptr_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ProcessManager::OnKeepaliveImpulseCheck,
+                              weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
   }
 }

@@ -6,7 +6,10 @@
 
 #include <utility>
 
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -317,12 +320,11 @@ int WebViewPermissionHelper::RequestPermission(
     // objects held by the permission request are not destroyed immediately
     // after creation. This is to allow those same objects to be accessed again
     // in the same scope without fear of use after freeing.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&PermissionResponseCallback::Run,
                    base::Owned(new PermissionResponseCallback(callback)),
-                   allowed_by_default,
-                   std::string()));
+                   allowed_by_default, std::string()));
     return webview::kInvalidPermissionRequestID;
   }
 

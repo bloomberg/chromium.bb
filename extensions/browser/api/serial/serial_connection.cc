@@ -9,8 +9,10 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/buffer.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
@@ -364,9 +366,8 @@ void SerialConnection::OnAsyncWriteComplete(int bytes_sent,
 SerialConnection::TimeoutTask::TimeoutTask(const base::Closure& closure,
                                            const base::TimeDelta& delay)
     : closure_(closure), delay_(delay), weak_factory_(this) {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TimeoutTask::Run, weak_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&TimeoutTask::Run, weak_factory_.GetWeakPtr()),
       delay_);
 }
 

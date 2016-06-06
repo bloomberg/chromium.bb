@@ -8,9 +8,12 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
@@ -194,7 +197,7 @@ void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                    const Extension* extension) {
   base::Version previous_version;
   if (ReadPendingOnInstallInfoFromPref(extension->id(), &previous_version)) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
                    browser_context_, extension->id(), previous_version, false));
@@ -205,13 +208,10 @@ void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
     return;
 
   // Dispatch the onInstalled event with reason "chrome_update".
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
-                 browser_context_,
-                 extension->id(),
-                 Version(),
-                 true));
+                 browser_context_, extension->id(), Version(), true));
 }
 
 void RuntimeAPI::OnExtensionWillBeInstalled(

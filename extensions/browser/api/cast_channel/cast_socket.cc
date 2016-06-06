@@ -13,12 +13,14 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
@@ -297,8 +299,8 @@ void CastSocketImpl::PostTaskToStartConnectLoop(int result) {
   DCHECK(connect_loop_callback_.IsCancelled());
   connect_loop_callback_.Reset(base::Bind(&CastSocketImpl::DoConnectLoop,
                                           base::Unretained(this), result));
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         connect_loop_callback_.callback());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, connect_loop_callback_.callback());
 }
 
 // This method performs the state machine transitions for connection flow.

@@ -7,7 +7,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/process_info_native_handler.h"
@@ -48,7 +51,7 @@ class TestNatives : public gin::Wrappable<TestNatives> {
   }
 
   void FinishTesting() {
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
   }
 
   static gin::WrapperInfo kWrapperInfo;
@@ -186,11 +189,11 @@ void ApiTestEnvironment::RunTest(const std::string& file_name,
       env()->isolate(),
       "testNatives",
       TestNatives::Create(env()->isolate(), run_loop.QuitClosure()).ToV8());
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ApiTestEnvironment::RunTestInner, base::Unretained(this),
                  test_name, run_loop.QuitClosure()));
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ApiTestEnvironment::RunPromisesAgain,
                             base::Unretained(this)));
   run_loop.Run();
@@ -203,14 +206,14 @@ void ApiTestEnvironment::RunTestInner(const std::string& test_name,
   v8::Local<v8::Value> result =
       env()->module_system()->CallModuleMethod("testBody", test_name);
   if (!result->IsTrue()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
     FAIL() << "Failed to run test \"" << test_name << "\"";
   }
 }
 
 void ApiTestEnvironment::RunPromisesAgain() {
   v8::MicrotasksScope::PerformCheckpoint(env()->isolate());
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ApiTestEnvironment::RunPromisesAgain,
                             base::Unretained(this)));
 }

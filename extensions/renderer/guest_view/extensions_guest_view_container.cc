@@ -4,6 +4,9 @@
 
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -34,7 +37,7 @@ void ExtensionsGuestViewContainer::DidResizeElement(const gfx::Size& new_size) {
   if (element_resize_callback_.IsEmpty())
     return;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ExtensionsGuestViewContainer::CallElementResizeCallback,
                  weak_ptr_factory_.GetWeakPtr(), new_size));

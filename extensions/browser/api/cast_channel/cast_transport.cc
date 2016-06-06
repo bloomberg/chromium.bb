@@ -12,9 +12,11 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/logger.h"
@@ -156,7 +158,7 @@ void CastTransportImpl::SetReadDelegate(std::unique_ptr<Delegate> delegate) {
 void CastTransportImpl::FlushWriteQueue() {
   for (; !write_queue_.empty(); write_queue_.pop()) {
     net::CompletionCallback& callback = write_queue_.front().callback;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, net::ERR_FAILED));
     callback.Reset();
   }
@@ -170,7 +172,7 @@ void CastTransportImpl::SendMessage(const CastMessage& message,
     logger_->LogSocketEventForMessage(channel_id_, proto::SEND_MESSAGE_FAILED,
                                       message.namespace_(),
                                       "Error when serializing message.");
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, net::ERR_FAILED));
     return;
   }
@@ -325,10 +327,10 @@ int CastTransportImpl::DoWriteCallback() {
   logger_->LogSocketEventForMessage(
       channel_id_, proto::MESSAGE_WRITTEN, request.message_namespace,
       base::StringPrintf("Bytes: %d", bytes_consumed));
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(&base::DoNothing));
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(request.callback, net::OK));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&base::DoNothing));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(request.callback, net::OK));
 
   write_queue_.pop();
   if (write_queue_.empty()) {

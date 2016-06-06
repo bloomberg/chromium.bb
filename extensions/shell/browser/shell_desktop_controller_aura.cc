@@ -9,7 +9,10 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -264,7 +267,7 @@ void ShellDesktopControllerAura::OnHostCloseRequested(
     const aura::WindowTreeHost* host) {
   DCHECK_EQ(host_.get(), host);
   CloseAppWindows();
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 

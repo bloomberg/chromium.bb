@@ -9,8 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -259,7 +261,7 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
   // Success case. If waiting for more data, then loop until encounter the
   // terminator.
   if (data_buffer_.back() != kViscaTerminator) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
                               weak_ptr_factory_.GetWeakPtr(), callback));
     return;
@@ -278,7 +280,7 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
                  kViscaResponseNetworkChange) {
     callback.Run(true, response);
   } else {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
                               weak_ptr_factory_.GetWeakPtr(), callback));
   }
