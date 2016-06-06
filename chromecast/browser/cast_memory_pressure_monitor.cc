@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -88,6 +89,13 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
   }
 
   UpdateMemoryPressureLevel(level);
+
+  UMA_HISTOGRAM_PERCENTAGE("Platform.MeminfoMemFree",
+                           (info.free * 100.0) / info.total);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Platform.MeminfoMemFreeDerived",
+                              info.free + info.buffers + info.cached, 1,
+                              info.total, 100);
+
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&CastMemoryPressureMonitor::PollPressureLevel,
                             weak_ptr_factory_.GetWeakPtr()),
