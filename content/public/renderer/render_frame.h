@@ -20,10 +20,8 @@
 class GURL;
 
 namespace blink {
-class WebElement;
 class WebFrame;
 class WebLocalFrame;
-class WebNode;
 class WebPlugin;
 class WebURLRequest;
 class WebURLResponse;
