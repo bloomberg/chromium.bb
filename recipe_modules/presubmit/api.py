@@ -5,6 +5,10 @@
 from recipe_engine import recipe_api
 
 class PresubmitApi(recipe_api.RecipeApi):
+  @property
+  def presubmit_support_path(self):
+    return self.package_repo_resource('presubmit_support.py')
+
   def __call__(self, *args, **kwargs):
     """Return a presubmit step."""
 
@@ -16,5 +20,4 @@ class PresubmitApi(recipe_api.RecipeApi):
         kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
     return self.m.python(
-        name, self.package_repo_resource('presubmit_support.py'), list(args),
-        **kwargs)
+        name, self.presubmit_support_path, list(args), **kwargs)

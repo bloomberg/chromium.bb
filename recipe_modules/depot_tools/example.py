@@ -15,6 +15,10 @@ def RunSteps(api):
       'download_from_google_storage',
       ['ls', api.depot_tools.download_from_google_storage_path])
 
+  api.step(
+      'upload_to_google_storage',
+      ['ls', api.depot_tools.upload_to_google_storage_path])
+
   api.step('cros', ['ls', api.depot_tools.cros_path])
 
   api.step(

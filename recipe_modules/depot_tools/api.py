@@ -10,6 +10,10 @@ class DepotToolsApi(recipe_api.RecipeApi):
     return self.package_repo_resource('download_from_google_storage.py')
 
   @property
+  def upload_to_google_storage_path(self):
+    return self.package_repo_resource('upload_to_google_storage.py')
+
+  @property
   def cros_path(self):
     return self.package_repo_resource('cros')
 

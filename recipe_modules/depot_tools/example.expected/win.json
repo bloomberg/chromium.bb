@@ -9,6 +9,13 @@
   {
     "cmd": [
       "ls",
+      "RECIPE_PACKAGE_REPO[depot_tools]\\upload_to_google_storage.py"
+    ],
+    "name": "upload_to_google_storage"
+  },
+  {
+    "cmd": [
+      "ls",
       "RECIPE_PACKAGE_REPO[depot_tools]\\cros"
     ],
     "name": "cros"
