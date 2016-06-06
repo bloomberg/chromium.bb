@@ -114,7 +114,7 @@ allowed_hosts = [
 
 deps = {
   'src/breakpad/src':
-   Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + 'a9d0511e9d7cf85221adcf9b43e80dc19eba04cc',
+   Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '1c3361fcc256bfa0e6b3e3ce8cb99e070a49c46b',
 
   'src/buildtools':
    Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
@@ -435,7 +435,7 @@ deps_os = {
      Var('chromium_git') + '/external/android_protobuf.git' + '@' + '999188d0dc72e97f7fe08bb756958a2cf090f4e7',
 
     'src/third_party/android_tools':
-     Var('chromium_git') + '/android_tools.git' + '@' + '04c2c06fe3ef3d93343feb6e83cd932725740d7f',
+     Var('chromium_git') + '/android_tools.git' + '@' + '5b5f2f60b78198eaef25d442ac60f823142a8a6e',
 
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',

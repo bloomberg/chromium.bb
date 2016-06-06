@@ -1716,7 +1716,7 @@
             'android_ndk_absolute_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk/',
             'android_host_arch%': '<!(uname -m)',
             # Version of the NDK. Used to ensure full rebuilds on NDK rolls.
-            'android_ndk_version%': 'r11c',
+            'android_ndk_version%': 'r10e',
             # Android API-level of the SDK used for compilation.
             'android_sdk_version%': '23',
             'android_sdk_build_tools_version%': '23.0.1',
