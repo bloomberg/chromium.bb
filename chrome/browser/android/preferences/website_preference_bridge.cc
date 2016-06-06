@@ -313,11 +313,9 @@ static jint GetNotificationSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& origin,
-    const JavaParamRef<jstring>& embedder,
     jboolean is_incognito) {
-  return DesktopNotificationProfileUtil::GetContentSetting(
-      GetActiveUserProfile(is_incognito),
-      GURL(ConvertJavaStringToUTF8(env, origin)));
+  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                             origin, origin, is_incognito);
 }
 
 static void SetNotificationSettingForOrigin(

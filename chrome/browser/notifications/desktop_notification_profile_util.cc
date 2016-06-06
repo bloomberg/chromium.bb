@@ -49,12 +49,3 @@ void DesktopNotificationProfileUtil::GetNotificationsSettings(
                               content_settings::ResourceIdentifier(),
                               settings);
 }
-
-ContentSetting DesktopNotificationProfileUtil::GetContentSetting(
-    Profile* profile, const GURL& origin) {
-  return HostContentSettingsMapFactory::GetForProfile(profile)
-      ->GetContentSetting(origin,
-                          origin,
-                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                          content_settings::ResourceIdentifier());
-}

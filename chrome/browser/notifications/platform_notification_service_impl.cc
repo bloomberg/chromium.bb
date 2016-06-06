@@ -15,11 +15,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -38,6 +38,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
@@ -267,15 +268,8 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
   }
 #endif
 
-  ContentSetting setting =
-      DesktopNotificationProfileUtil::GetContentSetting(profile, origin);
-
-  if (setting == CONTENT_SETTING_ALLOW)
-    return blink::mojom::PermissionStatus::GRANTED;
-  if (setting == CONTENT_SETTING_BLOCK)
-    return blink::mojom::PermissionStatus::DENIED;
-
-  return blink::mojom::PermissionStatus::ASK;
+  return PermissionManager::Get(profile)->GetPermissionStatus(
+      content::PermissionType::NOTIFICATIONS, origin, origin);
 }
 
 blink::mojom::PermissionStatus

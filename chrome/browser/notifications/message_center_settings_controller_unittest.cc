@@ -12,12 +12,13 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -312,15 +313,19 @@ TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
           ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
   ASSERT_EQ(CONTENT_SETTING_ASK, default_setting);
 
+  PermissionManager* permission_manager = PermissionManager::Get(profile);
+
   // (1) Enable the permission when the default is to ask (expected to set).
   controller()->SetNotifierEnabled(disabled_notifier, true);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, origin, origin));
 
   // (2) Disable the permission when the default is to ask (expected to clear).
   controller()->SetNotifierEnabled(enabled_notifier, false);
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, origin, origin));
 
   // Change the default content setting vaule for notifications to ALLOW.
   HostContentSettingsMapFactory::GetForProfile(profile)
@@ -329,13 +334,15 @@ TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
 
   // (3) Disable the permission when the default is allowed (expected to set).
   controller()->SetNotifierEnabled(enabled_notifier, false);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+  EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, origin, origin));
 
   // (4) Enable the permission when the default is allowed (expected to clear).
   controller()->SetNotifierEnabled(disabled_notifier, true);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, origin, origin));
 
   // Now change the default content setting value to BLOCK.
   HostContentSettingsMapFactory::GetForProfile(profile)
@@ -344,11 +351,13 @@ TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
 
   // (5) Enable the permission when the default is blocked (expected to set).
   controller()->SetNotifierEnabled(disabled_notifier, true);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, origin, origin));
 
   // (6) Disable the permission when the default is blocked (expected to clear).
   controller()->SetNotifierEnabled(enabled_notifier, false);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+  EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
+            permission_manager->GetPermissionStatus(
+                content::PermissionType::NOTIFICATIONS, origin, origin));
 }

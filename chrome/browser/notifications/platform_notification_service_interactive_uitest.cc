@@ -140,9 +140,10 @@ void PlatformNotificationServiceBrowserTest::
   GURL origin = TestPageUrl().GetOrigin();
 
   DesktopNotificationProfileUtil::GrantPermission(browser()->profile(), origin);
-  ASSERT_EQ(CONTENT_SETTING_ALLOW,
-            DesktopNotificationProfileUtil::GetContentSetting(
-                browser()->profile(), origin));
+  ASSERT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            PermissionManager::Get(browser()->profile())
+                ->GetPermissionStatus(content::PermissionType::NOTIFICATIONS,
+                                      origin, origin));
 }
 
 void PlatformNotificationServiceBrowserTest::NavigateToTestPage(
