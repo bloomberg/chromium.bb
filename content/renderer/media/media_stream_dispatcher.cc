@@ -352,6 +352,15 @@ void MediaStreamDispatcher::OnDeviceStopped(
   if (stream->handler.get())
     stream->handler->OnDeviceStopped(label, device_info);
 
+  // |it| could have already been invalidated in the function call above. So we
+  // need to check if |label| is still in |label_stream_map_| again.
+  // Note: this is a quick fix to the crash caused by erasing the invalidated
+  // iterator from |label_stream_map_| (crbug.com/616884). Future work needs to
+  // be done to resolve this re-entrancy issue.
+  it = label_stream_map_.find(label);
+  if (it == label_stream_map_.end())
+    return;
+  stream = &it->second;
   if (stream->audio_array.empty() && stream->video_array.empty())
     label_stream_map_.erase(it);
 }
