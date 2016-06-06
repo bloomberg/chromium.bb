@@ -186,6 +186,12 @@ MediaDecoderJob::MediaDecoderJobStatus
     return STATUS_FAILURE;
   }
 
+  // ConfigureAndStart() creates AudioTrack with |config_sampling_rate_|
+  // and |config_num_channels_|. Keep |output_...| in sync to detect the changes
+  // that might come with OnOutputFormatChanged().
+  output_sampling_rate_ = config_sampling_rate_;
+  output_num_channels_ = config_num_channels_;
+
   SetVolumeInternal();
 
   // Reset values used to track codec bridge output

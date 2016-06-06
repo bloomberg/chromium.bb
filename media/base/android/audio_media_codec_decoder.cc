@@ -159,6 +159,12 @@ MediaCodecDecoder::ConfigStatus AudioMediaCodecDecoder::ConfigureInternal(
 
   DVLOG(0) << class_name() << "::" << __FUNCTION__ << " succeeded";
 
+  // ConfigureAndStart() creates AudioTrack with sampling rate and channel count
+  // from |configs_|. Keep |output_...| in sync to detect the changes that might
+  // come with OnOutputFormatChanged().
+  output_sampling_rate_ = configs_.audio_sampling_rate;
+  output_num_channels_ = configs_.audio_channels;
+
   SetVolumeInternal();
 
   frame_count_ = 0;
