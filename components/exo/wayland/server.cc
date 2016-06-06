@@ -1172,7 +1172,7 @@ void xdg_surface_unset_fullscreen(wl_client* client, wl_resource* resource) {
 }
 
 void xdg_surface_set_minimized(wl_client* client, wl_resource* resource) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->Minimize();
 }
 
 const struct xdg_surface_interface xdg_surface_implementation = {
@@ -1391,9 +1391,31 @@ void remote_surface_set_scale(wl_client* client,
   GetUserDataAs<ShellSurface>(resource)->SetScale(wl_fixed_to_double(scale));
 }
 
+void remote_surface_fullscreen(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
+}
+
+void remote_surface_maximize(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->Maximize();
+}
+
+void remote_surface_minimize(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->Minimize();
+}
+
+void remote_surface_restore(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ShellSurface>(resource)->Restore();
+}
+
 const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
-    remote_surface_destroy, remote_surface_set_app_id,
-    remote_surface_set_window_geometry, remote_surface_set_scale};
+    remote_surface_destroy,
+    remote_surface_set_app_id,
+    remote_surface_set_window_geometry,
+    remote_surface_set_scale,
+    remote_surface_fullscreen,
+    remote_surface_maximize,
+    remote_surface_minimize,
+    remote_surface_restore};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
@@ -1521,6 +1543,45 @@ void HandleRemoteSurfaceCloseCallback(wl_resource* resource) {
   wl_client_flush(wl_resource_get_client(resource));
 }
 
+void HandleRemoteSurfaceStateChangedCallback(
+    wl_resource* resource,
+    ash::wm::WindowStateType old_state_type,
+    ash::wm::WindowStateType new_state_type) {
+  DCHECK_NE(old_state_type, new_state_type);
+
+  switch (old_state_type) {
+    case ash::wm::WINDOW_STATE_TYPE_MINIMIZED:
+      if (wl_resource_get_version(resource) >= 2)
+        zwp_remote_surface_v1_send_unset_minimized(resource);
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_MAXIMIZED:
+      if (wl_resource_get_version(resource) >= 2)
+        zwp_remote_surface_v1_send_unset_maximized(resource);
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_FULLSCREEN:
+      zwp_remote_surface_v1_send_unset_fullscreen(resource);
+      break;
+    default:
+      break;
+  }
+  switch (new_state_type) {
+    case ash::wm::WINDOW_STATE_TYPE_MINIMIZED:
+      if (wl_resource_get_version(resource) >= 2)
+        zwp_remote_surface_v1_send_set_minimized(resource);
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_MAXIMIZED:
+      if (wl_resource_get_version(resource) >= 2)
+        zwp_remote_surface_v1_send_set_maximized(resource);
+      break;
+    case ash::wm::WINDOW_STATE_TYPE_FULLSCREEN:
+      zwp_remote_surface_v1_send_set_fullscreen(resource);
+      break;
+    default:
+      break;
+  }
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
 void remote_shell_get_remote_surface(wl_client* client,
                                      wl_resource* resource,
                                      uint32_t id,
@@ -1536,10 +1597,14 @@ void remote_shell_get_remote_surface(wl_client* client,
   }
 
   wl_resource* remote_surface_resource =
-      wl_resource_create(client, &zwp_remote_surface_v1_interface, 1, id);
+      wl_resource_create(client, &zwp_remote_surface_v1_interface,
+                         wl_resource_get_version(resource), id);
 
   shell_surface->set_close_callback(
       base::Bind(&HandleRemoteSurfaceCloseCallback,
+                 base::Unretained(remote_surface_resource)));
+  shell_surface->set_state_changed_callback(
+      base::Bind(&HandleRemoteSurfaceStateChangedCallback,
                  base::Unretained(remote_surface_resource)));
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
@@ -1549,12 +1614,15 @@ void remote_shell_get_remote_surface(wl_client* client,
 const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface};
 
+const uint32_t remote_shell_version = 2;
+
 void bind_remote_shell(wl_client* client,
                        void* data,
                        uint32_t version,
                        uint32_t id) {
   wl_resource* resource =
-      wl_resource_create(client, &zwp_remote_shell_v1_interface, 1, id);
+      wl_resource_create(client, &zwp_remote_shell_v1_interface,
+                         std::min(version, remote_shell_version), id);
 
   // TODO(reveman): Multi-display support.
   const display::Display& display = ash::Shell::GetInstance()
@@ -2434,8 +2502,8 @@ Server::Server(Display* display)
                    display_, bind_secure_output);
   wl_global_create(wl_display_.get(), &zwp_alpha_compositing_v1_interface, 1,
                    display_, bind_alpha_compositing);
-  wl_global_create(wl_display_.get(), &zwp_remote_shell_v1_interface, 1,
-                   display_, bind_remote_shell);
+  wl_global_create(wl_display_.get(), &zwp_remote_shell_v1_interface,
+                   remote_shell_version, display_, bind_remote_shell);
 }
 
 Server::~Server() {}

@@ -109,9 +109,9 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return base::WrapUnique(new ShellSurface(
-      surface, nullptr, gfx::Rect(), true /* activatable */,
-      true /* resizeable */, ash::kShellWindowId_DefaultContainer));
+  return base::WrapUnique(
+      new ShellSurface(surface, nullptr, gfx::Rect(), true /* activatable */,
+                       ash::kShellWindowId_DefaultContainer));
 }
 
 std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
@@ -131,9 +131,16 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
     return nullptr;
   }
 
+  // Determine the initial bounds for popup. |position| is relative to the
+  // parent's main surface origin and initial bounds are relative to the
+  // container origin.
+  gfx::Rect initial_bounds(position, gfx::Size(1, 1));
+  aura::Window::ConvertRectToTarget(
+      ShellSurface::GetMainSurface(parent->GetWidget()->GetNativeWindow()),
+      parent->GetWidget()->GetNativeWindow()->parent(), &initial_bounds);
+
   return base::WrapUnique(
-      new ShellSurface(surface, parent, gfx::Rect(position, gfx::Size(1, 1)),
-                       false /* activatable */, true /* resizeable */,
+      new ShellSurface(surface, parent, initial_bounds, false /* activatable */,
                        ash::kShellWindowId_DefaultContainer));
 }
 
@@ -149,8 +156,7 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
   }
 
   return base::WrapUnique(new ShellSurface(surface, nullptr, gfx::Rect(1, 1),
-                                           true /* activatable */,
-                                           false /* resizeable */, container));
+                                           true /* activatable */, container));
 }
 
 std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,

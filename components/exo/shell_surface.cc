@@ -161,15 +161,14 @@ ShellSurface::ShellSurface(Surface* surface,
                            ShellSurface* parent,
                            const gfx::Rect& initial_bounds,
                            bool activatable,
-                           bool resizeable,
                            int container)
     : widget_(nullptr),
       surface_(surface),
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       initial_bounds_(initial_bounds),
       activatable_(activatable),
-      resizeable_(resizeable),
       container_(container),
+      pending_show_widget_(false),
       scale_(1.0),
       pending_scale_(1.0),
       scoped_configure_(nullptr),
@@ -189,7 +188,6 @@ ShellSurface::ShellSurface(Surface* surface)
     : ShellSurface(surface,
                    nullptr,
                    gfx::Rect(),
-                   true,
                    true,
                    ash::kShellWindowId_DefaultContainer) {}
 
@@ -270,6 +268,18 @@ void ShellSurface::Maximize() {
   widget_->Maximize();
 }
 
+void ShellSurface::Minimize() {
+  TRACE_EVENT0("exo", "ShellSurface::Minimize");
+
+  if (!widget_)
+    return;
+
+  // Note: This will ask client to configure its surface even if already
+  // minimized.
+  ScopedConfigure scoped_configure(this, true);
+  widget_->Minimize();
+}
+
 void ShellSurface::Restore() {
   TRACE_EVENT0("exo", "ShellSurface::Restore");
 
@@ -277,7 +287,7 @@ void ShellSurface::Restore() {
     return;
 
   // Note: This will ask client to configure its surface even if not already
-  // maximized.
+  // maximized or minimized.
   ScopedConfigure scoped_configure(this, true);
   widget_->Restore();
 }
@@ -325,14 +335,14 @@ void ShellSurface::SetApplicationId(const std::string& application_id) {
 void ShellSurface::Move() {
   TRACE_EVENT0("exo", "ShellSurface::Move");
 
-  if (widget_)
+  if (widget_ && !widget_->movement_disabled())
     AttemptToStartDrag(HTCAPTION);
 }
 
 void ShellSurface::Resize(int component) {
   TRACE_EVENT1("exo", "ShellSurface::Resize", "component", component);
 
-  if (widget_)
+  if (widget_ && !widget_->movement_disabled())
     AttemptToStartDrag(component);
 }
 
@@ -443,9 +453,13 @@ void ShellSurface::OnSurfaceCommit() {
       scale_ = pending_scale_;
     }
 
-    // Show widget if not already visible.
-    if (!widget_->IsClosed() && !widget_->IsVisible())
+    // Show widget if needed.
+    if (pending_show_widget_) {
+      DCHECK(!widget_->IsClosed());
+      DCHECK(!widget_->IsVisible());
+      pending_show_widget_ = false;
       widget_->Show();
+    }
   }
 }
 
@@ -480,12 +494,16 @@ void ShellSurface::OnSurfaceDestroying(Surface* surface) {
 ////////////////////////////////////////////////////////////////////////////////
 // views::WidgetDelegate overrides:
 
-bool ShellSurface::CanMaximize() const {
-  return resizeable_;
+bool ShellSurface::CanResize() const {
+  return initial_bounds_.IsEmpty();
 }
 
-bool ShellSurface::CanResize() const {
-  return resizeable_;
+bool ShellSurface::CanMaximize() const {
+  return true;
+}
+
+bool ShellSurface::CanMinimize() const {
+  return true;
 }
 
 base::string16 ShellSurface::GetWindowTitle() const {
@@ -553,6 +571,9 @@ void ShellSurface::OnPostWindowStateTypeChange(
 
   if (widget_)
     UpdateWidgetBounds();
+
+  if (!state_changed_callback_.is_null())
+    state_changed_callback_.Run(old_type, new_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -690,13 +711,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   params.show_state = show_state;
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container_);
-  if (!initial_bounds_.IsEmpty()) {
-    params.bounds = initial_bounds_;
-    if (parent_) {
-      aura::Window::ConvertRectToTarget(GetMainSurface(parent_), params.parent,
-                                        &params.bounds);
-    }
-  }
+  params.bounds = initial_bounds_;
   bool activatable = activatable_ && !surface_->GetHitTestBounds().IsEmpty();
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
@@ -704,6 +719,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget(this);
   widget_->Init(params);
+
+  // Disable movement if initial bounds were specified.
+  widget_->set_movement_disabled(!initial_bounds_.IsEmpty());
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
@@ -727,6 +745,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
       ash::wm::ToWindowShowState(ash::wm::WINDOW_STATE_TYPE_AUTO_POSITIONED) ==
           show_state &&
       initial_bounds_.IsEmpty());
+
+  // Show widget next time Commit() is called.
+  pending_show_widget_ = true;
 }
 
 void ShellSurface::Configure() {
@@ -877,8 +898,13 @@ gfx::Rect ShellSurface::GetVisibleBounds() const {
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
   gfx::Rect window_bounds = widget_->GetWindowBoundsInScreen();
-  gfx::Rect visible_bounds = GetVisibleBounds();
 
+  // If initial bounds were specified then surface origin is always relative
+  // to those bounds.
+  if (!initial_bounds_.IsEmpty())
+    return initial_bounds_.origin() - window_bounds.OffsetFromOrigin();
+
+  gfx::Rect visible_bounds = GetVisibleBounds();
   switch (resize_component_) {
     case HTCAPTION:
       return origin_ - visible_bounds.OffsetFromOrigin();

@@ -108,6 +108,19 @@ TEST_P(ShellSurfaceTest, Maximize) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
+TEST_P(ShellSurfaceTest, Minimize) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->Minimize();
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+}
+
 TEST_P(ShellSurfaceTest, Restore) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
@@ -210,7 +223,7 @@ TEST_P(ShellSurfaceTest, SetGeometry) {
             surface->bounds().ToString());
 }
 
-TEST_F(ShellSurfaceTest, SetScale) {
+TEST_P(ShellSurfaceTest, SetScale) {
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));

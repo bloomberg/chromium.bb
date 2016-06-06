@@ -49,7 +49,6 @@ class ShellSurface : public SurfaceDelegate,
                ShellSurface* parent,
                const gfx::Rect& initial_bounds,
                bool activatable,
-               bool resizeable,
                int container);
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
@@ -64,6 +63,15 @@ class ShellSurface : public SurfaceDelegate,
   void set_surface_destroyed_callback(
       const base::Closure& surface_destroyed_callback) {
     surface_destroyed_callback_ = surface_destroyed_callback;
+  }
+
+  // Set the callback to run when the surface state changed.
+  using StateChangedCallback =
+      base::Callback<void(ash::wm::WindowStateType old_state_type,
+                          ash::wm::WindowStateType new_state_type)>;
+  void set_state_changed_callback(
+      const StateChangedCallback& state_changed_callback) {
+    state_changed_callback_ = state_changed_callback;
   }
 
   // Set the callback to run when the client is asked to configure the surface.
@@ -90,6 +98,9 @@ class ShellSurface : public SurfaceDelegate,
 
   // Maximizes the shell surface.
   void Maximize();
+
+  // Minimize the shell surface.
+  void Minimize();
 
   // Restore the shell surface.
   void Restore();
@@ -144,8 +155,9 @@ class ShellSurface : public SurfaceDelegate,
   void OnSurfaceDestroying(Surface* surface) override;
 
   // Overridden from views::WidgetDelegate:
-  bool CanMaximize() const override;
   bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   views::Widget* GetWidget() override;
@@ -221,9 +233,9 @@ class ShellSurface : public SurfaceDelegate,
   aura::Window* parent_;
   const gfx::Rect initial_bounds_;
   const bool activatable_;
-  const bool resizeable_;
   // Container Window Id (see ash/common/shell_window_ids.h)
   const int container_;
+  bool pending_show_widget_;
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;
@@ -232,6 +244,7 @@ class ShellSurface : public SurfaceDelegate,
   double pending_scale_;
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
+  StateChangedCallback state_changed_callback_;
   ConfigureCallback configure_callback_;
   ScopedConfigure* scoped_configure_;
   bool ignore_window_bounds_changes_;
