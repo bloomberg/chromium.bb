@@ -16,7 +16,7 @@ FILE_TEMPLATE = \
   Please use 'src/tools/polymer/polymer_grdp_to_txt.py' and
   'src/tools/polymer/txt_to_polymer_grdp.py' to modify it, if possible.
 
-  'polymer_grdp_to_txt.py' converts 'polymer_resources.grdp' to a plane list of
+  'polymer_grdp_to_txt.py' converts 'polymer_resources.grdp' to a plain list of
   used Polymer components:
     ...
     iron-iron-iconset/iron-iconset-extracted.js
