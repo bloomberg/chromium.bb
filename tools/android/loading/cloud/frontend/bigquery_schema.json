@@ -5,18 +5,6 @@
         "mode": "REQUIRED"
     },
     {
-        "name": "activity_frac",
-        "type": "FLOAT"
-    },
-    {
-        "name": "parsing_frac",
-        "type": "FLOAT"
-    },
-    {
-        "name": "script_frac",
-        "type": "FLOAT"
-    },
-    {
         "name": "ad_or_tracking_initiated_requests",
         "type": "INTEGER"
     },
@@ -137,16 +125,36 @@
         "type": "INTEGER"
     },
     {
+        "name": "plt_activity_frac",
+        "type": "FLOAT"
+    },
+    {
+        "name": "plt_byte_frac",
+        "type": "FLOAT"
+    },
+    {
+        "name": "plt_inversion",
+        "type": "STRING"
+    },
+    {
         "name": "plt_ms",
         "type": "FLOAT"
     },
     {
-        "name": "preloaded_requests",
+        "name": "plt_parsing_frac",
+        "type": "FLOAT"
+    },
+    {
+        "name": "plt_preloaded_requests",
         "type": "INTEGER"
     },
     {
-        "name": "requests",
+        "name": "plt_requests",
         "type": "INTEGER"
+    },
+    {
+        "name": "plt_script_frac",
+        "type": "FLOAT"
     },
     {
         "name": "significant_activity_frac",

@@ -43,6 +43,29 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
   def setUp(self):
     super(UserSatisfiedLensTestCase, self).setUp()
 
+  def testPLTLens(self):
+    MAINFRAME = 1
+    trace_creator = test_utils.TraceCreator()
+    requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
+                trace_creator.RequestAt(20)]
+    loading_trace = trace_creator.CreateTrace(
+        requests,
+        [{'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'devtools.timeline', 'pid': 1, 'tid': 1,
+          'name': 'MarkLoad',
+          'args': {'data': {'isMainFrame': True}}},
+         {'ts': 10 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'devtools.timeline', 'pid': 1, 'tid': 1,
+          'name': 'MarkLoad',
+          'args': {'data': {'isMainFrame': True}}},
+         {'ts': 20 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'devtools.timeline', 'pid': 1, 'tid': 1,
+          'name': 'MarkLoad',
+          'args': {'data': {'isMainFrame': False}}}], MAINFRAME)
+    lens = user_satisfied_lens.PLTLens(loading_trace)
+    self.assertEqual(set(['0.1']), lens.CriticalRequestIds())
+    self.assertEqual(10, lens.SatisfiedMs())
+
   def testFirstContentfulPaintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2

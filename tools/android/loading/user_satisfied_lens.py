@@ -64,6 +64,36 @@ class _UserSatisfiedLens(object):
     """
     return self._satisfied_msec
 
+  @classmethod
+  def RequestsBefore(cls, request_track, time_ms):
+    return [rq for rq in request_track.GetEvents()
+            if rq.end_msec <= time_ms]
+
+
+class PLTLens(_UserSatisfiedLens):
+  """A lens built using page load time (PLT) as the metric of user satisfaction.
+  """
+  def __init__(self, trace):
+    self._satisfied_msec = PLTLens._ComputePlt(trace)
+    self._critical_requests = _UserSatisfiedLens.RequestsBefore(
+        trace.request_track, self._satisfied_msec)
+
+  def CriticalRequests(self):
+    return self._critical_requests
+
+  @classmethod
+  def _ComputePlt(cls, trace):
+    mark_load_events = trace.tracing_track.GetMatchingEvents(
+        'devtools.timeline', 'MarkLoad')
+    # Some traces contain several load events for the main frame.
+    main_frame_load_events = filter(
+        lambda e: e.args['data']['isMainFrame'], mark_load_events)
+    if main_frame_load_events:
+      return max(e.start_msec for e in main_frame_load_events)
+    # Main frame onLoad() didn't finish. Take the end of the last completed
+    # request.
+    return max(r.end_msec or -1 for r in trace.request_track.GetEvents())
+
 
 class RequestFingerprintLens(_UserSatisfiedLens):
   """A lens built using requests in a trace that match a set of fingerprints."""
@@ -95,7 +125,7 @@ class _FirstEventLens(_UserSatisfiedLens):
     if trace is None:
       return
     self._CalculateTimes(trace)
-    self._critical_requests = self._RequestsBefore(
+    self._critical_requests = _UserSatisfiedLens.RequestsBefore(
         trace.request_track, self._satisfied_msec)
     self._critical_request_ids = set(rq.request_id
                                      for rq in self._critical_requests)
@@ -125,11 +155,6 @@ class _FirstEventLens(_UserSatisfiedLens):
   def _CalculateTimes(self, trace):
     """Subclasses should implement to set _satisfied_msec and _event_msec."""
     raise NotImplementedError
-
-  @classmethod
-  def _RequestsBefore(cls, request_track, time_ms):
-    return [rq for rq in request_track.GetEvents()
-            if rq.end_msec <= time_ms]
 
   @classmethod
   def _CheckCategory(cls, tracing_track, category):

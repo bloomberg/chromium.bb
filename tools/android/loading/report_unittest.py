@@ -104,11 +104,11 @@ class LoadingReportTestCase(unittest.TestCase):
                            loading_report['plt_ms'])
     self.assertAlmostEqual(0.34, loading_report['contentful_byte_frac'], 2)
     self.assertAlmostEqual(0.1844, loading_report['significant_byte_frac'], 2)
-    self.assertEqual(2, loading_report['requests'])
+    self.assertEqual(2, loading_report['plt_requests'])
     self.assertEqual(1, loading_report['first_text_requests'])
     self.assertEqual(1, loading_report['contentful_requests'])
     self.assertEqual(1, loading_report['significant_requests'])
-    self.assertEqual(1, loading_report['preloaded_requests'])
+    self.assertEqual(1, loading_report['plt_preloaded_requests'])
     self.assertEqual(1, loading_report['first_text_preloaded_requests'])
     self.assertEqual(1, loading_report['contentful_preloaded_requests'])
     self.assertEqual(1, loading_report['significant_preloaded_requests'])
@@ -174,7 +174,7 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertAlmostEqual(
         float(self._TOPLEVEL_EVENT_DURATION - self._TOPLEVEL_EVENT_OFFSET)
         / (self._LOAD_END_TIME - self._NAVIGATION_START_TIME),
-        loading_report['activity_frac'])
+        loading_report['plt_activity_frac'])
 
   def testActivityBreakdown(self):
     loading_report = report.LoadingReport(self._MakeTrace()).GenerateReport()
@@ -183,11 +183,11 @@ class LoadingReportTestCase(unittest.TestCase):
         self._CONTENTFUL_PAINT - self._NAVIGATION_START_TIME)
 
     self.assertAlmostEqual(self._SCRIPT_EVENT_DURATION / load_time,
-                           loading_report['script_frac'])
+                           loading_report['plt_script_frac'])
     self.assertAlmostEqual(
         (self._PARSING_EVENT_DURATION - self._SCRIPT_EVENT_DURATION)
         / load_time,
-        loading_report['parsing_frac'])
+        loading_report['plt_parsing_frac'])
 
     self.assertAlmostEqual(1., loading_report['significant_script_frac'])
     self.assertAlmostEqual(0., loading_report['significant_parsing_frac'])
@@ -208,7 +208,7 @@ class LoadingReportTestCase(unittest.TestCase):
         'args': {'data': {'scriptName': self.ad_url}}})
     loading_report = report.LoadingReport(
         self._MakeTrace(), [self.ad_domain]).GenerateReport()
-    self.assertAlmostEqual(.5, loading_report['ad_or_tracking_script_frac'])
+    self.assertAlmostEqual(.5, loading_report['ad_or_tracking_script_frac'], 2)
     self.assertAlmostEqual(0., loading_report['ad_or_tracking_parsing_frac'])
 
 
