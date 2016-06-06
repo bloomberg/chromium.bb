@@ -309,53 +309,27 @@ void RunAsync(scoped_refptr<base::TaskRunner> proxy,
   proxy->PostTask(FROM_HERE, base::Bind(callback, cookie, removed));
 }
 
-size_t CountProtectedSecureCookiesAtPriority(
-    CookiePriority priority,
-    CookieMonster::CookieItVector* cookies) {
-  size_t num_protected_secure_cookies = 0;
-  for (const auto& cookie : *cookies) {
-    if (!cookie->second->IsSecure())
-      continue;
-    // 1) At low-priority, only low-priority secure cookies are protected as
-    //    part of the quota.
-    // 2) At medium-priority, only medium-priority secure cookies are protected
-    //    as part of the quota (low-priority secure cookies may be deleted).
-    // 3) At high-priority, medium-priority and high-priority secure cookies are
-    //    protected as part of the quota (low-priority secure cookies may be
-    //    deleted).
-    CookiePriority cookie_priority = cookie->second->Priority();
-    switch (cookie_priority) {
-      case COOKIE_PRIORITY_LOW:
-        if (priority == COOKIE_PRIORITY_LOW)
-          num_protected_secure_cookies++;
-        break;
-      case COOKIE_PRIORITY_MEDIUM:
-      case COOKIE_PRIORITY_HIGH:
-        if (cookie_priority <= priority)
-          num_protected_secure_cookies++;
-        break;
-    }
-  }
-
-  return num_protected_secure_cookies;
-}
-
 bool IsCookieEligibleForEviction(CookiePriority current_priority_level,
                                  bool protect_secure_cookies,
                                  const CanonicalCookie* cookie) {
-  if (!cookie->IsSecure() || !protect_secure_cookies)
-    return cookie->Priority() <= current_priority_level;
+  if (cookie->Priority() == current_priority_level && protect_secure_cookies)
+    return !cookie->IsSecure();
 
-  // Special consideration has to be given for low-priority secure cookies since
-  // they are given lower prority than non-secure medium-priority and non-secure
-  // high-priority cookies. Thus, low-priority secure cookies may be evicted at
-  // a medium and high value of |current_priority_level|. Put another way,
-  // low-priority secure cookies are only protected when the current priority
-  // level is low.
-  if (current_priority_level == COOKIE_PRIORITY_LOW)
-    return false;
+  return cookie->Priority() == current_priority_level;
+}
 
-  return cookie->Priority() == COOKIE_PRIORITY_LOW;
+size_t CountCookiesForPossibleDeletion(
+    CookiePriority priority,
+    const CookieMonster::CookieItVector* cookies,
+    bool protect_secure_cookies) {
+  size_t cookies_count = 0U;
+  for (const auto& cookie : *cookies) {
+    if (cookie->second->Priority() == priority) {
+      if (!protect_secure_cookies || cookie->second->IsSecure())
+        cookies_count++;
+    }
+  }
+  return cookies_count;
 }
 
 }  // namespace
@@ -1928,10 +1902,6 @@ size_t CookieMonster::GarbageCollect(const Time& current,
       // Sort the cookies by access date, from least-recent to most-recent.
       std::sort(cookie_its->begin(), cookie_its->end(), LRACookieSorter);
 
-      size_t additional_quota_low = kDomainCookiesQuotaLow;
-      size_t additional_quota_medium = kDomainCookiesQuotaMedium;
-      size_t additional_quota_high = kDomainCookiesQuotaHigh;
-
       // Remove all but the kDomainCookiesQuotaLow most-recently accessed
       // cookies with low-priority. Then, if cookies still need to be removed,
       // bump the quota and remove low- and medium-priority. Then, if cookies
@@ -1969,26 +1939,24 @@ size_t CookieMonster::GarbageCollect(const Time& current,
         if (!enforce_strict_secure && purge_round.protect_secure_cookies)
           continue;
 
-        // Only adjust the quota if the round is executing, otherwise it is
-        // necesary to delay quota adjustments until a later round. This is
-        // because if the high priority, non-secure round is skipped, its quota
-        // should not count until the later high priority, full round later.
-        size_t* additional_quota = nullptr;
+        // Adjust quota according to the priority of cookies. Each round should
+        // protect certain number of cookies in order to avoid starvation.
+        // For example, when each round starts to remove cookies, the number of
+        // cookies of that priority are counted and a decision whether they
+        // should be deleted or not is made. If yes, some number of cookies of
+        // that priority are deleted considering the quota.
         switch (purge_round.priority) {
           case COOKIE_PRIORITY_LOW:
-            additional_quota = &additional_quota_low;
+            quota = kDomainCookiesQuotaLow;
             break;
           case COOKIE_PRIORITY_MEDIUM:
-            additional_quota = &additional_quota_medium;
+            quota = kDomainCookiesQuotaMedium;
             break;
           case COOKIE_PRIORITY_HIGH:
-            additional_quota = &additional_quota_high;
+            quota = kDomainCookiesQuotaHigh;
             break;
         }
-        quota += *additional_quota;
-        *additional_quota = 0u;
         size_t just_deleted = 0u;
-
         // Purge up to |purge_goal| for all cookies at the given priority. This
         // path will always execute if strict secure cookies is disabled since
         // |purge_goal| must be positive because of the for-loop guard. If
@@ -2058,45 +2026,44 @@ size_t CookieMonster::PurgeLeastRecentMatches(CookieItVector* cookies,
                                               bool protect_secure_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Find the first protected cookie by walking down from the end of the list
-  // cookie list (most-recently accessed) until |to_protect| cookies that match
-  // |priority| are found.
-  //
-  // If |protect_secure_cookies| is true, do a first pass that counts eligible
-  // secure cookies at the specified priority as protected.
+  // 1. Count number of the cookies at |priority|
+  size_t cookies_count_possibly_to_be_deleted = CountCookiesForPossibleDeletion(
+      priority, cookies, false /* count all cookies */);
+
+  // 2. If |cookies_count_possibly_to_be_deleted| at |priority| is less than or
+  // equal |to_protect|, skip round in order to preserve the quota. This
+  // involves secure and non-secure cookies at |priority|.
+  if (cookies_count_possibly_to_be_deleted <= to_protect)
+    return 0u;
+
+  // 3. Calculate number of secure cookies at |priority|
+  // and number of cookies at |priority| that can possibly be deleted.
+  // It is guaranteed we do not delete more than |purge_goal| even if
+  // |cookies_count_possibly_to_be_deleted| is higher.
+  size_t secure_cookies = 0u;
   if (protect_secure_cookies) {
-    to_protect -= std::min(
-        to_protect, CountProtectedSecureCookiesAtPriority(priority, cookies));
+    secure_cookies = CountCookiesForPossibleDeletion(
+        priority, cookies, protect_secure_cookies /* count secure cookies */);
+    cookies_count_possibly_to_be_deleted -=
+        std::max(secure_cookies, to_protect - secure_cookies);
+  } else {
+    cookies_count_possibly_to_be_deleted -= to_protect;
   }
 
-  size_t protection_boundary = cookies->size();
-  while (to_protect > 0 && protection_boundary > 0) {
-    protection_boundary--;
-    if (cookies->at(protection_boundary)->second->Priority() <= priority)
-      to_protect--;
-  }
-
-  // Now, walk up from the beginning of the list (least-recently accessed) until
-  // |purge_goal| cookies are removed, or the iterator hits
-  // |protection_boundary|.
-  size_t removed = 0;
-  size_t current = 0;
-  while (removed < purge_goal && current < protection_boundary) {
+  size_t removed = 0u;
+  size_t current = 0u;
+  while ((removed < purge_goal && current < cookies->size()) &&
+         cookies_count_possibly_to_be_deleted > 0) {
     const CanonicalCookie* current_cookie = cookies->at(current)->second;
-    // Only delete the current cookie if the priority is less than or equal to
-    // the current level. If it is equal to the current level, and secure
-    // cookies are protected, only delete it if it is not secure.
+    // Only delete the current cookie if the priority is equal to
+    // the current level.
     if (IsCookieEligibleForEviction(priority, protect_secure_cookies,
                                     current_cookie)) {
       InternalDeleteCookie(cookies->at(current), true,
                            DELETE_COOKIE_EVICTED_DOMAIN);
       cookies->erase(cookies->begin() + current);
       removed++;
-
-      // The call to 'erase' above shifts the contents of the vector, but
-      // doesn't shift |protection_boundary|. Decrement that here to ensure that
-      // the correct set of cookies is protected.
-      protection_boundary--;
+      cookies_count_possibly_to_be_deleted--;
     } else {
       current++;
     }
