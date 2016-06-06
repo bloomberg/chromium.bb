@@ -24,7 +24,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/test_support_android.h"
 #include "gtest/gtest.h"
 #include "jni/NativeTest_jni.h"
 #include "testing/android/native_test/native_test_util.h"
@@ -71,8 +70,7 @@ static void RunTests(JNIEnv* env,
                      const JavaParamRef<jstring>& jcommand_line_file_path,
                      const JavaParamRef<jstring>& jstdout_file_path,
                      jboolean jstdout_fifo,
-                     const JavaParamRef<jobject>& app_context,
-                     const JavaParamRef<jstring>& jtest_data_dir) {
+                     const JavaParamRef<jobject>& app_context) {
   // Command line initialized basically, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ChromeTestActivity" };
   base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
@@ -125,10 +123,6 @@ static void RunTests(JNIEnv* env,
                switches::kWaitForDebugger);
     base::debug::WaitForDebugger(24 * 60 * 60, false);
   }
-
-  base::FilePath test_data_dir(
-      base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
-  base::InitAndroidTestPaths(test_data_dir);
 
   ScopedMainEntryLogger scoped_main_entry_logger;
   main(argc, &argv[0]);

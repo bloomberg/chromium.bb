@@ -20,7 +20,7 @@ public class UrlUtils {
      */
     public static String getTestFilePath(String path) {
         // TODO(jbudorick): Remove DATA_DIR once everything has been isolated. crbug/400499
-        return getIsolatedTestFilePath(DATA_DIR + path);
+        return PathUtils.getExternalStorageDirectory() + DATA_DIR + path;
     }
 
     // TODO(jbudorick): Remove this function once everything has been isolated and switched back
@@ -30,14 +30,7 @@ public class UrlUtils {
      * @param path Pathname relative to external/
      */
     public static String getIsolatedTestFilePath(String path) {
-        return getIsolatedTestRoot() + "/" + path;
-    }
-
-    /**
-     * Returns the root of the test data directory.
-     */
-    public static String getIsolatedTestRoot() {
-        return PathUtils.getExternalStorageDirectory() + "/chromium_tests_root";
+        return PathUtils.getExternalStorageDirectory() + "/" + path;
     }
 
     /**

@@ -15,7 +15,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.test.util.UrlUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -77,7 +76,7 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
         runOnHandlerThread(new Callable<Void>() {
             @Override
             public Void call() {
-                if (mNativeEmbeddedTestServer == 0) nativeInit(UrlUtils.getIsolatedTestRoot());
+                if (mNativeEmbeddedTestServer == 0) nativeInit();
                 assert mNativeEmbeddedTestServer != 0;
                 return null;
             }
@@ -206,7 +205,7 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
         mNativeEmbeddedTestServer = 0;
     }
 
-    private native void nativeInit(String testDataDir);
+    private native void nativeInit();
     private native void nativeDestroy(long nativeEmbeddedTestServerAndroid);
     private native boolean nativeStart(long nativeEmbeddedTestServerAndroid);
     private native boolean nativeShutdownAndWaitUntilComplete(long nativeEmbeddedTestServerAndroid);

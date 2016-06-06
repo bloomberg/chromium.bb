@@ -10,7 +10,6 @@ import android.os.ConditionVariable;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.test.util.UrlUtils;
 
 /**
  * Wrapper class to start a Quic test server.
@@ -34,8 +33,7 @@ public final class QuicTestServer {
             throw new IllegalStateException("Quic server is already running");
         }
         TestFilesInstaller.installIfNeeded(context);
-        nativeStartQuicTestServer(
-                TestFilesInstaller.getInstalledPath(context), UrlUtils.getIsolatedTestRoot());
+        nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context));
         sBlock.block();
         sBlock.close();
         sServerRunning = true;
@@ -82,7 +80,7 @@ public final class QuicTestServer {
         sBlock.open();
     }
 
-    private static native void nativeStartQuicTestServer(String filePath, String testDataDir);
+    private static native void nativeStartQuicTestServer(String filePath);
     private static native void nativeShutdownQuicTestServer();
     private static native String nativeGetServerHost();
     private static native int nativeGetServerPort();
