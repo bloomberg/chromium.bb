@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace device {
 
@@ -154,10 +156,9 @@ void DataSinkReceiver::Done(uint32_t bytes_read) {
   if (pending_data_buffers_.front()->GetRemainingBytes() == 0)
     pending_data_buffers_.pop();
   if (!pending_data_buffers_.empty()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&DataSinkReceiver::RunReadyCallback,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&DataSinkReceiver::RunReadyCallback,
+                              weak_factory_.GetWeakPtr()));
   }
 }
 

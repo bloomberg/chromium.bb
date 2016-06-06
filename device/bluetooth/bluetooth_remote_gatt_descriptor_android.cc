@@ -10,8 +10,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
 #include "jni/ChromeBluetoothRemoteGattDescriptor_jni.h"
@@ -86,7 +88,7 @@ void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(error_callback,
                    BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
@@ -95,7 +97,7 @@ void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
 
   if (!Java_ChromeBluetoothRemoteGattDescriptor_readRemoteDescriptor(
           AttachCurrentThread(), j_descriptor_.obj())) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(error_callback,
                    BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
@@ -112,7 +114,7 @@ void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (read_pending_ || write_pending_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(error_callback,
                    BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
@@ -123,7 +125,7 @@ void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
   if (!Java_ChromeBluetoothRemoteGattDescriptor_writeRemoteDescriptor(
           env, j_descriptor_.obj(),
           base::android::ToJavaByteArray(env, new_value).obj())) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(error_callback,
                    BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));

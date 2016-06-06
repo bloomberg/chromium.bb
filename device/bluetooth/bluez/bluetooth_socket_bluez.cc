@@ -13,14 +13,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "dbus/bus.h"
 #include "dbus/file_descriptor.h"
@@ -230,7 +232,7 @@ void BluetoothSocketBlueZ::RegisterProfile(
   if (!adapter->IsPresent()) {
     VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
             << ": Delaying profile registration.";
-    base::MessageLoop::current()->PostTask(FROM_HERE, success_callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, success_callback);
     return;
   }
 

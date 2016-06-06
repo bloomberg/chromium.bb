@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 
@@ -281,14 +281,14 @@ bool SerialIoHandler::ConfigurePort(const serial::ConnectionOptions& options) {
 
 void SerialIoHandler::QueueReadCompleted(int bytes_read,
                                          serial::ReceiveError error) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SerialIoHandler::ReadCompleted, this, bytes_read, error));
 }
 
 void SerialIoHandler::QueueWriteCompleted(int bytes_written,
                                           serial::SendError error) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SerialIoHandler::WriteCompleted, this, bytes_written, error));
 }

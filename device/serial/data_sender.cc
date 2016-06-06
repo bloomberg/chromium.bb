@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace device {
 
@@ -80,7 +82,7 @@ bool DataSender::Cancel(int32_t error, const CancelCallback& callback) {
   if (!pending_cancel_.is_null() || shut_down_)
     return false;
   if (sends_awaiting_ack_.empty()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
     return true;
   }
 
@@ -120,8 +122,8 @@ void DataSender::RunCancelCallback() {
   if (pending_cancel_.is_null())
     return;
 
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(pending_cancel_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(pending_cancel_));
   pending_cancel_.Reset();
 }
 
@@ -146,19 +148,19 @@ DataSender::PendingSend::PendingSend(const base::StringPiece& data,
 
 void DataSender::PendingSend::OnDataSent(uint32_t num_bytes, int32_t error) {
   if (error) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(error_callback_, num_bytes, error));
     sender_->SendFailed(error);
   } else {
     DCHECK(num_bytes == data_.size());
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback_, num_bytes));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback_, num_bytes));
     sender_->SendComplete();
   }
 }
 
 void DataSender::PendingSend::DispatchFatalError() {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(error_callback_, 0, sender_->fatal_error_value_));
 }
 
