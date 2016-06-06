@@ -3,7 +3,7 @@ This package contains tools for working with Chromium development.
 The "gclient" wrapper knows how to keep this repository updated to
 the latest versions of these tools as found at:
 
-    http://src.chromium.org/svn/trunk/tools/depot_tools
+    https://chromium.googlesource.com/chromium/tools/depot_tools/+/master/gclient.py
 
 This package contains:
 
