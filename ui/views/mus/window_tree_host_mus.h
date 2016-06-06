@@ -11,20 +11,12 @@
 
 class SkBitmap;
 
-namespace bitmap_uploader {
-class BitmapUploader;
-}
-
 namespace mus {
 class Window;
 }
 
 namespace shell {
 class Connector;
-}
-
-namespace ui {
-class ViewProp;
 }
 
 namespace views {
@@ -35,9 +27,7 @@ class PlatformWindowMus;
 
 class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
-  WindowTreeHostMus(shell::Connector* connector,
-                    NativeWidgetMus* native_widget,
-                    mus::Window* window);
+  WindowTreeHostMus(NativeWidgetMus* native_widget, mus::Window* window);
   ~WindowTreeHostMus() override;
 
  private:
@@ -49,10 +39,6 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
 
   NativeWidgetMus* native_widget_;
   std::unique_ptr<InputMethodMUS> input_method_;
-
-  // Bitmap management.
-  std::unique_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
-  std::unique_ptr<ui::ViewProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };

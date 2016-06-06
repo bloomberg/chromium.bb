@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/bitmap_uploader/bitmap_uploader.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -25,6 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/view_prop.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -491,22 +493,35 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
 
   // TODO(fsamuel): Figure out lifetime of |window_|.
   aura::SetMusWindow(content_, window_);
-
   window->SetLocalProperty(kNativeWidgetMusKey, this);
+
   // WindowTreeHost creates the compositor using the ContextFactory from
   // aura::Env. Install |context_factory_| there so that |context_factory_| is
   // picked up.
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
   // For Chrome, we need the GpuProcessTransportFactory so that renderer and
-  // browser pixels are composited into a single backing
-  // SoftwareOutputDeviceMus.
-  if (!default_context_factory && connector) {
+  // browser pixels are composited into a single backing SoftwareOutputDeviceMus
+  // (which also requires the BitmapUploader).
+  bool needs_bitmap_uploader = false;
+  if (!default_context_factory) {
     context_factory_.reset(
         new SurfaceContextFactory(connector, window_, surface_type_));
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
+  } else {
+    needs_bitmap_uploader = true;
   }
-  window_tree_host_.reset(new WindowTreeHostMus(connector, this, window_));
+
+  window_tree_host_.reset(new WindowTreeHostMus(this, window_));
+  if (needs_bitmap_uploader) {
+    bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(window));
+    bitmap_uploader_->Init(connector);
+    prop_.reset(
+        new ui::ViewProp(window_tree_host_->GetAcceleratedWidget(),
+                         bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
+                         bitmap_uploader_.get()));
+  }
+
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
 }
 

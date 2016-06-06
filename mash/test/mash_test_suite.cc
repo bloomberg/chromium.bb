@@ -9,8 +9,6 @@
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace mash {
 namespace test {
@@ -21,7 +19,6 @@ MashTestSuite::~MashTestSuite() {}
 
 void MashTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gl::GLSurfaceTestSupport::InitializeOneOff();
 
   // Load ash resources and en-US strings; not 'common' (Chrome) resources.
   // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
@@ -34,16 +31,11 @@ void MashTestSuite::Initialize() {
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance();
-
-  const bool enable_pixel_output = false;
-  env_->set_context_factory(
-      ui::InitializeContextFactoryForTests(enable_pixel_output));
 }
 
 void MashTestSuite::Shutdown() {
   env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
-  ui::TerminateContextFactoryForTests();
   base::TestSuite::Shutdown();
 }
 

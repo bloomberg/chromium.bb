@@ -5,11 +5,9 @@
 #include "ui/views/mus/window_tree_host_mus.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/bitmap_uploader/bitmap_uploader.h"
 #include "components/mus/public/cpp/window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/view_prop.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/stub/stub_window.h"
 #include "ui/views/mus/input_method_mus.h"
@@ -24,8 +22,7 @@ static uint32_t accelerated_widget_count = 1;
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, public:
 
-WindowTreeHostMus::WindowTreeHostMus(shell::Connector* connector,
-                                     NativeWidgetMus* native_widget,
+WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
                                      mus::Window* window)
     : native_widget_(native_widget) {
 // We need accelerated widget numbers to be different for each
@@ -40,18 +37,6 @@ WindowTreeHostMus::WindowTreeHostMus(shell::Connector* connector,
 #endif
   // TODO(markdittmer): Use correct device-scale-factor from |window|.
   OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
-
-  // If no connector was passed, then it's entirely possible that mojo has not
-  // been initialized and BitmapUploader will not work. This occurs, for
-  // example, in some unit test contexts.
-  if (connector) {
-    bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(window));
-    bitmap_uploader_->Init(connector);
-    prop_.reset(
-        new ui::ViewProp(accelerated_widget,
-                         bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
-                         bitmap_uploader_.get()));
-  }
 
   SetPlatformWindow(base::WrapUnique(new ui::StubWindow(nullptr)));
   // Initialize the stub platform window bounds to those of the mus::Window.
