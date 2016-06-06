@@ -5490,12 +5490,11 @@ void RenderFrameImpl::NavigateInternal(
 
     // Perform a navigation to a data url if needed.
     // Note: the base URL might be invalid, so also check the data URL string.
-    if (!common_params.base_url_for_data_url.is_empty() ||
+    bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
 #if defined(OS_ANDROID)
-        !request_params.data_url_as_string.empty() ||
+    should_load_data_url |= !request_params.data_url_as_string.empty();
 #endif
-        (browser_side_navigation &&
-         common_params.url.SchemeIs(url::kDataScheme))) {
+    if (should_load_data_url) {
       LoadDataURL(common_params, request_params, frame_, load_type,
                   item_for_history_navigation, history_load_type,
                   is_client_redirect);

@@ -436,12 +436,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                       SyncLoadResponse* sync_load_response) {
   DCHECK(request_id_ == -1);
   request_ = request;  // Save the request.
-  if (request.getExtraData()) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.getExtraData());
-    stream_override_ = extra_data->TakeStreamOverrideOwnership();
-  }
-
   GURL url = request.url();
 
   if (CanHandleDataURLRequestLocally()) {
@@ -460,6 +454,13 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     }
     return;
   }
+
+  if (request.getExtraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.getExtraData());
+    stream_override_ = extra_data->TakeStreamOverrideOwnership();
+  }
+
 
   // PlzNavigate: outside of tests, the only navigation requests going through
   // the WebURLLoader are the ones created by CommitNavigation. Several browser
