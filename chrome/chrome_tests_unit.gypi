@@ -547,6 +547,7 @@
       'browser/extensions/scripting_permissions_modifier_unittest.cc',
       'browser/extensions/shared_module_service_unittest.cc',
       'browser/extensions/standard_management_policy_provider_unittest.cc',
+      'browser/extensions/tab_helper_unittest.cc',
       'browser/extensions/token_cache/token_cache_service_unittest.cc',
       'browser/extensions/update_install_gate_unittest.cc',
       'browser/extensions/updater/extension_cache_fake.cc',

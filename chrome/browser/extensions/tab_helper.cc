@@ -84,6 +84,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       location_bar_controller_(new LocationBarController(web_contents)),
       extension_action_runner_(new ExtensionActionRunner(web_contents)),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()),
+      registry_observer_(this),
       image_loader_ptr_factory_(this),
       weak_ptr_factory_(this) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
@@ -168,6 +169,13 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
     return;
 
   extension_app_ = extension;
+
+  if (extension_app_) {
+    registry_observer_.Add(
+        ExtensionRegistry::Get(web_contents()->GetBrowserContext()));
+  } else {
+    registry_observer_.RemoveAll();
+  }
 
   UpdateExtensionAppIcon(extension_app_);
 
@@ -530,6 +538,15 @@ void TabHelper::OnInlineInstallComplete(int install_id,
 
 WebContents* TabHelper::GetAssociatedWebContents() const {
   return web_contents();
+}
+
+void TabHelper::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  DCHECK(extension_app_);
+  if (extension == extension_app_)
+    SetExtensionApp(nullptr);
 }
 
 void TabHelper::GetApplicationInfo(WebAppAction action) {

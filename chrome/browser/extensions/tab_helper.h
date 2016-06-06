@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_reenabler.h"
 #include "chrome/common/extensions/webstore_install_result.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/script_execution_observer.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/stack_frame.h"
@@ -47,7 +49,8 @@ class WebstoreInlineInstallerFactory;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
-                  public extensions::ExtensionFunctionDispatcher::Delegate,
+                  public ExtensionFunctionDispatcher::Delegate,
+                  public ExtensionRegistryObserver,
                   public base::SupportsWeakPtr<TabHelper>,
                   public content::NotificationObserver,
                   public content::WebContentsUserData<TabHelper> {
@@ -160,6 +163,11 @@ class TabHelper : public content::WebContentsObserver,
   extensions::WindowController* GetExtensionWindowController() const override;
   content::WebContents* GetAssociatedWebContents() const override;
 
+  // ExtensionRegistryObserver:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override;
+
   // Message handlers.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& info);
   void OnInlineWebstoreInstall(content::RenderFrameHost* host,
@@ -258,6 +266,9 @@ class TabHelper : public content::WebContentsObserver,
 
   // The reenable prompt for disabled extensions, if any.
   std::unique_ptr<ExtensionReenabler> extension_reenabler_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
