@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+
+<div id="testElement"></div>
+
+<script>
+
+var computedStyleMap = getComputedStyleMap(testElement);
+var computedStyle = getComputedStyle(testElement);
+
+test(function() {
+  assert_throws(new TypeError(), function() {
+    getComputedStyleMap(null);
+  });
+}, 'Test that passing null to getComputedStyleMap does not crash');
+
+test(function() {
+  var properties = computedStyleMap.getProperties();
+  assert_equals(properties.length, computedStyle.length);
+}, "Computed StyleMap.getProperties returns the same number of properties as ComputedStyle");
+
+test(function() {
+  var properties = computedStyleMap.getProperties();
+  for (var i = 0; i < properties.length; i++) {
+    var property = properties[i];
+    var styleValues = computedStyleMap.getAll(property);
+    if (styleValues.length == 1) {
+      // TODO(meade): Remove this if statement once all properties are supported.
+      // TODO(meade): Handle sequence types.
+      assert_equals(computedStyleMap.get(property).cssString, computedStyle[property]);
+    }
+  }
+}, 'Properties retrieved from ComputedStyleMap reflect the same values as from ComputedStyle');
+
+test(function() {
+  assert_false(computedStyleMap.has('max-zoom'));
+}, 'has() return false for an unsupported property.');
+
+test(function() {
+  assert_throws(null, function() { computedStyleMap.has('bananas'); });
+}, 'has() throws for an invalid property.');
+
+test(function() {
+  assert_false(computedStyleMap.has('border'));
+}, 'has() return false for unsupported shorthand properties.');
+
+test(function() {
+  assert_true(computedStyleMap.has('width'));
+}, 'has() returns true for a set property.');
+
+</script>

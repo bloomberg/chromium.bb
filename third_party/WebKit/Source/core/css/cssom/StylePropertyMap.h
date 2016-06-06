@@ -31,8 +31,6 @@ public:
     bool has(const String& propertyName, ExceptionState&);
 
     virtual StyleValueVector getAll(CSSPropertyID) = 0;
-    virtual bool has(CSSPropertyID) = 0;
-
     virtual Vector<String> getProperties() = 0;
 
     // Modifiers.

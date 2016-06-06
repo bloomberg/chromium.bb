@@ -26,6 +26,9 @@ public:
     {
         exceptionState.throwTypeError("This StylePropertyMap is immutable.");
     }
+
+protected:
+    ImmutableStylePropertyMap() = default;
 };
 
 } // namespace blink

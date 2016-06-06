@@ -7671,6 +7671,7 @@ interface webkitURL
     method focus
     method gc
     method getComputedStyle
+    method getComputedStyleMap
     method getMatchedCSSRules
     method getSelection
     method matchMedia

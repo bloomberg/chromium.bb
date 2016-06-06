@@ -17,7 +17,6 @@ public:
         : m_ownerElement(ownerElement) { }
 
     StyleValueVector getAll(CSSPropertyID) override;
-    bool has(CSSPropertyID) override;
     Vector<String> getProperties() override;
 
     void set(CSSPropertyID, StyleValueOrStyleValueSequenceOrString&, ExceptionState&) override;

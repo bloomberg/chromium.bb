@@ -23,11 +23,6 @@ StylePropertyMap::StyleValueVector InlineStylePropertyMap::getAll(CSSPropertyID 
     return cssValueToStyleValueVector(propertyID, *cssValue);
 }
 
-bool InlineStylePropertyMap::has(CSSPropertyID propertyID)
-{
-    return !getAll(propertyID).isEmpty();
-}
-
 Vector<String> InlineStylePropertyMap::getProperties()
 {
     Vector<String> result;

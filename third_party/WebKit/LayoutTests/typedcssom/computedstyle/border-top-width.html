@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+
+<div id="testElement"></div>
+
+<script>
+
+var computedStyleMap = getComputedStyleMap(testElement);
+
+test(function() {
+  testElement.style.borderTop = '10px solid #000';
+
+  var result = computedStyleMap.get('border-top-width');
+  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.cssString, '10px');
+}, "Getting a 10px border-top-width returns a CSSSimpleLength");
+
+test(function() {
+  testElement.style.borderTop = '20px solid #000';
+
+  var result = computedStyleMap.getAll('border-top-width');
+  assert_equals(result.length, 1);
+  assert_equals(result[0].cssString, '20px');
+}, "getAll for border-top-width returns a single value");
+
+</script>

@@ -43,7 +43,7 @@ bool StylePropertyMap::has(const String& propertyName, ExceptionState& exception
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid)
-        return has(propertyID);
+        return !getAll(propertyID).isEmpty();
 
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
