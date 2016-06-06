@@ -15,7 +15,8 @@ namespace ui {
 
 class STUB_WINDOW_EXPORT StubWindow : NON_EXPORTED_BASE(public PlatformWindow) {
  public:
-  explicit StubWindow(PlatformWindowDelegate* delegate);
+  StubWindow(PlatformWindowDelegate* delegate,
+             bool use_default_accelerated_widget = true);
   ~StubWindow() override;
 
  private:

@@ -10,6 +10,7 @@
     'target_name': 'stub_window',
     'type': '<(component)',
     'dependencies': [
+      '../../../base/base.gyp:base',
       '../../gfx/gfx.gyp:gfx',
       '../../gfx/gfx.gyp:gfx_geometry',
       '../platform_window.gyp:platform_window',

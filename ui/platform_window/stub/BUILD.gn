@@ -6,6 +6,7 @@ component("stub") {
   output_name = "stub_window"
 
   deps = [
+    "//base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/platform_window",

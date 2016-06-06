@@ -365,11 +365,6 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
   void OnWindowVisibilityChanged(mus::Window* window) override {
     native_widget_mus_->OnMusWindowVisibilityChanged(window);
   }
-  void OnWindowBoundsChanged(mus::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override {
-    platform_window_delegate()->OnBoundsChanged(new_bounds);
-  }
   void OnWindowPredefinedCursorChanged(mus::Window* window,
                                        mus::mojom::Cursor cursor) override {
     DCHECK_EQ(window, mus_window());

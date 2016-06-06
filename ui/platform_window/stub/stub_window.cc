@@ -4,12 +4,16 @@
 
 #include "ui/platform_window/stub/stub_window.h"
 
+#include "base/logging.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
-StubWindow::StubWindow(PlatformWindowDelegate* delegate) : delegate_(delegate) {
-  if (delegate_)
+StubWindow::StubWindow(PlatformWindowDelegate* delegate,
+                       bool use_default_accelerated_widget)
+    : delegate_(delegate) {
+  DCHECK(delegate);
+  if (use_default_accelerated_widget)
     delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
 }
 
@@ -23,16 +27,14 @@ void StubWindow::Hide() {
 }
 
 void StubWindow::Close() {
-  if (delegate_)
-    delegate_->OnClosed();
+  delegate_->OnClosed();
 }
 
 void StubWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
   bounds_ = bounds;
-  if (delegate_)
-    delegate_->OnBoundsChanged(bounds);
+  delegate_->OnBoundsChanged(bounds);
 }
 
 gfx::Rect StubWindow::GetBounds() {
