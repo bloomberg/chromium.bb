@@ -38,7 +38,11 @@ gfx::Rect GetWindowUserSetBounds(const ::mus::Window* window);
 void SetWindowPreferredSize(::mus::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(const ::mus::Window* window);
 
-mojom::Container GetRequestedContainer(const ::mus::Window* window);
+// If |window| has the |kWindowContainer_Property| set as a property, then
+// the value of |kWindowContainer_Property| is set in |container| and true is
+// returned. Otherwise false is returned.
+bool GetRequestedContainer(const ::mus::Window* window,
+                           mojom::Container* container);
 
 // Returns a bitfield of kResizeBehavior* values from
 // window_manager_constants.mojom.

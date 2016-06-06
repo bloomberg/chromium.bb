@@ -32,6 +32,7 @@ class Event;
 namespace ash {
 
 class AlwaysOnTopController;
+class RootWindowControllerCommon;
 
 namespace mus {
 
@@ -45,6 +46,7 @@ class WmRootWindowControllerMus;
 class WmShelfMus;
 class WmTestBase;
 class WmTestHelper;
+class WmWindowMus;
 
 // RootWindowController manages the windows and state for a single display.
 //
@@ -70,7 +72,9 @@ class RootWindowController : public ::mus::WindowObserver,
   void IncrementWindowCount() { ++window_count_; }
 
   ::mus::Window* GetWindowForContainer(mojom::Container container);
-  bool WindowIsContainer(const ::mus::Window* window) const;
+  bool WindowIsContainer(::mus::Window* window);
+
+  WmWindowMus* GetWindowByShellWindowId(int id);
 
   WindowManager* window_manager() { return window_manager_.get(); }
 
@@ -109,14 +113,14 @@ class RootWindowController : public ::mus::WindowObserver,
   // ShelfLayoutManagerDelegate:
   void OnShelfWindowAvailable() override;
 
-  // Sets up the window containers used for z-space management.
-  void CreateContainer(mojom::Container container,
-                       mojom::Container parent_container);
-  void CreateContainers();
+  // Creates the necessary set of layout managers in the shell windows.
+  void CreateLayoutManagers();
 
   WindowManagerApplication* app_;
   ::mus::Window* root_;
   int window_count_;
+
+  std::unique_ptr<RootWindowControllerCommon> root_window_controller_common_;
 
   std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
   std::unique_ptr<WmShelfMus> wm_shelf_;

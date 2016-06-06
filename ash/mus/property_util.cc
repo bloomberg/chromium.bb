@@ -74,12 +74,14 @@ gfx::Size GetWindowPreferredSize(const ::mus::Window* window) {
   return gfx::Size();
 }
 
-mojom::Container GetRequestedContainer(const ::mus::Window* window) {
-  if (window->HasSharedProperty(mojom::kWindowContainer_Property)) {
-    return static_cast<mojom::Container>(
-        window->GetSharedProperty<int32_t>(mojom::kWindowContainer_Property));
-  }
-  return mojom::Container::USER_PRIVATE_WINDOWS;
+bool GetRequestedContainer(const ::mus::Window* window,
+                           mojom::Container* container) {
+  if (!window->HasSharedProperty(mojom::kWindowContainer_Property))
+    return false;
+
+  *container = static_cast<mojom::Container>(
+      window->GetSharedProperty<int32_t>(mojom::kWindowContainer_Property));
+  return true;
 }
 
 int32_t GetResizeBehavior(const ::mus::Window* window) {

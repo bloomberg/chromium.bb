@@ -90,7 +90,7 @@ Window::Window(WindowDelegate* delegate)
       delegate_(delegate),
       parent_(NULL),
       visible_(false),
-      id_(-1),
+      id_(kInitialId),
       transparent_(false),
       user_data_(NULL),
       ignore_events_(false),

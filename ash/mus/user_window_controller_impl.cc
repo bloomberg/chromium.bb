@@ -4,6 +4,8 @@
 
 #include "ash/mus/user_window_controller_impl.h"
 
+#include "ash/common/shell_window_ids.h"
+#include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/public/interfaces/container.mojom.h"
@@ -136,8 +138,9 @@ void UserWindowControllerImpl::RemoveObservers(::mus::Window* user_container) {
 }
 
 ::mus::Window* UserWindowControllerImpl::GetUserWindowContainer() const {
-  return root_controller_->GetWindowForContainer(
-      mojom::Container::USER_PRIVATE_WINDOWS);
+  WmWindowMus* window = root_controller_->GetWindowByShellWindowId(
+      kShellWindowId_DefaultContainer);
+  return window ? window->mus_window() : nullptr;
 }
 
 void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {

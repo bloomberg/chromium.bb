@@ -70,6 +70,7 @@
       'common/shelf/wm_shelf_observer.h',
       'common/shelf/wm_shelf_util.cc',
       'common/shelf/wm_shelf_util.h',
+      'common/shell_window_ids.cc',
       'common/shell_window_ids.h',
       'common/wm/always_on_top_controller.cc',
       'common/wm/always_on_top_controller.h',

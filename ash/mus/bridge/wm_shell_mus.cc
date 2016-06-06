@@ -184,8 +184,9 @@ bool WmShellMus::IsActivationParent(::mus::Window* window) {
   if (!window)
     return false;
 
-  for (size_t i = 0; i < kNumActivationContainers; ++i) {
-    if (window->local_id() == static_cast<int>(kActivationContainers[i]))
+  const int shell_window_id = WmWindowMus::Get(window)->GetShellWindowId();
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
+    if (shell_window_id == kActivatableShellWindowIds[i])
       return true;
   }
   return false;

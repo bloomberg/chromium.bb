@@ -12,8 +12,6 @@ source_set("lib") {
   sources = [
     "accelerator_registrar_impl.cc",
     "accelerator_registrar_impl.h",
-    "background_layout.cc",
-    "background_layout.h",
     "bridge/mus_layout_manager_adapter.cc",
     "bridge/mus_layout_manager_adapter.h",
     "bridge/wm_lookup_mus.cc",
@@ -32,8 +30,6 @@ source_set("lib") {
     "disconnected_app_handler.h",
     "drag_window_resizer.cc",
     "drag_window_resizer.h",
-    "fill_layout.cc",
-    "fill_layout.h",
     "frame/caption_buttons/caption_button_types.h",
     "frame/caption_buttons/frame_caption_button.cc",
     "frame/caption_buttons/frame_caption_button.h",

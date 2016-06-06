@@ -16,26 +16,6 @@ namespace ash {
 namespace wm {
 namespace {
 
-// These are the list of container ids of containers which may contain windows
-// that need to be activated in the order that they should be activated.
-const int kWindowContainerIds[] = {
-    kShellWindowId_OverlayContainer,
-    kShellWindowId_LockSystemModalContainer,
-    kShellWindowId_SettingBubbleContainer,
-    kShellWindowId_LockScreenContainer,
-    kShellWindowId_SystemModalContainer,
-    kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_AppListContainer,
-    kShellWindowId_DefaultContainer,
-
-    // Docked, panel, launcher and status are intentionally checked after other
-    // containers even though these layers are higher. The user expects their
-    // windows to be focused before these elements.
-    kShellWindowId_DockedContainer,
-    kShellWindowId_PanelContainer,
-    kShellWindowId_ShelfContainer,
-    kShellWindowId_StatusContainer, };
-
 bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
                                             int container_id) {
   for (; window; window = window->parent()) {
@@ -75,8 +55,8 @@ bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
   if (window->id() == kShellWindowId_DefaultContainer)
     return true;
 
-  for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
-    if (window->id() == kWindowContainerIds[i])
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; i++) {
+    if (window->id() == kActivatableShellWindowIds[i])
       return true;
   }
   return false;
@@ -136,9 +116,10 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   aura::Window* root = starting_window->GetRootWindow();
   if (!root)
     root = Shell::GetTargetRootWindow();
-  int container_count = static_cast<int>(arraysize(kWindowContainerIds));
+  int container_count = static_cast<int>(kNumActivatableShellWindowIds);
   for (int i = 0; i < container_count; i++) {
-    aura::Window* container = Shell::GetContainer(root, kWindowContainerIds[i]);
+    aura::Window* container =
+        Shell::GetContainer(root, kActivatableShellWindowIds[i]);
     if (container && container->Contains(starting_window)) {
       starting_container_index = i;
       break;
@@ -164,7 +145,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
   aura::Window* window = NULL;
   aura::Window* root = ignore ? ignore->GetRootWindow() : NULL;
   aura::Window::Windows containers = Shell::GetContainersFromAllRootWindows(
-      kWindowContainerIds[index], root);
+      kActivatableShellWindowIds[index], root);
   for (aura::Window::Windows::const_iterator iter = containers.begin();
         iter != containers.end() && !window; ++iter) {
     window = GetTopmostWindowToActivateInContainer((*iter), ignore);

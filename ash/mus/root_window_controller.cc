@@ -9,19 +9,19 @@
 #include <map>
 #include <sstream>
 
+#include "ash/common/root_window_controller_common.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
+#include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
-#include "ash/mus/background_layout.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
-#include "ash/mus/fill_layout.h"
 #include "ash/mus/screenlock_layout.h"
 #include "ash/mus/shadow_controller.h"
 #include "ash/mus/shelf_layout_manager.h"
@@ -54,10 +54,6 @@ const uint32_t kWindowSwitchAccelerator = 1;
 
 void AssertTrue(bool success) {
   DCHECK(success);
-}
-
-int ContainerToLocalId(Container container) {
-  return static_cast<int>(container);
 }
 
 class WorkspaceLayoutManagerDelegateImpl
@@ -113,13 +109,20 @@ shell::Connector* RootWindowController::GetConnector() {
 
 ::mus::Window* RootWindowController::GetWindowForContainer(
     Container container) {
-  return root_->GetChildByLocalId(ContainerToLocalId(container));
+  WmWindowMus* wm_window =
+      GetWindowByShellWindowId(MashContainerToAshShellWindowId(container));
+  DCHECK(wm_window);
+  return wm_window->mus_window();
 }
 
-bool RootWindowController::WindowIsContainer(
-    const ::mus::Window* window) const {
-  return window && window->local_id() > ContainerToLocalId(Container::ROOT) &&
-         window->local_id() < ContainerToLocalId(Container::COUNT);
+bool RootWindowController::WindowIsContainer(::mus::Window* window) {
+  return window &&
+         WmWindowMus::Get(window)->GetShellWindowId() != kShellWindowId_Invalid;
+}
+
+WmWindowMus* RootWindowController::GetWindowByShellWindowId(int id) {
+  return WmWindowMus::AsWmWindowMus(
+      WmWindowMus::Get(root_)->GetChildByShellWindowId(id));
 }
 
 ::mus::WindowManagerClient* RootWindowController::window_manager_client() {
@@ -165,25 +168,30 @@ void RootWindowController::AddAccelerators() {
 
 void RootWindowController::OnEmbed(::mus::Window* root) {
   root_ = root;
-  root_->set_local_id(ContainerToLocalId(Container::ROOT));
   root_->AddObserver(this);
-  layout_managers_[root_].reset(new FillLayout(root_));
 
   app_->OnRootWindowControllerGotRoot(this);
 
   wm_root_window_controller_.reset(
       new WmRootWindowControllerMus(app_->shell(), this));
 
-  CreateContainers();
+  root_window_controller_common_.reset(
+      new RootWindowControllerCommon(WmWindowMus::Get(root_)));
+  root_window_controller_common_->CreateContainers();
+  root_window_controller_common_->CreateLayoutManagers();
+  CreateLayoutManagers();
 
-  for (size_t i = 0; i < kNumActivationContainers; ++i) {
+  // Force a layout of the root, and its children, RootWindowLayout handles
+  // both.
+  root_window_controller_common_->root_window_layout()->OnWindowResized();
+
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
     window_manager_client()->AddActivationParent(
-        GetWindowForContainer(kActivationContainers[i]));
+        GetWindowByShellWindowId(kActivatableShellWindowIds[i])->mus_window());
   }
 
-  WmWindow* always_on_top_container =
-      WmWindowMus::Get(root)->GetChildByShellWindowId(
-          kShellWindowId_AlwaysOnTopContainer);
+  WmWindowMus* always_on_top_container =
+      GetWindowByShellWindowId(kShellWindowId_AlwaysOnTopContainer);
   always_on_top_controller_.reset(
       new AlwaysOnTopController(always_on_top_container));
 
@@ -229,123 +237,46 @@ void RootWindowController::OnShelfWindowAvailable() {
   // docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
 }
 
-void RootWindowController::CreateContainer(Container container,
-                                           Container parent_container) {
-  // Set the window's name to the container name (e.g. "Container::LOGIN"),
-  // which makes the window hierarchy easier to read.
-  std::map<std::string, std::vector<uint8_t>> properties;
-  std::ostringstream container_name;
-  container_name << container;
-  properties[::mus::mojom::WindowManager::kName_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(container_name.str());
-
-  ::mus::Window* window = root_->window_tree()->NewWindow(&properties);
-  window->set_local_id(ContainerToLocalId(container));
-  layout_managers_[window].reset(new FillLayout(window));
-  WmWindowMus::Get(window)->SetShellWindowId(
-      MashContainerToAshContainer(container));
-
-  // User private windows are hidden by default until the window manager learns
-  // the lock state, so their contents are never accidentally revealed. Tests,
-  // however, usually assume the screen is unlocked.
-  const bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::mus::switches::kUseTestConfig);
-  window->SetVisible(container != Container::USER_PRIVATE || is_test);
-
-  ::mus::Window* parent =
-      root_->GetChildByLocalId(ContainerToLocalId(parent_container));
-  parent->AddChild(window);
-}
-
-void RootWindowController::CreateContainers() {
-  CreateContainer(Container::ALL_USER_BACKGROUND, Container::ROOT);
-  CreateContainer(Container::USER, Container::ROOT);
-  CreateContainer(Container::USER_BACKGROUND, Container::USER);
-  CreateContainer(Container::USER_PRIVATE, Container::USER);
-  CreateContainer(Container::USER_PRIVATE_WINDOWS, Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS,
-                  Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_DOCKED_WINDOWS,
-                  Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_PRESENTATION_WINDOWS,
-                  Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_SHELF, Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_PANELS, Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_APP_LIST, Container::USER_PRIVATE);
-  CreateContainer(Container::USER_PRIVATE_SYSTEM_MODAL,
-                  Container::USER_PRIVATE);
-  CreateContainer(Container::LOGIN, Container::ROOT);
-  CreateContainer(Container::LOGIN_WINDOWS, Container::LOGIN);
-  CreateContainer(Container::LOGIN_APP, Container::LOGIN);
-  CreateContainer(Container::LOGIN_SHELF, Container::LOGIN);
-  CreateContainer(Container::STATUS, Container::ROOT);
-  CreateContainer(Container::BUBBLES, Container::ROOT);
-  CreateContainer(Container::SYSTEM_MODAL_WINDOWS, Container::ROOT);
-  CreateContainer(Container::KEYBOARD, Container::ROOT);
-  CreateContainer(Container::MENUS, Container::ROOT);
-  CreateContainer(Container::DRAG_AND_TOOLTIPS, Container::ROOT);
-
+void RootWindowController::CreateLayoutManagers() {
   // Override the default layout managers for certain containers.
-  ::mus::Window* user_background =
-      GetWindowForContainer(Container::USER_BACKGROUND);
-  layout_managers_[user_background].reset(
-      new BackgroundLayout(user_background));
+  WmWindowMus* lock_screen_container =
+      GetWindowByShellWindowId(kShellWindowId_LockScreenContainer);
+  layout_managers_[lock_screen_container->mus_window()].reset(
+      new ScreenlockLayout(lock_screen_container->mus_window()));
 
-  ::mus::Window* login_app = GetWindowForContainer(Container::LOGIN_APP);
-  layout_managers_[login_app].reset(new ScreenlockLayout(login_app));
-
-  ::mus::Window* user_shelf =
-      GetWindowForContainer(Container::USER_PRIVATE_SHELF);
+  WmWindowMus* shelf_container =
+      GetWindowByShellWindowId(kShellWindowId_ShelfContainer);
   ShelfLayoutManager* shelf_layout_manager =
-      new ShelfLayoutManager(user_shelf, this);
-  layout_managers_[user_shelf].reset(shelf_layout_manager);
+      new ShelfLayoutManager(shelf_container->mus_window(), this);
+  layout_managers_[shelf_container->mus_window()].reset(shelf_layout_manager);
 
   wm_shelf_.reset(new WmShelfMus(shelf_layout_manager));
 
-  ::mus::Window* status = GetWindowForContainer(Container::STATUS);
-  layout_managers_[status].reset(new StatusLayoutManager(status));
+  WmWindowMus* status_container =
+      GetWindowByShellWindowId(kShellWindowId_StatusContainer);
+  layout_managers_[status_container->mus_window()].reset(
+      new StatusLayoutManager(status_container->mus_window()));
 
-  ::mus::Window* user_private_windows =
-      GetWindowForContainer(Container::USER_PRIVATE_WINDOWS);
+  WmWindowMus* default_container =
+      GetWindowByShellWindowId(kShellWindowId_DefaultContainer);
   // WorkspaceLayoutManager is not a mash::wm::LayoutManager (it's a
   // wm::LayoutManager), so it can't be in |layout_managers_|.
-  layout_managers_.erase(user_private_windows);
   std::unique_ptr<WorkspaceLayoutManagerDelegateImpl>
       workspace_layout_manager_delegate(new WorkspaceLayoutManagerDelegateImpl(
           wm_root_window_controller_.get()));
-  WmWindowMus* user_private_windows_wm = WmWindowMus::Get(user_private_windows);
-  user_private_windows_wm->SetSnapsChildrenToPhysicalPixelBoundary();
-  user_private_windows_wm->SetChildrenUseExtendedHitRegion();
-  user_private_windows_wm->SetLayoutManager(
+  default_container->SetLayoutManager(
       base::WrapUnique(new WorkspaceLayoutManager(
-          user_private_windows_wm,
-          std::move(workspace_layout_manager_delegate))));
+          default_container, std::move(workspace_layout_manager_delegate))));
 
-  ::mus::Window* user_private_docked_windows =
-      GetWindowForContainer(Container::USER_PRIVATE_DOCKED_WINDOWS);
-  WmWindowMus* user_private_docked_windows_wm =
-      WmWindowMus::Get(user_private_docked_windows);
-  user_private_docked_windows_wm->SetSnapsChildrenToPhysicalPixelBoundary();
-  layout_managers_.erase(user_private_docked_windows);
-  user_private_docked_windows_wm->SetChildrenUseExtendedHitRegion();
-  user_private_docked_windows_wm->SetLayoutManager(base::WrapUnique(
-      new DockedWindowLayoutManager(user_private_docked_windows_wm)));
+  WmWindowMus* docked_container =
+      GetWindowByShellWindowId(kShellWindowId_DockedContainer);
+  docked_container->SetLayoutManager(
+      base::WrapUnique(new DockedWindowLayoutManager(docked_container)));
 
-  ::mus::Window* user_private_panels =
-      GetWindowForContainer(Container::USER_PRIVATE_PANELS);
-  WmWindowMus* user_private_panels_wm = WmWindowMus::Get(user_private_panels);
-  user_private_panels_wm->SetSnapsChildrenToPhysicalPixelBoundary();
-  layout_managers_.erase(user_private_panels);
-  user_private_panels_wm->SetChildrenUseExtendedHitRegion();
-  user_private_panels_wm->SetLayoutManager(
-      base::WrapUnique(new PanelLayoutManager(user_private_panels_wm)));
-
-  ::mus::Window* user_private_always_on_top =
-      GetWindowForContainer(Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS);
-  WmWindowMus* user_private_always_on_top_wm =
-      WmWindowMus::Get(user_private_always_on_top);
-  user_private_always_on_top_wm->SetChildrenUseExtendedHitRegion();
-  user_private_always_on_top_wm->SetSnapsChildrenToPhysicalPixelBoundary();
+  WmWindowMus* panel_container =
+      GetWindowByShellWindowId(kShellWindowId_PanelContainer);
+  panel_container->SetLayoutManager(
+      base::WrapUnique(new PanelLayoutManager(panel_container)));
 }
 
 }  // namespace mus

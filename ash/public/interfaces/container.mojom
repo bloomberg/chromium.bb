@@ -4,43 +4,22 @@
 
 module ash.mojom;
 
-// Containers for windows. This list is in the z-order of the windows, however
-// they are actually built in a hierarchy (e.g. USER and LOGIN are siblings).
-// See RootWindowController::CreateContainers() for the full hierarchy.
-//
-// NOTE: containers whose name starts with an earlier name are children.
-// For example, USER_BACKGROUND is a child of USER and USER_PRIVATE_WINDOWS is a
-// child of USER_PRIVATE.
+// Containers windows may be parented to.
+// NOTE: this is not the complete list of containers created by ash. See
+// ash/common/shell_window_ids.h for the complete this. This is only a subset
+// that other apps may need to parent windows to.
 enum Container {
-  ROOT = 0,
-  ALL_USER_BACKGROUND,
-  USER,
+  // TODO: remove everything but LOGIN_WINDOWS, http://crbug.com/616859.
   USER_BACKGROUND,
-  // Container that is hidden when screen is locked, child of USER.
-  USER_PRIVATE,
-  // Windows with no explicit container end up here.
-  USER_PRIVATE_WINDOWS,
-  USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS,
-  USER_PRIVATE_DOCKED_WINDOWS,
-  USER_PRIVATE_PRESENTATION_WINDOWS,
   USER_PRIVATE_SHELF,
-  USER_PRIVATE_PANELS,
-  USER_PRIVATE_APP_LIST,
-  USER_PRIVATE_SYSTEM_MODAL,
-  LOGIN,
   LOGIN_WINDOWS,
-  LOGIN_APP,    // TODO(beng): what about dialog boxes login opens?
-  LOGIN_SHELF,
   // Status area widget and message center notification popups.
   STATUS,
   // Bubble windows, for example the sysui system tray bubble and the screen
   // brightness bubble.
   BUBBLES,
-  SYSTEM_MODAL_WINDOWS,
-  KEYBOARD,
   MENUS,
   DRAG_AND_TOOLTIPS,
-  COUNT
 };
 
 const string kWindowContainer_Property = "ash:window-container";

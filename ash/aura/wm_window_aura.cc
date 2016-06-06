@@ -8,6 +8,7 @@
 #include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_shell_aura.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
 #include "ash/common/wm_window_observer.h"
@@ -43,6 +44,9 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::WmWindowAura*);
 namespace ash {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::WmWindowAura, kWmWindowKey, nullptr);
+
+static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
+              "ids must match");
 
 namespace {
 

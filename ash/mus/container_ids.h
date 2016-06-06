@@ -13,19 +13,9 @@ enum class Container;
 }
 
 namespace mus {
-// Id used when there is no corresponding ash container.
-const int kUnknownAshId = -1;
 
-// The set of containers that allow their children to be active.
-extern const mojom::Container kActivationContainers[];
-
-// Number of kActivationContainers.
-extern const size_t kNumActivationContainers;
-
-// Converts window ids between ash (ash/common/shell_window_ids.h) and
-// mash.
-mojom::Container AshContainerToMashContainer(int shell_window_id);
-int MashContainerToAshContainer(mojom::Container container);
+// Converts a Container to a shell window ids (ash/common/shell_window_ids.h).
+int MashContainerToAshShellWindowId(mojom::Container container);
 
 }  // namespace mus
 }  // namespace ash

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/non_client_frame_controller.h"
@@ -41,16 +42,29 @@ void WindowManager::Initialize(RootWindowController* root_controller,
 
   // Observe all the containers so that windows can be added to/removed from the
   // |disconnected_app_handler_|.
-  int count = static_cast<int>(mojom::Container::COUNT);
-  for (int id = static_cast<int>(mojom::Container::ROOT) + 1; id < count;
-       ++id) {
-    ::mus::Window* container = root_controller_->GetWindowForContainer(
-        static_cast<mojom::Container>(id));
-    Add(container);
+  WmWindowMus* root = WmWindowMus::Get(root_controller_->root());
+  for (int shell_window_id = kShellWindowId_Min;
+       shell_window_id < kShellWindowId_Max; ++shell_window_id) {
+    // kShellWindowId_VirtualKeyboardContainer is lazily created.
+    // TODO(sky): http://crbug.com/616909 .
+    // kShellWindowId_PhantomWindow is not a container, but a window.
+    if (shell_window_id == kShellWindowId_VirtualKeyboardContainer ||
+        shell_window_id == kShellWindowId_PhantomWindow)
+      continue;
+
+// kShellWindowId_MouseCursorContainer is chromeos specific.
+#if !defined(OS_CHROMEOS)
+    if (shell_window_id == kShellWindowId_MouseCursorContainer)
+      continue;
+#endif
+
+    WmWindowMus* container = WmWindowMus::AsWmWindowMus(
+        root->GetChildByShellWindowId(shell_window_id));
+    Add(container->mus_window());
 
     // Add any pre-existing windows in the container to
     // |disconnected_app_handler_|.
-    for (auto child : container->children()) {
+    for (::mus::Window* child : container->mus_window()->children()) {
       if (!root_controller_->WindowIsContainer(child))
         disconnected_app_handler_.Add(child);
     }
@@ -92,9 +106,9 @@ void WindowManager::Initialize(RootWindowController* root_controller,
   window->SetBounds(CalculateDefaultBounds(window));
 
   ::mus::Window* container_window = nullptr;
-  if (window->HasSharedProperty(mojom::kWindowContainer_Property)) {
-    container_window =
-        root_controller_->GetWindowForContainer(GetRequestedContainer(window));
+  mojom::Container container;
+  if (GetRequestedContainer(window, &container)) {
+    container_window = root_controller_->GetWindowForContainer(container);
   } else {
     // TODO(sky): window->bounds() isn't quite right.
     container_window = WmWindowMus::GetMusWindow(
@@ -201,10 +215,10 @@ void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
 }
 
 void WindowManager::ScreenlockStateChanged(bool locked) {
-  // Hide USER_PRIVATE_CONTAINER windows when the screen is locked.
-  ::mus::Window* window =
-      root_controller_->GetWindowForContainer(mojom::Container::USER_PRIVATE);
-  window->SetVisible(!locked);
+  WmWindowMus* non_lock_screen_containers_container =
+      root_controller_->GetWindowByShellWindowId(
+          kShellWindowId_NonLockScreenContainersContainer);
+  non_lock_screen_containers_container->mus_window()->SetVisible(!locked);
 }
 
 }  // namespace mus

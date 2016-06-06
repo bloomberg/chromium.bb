@@ -5,6 +5,7 @@
 #ifndef ASH_COMMON_ROOT_WINDOW_CONTROLLER_COMMON_H_
 #define ASH_COMMON_ROOT_WINDOW_CONTROLLER_COMMON_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -18,7 +19,7 @@ class RootWindowLayoutManager;
 // This will eventually become what is RootWindowController. During the
 // transition it contains code used by both the aura and mus implementations.
 // It should *not* contain any aura specific code.
-class RootWindowControllerCommon {
+class ASH_EXPORT RootWindowControllerCommon {
  public:
   explicit RootWindowControllerCommon(WmWindow* root);
   ~RootWindowControllerCommon();

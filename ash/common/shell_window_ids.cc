@@ -1,0 +1,30 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/common/shell_window_ids.h"
+
+#include "base/macros.h"
+
+namespace ash {
+
+// NOTE: this list is ordered by activation order. That is, windows in
+// containers appearing earlier in the list are activated before windows in
+// containers appearing later in the list.
+const int kActivatableShellWindowIds[] = {
+    kShellWindowId_OverlayContainer, kShellWindowId_LockSystemModalContainer,
+    kShellWindowId_SettingBubbleContainer, kShellWindowId_LockScreenContainer,
+    kShellWindowId_SystemModalContainer, kShellWindowId_AlwaysOnTopContainer,
+    kShellWindowId_AppListContainer, kShellWindowId_DefaultContainer,
+
+    // Docked, panel, launcher and status are intentionally checked after other
+    // containers even though these layers are higher. The user expects their
+    // windows to be focused before these elements.
+    kShellWindowId_DockedContainer, kShellWindowId_PanelContainer,
+    kShellWindowId_ShelfContainer, kShellWindowId_StatusContainer,
+};
+
+const size_t kNumActivatableShellWindowIds =
+    arraysize(kActivatableShellWindowIds);
+
+}  // namespace ash

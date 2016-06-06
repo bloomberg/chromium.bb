@@ -73,6 +73,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                            public ui::EventTarget,
                            public ui::GestureConsumer {
  public:
+  // Initial value of id() for newly created windows.
+  static constexpr int kInitialId = -1;
+
   // Used when stacking windows.
   enum StackDirection {
     STACK_ABOVE,

@@ -5,9 +5,16 @@
 #ifndef ASH_COMMON_SHELL_WINDOW_IDS_H_
 #define ASH_COMMON_SHELL_WINDOW_IDS_H_
 
+#include <stddef.h>
+
+#include "ash/ash_export.h"
+
 // Declarations of ids of special shell windows.
 
 namespace ash {
+
+// Used to indicate no shell window id.
+const int kShellWindowId_Invalid = -1;
 
 // A higher-level container that holds all of the containers stacked below
 // kShellWindowId_LockScreenContainer.  Only used by PowerButtonController for
@@ -33,6 +40,7 @@ const int kShellWindowId_UnparentedControlContainer = 3;
 const int kShellWindowId_DesktopBackgroundContainer = 4;
 
 // The virtual keyboard container.
+// NOTE: this is lazily created.
 const int kShellWindowId_VirtualKeyboardContainer = 5;
 
 // The container for standard top-level windows.
@@ -98,6 +106,14 @@ const int kShellWindowId_MouseCursorContainer = 24;
 
 // The topmost container, used for power off animation.
 const int kShellWindowId_PowerButtonAnimationContainer = 25;
+
+const int kShellWindowId_Min = 0;
+const int kShellWindowId_Max = kShellWindowId_PowerButtonAnimationContainer;
+
+// These are the list of container ids of containers which may contain windows
+// that need to be activated.
+ASH_EXPORT extern const int kActivatableShellWindowIds[];
+ASH_EXPORT extern const size_t kNumActivatableShellWindowIds;
 
 }  // namespace ash
 

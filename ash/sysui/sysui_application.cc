@@ -64,26 +64,40 @@ const char kResourceFile100[] = "ash_resources_100_percent.pak";
 const char kResourceFile200[] = "ash_resources_200_percent.pak";
 
 // Tries to determine the corresponding mash container from widget init params.
-ash::mojom::Container GetContainerId(const views::Widget::InitParams& params) {
-  const int id = params.parent->id();
-  if (id == kShellWindowId_DesktopBackgroundContainer)
-    return ash::mojom::Container::USER_BACKGROUND;
-  if (id == kShellWindowId_ShelfContainer)
-    return ash::mojom::Container::USER_PRIVATE_SHELF;
-  if (id == kShellWindowId_StatusContainer)
-    return ash::mojom::Container::STATUS;
+bool GetContainerForWidget(const views::Widget::InitParams& params,
+                           ash::mojom::Container* container) {
+  switch (params.parent->id()) {
+    case kShellWindowId_DesktopBackgroundContainer:
+      *container = ash::mojom::Container::USER_BACKGROUND;
+      return true;
+
+    case kShellWindowId_ShelfContainer:
+      *container = ash::mojom::Container::USER_PRIVATE_SHELF;
+      return true;
+
+    case kShellWindowId_StatusContainer:
+      *container = ash::mojom::Container::STATUS;
+      return true;
+  }
 
   // Determine the container based on Widget type.
   switch (params.type) {
     case views::Widget::InitParams::Type::TYPE_BUBBLE:
-      return ash::mojom::Container::BUBBLES;
+      *container = ash::mojom::Container::BUBBLES;
+      return true;
+
     case views::Widget::InitParams::Type::TYPE_MENU:
-      return ash::mojom::Container::MENUS;
+      *container = ash::mojom::Container::MENUS;
+      return true;
+
     case views::Widget::InitParams::Type::TYPE_TOOLTIP:
-      return ash::mojom::Container::DRAG_AND_TOOLTIPS;
+      *container = ash::mojom::Container::DRAG_AND_TOOLTIPS;
+      return true;
+
     default:
-      return ash::mojom::Container::COUNT;
+      break;
   }
+  return false;
 }
 
 // Tries to determine the corresponding ash window type from the ash container
@@ -144,8 +158,8 @@ class NativeWidgetFactory {
       views::internal::NativeWidgetDelegate* delegate) {
     std::map<std::string, std::vector<uint8_t>> properties;
     if (params.parent) {
-      ash::mojom::Container container = GetContainerId(params);
-      if (container != ash::mojom::Container::COUNT) {
+      ash::mojom::Container container;
+      if (GetContainerForWidget(params, &container)) {
         properties[ash::mojom::kWindowContainer_Property] =
             mojo::ConvertTo<std::vector<uint8_t>>(
                 static_cast<int32_t>(container));
