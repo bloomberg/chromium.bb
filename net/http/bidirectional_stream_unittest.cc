@@ -390,6 +390,26 @@ TEST_F(BidirectionalStreamTest, CreateInsecureStream) {
   EXPECT_EQ(ERR_DISALLOWED_URL_SCHEME, delegate.error());
 }
 
+// Creates a BidirectionalStream with an insecure scheme. Destroy the stream
+// without waiting for the OnFailed task to be executed.
+TEST_F(BidirectionalStreamTest,
+       CreateInsecureStreamAndDestroyStreamRightAfter) {
+  std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
+      new BidirectionalStreamRequestInfo);
+  request_info->method = "GET";
+  request_info->url = GURL("http://www.example.org/");
+
+  std::unique_ptr<TestDelegateBase> delegate(new TestDelegateBase(nullptr, 0));
+  HttpNetworkSession::Params params =
+      SpdySessionDependencies::CreateSessionParams(&session_deps_);
+  std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
+  delegate->Start(std::move(request_info), session.get());
+  // Reset stream right before the OnFailed task is executed.
+  delegate.reset();
+
+  base::RunLoop().RunUntilIdle();
+}
+
 // Simulates user calling ReadData after END_STREAM has been received in
 // BidirectionalStreamSpdyImpl.
 TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
