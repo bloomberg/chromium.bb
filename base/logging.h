@@ -456,17 +456,11 @@ class CheckOpResult {
 // Make all CHECK functions discard their log strings to reduce code
 // bloat, and improve performance, for official release builds.
 
-#if defined(COMPILER_GCC) || __clang__
-#define LOGGING_CRASH() __builtin_trap()
-#else
-#define LOGGING_CRASH() ((void)(*(volatile char*)0 = 0))
-#endif
-
-// This is not calling BreakDebugger since this is called frequently, and
-// calling an out-of-line function instead of a noreturn inline macro prevents
-// compiler optimizations.
+// TODO(akalin): This would be more valuable if there were some way to
+// remove BreakDebugger() from the backtrace, perhaps by turning it
+// into a macro (like __debugbreak() on Windows).
 #define CHECK(condition)                                                \
-  !(condition) ? LOGGING_CRASH() : EAT_STREAM_PARAMETERS
+  !(condition) ? ::base::debug::BreakDebugger() : EAT_STREAM_PARAMETERS
 
 #define PCHECK(condition) CHECK(condition)
 
