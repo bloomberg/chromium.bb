@@ -87,7 +87,7 @@ public:
     }
 
     SkPaint m_paint;
-    RefPtr<SimpleFontData> m_simpleFontData;
+    SimpleFontData* m_simpleFontData;
     RefPtr<UnicodeRangeSet> m_rangeSet;
 };
 
@@ -220,7 +220,7 @@ static hb_bool_t harfBuzzGetGlyphVerticalOrigin(hb_font_t* hbFont, void* fontDat
 
     float result[] = { 0, 0 };
     Glyph theGlyph = glyph;
-    verticalData->getVerticalTranslationsForGlyphs(hbFontData->m_simpleFontData.get(), &theGlyph, 1, result);
+    verticalData->getVerticalTranslationsForGlyphs(hbFontData->m_simpleFontData, &theGlyph, 1, result);
     *x = SkiaScalarToHarfBuzzPosition(-result[0]);
     *y = SkiaScalarToHarfBuzzPosition(-result[1]);
     return true;
@@ -234,7 +234,7 @@ static hb_position_t harfBuzzGetGlyphVerticalAdvance(hb_font_t* hbFont, void* fo
         return SkiaScalarToHarfBuzzPosition(hbFontData->m_simpleFontData->getFontMetrics().height());
 
     Glyph theGlyph = glyph;
-    float advanceHeight = -verticalData->advanceHeight(hbFontData->m_simpleFontData.get(), theGlyph);
+    float advanceHeight = -verticalData->advanceHeight(hbFontData->m_simpleFontData, theGlyph);
     return SkiaScalarToHarfBuzzPosition(SkFloatToScalar(advanceHeight));
 }
 
@@ -336,7 +336,7 @@ hb_font_t* HarfBuzzFace::getScaledFont(PassRefPtr<UnicodeRangeSet> rangeSet) con
 {
     m_platformData->setupPaint(&m_harfBuzzFontData->m_paint);
     m_harfBuzzFontData->m_rangeSet = rangeSet;
-    m_harfBuzzFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
+    m_harfBuzzFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData).get();
     ASSERT(m_harfBuzzFontData->m_simpleFontData);
     int scale = SkiaScalarToHarfBuzzPosition(m_platformData->size());
     hb_font_set_scale(m_unscaledFont, scale, scale);
