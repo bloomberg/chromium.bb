@@ -52,9 +52,9 @@ class PerUserLensReport(object):
 
     self._byte_frac = self._GenerateByteFrac(network_lens)
 
-    self._requests = len(user_lens.CriticalRequests())
-    self._preloaded_requests = len(set(preloaded_requests) &
-                                   set(user_lens.CriticalRequests()))
+    self._requests = user_lens.CriticalRequests()
+    self._preloaded_requests = (
+        [r for r in preloaded_requests if r in self._requests])
 
     self._cpu_busyness = _ComputeCpuBusyness(activity_lens,
                                              navigation_start_msec,
@@ -65,8 +65,13 @@ class PerUserLensReport(object):
 
     report['ms'] = self._satisfied_msec - self._navigation_start_msec
     report['byte_frac'] = self._byte_frac
-    report['requests'] = self._requests
-    report['preloaded_requests'] = self._preloaded_requests
+
+    report['requests'] = len(self._requests)
+    report['preloaded_requests'] = len(self._preloaded_requests)
+    report['requests_cost'] = reduce(lambda x,y: x + y.Cost(),
+                                     self._requests, 0)
+    report['preloaded_requests_cost'] = reduce(lambda x,y: x + y.Cost(),
+                                        self._preloaded_requests, 0)
 
     # Take the first (earliest) inversion.
     report['inversion'] = self._inversions[0].url if self._inversions else None

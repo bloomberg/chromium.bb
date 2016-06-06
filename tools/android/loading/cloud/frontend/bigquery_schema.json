@@ -61,8 +61,16 @@
         "type": "INTEGER"
     },
     {
+        "name": "contentful_preloaded_requests_cost",
+        "type": "FLOAT"
+    },
+    {
         "name": "contentful_requests",
         "type": "INTEGER"
+    },
+    {
+        "name": "contentful_requests_cost",
+        "type": "FLOAT"
     },
     {
         "name": "contentful_script_frac",
@@ -109,8 +117,16 @@
         "type": "INTEGER"
     },
     {
+        "name": "first_text_preloaded_requests_cost",
+        "type": "FLOAT"
+    },
+    {
         "name": "first_text_requests",
         "type": "INTEGER"
+    },
+    {
+        "name": "first_text_requests_cost",
+        "type": "FLOAT"
     },
     {
         "name": "first_text_script_frac",
@@ -149,8 +165,16 @@
         "type": "INTEGER"
     },
     {
+        "name": "plt_preloaded_requests_cost",
+        "type": "FLOAT"
+    },
+    {
         "name": "plt_requests",
         "type": "INTEGER"
+    },
+    {
+        "name": "plt_requests_cost",
+        "type": "FLOAT"
     },
     {
         "name": "plt_script_frac",
@@ -181,8 +205,16 @@
         "type": "INTEGER"
     },
     {
+        "name": "significant_preloaded_requests_cost",
+        "type": "FLOAT"
+    },
+    {
         "name": "significant_requests",
         "type": "INTEGER"
+    },
+    {
+        "name": "significant_requests_cost",
+        "type": "FLOAT"
     },
     {
         "name": "significant_script_frac",
