@@ -188,6 +188,12 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings)
     if (platformSettings.hasFrameRate()) {
         settings.setFrameRate(platformSettings.frameRate);
     }
+    if (platformSettings.hasWidth()) {
+        settings.setWidth(platformSettings.width);
+    }
+    if (platformSettings.hasHeight()) {
+        settings.setHeight(platformSettings.height);
+    }
     settings.setDeviceId(platformSettings.deviceId);
 }
 

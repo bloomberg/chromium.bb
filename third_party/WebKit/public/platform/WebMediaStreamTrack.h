@@ -46,9 +46,19 @@ public:
         {
             return frameRate >= 0.0;
         }
+        bool hasWidth()
+        {
+            return width >= 0;
+        }
+        bool hasHeight()
+        {
+            return height >= 0;
+        }
         // The variables are read from
         // MediaStreamTrack::GetSettings only.
         double frameRate = -1.0;
+        long width = -1;
+        long height = -1;
         WebString deviceId;
     };
 

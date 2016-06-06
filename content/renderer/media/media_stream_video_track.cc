@@ -292,8 +292,11 @@ void MediaStreamVideoTrack::getSettings(
     blink::WebMediaStreamTrack::Settings& settings) {
   if (source_) {
     const media::VideoCaptureFormat* format = source_->GetCurrentFormat();
-    if (format)
+    if (format) {
       settings.frameRate = format->frame_rate;
+      settings.width = format->frame_size.width();
+      settings.height = format->frame_size.height();
+    }
   }
   // TODO(hta): Extract the real value.
   settings.deviceId = blink::WebString("video device ID");
