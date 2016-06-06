@@ -3267,7 +3267,10 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     drmFoldDuplicatedDevices(local_devices, node_count);
 
     device_count = 0;
-    for (i = 0; i < node_count && local_devices[i]; i++) {
+    for (i = 0; i < node_count; i++) {
+	    if (!local_devices[i])
+		    continue;
+
         if ((devices != NULL) && (device_count < max_devices))
             devices[device_count] = local_devices[i];
         else
