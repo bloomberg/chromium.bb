@@ -1454,7 +1454,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public void onNetworkDisconnect(int netId) {}
 
     @Override
-    public void updateActiveNetworkList(int[] activeNetIds) {}
+    public void purgeActiveNetworkList(int[] activeNetIds) {}
 
     private native long nativeInit();
     private native void nativeResumeDownload(

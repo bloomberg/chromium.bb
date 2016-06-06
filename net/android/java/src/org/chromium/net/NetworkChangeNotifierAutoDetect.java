@@ -360,7 +360,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                         // Make VPN the default network.
                         mObserver.onConnectionTypeChanged(connectionType);
                         // Purge all other networks as they're inaccessible to Chrome now.
-                        mObserver.updateActiveNetworkList(new int[] {netId});
+                        mObserver.purgeActiveNetworkList(new int[] {netId});
                     }
                 }
             });
@@ -526,7 +526,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * been missed, and acts to keep cached lists of active networks
          * accurate. Only called on Android L and above.
          */
-        public void updateActiveNetworkList(int[] activeNetIds);
+        public void purgeActiveNetworkList(int[] activeNetIds);
     }
 
     /**
@@ -625,7 +625,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             for (int i = 0; i < networks.length; i++) {
                 netIds[i] = networkToNetId(networks[i]);
             }
-            mObserver.updateActiveNetworkList(netIds);
+            mObserver.purgeActiveNetworkList(netIds);
         }
     }
 

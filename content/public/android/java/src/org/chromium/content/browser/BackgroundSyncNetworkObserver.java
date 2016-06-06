@@ -116,7 +116,7 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
     @Override
     public void onNetworkDisconnect(int netId) {}
     @Override
-    public void updateActiveNetworkList(int[] activeNetIds) {}
+    public void purgeActiveNetworkList(int[] activeNetIds) {}
 
     @NativeClassQualifiedName("BackgroundSyncNetworkObserverAndroid::Observer")
     private native void nativeNotifyConnectionTypeChanged(long nativePtr, int newConnectionType);

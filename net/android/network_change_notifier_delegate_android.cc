@@ -255,7 +255,7 @@ void NetworkChangeNotifierDelegateAndroid::NotifyOfNetworkDisconnect(
   observers_->Notify(FROM_HERE, &Observer::OnNetworkDisconnected, network);
 }
 
-void NetworkChangeNotifierDelegateAndroid::NotifyUpdateActiveNetworkList(
+void NetworkChangeNotifierDelegateAndroid::NotifyPurgeActiveNetworkList(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jintArray>& active_networks) {
@@ -351,10 +351,10 @@ void NetworkChangeNotifierDelegateAndroid::FakeNetworkDisconnected(
   Java_NetworkChangeNotifier_fakeNetworkDisconnected(env, network);
 }
 
-void NetworkChangeNotifierDelegateAndroid::FakeUpdateActiveNetworkList(
+void NetworkChangeNotifierDelegateAndroid::FakePurgeActiveNetworkList(
     NetworkChangeNotifier::NetworkList networks) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_NetworkChangeNotifier_fakeUpdateActiveNetworkList(
+  Java_NetworkChangeNotifier_fakePurgeActiveNetworkList(
       env, base::android::ToJavaIntArray(env, networks).obj());
 }
 

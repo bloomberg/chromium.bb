@@ -87,7 +87,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint net_id);
-  void NotifyUpdateActiveNetworkList(
+  void NotifyPurgeActiveNetworkList(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jintArray>& active_networks);
@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   void FakeNetworkConnected(NetworkHandle network, ConnectionType type);
   void FakeNetworkSoonToBeDisconnected(NetworkHandle network);
   void FakeNetworkDisconnected(NetworkHandle network);
-  void FakeUpdateActiveNetworkList(NetworkList networks);
+  void FakePurgeActiveNetworkList(NetworkList networks);
   void FakeDefaultNetwork(NetworkHandle network, ConnectionType type);
   void FakeMaxBandwidthChanged(double max_bandwidth_mbps);
 

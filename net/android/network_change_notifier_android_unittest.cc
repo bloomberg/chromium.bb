@@ -252,9 +252,8 @@ class BaseNetworkChangeNotifierAndroidTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  void FakeUpdateActiveNetworkList(
-      NetworkChangeNotifier::NetworkList networks) {
-    delegate_.FakeUpdateActiveNetworkList(networks);
+  void FakePurgeActiveNetworkList(NetworkChangeNotifier::NetworkList networks) {
+    delegate_.FakePurgeActiveNetworkList(networks);
     // See comment above.
     base::MessageLoop::current()->RunUntilIdle();
   }
@@ -515,7 +514,7 @@ TEST_F(NetworkChangeNotifierAndroidTest, NetworkCallbacks) {
   EXPECT_EQ(100, network_list[0]);
   EXPECT_EQ(101, network_list[1]);
   network_list.erase(network_list.begin() + 1);  // Remove network 101
-  FakeUpdateActiveNetworkList(network_list);
+  FakePurgeActiveNetworkList(network_list);
   network_observer.ExpectChange(DISCONNECTED, 101);
   NetworkChangeNotifier::GetConnectedNetworks(&network_list);
   EXPECT_EQ(1u, network_list.size());

@@ -210,8 +210,8 @@ public class NetworkChangeNotifier {
                                 notifyObserversOfNetworkDisconnect(netId);
                             }
                             @Override
-                            public void updateActiveNetworkList(int[] activeNetIds) {
-                                notifyObserversToUpdateActiveNetworkList(activeNetIds);
+                            public void purgeActiveNetworkList(int[] activeNetIds) {
+                                notifyObserversToPurgeActiveNetworkList(activeNetIds);
                             }
                         },
                         mContext, policy);
@@ -270,9 +270,9 @@ public class NetworkChangeNotifier {
 
     // For testing, pretend a network lists should be purged.
     @CalledByNative
-    public static void fakeUpdateActiveNetworkList(int[] activeNetIds) {
+    public static void fakePurgeActiveNetworkList(int[] activeNetIds) {
         setAutoDetectConnectivityState(false);
-        getInstance().notifyObserversToUpdateActiveNetworkList(activeNetIds);
+        getInstance().notifyObserversToPurgeActiveNetworkList(activeNetIds);
     }
 
     // For testing, pretend a default network changed.
@@ -363,9 +363,9 @@ public class NetworkChangeNotifier {
      * issued if a period elapsed where disconnected notifications may have
      * been missed, and acts to keep cached lists of active networks accurate.
      */
-    void notifyObserversToUpdateActiveNetworkList(int[] activeNetIds) {
+    void notifyObserversToPurgeActiveNetworkList(int[] activeNetIds) {
         for (Long nativeChangeNotifier : mNativeChangeNotifiers) {
-            nativeNotifyUpdateActiveNetworkList(nativeChangeNotifier, activeNetIds);
+            nativeNotifyPurgeActiveNetworkList(nativeChangeNotifier, activeNetIds);
         }
     }
 
@@ -408,7 +408,7 @@ public class NetworkChangeNotifier {
     private native void nativeNotifyOfNetworkDisconnect(long nativePtr, int netId);
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
-    private native void nativeNotifyUpdateActiveNetworkList(long nativePtr, int[] activeNetIds);
+    private native void nativeNotifyPurgeActiveNetworkList(long nativePtr, int[] activeNetIds);
 
     private static native double nativeGetMaxBandwidthForConnectionSubtype(int subtype);
 

@@ -321,7 +321,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void updateActiveNetworkList(int[] activeNetIds) {
+        public void purgeActiveNetworkList(int[] activeNetIds) {
             ThreadUtils.assertOnUiThread();
             if (activeNetIds.length == 1) {
                 mChanges.add(new ChangeInfo(ChangeType.PURGE_LIST, activeNetIds[0]));
