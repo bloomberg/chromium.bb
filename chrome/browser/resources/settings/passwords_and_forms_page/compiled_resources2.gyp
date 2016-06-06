@@ -22,6 +22,15 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):autofill_private',
+        'credit_card_edit_dialog',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'credit_card_edit_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(EXTERNS_GYP):autofill_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -30,13 +39,13 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):passwords_private',
+        'password_edit_dialog',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'password_edit_dialog',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):passwords_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -67,6 +67,19 @@ FakeDataMaker.addressEntry = function() {
 };
 
 /**
+ * Creates a new empty credit card entry for testing.
+ * @return {!chrome.autofillPrivate.CreditCardEntry}
+ */
+FakeDataMaker.emptyCreditCardEntry = function() {
+  var now = new Date();
+  var expirationMonth = now.getMonth() + 1;
+  var ret = {};
+  ret.expirationMonth = expirationMonth.toString()
+  ret.expirationYear = now.getFullYear().toString();
+  return ret;
+};
+
+/**
  * Creates a new random credit card entry for testing.
  * @return {!chrome.autofillPrivate.CreditCardEntry}
  */
@@ -86,7 +99,7 @@ FakeDataMaker.creditCardEntry = function() {
 
 /**
  * Creates a new random GUID for testing.
- * @return {!string}
+ * @return {string}
  * @private
  */
 FakeDataMaker.makeGuid_ = function() {
@@ -96,9 +109,9 @@ FakeDataMaker.makeGuid_ = function() {
 
 /**
  * Replaces any 'x' in a string with a random number of the base.
- * @param {!string} pattern The pattern that should be used as an input.
- * @param {!number} base The number base. ie: 16 for hex or 10 for decimal.
- * @return {!string}
+ * @param {string} pattern The pattern that should be used as an input.
+ * @param {number} base The number base. ie: 16 for hex or 10 for decimal.
+ * @return {string}
  * @private
  */
 FakeDataMaker.patternMaker_ = function(pattern, base) {

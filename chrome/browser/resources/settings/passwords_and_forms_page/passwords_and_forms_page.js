@@ -71,7 +71,7 @@ PasswordManager.prototype = {
 
   /**
    * Should remove the password exception and notify that the list has changed.
-   * @param {!string} exception The exception that should be removed from the
+   * @param {string} exception The exception that should be removed from the
    *     list. No-op if |exception| is not in the list.
    */
   removeException: assertNotReached,
@@ -142,6 +142,12 @@ AutofillManager.prototype = {
    *     remove.
    */
   removeCreditCard: assertNotReached,
+
+  /**
+   * Saves the given credit card.
+   * @param {!AutofillManager.CreditCardEntry} creditCard
+   */
+  saveCreditCard: assertNotReached,
 };
 
 /**
@@ -264,6 +270,11 @@ AutofillManagerImpl.prototype = {
   removeCreditCard: function(creditCard) {
     chrome.autofillPrivate.removeEntry(/** @type {string} */(creditCard.guid));
   },
+
+  /** @override */
+  saveCreditCard: function(creditCard) {
+    chrome.autofillPrivate.saveCreditCard(creditCard);
+  }
 };
 
 (function() {
@@ -293,33 +304,25 @@ Polymer({
      * An array of passwords to display.
      * @type {!Array<!PasswordManager.PasswordUiEntry>}
      */
-    savedPasswords: {
-      type: Array,
-    },
+    savedPasswords: Array,
 
     /**
      * An array of sites to display.
      * @type {!Array<!PasswordManager.ExceptionPair>}
      */
-    passwordExceptions: {
-      type: Array,
-    },
+    passwordExceptions: Array,
 
      /**
      * An array of saved addresses.
      * @type {!Array<!AutofillManager.AddressEntry>}
      */
-    addresses: {
-      type: Array,
-    },
+    addresses: Array,
 
     /**
      * An array of saved addresses.
      * @type {!Array<!AutofillManager.CreditCardEntry>}
      */
-    creditCards: {
-      type: Array,
-    },
+    creditCards: Array,
  },
 
   listeners: {
@@ -327,6 +330,7 @@ Polymer({
     'remove-credit-card': 'removeCreditCard_',
     'remove-password-exception': 'removePasswordException_',
     'remove-saved-password': 'removeSavedPassword_',
+    'save-credit-card': 'saveCreditCard_',
     'show-password': 'showPassword_',
   },
 
@@ -455,6 +459,15 @@ Polymer({
         this.getPref('profile.password_manager_enabled').value) {
       this.$.pages.setSubpageChain(['manage-passwords']);
     }
+  },
+
+  /**
+   * Listens for the save-credit-card event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  saveCreditCard_: function(event) {
+    this.autofillManager_.saveCreditCard(event.detail);
   },
 
   /**

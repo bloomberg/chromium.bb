@@ -471,6 +471,12 @@
       <structure name="IDR_SETTINGS_PASSWORDS_SHARED_CSS_HTML"
                  file="passwords_and_forms_page/passwords_shared_css.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CREDIT_CARD_EDIT_DIALOG_HTML"
+                 file="passwords_and_forms_page/credit_card_edit_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CREDIT_CARD_EDIT_DIALOG_JS"
+                 file="passwords_and_forms_page/credit_card_edit_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_AUTOFILL_SECTION_HTML"
                  file="passwords_and_forms_page/autofill_section.html"
                  type="chrome_html" />

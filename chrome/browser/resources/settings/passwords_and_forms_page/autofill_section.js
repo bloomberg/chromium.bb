@@ -17,17 +17,13 @@
        * An array of saved addresses.
        * @type {!Array<!chrome.autofillPrivate.AddressEntry>}
        */
-      addresses: {
-        type: Array,
-      },
+      addresses: Array,
 
       /**
        * An array of saved addresses.
        * @type {!Array<!chrome.autofillPrivate.CreditCardEntry>}
        */
-      creditCards: {
-        type: Array,
-      },
+      creditCards: Array,
     },
 
     listeners: {
@@ -39,7 +35,7 @@
     /**
      * Formats an AddressEntry so it's displayed as an address.
      * @param {!chrome.autofillPrivate.AddressEntry} item
-     * @return {!string}
+     * @return {string}
      */
     address_: function(item) {
       return item.metadata.summaryLabel + item.metadata.summarySublabel;
@@ -48,7 +44,7 @@
     /**
      * Formats the expiration date so it's displayed as MM/YYYY.
      * @param {!chrome.autofillPrivate.CreditCardEntry} item
-     * @return {!string}
+     * @return {string}
      */
     expiration_: function(item) {
       return item.expirationMonth + '/' + item.expirationYear;
@@ -122,7 +118,13 @@
      * @private
      */
     onAddCreditCardTap_: function(e) {
-      // TODO(hcarmona): implement adding a credit card.
+      var date = new Date();  // Default to current month/year.
+      var expirationMonth = date.getMonth() + 1;  // Months are 0 based.
+      // Pass in a new object to edit.
+      this.$.editCreditCardDialog.open({
+        expirationMonth: expirationMonth.toString(),
+        expirationYear: date.getFullYear().toString(),
+      });
       e.preventDefault();
     },
 
@@ -131,8 +133,10 @@
      * @private
      */
     onMenuEditCreditCardTap_: function() {
-      // TODO(hcarmona): implement editing a credit card.
-      this.$.creditCardSharedMenu.closeMenu();
+      var menu = this.$.creditCardSharedMenu;
+      this.$.editCreditCardDialog.open(
+          /** @type {chrome.autofillPrivate.CreditCardEntry} */(menu.itemData));
+      menu.closeMenu();
     },
 
     /**
