@@ -84,3 +84,6 @@ IFrameZoomBrowserTest.SubframesDontZoomIndependently
 
 # https://crbug.com/614470
 DumpAccessibilityEventsTest.AccessibilityEventsMenuListFocus
+
+# https://crbug.com/617727
+VibrationTest.CancelVibrationFromMainFrameWhenMainFrameIsReloaded
