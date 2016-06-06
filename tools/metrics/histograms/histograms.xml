@@ -10079,6 +10079,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.Time.ViewerLoading" units="ms">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Records the time from the Reader Mode panel opening to the viewer loaded.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.Time.ViewingReaderModePanel" units="ms">
   <owner>mdjones@chromium.org</owner>
   <summary>

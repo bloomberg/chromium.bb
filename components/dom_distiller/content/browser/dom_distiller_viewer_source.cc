@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/user_metrics.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -155,6 +155,15 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
     const GURL& validated_url) {
   if (render_frame_host->GetParent()) {
     return;
+  }
+
+  int64_t start_time_ms = url_utils::GetTimeFromDistillerUrl(validated_url);
+  if (start_time_ms > 0) {
+    base::TimeTicks start_time =
+        base::TimeDelta::FromMilliseconds(start_time_ms) + base::TimeTicks();
+    base::TimeDelta latency = base::TimeTicks::Now() - start_time;
+
+    UMA_HISTOGRAM_TIMES("DomDistiller.Time.ViewerLoading", latency);
   }
 
   // No SendJavaScript() calls allowed before |buffer_| is run and cleared.

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "grit/components_resources.h"
 #include "net/base/url_util.h"
@@ -30,8 +31,13 @@ const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
 }
 
 const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
-                                      const GURL& view_url) {
+                                      const GURL& view_url,
+                                      int64_t start_time_ms) {
   GURL url(scheme + "://" + base::GenerateGUID());
+  if (start_time_ms > 0) {
+    url = net::AppendOrReplaceQueryParameter(url, kTimeKey,
+        base::IntToString(start_time_ms));
+  }
   return net::AppendOrReplaceQueryParameter(url, kUrlKey, view_url.spec());
 }
 
@@ -43,6 +49,21 @@ const GURL GetOriginalUrlFromDistillerUrl(const GURL& url) {
   net::GetValueForKeyInQuery(url, kUrlKey, &original_url_str);
 
   return GURL(original_url_str);
+}
+
+int64_t GetTimeFromDistillerUrl(const GURL& url) {
+  if (!dom_distiller::url_utils::IsDistilledPage(url))
+    return 0;
+
+  std::string time_str;
+  if (!net::GetValueForKeyInQuery(url, kTimeKey, &time_str))
+    return 0;
+
+  int64_t time_int = 0;
+  if (!base::StringToInt64(time_str, &time_int))
+    return 0;
+
+  return time_int;
 }
 
 std::string GetValueForKeyInUrl(const GURL& url, const std::string& key) {

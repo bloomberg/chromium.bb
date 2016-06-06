@@ -19,11 +19,16 @@ const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
 
 // Returns the URL for viewing distilled content for a URL.
 const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
-                                      const GURL& view_url);
+                                      const GURL& view_url,
+                                      int64_t start_time_ms = 0);
 
 // Returns the original URL from the distilled URL.
 // If the URL is not distilled, it is returned as is.
 const GURL GetOriginalUrlFromDistillerUrl(const GURL& distilled_url);
+
+// Returns the starting time from the distilled URL.
+// Returns 0 when not available or on error.
+int64_t GetTimeFromDistillerUrl(const GURL& url);
 
 // Returns the value of the query parameter for the given |key| for a given URL.
 // If the URL is invalid or if the key is not found, returns an empty string.

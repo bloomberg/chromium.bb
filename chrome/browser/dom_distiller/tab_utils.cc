@@ -108,7 +108,8 @@ void SelfDeletingRequestDelegate::TakeViewerHandle(
 void StartNavigationToDistillerViewer(content::WebContents* web_contents,
                                       const GURL& url) {
   GURL viewer_url = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
-      dom_distiller::kDomDistillerScheme, url);
+      dom_distiller::kDomDistillerScheme, url,
+      (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds());
   content::NavigationController::LoadURLParams params(viewer_url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   web_contents->GetController().LoadURLWithParams(params);
