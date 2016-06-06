@@ -552,7 +552,7 @@ int SerializedScriptValueWriter::v8StringWriteOptions()
     return v8::String::NO_NULL_TERMINATION;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::serializeProperties(bool ignoreIndexed, ScriptValueSerializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::serializeProperties(ScriptValueSerializer& serializer)
 {
     while (m_index < m_propertyNames->Length()) {
         v8::Local<v8::Value> propertyName;
@@ -563,7 +563,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
         if (propertyName->IsString()) {
             hasProperty = v8CallBoolean(composite()->HasRealNamedProperty(serializer.context(), propertyName.As<v8::String>()));
         } else if (propertyName->IsUint32()) {
-            hasProperty = v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName.As<v8::Uint32>()->Value())) && !ignoreIndexed;
+            hasProperty = v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName.As<v8::Uint32>()->Value()));
         }
         if (StateBase* newState = serializer.checkException(this))
             return newState;
@@ -595,7 +595,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::advance(Sc
         if (!composite()->GetOwnPropertyNames(serializer.context()).ToLocal(&m_propertyNames))
             return serializer.checkException(this);
     }
-    return serializeProperties(false, serializer);
+    return serializeProperties(serializer);
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::objectDone(unsigned numProperties, ScriptValueSerializer& serializer)
@@ -615,7 +615,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::advanc
         if (StateBase* newState = serializer.doSerialize(value, this))
             return newState;
     }
-    return serializeProperties(true, serializer);
+    return serializeProperties(serializer);
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::objectDone(unsigned numProperties, ScriptValueSerializer& serializer)
@@ -625,7 +625,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::object
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::SparseArrayState::advance(ScriptValueSerializer& serializer)
 {
-    return serializeProperties(false, serializer);
+    return serializeProperties(serializer);
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::SparseArrayState::objectDone(unsigned numProperties, ScriptValueSerializer& serializer)
@@ -1206,6 +1206,10 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Loc
 
     if (shouldSerializeDensely(length, propertyNames->Length())) {
         m_writer.writeGenerateFreshDenseArray(length);
+        // In serializing a dense array, indexed properties are ignored, so we get
+        // non indexed own property names here.
+        if (!array->GetPropertyNames(context(), v8::KeyCollectionMode::kIncludePrototypes, static_cast<v8::PropertyFilter>(v8::ONLY_ENUMERABLE | v8::SKIP_SYMBOLS), v8::IndexFilter::kSkipIndices).ToLocal(&propertyNames))
+            return checkException(next);
         return push(new DenseArrayState(array, propertyNames, next, isolate()));
     }
 

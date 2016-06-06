@@ -291,7 +291,7 @@ protected:
     protected:
         virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) = 0;
 
-        StateBase* serializeProperties(bool ignoreIndexed, ScriptValueSerializer&);
+        StateBase* serializeProperties(ScriptValueSerializer&);
         v8::Local<v8::Array> m_propertyNames;
 
     private:
