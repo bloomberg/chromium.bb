@@ -60,6 +60,7 @@ void JniClient::ConnectToHost(base::WeakPtr<JniDisplayHandler> display_handler,
 void JniClient::DisconnectFromHost() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   display_handler_ = nullptr;
+  secret_fetcher_.reset();
   if (session_) {
     session_->Disconnect();
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
