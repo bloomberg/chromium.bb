@@ -2098,6 +2098,8 @@
             'paint/PaintInfo.h',
             'paint/PaintInvalidationCapableScrollableArea.cpp',
             'paint/PaintInvalidationCapableScrollableArea.h',
+            'paint/PaintInvalidator.cpp',
+            'paint/PaintInvalidator.h',
             'paint/PaintLayer.cpp',
             'paint/PaintLayerClipper.cpp',
             'paint/PaintLayerFilterInfo.cpp',

@@ -35,7 +35,7 @@ enum VisualRectFlags {
 // needs of the paint invalidation systems (keeping visual rectangles
 // instead of layout specific information).
 //
-// See Source/core/paint/README.md ### PaintInvalidationState for more details.
+// See Source/core/paint/README.md#Paint-invalidation for more details.
 
 class CORE_EXPORT PaintInvalidationState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -46,7 +46,7 @@ public:
     // For root LayoutView, or when sub-frame LayoutView's invalidateTreeIfNeeded() is called directly from
     // FrameView::invalidateTreeIfNeededRecursive() instead of the owner LayoutPart.
     // TODO(wangxianzhu): Eliminate the latter case.
-    PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations);
+    PaintInvalidationState(const LayoutView&, Vector<const LayoutObject*>& pendingDelayedPaintInvalidations);
 
     // When a PaintInvalidationState is constructed, it can be used to map points/rects in the object's
     // local space (border box space for LayoutBoxes). After invalidation of the current object,
@@ -75,10 +75,6 @@ public:
     LayoutRect computePaintInvalidationRectInBacking() const;
 
     void mapLocalRectToPaintInvalidationBacking(LayoutRect&) const;
-
-    // Records |obj| as needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
-    void pushDelayedPaintInvalidationTarget(LayoutObject& obj) const { m_pendingDelayedPaintInvalidations.append(&obj); }
-    Vector<LayoutObject*>& pendingDelayedPaintInvalidationTargets() const { return m_pendingDelayedPaintInvalidations; }
 
     PaintLayer& paintingLayer() const;
 
@@ -145,7 +141,8 @@ private:
     // with |m_paintOffset| yields the "final" offset.
     AffineTransform m_svgTransform;
 
-    Vector<LayoutObject*>& m_pendingDelayedPaintInvalidations;
+    // Records objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
+    Vector<const LayoutObject*>& m_pendingDelayedPaintInvalidations;
 
     PaintLayer& m_paintingLayer;
 

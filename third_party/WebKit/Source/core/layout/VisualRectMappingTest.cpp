@@ -24,7 +24,7 @@ protected:
             ancestors.append(ancestor);
 
         Vector<Optional<PaintInvalidationState>> paintInvalidationStates(ancestors.size() + 1);
-        Vector<LayoutObject*> pendingDelayedPaintInvalidations;
+        Vector<const LayoutObject*> pendingDelayedPaintInvalidations;
         paintInvalidationStates[0].emplace(layoutView, pendingDelayedPaintInvalidations);
         if (layoutView != object)
             paintInvalidationStates[0]->updateForChildren(PaintInvalidationFull);

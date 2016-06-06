@@ -1202,7 +1202,8 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
     if (paintInvalidationContainer.frameView()->shouldThrottleRendering())
         return;
 
-    ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
+    DCHECK(gDisablePaintInvalidationStateAsserts
+        || document().lifecycle().state() == (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? DocumentLifecycle::InPrePaint : DocumentLifecycle::InPaintInvalidation));
 
     if (dirtyRect.isEmpty())
         return;

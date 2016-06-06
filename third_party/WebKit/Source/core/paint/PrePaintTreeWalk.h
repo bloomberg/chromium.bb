@@ -5,6 +5,7 @@
 #ifndef PrePaintTreeWalk_h
 #define PrePaintTreeWalk_h
 
+#include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
 
 namespace blink {
@@ -25,6 +26,7 @@ private:
     void walk(const LayoutObject&, const PrePaintTreeWalkContext&);
 
     PaintPropertyTreeBuilder m_propertyTreeBuilder;
+    PaintInvalidator m_paintInvalidator;
 };
 
 } // namespace blink

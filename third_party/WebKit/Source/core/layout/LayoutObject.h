@@ -1388,6 +1388,9 @@ public:
         void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
         ObjectPaintProperties& ensureObjectPaintProperties() { return m_layoutObject.ensureObjectPaintProperties(); }
         void clearObjectPaintProperties() { m_layoutObject.clearObjectPaintProperties(); }
+        PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState) { return m_layoutObject.invalidatePaintIfNeeded(paintInvalidationState); }
+        void clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState) { m_layoutObject.clearPaintInvalidationFlags(paintInvalidationState); }
+        void setShouldDoDelayedFullPaintInvalidation() { m_layoutObject.setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull); }
 
     private:
         friend class LayoutObject;

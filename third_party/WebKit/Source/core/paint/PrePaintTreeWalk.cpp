@@ -14,7 +14,14 @@
 namespace blink {
 
 struct PrePaintTreeWalkContext {
+    PrePaintTreeWalkContext() { }
+    PrePaintTreeWalkContext(const PaintPropertyTreeBuilderContext& parentTreeBuilderContext)
+        : treeBuilderContext(parentTreeBuilderContext) { }
+
     PaintPropertyTreeBuilderContext treeBuilderContext;
+    // This will be initialized by PaintInvalidator::invalidatePaintIfNeeded().
+    // TODO(wangxianzhu): Change to copy-and-update pattern like PaintPropertyTreeBuilderContext.
+    Optional<PaintInvalidatorContext> paintInvalidatorContext;
 };
 
 void PrePaintTreeWalk::walk(FrameView& rootFrame)
@@ -24,24 +31,30 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame)
     PrePaintTreeWalkContext rootContext;
     m_propertyTreeBuilder.buildTreeRootNodes(rootFrame, rootContext.treeBuilderContext);
     walk(rootFrame, rootContext);
+    m_paintInvalidator.processPendingDelayedPaintInvalidations();
 }
 
 void PrePaintTreeWalk::walk(FrameView& frameView, const PrePaintTreeWalkContext& context)
 {
-    PrePaintTreeWalkContext localContext(context);
+    PrePaintTreeWalkContext localContext(context.treeBuilderContext);
     m_propertyTreeBuilder.buildTreeNodes(frameView, localContext.treeBuilderContext);
+
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        m_paintInvalidator.invalidatePaintIfNeeded(frameView, localContext.treeBuilderContext, localContext.paintInvalidatorContext);
+
     if (LayoutView* layoutView = frameView.layoutView())
         walk(*layoutView, localContext);
 }
 
 void PrePaintTreeWalk::walk(const LayoutObject& object, const PrePaintTreeWalkContext& context)
 {
-    PrePaintTreeWalkContext localContext(context);
+    PrePaintTreeWalkContext localContext(context.treeBuilderContext);
     m_propertyTreeBuilder.buildTreeNodes(object, localContext.treeBuilderContext);
 
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && context.paintInvalidatorContext)
+        m_paintInvalidator.invalidatePaintIfNeeded(object, localContext.treeBuilderContext, *context.paintInvalidatorContext, localContext.paintInvalidatorContext);
+
     for (const LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isBoxModelObject() && !child->isSVG())
-            continue;
         // Column spanners are walked through their placeholders. See below.
         if (child->isColumnSpanAll())
             continue;

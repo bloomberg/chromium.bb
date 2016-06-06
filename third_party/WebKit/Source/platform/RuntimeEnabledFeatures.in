@@ -190,7 +190,7 @@ SetRootScroller status=experimental
 ShadowDOMV1 status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
-SlimmingPaintInvalidation
+SlimmingPaintInvalidation implied_by=SlimmingPaintV2
 SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
 SlimmingPaintUnderInvalidationChecking

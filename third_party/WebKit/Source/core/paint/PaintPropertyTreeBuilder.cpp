@@ -359,6 +359,9 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
 
 void PaintPropertyTreeBuilder::buildTreeNodes(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
+    if (!object.isBoxModelObject() && !object.isSVG())
+        return;
+
     object.getMutableForPainting().clearObjectPaintProperties();
 
     deriveBorderBoxFromContainerContext(object, context);

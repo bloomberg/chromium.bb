@@ -603,6 +603,9 @@ public:
 
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
 
+    // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into PaintInvalidator.
+    void invalidatePaintIfNeeded(const PaintInvalidationState&);
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -641,7 +644,7 @@ protected:
     };
 
     // Only for LayoutPart to traverse into sub frames during paint invalidation.
-    void invalidateTreeIfNeeded(PaintInvalidationState&);
+    void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
 private:
     explicit FrameView(LocalFrame*);

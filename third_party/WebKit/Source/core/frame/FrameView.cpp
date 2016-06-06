@@ -1092,8 +1092,10 @@ void FrameView::layout()
     frame().document()->layoutUpdated();
 }
 
-void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void FrameView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+
     if (shouldThrottleRendering())
         return;
 
@@ -1106,25 +1108,31 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
     TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation.debugName().ascii());
 
     rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
-
-    if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls())
-        invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
+    invalidatePaintIfNeeded(paintInvalidationState);
 
 #if ENABLE(ASSERT)
     layoutView()->assertSubtreeClearedPaintInvalidationFlags();
 #endif
 
+    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
+}
+
+void FrameView::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
+{
+    RELEASE_ASSERT(!layoutViewItem().isNull());
+    if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls())
+        invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
+
     if (m_frame->selection().isCaretBoundsDirty())
         m_frame->selection().invalidateCaretRect();
 
     m_doFullPaintInvalidation = false;
-    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
 
     // Temporary callback for crbug.com/487345,402044
     // TODO(ojan): Make this more general to be used by PositionObserver
     // and rAF throttling.
     IntRect visibleRect = rootFrameToContents(computeVisibleArea());
-    rootForPaintInvalidation.sendMediaPositionChangeNotifications(visibleRect);
+    layoutViewItem().sendMediaPositionChangeNotifications(visibleRect);
 }
 
 IntRect FrameView::computeVisibleArea()
@@ -2463,7 +2471,8 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
             if (phases == AllPhases || phases == AllPhasesExceptPaint) {
-                invalidateTreeIfNeededRecursive();
+                if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+                    invalidateTreeIfNeededRecursive();
 
                 if (view.compositor()->inCompositingMode())
                     scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
@@ -2679,7 +2688,8 @@ void FrameView::invalidateTreeIfNeededRecursive()
 
 void FrameView::invalidateTreeIfNeededRecursiveInternal()
 {
-    RELEASE_ASSERT(layoutView());
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    CHECK(layoutView());
 
     // We need to stop recursing here since a child frame view might not be throttled
     // even though we are (e.g., it didn't compute its visibility yet).
@@ -2687,7 +2697,7 @@ void FrameView::invalidateTreeIfNeededRecursiveInternal()
         return;
     TRACE_EVENT1("blink", "FrameView::invalidateTreeIfNeededRecursive", "root", layoutView()->debugName().ascii());
 
-    Vector<LayoutObject*> pendingDelayedPaintInvalidations;
+    Vector<const LayoutObject*> pendingDelayedPaintInvalidations;
     PaintInvalidationState rootPaintInvalidationState(*layoutView(), pendingDelayedPaintInvalidations);
 
     if (lifecycle().state() < DocumentLifecycle::PaintInvalidationClean)
@@ -2712,7 +2722,7 @@ void FrameView::invalidateTreeIfNeededRecursiveInternal()
 
     // Process objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
     for (auto& target : pendingDelayedPaintInvalidations)
-        target->setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
+        target->getMutableForPainting().setShouldDoDelayedFullPaintInvalidation();
 }
 
 void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)

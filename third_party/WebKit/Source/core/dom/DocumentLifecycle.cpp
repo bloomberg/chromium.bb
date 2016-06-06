@@ -206,24 +206,26 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         if (nextState == InCompositingUpdate)
             return true;
-        if (nextState == InPaintInvalidation)
+        if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+            if (nextState == InPrePaint)
+                return true;
+        } else if (nextState == InPaintInvalidation) {
             return true;
+        }
         break;
     case InPaintInvalidation:
+        DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         return nextState == PaintInvalidationClean;
     case PaintInvalidationClean:
+        DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         if (nextState == InStyleRecalc)
             return true;
         if (nextState == InPreLayout)
             return true;
         if (nextState == InCompositingUpdate)
             return true;
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            if (nextState == InPrePaint)
-                return true;
-        } else if (nextState == InPaint) {
+        if (nextState == InPaint)
             return true;
-        }
         break;
     case InPrePaint:
         if (nextState == PrePaintClean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
