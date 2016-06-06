@@ -895,11 +895,12 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     cspReport->setString("effective-directive", violationData.effectiveDirective());
     cspReport->setString("original-policy", violationData.originalPolicy());
     cspReport->setString("blocked-uri", violationData.blockedURI());
-    if (!violationData.sourceFile().isEmpty() && violationData.lineNumber()) {
-        cspReport->setString("source-file", violationData.sourceFile());
+    if (violationData.lineNumber())
         cspReport->setNumber("line-number", violationData.lineNumber());
+    if (violationData.columnNumber())
         cspReport->setNumber("column-number", violationData.columnNumber());
-    }
+    if (!violationData.sourceFile().isEmpty())
+        cspReport->setString("source-file", violationData.sourceFile());
     cspReport->setNumber("status-code", violationData.statusCode());
 
     RefPtr<JSONObject> reportObject = JSONObject::create();
