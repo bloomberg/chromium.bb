@@ -233,6 +233,11 @@
                 'content_utility',
               ],
             }],
+            # Shard this target into parts to work around linker limitations
+            # on link time code generation builds. See crbug.com/616946
+            ['OS=="win" and buildtype=="Official"', {
+              'msvs_shard': 5,
+            }],
           ],
         },
         {
