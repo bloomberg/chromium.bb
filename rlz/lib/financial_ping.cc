@@ -11,11 +11,14 @@
 #include <memory>
 
 #include "base/atomicops.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"
@@ -230,10 +233,8 @@ void ShutdownCheck(base::WeakPtr<base::RunLoop> weak) {
   // How frequently the financial ping thread should check
   // the shutdown condition?
   const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ShutdownCheck, weak),
-      kInterval);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ShutdownCheck, weak), kInterval);
 }
 #endif
 
@@ -334,13 +335,12 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   const base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(5);
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(
       base::MessageLoop::current());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ShutdownCheck, weak.GetWeakPtr()));
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ShutdownCheck, weak.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&net::URLFetcher::Start, base::Unretained(fetcher.get())));
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, loop.QuitClosure(), kTimeout);
 
   loop.Run();
