@@ -1739,6 +1739,7 @@
       'socket/unix_domain_server_socket_posix_unittest.cc',
       'socket/websocket_endpoint_lock_manager_unittest.cc',
       'socket/websocket_transport_client_socket_pool_unittest.cc',
+      'spdy/bidirectional_stream_spdy_impl_unittest.cc',
       'spdy/buffered_spdy_framer_unittest.cc',
       'spdy/fuzzing/hpack_fuzz_util_test.cc',
       'spdy/hpack/hpack_decoder_test.cc',

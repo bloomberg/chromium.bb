@@ -70,6 +70,9 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
  private:
   int SendRequestHeadersHelper();
   void OnStreamInitialized(int rv);
+  // Notifies delegate of an error.
+  void NotifyError(int rv);
+  void ResetStream();
   void ScheduleBufferedRead();
   void DoBufferedRead();
   bool ShouldWaitForMoreBufferedData() const;

@@ -51,6 +51,7 @@ void BidirectionalStreamQuicImpl::Start(
     BidirectionalStreamImpl::Delegate* delegate,
     std::unique_ptr<base::Timer> /* timer */) {
   DCHECK(!stream_);
+  CHECK(delegate);
 
   send_request_headers_automatically_ = send_request_headers_automatically;
   if (!session_) {
@@ -75,7 +76,14 @@ void BidirectionalStreamQuicImpl::Start(
 
 void BidirectionalStreamQuicImpl::SendRequestHeaders() {
   DCHECK(!has_sent_headers_);
-  DCHECK(stream_);
+  if (!stream_) {
+    LOG(ERROR)
+        << "Trying to send request headers after stream has been destroyed.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::NotifyError,
+                              weak_factory_.GetWeakPtr(), ERR_UNEXPECTED));
+    return;
+  }
 
   SpdyHeaderBlock headers;
   HttpRequestInfo http_request_info;
@@ -119,8 +127,14 @@ int BidirectionalStreamQuicImpl::ReadData(IOBuffer* buffer, int buffer_len) {
 void BidirectionalStreamQuicImpl::SendData(const scoped_refptr<IOBuffer>& data,
                                            int length,
                                            bool end_stream) {
-  DCHECK(stream_);
   DCHECK(length > 0 || (length == 0 && end_stream));
+  if (!stream_) {
+    LOG(ERROR) << "Trying to send data after stream has been destroyed.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::NotifyError,
+                              weak_factory_.GetWeakPtr(), ERR_UNEXPECTED));
+    return;
+  }
 
   std::unique_ptr<QuicConnection::ScopedPacketBundler> bundler;
   if (!has_sent_headers_) {
@@ -149,8 +163,15 @@ void BidirectionalStreamQuicImpl::SendvData(
     const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
     bool end_stream) {
-  DCHECK(stream_);
   DCHECK_EQ(buffers.size(), lengths.size());
+
+  if (!stream_) {
+    LOG(ERROR) << "Trying to send data after stream has been destroyed.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BidirectionalStreamQuicImpl::NotifyError,
+                              weak_factory_.GetWeakPtr(), ERR_UNEXPECTED));
+    return;
+  }
 
   QuicConnection::ScopedPacketBundler bundler(
       session_->connection(), QuicConnection::SEND_ACK_IF_PENDING);
@@ -173,8 +194,12 @@ void BidirectionalStreamQuicImpl::SendvData(
 }
 
 void BidirectionalStreamQuicImpl::Cancel() {
+  if (delegate_) {
+    delegate_ = nullptr;
+    // Cancel any pending callbacks.
+    weak_factory_.InvalidateWeakPtrs();
+  }
   if (stream_) {
-    stream_->SetDelegate(nullptr);
     stream_->Reset(QUIC_STREAM_CANCELLED);
     ResetStream();
   }
@@ -203,14 +228,16 @@ void BidirectionalStreamQuicImpl::OnHeadersAvailable(
   negotiated_protocol_ = kProtoQUIC1SPDY3;
   if (!has_received_headers_) {
     has_received_headers_ = true;
-    delegate_->OnHeadersReceived(headers);
+    if (delegate_)
+      delegate_->OnHeadersReceived(headers);
   } else {
     if (stream_->IsDoneReading()) {
       // If the write side is closed, OnFinRead() will call
       // BidirectionalStreamQuicImpl::OnClose().
       stream_->OnFinRead();
     }
-    delegate_->OnTrailersReceived(headers);
+    if (delegate_)
+      delegate_->OnTrailersReceived(headers);
   }
 }
 
@@ -228,17 +255,18 @@ void BidirectionalStreamQuicImpl::OnDataAvailable() {
   }
   read_buffer_ = nullptr;
   read_buffer_len_ = 0;
-  delegate_->OnDataRead(rv);
+  if (delegate_)
+    delegate_->OnDataRead(rv);
 }
 
 void BidirectionalStreamQuicImpl::OnClose(QuicErrorCode error) {
   DCHECK(stream_);
+
   if (error == QUIC_NO_ERROR &&
       stream_->stream_error() == QUIC_STREAM_NO_ERROR) {
     ResetStream();
     return;
   }
-  ResetStream();
   NotifyError(was_handshake_confirmed_ ? ERR_QUIC_PROTOCOL_ERROR
                                        : ERR_QUIC_HANDSHAKE_FAILED);
 }
@@ -271,7 +299,8 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
     if (send_request_headers_automatically_) {
       SendRequestHeaders();
     }
-    delegate_->OnStreamReady(has_sent_headers_);
+    if (delegate_)
+      delegate_->OnStreamReady(has_sent_headers_);
   } else {
     NotifyError(rv);
   }
@@ -280,7 +309,8 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
 void BidirectionalStreamQuicImpl::OnSendDataComplete(int rv) {
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
-    delegate_->OnDataSent();
+    if (delegate_)
+      delegate_->OnDataSent();
   } else {
     NotifyError(rv);
   }
@@ -290,9 +320,16 @@ void BidirectionalStreamQuicImpl::NotifyError(int error) {
   DCHECK_NE(OK, error);
   DCHECK_NE(ERR_IO_PENDING, error);
 
-  response_status_ = error;
   ResetStream();
-  delegate_->OnFailed(error);
+  if (delegate_) {
+    response_status_ = error;
+    BidirectionalStreamImpl::Delegate* delegate = delegate_;
+    delegate_ = nullptr;
+    // Cancel any pending callback.
+    weak_factory_.InvalidateWeakPtrs();
+    delegate->OnFailed(error);
+    // |this| might be destroyed at this point.
+  }
 }
 
 void BidirectionalStreamQuicImpl::ResetStream() {

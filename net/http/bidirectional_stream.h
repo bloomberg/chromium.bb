@@ -81,8 +81,8 @@ class NET_EXPORT BidirectionalStream
     // EOF has not been received, or to send data if there is no pending send.
     virtual void OnTrailersReceived(const SpdyHeaderBlock& trailers) = 0;
 
-    // Called when the stream is closed or an error occurred.
-    // No other delegate functions will be called after this.
+    // Called when an error occurred. Do not call into the stream after this
+    // point. No other delegate functions will be called after this.
     virtual void OnFailed(int error) = 0;
 
    protected:
