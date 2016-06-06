@@ -64,6 +64,30 @@ test_with_window((w) => {
      'a NotSupportedError');
 }, 'Duplicate name');
 
+// TODO(dominicc): Update this (perhaps by removing this comment) when
+// https://github.com/whatwg/html/pull/1333 lands/issue
+// https://github.com/whatwg/html/issues/1329 is closed.
+test_with_window((w) => {
+  class Y extends w.HTMLElement {}
+  let X = (function () {}).bind({});
+  Object.defineProperty(X, 'prototype', {
+    get() {
+      assert_throws('NotSupportedError', () => {
+        w.customElements.define('a-a', Y);
+      }, 'defining an element with a name that is being defined should ' +
+         'throw a NotSupportedError');
+      return new Object();
+    }
+  });
+  // TODO(dominicc): When callback retrieval is implemented, change this
+  // to pass a valid constructor and recursively call define when retrieving
+  // callbacks instead; then it is possible to assert the first definition
+  // worked:
+  //  let element = Reflect.construct(HTMLElement, [], X);
+  //  assert_equals(element.localName, 'a-a');
+  w.customElements.define('a-a', X);
+}, 'Duplicate name defined recursively');
+
 test_with_window((w) => {
   class X extends w.HTMLElement {}
   w.customElements.define('a-a', X);
@@ -72,6 +96,29 @@ test_with_window((w) => {
   }, 'defining an element with a constructor that is already in the ' +
      'registry should throw a NotSupportedError');
 }, 'Reused constructor');
+
+// TODO(dominicc): Update this (perhaps by removing this comment) when
+// https://github.com/whatwg/html/pull/1333 lands/issue
+// https://github.com/whatwg/html/issues/1329 is closed.
+test_with_window((w) => {
+  let X = (function () {}).bind({});
+  Object.defineProperty(X, 'prototype', {
+    get() {
+      assert_throws('NotSupportedError', () => {
+        w.customElements.define('second-name', X);
+      }, 'defining an element with a constructor that is being defined ' +
+         'should throw a NotSupportedError');
+      return new Object();
+    }
+  });
+  // TODO(dominicc): When callback retrieval is implemented, change this
+  // to pass a valid constructor and recursively call define when retrieving
+  // callbacks instead; then it is possible to assert the first definition
+  // worked:
+  //  let element = Reflect.construct(HTMLElement, [], X);
+  //  assert_equals(element.localName, 'a-a');
+  w.customElements.define('first-name', X);
+}, 'Reused constructor recursively');
 
 test_with_window((w) => {
   function F() {}

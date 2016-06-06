@@ -15,16 +15,26 @@
 
 namespace blink {
 
+ScriptCustomElementDefinitionBuilder* ScriptCustomElementDefinitionBuilder
+    ::s_stack = nullptr;
+
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* scriptState,
     CustomElementsRegistry* registry,
     const ScriptValue& constructor,
     ExceptionState& exceptionState)
-    : m_scriptState(scriptState)
+    : m_prev(s_stack)
+    , m_scriptState(scriptState)
     , m_registry(registry)
     , m_constructorValue(constructor.v8Value())
     , m_exceptionState(exceptionState)
 {
+    s_stack = this;
+}
+
+ScriptCustomElementDefinitionBuilder::~ScriptCustomElementDefinitionBuilder()
+{
+    s_stack = m_prev;
 }
 
 bool ScriptCustomElementDefinitionBuilder::checkConstructorIntrinsics()
@@ -55,6 +65,17 @@ bool ScriptCustomElementDefinitionBuilder::checkConstructorNotRegistered()
         m_exceptionState.throwDOMException(
             NotSupportedError,
             "this constructor has already been used with this registry");
+        return false;
+    }
+    for (auto builder = m_prev; builder; builder = builder->m_prev) {
+        CHECK(!builder->m_constructor.IsEmpty());
+        if (m_registry != builder->m_registry
+            || m_constructor != builder->m_constructor) {
+            continue;
+        }
+        m_exceptionState.throwDOMException(
+            NotSupportedError,
+            "this constructor is already being defined in this registry");
         return false;
     }
     return true;

@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -27,12 +28,14 @@ class ScriptValue;
 class V0CustomElementRegistrationContext;
 
 class CORE_EXPORT CustomElementsRegistry final
-    : public GarbageCollected<CustomElementsRegistry>
+    : public GarbageCollectedFinalized<CustomElementsRegistry>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CustomElementsRegistry);
 public:
     static CustomElementsRegistry* create(Document*);
+
+    virtual ~CustomElementsRegistry() = default;
 
     void define(
         ScriptState*,
@@ -69,6 +72,9 @@ private:
         const CustomElementDescriptor&,
         HeapVector<Member<Element>>*);
 
+    class NameIsBeingDefined;
+
+    HashSet<AtomicString> m_namesBeingDefined;
     using DefinitionMap =
         HeapHashMap<AtomicString, Member<CustomElementDefinition>>;
     DefinitionMap m_definitions;

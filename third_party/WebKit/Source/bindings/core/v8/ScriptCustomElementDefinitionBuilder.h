@@ -30,6 +30,7 @@ public:
         CustomElementsRegistry*,
         const ScriptValue& constructorScriptValue,
         ExceptionState&);
+    ~ScriptCustomElementDefinitionBuilder();
 
     bool checkConstructorIntrinsics() override;
     bool checkConstructorNotRegistered() override;
@@ -37,6 +38,9 @@ public:
     CustomElementDefinition* build(const CustomElementDescriptor&) override;
 
 private:
+    static ScriptCustomElementDefinitionBuilder* s_stack;
+
+    ScriptCustomElementDefinitionBuilder* m_prev;
     RefPtr<ScriptState> m_scriptState;
     Member<CustomElementsRegistry> m_registry;
     v8::Local<v8::Value> m_constructorValue;

@@ -18,8 +18,33 @@
 #include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
+
+class CustomElementsRegistry::NameIsBeingDefined final {
+    STACK_ALLOCATED();
+    DISALLOW_IMPLICIT_CONSTRUCTORS(NameIsBeingDefined);
+public:
+    NameIsBeingDefined(
+        CustomElementsRegistry* registry,
+        const AtomicString& name)
+        : m_registry(registry)
+        , m_name(name)
+    {
+        DCHECK(!m_registry->m_namesBeingDefined.contains(name));
+        m_registry->m_namesBeingDefined.add(name);
+    }
+
+    ~NameIsBeingDefined()
+    {
+        m_registry->m_namesBeingDefined.remove(m_name);
+    }
+
+private:
+    Member<CustomElementsRegistry> m_registry;
+    const AtomicString& m_name;
+};
 
 CustomElementsRegistry* CustomElementsRegistry::create(
     Document* document)
@@ -76,6 +101,14 @@ void CustomElementsRegistry::define(
             "\"" + name + "\" is not a valid custom element name");
         return;
     }
+
+    if (m_namesBeingDefined.contains(name)) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            "this name is already being defined in this registry");
+        return;
+    }
+    NameIsBeingDefined defining(this, name);
 
     if (nameIsDefined(name) || v0NameIsDefined(name)) {
         exceptionState.throwDOMException(
