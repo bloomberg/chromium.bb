@@ -148,19 +148,44 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
 
-  // Copy to the clipboard an image located at a point in the RenderView
-  void CopyImageAt(int x, int y);
+  // Command enabled query functions.
+  bool IsReloadEnabled() const;
+  bool IsViewSourceEnabled() const;
+  bool IsDevCommandEnabled(int id) const;
+  bool IsTranslateEnabled() const;
+  bool IsSaveLinkAsEnabled() const;
+  bool IsSaveImageAsEnabled() const;
+  bool IsSaveAsEnabled() const;
+  bool IsSavePageEnabled() const;
+  bool IsPasteEnabled() const;
+  bool IsPasteAndMatchStyleEnabled() const;
+  bool IsRouteMediaEnabled() const;
 
-  // Load the original image located at a point in the RenderView.
-  void LoadOriginalImage();
-
-  // Get an image located at a point in the RenderView for search.
-  void GetImageThumbnailForSearch();
-
-  // Launch the inspector targeting a point in the RenderView
-  void Inspect(int x, int y);
-
-  void SaveLinkAs();
+  // Command execution functions.
+  void ExecOpenLinkNewTab();
+  void ExecProtocolHandler(int event_flags, int handler_index);
+  void ExecOpenLinkInProfile(int profile_index);
+  void ExecInspectElement();
+  void ExecInspectBackgroundPage();
+  void ExecSaveLinkAs();
+  void ExecSaveAs();
+  void ExecCopyLinkText();
+  void ExecCopyImageAt();
+  void ExecSearchWebForImage();
+  void ExecLoadOriginalImage();
+  void ExecPlayPause();
+  void ExecMute();
+  void ExecLoop();
+  void ExecControls();
+  void ExecRotateCW();
+  void ExecRotateCCW();
+  void ExecReloadPackagedApp();
+  void ExecRestartPackagedApp();
+  void ExecPrint();
+  void ExecRouteMedia();
+  void ExecTranslate();
+  void ExecLanguageSettings(int event_flags);
+  void ExecProtocolHandlerSettings(int event_flags);
 
   // Writes the specified text/url to the system clipboard
   void WriteURLToClipboard(const GURL& url);
@@ -169,8 +194,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
                            const blink::WebMediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
                       const blink::WebPluginAction& action);
-
-  bool IsDevCommandEnabled(int id) const;
 
   // Returns a list of registered ProtocolHandlers that can handle the clicked
   // on URL.
