@@ -2,6 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""
+Implements a task builder for benchmarking effects of NoState Prefetch.
+Noticeable steps of the task pipeline:
+  * Save a WPR archive
+  * Process the WPR archive to make all resources cacheable
+  * Process cache archive to patch response headers back to their original
+      values.
+  * Find out which resources are discoverable by NoState Prefetch
+      (HTMLPreloadScanner)
+  * Load pages with empty/full/prefetched cache
+  * Extract most important metrics to a CSV
+"""
+
 import csv
 import logging
 import json
@@ -198,10 +211,10 @@ def _ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
     assert False
 
   whitelisted_urls = set()
-  logging.info('white-listing %s' % first_resource_request.url)
   for request in _FilterOutDataAndIncompleteRequests(discovered_requests):
-    logging.info('white-listing %s' % request.url)
+    logging.debug('white-listing %s', request.url)
     whitelisted_urls.add(request.url)
+  logging.info('number of white-listed resources: %d', len(whitelisted_urls))
   return whitelisted_urls
 
 
@@ -261,37 +274,32 @@ def _ListUrlRequests(trace, request_kind):
   return urls
 
 
-def _VerifyBenchmarkOutputDirectory(benchmark_setup_path,
-                                    benchmark_output_directory_path):
-  """Verifies that all run inside the run_output_directory worked as expected.
-
-  Args:
-    benchmark_setup_path: Path of the JSON of the benchmark setup.
-    benchmark_output_directory_path: Path of the benchmark output directory to
-        verify.
+class _RunOutputVerifier(object):
+  """Object to verify benchmark run from traces and WPR log stored in the
+  runner output directory.
   """
-  # TODO(gabadie): What's the best way of propagating errors happening in here?
-  benchmark_setup = json.load(open(benchmark_setup_path))
-  cache_whitelist = set(benchmark_setup['cache_whitelist'])
-  original_requests = set(benchmark_setup['url_resources'])
-  original_cached_requests = original_requests.intersection(cache_whitelist)
-  original_uncached_requests = original_requests.difference(cache_whitelist)
-  all_sent_url_requests = set()
 
-  # Verify requests from traces.
-  run_id = -1
-  while True:
-    run_id += 1
-    run_path = os.path.join(benchmark_output_directory_path, str(run_id))
-    if not os.path.isdir(run_path):
-      break
-    trace_path = os.path.join(run_path, sandwich_runner.TRACE_FILENAME)
-    if not os.path.isfile(trace_path):
-      logging.error('missing trace %s' % trace_path)
-      continue
-    trace = loading_trace.LoadingTrace.FromJsonFile(trace_path)
-    logging.info('verifying %s from %s' % (trace.url, trace_path))
+  def __init__(self, cache_validation_result, benchmark_setup):
+    """Constructor.
 
+    Args:
+      cache_validation_result: JSON of the cache validation task.
+      benchmark_setup: JSON of the benchmark setup.
+    """
+    self._cache_whitelist = set(benchmark_setup['cache_whitelist'])
+    self._original_requests = set(cache_validation_result['effective_requests'])
+    self._original_post_requests = set(
+        cache_validation_result['effective_post_requests'])
+    self._original_cached_requests = self._original_requests.intersection(
+        self._cache_whitelist)
+    self._original_uncached_requests = self._original_requests.difference(
+        self._cache_whitelist)
+    self._all_sent_url_requests = set()
+
+  def VerifyTrace(self, trace):
+    """Verifies a trace with the cache validation result and the benchmark
+    setup.
+    """
     effective_requests = _ListUrlRequests(trace, _RequestOutcome.All)
     effective_post_requests = _ListUrlRequests(trace, _RequestOutcome.Post)
     effective_cached_requests = \
@@ -299,74 +307,49 @@ def _VerifyBenchmarkOutputDirectory(benchmark_setup_path,
     effective_uncached_requests = \
         _ListUrlRequests(trace, _RequestOutcome.NotServedFromCache)
 
-    missing_requests = original_requests.difference(effective_requests)
-    unexpected_requests = effective_requests.difference(original_requests)
+    missing_requests = self._original_requests.difference(effective_requests)
+    unexpected_requests = effective_requests.difference(self._original_requests)
     expected_cached_requests = \
-        original_cached_requests.difference(missing_requests)
-    missing_cached_requests = \
-        expected_cached_requests.difference(effective_cached_requests)
-    expected_uncached_requests = original_uncached_requests.union(
-        unexpected_requests).union(missing_cached_requests)
-    all_sent_url_requests.update(effective_uncached_requests)
+        self._original_cached_requests.difference(missing_requests)
+    expected_uncached_requests = self._original_uncached_requests.union(
+        unexpected_requests).difference(missing_requests)
 
     # POST requests are known to be unable to use the cache.
     expected_cached_requests.difference_update(effective_post_requests)
     expected_uncached_requests.update(effective_post_requests)
 
-    _PrintUrlSetComparison(original_requests, effective_requests,
+    _PrintUrlSetComparison(self._original_requests, effective_requests,
                            'All resources')
-    _PrintUrlSetComparison(set(), effective_post_requests,
-                           'POST resources')
+    _PrintUrlSetComparison(set(), effective_post_requests, 'POST resources')
     _PrintUrlSetComparison(expected_cached_requests, effective_cached_requests,
                            'Cached resources')
     _PrintUrlSetComparison(expected_uncached_requests,
                            effective_uncached_requests, 'Non cached resources')
 
-  # Verify requests from WPR.
-  wpr_log_path = os.path.join(
-      benchmark_output_directory_path, sandwich_runner.WPR_LOG_FILENAME)
-  logging.info('verifying requests from %s' % wpr_log_path)
-  all_wpr_requests = wpr_backend.ExtractRequestsFromLog(wpr_log_path)
-  all_wpr_urls = set()
-  unserved_wpr_urls = set()
-  wpr_command_colliding_urls = set()
+    self._all_sent_url_requests.update(effective_uncached_requests)
 
-  for request in all_wpr_requests:
-    if request.is_wpr_host:
-      continue
-    if urlparse(request.url).path.startswith('/web-page-replay'):
-      wpr_command_colliding_urls.add(request.url)
-    elif request.is_served is False:
-      unserved_wpr_urls.add(request.url)
-    all_wpr_urls.add(request.url)
+  def VerifyWprLog(self, wpr_log_path):
+    """Verifies WPR log with previously verified traces."""
+    all_wpr_requests = wpr_backend.ExtractRequestsFromLog(wpr_log_path)
+    all_wpr_urls = set()
+    unserved_wpr_urls = set()
+    wpr_command_colliding_urls = set()
 
-  _PrintUrlSetComparison(set(), unserved_wpr_urls,
-                         'Distinct unserved resources from WPR')
-  _PrintUrlSetComparison(set(), wpr_command_colliding_urls,
-                         'Distinct resources colliding to WPR commands')
-  _PrintUrlSetComparison(all_wpr_urls, all_sent_url_requests,
-                         'Distinct resource requests to WPR')
+    for request in all_wpr_requests:
+      if request.is_wpr_host:
+        continue
+      if urlparse(request.url).path.startswith('/web-page-replay'):
+        wpr_command_colliding_urls.add(request.url)
+      elif request.is_served is False:
+        unserved_wpr_urls.add(request.url)
+      all_wpr_urls.add(request.url)
 
-
-def _ReadSubresourceFromRunnerOutputDir(runner_output_dir):
-  """Extracts a list of subresources in runner output directory.
-
-  Args:
-    runner_output_dir: Path of the runner's output directory.
-
-  Returns:
-    [URLs of sub-resources]
-  """
-  trace_path = os.path.join(
-      runner_output_dir, '0', sandwich_runner.TRACE_FILENAME)
-  trace = loading_trace.LoadingTrace.FromJsonFile(trace_path)
-  url_set = set()
-  for request_event in _FilterOutDataAndIncompleteRequests(
-      trace.request_track.GetEvents()):
-    url_set.add(request_event.url)
-  logging.info('lists %s resources of %s from %s' % \
-               (len(url_set), trace.url, trace_path))
-  return [url for url in url_set]
+    _PrintUrlSetComparison(set(), unserved_wpr_urls,
+                           'Distinct unserved resources from WPR')
+    _PrintUrlSetComparison(set(), wpr_command_colliding_urls,
+                           'Distinct resources colliding to WPR commands')
+    _PrintUrlSetComparison(all_wpr_urls, self._all_sent_url_requests,
+                           'Distinct resource requests to WPR')
 
 
 def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
@@ -375,6 +358,14 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
   Args:
     cache_build_trace_path: Path of the generated trace at the cache build time.
     cache_archive_path: Cache archive's path to validate.
+
+  Returns:
+    {
+      'effective_requests': [URLs of all requests],
+      'effective_post_requests': [URLs of POST requests],
+      'expected_cached_resources': [URLs of resources expected to be cached],
+      'successfully_cached': [URLs of cached sub-resources]
+    }
   """
   # TODO(gabadie): What's the best way of propagating errors happening in here?
   logging.info('lists cached urls from %s' % cache_archive_path)
@@ -405,6 +396,69 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
   _PrintUrlSetComparison(expected_cached_requests, effective_cache_keys,
                          'Cached resources')
 
+  return {
+      'effective_requests': [url for url in effective_requests],
+      'effective_post_requests': [url for url in effective_post_requests],
+      'expected_cached_resources': [url for url in expected_cached_requests],
+      'successfully_cached_resources': [url for url in effective_cache_keys]
+  }
+
+
+def _ProcessRunOutputDir(
+    cache_validation_result, benchmark_setup, runner_output_dir):
+  """Process benchmark's run output directory.
+
+  Args:
+    cache_validation_result: Same as for _RunOutputVerifier
+    benchmark_setup: Same as for _RunOutputVerifier
+    runner_output_dir: Same as for SandwichRunner.output_dir
+
+  Returns:
+    List of dictionary.
+  """
+  run_metrics_list = []
+  run_output_verifier = _RunOutputVerifier(
+      cache_validation_result, benchmark_setup)
+  for repeat_id, repeat_dir in sandwich_runner.WalkRepeatedRuns(
+      runner_output_dir):
+    trace_path = os.path.join(repeat_dir, sandwich_runner.TRACE_FILENAME)
+
+    logging.info('loading trace: %s', trace_path)
+    trace = loading_trace.LoadingTrace.FromJsonFile(trace_path)
+
+    logging.info('verifying trace: %s', trace_path)
+    run_output_verifier.VerifyTrace(trace)
+
+    logging.info('extracting metrics from trace: %s', trace_path)
+    run_metrics = {
+        'url': trace.url,
+        'repeat_id': repeat_id,
+        'subresource_discoverer': benchmark_setup['subresource_discoverer'],
+        'cache_recording.subresource_count':
+            len(cache_validation_result['effective_requests']),
+        'cache_recording.cached_subresource_count_theoretic':
+            len(cache_validation_result['successfully_cached_resources']),
+        'cache_recording.cached_subresource_count':
+            len(cache_validation_result['expected_cached_resources']),
+        'benchmark.subresource_count': len(_ListUrlRequests(
+            trace, _RequestOutcome.All)),
+        'benchmark.served_from_cache_count_theoretic':
+            len(benchmark_setup['cache_whitelist']),
+        'benchmark.served_from_cache_count': len(_ListUrlRequests(
+            trace, _RequestOutcome.ServedFromCache)),
+    }
+    run_metrics.update(
+        sandwich_metrics.ExtractCommonMetricsFromRepeatDirectory(
+            repeat_dir, trace))
+    run_metrics_list.append(run_metrics)
+  run_metrics_list.sort(key=lambda e: e['repeat_id'])
+
+  wpr_log_path = os.path.join(
+      runner_output_dir, sandwich_runner.WPR_LOG_FILENAME)
+  logging.info('verifying wpr log: %s', wpr_log_path)
+  run_output_verifier.VerifyWprLog(wpr_log_path)
+  return run_metrics_list
+
 
 class PrefetchBenchmarkBuilder(task_manager.Builder):
   """A builder for a graph of tasks for NoState-Prefetch emulated benchmarks."""
@@ -415,10 +469,10 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
                                   common_builder.output_subdirectory)
     self._common_builder = common_builder
 
-    self._patched_wpr_task = None
-    self._reference_cache_task = None
+    self._wpr_archive_path = None
+    self._cache_path = None
     self._trace_from_grabbing_reference_cache = None
-    self._subresources_for_urls_task = None
+    self._cache_validation_task = None
     self._PopulateCommonPipelines()
 
   def _PopulateCommonPipelines(self):
@@ -428,13 +482,11 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
     subresources (urls-resources.json).
 
     Here is the full dependency tree for the returned task:
-    common/patched-cache-validation.log
+    common/patched-cache-validation.json
       depends on: common/patched-cache.zip
         depends on: common/original-cache.zip
           depends on: common/webpages-patched.wpr
             depends on: common/webpages.wpr
-      depends on: common/urls-resources.json
-        depends on: common/original-cache.zip
     """
     @self.RegisterTask('common/webpages-patched.wpr',
                        dependencies=[self._common_builder.original_wpr_task])
@@ -461,29 +513,18 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
       _PatchCacheArchive(BuildOriginalCache.path,
           original_cache_trace_path, BuildPatchedCache.path)
 
-    @self.RegisterTask('common/subresources-for-urls.json',
-                       [BuildOriginalCache])
-    def ListUrlsResources():
-      url_resources = _ReadSubresourceFromRunnerOutputDir(
-          BuildOriginalCache.run_path)
-      with open(ListUrlsResources.path, 'w') as output:
-        json.dump(url_resources, output)
-
-    @self.RegisterTask('common/patched-cache-validation.log',
+    @self.RegisterTask('common/patched-cache-validation.json',
                        [BuildPatchedCache])
     def ValidatePatchedCache():
-      handler = logging.FileHandler(ValidatePatchedCache.path)
-      logging.getLogger().addHandler(handler)
-      try:
-        _ValidateCacheArchiveContent(
-            original_cache_trace_path, BuildPatchedCache.path)
-      finally:
-        logging.getLogger().removeHandler(handler)
+      cache_validation_result = _ValidateCacheArchiveContent(
+          original_cache_trace_path, BuildPatchedCache.path)
+      with open(ValidatePatchedCache.path, 'w') as output:
+        json.dump(cache_validation_result, output)
 
-    self._patched_wpr_task = BuildPatchedWpr
+    self._wpr_archive_path = BuildPatchedWpr.path
     self._trace_from_grabbing_reference_cache = original_cache_trace_path
-    self._reference_cache_task = BuildPatchedCache
-    self._subresources_for_urls_task = ListUrlsResources
+    self._cache_path = BuildPatchedCache.path
+    self._cache_validation_task = ValidatePatchedCache
 
     self._common_builder.default_final_tasks.append(ValidatePatchedCache)
 
@@ -503,21 +544,19 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
     <transformer_list_name>/<subresource_discoverer>-metrics.csv
       depends on: <transformer_list_name>/<subresource_discoverer>-run/
         depends on: common/<subresource_discoverer>-cache.zip
-          depends on: some tasks saved by PopulateCommonPipelines()
           depends on: common/<subresource_discoverer>-setup.json
-            depends on: some tasks saved by PopulateCommonPipelines()
+            depends on: common/patched-cache-validation.json
     """
     additional_column_names = [
         'url',
         'repeat_id',
         'subresource_discoverer',
-        'subresource_count',
-        # The amount of subresources detected at SetupBenchmark step.
-        'subresource_count_theoretic',
-        # Amount of subresources for caching as suggested by the subresource
-        # discoverer.
-        'cached_subresource_count_theoretic',
-        'cached_subresource_count']
+        'cache_recording.subresource_count',
+        'cache_recording.cached_subresource_count_theoretic',
+        'cache_recording.cached_subresource_count',
+        'benchmark.subresource_count',
+        'benchmark.served_from_cache_count_theoretic',
+        'benchmark.served_from_cache_count']
 
     assert subresource_discoverer in SUBRESOURCE_DISCOVERERS
     assert 'common' not in SUBRESOURCE_DISCOVERERS
@@ -525,28 +564,25 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
     task_prefix = os.path.join(transformer_list_name, subresource_discoverer)
 
     @self.RegisterTask(shared_task_prefix + '-setup.json', merge=True,
-                       dependencies=[self._subresources_for_urls_task])
+                       dependencies=[self._cache_validation_task])
     def SetupBenchmark():
       whitelisted_urls = _ExtractDiscoverableUrls(
           self._trace_from_grabbing_reference_cache, subresource_discoverer)
 
-      url_resources = json.load(open(self._subresources_for_urls_task.path))
       common_util.EnsureParentDirectoryExists(SetupBenchmark.path)
       with open(SetupBenchmark.path, 'w') as output:
         json.dump({
             'cache_whitelist': [url for url in whitelisted_urls],
             'subresource_discoverer': subresource_discoverer,
-            'url_resources': url_resources,
           }, output)
 
     @self.RegisterTask(shared_task_prefix + '-cache.zip', merge=True,
-                       dependencies=[
-                           SetupBenchmark, self._reference_cache_task])
+                       dependencies=[SetupBenchmark])
     def BuildBenchmarkCacheArchive():
-      setup = json.load(open(SetupBenchmark.path))
+      benchmark_setup = json.load(open(SetupBenchmark.path))
       chrome_cache.ApplyUrlWhitelistToCacheArchive(
-          cache_archive_path=self._reference_cache_task.path,
-          whitelisted_urls=setup['cache_whitelist'],
+          cache_archive_path=self._cache_path,
+          whitelisted_urls=benchmark_setup['cache_whitelist'],
           output_cache_archive_path=BuildBenchmarkCacheArchive.path)
 
     @self.RegisterTask(task_prefix + '-run/',
@@ -555,7 +591,7 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
       runner = self._common_builder.CreateSandwichRunner()
       for transformer in transformer_list:
         transformer(runner)
-      runner.wpr_archive_path = self._patched_wpr_task.path
+      runner.wpr_archive_path = self._wpr_archive_path
       runner.wpr_out_log_path = os.path.join(
           RunBenchmark.path, sandwich_runner.WPR_LOG_FILENAME)
       runner.cache_archive_path = BuildBenchmarkCacheArchive.path
@@ -565,42 +601,18 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
 
     @self.RegisterTask(task_prefix + '-metrics.csv',
                        dependencies=[RunBenchmark])
-    def ExtractMetrics():
-      # TODO(gabadie): Performance improvement: load each trace only once and
-      # use it for validation and extraction of metrics later.
-      _VerifyBenchmarkOutputDirectory(SetupBenchmark.path, RunBenchmark.path)
-
+    def ProcessRunOutputDir():
       benchmark_setup = json.load(open(SetupBenchmark.path))
-      run_metrics_list = []
-      for repeat_id, repeat_dir in sandwich_runner.WalkRepeatedRuns(
-          RunBenchmark.path):
-        trace_path = os.path.join(repeat_dir, sandwich_runner.TRACE_FILENAME)
-        logging.info('processing trace: %s', trace_path)
-        trace = loading_trace.LoadingTrace.FromJsonFile(trace_path)
-        run_metrics = {
-            'url': trace.url,
-            'repeat_id': repeat_id,
-            'subresource_discoverer': benchmark_setup['subresource_discoverer'],
-            'subresource_count': len(_ListUrlRequests(
-                trace, _RequestOutcome.All)),
-            'subresource_count_theoretic':
-                len(benchmark_setup['url_resources']),
-            'cached_subresource_count': len(_ListUrlRequests(
-                trace, _RequestOutcome.ServedFromCache)),
-            'cached_subresource_count_theoretic':
-                len(benchmark_setup['cache_whitelist']),
-        }
-        run_metrics.update(
-            sandwich_metrics.ExtractCommonMetricsFromRepeatDirectory(
-                repeat_dir, trace))
-        run_metrics_list.append(run_metrics)
+      cache_validation_result = json.load(
+          open(self._cache_validation_task.path))
 
-      run_metrics_list.sort(key=lambda e: e['repeat_id'])
-      with open(ExtractMetrics.path, 'w') as csv_file:
+      run_metrics_list = _ProcessRunOutputDir(
+          cache_validation_result, benchmark_setup, RunBenchmark.path)
+      with open(ProcessRunOutputDir.path, 'w') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=(additional_column_names +
                                     sandwich_metrics.COMMON_CSV_COLUMN_NAMES))
         writer.writeheader()
         for trace_metrics in run_metrics_list:
           writer.writerow(trace_metrics)
 
-    self._common_builder.default_final_tasks.append(ExtractMetrics)
+    self._common_builder.default_final_tasks.append(ProcessRunOutputDir)

@@ -135,7 +135,7 @@ def _GetWebPageTrackedEvents(tracing_track):
       # hence the first navigationStart in the trace registers the correct frame
       # id.
       if event_name == 'navigationStart':
-        logging.info('Found navigationStart at: %f', event.start_msec)
+        logging.info('  Found navigationStart at: %f', event.start_msec)
         main_frame_id = event.args['frame']
       continue
 
@@ -147,7 +147,7 @@ def _GetWebPageTrackedEvents(tracing_track):
     # important events (like requestStart) do not have a frame id attached.
     if event_name in _TRACKED_EVENT_NAMES and event_name not in tracked_events:
       tracked_events[event_name] = event
-      logging.info('Event %s first appears at: %f', event_name,
+      logging.info('  Event %s first appears at: %f', event_name,
           event.start_msec)
   return tracked_events
 
