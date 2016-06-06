@@ -3769,12 +3769,6 @@ void Document::moveNodeIteratorsToNewDocument(Node& node, Document& newDocument)
     }
 }
 
-void Document::updateRangesAfterChildrenChanged(ContainerNode* container)
-{
-    for (Range* range : m_ranges)
-        range->nodeChildrenChanged(container);
-}
-
 void Document::updateRangesAfterNodeMovedToAnotherDocument(const Node& node)
 {
     DCHECK_NE(node.document(), this);

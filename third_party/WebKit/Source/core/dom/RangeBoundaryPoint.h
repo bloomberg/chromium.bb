@@ -211,8 +211,10 @@ inline void RangeBoundaryPoint::setToEndOfNode(Node& container)
 
 inline void RangeBoundaryPoint::childBeforeWillBeRemoved()
 {
-    DCHECK(m_offsetInContainer);
     m_childBeforeBoundary = m_childBeforeBoundary->previousSibling();
+    if (!isOffsetValid())
+        return;
+    DCHECK_GT(m_offsetInContainer, 0);
     if (!m_childBeforeBoundary)
         m_offsetInContainer = 0;
     else if (m_offsetInContainer > 0)
