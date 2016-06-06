@@ -259,6 +259,8 @@ private:
     bool getUpperLeftCorner(FloatPoint&) const;
     bool getLowerRightCorner(FloatPoint&) const;
 
+    static bool shouldNotUpdateRangesAfterChildrenChanged(const ChildrenChange&);
+
     Member<Node> m_firstChild;
     Member<Node> m_lastChild;
 };

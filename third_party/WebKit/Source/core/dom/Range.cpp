@@ -1339,6 +1339,7 @@ bool areRangesEqual(const Range* a, const Range* b)
 
 static inline void boundaryNodeChildrenChanged(RangeBoundaryPoint& boundary, ContainerNode* container)
 {
+    boundary.markValid();
     if (!boundary.childBefore())
         return;
     if (boundary.container() != container)
@@ -1408,6 +1409,7 @@ void Range::nodeWillBeRemoved(Node& node)
 
 static inline void boundaryTextInserted(RangeBoundaryPoint& boundary, Node* text, unsigned offset, unsigned length)
 {
+    boundary.markValid();
     if (boundary.container() != text)
         return;
     unsigned boundaryOffset = boundary.offset();
@@ -1426,6 +1428,7 @@ void Range::didInsertText(Node* text, unsigned offset, unsigned length)
 
 static inline void boundaryTextRemoved(RangeBoundaryPoint& boundary, Node* text, unsigned offset, unsigned length)
 {
+    boundary.markValid();
     if (boundary.container() != text)
         return;
     unsigned boundaryOffset = boundary.offset();

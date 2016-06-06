@@ -772,10 +772,18 @@ void ContainerNode::detach(const AttachContext& context)
     Node::detach(context);
 }
 
+bool ContainerNode::shouldNotUpdateRangesAfterChildrenChanged(const ChildrenChange& change)
+{
+    return change.byParser
+        || change.type == TextChanged
+        || change.type == ElementInserted
+        || change.type == NonElementInserted;
+}
+
 void ContainerNode::childrenChanged(const ChildrenChange& change)
 {
     document().incDOMTreeVersion();
-    if (!change.byParser && change.type != TextChanged)
+    if (!shouldNotUpdateRangesAfterChildrenChanged(change))
         document().updateRangesAfterChildrenChanged(this);
     invalidateNodeListCachesInAncestors();
     if (change.isChildInsertion() && !childNeedsStyleRecalc()) {
