@@ -53,6 +53,26 @@
 
 namespace blink {
 
+struct HbFontDeleter {
+    void operator()(hb_font_t* font)
+    {
+        if (font)
+            hb_font_destroy(font);
+    }
+};
+
+using HbFontUniquePtr = std::unique_ptr<hb_font_t, HbFontDeleter>;
+
+struct HbFaceDeleter {
+    void operator()(hb_face_t* face)
+    {
+        if (face)
+            hb_face_destroy(face);
+    }
+};
+
+using HbFaceUniquePtr = std::unique_ptr<hb_face_t, HbFaceDeleter>;
+
 // struct to carry user-pointer data for hb_font_t callback functions.
 struct HarfBuzzFontData {
     USING_FAST_MALLOC(HarfBuzzFontData);
@@ -91,11 +111,11 @@ public:
 
 private:
     explicit HbFontCacheEntry(hb_font_t* font)
-        : m_hbFont(adoptPtr(font))
+        : m_hbFont(HbFontUniquePtr(font))
         , m_hbFontData(adoptPtr(new HarfBuzzFontData()))
     { };
 
-    OwnPtr<hb_font_t> m_hbFont;
+    HbFontUniquePtr m_hbFont;
     OwnPtr<HarfBuzzFontData> m_hbFontData;
 };
 
@@ -115,7 +135,7 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platformData, uint64_t uniqueID)
 {
     HarfBuzzFontCache::AddResult result = harfBuzzFontCache()->add(m_uniqueID, nullptr);
     if (result.isNewEntry) {
-        OwnPtr<hb_face_t> face = adoptPtr(createFace());
+        HbFaceUniquePtr face(createFace());
         result.storedValue->value = createHbFontCacheEntry(face.get());
     }
     result.storedValue->value->ref();
@@ -302,7 +322,7 @@ hb_face_t* HarfBuzzFace::createFace()
 
 PassRefPtr<HbFontCacheEntry> createHbFontCacheEntry(hb_face_t* face)
 {
-    OwnPtr<hb_font_t> otFont = adoptPtr(hb_font_create(face));
+    HbFontUniquePtr otFont(hb_font_create(face));
     hb_ot_font_set_funcs(otFont.get());
     // Creating a sub font means that non-available functions
     // are found from the parent.

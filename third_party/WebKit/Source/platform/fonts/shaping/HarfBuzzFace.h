@@ -76,28 +76,4 @@ private:
 
 } // namespace blink
 
-namespace WTF {
-
-template<typename T> struct OwnedPtrDeleter;
-template<> struct OwnedPtrDeleter<hb_font_t> {
-    STATIC_ONLY(OwnedPtrDeleter);
-    static void deletePtr(hb_font_t* font)
-    {
-        if (font)
-            hb_font_destroy(font);
-    }
-};
-
-template<typename T> struct OwnedPtrDeleter;
-template<> struct OwnedPtrDeleter<hb_face_t> {
-    STATIC_ONLY(OwnedPtrDeleter);
-    static void deletePtr(hb_face_t* face)
-    {
-        if (face)
-            hb_face_destroy(face);
-    }
-};
-
-} // namespace WTF
-
 #endif // HarfBuzzFace_h
