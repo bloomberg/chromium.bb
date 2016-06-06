@@ -327,11 +327,6 @@
             }
         }
     ],
-    "WebFontsIntervention": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "WebRTC-EnableWebRtcEcdsa": [
         {
             "enable_features": [
