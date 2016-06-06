@@ -300,7 +300,9 @@ TEST_F(MapTest, ArrayOfMap) {
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<int32_t, int8_t>*>* data;
     ArrayValidateParams validate_params(
-        0, false, new ArrayValidateParams(0, false, nullptr));
+        0, false, new ArrayValidateParams(
+            new ArrayValidateParams(0, false, nullptr),
+            new ArrayValidateParams(0, false, nullptr)));
     mojo::internal::Serialize<Array<Map<int32_t, int8_t>>>(
         array, &buf, &data, &validate_params, &context);
 
@@ -328,7 +330,10 @@ TEST_F(MapTest, ArrayOfMap) {
     Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(
-                      0, false, new ArrayValidateParams(0, false, nullptr)));
+            new ArrayValidateParams(
+                0, false, new ArrayValidateParams(0, false, nullptr)),
+            new ArrayValidateParams(
+                0, false, new ArrayValidateParams(0, false, nullptr))));
     mojo::internal::Serialize<Array<Map<String, Array<bool>>>>(
         array, &buf, &data, &validate_params, &context);
 

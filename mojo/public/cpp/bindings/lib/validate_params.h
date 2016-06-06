@@ -14,44 +14,68 @@ namespace internal {
 
 using ValidateEnumFunc = bool (*)(int32_t);
 
+// TODO(tibell): Rename to ContainerValidateParams.
 class ArrayValidateParams {
  public:
+  // Validates a map. A map is validated as a pair of arrays, one for the keys
+  // and one for the values. Both arguments must be non-null.
+  //
+  // ArrayValidateParams takes ownership of |in_key_validate params| and
+  // |in_element_validate params|.
+  ArrayValidateParams(ArrayValidateParams* in_key_validate_params,
+                      ArrayValidateParams* in_element_validate_params)
+      : key_validate_params(in_key_validate_params),
+        element_validate_params(in_element_validate_params) {
+    DCHECK(in_key_validate_params)
+        << "Map validate params require key validate params";
+    DCHECK(in_element_validate_params)
+        << "Map validate params require element validate params";
+  }
+
+  // Validates an array.
+  //
   // ArrayValidateParams takes ownership of |in_element_validate params|.
   ArrayValidateParams(uint32_t in_expected_num_elements,
                       bool in_element_is_nullable,
                       ArrayValidateParams* in_element_validate_params)
       : expected_num_elements(in_expected_num_elements),
         element_is_nullable(in_element_is_nullable),
-        element_validate_params(in_element_validate_params),
-        validate_enum_func(nullptr) {}
+        element_validate_params(in_element_validate_params) {}
 
   // Validates an array of enums.
   ArrayValidateParams(uint32_t in_expected_num_elements,
                       ValidateEnumFunc in_validate_enum_func)
       : expected_num_elements(in_expected_num_elements),
-        element_is_nullable(false),
-        element_validate_params(nullptr),
         validate_enum_func(in_validate_enum_func) {}
 
   ~ArrayValidateParams() {
     if (element_validate_params)
       delete element_validate_params;
+    if (key_validate_params)
+      delete key_validate_params;
   }
 
   // If |expected_num_elements| is not 0, the array is expected to have exactly
   // that number of elements.
-  uint32_t expected_num_elements;
+  uint32_t expected_num_elements = 0;
 
   // Whether the elements are nullable.
-  bool element_is_nullable;
+  bool element_is_nullable = false;
 
-  // Validation information for elements. It is either a pointer to another
-  // instance of ArrayValidateParams (if elements are arrays or maps), or
-  // nullptr. In the case of maps, this is used to validate the value array.
-  ArrayValidateParams* element_validate_params;
+  // Validation information for the map key array. May contain other
+  // ArrayValidateParams e.g. if the keys are strings.
+  ArrayValidateParams* key_validate_params = nullptr;
+
+  // For arrays: validation information for elements. It is either a pointer to
+  // another instance of ArrayValidateParams (if elements are arrays or maps),
+  // or nullptr.
+  //
+  // For maps: validation information for the whole value array. May contain
+  // other ArrayValidateParams e.g. if the values are arrays or maps.
+  ArrayValidateParams* element_validate_params = nullptr;
 
   // Validation function for enum elements.
-  ValidateEnumFunc validate_enum_func;
+  ValidateEnumFunc validate_enum_func = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);

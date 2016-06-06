@@ -13,37 +13,6 @@
 namespace mojo {
 namespace internal {
 
-inline const ArrayValidateParams* GetMapKeyValidateParamsDefault() {
-  // The memory allocated here never gets released to not cause an exit time
-  // destructor.
-  static const ArrayValidateParams* validate_params =
-      new ArrayValidateParams(0, false, nullptr);
-  return validate_params;
-}
-
-inline const ArrayValidateParams* GetMapKeyValidateParamsForStrings() {
-  // The memory allocated here never gets released to not cause an exit time
-  // destructor.
-  static const ArrayValidateParams* validate_params = new ArrayValidateParams(
-      0, false, new ArrayValidateParams(0, false, nullptr));
-  return validate_params;
-}
-
-template <typename MapKey>
-struct MapKeyValidateParamsFactory {
-  static const ArrayValidateParams* Get() {
-    return GetMapKeyValidateParamsDefault();
-  }
-};
-
-// For non-nullable strings only. (Which is OK; map keys can't be null.)
-template <>
-struct MapKeyValidateParamsFactory<mojo::internal::Array_Data<char>*> {
-  static const ArrayValidateParams* Get() {
-    return GetMapKeyValidateParamsForStrings();
-  }
-};
-
 // Map serializes into a struct which has two arrays as struct fields, the keys
 // and the values.
 template <typename Key, typename Value>
@@ -53,9 +22,11 @@ class Map_Data {
     return new (buf->Allocate(sizeof(Map_Data))) Map_Data();
   }
 
+  // |validate_params| must have non-null |key_validate_params| and
+  // |element_validate_params| members.
   static bool Validate(const void* data,
                        BoundsChecker* bounds_checker,
-                       const ArrayValidateParams* value_validate_params) {
+                       const ArrayValidateParams* validate_params) {
     if (!data)
       return true;
 
@@ -78,10 +49,9 @@ class Map_Data {
                             "null key array in map struct");
       return false;
     }
-    const ArrayValidateParams* key_validate_params =
-        MapKeyValidateParamsFactory<Key>::Get();
     if (!Array_Data<Key>::Validate(DecodePointerRaw(&object->keys.offset),
-                                   bounds_checker, key_validate_params)) {
+                                   bounds_checker,
+                                   validate_params->key_validate_params)) {
       return false;
     }
 
@@ -94,8 +64,9 @@ class Map_Data {
                             "null value array in map struct");
       return false;
     }
-    if (!Array_Data<Value>::Validate(DecodePointerRaw(&object->values.offset),
-                                     bounds_checker, value_validate_params)) {
+    if (!Array_Data<Value>::Validate(
+            DecodePointerRaw(&object->values.offset),
+            bounds_checker, validate_params->element_validate_params)) {
       return false;
     }
 

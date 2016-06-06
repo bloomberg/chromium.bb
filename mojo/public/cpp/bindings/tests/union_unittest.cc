@@ -705,7 +705,9 @@ TEST(UnionTest, PodUnionInMapSerialization) {
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Map_Data<mojo::internal::String_Data*,
                            internal::PodUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+  mojo::internal::ArrayValidateParams validate_params(
+      new mojo::internal::ArrayValidateParams(0, false, nullptr),
+      new mojo::internal::ArrayValidateParams(0, false, nullptr));
   mojo::internal::Serialize<Map<String, PodUnionPtr>>(
       map, &buf, &data, &validate_params, &context);
 
@@ -731,7 +733,9 @@ TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Map_Data<mojo::internal::String_Data*,
                            internal::PodUnion_Data>* data;
-  mojo::internal::ArrayValidateParams validate_params(0, true, nullptr);
+  mojo::internal::ArrayValidateParams validate_params(
+      new mojo::internal::ArrayValidateParams(0, false, nullptr),
+      new mojo::internal::ArrayValidateParams(0, true, nullptr));
   mojo::internal::Serialize<Map<String, PodUnionPtr>>(
       map, &buf, &data, &validate_params, &context);
 

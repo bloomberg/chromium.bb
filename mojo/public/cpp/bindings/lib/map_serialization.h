@@ -113,8 +113,10 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buf,
                         Data** output,
-                        const ArrayValidateParams* value_validate_params,
+                        const ArrayValidateParams* validate_params,
                         SerializationContext* context) {
+    DCHECK(validate_params->key_validate_params);
+    DCHECK(validate_params->element_validate_params);
     if (CallIsNullIfExists<Traits>(input)) {
       *output = nullptr;
       return;
@@ -124,21 +126,19 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
     if (result) {
       result->keys.ptr = Array<Key>::Data_::New(Traits::GetSize(input), buf);
       if (result->keys.ptr) {
-        const ArrayValidateParams* key_validate_params =
-            MapKeyValidateParamsFactory<
-                typename GetDataTypeAsArrayElement<Key>::Data>::Get();
         MapKeyReader<MaybeConstUserType> key_reader(input);
         KeyArraySerializer::SerializeElements(
-            &key_reader, buf, result->keys.ptr, key_validate_params, context);
+            &key_reader, buf, result->keys.ptr,
+            validate_params->key_validate_params, context);
       }
 
       result->values.ptr =
           Array<Value>::Data_::New(Traits::GetSize(input), buf);
       if (result->values.ptr) {
         MapValueReader<MaybeConstUserType> value_reader(input);
-        ValueArraySerializer::SerializeElements(&value_reader, buf,
-                                                result->values.ptr,
-                                                value_validate_params, context);
+        ValueArraySerializer::SerializeElements(
+            &value_reader, buf, result->values.ptr,
+            validate_params->element_validate_params, context);
       }
     }
     *output = result;

@@ -27,7 +27,7 @@
   }
 {%-   elif kind|is_map_kind %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
-      {{kind.value_kind|get_map_validate_params_ctor_args|indent(6)}});
+      {{kind|get_array_validate_params_ctor_args|indent(6)}});
   if (!mojo::internal::ValidateMap({{field_expr}}, bounds_checker,
                                    &{{name}}_validate_params)) {
     return false;

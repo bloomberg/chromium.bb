@@ -104,14 +104,14 @@ bool ValidateArray(const Pointer<Array_Data<T>>& input,
 template <typename T>
 bool ValidateMap(const Pointer<T>& input,
                  BoundsChecker* bounds_checker,
-                 const ArrayValidateParams* value_validate_params) {
+                 const ArrayValidateParams* validate_params) {
   if (!ValidateEncodedPointer(&input.offset)) {
     ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
     return false;
   }
 
   return T::Validate(DecodePointerRaw(&input.offset), bounds_checker,
-                     value_validate_params);
+                     validate_params);
 }
 
 template <typename T>
