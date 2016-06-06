@@ -480,7 +480,7 @@ deps_os = {
       Var('chromium_git') + '/external/mockito/mockito.git' + '@' + '4d987dcd923b81525c42b1333e6c4e07440776c3',
 
     'src/third_party/netty-tcnative/src':
-      Var('chromium_git') + '/external/netty-tcnative.git' + '@' + '12d01332921695e974175870175eb14a889313a1',
+      Var('chromium_git') + '/external/netty-tcnative.git' + '@' + 'dba66573998801a08ea41b605b1629857ae02a6b',
 
     'src/third_party/netty4/src':
       Var('chromium_git') + '/external/netty4.git' + '@' + 'e0f26303b4ce635365be19414d0ac81f2ef6ba3c',
