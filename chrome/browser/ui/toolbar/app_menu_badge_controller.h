@@ -18,11 +18,11 @@ class Profile;
 // as a result of various events - such as available updates, errors, etc.
 class AppMenuBadgeController : public content::NotificationObserver {
  public:
-  enum BadgeType {
-    BADGE_TYPE_NONE,
-    BADGE_TYPE_UPGRADE_NOTIFICATION,
-    BADGE_TYPE_GLOBAL_ERROR,
-    BADGE_TYPE_INCOMPATIBILITY_WARNING,
+  enum class BadgeType {
+    NONE,
+    UPGRADE_NOTIFICATION,
+    GLOBAL_ERROR,
+    INCOMPATIBILITY_WARNING,
   };
 
   // Delegate interface for receiving badge update notifications.

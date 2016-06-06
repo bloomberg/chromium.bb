@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -31,7 +32,9 @@ class AppMenuButton : public views::MenuButton,
   explicit AppMenuButton(ToolbarView* toolbar_view);
   ~AppMenuButton() override;
 
-  void SetSeverity(AppMenuIconPainter::Severity severity, bool animate);
+  void SetSeverity(AppMenuBadgeController::BadgeType type,
+                   AppMenuIconPainter::Severity severity,
+                   bool animate);
 
   // Shows the app menu. |for_drop| indicates whether the menu is opened for a
   // drag-and-drop operation.
@@ -91,6 +94,7 @@ class AppMenuButton : public views::MenuButton,
 
   // Only used in MD.
   AppMenuIconPainter::Severity severity_;
+  AppMenuBadgeController::BadgeType type_;
 
   // Our owning toolbar view.
   ToolbarView* toolbar_view_;

@@ -658,12 +658,12 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
   DCHECK(app_menu_button_->GetWidget());
 
   base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
-  if (type == AppMenuBadgeController::BADGE_TYPE_UPGRADE_NOTIFICATION) {
+  if (type == AppMenuBadgeController::BadgeType::UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
   }
   app_menu_button_->SetAccessibleName(accname_app);
-  app_menu_button_->SetSeverity(severity, animate);
+  app_menu_button_->SetSeverity(type, severity, animate);
 
   // Keep track of whether we were showing the badge before, so we don't send
   // multiple UMA events for example when multiple Chrome windows are open.
@@ -672,7 +672,7 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
   bool was_showing = incompatibility_badge_showing;
   incompatibility_badge_showing = false;
 
-  if (type == AppMenuBadgeController::BADGE_TYPE_INCOMPATIBILITY_WARNING) {
+  if (type == AppMenuBadgeController::BadgeType::INCOMPATIBILITY_WARNING) {
     if (!was_showing) {
       content::RecordAction(UserMetricsAction("ConflictBadge"));
 #if defined(OS_WIN)

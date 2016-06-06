@@ -104,14 +104,14 @@ void AppMenuBadgeController::UpdateDelegate() {
   if (ShouldShowUpgradeRecommended()) {
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
         UpgradeDetector::GetInstance()->upgrade_notification_stage();
-    delegate_->UpdateBadgeSeverity(BADGE_TYPE_UPGRADE_NOTIFICATION,
+    delegate_->UpdateBadgeSeverity(BadgeType::UPGRADE_NOTIFICATION,
                                    SeverityFromUpgradeLevel(level),
                                    ShouldAnimateUpgradeLevel(level));
     return;
   }
 
   if (ShouldShowIncompatibilityWarning()) {
-    delegate_->UpdateBadgeSeverity(BADGE_TYPE_INCOMPATIBILITY_WARNING,
+    delegate_->UpdateBadgeSeverity(BadgeType::INCOMPATIBILITY_WARNING,
                                    AppMenuIconPainter::SEVERITY_MEDIUM, true);
     return;
   }
@@ -120,12 +120,12 @@ void AppMenuBadgeController::UpdateDelegate() {
           GetHighestSeverityGlobalErrorWithAppMenuItem()) {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
-    delegate_->UpdateBadgeSeverity(BADGE_TYPE_GLOBAL_ERROR,
+    delegate_->UpdateBadgeSeverity(BadgeType::GLOBAL_ERROR,
                                    AppMenuIconPainter::SEVERITY_MEDIUM, true);
     return;
   }
 
-  delegate_->UpdateBadgeSeverity(BADGE_TYPE_NONE,
+  delegate_->UpdateBadgeSeverity(BadgeType::NONE,
                                  AppMenuIconPainter::SEVERITY_NONE, true);
 }
 
