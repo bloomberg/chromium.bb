@@ -157,7 +157,7 @@ public:
 
     unsigned propertyCount() const { return m_arraySize; }
 
-    const Member<CSSValue>* valueArray() const;
+    const Member<const CSSValue>* valueArray() const;
     const StylePropertyMetadata* metadataArray() const;
 
     template<typename T> // CSSPropertyID or AtomicString
@@ -176,9 +176,9 @@ private:
     ImmutableStylePropertySet(const CSSProperty*, unsigned count, CSSParserMode);
 };
 
-inline const Member<CSSValue>* ImmutableStylePropertySet::valueArray() const
+inline const Member<const CSSValue>* ImmutableStylePropertySet::valueArray() const
 {
-    return reinterpret_cast<const Member<CSSValue>*>(const_cast<const void**>(&(this->m_storage)));
+    return reinterpret_cast<const Member<const CSSValue>*>(const_cast<const void**>(&(this->m_storage)));
 }
 
 inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() const
