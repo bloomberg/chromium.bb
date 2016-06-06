@@ -327,8 +327,6 @@ int CastTransportImpl::DoWriteCallback() {
   logger_->LogSocketEventForMessage(
       channel_id_, proto::MESSAGE_WRITTEN, request.message_namespace,
       base::StringPrintf("Bytes: %d", bytes_consumed));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&base::DoNothing));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(request.callback, net::OK));
 
