@@ -62,7 +62,7 @@ void av1_compute_skin_map(AV1_COMP *const cpi, FILE *yuv_skinmap_file) {
   YV12_BUFFER_CONFIG skinmap;
   memset(&skinmap, 0, sizeof(YV12_BUFFER_CONFIG));
   if (aom_alloc_frame_buffer(&skinmap, cm->width, cm->height, cm->subsampling_x,
-                             cm->subsampling_y, AOM_ENC_BORDER_IN_PIXELS,
+                             cm->subsampling_y, AOM_BORDER_IN_PIXELS,
                              cm->byte_alignment)) {
     aom_free_frame_buffer(&skinmap);
     return;

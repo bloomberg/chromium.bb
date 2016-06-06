@@ -960,7 +960,7 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_AOM_HIGHBITDEPTH
           cm->use_highbitdepth,
 #endif
-          AOM_DEC_BORDER_IN_PIXELS, cm->byte_alignment,
+          AOM_BORDER_IN_PIXELS, cm->byte_alignment,
           &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
           pool->cb_priv)) {
     unlock_buffer_pool(pool);
@@ -1050,7 +1050,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #if CONFIG_AOM_HIGHBITDEPTH
           cm->use_highbitdepth,
 #endif
-          AOM_DEC_BORDER_IN_PIXELS, cm->byte_alignment,
+          AOM_BORDER_IN_PIXELS, cm->byte_alignment,
           &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
           pool->cb_priv)) {
     unlock_buffer_pool(pool);
