@@ -29,6 +29,13 @@ from chromite.lib import graphite
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 
+try:
+  from infra_libs.ts_mon.common import metrics
+  from infra_libs.ts_mon.common import interface
+except (ImportError, RuntimeError):
+  metrics = None
+  interface = None
+
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
@@ -676,11 +683,21 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     stats = graphite.StatsFactory.GetInstance()
     for cl_action in cl_actions:
       r = cl_action.reason or 'no_reason'
+
       # TODO(akeshet) This is a slightly hacky workaround for the fact that our
       # strategy reasons contain a ':', but statsd considers that character to
       # be a name terminator.
-      r = r.replace(':', '_')
-      stats.Counter('.'.join(['cl_actions', cl_action.action])).increment(r)
+      statsd_name = 'cl_actions.%s' % cl_action.action
+      stats.Counter(statsd_name).increment(r.replace(':', '_'))
+
+      if metrics:
+        monarch_name = 'chromeos/cbuildbot/cl_action/' + cl_action.action
+        # This is necessary because ts_mon does not allow constructing a metrics
+        # object with the same name twice.
+        counter = (
+            interface.state.metrics.get(monarch_name) or
+            metrics.CounterMetric(monarch_name, fields={'reason': r}))
+        counter.increment()
 
     return retval
 

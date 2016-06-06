@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import exceptions
+import mock
 import sqlalchemy
 
 from chromite.cbuildbot import constants
@@ -52,6 +53,28 @@ class HelperFunctionsTest(cros_test_lib.TestCase):
         FatalOperationalError())))
     self.assertFalse(cidb._IsRetryableException(self._WrapError(
         UnknownError())))
+
+class CIDBConnectionTest(cros_test_lib.MockTestCase):
+  """Tests CIDBConnection."""
+
+
+  def testInsertCLActions(self):
+    connection_mock = mock.Mock(spec=cidb.CIDBConnection,
+                                schema_version=10**100)
+
+    cl_actions = [
+        mock.Mock(reason='reason: #%d' % i,
+                  action='action_%d' % i)
+        for i in range(10)
+    ]
+
+    metrics_mock = self.PatchObject(cidb, 'metrics')
+    cidb.CIDBConnection.InsertCLActions(connection_mock, 0, cl_actions)
+
+    for i in range(10):
+      metrics_mock.CounterMetric.assert_any_call(
+          'chromeos/cbuildbot/cl_action/action_%d' % i,
+          fields={'reason': 'reason: #%d' % i})
 
 
 class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
