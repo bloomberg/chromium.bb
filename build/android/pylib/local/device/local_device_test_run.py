@@ -162,7 +162,7 @@ class LocalDeviceTestRun(test_run.TestRun):
                    for n, t in all_test_results.iteritems())
       return is_failure(all_test_results.get(name))
 
-    return [t for t in tests if should_retry(self._GetTestName(t))]
+    return [t for t in tests if should_retry(self._GetUniqueTestName(t))]
 
   def GetTool(self, device):
     if not str(device) in self._tools:
@@ -174,7 +174,7 @@ class LocalDeviceTestRun(test_run.TestRun):
     raise NotImplementedError
 
   # pylint: disable=no-self-use
-  def _GetTestName(self, test):
+  def _GetUniqueTestName(self, test):
     return test
 
   def _GetTests(self):

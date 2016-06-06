@@ -33,7 +33,7 @@ class TestLocalDeviceNonStringTestRun(
     super(TestLocalDeviceNonStringTestRun, self).__init__(
         mock.MagicMock(), mock.MagicMock())
 
-  def _GetTestName(self, test):
+  def _GetUniqueTestName(self, test):
     return test['name']
 
 

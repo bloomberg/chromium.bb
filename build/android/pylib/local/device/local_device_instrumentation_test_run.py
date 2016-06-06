@@ -168,17 +168,20 @@ class LocalDeviceInstrumentationTestRun(
   def _GetTests(self):
     return self._test_instance.GetTests()
 
-  #override
   def _GetTestName(self, test):
+    # pylint: disable=no-self-use
     return '%s#%s' % (test['class'], test['method'])
 
-  def _GetTestNameForDisplay(self, test):
+  #override
+  def _GetUniqueTestName(self, test):
     display_name = self._GetTestName(test)
-    flags = test['flags']
-    if flags.add:
-      display_name = '%s with {%s}' % (display_name, ' '.join(flags.add))
-    if flags.remove:
-      display_name = '%s without {%s}' % (display_name, ' '.join(flags.remove))
+    if 'flags' in test:
+      flags = test['flags']
+      if flags.add:
+        display_name = '%s with {%s}' % (display_name, ' '.join(flags.add))
+      if flags.remove:
+        display_name = '%s without {%s}' % (
+            display_name, ' '.join(flags.remove))
     return display_name
 
   #override
@@ -220,13 +223,12 @@ class LocalDeviceInstrumentationTestRun(
       timeout = sum(timeouts)
     else:
       test_name = self._GetTestName(test)
-      test_display_name = test_name
+      test_display_name = self._GetUniqueTestName(test)
       target = '%s/%s' % (
           self._test_instance.test_package, self._test_instance.test_runner)
       extras['class'] = test_name
       if 'flags' in test:
         flags = test['flags']
-        test_display_name = self._GetTestNameForDisplay(test)
       timeout = self._GetTimeoutFromAnnotations(
         test['annotations'], test_display_name)
 
@@ -263,19 +265,19 @@ class LocalDeviceInstrumentationTestRun(
     results = self._test_instance.GenerateTestResults(
         result_code, result_bundle, statuses, start_ms, duration_ms)
 
-    # Add UNKNOWN results for any missing tests.
-    iterable_test = test if isinstance(test, list) else [test]
-    test_names = set(self._GetTestName(t) for t in iterable_test)
-    results_names = set(r.GetName() for r in results)
-    results.extend(
-        base_test_result.BaseTestResult(u, base_test_result.ResultType.UNKNOWN)
-        for u in test_names.difference(results_names))
-
     # Update the result name if the test used flags.
     if flags:
       for r in results:
         if r.GetName() == test_name:
           r.SetName(test_display_name)
+
+    # Add UNKNOWN results for any missing tests.
+    iterable_test = test if isinstance(test, list) else [test]
+    test_names = set(self._GetUniqueTestName(t) for t in iterable_test)
+    results_names = set(r.GetName() for r in results)
+    results.extend(
+        base_test_result.BaseTestResult(u, base_test_result.ResultType.UNKNOWN)
+        for u in test_names.difference(results_names))
 
     # Update the result type if we detect a crash.
     if DidPackageCrashOnDevice(self._test_instance.test_package, device):
