@@ -494,6 +494,14 @@ class PriorityTracker {
   size_t counts_[NUM_PRIORITIES];
 };
 
+void MakeNotStale(HostCache::EntryStaleness* stale_info) {
+  if (!stale_info)
+    return;
+  stale_info->expired_by = base::TimeDelta::FromSeconds(-1);
+  stale_info->network_changes = 0;
+  stale_info->stale_hits = 0;
+}
+
 }  // namespace
 
 //-----------------------------------------------------------------------------
@@ -1923,7 +1931,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   // outstanding jobs map.
   Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
 
-  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, source_net_log);
+  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, false, nullptr,
+                         source_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
     LogFinishRequest(source_net_log, info, rv);
     RecordTotalTime(HaveDnsConfig(), info.is_speculative(), base::TimeDelta());
@@ -2032,29 +2041,41 @@ int HostResolverImpl::ResolveHelper(const Key& key,
                                     const RequestInfo& info,
                                     const IPAddress* ip_address,
                                     AddressList* addresses,
+                                    bool allow_stale,
+                                    HostCache::EntryStaleness* stale_info,
                                     const BoundNetLog& source_net_log) {
+  DCHECK(allow_stale == !!stale_info);
   // The result of |getaddrinfo| for empty hosts is inconsistent across systems.
   // On Windows it gives the default interface's address, whereas on Linux it
   // gives an error. We will make it fail on all platforms for consistency.
-  if (info.hostname().empty() || info.hostname().size() > kMaxHostLength)
+  if (info.hostname().empty() || info.hostname().size() > kMaxHostLength) {
+    MakeNotStale(stale_info);
     return ERR_NAME_NOT_RESOLVED;
+  }
 
   int net_error = ERR_UNEXPECTED;
-  if (ResolveAsIP(key, info, ip_address, &net_error, addresses))
+  if (ResolveAsIP(key, info, ip_address, &net_error, addresses)) {
+    MakeNotStale(stale_info);
     return net_error;
-  if (ServeFromCache(key, info, &net_error, addresses)) {
+  }
+  if (ServeFromCache(key, info, &net_error, addresses, allow_stale,
+                     stale_info)) {
     source_net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_CACHE_HIT);
+    // |ServeFromCache()| will set |*stale_info| as needed.
     return net_error;
   }
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
   // http://crbug.com/117655
   if (ServeFromHosts(key, info, addresses)) {
     source_net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_HOSTS_HIT);
+    MakeNotStale(stale_info);
     return OK;
   }
 
-  if (ServeLocalhost(key, info, addresses))
+  if (ServeLocalhost(key, info, addresses)) {
+    MakeNotStale(stale_info);
     return OK;
+  }
 
   return ERR_DNS_CACHE_MISS;
 }
@@ -2075,7 +2096,8 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
 
   Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
 
-  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, source_net_log);
+  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, false, nullptr,
+                         source_net_log);
   LogFinishRequest(source_net_log, info, rv);
   return rv;
 }
@@ -2128,6 +2150,31 @@ std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
   return dns_config->ToValue();
 }
 
+int HostResolverImpl::ResolveStaleFromCache(
+    const RequestInfo& info,
+    AddressList* addresses,
+    HostCache::EntryStaleness* stale_info,
+    const BoundNetLog& source_net_log) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(addresses);
+  DCHECK(stale_info);
+
+  // Update the net log and notify registered observers.
+  LogStartRequest(source_net_log, info);
+
+  IPAddress ip_address;
+  IPAddress* ip_address_ptr = nullptr;
+  if (ip_address.AssignFromIPLiteral(info.hostname()))
+    ip_address_ptr = &ip_address;
+
+  Key key = GetEffectiveKeyForRequest(info, ip_address_ptr, source_net_log);
+
+  int rv = ResolveHelper(key, info, ip_address_ptr, addresses, true, stale_info,
+                         source_net_log);
+  LogFinishRequest(source_net_log, info, rv);
+  return rv;
+}
+
 bool HostResolverImpl::ResolveAsIP(const Key& key,
                                    const RequestInfo& info,
                                    const IPAddress* ip_address,
@@ -2155,14 +2202,20 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
 bool HostResolverImpl::ServeFromCache(const Key& key,
                                       const RequestInfo& info,
                                       int* net_error,
-                                      AddressList* addresses) {
+                                      AddressList* addresses,
+                                      bool allow_stale,
+                                      HostCache::EntryStaleness* stale_info) {
   DCHECK(addresses);
   DCHECK(net_error);
+  DCHECK(allow_stale == !!stale_info);
   if (!info.allow_cached_response() || !cache_.get())
     return false;
 
-  const HostCache::Entry* cache_entry = cache_->Lookup(
-      key, base::TimeTicks::Now());
+  const HostCache::Entry* cache_entry;
+  if (allow_stale)
+    cache_entry = cache_->LookupStale(key, base::TimeTicks::Now(), stale_info);
+  else
+    cache_entry = cache_->Lookup(key, base::TimeTicks::Now());
   if (!cache_entry)
     return false;
 

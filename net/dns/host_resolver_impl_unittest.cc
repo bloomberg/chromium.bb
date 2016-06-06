@@ -211,7 +211,7 @@ class Request {
   Request(const HostResolver::RequestInfo& info,
           RequestPriority priority,
           size_t index,
-          HostResolver* resolver,
+          HostResolverImpl* resolver,
           Handler* handler)
       : info_(info),
         priority_(priority),
@@ -244,6 +244,13 @@ class Request {
     return resolver_->ResolveFromCache(info_, &list_, BoundNetLog());
   }
 
+  int ResolveStaleFromCache() {
+    DCHECK(resolver_);
+    DCHECK(!handle_);
+    return resolver_->ResolveStaleFromCache(info_, &list_, &staleness_,
+                                            BoundNetLog());
+  }
+
   void ChangePriority(RequestPriority priority) {
     DCHECK(resolver_);
     DCHECK(handle_);
@@ -262,6 +269,7 @@ class Request {
   size_t index() const { return index_; }
   const AddressList& list() const { return list_; }
   int result() const { return result_; }
+  const HostCache::EntryStaleness staleness() const { return staleness_; }
   bool completed() const { return result_ != ERR_IO_PENDING; }
   bool pending() const { return handle_ != NULL; }
 
@@ -318,13 +326,14 @@ class Request {
   HostResolver::RequestInfo info_;
   RequestPriority priority_;
   size_t index_;
-  HostResolver* resolver_;
+  HostResolverImpl* resolver_;
   Handler* handler_;
   bool quit_on_complete_;
 
   AddressList list_;
   int result_;
   HostResolver::RequestHandle handle_;
+  HostCache::EntryStaleness staleness_;
 
   DISALLOW_COPY_AND_ASSIGN(Request);
 };
@@ -603,6 +612,11 @@ class HostResolverImplTest : public testing::Test {
 
   bool IsIPv6Reachable(const BoundNetLog& net_log) {
     return resolver_->IsIPv6Reachable(net_log);
+  }
+
+  void MakeCacheStale() {
+    DCHECK(resolver_.get());
+    resolver_->GetHostCache()->OnNetworkChange();
   }
 
   scoped_refptr<MockHostResolverProc> proc_;
@@ -1377,6 +1391,38 @@ TEST_F(HostResolverImplTest, ResolveFromCache) {
   // Now we should be able to fetch from the cache.
   EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.1.42", 80));
+}
+
+TEST_F(HostResolverImplTest, ResolveStaleFromCache) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+  proc_->SignalMultiple(1u);  // Need only one.
+
+  HostResolver::RequestInfo info(HostPortPair("just.testing", 80));
+
+  // First hit will miss the cache.
+  EXPECT_EQ(ERR_DNS_CACHE_MISS,
+            CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
+
+  // This time, we fetch normally.
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info, DEFAULT_PRIORITY)->Resolve());
+  EXPECT_EQ(OK, requests_[1]->WaitForResult());
+
+  // Now we should be able to fetch from the cache.
+  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
+  EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.1.42", 80));
+  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveStaleFromCache());
+  EXPECT_TRUE(requests_[3]->HasOneAddress("192.168.1.42", 80));
+  EXPECT_FALSE(requests_[3]->staleness().is_stale());
+
+  MakeCacheStale();
+
+  // Now we should be able to fetch from the cache only if we use
+  // ResolveStaleFromCache.
+  EXPECT_EQ(ERR_DNS_CACHE_MISS,
+            CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
+  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveStaleFromCache());
+  EXPECT_TRUE(requests_[5]->HasOneAddress("192.168.1.42", 80));
+  EXPECT_TRUE(requests_[5]->staleness().is_stale());
 }
 
 // Test the retry attempts simulating host resolver proc that takes too long.
