@@ -245,7 +245,6 @@ WebstoreInstaller::Approval::Approval()
       use_app_installed_bubble(false),
       skip_post_install_ui(false),
       skip_install_dialog(false),
-      enable_launcher(false),
       manifest_check_level(MANIFEST_CHECK_LEVEL_STRICT) {
 }
 

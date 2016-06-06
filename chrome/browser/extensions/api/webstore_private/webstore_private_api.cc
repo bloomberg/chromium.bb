@@ -324,7 +324,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallProceed() {
           chrome_details_.GetProfile(), details().id,
           std::move(parsed_manifest_), false));
   approval->use_app_installed_bubble = !!details().app_install_bubble;
-  approval->enable_launcher = !!details().enable_launcher;
   // If we are enabling the launcher, we should not show the app list in order
   // to train the user to open it themselves at least once.
   approval->skip_post_install_ui = !!details().enable_launcher;
@@ -410,22 +409,6 @@ WebstorePrivateCompleteInstallFunction::Run() {
 
   scoped_active_install_.reset(new ScopedActiveInstall(
       InstallTracker::Get(browser_context()), params->expected_id));
-
-  AppListService* app_list_service = AppListService::Get();
-
-  if (approval_->enable_launcher) {
-    app_list_service->EnableAppList(chrome_details_.GetProfile(),
-                                    AppListService::ENABLE_FOR_APP_INSTALL);
-  }
-
-  if (IsAppLauncherEnabled() && approval_->manifest->is_app()) {
-    // Show the app list to show download is progressing. Don't show the app
-    // list on first app install so users can be trained to open it themselves.
-    app_list_service->ShowForAppInstall(
-        chrome_details_.GetProfile(),
-        params->expected_id,
-        approval_->enable_launcher);
-  }
 
   // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();

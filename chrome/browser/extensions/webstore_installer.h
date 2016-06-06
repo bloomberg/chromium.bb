@@ -142,9 +142,6 @@ class WebstoreInstaller : public content::NotificationObserver,
     // so there's no need to show it again.
     bool skip_install_dialog;
 
-    // Whether we should enable the launcher before installing the app.
-    bool enable_launcher;
-
     // Manifest check level for checking actual manifest against expected
     // manifest.
     ManifestCheckLevel manifest_check_level;
