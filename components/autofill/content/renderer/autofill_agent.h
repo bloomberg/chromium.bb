@@ -269,10 +269,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;
 
-  // Have we already shown Autofill suggestions for the field the user is
-  // currently editing?  Used to keep track of state for metrics logging.
-  bool has_shown_autofill_popup_for_current_edit_;
-
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to
   // trigger an autofill popup to show.

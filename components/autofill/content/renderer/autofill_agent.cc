@@ -172,7 +172,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       legacy_(render_frame->GetRenderView(), this),
       autofill_query_id_(0),
       was_query_node_autofilled_(false),
-      has_shown_autofill_popup_for_current_edit_(false),
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
       is_generation_popup_possibly_visible_(false),
@@ -370,7 +369,6 @@ void AutofillAgent::FormControlElementClicked(
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
   password_autofill_agent_->TextFieldDidEndEditing(element);
-  has_shown_autofill_popup_for_current_edit_ = false;
   Send(new AutofillHostMsg_DidEndTextFieldEditing(routing_id()));
 }
 
