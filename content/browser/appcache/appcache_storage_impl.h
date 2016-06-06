@@ -145,6 +145,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
                                int64_t group_id,
                                const GURL& manifest_url);
 
+  // Don't call this when |is_disabled_| is true.
   CONTENT_EXPORT AppCacheDiskCache* disk_cache();
 
   // The directory in which we place files in the file system.
