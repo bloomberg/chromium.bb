@@ -14,6 +14,10 @@
 #include "net/base/winsock_init.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include <unistd.h>
+#endif
+
 namespace net {
 
 SocketDescriptor CreatePlatformSocket(int family, int type, int protocol) {
@@ -31,7 +35,20 @@ SocketDescriptor CreatePlatformSocket(int family, int type, int protocol) {
   }
   return result;
 #else  // OS_WIN
-  return ::socket(family, type, protocol);
+  SocketDescriptor result = ::socket(family, type, protocol);
+#if defined(OS_MACOSX)
+  // Disable SIGPIPE on this socket. Although Chromium globally disables
+  // SIGPIPE, the net stack may be used in other consumers which do not do
+  // this. SO_NOSIGPIPE is a Mac-only API. On Linux, it is a flag on send.
+  if (result != kInvalidSocket) {
+    int value = 1;
+    if (setsockopt(result, SOL_SOCKET, SO_NOSIGPIPE, &value, sizeof(value))) {
+      close(result);
+      return kInvalidSocket;
+    }
+  }
+#endif
+  return result;
 #endif  // OS_WIN
 
 }
