@@ -2314,6 +2314,28 @@ TEST_P(GLES2DecoderManualInitTest, ClearUniformsBeforeFirstProgramUse) {
   }
 }
 
+TEST_P(GLES2DecoderWithShaderTest, UseDeletedProgram) {
+  DoDeleteProgram(client_program_id_, kServiceProgramId);
+  {
+    cmds::UseProgram cmd;
+    cmd.Init(client_program_id_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId)).Times(1);
+}
+
+TEST_P(GLES2DecoderWithShaderTest, DetachDeletedShader) {
+  DoDeleteShader(client_fragment_shader_id_, kServiceFragmentShaderId);
+  {
+    EXPECT_CALL(*gl_, DetachShader(kServiceProgramId, kServiceFragmentShaderId))
+        .Times(1)
+        .RetiresOnSaturation();
+    cmds::DetachShader cmd;
+    cmd.Init(client_program_id_, client_fragment_shader_id_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+}
+
 // TODO(gman): DeleteProgram
 
 // TODO(gman): UseProgram

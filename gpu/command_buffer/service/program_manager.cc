@@ -1460,18 +1460,19 @@ bool Program::AttachShader(
   return true;
 }
 
-bool Program::DetachShader(
+bool Program::IsShaderAttached(Shader* shader) {
+  return attached_shaders_[ShaderTypeToIndex(shader->shader_type())].get() ==
+         shader;
+}
+
+void Program::DetachShader(
     ShaderManager* shader_manager,
     Shader* shader) {
   DCHECK(shader_manager);
   DCHECK(shader);
-  if (attached_shaders_[ShaderTypeToIndex(shader->shader_type())].get() !=
-      shader) {
-    return false;
-  }
+  DCHECK(IsShaderAttached(shader));
   attached_shaders_[ShaderTypeToIndex(shader->shader_type())] = NULL;
   shader_manager->UnuseShader(shader);
-  return true;
 }
 
 void Program::DetachShaders(ShaderManager* shader_manager) {

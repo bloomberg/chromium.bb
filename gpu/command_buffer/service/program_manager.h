@@ -279,8 +279,9 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     return valid_;
   }
 
+  bool IsShaderAttached(Shader* shader);
   bool AttachShader(ShaderManager* manager, Shader* shader);
-  bool DetachShader(ShaderManager* manager, Shader* shader);
+  void DetachShader(ShaderManager* manager, Shader* shader);
 
   void CompileAttachedShaders();
   bool AttachedShadersExist() const;

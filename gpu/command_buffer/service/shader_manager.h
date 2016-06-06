@@ -48,7 +48,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   GLuint service_id() const {
-    return marked_for_deletion_ ? 0 : service_id_;
+    return service_id_;
   }
 
   GLenum shader_type() const {

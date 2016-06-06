@@ -8150,6 +8150,8 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program_id) {
         "transformfeedback is active and not paused");
     return;
   }
+  if (program == state_.current_program.get())
+    return;
   if (state_.current_program.get()) {
     program_manager()->UnuseProgram(shader_manager(),
                                     state_.current_program.get());
@@ -9146,13 +9148,14 @@ void GLES2DecoderImpl::DoDetachShader(
   if (!shader) {
     return;
   }
-  if (!program->DetachShader(shader_manager(), shader)) {
+  if (!program->IsShaderAttached(shader)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glDetachShader", "shader not attached to program");
     return;
   }
   glDetachShader(program->service_id(), shader->service_id());
+  program->DetachShader(shader_manager(), shader);
 }
 
 void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {

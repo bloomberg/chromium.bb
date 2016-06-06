@@ -644,8 +644,9 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
   EXPECT_FALSE(program->CanLink());
   TestHelper::SetShaderStates(gl_.get(), fshader, true);
   EXPECT_TRUE(program->CanLink());
-  EXPECT_TRUE(program->DetachShader(&shader_manager_, fshader));
-  EXPECT_FALSE(program->DetachShader(&shader_manager_, fshader));
+  EXPECT_TRUE(program->IsShaderAttached(fshader));
+  program->DetachShader(&shader_manager_, fshader);
+  EXPECT_FALSE(program->IsShaderAttached(fshader));
 }
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformFakeLocation) {
