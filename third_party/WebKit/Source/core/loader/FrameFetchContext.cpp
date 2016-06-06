@@ -524,7 +524,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
 
     if (m_document) {
         DCHECK(m_document->contentSecurityPolicy());
-        if (!shouldBypassMainWorldCSP && !m_document->contentSecurityPolicy()->allowRequest(resourceRequest.requestContext(), url, redirectStatus, cspReporting))
+        if (!shouldBypassMainWorldCSP && !m_document->contentSecurityPolicy()->allowRequest(resourceRequest.requestContext(), url, options.contentSecurityPolicyNonce, redirectStatus, cspReporting))
             return ResourceRequestBlockedReasonCSP;
     }
 

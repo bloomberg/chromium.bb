@@ -382,34 +382,13 @@ bool isAllowedByAllWithContext(const CSPDirectiveListVector& policies, const Str
     return isAllowed;
 }
 
-template<bool (CSPDirectiveList::*allowed)(const String&, const WTF::OrdinalNumber&, ContentSecurityPolicy::ReportingStatus, const String& content) const>
-bool isAllowedByAllWithContextAndContent(const CSPDirectiveListVector& policies, const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content)
+template <bool (CSPDirectiveList::*allowed)(const String&, const String&, const WTF::OrdinalNumber&, ContentSecurityPolicy::ReportingStatus, const String& content) const>
+bool isAllowedByAllWithContextAndContent(const CSPDirectiveListVector& policies, const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content)
 {
     bool isAllowed = true;
     for (const auto& policy : policies)
-        isAllowed &= (policy.get()->*allowed)(contextURL, contextLine, reportingStatus, content);
+        isAllowed &= (policy.get()->*allowed)(contextURL, nonce, contextLine, reportingStatus, content);
     return isAllowed;
-}
-
-template<CSPDirectiveList::NoncePolicyDisposition (CSPDirectiveList::*allowed)(const String&) const>
-bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const String& nonce)
-{
-    bool isExplicitlyAllowed = false;
-    for (const auto& policy : policies) {
-        // TODO(mkwst): We skip report-only policies here, because the result is used more or
-        // less as a bypass in ScriptLoader. If we return true, we don't apply policy, but
-        // we only return true if all policies match. This is a temporary workaround; a
-        // better fix would be to delay the nonce processing until such time as the whitelist
-        // processing fails. https://crbug.com/611652
-        if (policy.get()->headerType() == ContentSecurityPolicyHeaderTypeEnforce) {
-            CSPDirectiveList::NoncePolicyDisposition policyDisposition = (policy.get()->*allowed)(nonce);
-            if (policyDisposition == CSPDirectiveList::NoncePolicyDisposition::Denied)
-                return false;
-            if (policyDisposition == CSPDirectiveList::NoncePolicyDisposition::Allowed)
-                isExplicitlyAllowed = true;
-        }
-    }
-    return isExplicitlyAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&, ContentSecurityPolicy::InlineType) const>
@@ -430,6 +409,18 @@ bool isAllowedByAllWithURL(const CSPDirectiveListVector& policies, const KURL& u
     bool isAllowed = true;
     for (const auto& policy : policies)
         isAllowed &= (policy.get()->*allowFromURL)(url, redirectStatus, reportingStatus);
+    return isAllowed;
+}
+
+template <bool (CSPDirectiveList::*allowFromURLWithNonce)(const KURL&, const String& nonce, RedirectStatus, ContentSecurityPolicy::ReportingStatus) const>
+bool isAllowedByAllWithURLWithNonce(const CSPDirectiveListVector& policies, const KURL& url, const String& nonce, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus)
+{
+    if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol()))
+        return true;
+
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowFromURLWithNonce)(url, nonce, redirectStatus, reportingStatus);
     return isAllowed;
 }
 
@@ -490,16 +481,16 @@ bool ContentSecurityPolicy::allowInlineEventHandler(const String& source, const 
     return isAllowedByAllWithContext<&CSPDirectiveList::allowInlineEventHandlers>(m_policies, contextURL, contextLine, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& scriptContent, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowInlineScript(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, const String& scriptContent, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    return isAllowedByAllWithContextAndContent<&CSPDirectiveList::allowInlineScript>(m_policies, contextURL, contextLine, reportingStatus, scriptContent);
+    return isAllowedByAllWithContextAndContent<&CSPDirectiveList::allowInlineScript>(m_policies, contextURL, nonce, contextLine, reportingStatus, scriptContent);
 }
 
-bool ContentSecurityPolicy::allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& styleContent, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowInlineStyle(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, const String& styleContent, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     if (m_overrideInlineStyleAllowed)
         return true;
-    return isAllowedByAllWithContextAndContent<&CSPDirectiveList::allowInlineStyle>(m_policies, contextURL, contextLine, reportingStatus, styleContent);
+    return isAllowedByAllWithContextAndContent<&CSPDirectiveList::allowInlineStyle>(m_policies, contextURL, nonce, contextLine, reportingStatus, styleContent);
 }
 
 bool ContentSecurityPolicy::allowEval(ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus, ContentSecurityPolicy::ExceptionStatus exceptionStatus) const
@@ -554,19 +545,9 @@ bool ContentSecurityPolicy::allowPluginTypeForDocument(const Document& document,
     return true;
 }
 
-bool ContentSecurityPolicy::allowScriptFromSource(const KURL& url, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowScriptFromSource(const KURL& url, const String& nonce, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
-    return isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, redirectStatus, reportingStatus);
-}
-
-bool ContentSecurityPolicy::allowScriptWithNonce(const String& nonce) const
-{
-    return isAllowedByAllWithNonce<&CSPDirectiveList::allowScriptNonce>(m_policies, nonce);
-}
-
-bool ContentSecurityPolicy::allowStyleWithNonce(const String& nonce) const
-{
-    return isAllowedByAllWithNonce<&CSPDirectiveList::allowStyleNonce>(m_policies, nonce);
+    return isAllowedByAllWithURLWithNonce<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, nonce, redirectStatus, reportingStatus);
 }
 
 bool ContentSecurityPolicy::allowScriptWithHash(const String& source, InlineType type) const
@@ -579,7 +560,7 @@ bool ContentSecurityPolicy::allowStyleWithHash(const String& source, InlineType 
     return checkDigest<&CSPDirectiveList::allowStyleHash>(source, type, m_styleHashAlgorithmsUsed, m_policies);
 }
 
-bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, const KURL& url, RedirectStatus redirectStatus, ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, const KURL& url, const String& nonce, RedirectStatus redirectStatus, ReportingStatus reportingStatus) const
 {
     switch (context) {
     case WebURLRequest::RequestContextAudio:
@@ -608,7 +589,7 @@ bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, 
     case WebURLRequest::RequestContextImport:
     case WebURLRequest::RequestContextScript:
     case WebURLRequest::RequestContextXSLT:
-        return allowScriptFromSource(url, redirectStatus, reportingStatus);
+        return allowScriptFromSource(url, nonce, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextManifest:
         return allowManifestFromSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextServiceWorker:
@@ -616,7 +597,7 @@ bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, 
     case WebURLRequest::RequestContextWorker:
         return allowWorkerContextFromSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextStyle:
-        return allowStyleFromSource(url, redirectStatus, reportingStatus);
+        return allowStyleFromSource(url, nonce, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextCSPReport:
     case WebURLRequest::RequestContextDownload:
     case WebURLRequest::RequestContextHyperlink:
@@ -660,11 +641,11 @@ bool ContentSecurityPolicy::allowImageFromSource(const KURL& url, RedirectStatus
     return isAllowedByAllWithURL<&CSPDirectiveList::allowImageFromSource>(m_policies, url, redirectStatus, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowStyleFromSource(const KURL& url, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowStyleFromSource(const KURL& url, const String& nonce, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol(), SchemeRegistry::PolicyAreaStyle))
         return true;
-    return isAllowedByAllWithURL<&CSPDirectiveList::allowStyleFromSource>(m_policies, url, redirectStatus, reportingStatus);
+    return isAllowedByAllWithURLWithNonce<&CSPDirectiveList::allowStyleFromSource>(m_policies, url, nonce, redirectStatus, reportingStatus);
 }
 
 bool ContentSecurityPolicy::allowFontFromSource(const KURL& url, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -697,7 +678,7 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(const KURL& url, Redire
     // CSP 1.1 moves workers from 'script-src' to the new 'child-src'. Measure the impact of this backwards-incompatible change.
     if (Document* document = this->document()) {
         UseCounter::count(*document, UseCounter::WorkerSubjectToCSP);
-        if (isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, redirectStatus, SuppressReport) && !isAllowedByAllWithURL<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, redirectStatus, SuppressReport))
+        if (isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, redirectStatus, SuppressReport) && !isAllowedByAllWithURLWithNonce<&CSPDirectiveList::allowScriptFromSource>(m_policies, url, AtomicString(), redirectStatus, SuppressReport))
             UseCounter::count(*document, UseCounter::WorkerAllowedByChildBlockedByScript);
     }
 
@@ -859,17 +840,8 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (!document)
         return;
 
-    LocalFrame* frame = document->frame();
-    if (!frame)
-        return;
-
     SecurityPolicyViolationEventInit violationData;
     gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header, redirectStatus, violationType, contextLine);
-
-    frame->localDOMWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
-
-    if (reportEndpoints.isEmpty())
-        return;
 
     // TODO(mkwst): Obviously, we shouldn't hit this check, as extension-loaded
     // resources should be allowed regardless. We apparently do, however, so
@@ -909,20 +881,24 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
     if (!shouldSendViolationReport(stringifiedReport))
         return;
+    didSendViolationReport(stringifiedReport);
 
     RefPtr<EncodedFormData> report = EncodedFormData::create(stringifiedReport.utf8());
+
+    LocalFrame* frame = document->frame();
+    if (!frame)
+        return;
+    frame->localDOMWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
 
     for (const String& endpoint : reportEndpoints) {
         // If we have a context frame we're dealing with 'frame-ancestors' and we don't have our
         // own execution context. Use the frame's document to complete the endpoint URL, overriding
         // its URL with the blocked document's URL.
-        ASSERT(!contextFrame || !m_executionContext);
-        ASSERT(!contextFrame || equalIgnoringCase(effectiveDirective, FrameAncestors));
+        DCHECK(!contextFrame || !m_executionContext);
+        DCHECK(!contextFrame || equalIgnoringCase(effectiveDirective, FrameAncestors));
         KURL url = contextFrame ? frame->document()->completeURLWithOverride(endpoint, blockedURL) : completeURL(endpoint);
         PingLoader::sendViolationReport(frame, url, report, PingLoader::ContentSecurityPolicyViolationReport);
     }
-
-    didSendViolationReport(stringifiedReport);
 }
 
 void ContentSecurityPolicy::reportMixedContent(const KURL& mixedURL, RedirectStatus redirectStatus)

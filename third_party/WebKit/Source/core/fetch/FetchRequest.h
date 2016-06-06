@@ -99,6 +99,9 @@ public:
     const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }
     void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }
 
+    String contentSecurityPolicyNonce() const { return m_options.contentSecurityPolicyNonce; }
+    void setContentSecurityPolicyNonce(const String& nonce) { m_options.contentSecurityPolicyNonce = nonce; }
+
 private:
     ResourceRequest m_resourceRequest;
     String m_charset;

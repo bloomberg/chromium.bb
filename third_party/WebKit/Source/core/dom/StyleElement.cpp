@@ -175,8 +175,7 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
     bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP(e)
         || csp->allowStyleWithHash(text, ContentSecurityPolicy::InlineType::Block)
-        || csp->allowStyleWithNonce(e->fastGetAttribute(HTMLNames::nonceAttr))
-        || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line, text);
+        || csp->allowInlineStyle(e->document().url(), e->fastGetAttribute(HTMLNames::nonceAttr), m_startPosition.m_line, text);
 
     // Clearing the current sheet may remove the cache entry so create the new sheet first
     CSSStyleSheet* newSheet = nullptr;

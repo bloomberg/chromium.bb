@@ -17,6 +17,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -26,12 +27,6 @@ class ContentSecurityPolicy;
 class CORE_EXPORT CSPDirectiveList : public GarbageCollectedFinalized<CSPDirectiveList> {
     WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
 public:
-    enum class NoncePolicyDisposition {
-        NoDirective = 0,
-        Allowed,
-        Denied
-    };
-
     static CSPDirectiveList* create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     void parse(const UChar* begin, const UChar* end);
@@ -42,16 +37,17 @@ public:
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus) const;
-    bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus, const String& scriptContent) const;
-    bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus, const String& styleContent) const;
+    bool allowInlineScript(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus, const String& scriptContent) const;
+    bool allowInlineStyle(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus, const String& styleContent) const;
     bool allowEval(ScriptState*, ContentSecurityPolicy::ReportingStatus, ContentSecurityPolicy::ExceptionStatus = ContentSecurityPolicy::WillNotThrowException) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ContentSecurityPolicy::ReportingStatus) const;
 
-    bool allowScriptFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowScriptFromSource(const KURL&, const String& nonce, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowStyleFromSource(const KURL&, const String& nonce, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
+
     bool allowObjectFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
     bool allowChildFrameFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
     bool allowImageFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
-    bool allowStyleFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
     bool allowFontFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
     bool allowMediaFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
     bool allowManifestFromSource(const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
@@ -66,8 +62,6 @@ public:
     // because a child frame can't manipulate the URL of a cross-origin
     // parent.
     bool allowAncestors(LocalFrame*, const KURL&, ContentSecurityPolicy::ReportingStatus) const;
-    NoncePolicyDisposition allowScriptNonce(const String&) const;
-    NoncePolicyDisposition allowStyleNonce(const String&) const;
     bool allowScriptHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowStyleHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowDynamic() const;
@@ -93,6 +87,8 @@ public:
     DECLARE_TRACE();
 
 private:
+    FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, IsMatchingNoncePresent);
+
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     bool parseDirective(const UChar* begin, const UChar* end, String& name, String& value);
@@ -119,7 +115,7 @@ private:
     bool checkEval(SourceListDirective*) const;
     bool checkInline(SourceListDirective*) const;
     bool checkDynamic(SourceListDirective*) const;
-    bool checkNonce(SourceListDirective*, const String&) const;
+    bool isMatchingNoncePresent(SourceListDirective*, const String&) const;
     bool checkHash(SourceListDirective*, const CSPHashValue&) const;
     bool checkHashedAttributes(SourceListDirective*) const;
     bool checkSource(SourceListDirective*, const KURL&, ResourceRequest::RedirectStatus) const;

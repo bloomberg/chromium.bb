@@ -4064,6 +4064,7 @@
             'frame/RootFrameViewportTest.cpp',
             'frame/SubresourceIntegrityTest.cpp',
             'frame/UseCounterTest.cpp',
+            'frame/csp/CSPDirectiveListTest.cpp',
             'frame/csp/CSPSourceListTest.cpp',
             'frame/csp/CSPSourceTest.cpp',
             'frame/csp/ContentSecurityPolicyTest.cpp',

@@ -151,8 +151,6 @@ public:
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineEventHandler(const String& source, const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
-    bool allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& scriptContent, ReportingStatus = SendReport) const;
-    bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, const String& styleContent, ReportingStatus = SendReport) const;
     // When the reporting status is |SendReport|, the |ExceptionStatus|
     // should indicate whether the caller will throw a JavaScript
     // exception in the event of a violation. When the caller will throw
@@ -166,11 +164,10 @@ public:
     // plugin-types directives from the parent document.
     bool allowPluginTypeForDocument(const Document&, const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
 
-    bool allowScriptFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+
     bool allowObjectFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
     bool allowChildFrameFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
     bool allowImageFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
-    bool allowStyleFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
     bool allowFontFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
     bool allowMediaFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
     bool allowConnectToSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
@@ -179,6 +176,13 @@ public:
     bool allowWorkerContextFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
 
     bool allowManifestFromSource(const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+
+    // Passing 'String()' into the |nonce| arguments in the following methods represents an
+    // unnonced resource load.
+    bool allowScriptFromSource(const KURL&, const String& nonce, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+    bool allowStyleFromSource(const KURL&, const String& nonce, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+    bool allowInlineScript(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, const String& scriptContent, ReportingStatus = SendReport) const;
+    bool allowInlineStyle(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, const String& styleContent, ReportingStatus = SendReport) const;
 
     // |allowAncestors| does not need to know whether the resource was a
     // result of a redirect. After a redirect, source paths are usually
@@ -189,18 +193,19 @@ public:
     bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
     bool isFrameAncestorsEnforced() const;
 
-    // The nonce and hash allow functions are guaranteed to not have any side
+    // The hash allow functions are guaranteed to not have any side
     // effects, including reporting.
-    // Nonce/Hash functions check all policies relating to use of a script/style
-    // with the given nonce/hash and return true all CSP policies allow it.
+    // Hash functions check all policies relating to use of a script/style
+    // with the given hash and return true all CSP policies allow it.
     // If these return true, callers can then process the content or
     // issue a load and be safe disabling any further CSP checks.
-    bool allowScriptWithNonce(const String& nonce) const;
-    bool allowStyleWithNonce(const String& nonce) const;
+    //
+    // TODO(mkwst): Fold hashes into 'allow{Script,Style}' checks above, just
+    // as we've done with nonces. https://crbug.com/617065
     bool allowScriptWithHash(const String& source, InlineType) const;
     bool allowStyleWithHash(const String& source, InlineType) const;
 
-    bool allowRequest(WebURLRequest::RequestContext, const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+    bool allowRequest(WebURLRequest::RequestContext, const KURL&, const String& nonce, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
 
     void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
     void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
@@ -270,6 +275,10 @@ public:
     Document* document() const;
 
 private:
+    FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
+    FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
+    FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceMultiplePolicy);
+
     ContentSecurityPolicy();
 
     void applyPolicySideEffectsToExecutionContext();

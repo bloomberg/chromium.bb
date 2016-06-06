@@ -136,6 +136,7 @@ public:
     SynchronousPolicy synchronousPolicy;
     CORSEnabled corsEnabled; // If the resource is loaded out-of-origin, whether or not to use CORS.
     RefPtr<SecurityOrigin> securityOrigin;
+    String contentSecurityPolicyNonce;
 };
 
 // Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
@@ -150,7 +151,10 @@ struct CrossThreadResourceLoaderOptionsData {
         , requestInitiatorContext(options.requestInitiatorContext)
         , synchronousPolicy(options.synchronousPolicy)
         , corsEnabled(options.corsEnabled)
-        , securityOrigin(options.securityOrigin ? options.securityOrigin->isolatedCopy() : nullptr) { }
+        , securityOrigin(options.securityOrigin ? options.securityOrigin->isolatedCopy() : nullptr)
+        , contentSecurityPolicyNonce(options.contentSecurityPolicyNonce)
+    {
+    }
 
     operator ResourceLoaderOptions() const
     {
@@ -164,6 +168,7 @@ struct CrossThreadResourceLoaderOptionsData {
         options.synchronousPolicy = synchronousPolicy;
         options.corsEnabled = corsEnabled;
         options.securityOrigin = securityOrigin;
+        options.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
         return options;
     }
 
@@ -176,6 +181,7 @@ struct CrossThreadResourceLoaderOptionsData {
     SynchronousPolicy synchronousPolicy;
     CORSEnabled corsEnabled;
     RefPtr<SecurityOrigin> securityOrigin;
+    String contentSecurityPolicyNonce;
 };
 
 template <>

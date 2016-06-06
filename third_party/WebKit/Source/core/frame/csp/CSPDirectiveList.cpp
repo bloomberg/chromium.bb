@@ -120,7 +120,7 @@ bool CSPDirectiveList::checkInline(SourceListDirective* directive) const
     return !directive || (directive->allowInline() && !directive->isHashOrNoncePresent());
 }
 
-bool CSPDirectiveList::checkNonce(SourceListDirective* directive, const String& nonce) const
+bool CSPDirectiveList::isMatchingNoncePresent(SourceListDirective* directive, const String& nonce) const
 {
     return directive && directive->allowNonce(nonce);
 }
@@ -320,19 +320,21 @@ bool CSPDirectiveList::allowInlineEventHandlers(const String& contextURL, const 
     return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
-bool CSPDirectiveList::allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content) const
+bool CSPDirectiveList::allowInlineScript(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content) const
 {
-    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+    if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
+        return true;
+    if (reportingStatus == ContentSecurityPolicy::SendReport)
         return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), "Refused to execute inline script because it violates the following Content Security Policy directive: ", contextURL, contextLine, true, getSha256String(content));
-    }
     return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
-bool CSPDirectiveList::allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content) const
+bool CSPDirectiveList::allowInlineStyle(const String& contextURL, const String& nonce, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content) const
 {
-    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+    if (isMatchingNoncePresent(operativeDirective(m_styleSrc.get()), nonce))
+        return true;
+    if (reportingStatus == ContentSecurityPolicy::SendReport)
         return checkInlineAndReportViolation(operativeDirective(m_styleSrc.get()), "Refused to apply inline style because it violates the following Content Security Policy directive: ", contextURL, contextLine, false, getSha256String(content));
-    }
     return checkInline(operativeDirective(m_styleSrc.get()));
 }
 
@@ -351,8 +353,10 @@ bool CSPDirectiveList::allowPluginType(const String& type, const String& typeAtt
         checkMediaType(m_pluginTypes.get(), type, typeAttribute);
 }
 
-bool CSPDirectiveList::allowScriptFromSource(const KURL& url, ResourceRequest::RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool CSPDirectiveList::allowScriptFromSource(const KURL& url, const String& nonce, ResourceRequest::RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
+    if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
+        return true;
     return reportingStatus == ContentSecurityPolicy::SendReport ? checkSourceAndReportViolation(operativeDirective(m_scriptSrc.get()), url, ContentSecurityPolicy::ScriptSrc, redirectStatus) : checkSource(operativeDirective(m_scriptSrc.get()), url, redirectStatus);
 }
 
@@ -382,8 +386,10 @@ bool CSPDirectiveList::allowImageFromSource(const KURL& url, ResourceRequest::Re
     return reportingStatus == ContentSecurityPolicy::SendReport ? checkSourceAndReportViolation(operativeDirective(m_imgSrc.get()), url, ContentSecurityPolicy::ImgSrc, redirectStatus) : checkSource(operativeDirective(m_imgSrc.get()), url, redirectStatus);
 }
 
-bool CSPDirectiveList::allowStyleFromSource(const KURL& url, ResourceRequest::RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool CSPDirectiveList::allowStyleFromSource(const KURL& url, const String& nonce, ResourceRequest::RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
+    if (isMatchingNoncePresent(operativeDirective(m_styleSrc.get()), nonce))
+        return true;
     return reportingStatus == ContentSecurityPolicy::SendReport ? checkSourceAndReportViolation(operativeDirective(m_styleSrc.get()), url, ContentSecurityPolicy::StyleSrc, redirectStatus) : checkSource(operativeDirective(m_styleSrc.get()), url, redirectStatus);
 }
 
@@ -425,22 +431,6 @@ bool CSPDirectiveList::allowChildContextFromSource(const KURL& url, ResourceRequ
 bool CSPDirectiveList::allowAncestors(LocalFrame* frame, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return reportingStatus == ContentSecurityPolicy::SendReport ? checkAncestorsAndReportViolation(m_frameAncestors.get(), frame, url) : checkAncestors(m_frameAncestors.get(), frame);
-}
-
-CSPDirectiveList::NoncePolicyDisposition CSPDirectiveList::allowScriptNonce(const String& nonce) const
-{
-    SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
-    if (!directive)
-        return NoncePolicyDisposition::NoDirective;
-    return checkNonce(directive, nonce) ? NoncePolicyDisposition::Allowed : NoncePolicyDisposition::Denied;
-}
-
-CSPDirectiveList::NoncePolicyDisposition CSPDirectiveList::allowStyleNonce(const String& nonce) const
-{
-    SourceListDirective* directive = operativeDirective(m_styleSrc.get());
-    if (!directive)
-        return NoncePolicyDisposition::NoDirective;
-    return checkNonce(directive, nonce) ? NoncePolicyDisposition::Allowed : NoncePolicyDisposition::Denied;
 }
 
 bool CSPDirectiveList::allowScriptHash(const CSPHashValue& hashValue, ContentSecurityPolicy::InlineType type) const

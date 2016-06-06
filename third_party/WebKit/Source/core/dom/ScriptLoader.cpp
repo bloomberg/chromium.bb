@@ -300,19 +300,15 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
             request.setCrossOriginAccessControl(elementDocument->getSecurityOrigin(), crossOrigin);
         request.setCharset(scriptCharset());
 
-        // Skip fetch-related CSP checks if the script element has a valid nonce, or if dynamically
-        // injected script is whitelisted and this script is not parser-inserted.
+        // Skip fetch-related CSP checks if dynamically injected script is whitelisted and this script is not parser-inserted.
         bool scriptPassesCSPDynamic = (!isParserInserted() && elementDocument->contentSecurityPolicy()->allowDynamic());
-        bool scriptPassesCSPNonce = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
 
-        if (scriptPassesCSPDynamic)
+        request.setContentSecurityPolicyNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
+
+        if (scriptPassesCSPDynamic) {
             UseCounter::count(elementDocument->frame(), UseCounter::ScriptPassesCSPDynamic);
-
-        if (scriptPassesCSPNonce)
-            UseCounter::count(elementDocument->frame(), UseCounter::ScriptPassesCSPNonce);
-
-        if (scriptPassesCSPDynamic || scriptPassesCSPNonce)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
+        }
         request.setDefer(defer);
 
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
@@ -375,11 +371,10 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
 
     const ContentSecurityPolicy* csp = elementDocument->contentSecurityPolicy();
     bool shouldBypassMainWorldCSP = (frame && frame->script().shouldBypassMainWorldCSP())
-        || csp->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr))
         || csp->allowScriptWithHash(sourceCode.source().toString(), ContentSecurityPolicy::InlineType::Block)
         || (!isParserInserted() && csp->allowDynamic());
 
-    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_startLineNumber, sourceCode.source().toString()))) {
+    if (!m_isExternalScript && (!shouldBypassMainWorldCSP && !csp->allowInlineScript(elementDocument->url(), m_element->fastGetAttribute(HTMLNames::nonceAttr), m_startLineNumber, sourceCode.source().toString()))) {
         return false;
     }
 
