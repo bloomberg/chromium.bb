@@ -367,7 +367,7 @@ TEST_F(AutofillFieldTest, FillExpirationYearInput) {
 
   for (TestCase test_case : test_cases) {
     AutofillField field;
-    field.form_control_type = "input";
+    field.form_control_type = "text";
     field.SetHtmlType(test_case.field_type, HtmlFieldMode());
     field.max_length = test_case.field_max_length;
 

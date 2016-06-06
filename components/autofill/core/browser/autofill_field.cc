@@ -616,7 +616,7 @@ bool AutofillField::FillFormField(const AutofillField& field,
     return true;
   } else if (type.GetStorableType() == ADDRESS_HOME_STATE) {
     return FillStateText(value, field_data);
-  } else if (field_data->form_control_type == "input" &&
+  } else if (field_data->form_control_type == "text" &&
              (type.GetStorableType() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
               type.GetStorableType() == CREDIT_CARD_EXP_4_DIGIT_YEAR)) {
     FillExpirationYearInput(value, type.GetStorableType(), field_data);
