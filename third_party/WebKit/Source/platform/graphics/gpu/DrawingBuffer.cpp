@@ -288,8 +288,6 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
     m_gl->ProduceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, frontColorBufferMailbox->textureInfo.parameters.target, frontColorBufferMailbox->mailbox.name);
     const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
-    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
-        m_gl->DescheduleUntilFinishedCHROMIUM();
     m_gl->Flush();
     m_gl->GenSyncTokenCHROMIUM(fenceSync, frontColorBufferMailbox->mailbox.syncToken);
     frontColorBufferMailbox->mailbox.validSyncToken = true;
