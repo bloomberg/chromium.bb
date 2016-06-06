@@ -218,10 +218,10 @@
             'crash_component_non_mac_win',
             'crash_component_lib',
             '../base/base.gyp:base',
-            '../third_party/kasko/kasko.gyp:kasko_features',
+            '../third_party/kasko/kasko.gyp:kasko',
           ],
           'export_dependent_settings': [
-            '../third_party/kasko/kasko.gyp:kasko_features',
+            '../third_party/kasko/kasko.gyp:kasko',
           ],
           'conditions': [
             ['OS=="win"', {
