@@ -2163,3 +2163,9 @@ content.dll!content::ChildThreadImpl::Init
 content.dll!content::ChildThreadImpl::ChildThreadImpl
 content.dll!content::UtilityThreadImpl::UtilityThreadImpl
 content.dll!content::UtilityMain
+
+UNADDRESSABLE ACCESS
+name=bug_617740
+media.dll!mkvmuxer::Segment::WriteFramesAll
+media.dll!mkvmuxer::Segment::Finalize
+media.dll!media::WebmMuxer::~WebmMuxer
