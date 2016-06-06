@@ -101,7 +101,6 @@ public abstract class PrecacheLauncher {
      *
      * <ul>
      *   <li>The predictive network actions preference is enabled.</li>
-     *   <li>The current network type is suitable for predictive network actions.</li>
      *   <li>Sync is enabled for sessions and it is not encrypted with a secondary passphrase.</li>
      *   <li>Either the Precache field trial or the precache commandline flag is enabled.</li>
      * </ul>
@@ -116,15 +115,15 @@ public abstract class PrecacheLauncher {
         // thread.
         ThreadUtils.assertOnUiThread();
 
-        boolean networkPredictionsAllowed =
-                PrefServiceBridge.getInstance().canPrefetchAndPrerender();
+        boolean networkPredictionEnabledPref =
+                PrefServiceBridge.getInstance().getNetworkPredictionEnabled();
         boolean shouldRun = nativeShouldRun();
 
-        mNetworkPredictionsAllowed = networkPredictionsAllowed;
+        mNetworkPredictionsAllowed = networkPredictionEnabledPref;
         mShouldRun = shouldRun;
 
         PrecacheController.setIsPrecachingEnabled(
-                context, networkPredictionsAllowed && shouldRun);
+                context, networkPredictionEnabledPref && shouldRun);
         Log.v(TAG, "updateEnabledSync complete");
     }
 
