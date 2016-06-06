@@ -23,6 +23,7 @@ from memory_logs import MemoryLogs
 
 
 # Global variables.
+logging.Formatter.converter = time.gmtime
 clovis_logger = logging.getLogger('clovis_frontend')
 clovis_logger.setLevel(logging.DEBUG)
 project_name = app_identity.get_application_id()

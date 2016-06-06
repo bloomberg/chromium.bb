@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import sys
+import time
 
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
@@ -205,7 +206,10 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   # Configure logging.
-  logging.basicConfig(level=logging.WARNING)
+  logging.basicConfig(level=logging.WARNING,
+                      format='[%(asctime)s][%(levelname)s] %(message)s',
+                      datefmt='%y-%m-%d %H:%M:%S')
+  logging.Formatter.converter = time.gmtime
   worker_logger = logging.getLogger('worker')
   worker_logger.setLevel(logging.INFO)
 
