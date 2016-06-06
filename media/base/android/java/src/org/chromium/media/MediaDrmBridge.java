@@ -266,7 +266,12 @@ public class MediaDrmBridge {
             Log.e(TAG, "Cannot create MediaCrypto", e);
         }
 
-        mMediaDrm.closeSession(mMediaCryptoSession);
+        try {
+            // Some implementations let this method throw exception, crbug/611865
+            mMediaDrm.closeSession(mMediaCryptoSession);
+        } catch (Exception e) {
+            Log.e(TAG, "closeSession failed: ", e);
+        }
         mMediaCryptoSession = null;
 
         return false;
@@ -471,7 +476,13 @@ public class MediaDrmBridge {
             } catch (Exception e) {
                 Log.e(TAG, "removeKeys failed: ", e);
             }
-            mMediaDrm.closeSession(sessionId.array());
+
+            try {
+                // Some implementations let this method throw exception, crbug/611865
+                mMediaDrm.closeSession(sessionId.array());
+            } catch (Exception e) {
+                Log.e(TAG, "closeSession failed: ", e);
+            }
             onSessionClosed(sessionId.array());
         }
         mSessionIds.clear();
@@ -483,7 +494,12 @@ public class MediaDrmBridge {
             // MediaCrypto never notified. Notify a null one now.
             onMediaCryptoReady(null);
         } else {
-            mMediaDrm.closeSession(mMediaCryptoSession);
+            try {
+                // Some implementations let this method throw exception, crbug/611865
+                mMediaDrm.closeSession(mMediaCryptoSession);
+            } catch (Exception e) {
+                Log.e(TAG, "closeSession failed: ", e);
+            }
             mMediaCryptoSession = null;
         }
 
@@ -636,7 +652,12 @@ public class MediaDrmBridge {
             MediaDrm.KeyRequest request = null;
             request = getKeyRequest(sessionId, initData, mime, optionalParameters);
             if (request == null) {
-                mMediaDrm.closeSession(sessionId);
+                try {
+                    // Some implementations let this method throw exception, crbug/611865
+                    mMediaDrm.closeSession(sessionId);
+                } catch (Exception e) {
+                    Log.e(TAG, "closeSession failed", e);
+                }
                 onPromiseRejected(promiseId, "Generate request failed.");
                 return;
             }
@@ -649,7 +670,12 @@ public class MediaDrmBridge {
         } catch (android.media.NotProvisionedException e) {
             Log.e(TAG, "Device not provisioned", e);
             if (newSessionOpened) {
-                mMediaDrm.closeSession(sessionId);
+                try {
+                    // Some implementations let this method throw exception, crbug/611865
+                    mMediaDrm.closeSession(sessionId);
+                } catch (Exception ex) {
+                    Log.e(TAG, "closeSession failed", ex);
+                }
             }
             savePendingCreateSessionData(initData, mime, optionalParameters, promiseId);
             startProvisioning();
@@ -699,7 +725,12 @@ public class MediaDrmBridge {
         } catch (Exception e) {
             Log.e(TAG, "removeKeys failed: ", e);
         }
-        mMediaDrm.closeSession(sessionId);
+        try {
+            // Some implementations let this method throw exception, crbug/611865
+            mMediaDrm.closeSession(sessionId);
+        } catch (Exception e) {
+            Log.e(TAG, "closeSession failed: ", e);
+        }
         mSessionIds.remove(ByteBuffer.wrap(sessionId));
         onPromiseResolved(promiseId);
         onSessionClosed(sessionId);
