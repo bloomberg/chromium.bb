@@ -2597,6 +2597,9 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     if (shouldThrottleRendering())
         return;
 
+    ScopedFrameBlamer frameBlamer(m_frame);
+    TRACE_EVENT0("blink", "FrameView::updateStyleAndLayoutIfNeededRecursive");
+
     // We have to crawl our entire subtree looking for any FrameViews that need
     // layout and make sure they are up to date.
     // Mac actually tests for intersection with the dirty region and tries not to

@@ -828,4 +828,17 @@ FrameNavigationDisabler::~FrameNavigationDisabler()
     m_frame->enableNavigation();
 }
 
+ScopedFrameBlamer::ScopedFrameBlamer(LocalFrame* frame)
+    : m_frame(frame)
+{
+    if (m_frame && m_frame->client() && m_frame->client()->frameBlameContext())
+        m_frame->client()->frameBlameContext()->Enter();
+}
+
+ScopedFrameBlamer::~ScopedFrameBlamer()
+{
+    if (m_frame && m_frame->client() && m_frame->client()->frameBlameContext())
+        m_frame->client()->frameBlameContext()->Leave();
+}
+
 } // namespace blink

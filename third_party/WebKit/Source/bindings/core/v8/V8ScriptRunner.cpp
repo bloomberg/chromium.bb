@@ -30,9 +30,11 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/Histogram.h"
@@ -479,6 +481,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(v8::Isolate* isolate
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> function, ExecutionContext* context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> args[], v8::Isolate* isolate)
 {
+    ScopedFrameBlamer frameBlamer(context->isDocument() ? toDocument(context)->frame() : nullptr);
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
