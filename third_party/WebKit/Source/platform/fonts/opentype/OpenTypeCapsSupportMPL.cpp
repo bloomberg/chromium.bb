@@ -45,13 +45,11 @@ bool OpenTypeCapsSupport::supportsOpenTypeFeature(
     const hb_tag_t kGSUB = HB_TAG('G', 'S', 'U', 'B');
     unsigned scriptIndex = 0;
     // Identify for which script a GSUB table is available.
-    if (!hb_ot_layout_table_choose_script(face,
+    hb_ot_layout_table_choose_script(face,
         kGSUB,
         scriptTags,
         &scriptIndex,
-        nullptr)) {
-        return false;
-    }
+        nullptr);
 
     if (hb_ot_layout_language_find_feature(face, kGSUB,
         scriptIndex,
