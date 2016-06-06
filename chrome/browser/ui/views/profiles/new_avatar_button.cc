@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_delegate.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -213,9 +214,15 @@ void NewAvatarButton::Update() {
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (has_auth_error_) {
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13,
-                                   gfx::kGoogleYellow700));
+    if (switches::IsMaterialDesignUserMenu()) {
+      SetImage(views::Button::STATE_NORMAL,
+               gfx::CreateVectorIcon(gfx::VectorIconId::SYNC_PROBLEM, 13,
+                                     gfx::kGoogleRed700));
+    } else {
+      SetImage(views::Button::STATE_NORMAL,
+               gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13,
+                                     gfx::kGoogleYellow700));
+    }
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
   }

@@ -1498,9 +1498,13 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
       l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST) :
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON);
   const int kIconSize = 16;
+
+  gfx::VectorIconId settings_icon = switches::IsMaterialDesignUserMenu() ?
+      gfx::VectorIconId::SETTINGS : gfx::VectorIconId::ACCOUNT_BOX;
   users_button_ = new BackgroundColorHoverButton(
-      this, text, gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_BOX,
-                                        kIconSize, gfx::kChromeIconGrey));
+      this, text, gfx::CreateVectorIcon(settings_icon, kIconSize,
+                                        gfx::kChromeIconGrey));
+
   layout->StartRow(1, 0);
   layout->AddView(users_button_);
 
