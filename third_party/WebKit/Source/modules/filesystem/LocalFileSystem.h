@@ -33,6 +33,8 @@
 
 #include "core/workers/WorkerClients.h"
 #include "platform/FileSystemType.h"
+#include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
@@ -52,13 +54,13 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
     static LocalFileSystem* create(PassOwnPtr<FileSystemClient>);
-    virtual ~LocalFileSystem();
+    ~LocalFileSystem();
 
     void resolveURL(ExecutionContext*, const KURL&, PassOwnPtr<AsyncFileSystemCallbacks>);
     void requestFileSystem(ExecutionContext*, FileSystemType, long long size, PassOwnPtr<AsyncFileSystemCallbacks>);
     void deleteFileSystem(ExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>);
 
-    FileSystemClient* client() { return m_client.get(); }
+    FileSystemClient* client() const { return m_client.get(); }
 
     static const char* supplementName();
     static LocalFileSystem* from(ExecutionContext&);
@@ -69,17 +71,18 @@ public:
         Supplement<WorkerClients>::trace(visitor);
     }
 
-protected:
+private:
     explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
 
-private:
-    WebFileSystem* fileSystem() const;
-    void requestFileSystemAccessInternal(ExecutionContext*, std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied);
+    WebFileSystem* getFileSystem() const;
     void fileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
+
+    void requestFileSystemAccessInternal(ExecutionContext*, std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied);
     void fileSystemNotAllowedInternal(ExecutionContext*, CallbackWrapper*);
     void fileSystemAllowedInternal(ExecutionContext*, FileSystemType, CallbackWrapper*);
     void resolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
     void deleteFileSystemInternal(ExecutionContext*, FileSystemType, CallbackWrapper*);
+
     OwnPtr<FileSystemClient> m_client;
 };
 
