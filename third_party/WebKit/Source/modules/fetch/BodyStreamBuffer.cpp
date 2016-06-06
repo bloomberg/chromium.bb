@@ -106,11 +106,16 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, PassOwnPtr<FetchDat
 {
     if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
         ScriptState::Scope scope(scriptState);
-        if (isTerminating(scriptState))
+        if (isTerminating(scriptState)) {
+            m_reader = nullptr;
+            m_handle = nullptr;
             return;
+        }
         v8::Local<v8::Value> bodyValue = toV8(this, scriptState);
         if (bodyValue.IsEmpty()) {
             DCHECK(isTerminating(scriptState));
+            m_reader = nullptr;
+            m_handle = nullptr;
             return;
         }
         ASSERT(bodyValue->IsObject());
@@ -118,6 +123,11 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, PassOwnPtr<FetchDat
 
         ScriptValue readableStream = ReadableStreamOperations::createReadableStream(
             scriptState, this, ReadableStreamOperations::createCountQueuingStrategy(scriptState, 0));
+        if (isTerminating(scriptState)) {
+            m_reader = nullptr;
+            m_handle = nullptr;
+            return;
+        }
         V8HiddenValue::setHiddenValue(scriptState, body, V8HiddenValue::internalBodyStream(scriptState->isolate()), readableStream.v8Value());
     } else {
         m_stream = new ReadableByteStream(this, new ReadableByteStream::StrictStrategy);
