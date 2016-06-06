@@ -1109,7 +1109,7 @@ static void write_txfm_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
   if (mode != TX_MODE_SELECT) aom_wb_write_literal(wb, mode, 2);
 }
 #else
-static void write_txfm_mode(TX_MODE mode, struct aom_writer *wb) {
+static void write_txfm_mode(TX_MODE mode, aom_writer *wb) {
   aom_write_literal(wb, AOMMIN(mode, ALLOW_32X32), 2);
   if (mode >= ALLOW_32X32) aom_write_bit(wb, mode == TX_MODE_SELECT);
 }
