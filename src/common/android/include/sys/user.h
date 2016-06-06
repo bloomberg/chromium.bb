@@ -33,6 +33,7 @@
 // The purpose of this file is to glue the mismatching headers (Android NDK vs
 // glibc) and therefore avoid doing otherwise awkward #ifdefs in the code.
 // The following quirks are currently handled by this file:
+// - i386: Use the Android NDK but alias user_fxsr_struct > user_fpxregs_struct.
 // - aarch64: Add missing <stdint.h> include.
 // - Other platforms: Just use the Android NDK unchanged.
 
@@ -44,5 +45,15 @@
 #endif  // __aarch64__
 
 #include_next <sys/user.h>
+
+#ifdef __i386__
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+typedef struct user_fxsr_struct user_fpxregs_struct;
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+#endif  // __i386__
 
 #endif  // GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_SYS_USER_H
