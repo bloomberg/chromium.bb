@@ -152,6 +152,10 @@ TEST_F(WindowedFilterTest, SampleChangesThirdBestMin) {
   // RTT sample lower than the third-choice min-rtt sets that, but nothing else.
   QuicTime::Delta rtt_sample = windowed_min_rtt_.GetThirdBest().Subtract(
       QuicTime::Delta::FromMilliseconds(5));
+  // This assert is necessary to avoid triggering -Wstrict-overflow
+  // See crbug/616957
+  ASSERT_GT(windowed_min_rtt_.GetThirdBest(),
+            QuicTime::Delta::FromMilliseconds(5));
   // Latest sample was recorded at 100ms.
   QuicTime now = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(101));
   windowed_min_rtt_.Update(rtt_sample, now);
@@ -181,6 +185,10 @@ TEST_F(WindowedFilterTest, SampleChangesSecondBestMin) {
   // the third-choice min.
   QuicTime::Delta rtt_sample = windowed_min_rtt_.GetSecondBest().Subtract(
       QuicTime::Delta::FromMilliseconds(5));
+  // This assert is necessary to avoid triggering -Wstrict-overflow
+  // See crbug/616957
+  ASSERT_GT(windowed_min_rtt_.GetSecondBest(),
+            QuicTime::Delta::FromMilliseconds(5));
   // Latest sample was recorded at 100ms.
   QuicTime now = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(101));
   windowed_min_rtt_.Update(rtt_sample, now);
@@ -209,6 +217,9 @@ TEST_F(WindowedFilterTest, SampleChangesAllMins) {
   // the second and third-choice mins.
   QuicTime::Delta rtt_sample = windowed_min_rtt_.GetBest().Subtract(
       QuicTime::Delta::FromMilliseconds(5));
+  // This assert is necessary to avoid triggering -Wstrict-overflow
+  // See crbug/616957
+  ASSERT_GT(windowed_min_rtt_.GetBest(), QuicTime::Delta::FromMilliseconds(5));
   // Latest sample was recorded at 100ms.
   QuicTime now = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(101));
   windowed_min_rtt_.Update(rtt_sample, now);
@@ -289,6 +300,11 @@ TEST_F(WindowedFilterTest, ExpireAllMins) {
   InitializeMinFilter();
   QuicTime::Delta rtt_sample = windowed_min_rtt_.GetThirdBest().Add(
       QuicTime::Delta::FromMilliseconds(5));
+  // This assert is necessary to avoid triggering -Wstrict-overflow
+  // See crbug/616957
+  ASSERT_LT(windowed_min_rtt_.GetThirdBest(),
+            QuicTime::Delta::Infinite().Subtract(
+                QuicTime::Delta::FromMilliseconds(5)));
   // Third best min sample was recorded at 100ms, so expiry time is 199ms.
   QuicTime now = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(200));
   windowed_min_rtt_.Update(rtt_sample, now);
