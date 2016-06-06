@@ -63,16 +63,18 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
 
- protected:
-  void StartObserving(Profile* profile);
-  void StopObserving(Profile* profile);
-
  private:
   class AppWindow;
 
   using TaskIdToAppWindow = std::map<int, std::unique_ptr<AppWindow>>;
   using AppControllerMap =
       std::map<std::string, ArcAppWindowLauncherItemController*>;
+
+  void StartObserving(Profile* profile);
+  void StopObserving(Profile* profile);
+
+  void RegisterApp(AppWindow* app_window);
+  void UnregisterApp(AppWindow* app_window);
 
   AppWindow* GetAppWindowForTask(int task_id);
 

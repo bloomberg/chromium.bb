@@ -14,8 +14,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
@@ -36,8 +39,10 @@ std::string GetShelfAppId(const std::string& app_id) {
 
 class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
  public:
-  AppWindow(int task_id, ArcAppWindowLauncherController* owner)
-      : task_id_(task_id), owner_(owner) {}
+  AppWindow(int task_id,
+            const std::string app_id,
+            ArcAppWindowLauncherController* owner)
+      : task_id_(task_id), app_id_(app_id), owner_(owner) {}
   ~AppWindow() {}
 
   void SetController(ArcAppWindowLauncherItemController* controller) {
@@ -63,6 +68,8 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   void set_widget(views::Widget* widget) { widget_ = widget; }
 
   ArcAppWindowLauncherItemController* controller() { return controller_; }
+
+  const std::string app_id() { return app_id_; }
 
   // ui::BaseWindow:
   bool IsActive() const override {
@@ -167,6 +174,7 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   int task_id_;
   ash::ShelfID shelf_id_ = 0;
+  std::string app_id_;
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
   // Unowned pointers
   ArcAppWindowLauncherController* owner_;
@@ -193,8 +201,18 @@ ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
 
 void ArcAppWindowLauncherController::ActiveUserChanged(
     const std::string& user_email) {
-  // TODO(xdai): Traverse the Arc App list to show / hide the apps one by one
-  // if there are Arc Apps running.
+  for (auto& it : task_id_to_app_window_) {
+    AppWindow* app_window = it.second.get();
+    if (user_email ==
+        user_manager::UserManager::Get()
+            ->GetPrimaryUser()
+            ->GetAccountId()
+            .GetUserEmail()) {
+      RegisterApp(app_window);
+    } else {
+      UnregisterApp(app_window);
+    }
+  }
 }
 
 void ArcAppWindowLauncherController::AdditionalUserAddedToSession(
@@ -251,8 +269,12 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
 
   if (task_id) {
     AppWindow* app_window = GetAppWindowForTask(task_id);
-    if (app_window)
+    if (app_window) {
       app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+      chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
+          window,
+          user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+    }
   }
 }
 
@@ -288,34 +310,11 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
 
-  std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, this));
-
   const std::string app_id =
       GetShelfAppId(ArcAppListPrefs::GetAppId(package_name, activity_name));
 
-  ArcAppWindowLauncherItemController* controller;
-  AppControllerMap::iterator it = app_controller_map_.find(app_id);
-  ash::ShelfID shelf_id = 0;
-  if (it != app_controller_map_.end()) {
-    controller = it->second;
-    DCHECK_EQ(controller->app_id(), app_id);
-    shelf_id = controller->shelf_id();
-  } else {
-    controller = new ArcAppWindowLauncherItemController(app_id, owner());
-    shelf_id = owner()->GetShelfIDForAppID(app_id);
-    if (shelf_id == 0) {
-      // Map Play Store shelf icon to Arc Support host, to share one entry.
-      shelf_id = owner()->CreateAppLauncherItem(controller, app_id,
-                                                ash::STATUS_RUNNING);
-    } else {
-      owner()->SetItemController(shelf_id, controller);
-    }
-    app_controller_map_[app_id] = controller;
-  }
-  controller->AddWindow(app_window.get());
-  owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
-  app_window->SetController(controller);
-  app_window->set_shelf_id(shelf_id);
+  std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, app_id, this));
+  RegisterApp(app_window.get());
 
   task_id_to_app_window_[task_id] = std::move(app_window);
 
@@ -329,23 +328,15 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
     return;
 
   AppWindow* app_window = it->second.get();
-  ArcAppWindowLauncherItemController* controller = app_window->controller();
-  DCHECK(controller);
-  const std::string app_id = controller->app_id();
-  controller->RemoveWindow(app_window);
-  if (!controller->window_count()) {
-    ash::ShelfID shelf_id = app_window->shelf_id();
-    DCHECK(shelf_id);
-    owner()->CloseLauncherItem(shelf_id);
-    AppControllerMap::iterator it2 = app_controller_map_.find(app_id);
-    DCHECK(it2 != app_controller_map_.end());
-    app_controller_map_.erase(it2);
-  }
+  UnregisterApp(app_window);
 
   task_id_to_app_window_.erase(it);
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
+  if (observed_profile_ != owner()->profile())
+    return;
+
   TaskIdToAppWindow::iterator previous_active_app_it =
       task_id_to_app_window_.find(active_task_id_);
   if (previous_active_app_it != task_id_to_app_window_.end()) {
@@ -419,4 +410,48 @@ void ArcAppWindowLauncherController::StopObserving(Profile* profile) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->RemoveObserver(this);
+}
+
+void ArcAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
+  const std::string app_id = app_window->app_id();
+  DCHECK(!app_id.empty());
+
+  ArcAppWindowLauncherItemController* controller;
+  AppControllerMap::iterator it = app_controller_map_.find(app_id);
+  ash::ShelfID shelf_id = 0;
+  if (it != app_controller_map_.end()) {
+    controller = it->second;
+    DCHECK_EQ(controller->app_id(), app_id);
+    shelf_id = controller->shelf_id();
+  } else {
+    controller = new ArcAppWindowLauncherItemController(app_id, owner());
+    shelf_id = owner()->GetShelfIDForAppID(app_id);
+    if (shelf_id == 0) {
+      // Map Play Store shelf icon to Arc Support host, to share one entry.
+      shelf_id = owner()->CreateAppLauncherItem(controller, app_id,
+                                                ash::STATUS_RUNNING);
+    } else {
+      owner()->SetItemController(shelf_id, controller);
+    }
+    app_controller_map_[app_id] = controller;
+  }
+  controller->AddWindow(app_window);
+  owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
+  app_window->SetController(controller);
+  app_window->set_shelf_id(shelf_id);
+}
+
+void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window) {
+  const std::string app_id = app_window->app_id();
+  DCHECK(!app_id.empty());
+  AppControllerMap::iterator it = app_controller_map_.find(app_id);
+  DCHECK(it != app_controller_map_.end());
+
+  ArcAppWindowLauncherItemController* controller = it->second;
+  controller->RemoveWindow(app_window);
+  if (!controller->window_count()) {
+    ash::ShelfID shelf_id = app_window->shelf_id();
+    owner()->CloseLauncherItem(shelf_id);
+    app_controller_map_.erase(it);
+  }
 }
