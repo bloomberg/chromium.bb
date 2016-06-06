@@ -61,7 +61,6 @@ public:
     const CSSValue* itemWithBoundsCheck(size_t index) const { return index < m_values.size() ? m_values[index].get() : nullptr; }
 
     void append(CSSValue* value) { m_values.append(value); }
-    void prepend(CSSValue* value) { m_values.prepend(value); }
     bool removeAll(const CSSValue&);
     bool hasValue(const CSSValue&) const;
     CSSValueList* copy();
