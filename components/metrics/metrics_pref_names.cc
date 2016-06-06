@@ -16,6 +16,13 @@ const char kInstallDate[] = "uninstall_metrics.installation_date2";
 // new prefs to do a one-time reset of the previous values.
 const char kMetricsClientID[] = "user_experience_metrics.client_id2";
 
+// An enum value indicating the default value of the enable metrics reporting
+// checkbox shown during first-run. If it's opt-in, then the checkbox defaulted
+// to unchecked, if it's opt-out, then it defaulted to checked. This value is
+// only recorded during first-run, so older clients will not set it. The enum
+// used for the value is metrics::MetricsServiceClient::EnableMetricsDefault.
+const char kMetricsDefaultOptIn[] = "user_experience_metrics.default_opt_in";
+
 // Array of strings that are each UMA logs that were supposed to be sent in the
 // first minute of a browser session. These logs include things like crash count
 // info, etc.

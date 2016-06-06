@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "components/metrics/metrics_reporting_default_state.h"
 #include "jni/UmaUtils_jni.h"
 
 class PrefService;
@@ -27,7 +27,7 @@ static void RecordMetricsReportingDefaultOptIn(JNIEnv* env,
                                                jboolean opt_in) {
   DCHECK(g_browser_process);
   PrefService* local_state = g_browser_process->local_state();
-  ::RecordMetricsReportingDefaultOptIn(local_state, opt_in);
+  metrics::RecordMetricsReportingDefaultOptIn(local_state, opt_in);
 }
 
 bool RegisterStartupMetricUtils(JNIEnv* env) {

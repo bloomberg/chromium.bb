@@ -12,6 +12,7 @@ namespace prefs {
 // component. Document each in the .cc file.
 extern const char kInstallDate[];
 extern const char kMetricsClientID[];
+extern const char kMetricsDefaultOptIn[];
 extern const char kMetricsInitialLogs[];
 extern const char kMetricsLowEntropySource[];
 extern const char kMetricsMachineId[];

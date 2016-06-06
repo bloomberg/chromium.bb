@@ -27,21 +27,6 @@ void InitiateMetricsReportingChange(
 // Android).
 bool IsMetricsReportingPolicyManaged();
 
-// Register prefs relating to metrics reporting state. Currently only registers
-// a pref for metrics reporting default opt-in state.
-void RegisterMetricsReportingStatePrefs(PrefRegistrySimple* registry);
-
-// Sets whether metrics reporting was opt-in or not. If it was opt-in, then the
-// enable checkbox on first-run was default unchecked. If it was opt-out, then
-// the checkbox was default checked. This should only be set once, and only
-// during first-run.
-void RecordMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in);
-
-// Gets information about the default value for the enable metrics reporting
-// checkbox shown during first-run.
-metrics::MetricsServiceClient::EnableMetricsDefault
-GetMetricsReportingDefaultOptIn(PrefService* local_state);
-
 // Initialize kMetricsReportingEnabled based on kStatsReportingPref device
 // setting and add an observer as it is the source of truth on Chrome OS.
 void SetupMetricsStateForChromeOS();

@@ -24,6 +24,7 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
@@ -89,6 +90,7 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
     PrefRegistrySimple* registry) {
   metrics::MetricsService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
+  metrics::RegisterMetricsReportingStatePrefs(registry);
 }
 
 metrics::MetricsService* IOSChromeMetricsServiceClient::GetMetricsService() {

@@ -43,6 +43,7 @@
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -233,7 +234,7 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 
   RegisterInstallerFileMetricsPreferences(registry);
 
-  RegisterMetricsReportingStatePrefs(registry);
+  metrics::RegisterMetricsReportingStatePrefs(registry);
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   AndroidMetricsProvider::RegisterPrefs(registry);
@@ -359,7 +360,8 @@ bool ChromeMetricsServiceClient::IsReportingPolicyManaged() {
 
 metrics::MetricsServiceClient::EnableMetricsDefault
 ChromeMetricsServiceClient::GetDefaultOptIn() {
-  return GetMetricsReportingDefaultOptIn(g_browser_process->local_state());
+  return metrics::GetMetricsReportingDefaultOptIn(
+      g_browser_process->local_state());
 }
 
 void ChromeMetricsServiceClient::Initialize() {

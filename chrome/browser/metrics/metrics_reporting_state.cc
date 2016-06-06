@@ -124,30 +124,11 @@ void InitiateMetricsReportingChange(
       base::Bind(&SetMetricsReporting, enabled, callback_fn));
 }
 
-void RegisterMetricsReportingStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kMetricsDefaultOptIn,
-                                metrics::MetricsServiceClient::DEFAULT_UNKNOWN);
-}
-
 bool IsMetricsReportingPolicyManaged() {
   const PrefService* pref_service = g_browser_process->local_state();
   const PrefService::Preference* pref =
       pref_service->FindPreference(metrics::prefs::kMetricsReportingEnabled);
   return pref && pref->IsManaged();
-}
-
-void RecordMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in) {
-  DCHECK(GetMetricsReportingDefaultOptIn(local_state) ==
-         metrics::MetricsServiceClient::DEFAULT_UNKNOWN);
-  local_state->SetInteger(prefs::kMetricsDefaultOptIn,
-                          opt_in ? metrics::MetricsServiceClient::OPT_IN
-                                 : metrics::MetricsServiceClient::OPT_OUT);
-}
-
-metrics::MetricsServiceClient::EnableMetricsDefault
-GetMetricsReportingDefaultOptIn(PrefService* local_state) {
-  return static_cast<metrics::MetricsServiceClient::EnableMetricsDefault>(
-      local_state->GetInteger(prefs::kMetricsDefaultOptIn));
 }
 
 // TODO(gayane): Add unittest which will check that observer on device settings

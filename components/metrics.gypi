@@ -60,6 +60,8 @@
         'metrics/metrics_pref_names.h',
         'metrics/metrics_provider.cc',
         'metrics/metrics_provider.h',
+        'metrics/metrics_reporting_default_state.cc',
+        'metrics/metrics_reporting_default_state.h',
         'metrics/metrics_reporting_scheduler.cc',
         'metrics/metrics_reporting_scheduler.h',
         'metrics/metrics_service.cc',
