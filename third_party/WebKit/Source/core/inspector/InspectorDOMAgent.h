@@ -60,7 +60,6 @@ class ExceptionState;
 class FloatQuad;
 class InsertionPoint;
 class InspectedFrames;
-class InspectorFrontend;
 class InspectorHistory;
 class Node;
 class QualifiedName;

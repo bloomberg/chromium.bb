@@ -94,7 +94,7 @@ public:
     static ResourceType cachedResourceType(const Resource&);
     static String cachedResourceTypeJson(const Resource&);
 
-    // Page API for InspectorFrontend
+    // Page API for frontend
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void addScriptToEvaluateOnLoad(ErrorString*, const String& scriptSource, String* identifier) override;

@@ -36,7 +36,6 @@ namespace blink {
 
 class LocalFrame;
 class InspectedFrames;
-class InspectorFrontend;
 
 class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<protocol::ApplicationCache::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
@@ -56,7 +55,7 @@ public:
     void updateApplicationCacheStatus(LocalFrame*);
     void networkStateChanged(LocalFrame*, bool online);
 
-    // ApplicationCache API for InspectorFrontend
+    // ApplicationCache API for frontend
     void getFramesWithManifests(ErrorString*, std::unique_ptr<protocol::Array<protocol::ApplicationCache::FrameWithManifest>>* frameIds) override;
     void enable(ErrorString*) override;
     void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;

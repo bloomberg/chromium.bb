@@ -52,7 +52,6 @@ class ExecutionContext;
 class LocalFrame;
 class HTTPHeaderMap;
 class InspectedFrames;
-class InspectorFrontend;
 class KURL;
 class NetworkResourcesData;
 class ResourceError;

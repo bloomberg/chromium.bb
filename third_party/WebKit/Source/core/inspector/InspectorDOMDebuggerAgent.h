@@ -63,7 +63,7 @@ public:
     ~InspectorDOMDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    // DOMDebugger API for InspectorFrontend
+    // DOMDebugger API for frontend
     void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
     void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
     void setEventListenerBreakpoint(ErrorString*, const String& eventName, const Maybe<String>& targetName) override;

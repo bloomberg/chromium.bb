@@ -52,7 +52,6 @@ class CSSStyleSheet;
 class Document;
 class Element;
 class InspectedFrames;
-class InspectorFrontend;
 class InspectorResourceAgent;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
