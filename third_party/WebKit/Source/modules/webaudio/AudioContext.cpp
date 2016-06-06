@@ -124,6 +124,8 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
                 "cannot resume a closed AudioContext"));
     }
 
+    recordUserGestureState();
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -198,4 +200,3 @@ void AudioContext::stopRendering()
 }
 
 } // namespace blink
-

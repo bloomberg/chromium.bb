@@ -441,6 +441,8 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
 {
     ASSERT(isMainThread());
 
+    context()->recordUserGestureState();
+
     if (playbackState() != UNSCHEDULED_STATE) {
         exceptionState.throwDOMException(
             InvalidStateError,

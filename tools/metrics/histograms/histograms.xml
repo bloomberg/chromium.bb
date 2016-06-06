@@ -60468,6 +60468,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.UserGesture" enum="UserGestureRequirement">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records whether WebAudio had a user gesture requirement and whether it was
+    fulfilled.
+  </summary>
+</histogram>
+
 <histogram name="WebController.CertVerificationErrorsCacheHit"
     enum="BooleanCacheHit">
   <owner>eugenebut@chromium.org</owner>
@@ -90416,6 +90424,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Dev"/>
   <int value="2" label="Beta"/>
   <int value="3" label="Stable"/>
+</enum>
+
+<enum name="UserGestureRequirement" type="int">
+  <int value="0" label="Required and available"/>
+  <int value="1" label="Required and not available"/>
+  <int value="2" label="Not required and available"/>
+  <int value="3" label="Not required and not available"/>
 </enum>
 
 <enum name="UserInitiatedEvent" type="int">

@@ -261,6 +261,12 @@ public:
     // Get the PeriodicWave for the specified oscillator type.  The table is initialized internally
     // if necessary.
     PeriodicWave* periodicWave(int type);
+
+    // Check whether the AudioContext requires a user gesture and whether the
+    // current stack is processing user gesture and record these information in
+    // a histogram.
+    void recordUserGestureState();
+
 protected:
     explicit AbstractAudioContext(Document*);
     AbstractAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
@@ -335,6 +341,9 @@ private:
     // time and the audio context process loop is very fast, so we don't want to call resolve an
     // excessive number of times.
     bool m_isResolvingResumePromises;
+
+    // Whether a user gesture is required to start this AudioContext.
+    bool m_userGestureRequired;
 
     unsigned m_connectionCount;
 

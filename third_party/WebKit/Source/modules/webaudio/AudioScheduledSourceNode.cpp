@@ -132,6 +132,8 @@ void AudioScheduledSourceHandler::start(double when, ExceptionState& exceptionSt
 {
     ASSERT(isMainThread());
 
+    context()->recordUserGestureState();
+
     if (playbackState() != UNSCHEDULED_STATE) {
         exceptionState.throwDOMException(
             InvalidStateError,
@@ -277,4 +279,3 @@ bool AudioScheduledSourceNode::hasPendingActivity() const
 }
 
 } // namespace blink
-
