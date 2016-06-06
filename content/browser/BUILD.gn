@@ -66,6 +66,7 @@ source_set("browser") {
     "//media",
     "//media/gpu/ipc/client",
     "//media/midi",
+    "//media/mojo/interfaces:image_capture",
     "//mojo/common",
     "//mojo/common:url_type_converters",
     "//mojo/public/cpp/bindings",

@@ -26,9 +26,9 @@ void RunMojoCallback(const mojo::Callback<R(Args...)>& callback, Args... args) {
 void RunFailedGetCapabilitiesCallback(
     const ImageCaptureImpl::GetCapabilitiesCallback& cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  blink::mojom::PhotoCapabilitiesPtr empty_capabilities =
-      blink::mojom::PhotoCapabilities::New();
-  empty_capabilities->zoom = blink::mojom::Range::New();
+  media::mojom::PhotoCapabilitiesPtr empty_capabilities =
+      media::mojom::PhotoCapabilities::New();
+  empty_capabilities->zoom = media::mojom::Range::New();
   cb.Run(std::move(empty_capabilities));
 }
 
@@ -66,7 +66,7 @@ void TakePhotoOnIOThread(
 
 // static
 void ImageCaptureImpl::Create(
-    mojo::InterfaceRequest<blink::mojom::ImageCapture> request) {
+    mojo::InterfaceRequest<media::mojom::ImageCapture> request) {
   // |binding_| will take ownership of ImageCaptureImpl.
   new ImageCaptureImpl(std::move(request));
 }
@@ -100,7 +100,7 @@ void ImageCaptureImpl::TakePhoto(const mojo::String& source_id,
 }
 
 ImageCaptureImpl::ImageCaptureImpl(
-    mojo::InterfaceRequest<blink::mojom::ImageCapture> request)
+    mojo::InterfaceRequest<media::mojom::ImageCapture> request)
     : binding_(this, std::move(request)) {}
 
 }  // namespace content

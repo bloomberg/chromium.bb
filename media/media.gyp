@@ -49,7 +49,7 @@
     ],
   },
   'includes': [
-    'capture.gypi',
+    'capture/capture.gypi',
     'media_cdm.gypi',
     'media_variables.gypi',
   ],
@@ -104,7 +104,7 @@
         '..',
       ],
       'includes': [
-        'capture.gypi',
+        'capture/capture.gypi',
       ],
       'sources': [
         '<@(capture_sources)',
