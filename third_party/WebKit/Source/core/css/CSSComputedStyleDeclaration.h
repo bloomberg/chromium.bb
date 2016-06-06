@@ -58,11 +58,11 @@ public:
 
     MutableStylePropertySet* copyProperties() const;
 
-    const CSSValue* getPropertyCSSValue(CSSPropertyID) const;
-    const CSSValue* getPropertyCSSValue(AtomicString customPropertyName) const;
+    CSSValue* getPropertyCSSValue(CSSPropertyID) const;
+    CSSValue* getPropertyCSSValue(AtomicString customPropertyName) const;
     std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> getVariables() const;
 
-    const CSSValue* getFontSizeCSSValuePreferringKeyword() const;
+    CSSValue* getFontSizeCSSValuePreferringKeyword() const;
     bool isMonospaceFont() const;
 
     MutableStylePropertySet* copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
@@ -94,7 +94,7 @@ private:
     void setCSSFloat(const String&, ExceptionState&);
     String cssText() const override;
     void setCSSText(const String&, ExceptionState&) override;
-    const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) override;
+    CSSValue* getPropertyCSSValueInternal(CSSPropertyID) override;
     String getPropertyValueInternal(CSSPropertyID) override;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) override;
 

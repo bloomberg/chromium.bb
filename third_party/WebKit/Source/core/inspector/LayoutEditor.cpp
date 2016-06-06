@@ -187,20 +187,20 @@ void LayoutEditor::rebuild()
     editableSelectorUpdated(false);
 }
 
-const CSSPrimitiveValue* LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
+CSSPrimitiveValue* LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
 {
     CSSStyleDeclaration* style = m_cssAgent->findEffectiveDeclaration(property, m_matchedStyles);
     if (!style)
         return nullptr;
 
-    const CSSValue* cssValue = style->getPropertyCSSValueInternal(property);
+    CSSValue* cssValue = style->getPropertyCSSValueInternal(property);
     if (!cssValue || !cssValue->isPrimitiveValue())
         return nullptr;
 
     return toCSSPrimitiveValue(cssValue);
 }
 
-bool LayoutEditor::growInside(String propertyName, const CSSPrimitiveValue* value)
+bool LayoutEditor::growInside(String propertyName, CSSPrimitiveValue* value)
 {
     FloatQuad content1, padding1, border1, margin1;
     InspectorHighlight::buildNodeQuads(m_element.get(), &content1, &padding1, &border1, &margin1);
@@ -254,7 +254,7 @@ bool LayoutEditor::growInside(String propertyName, const CSSPrimitiveValue* valu
 
 std::unique_ptr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const String& propertyName)
 {
-    const CSSPrimitiveValue* cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
+    CSSPrimitiveValue* cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
     if (cssValue && !(cssValue->isLength() || cssValue->isPercentage()))
         return nullptr;
 
@@ -284,7 +284,7 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
     if (!m_changingProperty)
         return;
 
-    const CSSPrimitiveValue* cssValue = getPropertyCSSValue(m_changingProperty);
+    CSSPrimitiveValue* cssValue = getPropertyCSSValue(m_changingProperty);
     m_valueUnitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
     if (!isMutableUnitType(m_valueUnitType))
         return;

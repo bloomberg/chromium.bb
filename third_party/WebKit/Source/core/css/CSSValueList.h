@@ -63,7 +63,7 @@ public:
     void append(CSSValue* value) { m_values.append(value); }
     bool removeAll(const CSSValue&);
     bool hasValue(const CSSValue&) const;
-    CSSValueList* copy() const;
+    CSSValueList* copy();
 
     String customCSSText() const;
     bool equals(const CSSValueList&) const;

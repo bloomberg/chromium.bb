@@ -401,7 +401,7 @@ inline static CSSPrimitiveValue* zoomAdjustedPixelValue(double value, const Comp
     return CSSPrimitiveValue::create(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::UnitType::Pixels);
 }
 
-const CSSValue* CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
+CSSValue* CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
 {
     if (!m_node)
         return nullptr;
@@ -514,7 +514,7 @@ Node* CSSComputedStyleDeclaration::styledNode() const
     return m_node.get();
 }
 
-const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
+CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
 {
     Node* styledNode = this->styledNode();
     if (!styledNode)
@@ -536,7 +536,7 @@ std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> CSSComputedStyle
     return ComputedStyleCSSValueMapping::getVariables(*style);
 }
 
-const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
+CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     Node* styledNode = this->styledNode();
     if (!styledNode)
@@ -576,7 +576,7 @@ const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID p
 
 String CSSComputedStyleDeclaration::getPropertyValue(CSSPropertyID propertyID) const
 {
-    const CSSValue* value = getPropertyCSSValue(propertyID);
+    CSSValue* value = getPropertyCSSValue(propertyID);
     if (value)
         return value->cssText();
     return "";
@@ -610,7 +610,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
                 return true;
         }
     }
-    const CSSValue* value = getPropertyCSSValue(propertyID);
+    CSSValue* value = getPropertyCSSValue(propertyID);
     return value && propertyValue && value->equals(*propertyValue);
 }
 
@@ -624,7 +624,7 @@ MutableStylePropertySet* CSSComputedStyleDeclaration::copyPropertiesInSet(const 
     HeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
-        const CSSValue* value = getPropertyCSSValue(properties[i]);
+        CSSValue* value = getPropertyCSSValue(properties[i]);
         if (value)
             list.append(CSSProperty(properties[i], value, false));
     }
@@ -641,7 +641,7 @@ String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
         if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(propertyName)) {
-            const CSSValue* value = getPropertyCSSValue(AtomicString(propertyName));
+            CSSValue* value = getPropertyCSSValue(AtomicString(propertyName));
             if (value)
                 return value->cssText();
         }
@@ -678,7 +678,7 @@ String CSSComputedStyleDeclaration::removeProperty(const String& name, Exception
     return String();
 }
 
-const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
+CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
 {
     return getPropertyCSSValue(propertyID);
 }
