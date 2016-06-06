@@ -19,9 +19,9 @@
 - (id)initWithPasteboard:(NSPasteboard*)pasteboard;
 @end
 
-@implementation CocoaDragDropDataProvider
-
-std::unique_ptr<ui::OSExchangeData> data_;
+@implementation CocoaDragDropDataProvider {
+  std::unique_ptr<ui::OSExchangeData> data_;
+}
 
 - (id)initWithData:(const ui::OSExchangeData&)data {
   if ((self = [super init])) {
