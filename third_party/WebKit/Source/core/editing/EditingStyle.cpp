@@ -355,38 +355,24 @@ CSSValue* HTMLFontSizeEquivalent::attributeValueAsCSSValue(Element* element) con
 
 float EditingStyle::NoFontDelta = 0.0f;
 
-EditingStyle::EditingStyle()
-    : m_isMonospaceFont(false)
-    , m_fontSizeDelta(NoFontDelta)
-{
-}
-
 EditingStyle::EditingStyle(ContainerNode* node, PropertiesToInclude propertiesToInclude)
-    : m_isMonospaceFont(false)
-    , m_fontSizeDelta(NoFontDelta)
 {
     init(node, propertiesToInclude);
 }
 
 EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propertiesToInclude)
-    : m_isMonospaceFont(false)
-    , m_fontSizeDelta(NoFontDelta)
 {
     init(position.anchorNode(), propertiesToInclude);
 }
 
 EditingStyle::EditingStyle(const StylePropertySet* style)
     : m_mutableStyle(style ? style->mutableCopy() : nullptr)
-    , m_isMonospaceFont(false)
-    , m_fontSizeDelta(NoFontDelta)
 {
     extractFontSizeDelta();
 }
 
 EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
     : m_mutableStyle(nullptr)
-    , m_isMonospaceFont(false)
-    , m_fontSizeDelta(NoFontDelta)
 {
     setProperty(propertyID, value);
     m_isVerticalAlign = propertyID == CSSPropertyVerticalAlign && (value == "sub" || value == "super");

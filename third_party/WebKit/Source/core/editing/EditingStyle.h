@@ -145,7 +145,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    EditingStyle();
+    EditingStyle() = default;
     EditingStyle(ContainerNode*, PropertiesToInclude);
     EditingStyle(const Position&, PropertiesToInclude);
     explicit EditingStyle(const StylePropertySet*);
@@ -161,8 +161,8 @@ private:
     void mergeStyle(const StylePropertySet*, CSSPropertyOverrideMode);
 
     Member<MutableStylePropertySet> m_mutableStyle;
-    bool m_isMonospaceFont;
-    float m_fontSizeDelta;
+    bool m_isMonospaceFont = false;
+    float m_fontSizeDelta = NoFontDelta;
     bool m_isVerticalAlign = false;
 
     friend class HTMLElementEquivalent;
