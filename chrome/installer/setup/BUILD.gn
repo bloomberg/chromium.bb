@@ -53,6 +53,8 @@ if (is_win) {
       "setup_util.h",
       "update_active_setup_version_work_item.cc",
       "update_active_setup_version_work_item.h",
+      "user_hive_visitor.cc",
+      "user_hive_visitor.h",
     ]
 
     public_deps = [
@@ -88,6 +90,7 @@ if (is_win) {
       "setup_util_unittest.cc",
       "setup_util_unittest.h",
       "update_active_setup_version_work_item_unittest.cc",
+      "user_hive_visitor_unittest.cc",
     ]
 
     deps = [

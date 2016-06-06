@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -34,6 +35,7 @@
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/setup/user_hive_visitor.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -707,6 +709,21 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
   }
 }
 
+bool DeleteUserRegistryKeys(const std::vector<const base::string16*>* key_paths,
+                            const wchar_t* user_sid,
+                            base::win::RegKey* key) {
+  for (const auto& key_path : *key_paths) {
+    LONG result = key->DeleteKey(key_path->c_str());
+    if (result == ERROR_SUCCESS) {
+      VLOG(1) << "Deleted " << user_sid << "\\" << *key_path;
+    } else if (result != ERROR_FILE_NOT_FOUND) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed deleting " << user_sid << "\\" << *key_path;
+    }
+  }
+  return true;
+}
+
 // Removes Active Setup entries from the registry. This cannot be done through
 // a work items list as usual because of different paths based on conditionals,
 // but otherwise respects the no rollback/best effort uninstall mentality.
@@ -747,11 +764,6 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
   // all users hives. If a given user's hive is not loaded, try to load it to
   // proceed with the deletion (failure to do so is ignored).
 
-  VLOG(1) << "Uninstall per-user Active Setup keys.";
-
-  static const wchar_t kProfileList[] =
-      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\";
-
   // Windows automatically adds Wow6432Node when creating/deleting the HKLM key,
   // but doesn't seem to do so when manually deleting the user-level keys it
   // created.
@@ -759,85 +771,10 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
   alternate_active_setup_path.insert(arraysize("Software\\") - 1,
                                      L"Wow6432Node\\");
 
-  // These two privileges are required by RegLoadKey() and RegUnloadKey() below.
-  ScopedTokenPrivilege se_restore_name_privilege(SE_RESTORE_NAME);
-  ScopedTokenPrivilege se_backup_name_privilege(SE_BACKUP_NAME);
-  if (!se_restore_name_privilege.is_enabled() ||
-      !se_backup_name_privilege.is_enabled()) {
-    // This is not a critical failure as those privileges aren't required to
-    // clean hives that are already loaded, but attempts to LoadRegKey() below
-    // will fail.
-    LOG(WARNING) << "Failed to enable privileges required to load registry "
-                    "hives.";
-  }
-
-  for (base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE, kProfileList);
-       it.Valid(); ++it) {
-    const wchar_t* profile_sid = it.Name();
-
-    VLOG(1) << "Uninstalling Active Setup key for " << profile_sid;
-
-    // First check if this user's registry hive needs to be loaded in
-    // HKEY_USERS.
-    base::win::RegKey user_reg_root_probe(
-        HKEY_USERS, profile_sid, KEY_READ);
-    bool loaded_hive = false;
-    if (user_reg_root_probe.Valid()) {
-      VLOG(1) << "Registry hive already loaded for " << profile_sid;
-    } else {
-      VLOG(1) << "Attempting to load registry hive for " << profile_sid;
-
-      base::string16 reg_profile_info_path(kProfileList);
-      reg_profile_info_path.append(profile_sid);
-      base::win::RegKey reg_profile_info_key(
-          HKEY_LOCAL_MACHINE, reg_profile_info_path.c_str(), KEY_READ);
-
-      base::string16 profile_path;
-      LONG result = reg_profile_info_key.ReadValue(L"ProfileImagePath",
-                                                   &profile_path);
-      if (result != ERROR_SUCCESS) {
-        LOG(ERROR) << "Error reading ProfileImagePath: " << result;
-        continue;
-      }
-      base::FilePath registry_hive_file(profile_path);
-      registry_hive_file = registry_hive_file.AppendASCII("NTUSER.DAT");
-
-      result = RegLoadKey(HKEY_USERS, profile_sid,
-                          registry_hive_file.value().c_str());
-      if (result != ERROR_SUCCESS) {
-        LOG(ERROR) << "Error loading registry hive: " << result;
-        continue;
-      }
-
-      VLOG(1) << "Loaded registry hive for " << profile_sid;
-      loaded_hive = true;
-    }
-
-    base::win::RegKey user_reg_root(
-        HKEY_USERS, profile_sid, KEY_ALL_ACCESS);
-
-    LONG result = user_reg_root.DeleteKey(active_setup_path.c_str());
-    if (result != ERROR_SUCCESS) {
-      result = user_reg_root.DeleteKey(alternate_active_setup_path.c_str());
-      if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-        LOG(ERROR) << "Failed to delete key at " << active_setup_path
-                   << " and at " << alternate_active_setup_path
-                   << ", result: " << result;
-      }
-    }
-    VLOG_IF(1, result == ERROR_SUCCESS)
-        << "Deleted Active Setup entry for " << profile_sid;
-    VLOG_IF(1, result == ERROR_FILE_NOT_FOUND)
-        << "No Active Setup entry to delete for " << profile_sid;
-
-    if (loaded_hive) {
-      user_reg_root.Close();
-      if (RegUnLoadKey(HKEY_USERS, profile_sid) == ERROR_SUCCESS)
-        VLOG(1) << "Unloaded registry hive for " << profile_sid;
-      else
-        LOG(ERROR) << "Error unloading registry hive for " << profile_sid;
-    }
-  }
+  VLOG(1) << "Uninstall per-user Active Setup keys.";
+  std::vector<const base::string16*> paths = {&active_setup_path,
+                                              &alternate_active_setup_path};
+  VisitUserHives(base::Bind(&DeleteUserRegistryKeys, base::Unretained(&paths)));
 }
 
 // Removes the persistent blacklist state for the current user.  Note: this will
