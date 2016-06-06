@@ -1397,98 +1397,122 @@ void EventSender::KeyDown(const std::string& code_str,
   std::string domKeyString;
   std::string domCodeString;
 
-  if ("\n" == code_str) {
+  // TODO(dtapuska): Convert all layout tests to use the proper code_str
+  // values that match the DOM Code specification. crbug.com/617606
+  if ("\n" == code_str ||
+      "Enter" == code_str) {
     generate_char = true;
     text = code = ui::VKEY_RETURN;
     domKeyString.assign("Enter");
     domCodeString.assign("Enter");
-  } else if ("rightArrow" == code_str) {
+  } else if ("rightArrow" == code_str ||
+             "ArrowRight" == code_str) {
     code = ui::VKEY_RIGHT;
     domKeyString.assign("ArrowRight");
     domCodeString.assign("ArrowRight");
-  } else if ("downArrow" == code_str) {
+  } else if ("downArrow" == code_str ||
+             "ArrowDown" == code_str) {
     code = ui::VKEY_DOWN;
     domKeyString.assign("ArrowDown");
     domCodeString.assign("ArrowDown");
-  } else if ("leftArrow" == code_str) {
+  } else if ("leftArrow" == code_str ||
+             "ArrowLeft" == code_str) {
     code = ui::VKEY_LEFT;
     domKeyString.assign("ArrowLeft");
     domCodeString.assign("ArrowLeft");
-  } else if ("upArrow" == code_str) {
+  } else if ("upArrow" == code_str ||
+             "ArrowUp" == code_str) {
     code = ui::VKEY_UP;
     domKeyString.assign("ArrowUp");
     domCodeString.assign("ArrowUp");
-  } else if ("insert" == code_str) {
+  } else if ("insert" == code_str ||
+             "Insert" == code_str) {
     code = ui::VKEY_INSERT;
     domKeyString.assign("Insert");
     domCodeString.assign("Insert");
-  } else if ("delete" == code_str) {
+  } else if ("delete" == code_str ||
+             "Delete" == code_str) {
     code = ui::VKEY_DELETE;
     domKeyString.assign("Delete");
     domCodeString.assign("Delete");
-  } else if ("pageUp" == code_str) {
+  } else if ("pageUp" == code_str ||
+             "PageUp" == code_str) {
     code = ui::VKEY_PRIOR;
     domKeyString.assign("PageUp");
     domCodeString.assign("PageUp");
-  } else if ("pageDown" == code_str) {
+  } else if ("pageDown" == code_str ||
+             "PageDown" == code_str) {
     code = ui::VKEY_NEXT;
     domKeyString.assign("PageDown");
     domCodeString.assign("PageDown");
-  } else if ("home" == code_str) {
+  } else if ("home" == code_str ||
+             "Home" == code_str) {
     code = ui::VKEY_HOME;
     domKeyString.assign("Home");
     domCodeString.assign("Home");
-  } else if ("end" == code_str) {
+  } else if ("end" == code_str ||
+             "End" == code_str) {
     code = ui::VKEY_END;
     domKeyString.assign("End");
     domCodeString.assign("End");
-  } else if ("printScreen" == code_str) {
+  } else if ("printScreen" == code_str ||
+             "PrintScreen" == code_str) {
     code = ui::VKEY_SNAPSHOT;
     domKeyString.assign("PrintScreen");
     domCodeString.assign("PrintScreen");
-  } else if ("menu" == code_str) {
+  } else if ("menu" == code_str ||
+             "ContextMenu" == code_str) {
     code = ui::VKEY_APPS;
     domKeyString.assign("ContextMenu");
     domCodeString.assign("ContextMenu");
-  } else if ("leftControl" == code_str) {
+  } else if ("leftControl" == code_str ||
+             "ControlLeft" == code_str) {
     code = ui::VKEY_CONTROL;
     domKeyString.assign("Control");
     domCodeString.assign("ControlLeft");
     location = DOMKeyLocationLeft;
-  } else if ("rightControl" == code_str) {
+  } else if ("rightControl" == code_str ||
+             "ControlRight" == code_str) {
     code = ui::VKEY_CONTROL;
     domKeyString.assign("Control");
     domCodeString.assign("ControlRight");
     location = DOMKeyLocationRight;
-  } else if ("leftShift" == code_str) {
+  } else if ("leftShift" == code_str ||
+             "ShiftLeft" == code_str) {
     code = ui::VKEY_SHIFT;
     domKeyString.assign("Shift");
     domCodeString.assign("ShiftLeft");
     location = DOMKeyLocationLeft;
-  } else if ("rightShift" == code_str) {
+  } else if ("rightShift" == code_str ||
+             "ShiftRight" == code_str) {
     code = ui::VKEY_SHIFT;
     domKeyString.assign("Shift");
     domCodeString.assign("ShiftRight");
     location = DOMKeyLocationRight;
-  } else if ("leftAlt" == code_str) {
+  } else if ("leftAlt" == code_str ||
+             "AltLeft" == code_str) {
     code = ui::VKEY_MENU;
     domKeyString.assign("Alt");
     domCodeString.assign("AltLeft");
     location = DOMKeyLocationLeft;
-  } else if ("rightAlt" == code_str) {
+  } else if ("rightAlt" == code_str ||
+             "AltRight" == code_str) {
     code = ui::VKEY_MENU;
     domKeyString.assign("Alt");
     domCodeString.assign("AltRight");
     location = DOMKeyLocationRight;
-  } else if ("numLock" == code_str) {
+  } else if ("numLock" == code_str ||
+             "NumLock" == code_str) {
     code = ui::VKEY_NUMLOCK;
     domKeyString.assign("NumLock");
     domCodeString.assign("NumLock");
-  } else if ("backspace" == code_str) {
+  } else if ("backspace" == code_str ||
+             "Backspace" == code_str) {
     code = ui::VKEY_BACK;
     domKeyString.assign("Backspace");
     domCodeString.assign("Backspace");
-  } else if ("escape" == code_str) {
+  } else if ("escape" == code_str ||
+             "Escape" == code_str) {
     code = ui::VKEY_ESCAPE;
     domKeyString.assign("Escape");
     domCodeString.assign("Escape");
