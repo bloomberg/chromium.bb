@@ -5510,9 +5510,12 @@
             },
             'msvs_settings': {
               'VCLinkerTool': {
-                # Set /LTCG for the official builds.
-                'LinkTimeCodeGeneration': '1',
                 'AdditionalOptions': [
+                  # Enable /LTCG for the official builds. Use the incremental
+                  # mode to speed-up the non-clobber builds. This is not the
+                  # same as incremental linking (/INCREMENTAL) and doesn't have
+                  # any impact on code size or on performance.
+                  '/LTCG:INCREMENTAL',
                   # Set the number of LTCG code-gen threads to eight.
                   # The default is four. This gives a 5-10% link speedup.
                   '/cgthreads:8',
