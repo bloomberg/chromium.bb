@@ -769,11 +769,11 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, SubtreeLay
         if (!container && !object->isLayoutView())
             return;
         if (!last->isTextOrSVGChild() && last->style()->hasOutOfFlowPosition()) {
-            LayoutBlock* containingBlock = last->containingBlock();
-            if (containingBlock->posChildNeedsLayout())
+            object = last->containingBlock();
+            if (object->posChildNeedsLayout())
                 return;
-            container = containingBlock->container();
-            containingBlock->setPosChildNeedsLayout(true);
+            container = object->container();
+            object->setPosChildNeedsLayout(true);
             simplifiedNormalFlowLayout = true;
             ASSERT(!object->isSetNeedsLayoutForbidden());
         } else if (simplifiedNormalFlowLayout) {
