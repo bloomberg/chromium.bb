@@ -16,7 +16,6 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
-#include "core/page/scrolling/RootScroller.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/PlatformGestureEvent.h"

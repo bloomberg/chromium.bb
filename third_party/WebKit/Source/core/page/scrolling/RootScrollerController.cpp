@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/RootScroller.h"
+#include "core/page/scrolling/RootScrollerController.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -73,19 +73,19 @@ bool isValidRootScroller(const Element& element)
 
 } // namespace
 
-ViewportScrollCallback* RootScroller::createViewportApplyScroll(
+ViewportScrollCallback* RootScrollerController::createViewportApplyScroll(
     TopControls& topControls, OverscrollController& overscrollController)
 {
     return new ViewportScrollCallback(topControls, overscrollController);
 }
 
-RootScroller::RootScroller(Document& document, ViewportScrollCallback* applyScrollCallback)
+RootScrollerController::RootScrollerController(Document& document, ViewportScrollCallback* applyScrollCallback)
     : m_document(&document)
     , m_viewportApplyScroll(applyScrollCallback)
 {
 }
 
-DEFINE_TRACE(RootScroller)
+DEFINE_TRACE(RootScrollerController)
 {
     visitor->trace(m_document);
     visitor->trace(m_viewportApplyScroll);
@@ -93,28 +93,28 @@ DEFINE_TRACE(RootScroller)
     visitor->trace(m_effectiveRootScroller);
 }
 
-void RootScroller::set(Element* newRootScroller)
+void RootScrollerController::set(Element* newRootScroller)
 {
     m_rootScroller = newRootScroller;
     updateEffectiveRootScroller();
 }
 
-Element* RootScroller::get() const
+Element* RootScrollerController::get() const
 {
     return m_rootScroller;
 }
 
-Element* RootScroller::effectiveRootScroller() const
+Element* RootScrollerController::effectiveRootScroller() const
 {
     return m_effectiveRootScroller;
 }
 
-void RootScroller::didUpdateLayout()
+void RootScrollerController::didUpdateLayout()
 {
     updateEffectiveRootScroller();
 }
 
-void RootScroller::updateEffectiveRootScroller()
+void RootScrollerController::updateEffectiveRootScroller()
 {
     bool rootScrollerValid =
         m_rootScroller && isValidRootScroller(*m_rootScroller);
@@ -130,7 +130,7 @@ void RootScroller::updateEffectiveRootScroller()
     m_effectiveRootScroller = newEffectiveRootScroller;
 }
 
-void RootScroller::moveViewportApplyScroll(Element* target)
+void RootScrollerController::moveViewportApplyScroll(Element* target)
 {
     if (!m_viewportApplyScroll)
         return;
@@ -156,7 +156,7 @@ void RootScroller::moveViewportApplyScroll(Element* target)
     m_viewportApplyScroll->setScroller(targetScroller);
 }
 
-Element* RootScroller::defaultEffectiveRootScroller()
+Element* RootScrollerController::defaultEffectiveRootScroller()
 {
     DCHECK(m_document);
     return m_document->documentElement();

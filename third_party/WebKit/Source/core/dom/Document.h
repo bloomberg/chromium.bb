@@ -143,7 +143,7 @@ class ProcessingInstruction;
 class QualifiedName;
 class Range;
 class ResourceFetcher;
-class RootScroller;
+class RootScrollerController;
 class SVGDocumentExtensions;
 class SVGUseElement;
 class ScriptRunner;
@@ -1238,7 +1238,7 @@ private:
     Member<Element> m_activeHoverElement;
     Member<Element> m_documentElement;
     UserActionElementSet m_userActionElements;
-    Member<RootScroller> m_rootScroller;
+    Member<RootScrollerController> m_rootScrollerController;
 
     uint64_t m_domTreeVersion;
     static uint64_t s_globalTreeVersion;

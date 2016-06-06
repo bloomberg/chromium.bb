@@ -194,7 +194,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/scrolling/RootScroller.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/ViewportScrollCallback.h"
@@ -482,10 +482,11 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 
     ViewportScrollCallback* applyScroll = nullptr;
     if (isInMainFrame()) {
-        applyScroll = RootScroller::createViewportApplyScroll(
+        applyScroll = RootScrollerController::createViewportApplyScroll(
             frameHost()->topControls(), frameHost()->overscrollController());
     }
-    m_rootScroller = RootScroller::create(*this, applyScroll);
+    m_rootScrollerController =
+        RootScrollerController::create(*this, applyScroll);
 
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
@@ -610,17 +611,17 @@ void Document::childrenChanged(const ChildrenChange& change)
 
 void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionState)
 {
-    m_rootScroller->set(newScroller);
+    m_rootScrollerController->set(newScroller);
 }
 
 Element* Document::rootScroller() const
 {
-    return m_rootScroller->get();
+    return m_rootScrollerController->get();
 }
 
 bool Document::isEffectiveRootScroller(const Element& element) const
 {
-    return m_rootScroller->effectiveRootScroller() == element;
+    return m_rootScrollerController->effectiveRootScroller() == element;
 }
 
 bool Document::isInMainFrame() const
@@ -1913,7 +1914,7 @@ void Document::layoutUpdated()
             m_documentTiming.markFirstLayout();
     }
 
-    m_rootScroller->didUpdateLayout();
+    m_rootScrollerController->didUpdateLayout();
 }
 
 void Document::setNeedsFocusedElementCheck()
@@ -5916,7 +5917,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_hoverNode);
     visitor->trace(m_activeHoverElement);
     visitor->trace(m_documentElement);
-    visitor->trace(m_rootScroller);
+    visitor->trace(m_rootScrollerController);
     visitor->trace(m_titleElement);
     visitor->trace(m_axObjectCache);
     visitor->trace(m_markers);

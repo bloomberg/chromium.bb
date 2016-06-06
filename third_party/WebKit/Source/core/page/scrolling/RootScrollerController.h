@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RootScroller_h
-#define RootScroller_h
+#ifndef RootScrollerController_h
+#define RootScrollerController_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -35,17 +35,18 @@ class ViewportScrollCallback;
 // defaultEffectiveRootScroller()). The rules for what makes an element a valid
 // root scroller are set in isValidRootScroller(). The validity of the current
 // root scroller is re-checked after each layout.
-class CORE_EXPORT RootScroller : public GarbageCollected<RootScroller> {
+class CORE_EXPORT RootScrollerController
+    : public GarbageCollected<RootScrollerController> {
 public:
-    // Creates a RootScroller for the given document. An optional
-    // ViewportScrollCallback can be provided. If it is, RootScroller will
-    // ensure that the effectiveRootScroller element always has this set as the
-    // apply scroll callback.
-    static RootScroller* create(
+    // Creates a RootScrollerController for the given document. An optional
+    // ViewportScrollCallback can be provided. If it is, RootScrollerController
+    // will ensure that the effectiveRootScroller element always has this set as
+    // the apply scroll callback.
+    static RootScrollerController* create(
         Document& document,
         ViewportScrollCallback* applyScrollCallback)
     {
-        return new RootScroller(document, applyScrollCallback);
+        return new RootScrollerController(document, applyScrollCallback);
     }
 
     // Creates an apply scroll callback that handles viewport actions like
@@ -79,7 +80,7 @@ public:
     void didUpdateLayout();
 
 private:
-    RootScroller(Document&, ViewportScrollCallback*);
+    RootScrollerController(Document&, ViewportScrollCallback*);
 
     Element* defaultEffectiveRootScroller();
 
@@ -97,4 +98,4 @@ private:
 
 } // namespace blink
 
-#endif // RootScroller_h
+#endif // RootScrollerController_h
