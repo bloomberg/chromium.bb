@@ -2600,7 +2600,7 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
       grand_child_of_rs2, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
       gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
 
-  parent->layer_tree_impl()->BuildPropertyTreesForTesting();
+  parent->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
 
   // Put an animated opacity on the render surface.
   AddOpacityTransitionToLayerWithPlayer(render_surface1->id(), timeline_impl(),
@@ -3648,7 +3648,7 @@ TEST_F(LayerTreeHostCommonTest,
   host_impl.active_tree()->SetRootLayer(std::move(root));
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   bool update_lcd_text = false;
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 
@@ -4704,7 +4704,7 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
       Layer::INVALID_ID, page_scale->id(), Layer::INVALID_ID,
       Layer::INVALID_ID);
   root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
-  root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
   root->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale_factor);
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  root);
@@ -5082,7 +5082,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   root->SetHasRenderSurface(true);
   LayerImpl* root_layer = root.get();
   host_impl.pending_tree()->SetRootLayer(std::move(root));
-  host_impl.pending_tree()->BuildPropertyTreesForTesting();
+  host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   // Add opacity animation.
   scoped_refptr<AnimationTimeline> timeline =
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
@@ -7008,7 +7008,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   // Rounded to integers already.
   {
     root->layer_tree_impl()->SetRootLayer(std::move(root_ptr));
-    root->layer_tree_impl()->BuildPropertyTreesForTesting();
+    root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
 
     gfx::Vector2dF scroll_delta(3.0, 5.0);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
@@ -7034,7 +7034,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
   // Scroll delta requiring rounding.
   {
-    root->layer_tree_impl()->BuildPropertyTreesForTesting();
+    root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
 
     gfx::Vector2dF scroll_delta(4.1f, 8.1f);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
@@ -7064,7 +7064,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
     scaled_container_transform.Scale3d(2.0, 2.0, 1.0);
     container_layer->SetTransform(scaled_container_transform);
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-    root->layer_tree_impl()->BuildPropertyTreesForTesting();
+    root->layer_tree_impl()->BuildLayerListAndPropertyTreesForTesting();
 
     gfx::Vector2dF scroll_delta(4.5f, 8.5f);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);

@@ -1155,7 +1155,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     scroll_layer->SetBounds(
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
     impl->active_tree()->property_trees()->needs_rebuild = true;
-    impl->active_tree()->BuildPropertyTreesForTesting();
+    impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     ScrollTree& scroll_tree =
         impl->active_tree()->property_trees()->scroll_tree;
@@ -1173,7 +1173,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     // Set max_scroll_offset = (0, 0).
     scroll_layer->SetBounds(root->bounds());
     impl->active_tree()->property_trees()->needs_rebuild = true;
-    impl->active_tree()->BuildPropertyTreesForTesting();
+    impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
     scroll_tree = impl->active_tree()->property_trees()->scroll_tree;
     scroll_node = scroll_tree.Node(scroll_layer->scroll_tree_index());
     status = impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::TOUCHSCREEN,
@@ -1185,7 +1185,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     // Set max_scroll_offset = (-100, -100).
     scroll_layer->SetBounds(gfx::Size());
     impl->active_tree()->property_trees()->needs_rebuild = true;
-    impl->active_tree()->BuildPropertyTreesForTesting();
+    impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
     scroll_tree = impl->active_tree()->property_trees()->scroll_tree;
     scroll_node = scroll_tree.Node(scroll_layer->scroll_tree_index());
     status = impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::TOUCHSCREEN,

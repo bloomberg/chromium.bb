@@ -268,7 +268,7 @@ class CC_EXPORT LayerTreeImpl {
   // priorities. Returns false if it was unable to update.  Updating lcd
   // text may cause invalidations, so should only be done after a commit.
   bool UpdateDrawProperties(bool update_lcd_text);
-  void BuildPropertyTreesForTesting();
+  void BuildLayerListAndPropertyTreesForTesting();
 
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;
@@ -519,6 +519,7 @@ class CC_EXPORT LayerTreeImpl {
 
   std::unique_ptr<OwnedLayerImplList> layers_;
   LayerImplMap layer_id_map_;
+  std::vector<LayerImpl*> layer_list_;
   // Set of layers that need to push properties.
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
@@ -579,6 +580,7 @@ class CC_EXPORT LayerTreeImpl {
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
  private:
+  void BuildLayerListForTesting();
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };
 

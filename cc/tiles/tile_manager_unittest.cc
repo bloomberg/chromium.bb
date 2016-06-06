@@ -571,7 +571,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   host_impl()->SetRequiresHighResToDraw();
@@ -793,7 +793,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   ActivateTree();
@@ -908,7 +908,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   pending_child_layer->OnOpacityAnimated(0.0);
@@ -1759,7 +1759,7 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   pending_tree->SetRootLayer(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
-  host_impl()->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl()->pending_tree()->UpdateDrawProperties(
       false /* update_lcd_text */);
 
@@ -1856,7 +1856,7 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   pending_tree->SetRootLayer(std::move(pending_layer));
 
   // Add tilings/tiles for the layer.
-  host_impl->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl->pending_tree()->UpdateDrawProperties(false /* update_lcd_text */);
 
   // Build the raster queue and invalidate the top tile.

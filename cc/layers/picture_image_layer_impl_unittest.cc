@@ -114,7 +114,7 @@ TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {
 
   TestablePictureImageLayerImpl* layer_ptr = layer.get();
   host_impl_.pending_tree()->SetRootLayer(std::move(layer));
-  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::Rect viewport(100, 200);
   SetupDrawPropertiesAndUpdateTiles(layer_ptr, 2.f, 3.f, 4.f, 1.f, false,
@@ -131,7 +131,7 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
 
   TestablePictureImageLayerImpl* pending_layer_ptr = pending_layer.get();
   host_impl_.pending_tree()->SetRootLayer(std::move(pending_layer));
-  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Set PictureLayerImpl::ideal_contents_scale_ to 2.f which is not equal
   // to the content scale used by PictureImageLayerImpl.

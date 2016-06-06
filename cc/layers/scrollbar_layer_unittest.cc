@@ -162,7 +162,8 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
       static_cast<PaintedScrollbarLayerImpl*>(
           layer_impl_tree_root->layer_tree_impl()->LayerById(
               scrollbar_layer_id_));
-  layer_impl_tree_root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  layer_impl_tree_root->layer_tree_impl()
+      ->BuildLayerListAndPropertyTreesForTesting();
   ScrollTree& scroll_tree =
       layer_impl_tree_root->layer_tree_impl()->property_trees()->scroll_tree;
   ScrollNode* scroll_node =
@@ -184,7 +185,8 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
       layer_tree_host_.get(), std::move(scrollbar), false, false, 0, 0);
   scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>(
       layer_impl_tree_root->layer_tree_impl()->LayerById(scrollbar_layer_id_));
-  layer_impl_tree_root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  layer_impl_tree_root->layer_tree_impl()
+      ->BuildLayerListAndPropertyTreesForTesting();
   scroll_tree =
       layer_impl_tree_root->layer_tree_impl()->property_trees()->scroll_tree;
   scroll_node = scroll_tree.Node(scrollbar_layer_impl->scroll_tree_index());

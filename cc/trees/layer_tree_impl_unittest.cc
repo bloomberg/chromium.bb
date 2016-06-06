@@ -1703,7 +1703,7 @@ TEST_F(LayerTreeImplTest,
   host_impl().active_tree()->SetRootLayer(std::move(root));
   host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
                                                       Layer::INVALID_ID);
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, max_page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
@@ -1953,7 +1953,7 @@ TEST_F(LayerTreeImplTest,
   host_impl().active_tree()->SetRootLayer(std::move(root));
   host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
                                                       Layer::INVALID_ID);
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, max_page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
@@ -2113,7 +2113,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   expected_screen_space_transform.Translate(25.f, 25.f);
 
   host_impl().active_tree()->property_trees()->needs_rebuild = true;
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -2134,7 +2134,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   expected_screen_space_transform.Translate(10.f, 10.f);
 
   host_impl().active_tree()->property_trees()->needs_rebuild = true;
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
@@ -2363,7 +2363,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   host_impl().active_tree()->SetRootLayer(std::move(root));
   host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
                                                       Layer::INVALID_ID);
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);

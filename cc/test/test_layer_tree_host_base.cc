@@ -160,7 +160,7 @@ void TestLayerTreeHostBase::ActivateTree() {
 
 void TestLayerTreeHostBase::RebuildPropertyTreesOnPendingTree() {
   host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
-  host_impl()->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 }
 
 void TestLayerTreeHostBase::SetInitialTreePriority() {

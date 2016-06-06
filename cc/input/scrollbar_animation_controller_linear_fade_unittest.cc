@@ -69,7 +69,7 @@ class ScrollbarAnimationControllerLinearFadeTest
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
-    host_impl_.active_tree()->BuildPropertyTreesForTesting();
+    host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     scrollbar_controller_ = ScrollbarAnimationControllerLinearFade::Create(
         scroll_layer_ptr->id(), this, base::TimeDelta::FromSeconds(2),

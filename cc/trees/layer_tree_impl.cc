@@ -264,6 +264,14 @@ void LayerTreeImpl::SetRootLayer(std::unique_ptr<LayerImpl> layer) {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
+void LayerTreeImpl::BuildLayerListForTesting() {
+  layer_list_.clear();
+  LayerListIterator<LayerImpl> it(root_layer_);
+  for (; it != LayerListIterator<LayerImpl>(nullptr); ++it) {
+    layer_list_.push_back(*it);
+  }
+}
+
 bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
   return root_layer_ == layer;
 }
@@ -976,7 +984,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   return true;
 }
 
-void LayerTreeImpl::BuildPropertyTreesForTesting() {
+void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
+  BuildLayerListForTesting();
   PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(

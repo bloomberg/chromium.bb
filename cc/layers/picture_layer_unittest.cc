@@ -354,7 +354,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   // rect for tile priorities to something non-empty.
   const bool can_use_lcd_text = false;
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties(can_use_lcd_text);
 
   layer->SetBounds(gfx::Size(11, 11));

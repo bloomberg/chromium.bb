@@ -105,7 +105,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, ScaleRoot) {
   child1()->SetPosition(gfx::PointF(150.f, 50.f));
   child1()->SetBounds(gfx::Size(100, 200));
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -130,7 +130,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, TranslateParentLayer) {
   child1()->SetPosition(gfx::PointF(150.f, 50.f));
   child1()->SetBounds(gfx::Size(100, 200));
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -154,7 +154,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, TranslateChildLayer) {
   child1()->SetPosition(gfx::PointF(150.f, 50.f));
   child1()->SetBounds(gfx::Size(100, 200));
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -184,7 +184,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, TranslateBothLayers) {
   child1()->SetPosition(gfx::PointF(150.f, 50.f));
   child1()->SetBounds(gfx::Size(100, 200));
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -213,7 +213,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXNoPerspective) {
   child1()->test_properties()->transform_origin =
       gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -250,7 +250,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspective) {
   child1()->test_properties()->transform_origin =
       gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -291,7 +291,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspectiveOnSameLayer) {
   child1()->test_properties()->transform_origin =
       gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -319,7 +319,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateZ) {
   child1()->test_properties()->transform_origin =
       gfx::Point3F(bounds.width() * 0.5f, bounds.height() * 0.5f, 0);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -351,7 +351,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, MismatchedTransforms) {
   child1()->SetPosition(gfx::PointF(150.f, 50.f));
   child1()->SetBounds(bounds);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*child1(), &box);
@@ -387,7 +387,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   great_grand_child()->SetDrawsContent(true);
   great_grand_child()->SetPosition(gfx::PointF(150.f, 50.f));
   great_grand_child()->SetBounds(gfx::Size(100, 200));
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*great_grand_child(), &box);
@@ -423,7 +423,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   great_grand_child()->SetBounds(gfx::Size(50.f, 50.f));
   great_grand_child()->SetDrawsContent(true);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*great_grand_child(), &box);
@@ -477,7 +477,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   great_grand_child()->SetBounds(gfx::Size(50.f, 50.f));
   great_grand_child()->SetDrawsContent(true);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*great_grand_child(), &box);
@@ -553,7 +553,7 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
       gfx::Size(bounds.width() * 0.5f, bounds.height() * 0.5f));
   great_grand_child()->SetDrawsContent(true);
 
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::BoxF box;
   bool success = LayerUtils::GetAnimationBounds(*great_grand_child(), &box);

@@ -376,7 +376,7 @@ class LayerTreeHostImplTest : public testing::Test,
         host_impl_->InnerViewportScrollLayer()->parent()->parent();
     inner_clip_layer->SetBounds(viewport_size);
     host_impl_->InnerViewportScrollLayer()->SetBounds(viewport_size);
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     host_impl_->SetViewportSize(viewport_size);
     host_impl_->active_tree()->DidBecomeActive();
@@ -440,7 +440,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   void RebuildPropertyTrees() {
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   }
 
   DrawResult PrepareToDrawFrame(LayerTreeHostImpl::FrameData* frame) {
@@ -635,7 +635,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(root_layer->id(),
                                                        scroll_offset);
     host_impl_->active_tree()->SetRootLayer(std::move(root_clip));
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
     root_layer->ScrollBy(scroll_delta);
   }
 
@@ -1508,7 +1508,7 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   EXPECT_FALSE(child->was_ever_ready_since_last_transform_animation());
 
   host_impl_->active_tree()->property_trees()->needs_rebuild = true;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ResetRequiresHighResToDraw();
 
   // Child layer has an animating transform but missing tiles.
@@ -2436,7 +2436,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   CreateScrollAndContentsLayers(
       host_impl_->pending_tree(),
       gfx::Size(100, 100));
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
   DrawFrame();
 
@@ -2870,7 +2870,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     scrollbar->SetScrollLayerId(scroll->id());
     container->AddChild(std::move(scrollbar));
     host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+    host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
     host_impl_->ActivateSyncTree();
 
     LayerImpl* active_scrollbar_layer =
@@ -2895,7 +2895,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     container->test_properties()->force_render_surface = true;
     container->SetBounds(gfx::Size(10, 10));
     host_impl_->pending_tree()->property_trees()->needs_rebuild = true;
-    host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+    host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     LayerImpl* pending_scrollbar_layer =
         host_impl_->pending_tree()->LayerById(400);
@@ -3820,7 +3820,7 @@ TEST_F(LayerTreeHostImplTest, ClampingAfterActivation) {
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(),
                                 gfx::Size(100, 100));
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
 
   host_impl_->CreatePendingTree();
@@ -3920,7 +3920,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     tree_impl->SetViewportLayersFromIds(Layer::INVALID_ID, page_scale_layer_id,
                                         inner_viewport_scroll_layer_id,
                                         outer_viewport_scroll_layer_id);
-    tree_impl->BuildPropertyTreesForTesting();
+    tree_impl->BuildLayerListAndPropertyTreesForTesting();
 
     host_impl_->SetViewportSize(inner_viewport_size);
     LayerImpl* root_clip_ptr = tree_impl->root_layer();
@@ -4233,7 +4233,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
   // Scroll 25px to hide top controls
   gfx::Vector2dF scroll_delta(0.f, 25.f);
   host_impl_->active_tree()->property_trees()->needs_rebuild = true;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_
                 ->ScrollBegin(BeginState(gfx::Point()).get(),
@@ -5748,7 +5748,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   host_impl_->CreatePendingTree();
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(), new_size);
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
   EXPECT_EQ(gfx::SizeF(new_size), scroll_watcher.scrollable_size());
 
@@ -6868,7 +6868,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   LayerTreeHostImpl::FrameData frame;
 
   // First frame, the entire screen should get swapped.
-  layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
+  layer_tree_host_impl->active_tree()
+      ->BuildLayerListAndPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   layer_tree_host_impl->DidDrawAllLayers(frame);
@@ -6888,7 +6889,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
       ->children()[0]
       ->NoteLayerPropertyChanged();
   layer_tree_host_impl->active_tree()->property_trees()->needs_rebuild = true;
-  layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
+  layer_tree_host_impl->active_tree()
+      ->BuildLayerListAndPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -7198,7 +7200,7 @@ static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   root->AddChild(std::move(child));
 
   my_host_impl->active_tree()->SetRootLayer(std::move(root));
-  my_host_impl->active_tree()->BuildPropertyTreesForTesting();
+  my_host_impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   return my_host_impl;
 }
 
@@ -7485,7 +7487,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(scrolling_layer->id(),
                                                      scroll_offset);
 
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
 
   bool update_lcd_text = false;
@@ -9426,7 +9428,7 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
   layer->SetDrawsContent(true);
   host_impl_->pending_tree()->SetRootLayer(std::move(layer));
 
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
 
   const gfx::Transform draw_transform;
@@ -9460,11 +9462,11 @@ TEST_F(LayerTreeHostImplTest, ExternalTileConstraintReflectedInPendingTree) {
   host_impl_->CreatePendingTree();
   host_impl_->pending_tree()->SetRootLayer(
       LayerImpl::Create(host_impl_->pending_tree(), 1));
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   host_impl_->ActivateSyncTree();
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
 
   host_impl_->CreatePendingTree();
@@ -10609,7 +10611,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 3.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(),
                                 gfx::Size(100, 100));
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
   DrawFrame();
 
@@ -10680,7 +10682,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
                                 gfx::Size(100, 100));
 
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+  host_impl_->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   const int scroll = 5;
   int accumulated_scroll = 0;
   for (int i = 0; i < host_impl_->pending_tree()->kFixedPointHitsThreshold + 1;
@@ -10722,7 +10724,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
             ->scroll_tree.GetScrollOffsetBaseForTesting(
                 last_scrolled_layer->id());
     pending_tree->property_trees()->needs_rebuild = true;
-    pending_tree->BuildPropertyTreesForTesting();
+    pending_tree->BuildLayerListAndPropertyTreesForTesting();
     pending_tree->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
             last_scrolled_layer->id(), pending_base);

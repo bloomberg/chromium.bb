@@ -50,7 +50,7 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   HeadsUpDisplayLayerImpl* layer = layer_ptr.get();
 
   host_impl.pending_tree()->SetRootLayer(std::move(layer_ptr));
-  host_impl.pending_tree()->BuildPropertyTreesForTesting();
+  host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Check regular hardware draw is ok.
   CheckDrawLayer(layer, host_impl.resource_provider(), DRAW_MODE_HARDWARE);
