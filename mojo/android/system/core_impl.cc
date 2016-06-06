@@ -15,7 +15,9 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "jni/CoreImpl_jni.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/c/system/core.h"
@@ -381,7 +383,7 @@ static ScopedJavaLocalRef<jobject> AsyncWait(
                    base::Bind(&AsyncWaitCallback, watcher, callback_data));
   } else {
     cancel_id = kInvalidHandleCancelID;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AsyncWaitCallback, nullptr, callback_data,
                               MOJO_RESULT_INVALID_ARGUMENT));
   }
