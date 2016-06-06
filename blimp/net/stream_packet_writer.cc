@@ -7,10 +7,12 @@
 #include <iostream>
 
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/common.h"
@@ -73,8 +75,8 @@ void StreamPacketWriter::WritePacket(
     payload_buffer_ = nullptr;
 
     // Adapt synchronous completion to an asynchronous style.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, result));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, result));
   } else {
     callback_ = callback;
   }

@@ -8,8 +8,10 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/net/stream_socket_connection.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
@@ -37,8 +39,8 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
     int result = server_socket_->Listen(address_, 5);
     if (result != net::OK) {
       server_socket_.reset();
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(callback, result));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, result));
       return;
     }
   }
@@ -57,8 +59,8 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
     server_socket_.reset();
   }
 
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, result));
 }
 
 std::unique_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {

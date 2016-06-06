@@ -8,7 +8,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"
@@ -73,7 +75,7 @@ class FakeFeaturePeer : public BlimpMessageProcessor {
                       const net::CompletionCallback& callback) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     ASSERT_EQ(feature_case_, message->feature_case());
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&FakeFeaturePeer::ForwardMessage,
                               base::Unretained(this), base::Passed(&message)));
     if (!callback.is_null())

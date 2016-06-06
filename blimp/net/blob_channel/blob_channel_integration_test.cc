@@ -4,9 +4,12 @@
 
 #include <memory>
 
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
 #include "blimp/common/blob_cache/test_util.h"
@@ -37,7 +40,7 @@ class SenderDelegateProxy : public BlobChannelSender::Delegate {
  private:
   // BlobChannelSender implementation.
   void DeliverBlob(const BlobId& id, BlobDataPtr data) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&BlobChannelReceiver::OnBlobReceived,
                               base::Unretained(receiver_), id, data));
   }

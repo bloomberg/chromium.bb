@@ -9,9 +9,12 @@
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/common.h"
@@ -99,7 +102,7 @@ class FakeBlimpConnection : public BlimpConnection,
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&FakeBlimpConnection::ForwardMessage,
                               base::Unretained(this), base::Passed(&message)));
 

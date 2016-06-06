@@ -6,9 +6,11 @@
 
 #include <algorithm>
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "net/base/net_errors.h"
@@ -104,7 +106,7 @@ void BlimpMessageOutputBuffer::OnMessageCheckpoint(int64_t message_id) {
             << " (max=" << current_buffer_size_bytes_ << ")";
 
     if (!ack_entry.callback.is_null()) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(ack_entry.callback, net::OK));
     }
 
