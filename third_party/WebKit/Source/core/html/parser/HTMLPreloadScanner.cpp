@@ -193,7 +193,11 @@ public:
     void handlePictureSourceURL(PictureData& pictureData)
     {
         if (match(m_tagImpl, sourceTag) && m_matched && pictureData.sourceURL.isEmpty()) {
-            pictureData.sourceURL = m_srcsetImageCandidate.toString();
+            // Must create an isolatedCopy() since the srcset attribute value will
+            // get sent back to the main thread between when we set this, and when we
+            // process the closing tag which would clear m_pictureData. Having any
+            // ref to a string we're going to send will fail isSafeToSendToAnotherThread().
+            pictureData.sourceURL = m_srcsetImageCandidate.toString().isolatedCopy();
             pictureData.sourceSizeSet = m_sourceSizeSet;
             pictureData.sourceSize = m_sourceSize;
             pictureData.picked = true;

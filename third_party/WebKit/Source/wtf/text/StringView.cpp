@@ -6,21 +6,15 @@
 
 namespace WTF {
 
-StringView::StringView(const UChar* chars, unsigned length)
-    : m_length(length)
-    , m_is8Bit(false)
-{
-    m_data.characters16 = chars;
-}
-
 StringView::StringView(const UChar* chars)
     : StringView(chars, chars ? lengthOfNullTerminatedString(chars) : 0) {}
 
 #if DCHECK_IS_ON()
 StringView::~StringView()
 {
-    // StringView does not own the StringImpl, we must not be the last ref.
-    DCHECK(!m_impl || !m_impl->hasOneRef());
+    DCHECK(m_impl);
+    DCHECK(!m_impl->hasOneRef())
+        << "StringView does not own the StringImpl, it must not have the last ref.";
 }
 #endif
 
@@ -30,9 +24,11 @@ String StringView::toString() const
         return String();
     if (isEmpty())
         return emptyString();
+    if (StringImpl* impl = sharedImpl())
+        return impl;
     if (is8Bit())
-        return String(m_data.characters8, m_length);
-    return StringImpl::create8BitIfPossible(m_data.characters16, m_length);
+        return String(characters8(), m_length);
+    return StringImpl::create8BitIfPossible(characters16(), m_length);
 }
 
 AtomicString StringView::toAtomicString() const
@@ -41,9 +37,11 @@ AtomicString StringView::toAtomicString() const
         return nullAtom;
     if (isEmpty())
         return emptyAtom;
+    if (StringImpl* impl = sharedImpl())
+        return AtomicString(impl);
     if (is8Bit())
-        return AtomicString(m_data.characters8, m_length);
-    return AtomicString(m_data.characters16, m_length);
+        return AtomicString(characters8(), m_length);
+    return AtomicString(characters16(), m_length);
 }
 
 bool equalStringView(const StringView& a, const StringView& b)

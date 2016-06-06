@@ -223,6 +223,7 @@ public:
 
     ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return reinterpret_cast<const LChar*>(this + 1); }
     ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return reinterpret_cast<const UChar*>(this + 1); }
+    ALWAYS_INLINE const void* bytes() const { return reinterpret_cast<const void*>(this + 1); }
 
     template <typename CharType>
     ALWAYS_INLINE const CharType * getCharacters() const;

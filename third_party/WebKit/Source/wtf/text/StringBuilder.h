@@ -70,27 +70,41 @@ public:
             append(other.characters16(), other.m_length);
     }
 
-    // TODO(esprehn): This method is just duplicating what StringView itself
-    // does. Remove it and replace callers with append(StringView(string, offset, length)).
+    // NOTE: The semantics of this are different than StringView(..., offset, length)
+    // in that an invalid offset or invalid length is a no-op instead of an
+    // error.
+    // TODO(esprehn): We should probably unify the semantics instead.
     void append(const StringView& string, unsigned offset, unsigned length)
     {
-        if (!string.length())
-            return;
-
         unsigned extent = offset + length;
         if (extent < offset || extent > string.length())
             return;
 
-        if (string.is8Bit())
-            append(string.characters8() + offset, length);
-        else
-            append(string.characters16() + offset, length);
+        // We can't do this before the above check since StringView's constructor
+        // doesn't accept invalid offsets or lengths.
+        append(StringView(string, offset, length));
     }
 
     void append(const StringView& string)
     {
-        if (!string.length())
+        if (string.isEmpty())
             return;
+
+        // If we're appending to an empty builder, and there is not a buffer
+        // (reserveCapacity has not been called), then share the impl if
+        // possible.
+        //
+        // This is important to avoid string copies inside dom operations like
+        // Node::textContent when there's only a single Text node child, or
+        // inside the parser in the common case when flushing buffered text to
+        // a Text node.
+        StringImpl* impl = string.sharedImpl();
+        if (!m_length && !m_buffer && impl) {
+            m_string = impl;
+            m_length = impl->length();
+            m_is8Bit = impl->is8Bit();
+            return;
+        }
 
         if (string.is8Bit())
             append(string.characters8(), string.length());

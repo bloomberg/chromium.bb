@@ -318,18 +318,26 @@ TEST(StringViewTest, IsEmpty)
 
 TEST(StringViewTest, ToString)
 {
-    // Empty string optimization.
     EXPECT_EQ(emptyString().impl(), StringView("").toString().impl());
+    EXPECT_EQ(nullAtom.impl(), StringView().toString().impl());
     // NOTE: All the construction tests also check toString().
 }
 
 TEST(StringViewTest, ToAtomicString)
 {
-    EXPECT_EQ(AtomicString(), nullAtom);
-    EXPECT_EQ(AtomicString(""), emptyAtom);
+    EXPECT_EQ(nullAtom.impl(), StringView().toAtomicString());
+    EXPECT_EQ(emptyAtom.impl(), StringView("").toAtomicString());
     EXPECT_EQ(AtomicString("12"), StringView(kChars8, 2).toAtomicString());
     // AtomicString will convert to 8bit if possible when creating the string.
-    EXPECT_EQ(AtomicString("12"), StringView(kChars16, 2).toAtomicString());
+    EXPECT_EQ(AtomicString("12").impl(), StringView(kChars16, 2).toAtomicString().impl());
+}
+
+TEST(StringViewTest, ToStringImplSharing)
+{
+    String string(kChars);
+    EXPECT_EQ(string.impl(), StringView(string).sharedImpl());
+    EXPECT_EQ(string.impl(), StringView(string).toString().impl());
+    EXPECT_EQ(string.impl(), StringView(string).toAtomicString().impl());
 }
 
 TEST(StringViewTest, NullString)

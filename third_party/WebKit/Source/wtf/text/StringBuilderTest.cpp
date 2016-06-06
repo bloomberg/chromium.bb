@@ -95,6 +95,24 @@ TEST(StringBuilderTest, Append)
     builder2.append("0123456789");
     EXPECT_EQ(characters, builder2.characters8());
 
+    StringBuilder builder3;
+    builder3.append("xyz", 1, 2);
+    expectBuilderContent("yz", builder3);
+
+    StringBuilder builder4;
+    builder4.append("abc", 5, 3);
+    expectEmpty(builder4);
+
+    StringBuilder builder5;
+    builder5.append(StringView(StringView("def"), 1, 1));
+    expectBuilderContent("e", builder5);
+
+    // append() has special code paths for String backed StringView instead of
+    // just char* backed ones.
+    StringBuilder builder6;
+    builder6.append(String("ghi"), 1, 2);
+    expectBuilderContent("hi", builder6);
+
     // Test appending UChar32 characters to StringBuilder.
     StringBuilder builderForUChar32Append;
     UChar32 frakturAChar = 0x1D504;
@@ -104,6 +122,20 @@ TEST(StringBuilderTest, Append)
     EXPECT_EQ(3U, builderForUChar32Append.length());
     const UChar resultArray[] = { U16_LEAD(frakturAChar), U16_TRAIL(frakturAChar), 'A' };
     expectBuilderContent(String(resultArray, WTF_ARRAY_LENGTH(resultArray)), builderForUChar32Append);
+}
+
+TEST(StringBuilderTest, AppendSharingImpl)
+{
+    String string("abc");
+    StringBuilder builder1;
+    builder1.append(string);
+    EXPECT_EQ(string.impl(), builder1.toString().impl());
+    EXPECT_EQ(string.impl(), builder1.toAtomicString().impl());
+
+    StringBuilder builder2;
+    builder2.append(string, 0, string.length());
+    EXPECT_EQ(string.impl(), builder2.toString().impl());
+    EXPECT_EQ(string.impl(), builder2.toAtomicString().impl());
 }
 
 TEST(StringBuilderTest, ToString)

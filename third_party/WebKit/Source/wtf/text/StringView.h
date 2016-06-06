@@ -6,6 +6,7 @@
 #define WTF_StringView_h
 
 #include "wtf/Allocator.h"
+#include "wtf/GetPtr.h"
 #if DCHECK_IS_ON()
 #include "wtf/RefPtr.h"
 #endif
@@ -21,7 +22,7 @@ namespace WTF {
 // and keeps track of the length and the type, it does NOT own the bytes.
 //
 // Since StringView does not own the bytes creating a StringView from a String,
-// then calling clear() on the string will result in a use-after-free. Asserts
+// then calling clear() on the String will result in a use-after-free. Asserts
 // in ~StringView attempt to enforce this for most common cases.
 //
 // See base/strings/string_piece.h for more details.
@@ -47,7 +48,7 @@ public:
     StringView(const String& string, unsigned offset)
         : StringView(string.impl(), offset) {}
     StringView(const String& string)
-        : StringView(string, 0, string.length()) {}
+        : StringView(string.impl()) {}
 
     // From an AtomicString:
     StringView(const AtomicString& string, unsigned offset, unsigned length)
@@ -55,10 +56,11 @@ public:
     StringView(const AtomicString& string, unsigned offset)
         : StringView(string.impl(), offset) {}
     StringView(const AtomicString& string)
-        : StringView(string, 0, string.length()) {}
+        : StringView(string.impl()) {}
 
     // From a literal string or LChar buffer:
-    StringView(const LChar* chars, unsigned length);
+    StringView(const LChar* chars, unsigned length)
+        : StringView(reinterpret_cast<const void*>(chars), length, true) {}
     StringView(const char* chars, unsigned length)
         : StringView(reinterpret_cast<const LChar*>(chars), length) {}
     StringView(const LChar* chars)
@@ -67,27 +69,26 @@ public:
         : StringView(reinterpret_cast<const LChar*>(chars)) {}
 
     // From a wide literal string or UChar buffer.
+    StringView(const UChar* chars, unsigned length)
+        : StringView(reinterpret_cast<const void*>(chars), length, false) {}
     StringView(const UChar* chars);
-    StringView(const UChar* chars, unsigned length);
 
     // From a byte pointer.
     StringView(const void* bytes, unsigned length, bool is8Bit)
-        : m_length(length)
-        , m_is8Bit(is8Bit)
-    {
-        m_data.bytes = bytes;
-    }
+        : m_impl(is8Bit ? StringImpl::empty() : StringImpl::empty16Bit())
+        , m_bytes(bytes)
+        , m_length(length) {}
 
 #if DCHECK_IS_ON()
     ~StringView();
 #endif
 
-    bool isNull() const { return !m_data.bytes; }
+    bool isNull() const { return !m_bytes; }
     bool isEmpty() const { return !m_length; }
 
     unsigned length() const { return m_length; }
 
-    bool is8Bit() const { return m_is8Bit; }
+    bool is8Bit() const { DCHECK(m_impl); return m_impl->is8Bit(); }
 
     void clear();
 
@@ -101,17 +102,31 @@ public:
 
     const LChar* characters8() const
     {
-        ASSERT(is8Bit());
-        return m_data.characters8;
+        DCHECK(is8Bit());
+        return m_characters8;
     }
 
     const UChar* characters16() const
     {
-        ASSERT(!is8Bit());
-        return m_data.characters16;
+        DCHECK(!is8Bit());
+        return m_characters16;
     }
 
-    const void* bytes() const { return m_data.bytes; }
+    const void* bytes() const { return m_bytes; }
+
+    // This is not named impl() like String because it has different semantics.
+    // String::impl() is never null if String::isNull() is false. For StringView
+    // sharedImpl() can be null if the StringView was created with a non-zero
+    // offset, or a length that made it shorter than the underlying impl.
+    StringImpl* sharedImpl() const
+    {
+        // If this StringView is backed by a StringImpl, and was constructed
+        // with a zero offset and the same length we can just access the impl
+        // directly since this == StringView(m_impl).
+        if (m_impl->bytes() == bytes() && m_length == m_impl->length())
+            return getPtr(m_impl);
+        return nullptr;
+    }
 
     String toString() const;
     AtomicString toAtomicString() const;
@@ -119,32 +134,42 @@ public:
 private:
     void set(StringImpl&, unsigned offset, unsigned length);
 
+    // We use the StringImpl to mark for 8bit or 16bit, even for strings where
+    // we were constructed from a char pointer. So m_impl->bytes() might have
+    // nothing to do with this view's bytes().
 #if DCHECK_IS_ON()
     RefPtr<StringImpl> m_impl;
+#else
+    StringImpl* m_impl;
 #endif
-    union DataUnion {
-        const LChar* characters8;
-        const UChar* characters16;
-        const void* bytes;
-    } m_data;
+    union {
+        const LChar* m_characters8;
+        const UChar* m_characters16;
+        const void* m_bytes;
+    };
     unsigned m_length;
-    unsigned m_is8Bit : 1;
 };
 
 inline StringView::StringView(const StringView& view, unsigned offset, unsigned length)
-    : m_length(length)
-    , m_is8Bit(view.is8Bit())
+    : m_impl(view.m_impl)
+    , m_length(length)
 {
     SECURITY_DCHECK(offset + length <= view.length());
     if (is8Bit())
-        m_data.characters8 = view.characters8() + offset;
+        m_characters8 = view.characters8() + offset;
     else
-        m_data.characters16 = view.characters16() + offset;
+        m_characters16 = view.characters16() + offset;
 }
 
 inline StringView::StringView(StringImpl* impl)
 {
-    impl ? set(*impl, 0, impl->length()) : clear();
+    if (!impl) {
+        clear();
+        return;
+    }
+    m_impl = impl;
+    m_length = impl->length();
+    m_bytes = impl->bytes();
 }
 
 inline StringView::StringView(StringImpl* impl, unsigned offset)
@@ -157,35 +182,22 @@ inline StringView::StringView(StringImpl* impl, unsigned offset, unsigned length
     impl ? set(*impl, offset, length) : clear();
 }
 
-inline StringView::StringView(const LChar* chars, unsigned length)
-    : m_length(length)
-    , m_is8Bit(true)
-{
-    m_data.characters8 = chars;
-}
-
 inline void StringView::clear()
 {
     m_length = 0;
-    m_is8Bit = true;
-    m_data.bytes = nullptr;
-#if DCHECK_IS_ON()
-    m_impl = nullptr;
-#endif
+    m_bytes = nullptr;
+    m_impl = StringImpl::empty(); // mark as 8 bit.
 }
 
 inline void StringView::set(StringImpl& impl, unsigned offset, unsigned length)
 {
     SECURITY_DCHECK(offset + length <= impl.length());
     m_length = length;
-    m_is8Bit = impl.is8Bit();
-#if DCHECK_IS_ON()
     m_impl = &impl;
-#endif
-    if (m_is8Bit)
-        m_data.characters8 = impl.characters8() + offset;
+    if (impl.is8Bit())
+        m_characters8 = impl.characters8() + offset;
     else
-        m_data.characters16 = impl.characters16() + offset;
+        m_characters16 = impl.characters16() + offset;
 }
 
 WTF_EXPORT bool equalIgnoringASCIICase(const StringView& a, const StringView& b);
