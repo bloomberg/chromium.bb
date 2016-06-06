@@ -108,7 +108,7 @@ TEST_F(MediaStreamVideoRendererSinkTest, StartStop) {
   media_stream_video_renderer_sink_->Pause();
   EXPECT_TRUE(IsInPausedState());
 
-  media_stream_video_renderer_sink_->Play();  // Should be called Resume().
+  media_stream_video_renderer_sink_->Resume();
   EXPECT_TRUE(IsInStartedState());
 
   media_stream_video_renderer_sink_->Stop();

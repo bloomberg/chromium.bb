@@ -75,7 +75,7 @@ void MediaStreamVideoRendererSink::Stop() {
   frame_size_.set_height(kMinFrameSize);
 }
 
-void MediaStreamVideoRendererSink::Play() {
+void MediaStreamVideoRendererSink::Resume() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == PAUSED)
     state_ = STARTED;

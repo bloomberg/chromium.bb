@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
+#include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/public/renderer/video_frame_provider.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "ui/gfx/geometry/size.h"
@@ -27,12 +27,12 @@ class GpuVideoAcceleratorFactories;
 
 namespace content {
 
-// MediaStreamVideoRendererSink is a VideoFrameProvider designed for rendering
-// Video MediaStreamTracks [1], MediaStreamVideoRendererSink implements
-// MediaStreamVideoSink in order to render video frames provided from a
-// MediaStreamVideoTrack, to which it connects itself when the
-// VideoFrameProvider is Start()ed, and disconnects itself when the latter is
-// Stop()ed.
+// MediaStreamVideoRendererSink is a MediaStreamVideoRenderer designed for
+// rendering Video MediaStreamTracks [1], MediaStreamVideoRendererSink
+// implements MediaStreamVideoSink in order to render video frames provided from
+// a MediaStreamVideoTrack, to which it connects itself when the
+// MediaStreamVideoRenderer is Start()ed, and disconnects itself when the latter
+// is Stop()ed.
 //
 // [1] http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 //
@@ -40,22 +40,23 @@ namespace content {
 // http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
 // deo_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT MediaStreamVideoRendererSink
-    : NON_EXPORTED_BASE(public VideoFrameProvider),
+    : NON_EXPORTED_BASE(public MediaStreamVideoRenderer),
       NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
   MediaStreamVideoRendererSink(
       const blink::WebMediaStreamTrack& video_track,
       const base::Closure& error_cb,
-      const RepaintCB& repaint_cb,
+      const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories);
 
-  // VideoFrameProvider implementation. Called on the main thread.
+  // MediaStreamVideoRenderer implementation. Called on the main thread.
   void Start() override;
   void Stop() override;
-  void Play() override;
+  void Resume() override;
   void Pause() override;
+
   void SetGpuMemoryBufferVideoForTesting(
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 

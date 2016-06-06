@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/test_video_frame_provider.h"
+#include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -12,11 +12,11 @@
 
 namespace content {
 
-TestVideoFrameProvider::TestVideoFrameProvider(
+TestMediaStreamVideoRenderer::TestMediaStreamVideoRenderer(
     const gfx::Size& size,
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb)
+    const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       size_(size),
       state_(kStopped),
@@ -25,38 +25,39 @@ TestVideoFrameProvider::TestVideoFrameProvider(
       repaint_cb_(repaint_cb) {
 }
 
-TestVideoFrameProvider::~TestVideoFrameProvider() {}
+TestMediaStreamVideoRenderer::~TestMediaStreamVideoRenderer() {}
 
-void TestVideoFrameProvider::Start() {
-  DVLOG(1) << "TestVideoFrameProvider::Start";
+void TestMediaStreamVideoRenderer::Start() {
+  DVLOG(1) << "TestMediaStreamVideoRenderer::Start";
   DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kStarted;
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&TestVideoFrameProvider::GenerateFrame, this));
+      FROM_HERE, base::Bind(&TestMediaStreamVideoRenderer::GenerateFrame,
+                            this));
 }
 
-void TestVideoFrameProvider::Stop() {
-  DVLOG(1) << "TestVideoFrameProvider::Stop";
+void TestMediaStreamVideoRenderer::Stop() {
+  DVLOG(1) << "TestMediaStreamVideoRenderer::Stop";
   DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kStopped;
 }
 
-void TestVideoFrameProvider::Play() {
-  DVLOG(1) << "TestVideoFrameProvider::Play";
+void TestMediaStreamVideoRenderer::Resume() {
+  DVLOG(1) << "TestMediaStreamVideoRenderer::Resume";
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == kPaused)
     state_ = kStarted;
 }
 
-void TestVideoFrameProvider::Pause() {
-  DVLOG(1) << "TestVideoFrameProvider::Pause";
+void TestMediaStreamVideoRenderer::Pause() {
+  DVLOG(1) << "TestMediaStreamVideoRenderer::Pause";
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == kStarted)
     state_ = kPaused;
 }
 
-void TestVideoFrameProvider::GenerateFrame() {
-  DVLOG(1) << "TestVideoFrameProvider::GenerateFrame";
+void TestMediaStreamVideoRenderer::GenerateFrame() {
+  DVLOG(1) << "TestMediaStreamVideoRenderer::GenerateFrame";
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == kStopped)
     return;
@@ -75,7 +76,7 @@ void TestVideoFrameProvider::GenerateFrame() {
 
   current_time_ += frame_duration_;
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&TestVideoFrameProvider::GenerateFrame, this),
+      FROM_HERE, base::Bind(&TestMediaStreamVideoRenderer::GenerateFrame, this),
       frame_duration_);
 }
 

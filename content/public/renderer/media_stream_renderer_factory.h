@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
-#include "content/public/renderer/video_frame_provider.h"
+#include "content/public/renderer/media_stream_video_renderer.h"
 #include "url/origin.h"
 
 namespace base {
@@ -36,10 +36,10 @@ class MediaStreamRendererFactory {
  public:
   virtual ~MediaStreamRendererFactory() {}
 
-  virtual scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
+  virtual scoped_refptr<MediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb,
+      const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories) = 0;

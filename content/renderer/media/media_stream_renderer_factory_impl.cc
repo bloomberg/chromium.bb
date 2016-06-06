@@ -57,17 +57,17 @@ MediaStreamRendererFactoryImpl::MediaStreamRendererFactoryImpl() {
 MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {
 }
 
-scoped_refptr<VideoFrameProvider>
-MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
+scoped_refptr<MediaStreamVideoRenderer>
+MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb,
+    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   DCHECK(!web_stream.isNull());
 
-  DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoFrameProvider stream:"
+  DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoRenderer stream:"
            << base::UTF16ToUTF8(base::StringPiece16(web_stream.id()));
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;

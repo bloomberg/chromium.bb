@@ -4,7 +4,7 @@
 
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 
-#include "content/shell/renderer/layout_test/test_video_frame_provider.h"
+#include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
@@ -38,18 +38,18 @@ TestMediaStreamRendererFactory::TestMediaStreamRendererFactory() {}
 
 TestMediaStreamRendererFactory::~TestMediaStreamRendererFactory() {}
 
-scoped_refptr<VideoFrameProvider>
-TestMediaStreamRendererFactory::GetVideoFrameProvider(
+scoped_refptr<MediaStreamVideoRenderer>
+TestMediaStreamRendererFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb,
+    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   if (!IsMockMediaStreamWithVideo(web_stream))
     return NULL;
 
-  return new TestVideoFrameProvider(
+  return new TestMediaStreamVideoRenderer(
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs),
       error_cb,

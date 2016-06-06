@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_VIDEO_FRAME_PROVIDER_H_
-#define CONTENT_PUBLIC_RENDERER_VIDEO_FRAME_PROVIDER_H_
+#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_VIDEO_RENDERER_H_
+#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_VIDEO_RENDERER_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -14,11 +14,11 @@ class VideoFrame;
 
 namespace content {
 
-// Define an interface to provide a sequence of video frames to clients.
+// Interface returned by MediaStreamRendererFactory that provides controls for
+// the flow of video frame callbacks being made.
 // TODO(wjia): remove ref count.
-// TODO(wjia): rename interface so it doesn't clash with cc::VideoFrameProvider.
-class VideoFrameProvider
-    : public base::RefCountedThreadSafe<VideoFrameProvider> {
+class MediaStreamVideoRenderer
+    : public base::RefCountedThreadSafe<MediaStreamVideoRenderer> {
  public:
   typedef base::Callback<void(const scoped_refptr<media::VideoFrame>&)>
       RepaintCB;
@@ -30,7 +30,7 @@ class VideoFrameProvider
   virtual void Stop() = 0;
 
   // Resume to provide video frames to the caller after being paused.
-  virtual void Play() = 0;
+  virtual void Resume() = 0;
 
   // Put the provider in pause state and the caller will not receive video
   // frames, but the provider might still generate video frames which are
@@ -38,12 +38,12 @@ class VideoFrameProvider
   virtual void Pause() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<VideoFrameProvider>;
+  friend class base::RefCountedThreadSafe<MediaStreamVideoRenderer>;
 
-  virtual ~VideoFrameProvider() {}
+  virtual ~MediaStreamVideoRenderer() {}
 
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_VIDEO_FRAME_PROVIDER_H_
+#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_VIDEO_RENDERER_H_

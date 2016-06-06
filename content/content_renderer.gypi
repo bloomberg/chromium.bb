@@ -93,7 +93,7 @@
       'public/renderer/resource_fetcher.h',
       'public/renderer/video_encode_accelerator.cc',
       'public/renderer/video_encode_accelerator.h',
-      'public/renderer/video_frame_provider.h',
+      'public/renderer/media_stream_video_renderer.h',
     ],
     'public_renderer_plugin_sources': [
       'public/renderer/plugin_instance_throttler.h',

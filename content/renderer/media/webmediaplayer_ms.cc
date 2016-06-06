@@ -18,7 +18,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
-#include "content/public/renderer/video_frame_provider.h"
+#include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webmediaplayer_ms_compositor.h"
 #include "content/renderer/render_frame_impl.h"
@@ -122,7 +122,7 @@ void WebMediaPlayerMS::load(LoadType load_type,
       web_stream.isNull() ? std::string() : web_stream.id().utf8();
   media_log_->AddEvent(media_log_->CreateLoadEvent(stream_id));
 
-  video_frame_provider_ = renderer_factory_->GetVideoFrameProvider(
+  video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream, base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr()),
       base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()),
       media_task_runner_, worker_task_runner_, gpu_factories_);
@@ -166,7 +166,7 @@ void WebMediaPlayerMS::play() {
     return;
 
   if (video_frame_provider_)
-    video_frame_provider_->Play();
+    video_frame_provider_->Resume();
 
   compositor_->StartRendering();
 

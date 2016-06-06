@@ -111,13 +111,13 @@ class ReusableMessageLoopEvent {
 };
 
 // The class is used mainly to inject VideoFrames into WebMediaPlayerMS.
-class MockVideoFrameProvider : public VideoFrameProvider {
+class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
  public:
-  MockVideoFrameProvider(
+  MockMediaStreamVideoRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ReusableMessageLoopEvent* message_loop_controller,
       const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb)
+      const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
       : started_(false),
         task_runner_(task_runner),
         message_loop_controller_(message_loop_controller),
@@ -126,10 +126,10 @@ class MockVideoFrameProvider : public VideoFrameProvider {
         delay_till_next_generated_frame_(
             base::TimeDelta::FromSecondsD(1.0 / 30.0)) {}
 
-  // Implementation of VideoFrameProvider
+  // Implementation of MediaStreamVideoRenderer
   void Start() override;
   void Stop() override;
-  void Play() override;
+  void Resume() override;
   void Pause() override;
 
   // Methods for test use
@@ -141,7 +141,7 @@ class MockVideoFrameProvider : public VideoFrameProvider {
   bool Paused() { return paused_; }
 
  private:
-  ~MockVideoFrameProvider() override {}
+  ~MockMediaStreamVideoRenderer() override {}
 
   // Main function that pushes a frame into WebMediaPlayerMS
   void InjectFrame();
@@ -156,42 +156,43 @@ class MockVideoFrameProvider : public VideoFrameProvider {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ReusableMessageLoopEvent* const message_loop_controller_;
   const base::Closure error_cb_;
-  const VideoFrameProvider::RepaintCB repaint_cb_;
+  const MediaStreamVideoRenderer::RepaintCB repaint_cb_;
 
   std::deque<TestFrame> frames_;
   base::TimeDelta delay_till_next_generated_frame_;
 };
 
-void MockVideoFrameProvider::Start() {
+void MockMediaStreamVideoRenderer::Start() {
   started_ = true;
   paused_ = false;
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&MockVideoFrameProvider::InjectFrame, base::Unretained(this)));
+      base::Bind(&MockMediaStreamVideoRenderer::InjectFrame,
+                 base::Unretained(this)));
 }
 
-void MockVideoFrameProvider::Stop() {
+void MockMediaStreamVideoRenderer::Stop() {
   started_ = false;
   frames_.clear();
 }
 
-void MockVideoFrameProvider::Play() {
+void MockMediaStreamVideoRenderer::Resume() {
   CHECK(started_);
   paused_ = false;
 }
 
-void MockVideoFrameProvider::Pause() {
+void MockMediaStreamVideoRenderer::Pause() {
   CHECK(started_);
   paused_ = true;
 }
 
-void MockVideoFrameProvider::AddFrame(
+void MockMediaStreamVideoRenderer::AddFrame(
     FrameType category,
     const scoped_refptr<media::VideoFrame>& frame) {
   frames_.push_back(std::make_pair(category, frame));
 }
 
-void MockVideoFrameProvider::QueueFrames(
+void MockMediaStreamVideoRenderer::QueueFrames(
     const std::vector<int>& timestamp_or_frame_type,
     bool opaque_frame,
     bool odd_size_frame,
@@ -235,7 +236,7 @@ void MockVideoFrameProvider::QueueFrames(
   }
 }
 
-void MockVideoFrameProvider::InjectFrame() {
+void MockMediaStreamVideoRenderer::InjectFrame() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!started_)
     return;
@@ -271,7 +272,8 @@ void MockVideoFrameProvider::InjectFrame() {
 
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MockVideoFrameProvider::InjectFrame, base::Unretained(this)),
+      base::Bind(&MockMediaStreamVideoRenderer::InjectFrame,
+                 base::Unretained(this)),
       delay_till_next_generated_frame_);
 
   // This will pause the |message_loop_|, and the purpose is to allow the main
@@ -292,16 +294,16 @@ class MockRenderFactory : public MediaStreamRendererFactory {
       : task_runner_(task_runner),
         message_loop_controller_(message_loop_controller) {}
 
-  scoped_refptr<VideoFrameProvider> GetVideoFrameProvider(
+  scoped_refptr<MediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
-      const VideoFrameProvider::RepaintCB& repaint_cb,
+      const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       media::GpuVideoAcceleratorFactories* gpu_factories) override;
 
-  MockVideoFrameProvider* provider() {
-    return static_cast<MockVideoFrameProvider*>(provider_.get());
+  MockMediaStreamVideoRenderer* provider() {
+    return static_cast<MockMediaStreamVideoRenderer*>(provider_.get());
   }
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
@@ -314,19 +316,19 @@ class MockRenderFactory : public MediaStreamRendererFactory {
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<VideoFrameProvider> provider_;
+  scoped_refptr<MediaStreamVideoRenderer> provider_;
   ReusableMessageLoopEvent* const message_loop_controller_;
 };
 
-scoped_refptr<VideoFrameProvider> MockRenderFactory::GetVideoFrameProvider(
+scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const VideoFrameProvider::RepaintCB& repaint_cb,
+    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
-  provider_ = new MockVideoFrameProvider(task_runner_, message_loop_controller_,
-                                         error_cb, repaint_cb);
+  provider_ = new MockMediaStreamVideoRenderer(task_runner_,
+      message_loop_controller_, error_cb, repaint_cb);
 
   return provider_;
 }
@@ -334,8 +336,8 @@ scoped_refptr<VideoFrameProvider> MockRenderFactory::GetVideoFrameProvider(
 // This is the main class coordinating the tests.
 // Basic workflow:
 // 1. WebMediaPlayerMS::Load will generate and start
-// content::VideoFrameProvider.
-// 2. content::VideoFrameProvider will start pushing frames into
+// content::MediaStreamVideoRenderer.
+// 2. content::MediaStreamVideoRenderer will start pushing frames into
 //    WebMediaPlayerMS repeatedly.
 // 3. On WebMediaPlayerMS receiving the first frame, a WebLayer will be created.
 // 4. The WebLayer will call
@@ -345,7 +347,7 @@ scoped_refptr<VideoFrameProvider> MockRenderFactory::GetVideoFrameProvider(
 //    WebMediaPlayerMSCompositor::UpdateCurrentFrame, GetCurrentFrame for
 //    rendering repeatedly.
 // 6. When WebMediaPlayerMS::pause gets called, it should trigger
-//    content::VideoFrameProvider::Pause, and then the provider will stop
+//    content::MediaStreamVideoRenderer::Pause, and then the provider will stop
 //    pushing frames into WebMediaPlayerMS, but instead digesting them;
 //    simultanously, it should call cc::VideoFrameProviderClient::StopRendering,
 //    so cc::VideoFrameProviderClient will stop asking frames from
@@ -375,7 +377,7 @@ class WebMediaPlayerMSTest
         background_rendering_(false) {}
   ~WebMediaPlayerMSTest() override {}
 
-  MockVideoFrameProvider* LoadAndGetFrameProvider(bool algorithm_enabled);
+  MockMediaStreamVideoRenderer* LoadAndGetFrameProvider(bool algorithm_enabled);
 
   // Implementation of WebMediaPlayerClient
   void networkStateChanged() override;
@@ -448,7 +450,7 @@ class WebMediaPlayerMSTest
   bool background_rendering_;
 };
 
-MockVideoFrameProvider* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
+MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
     bool algorithm_enabled) {
   EXPECT_FALSE(!!render_factory_->provider()) << "There should not be a "
                                                  "FrameProvider yet.";
@@ -464,7 +466,7 @@ MockVideoFrameProvider* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
   EXPECT_TRUE(!!compositor_);
   compositor_->SetAlgorithmEnabledForTesting(algorithm_enabled);
 
-  MockVideoFrameProvider* const provider = render_factory_->provider();
+  MockMediaStreamVideoRenderer* const provider = render_factory_->provider();
   EXPECT_TRUE(!!provider);
   EXPECT_TRUE(provider->Started());
 
@@ -550,7 +552,7 @@ TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
   // and verifies that they are produced by WebMediaPlayerMS in appropriate
   // order.
 
-  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(true);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
                   333, 366, 400, 433, 466, 500, 533, 566, 600};
@@ -577,7 +579,7 @@ TEST_F(WebMediaPlayerMSTest, Playing_ErrorFrame) {
   // This tests sends a broken frame to WebMediaPlayerMS, and verifies
   // OnSourceError function works as expected.
 
-  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(false);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
 
   const int kBrokenFrame = static_cast<int>(FrameType::BROKEN_FRAME);
   int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
@@ -609,7 +611,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
   // In the middle of this test, WebMediaPlayerMS::pause will be called, and we
   // are going to verify that during the pause stage, a frame gets freezed, and
   // cc::VideoFrameProviderClient should also be paused.
-  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(false);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
   int tokens[] = {0,   33,  66,  100, 133, kTestBrake, 166, 200, 233, 266,
@@ -649,7 +651,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
   const bool odd_size_frame = testing::get<1>(GetParam());
   // Similary to PlayAndPause test above, this one focuses on testing that
   // WebMediaPlayerMS can be resumed after a period of paused status.
-  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(false);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
   int tokens[] = {0,   33,         66,  100, 133, kTestBrake, 166,
@@ -708,7 +710,7 @@ TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
   // WebMediaPlayerMS without an explicit notification. We should expect that
   // WebMediaPlayerMS can digest old frames, rather than piling frames up and
   // explode.
-  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(true);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
   int tokens[] = {0,   33,         66,  100, 133, kTestBrake, 166,
@@ -754,7 +756,7 @@ TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
   // During this test, the frame size of the input changes.
   // We need to make sure, when sizeChanged() gets called, new size should be
   // returned by GetCurrentSize().
-  MockVideoFrameProvider* provider = LoadAndGetFrameProvider(true);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
                   333, 366, 400, 433, 466, 500, 533, 566, 600};
