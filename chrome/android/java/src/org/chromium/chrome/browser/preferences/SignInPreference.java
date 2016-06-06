@@ -23,8 +23,6 @@ import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
-import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -95,7 +93,7 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
                 }
                 title = TextUtils.isEmpty(cachedName) ? account.name : cachedName;
             }
-            if (ProfileSyncService.get().getAuthError() != GoogleServiceAuthError.State.NONE) {
+            if (SyncPreference.showSyncErrorIcon(getContext())) {
                 setWidgetLayoutResource(R.layout.sync_error_widget);
             } else {
                 setWidgetLayoutResource(0);
