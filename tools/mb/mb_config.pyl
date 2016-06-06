@@ -136,12 +136,12 @@
         'swarming_gn_clang_tot_linux_full_symbols_shared_release',
       'ClangToTLinux tester': 'none',
       'ClangToTLinux (dbg)': 'swarming_clang_tot_shared_debug',
-      'ClangToTLinuxASan': 'swarming_gyp_clang_tot_asan_lsan_static_release',
+      'ClangToTLinuxASan': 'swarming_gn_clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASan tester': 'none',
       'ClangToTLinuxLLD': 'swarming_clang_tot_lld_release_shared',
       'ClangToTLinuxLLD tester': 'none',
       'ClangToTLinuxUBSanVptr':
-        'swarming_gyp_clang_tot_edge_ubsan_no_recover_hack_static_release',
+        'swarming_gn_clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ClangToTLinuxUBSanVptr tester': 'none',
       'ClangToTMac': 'swarming_gyp_clang_tot_minimal_symbols_shared_release',
       'ClangToTMac tester': 'none',
@@ -1762,12 +1762,12 @@
       'x86',
     ],
 
-    'swarming_gyp_clang_tot_asan_lsan_static_release': [
-      'swarming', 'gyp', 'clang_tot', 'asan', 'lsan', 'static', 'release',
+    'swarming_gn_clang_tot_asan_lsan_static_release': [
+      'swarming', 'gn', 'clang_tot', 'asan', 'lsan', 'static', 'release',
     ],
 
-    'swarming_gyp_clang_tot_edge_ubsan_no_recover_hack_static_release': [
-      'swarming', 'gyp', 'clang_tot', 'edge', 'ubsan_no_recover_hack',
+    'swarming_gn_clang_tot_edge_ubsan_no_recover_hack_static_release': [
+      'swarming', 'gn', 'clang_tot', 'edge', 'ubsan_no_recover_hack',
       'static', 'release',
     ],
 
