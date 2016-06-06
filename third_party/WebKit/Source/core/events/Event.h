@@ -242,6 +242,7 @@ private:
     unsigned m_canBubble:1;
     unsigned m_cancelable:1;
     unsigned m_composed:1;
+    unsigned m_isEventTypeScopedInV0:1;
 
     unsigned m_propagationStopped:1;
     unsigned m_immediatePropagationStopped:1;

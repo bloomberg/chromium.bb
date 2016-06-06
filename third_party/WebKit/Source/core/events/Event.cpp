@@ -34,6 +34,23 @@
 
 namespace blink {
 
+static bool isEventTypeScopedInV0(const AtomicString& eventType)
+{
+    // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
+    // Changing this breaks existing sites.
+    // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
+    return eventType == EventTypeNames::abort
+        || eventType == EventTypeNames::change
+        || eventType == EventTypeNames::error
+        || eventType == EventTypeNames::load
+        || eventType == EventTypeNames::reset
+        || eventType == EventTypeNames::resize
+        || eventType == EventTypeNames::scroll
+        || eventType == EventTypeNames::select
+        || eventType == EventTypeNames::selectstart
+        || eventType == EventTypeNames::slotchange;
+}
+
 Event::Event()
     : Event("", false, false)
 {
@@ -55,6 +72,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_canBubble(canBubbleArg)
     , m_cancelable(cancelableArg)
     , m_composed(composedMode == ComposedMode::Composed)
+    , m_isEventTypeScopedInV0(isEventTypeScopedInV0(eventType))
     , m_propagationStopped(false)
     , m_immediatePropagationStopped(false)
     , m_defaultPrevented(false)
@@ -81,20 +99,7 @@ Event::~Event()
 
 bool Event::isScopedInV0() const
 {
-    // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
-    // Changing this breaks existing sites.
-    // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
-    return isTrusted()
-        && (m_type == EventTypeNames::abort
-            || m_type == EventTypeNames::change
-            || m_type == EventTypeNames::error
-            || m_type == EventTypeNames::load
-            || m_type == EventTypeNames::reset
-            || m_type == EventTypeNames::resize
-            || m_type == EventTypeNames::scroll
-            || m_type == EventTypeNames::select
-            || m_type == EventTypeNames::selectstart
-            || m_type == EventTypeNames::slotchange);
+    return isTrusted() && m_isEventTypeScopedInV0;
 }
 
 void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg)
