@@ -8,9 +8,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
@@ -79,13 +82,14 @@ void PumpLoop() {
   // Do it this way instead of RunAllPending to pump loop exactly once
   // (necessary in the presence of timers; see comment in
   // QuitLoopNow).
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&QuitLoopNow));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&QuitLoopNow));
   RunLoop();
 }
 
 void PumpLoopFor(base::TimeDelta time) {
   // Allow the loop to run for the specified amount of time.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&QuitLoopNow), time);
   RunLoop();
 }
@@ -207,10 +211,9 @@ class SyncSchedulerTest : public testing::Test {
 
   // This stops the scheduler synchronously.
   void StopSyncScheduler() {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
-                   weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
+                              weak_ptr_factory_.GetWeakPtr()));
     RunLoop();
   }
 

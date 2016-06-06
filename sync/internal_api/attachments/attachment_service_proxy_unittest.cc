@@ -7,12 +7,15 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -40,10 +43,9 @@ class StubAttachmentService : public AttachmentService,
     CalledOnValidThread();
     Increment();
     std::unique_ptr<AttachmentMap> attachments(new AttachmentMap());
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   AttachmentService::GET_UNSPECIFIED_ERROR,
+        base::Bind(callback, AttachmentService::GET_UNSPECIFIED_ERROR,
                    base::Passed(&attachments)));
   }
 

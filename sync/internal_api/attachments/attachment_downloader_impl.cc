@@ -9,11 +9,13 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -246,7 +248,7 @@ void AttachmentDownloaderImpl::ReportResult(
           download_state.attachment_id, attachment_data)));
     }
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(*iter, result, base::Passed(&attachment)));
   }
 }

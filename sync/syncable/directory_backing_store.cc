@@ -11,10 +11,12 @@
 #include <unordered_set>
 
 #include "base/base64.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -195,8 +197,8 @@ void OnSqliteError(const base::Closure& catastrophic_error_handler,
     // At this point sql::* and DirectoryBackingStore may be on the callstack so
     // don't invoke the error handler directly. Instead, PostTask to this thread
     // to avoid potential reentrancy issues.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           catastrophic_error_handler);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  catastrophic_error_handler);
   }
 }
 

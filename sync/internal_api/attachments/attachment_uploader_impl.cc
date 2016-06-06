@@ -12,14 +12,16 @@
 #include "base/base64.h"
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -264,14 +266,12 @@ void AttachmentUploaderImpl::UploadState::StopAndReportResult(
   UploadCallbackList::const_iterator iter = user_callbacks_.begin();
   UploadCallbackList::const_iterator end = user_callbacks_.end();
   for (; iter != end; ++iter) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(*iter, result, attachment_id));
   }
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AttachmentUploaderImpl::OnUploadStateStopped,
-                 owner_,
-                 attachment_id.GetProto().unique_id()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AttachmentUploaderImpl::OnUploadStateStopped,
+                            owner_, attachment_id.GetProto().unique_id()));
 }
 
 AttachmentUploaderImpl::AttachmentUploaderImpl(

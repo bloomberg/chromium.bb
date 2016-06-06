@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
 #include "sync/api/attachments/attachment_store_backend.h"
@@ -104,12 +106,9 @@ class MockAttachmentStoreBackend
                                          ? AttachmentStore::SUCCESS
                                          : AttachmentStore::UNSPECIFIED_ERROR;
 
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   result,
-                   base::Passed(&attachments),
-                   base::Passed(&unavailable_attachments)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, result, base::Passed(&attachments),
+                              base::Passed(&unavailable_attachments)));
   }
 
   // Respond to Write request with |result|.
@@ -117,8 +116,8 @@ class MockAttachmentStoreBackend
     AttachmentStore::WriteCallback callback = write_callbacks.back();
     write_callbacks.pop_back();
     write_attachments.pop_back();
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, result));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, result));
   }
 
   std::vector<AttachmentIdList> read_ids;
@@ -154,7 +153,7 @@ class MockAttachmentDownloader
       scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
       attachment.reset(new Attachment(Attachment::CreateFromParts(id, data)));
     }
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(download_requests[id], result, base::Passed(&attachment)));
 
@@ -183,7 +182,7 @@ class MockAttachmentUploader
 
   void RespondToUpload(const AttachmentId& id, const UploadResult& result) {
     ASSERT_TRUE(upload_requests.find(id) != upload_requests.end());
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(upload_requests[id], result, id));
     upload_requests.erase(id);
   }

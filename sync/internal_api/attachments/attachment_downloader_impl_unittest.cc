@@ -9,9 +9,11 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -77,13 +79,10 @@ void MockOAuth2TokenService::RespondToAccessTokenRequest(
     access_token = kAccessToken;
     expiration_time = base::Time::Max();
   }
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
-                 last_request_,
-                 error,
-                 access_token,
-                 expiration_time));
+                 last_request_, error, access_token, expiration_time));
 }
 
 void MockOAuth2TokenService::FetchOAuth2Token(

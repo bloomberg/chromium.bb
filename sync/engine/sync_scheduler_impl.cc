@@ -14,6 +14,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/syncer.h"
 #include "sync/protocol/proto_enum_conversions.h"
@@ -746,9 +748,9 @@ void SyncSchedulerImpl::TryCanaryJob() {
 void SyncSchedulerImpl::TrySyncSessionJob() {
   // Post call to TrySyncSessionJobImpl on current thread. Later request for
   // access token will be here.
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &SyncSchedulerImpl::TrySyncSessionJobImpl,
-      weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&SyncSchedulerImpl::TrySyncSessionJobImpl,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncSchedulerImpl::TrySyncSessionJobImpl() {

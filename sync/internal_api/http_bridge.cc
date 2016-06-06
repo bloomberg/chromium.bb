@@ -10,13 +10,16 @@
 #include <vector>
 
 #include "base/bit_cast.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
@@ -379,7 +382,8 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   // End of the line for url_poster_. It lives only on the IO loop.
   // We defer deletion because we're inside a callback from a component of the
   // URLFetcher, so it seems most natural / "polite" to let the stack unwind.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetch_state_.url_poster);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  fetch_state_.url_poster);
   fetch_state_.url_poster = NULL;
 
   // Wake the blocked syncer thread in MakeSynchronousPost.

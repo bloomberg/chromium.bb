@@ -8,8 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment.h"
@@ -105,7 +106,7 @@ AttachmentServiceImpl::GetOrDownloadState::PostResultIfAllRequestsCompleted() {
     // All requests completed. Let's notify consumer.
     GetOrDownloadResult result =
         unavailable_attachments_.empty() ? GET_SUCCESS : GET_UNSPECIFIED_ERROR;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback_, result, base::Passed(&retrieved_attachments_)));
   }

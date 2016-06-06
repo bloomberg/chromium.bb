@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -131,13 +133,10 @@ void MockOAuth2TokenService::FetchOAuth2Token(
     const std::string& client_id,
     const std::string& client_secret,
     const ScopeSet& scopes) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
-                 request->AsWeakPtr(),
-                 response_error_,
-                 response_access_token_,
-                 response_expiration_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
+                            request->AsWeakPtr(), response_error_,
+                            response_access_token_, response_expiration_));
 }
 
 void MockOAuth2TokenService::InvalidateAccessTokenImpl(

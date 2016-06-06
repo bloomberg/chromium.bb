@@ -5,7 +5,9 @@
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -26,8 +28,8 @@ void FakeAttachmentUploader::UploadAttachment(const Attachment& attachment,
 
   UploadResult result = UPLOAD_SUCCESS;
   AttachmentId id = attachment.GetId();
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, result, id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, result, id));
 }
 
 }  // namespace syncer
