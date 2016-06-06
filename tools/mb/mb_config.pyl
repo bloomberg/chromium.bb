@@ -838,18 +838,18 @@
       'mac_perf_bisect_builder': 'gyp_official_goma',
       'mac_retina_perf_bisect': 'gyp_official_goma',
       'mac_retina_perf_cq': 'gyp_official_goma',
-      'win_8_perf_bisect': 'gyp_official_goma_minimal_symbols_x86',
-      'win_fyi_perf_bisect': 'gyp_official_goma_minimal_symbols_x86',
-      'win_perf_bisect': 'gyp_official_goma_minimal_symbols_x86',
-      'win_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_x86',
-      'win_x64_perf_bisect': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64_10_perf_bisect': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64_10_perf_cq': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64_bisect_builder': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64_zen_perf_bisect': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64ati_perf_bisect': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64intel_perf_bisect': 'gyp_official_goma_minimal_symbols_x64',
-      'winx64nvidia_perf_bisect': 'gyp_official_goma_minimal_symbols_x64',
+      'win_8_perf_bisect': 'gn_official_goma_minimal_symbols_x86',
+      'win_fyi_perf_bisect': 'gn_official_goma_minimal_symbols_x86',
+      'win_perf_bisect': 'gn_official_goma_minimal_symbols_x86',
+      'win_perf_bisect_builder': 'gn_official_goma_minimal_symbols_x86',
+      'win_x64_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
+      'winx64_10_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
+      'winx64_10_perf_cq': 'gn_official_goma_minimal_symbols_x64',
+      'winx64_bisect_builder': 'gn_official_goma_minimal_symbols_x64',
+      'winx64_zen_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
+      'winx64ati_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
+      'winx64intel_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
+      'winx64nvidia_perf_bisect': 'gn_official_goma_minimal_symbols_x64',
     },
 
     'tryserver.chromium.win': {
@@ -1327,14 +1327,6 @@
 
     'gyp_official_goma_chromeos': [
       'gyp', 'official', 'goma', 'chromeos',
-    ],
-
-    'gyp_official_goma_minimal_symbols_x64': [
-      'gyp', 'official', 'goma', 'minimal_symbols', 'x64',
-    ],
-
-    'gyp_official_goma_minimal_symbols_x86': [
-      'gyp', 'official', 'goma', 'minimal_symbols', 'x86',
     ],
 
     'gyp_official_syzyasan': [
