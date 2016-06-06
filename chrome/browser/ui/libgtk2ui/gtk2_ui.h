@@ -63,7 +63,7 @@ class Gtk2UI : public views::LinuxUI {
   void GetDefaultFontDescription(
       std::string* family_out,
       int* size_pixels_out,
-      bool* italic_out,
+      int* style_out,
       gfx::Font::Weight* weight_out,
       gfx::FontRenderParams* params_out) const override;
 

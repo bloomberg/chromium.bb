@@ -80,7 +80,7 @@ PlatformFontLinux::PlatformFontLinux() {
   if (!g_default_font.Get()) {
     std::string family = kFallbackFontFamilyName;
     int size_pixels = 12;
-    bool italic = false;
+    int style = Font::NORMAL;
     Font::Weight weight = Font::Weight::NORMAL;
     FontRenderParams params;
 
@@ -95,7 +95,7 @@ PlatformFontLinux::PlatformFontLinux() {
           << "Failed to parse font description " << *default_font_description_;
       params = gfx::GetFontRenderParams(query, &family);
       size_pixels = query.pixel_size;
-      italic = query.style & gfx::Font::ITALIC;
+      style = query.style;
       weight = query.weight;
     }
 #else
@@ -103,14 +103,14 @@ PlatformFontLinux::PlatformFontLinux() {
     // GTK+) for the default UI font.
     const LinuxFontDelegate* delegate = LinuxFontDelegate::instance();
     if (delegate) {
-      delegate->GetDefaultFontDescription(&family, &size_pixels, &italic,
+      delegate->GetDefaultFontDescription(&family, &size_pixels, &style,
                                           &weight, &params);
     }
 #endif
 
-    g_default_font.Get() =
-        new PlatformFontLinux(CreateSkTypeface(italic, weight, &family), family,
-                              size_pixels, italic, weight, params);
+    g_default_font.Get() = new PlatformFontLinux(
+        CreateSkTypeface(style & Font::ITALIC, weight, &family), family,
+        size_pixels, style, weight, params);
   }
 
   InitFromPlatformFont(g_default_font.Get().get());
@@ -123,7 +123,8 @@ PlatformFontLinux::PlatformFontLinux(const std::string& font_name,
   query.pixel_size = font_size_pixels;
   query.weight = Font::Weight::NORMAL;
   InitFromDetails(nullptr, font_name, font_size_pixels,
-                  false, query.weight, gfx::GetFontRenderParams(query, NULL));
+                  Font::NORMAL, query.weight,
+                  gfx::GetFontRenderParams(query, NULL));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,23 +152,20 @@ Font PlatformFontLinux::DeriveFont(int size_delta,
   const int new_size = font_size_pixels_ + size_delta;
   DCHECK_GT(new_size, 0);
 
-  const int current_style = italic_ ? Font::ITALIC : Font::NORMAL;
-
   // If the style changed, we may need to load a new face.
   std::string new_family = font_family_;
   sk_sp<SkTypeface> typeface =
-      (weight == weight_ && style == current_style)
+      (weight == weight_ && style == style_)
           ? typeface_
           : CreateSkTypeface(style, weight, &new_family);
 
   FontRenderParamsQuery query;
   query.families.push_back(new_family);
   query.pixel_size = new_size;
-  // TODO(mboc): Support UNDERLINE on Linux, if possible.
-  query.style = style & Font::ITALIC;
+  query.style = style;
 
   return Font(new PlatformFontLinux(std::move(typeface), new_family, new_size,
-      style & Font::ITALIC, weight, gfx::GetFontRenderParams(query, NULL)));
+      style, weight, gfx::GetFontRenderParams(query, NULL)));
 }
 
 int PlatformFontLinux::GetHeight() {
@@ -195,7 +193,7 @@ int PlatformFontLinux::GetExpectedTextWidth(int length) {
 }
 
 int PlatformFontLinux::GetStyle() const {
-  return italic_ ? Font::ITALIC : Font::NORMAL;
+  return style_;
 }
 
 const std::string& PlatformFontLinux::GetFontName() const {
@@ -218,7 +216,7 @@ const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
     FontRenderParamsQuery query;
     query.families.push_back(font_family_);
     query.pixel_size = font_size_pixels_;
-    query.style = italic_ ? Font::ITALIC : Font::NORMAL;
+    query.style = style_;
     query.weight = weight_;
     query.device_scale_factor = current_scale_factor;
     font_render_params_ = gfx::GetFontRenderParams(query, nullptr);
@@ -233,10 +231,10 @@ const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
 PlatformFontLinux::PlatformFontLinux(sk_sp<SkTypeface> typeface,
                                      const std::string& family,
                                      int size_pixels,
-                                     bool italic,
+                                     int style,
                                      Font::Weight weight,
                                      const FontRenderParams& render_params) {
-  InitFromDetails(std::move(typeface), family, size_pixels, italic, weight,
+  InitFromDetails(std::move(typeface), family, size_pixels, style, weight,
       render_params);
 }
 
@@ -246,17 +244,17 @@ void PlatformFontLinux::InitFromDetails(
     sk_sp<SkTypeface> typeface,
     const std::string& font_family,
     int font_size_pixels,
-    bool italic,
+    int style,
     Font::Weight weight,
     const FontRenderParams& render_params) {
   DCHECK_GT(font_size_pixels, 0);
 
   font_family_ = font_family;
   typeface_ = typeface ? std::move(typeface) :
-      CreateSkTypeface(italic, weight, &font_family_);
+      CreateSkTypeface(style & Font::ITALIC, weight, &font_family_);
 
   font_size_pixels_ = font_size_pixels;
-  italic_ = italic;
+  style_ = style;
   weight_ = weight;
   device_scale_factor_ = GetFontRenderParamsDeviceScaleFactor();
   font_render_params_ = render_params;
@@ -266,7 +264,7 @@ void PlatformFontLinux::InitFromPlatformFont(const PlatformFontLinux* other) {
   typeface_ = other->typeface_;
   font_family_ = other->font_family_;
   font_size_pixels_ = other->font_size_pixels_;
-  italic_ = other->italic_;
+  style_ = other->style_;
   weight_ = other->weight_;
   device_scale_factor_ = other->device_scale_factor_;
   font_render_params_ = other->font_render_params_;
@@ -291,7 +289,8 @@ void PlatformFontLinux::ComputeMetricsIfNecessary() {
     paint.setTypeface(typeface_.get());
     paint.setFakeBoldText(weight_ >= Font::Weight::BOLD &&
                           !typeface_->isBold());
-    paint.setTextSkewX(italic_ && !typeface_->isItalic() ? -SK_Scalar1 / 4 : 0);
+    paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic() ?
+                        -SK_Scalar1/4 : 0);
     SkPaint::FontMetrics metrics;
     paint.getFontMetrics(&metrics);
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);

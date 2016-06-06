@@ -33,11 +33,12 @@ class GFX_EXPORT LinuxFontDelegate {
   // Returns the default font rendering settings.
   virtual FontRenderParams GetDefaultFontRenderParams() const = 0;
 
-  // Returns details about the default UI font.
+  // Returns details about the default UI font. |style_out| holds a bitfield of
+  // gfx::Font::Style values.
   virtual void GetDefaultFontDescription(
       std::string* family_out,
       int* size_pixels_out,
-      bool* italic_out,
+      int* style_out,
       Font::Weight* weight_out,
       FontRenderParams* params_out) const = 0;
 };

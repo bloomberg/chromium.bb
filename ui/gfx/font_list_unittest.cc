@@ -260,15 +260,12 @@ TEST(FontListTest, MAYBE_Fonts_Derive) {
   EXPECT_EQ("Arial|13|italic|bold", FontToString(derived_fonts[0]));
   EXPECT_EQ("Courier New|13|italic|bold", FontToString(derived_fonts[1]));
 
-  // TODO(mboc): Linux has never supported UNDERLINE. Fix this if possible.
-#if !defined(OS_LINUX)
   derived = font_list.Derive(5, Font::UNDERLINE, Font::Weight::BOLD);
   const std::vector<Font>& underline_fonts = derived.GetFonts();
 
   EXPECT_EQ(2U, underline_fonts.size());
   EXPECT_EQ("Arial|13|underline|bold", FontToString(underline_fonts[0]));
   EXPECT_EQ("Courier New|13|underline|bold", FontToString(underline_fonts[1]));
-#endif
 }
 
 // TODO(489354): Enable this on android.

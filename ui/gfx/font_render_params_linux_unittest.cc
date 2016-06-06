@@ -31,7 +31,7 @@ class TestFontDelegate : public LinuxFontDelegate {
   }
   void GetDefaultFontDescription(std::string* family_out,
                                  int* size_pixels_out,
-                                 bool* italic_out,
+                                 int* style_out,
                                  Font::Weight* weight_out,
                                  FontRenderParams* params_out) const override {
     NOTIMPLEMENTED();

@@ -60,7 +60,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   PlatformFontLinux(sk_sp<SkTypeface> typeface,
                     const std::string& family,
                     int size_pixels,
-                    bool italic,
+                    int style,
                     Font::Weight weight,
                     const FontRenderParams& params);
   ~PlatformFontLinux() override;
@@ -71,7 +71,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
       sk_sp<SkTypeface> typeface,
       const std::string& font_family,
       int font_size_pixels,
-      bool italic,
+      int style,
       Font::Weight weight,
       const FontRenderParams& params);
 
@@ -87,7 +87,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   // Skia actually expects a family name and not a font name.
   std::string font_family_;
   int font_size_pixels_;
-  bool italic_;
+  int style_;
   float device_scale_factor_;
 
   // Information describing how the font should be rendered.

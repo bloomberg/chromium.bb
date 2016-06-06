@@ -22,12 +22,12 @@ namespace gfx {
 class TestFontDelegate : public LinuxFontDelegate {
  public:
   TestFontDelegate()
-      : size_pixels_(0), italic_(false), weight_(Font::Weight::NORMAL) {}
+      : size_pixels_(0), style_(Font::NORMAL), weight_(Font::Weight::NORMAL) {}
   ~TestFontDelegate() override {}
 
   void set_family(const std::string& family) { family_ = family; }
   void set_size_pixels(int size_pixels) { size_pixels_ = size_pixels; }
-  void set_italic(int italic) { italic_ = italic; }
+  void set_style(int style) { style_ = style; }
   void set_weight(gfx::Font::Weight weight) { weight_ = weight; }
   void set_params(const FontRenderParams& params) { params_ = params; }
 
@@ -38,12 +38,12 @@ class TestFontDelegate : public LinuxFontDelegate {
 
   void GetDefaultFontDescription(std::string* family_out,
                                  int* size_pixels_out,
-                                 bool* italic_out,
+                                 int* style_out,
                                  Font::Weight* weight_out,
                                  FontRenderParams* params_out) const override {
     *family_out = family_;
     *size_pixels_out = size_pixels_;
-    *italic_out = italic_;
+    *style_out = style_;
     *weight_out = weight_;
     *params_out = params_;
   }
@@ -52,7 +52,7 @@ class TestFontDelegate : public LinuxFontDelegate {
   // Default values to be returned.
   std::string family_;
   int size_pixels_;
-  bool italic_;
+  int style_;
   gfx::Font::Weight weight_;
   FontRenderParams params_;
 
@@ -94,7 +94,7 @@ TEST_F(PlatformFontLinuxTest, DefaultFont) {
 #else
   test_font_delegate_.set_family("Arial");
   test_font_delegate_.set_size_pixels(13);
-  test_font_delegate_.set_italic(false);
+  test_font_delegate_.set_style(Font::NORMAL);
   FontRenderParams params;
   params.antialiasing = false;
   params.hinting = FontRenderParams::HINTING_FULL;
@@ -117,7 +117,7 @@ TEST_F(PlatformFontLinuxTest, DefaultFont) {
 #else
   test_font_delegate_.set_family("Times New Roman");
   test_font_delegate_.set_size_pixels(15);
-  test_font_delegate_.set_italic(true);
+  test_font_delegate_.set_style(gfx::Font::ITALIC);
   test_font_delegate_.set_weight(gfx::Font::Weight::BOLD);
 #endif
   PlatformFontLinux::ReloadDefaultFont();

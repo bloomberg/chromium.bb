@@ -836,12 +836,12 @@ gfx::FontRenderParams Gtk2UI::GetDefaultFontRenderParams() const {
 void Gtk2UI::GetDefaultFontDescription(
     std::string* family_out,
     int* size_pixels_out,
-    bool* italic_out,
+    int* style_out,
     gfx::Font::Weight* weight_out,
     gfx::FontRenderParams* params_out) const {
   *family_out = default_font_family_;
   *size_pixels_out = default_font_size_pixels_;
-  *italic_out = (default_font_style_ & gfx::Font::ITALIC) != 0;
+  *style_out = default_font_style_;
   *weight_out = default_font_weight_;
   *params_out = default_font_render_params_;
 }
