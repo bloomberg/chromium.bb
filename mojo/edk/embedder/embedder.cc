@@ -38,9 +38,16 @@ void SetMaxMessageSize(size_t bytes) {
 }
 
 void ChildProcessLaunched(base::ProcessHandle child_process,
-                          ScopedPlatformHandle server_pipe) {
+                          ScopedPlatformHandle server_pipe,
+                          const std::string& child_token) {
   CHECK(internal::g_core);
-  internal::g_core->AddChild(child_process, std::move(server_pipe));
+  internal::g_core->AddChild(child_process, std::move(server_pipe),
+                             child_token);
+}
+
+void ChildProcessLaunchFailed(const std::string& child_token) {
+  CHECK(internal::g_core);
+  internal::g_core->ChildLaunchFailed(child_token);
 }
 
 void SetParentPipeHandle(ScopedPlatformHandle pipe) {
@@ -126,9 +133,10 @@ ScopedMessagePipeHandle CreateMessagePipe(
   return internal::g_core->CreateMessagePipe(std::move(platform_handle));
 }
 
-ScopedMessagePipeHandle CreateParentMessagePipe(const std::string& token) {
+ScopedMessagePipeHandle CreateParentMessagePipe(
+    const std::string& token, const std::string& child_token) {
   CHECK(internal::g_process_delegate);
-  return internal::g_core->CreateParentMessagePipe(token);
+  return internal::g_core->CreateParentMessagePipe(token, child_token);
 }
 
 ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {

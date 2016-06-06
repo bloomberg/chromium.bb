@@ -53,7 +53,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // Called in the parent process any time a new child is launched.
   void AddChild(base::ProcessHandle process_handle,
-                ScopedPlatformHandle platform_handle);
+                ScopedPlatformHandle platform_handle,
+                const std::string& child_token);
+
+  // Called in the parent process when a child process fails to launch.
+  void ChildLaunchFailed(const std::string& child_token);
 
   // Called in a child process exactly once during early initialization.
   void InitChild(ScopedPlatformHandle platform_handle);
@@ -66,7 +70,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // Creates a message pipe endpoint associated with |token|, which a child
   // holding the token can later locate and connect to.
-  ScopedMessagePipeHandle CreateParentMessagePipe(const std::string& token);
+  ScopedMessagePipeHandle CreateParentMessagePipe(
+      const std::string& token, const std::string& child_token);
 
   // Creates a message pipe endpoint and connects it to a pipe the parent has
   // associated with |token|.

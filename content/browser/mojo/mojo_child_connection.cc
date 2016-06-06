@@ -17,10 +17,11 @@
 namespace content {
 
 MojoChildConnection::MojoChildConnection(const std::string& application_name,
-                                         const std::string& instance_id)
+                                         const std::string& instance_id,
+                                         const std::string& child_token)
     : shell_client_token_(mojo::edk::GenerateRandomToken()) {
   mojo::ScopedMessagePipeHandle shell_client_pipe =
-      mojo::edk::CreateParentMessagePipe(shell_client_token_);
+      mojo::edk::CreateParentMessagePipe(shell_client_token_, child_token);
 
   // Some process types get created before the main message loop. In this case
   // the shell request pipe will simply be closed, and the child can detect

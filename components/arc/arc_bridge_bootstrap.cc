@@ -255,7 +255,8 @@ base::ScopedFD ArcBridgeBootstrapImpl::AcceptInstanceConnection(
   const base::ProcessHandle kUnusedChildProcessHandle = 0;
   mojo::edk::PlatformChannelPair channel_pair;
   mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
-                                  channel_pair.PassServerHandle());
+                                  channel_pair.PassServerHandle(),
+                                  mojo::edk::GenerateRandomToken());
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
       new mojo::edk::PlatformHandleVector{

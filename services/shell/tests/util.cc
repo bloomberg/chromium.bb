@@ -65,8 +65,9 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
                                         primordial_pipe_token);
 
   // Allocate the pipe locally.
+  std::string child_token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle pipe =
-      mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
+      mojo::edk::CreateParentMessagePipe(primordial_pipe_token, child_token);
 
   shell::mojom::ShellClientPtr client;
   client.Bind(
@@ -94,7 +95,8 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
   DCHECK(process->IsValid());
   receiver->SetPID(process->Pid());
   mojo::edk::ChildProcessLaunched(process->Handle(),
-                                  platform_channel_pair.PassServerHandle());
+                                  platform_channel_pair.PassServerHandle(),
+                                  child_token);
   return connection;
 }
 

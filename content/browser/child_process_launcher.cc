@@ -395,6 +395,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     base::CommandLine* cmd_line,
     int child_process_id,
     Client* client,
+    const std::string& mojo_child_token,
     bool terminate_on_shutdown)
     : client_(client),
       termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
@@ -408,6 +409,7 @@ ChildProcessLauncher::ChildProcessLauncher(
 #else
       terminate_child_on_shutdown_(terminate_on_shutdown),
 #endif
+      mojo_child_token_(mojo_child_token),
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
@@ -557,7 +559,8 @@ void ChildProcessLauncher::Notify(ZygoteHandle zygote,
   if (process_.IsValid()) {
     // Set up Mojo IPC to the new process.
     mojo::edk::ChildProcessLaunched(process_.Handle(),
-                                    std::move(mojo_host_platform_handle_));
+                                    std::move(mojo_host_platform_handle_),
+                                    mojo_child_token_);
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -566,6 +569,7 @@ void ChildProcessLauncher::Notify(ZygoteHandle zygote,
   if (process_.IsValid()) {
     client_->OnProcessLaunched();
   } else {
+    mojo::edk::ChildProcessLaunchFailed(mojo_child_token_);
     termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;
     client_->OnProcessLaunchFailed(error_code);
   }

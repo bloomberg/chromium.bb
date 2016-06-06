@@ -83,6 +83,7 @@ class ChildProcessHost {
   // Used to initialize the Mojo IPC channel between parent and child.
   std::unique_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
   mojo::edk::HandlePassingInformation handle_passing_info_;
+  const std::string child_token_;
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.

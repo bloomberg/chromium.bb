@@ -60,8 +60,9 @@ void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
   const base::ProcessHandle kUnusedChildProcessHandle =
       base::kNullProcessHandle;
   mojo::edk::PlatformChannelPair channel_pair;
+  std::string child_token = mojo::edk::GenerateRandomToken();
   mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
-                                  channel_pair.PassServerHandle());
+                                  channel_pair.PassServerHandle(), child_token);
 
   MojoHandle wrapped_handle;
   MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
@@ -75,7 +76,7 @@ void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
 
   std::string token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle server_pipe =
-      mojo::edk::CreateParentMessagePipe(token);
+      mojo::edk::CreateParentMessagePipe(token, child_token);
   if (!server_pipe.is_valid()) {
     LOG(ERROR) << "Invalid pipe";
     callback.Run(mojo::ScopedHandle(), std::string());

@@ -300,6 +300,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's ServiceRegistry.
+  const std::string child_token_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);

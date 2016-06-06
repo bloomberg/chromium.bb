@@ -38,7 +38,7 @@ class ApplicationSetupImpl : public mojom::ApplicationSetup {
 
 }  // namespace
 
-MojoApplicationHost::MojoApplicationHost()
+MojoApplicationHost::MojoApplicationHost(const std::string& child_token)
     : token_(mojo::edk::GenerateRandomToken()) {
 #if defined(OS_ANDROID)
   service_registry_android_ =
@@ -46,7 +46,7 @@ MojoApplicationHost::MojoApplicationHost()
 #endif
 
   mojo::ScopedMessagePipeHandle pipe =
-      mojo::edk::CreateParentMessagePipe(token_);
+      mojo::edk::CreateParentMessagePipe(token_, child_token);
   DCHECK(pipe.is_valid());
   application_setup_.reset(new ApplicationSetupImpl(
       &service_registry_,

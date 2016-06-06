@@ -30,7 +30,7 @@ namespace content {
 // be invoked.
 class CONTENT_EXPORT MojoApplicationHost {
  public:
-  MojoApplicationHost();
+  explicit MojoApplicationHost(const std::string& child_token);
   ~MojoApplicationHost();
 
   // Returns a token to pass to the child process to initialize its

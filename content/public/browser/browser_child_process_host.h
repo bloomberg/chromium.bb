@@ -42,6 +42,14 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
       content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate);
 
+  // Used to create a child process host, with a unique token to identify the
+  // child process to Mojo. |mojo_child_token| should be a unique string
+  // generated using mojo::edk::GenerateRandomToken().
+  static BrowserChildProcessHost* Create(
+      content::ProcessType process_type,
+      BrowserChildProcessHostDelegate* delegate,
+      const std::string& mojo_child_token);
+
   // Returns the child process host with unique id |child_process_id|, or
   // nullptr if it doesn't exist. |child_process_id| is NOT the process ID, but
   // is the same unique ID as |ChildProcessData::id|.

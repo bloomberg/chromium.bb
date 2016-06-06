@@ -116,13 +116,16 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 #error "Not supported yet."
 #endif
 
-  ScopedMessagePipeHandle pipe = CreateParentMessagePipe(pipe_token);
+  std::string child_token = mojo::edk::GenerateRandomToken();
+  ScopedMessagePipeHandle pipe = CreateParentMessagePipe(pipe_token,
+                                                         child_token);
 
   test_child_ =
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
   channel.ChildProcessLaunched();
 
-  ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle());
+  ChildProcessLaunched(test_child_.Handle(), channel.PassServerHandle(),
+                       child_token);
   CHECK(test_child_.IsValid());
 
   return pipe;

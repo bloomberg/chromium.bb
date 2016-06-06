@@ -74,6 +74,7 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
       base::CommandLine* cmd_line,
       int child_process_id,
       Client* client,
+      const std::string& mojo_child_token,
       bool terminate_on_shutdown = true);
   ~ChildProcessLauncher();
 
@@ -157,6 +158,7 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
 
   // Host side platform handle to establish Mojo IPC.
   mojo::edk::ScopedPlatformHandle mojo_host_platform_handle_;
+  const std::string mojo_child_token_;
 
   base::WeakPtrFactory<ChildProcessLauncher> weak_factory_;
 

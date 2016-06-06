@@ -558,7 +558,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       pending_views_(0),
       immediate_sender_(new SafeSenderProxy(this, true)),
       io_thread_sender_(new SafeSenderProxy(this, false)),
-      mojo_application_host_(new MojoApplicationHost),
+      child_token_(mojo::edk::GenerateRandomToken()),
+      mojo_application_host_(new MojoApplicationHost(child_token_)),
       visible_widgets_(0),
       is_process_backgrounded_(false),
       is_initialized_(false),
@@ -694,7 +695,8 @@ bool RenderProcessHostImpl::Init() {
 
   mojo_child_connection_.reset(new MojoChildConnection(
       kRendererMojoApplicationName,
-      base::StringPrintf("%d_%d", id_, instance_id_++)));
+      base::StringPrintf("%d_%d", id_, instance_id_++),
+      child_token_));
 
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
@@ -780,7 +782,7 @@ bool RenderProcessHostImpl::Init() {
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
         new RendererSandboxedProcessLauncherDelegate(channel_.get()), cmd_line,
-        GetID(), this));
+        GetID(), this, child_token_));
 
     fast_shutdown_started_ = false;
   }
@@ -803,7 +805,7 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   mojo_channel_token_ = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle handle =
-      mojo::edk::CreateParentMessagePipe(mojo_channel_token_);
+      mojo::edk::CreateParentMessagePipe(mojo_channel_token_, child_token_);
 
   // Do NOT expand ifdef or run time condition checks here! Synchronous
   // IPCs from browser process are banned. It is only narrowly allowed
@@ -2417,7 +2419,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // RenderProcessExited observers and RenderProcessGone handlers might
   // navigate or perform other actions that require a connection. Ensure that
   // there is one before calling them.
-  mojo_application_host_.reset(new MojoApplicationHost);
+  child_token_ = mojo::edk::GenerateRandomToken();
+  mojo_application_host_.reset(new MojoApplicationHost(child_token_));
 
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(

@@ -47,7 +47,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       public ChildProcessLauncher::Client {
  public:
   BrowserChildProcessHostImpl(content::ProcessType process_type,
-                              BrowserChildProcessHostDelegate* delegate);
+                              BrowserChildProcessHostDelegate* delegate,
+                              const std::string& mojo_child_token);
   ~BrowserChildProcessHostImpl() override;
 
   // Terminates all child processes and deletes each BrowserChildProcessHost
@@ -124,6 +125,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   ChildProcessData data_;
   BrowserChildProcessHostDelegate* delegate_;
   std::unique_ptr<ChildProcessHost> child_process_host_;
+  const std::string mojo_child_token_;
 
   std::unique_ptr<ChildProcessLauncher> child_process_;
 

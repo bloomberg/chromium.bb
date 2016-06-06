@@ -40,7 +40,15 @@ MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
 
 // Called in the parent process for each child process that is launched.
 MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
-    base::ProcessHandle child_process, ScopedPlatformHandle server_pipe);
+    base::ProcessHandle child_process,
+    ScopedPlatformHandle server_pipe,
+    const std::string& child_token);
+
+// Called in the parent process when a child process fails to launch.
+// Exactly one of ChildProcessLaunched() or ChildProcessLaunchFailed() must be
+// called per child process launch attempt.
+MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunchFailed(
+    const std::string& child_token);
 
 // Should be called as early as possible in the child process with the handle
 // that the parent received from ChildProcessLaunched.
@@ -150,9 +158,13 @@ CreateMessagePipe(ScopedPlatformHandle platform_handle);
 
 // Creates a message pipe from a token. A child embedder must also have this
 // token and call CreateChildMessagePipe() with it in order for the pipe to get
-// connected.
+// connected. |child_token| identifies the child process and should be the same
+// as the token passed into ChildProcessLaunched(). If they are different, the
+// returned message pipe will not be signaled of peer closure if the child
+// process dies before establishing connection to the pipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-CreateParentMessagePipe(const std::string& token);
+CreateParentMessagePipe(const std::string& token,
+                        const std::string& child_token);
 
 // Creates a message pipe from a token in a child process. The parent must also
 // have this token and call CreateParentMessagePipe() with it in order for the

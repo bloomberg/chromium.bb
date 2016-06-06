@@ -82,7 +82,16 @@ void NotifyProcessKilled(const ChildProcessData& data, int exit_code) {
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
     content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate) {
-  return new BrowserChildProcessHostImpl(process_type, delegate);
+  return new BrowserChildProcessHostImpl(
+      process_type, delegate, mojo::edk::GenerateRandomToken());
+}
+
+BrowserChildProcessHost* BrowserChildProcessHost::Create(
+    content::ProcessType process_type,
+    BrowserChildProcessHostDelegate* delegate,
+    const std::string& mojo_child_token) {
+  return new BrowserChildProcessHostImpl(
+      process_type, delegate, mojo_child_token);
 }
 
 BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
@@ -124,9 +133,11 @@ void BrowserChildProcessHostImpl::RemoveObserver(
 
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     content::ProcessType process_type,
-    BrowserChildProcessHostDelegate* delegate)
+    BrowserChildProcessHostDelegate* delegate,
+    const std::string& mojo_child_token)
     : data_(process_type),
       delegate_(delegate),
+      mojo_child_token_(mojo_child_token),
       power_monitor_message_broadcaster_(this),
       is_channel_connected_(false),
       notify_child_disconnected_(false) {
@@ -229,6 +240,7 @@ void BrowserChildProcessHostImpl::Launch(
       cmd_line,
       data_.id,
       this,
+      mojo_child_token_,
       terminate_on_shutdown));
 }
 

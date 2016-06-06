@@ -73,8 +73,10 @@ class Driver : public shell::ShellClient,
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);
 
+    std::string child_token = mojo::edk::GenerateRandomToken();
     shell::mojom::ShellClientPtr client =
-        shell::PassShellClientRequestOnCommandLine(&child_command_line);
+        shell::PassShellClientRequestOnCommandLine(&child_command_line,
+                                                   child_token);
     shell::mojom::PIDReceiverPtr receiver;
 
     shell::Identity target("exe:shell_unittest_target",
@@ -96,7 +98,8 @@ class Driver : public shell::ShellClient,
     DCHECK(target_.IsValid());
     receiver->SetPID(target_.Pid());
     mojo::edk::ChildProcessLaunched(target_.Handle(),
-                                    platform_channel_pair.PassServerHandle());
+                                    platform_channel_pair.PassServerHandle(),
+                                    child_token);
   }
 
   bool AcceptConnection(shell::Connection* connection) override {

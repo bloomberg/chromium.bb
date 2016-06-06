@@ -9,6 +9,7 @@
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -72,7 +73,12 @@ class NodeController : public ports::NodeDelegate,
 
   // Connects this node to a child node. This node will initiate a handshake.
   void ConnectToChild(base::ProcessHandle process_handle,
-                      ScopedPlatformHandle platform_handle);
+                      ScopedPlatformHandle platform_handle,
+                      const std::string& child_token);
+
+  // Closes all reserved ports which associated with the child process
+  // |child_token|.
+  void CloseChildPorts(const std::string& child_token);
 
   // Connects this node to a parent node. The parent node will initiate a
   // handshake.
@@ -93,7 +99,8 @@ class NodeController : public ports::NodeDelegate,
 
   // Reserves a local port |port| associated with |token|. A peer holding a copy
   // of |token| can merge one of its own ports into this one.
-  void ReservePort(const std::string& token, const ports::PortRef& port);
+  void ReservePort(const std::string& token, const ports::PortRef& port,
+                   const std::string& child_token);
 
   // Merges a local port |port| into a port reserved by |token| in the parent.
   void MergePortIntoParent(const std::string& token,
@@ -121,8 +128,14 @@ class NodeController : public ports::NodeDelegate,
                                      scoped_refptr<NodeChannel>>;
   using OutgoingMessageQueue = std::queue<Channel::MessagePtr>;
 
+  struct ReservedPort {
+    ports::PortRef port;
+    const std::string child_token;
+  };
+
   void ConnectToChildOnIOThread(base::ProcessHandle process_handle,
-                                ScopedPlatformHandle platform_handle);
+                                ScopedPlatformHandle platform_handle,
+                                ports::NodeName token);
   void ConnectToParentOnIOThread(ScopedPlatformHandle platform_handle);
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
@@ -209,11 +222,14 @@ class NodeController : public ports::NodeDelegate,
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
       pending_peer_messages_;
 
-  // Guards |reserved_ports_|.
+  // Guards |reserved_ports_| and |pending_child_tokens_|.
   base::Lock reserved_ports_lock_;
 
-  // Ports reserved by token.
-  base::hash_map<std::string, ports::PortRef> reserved_ports_;
+  // Ports reserved by token. Key is the port token.
+  base::hash_map<std::string, ReservedPort> reserved_ports_;
+  // TODO(amistry): This _really_ needs to be a bimap. Unfortunately, we don't
+  // have one yet :(
+  std::unordered_map<ports::NodeName, std::string> pending_child_tokens_;
 
   // Guards |pending_port_merges_|.
   base::Lock pending_port_merges_lock_;

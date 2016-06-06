@@ -77,11 +77,11 @@ std::unique_ptr<shell::TestCatalogStore> BuildTestCatalogStore() {
 // mojo. This class is only used on the thread created by BackgroundShell.
 class BackgroundTestState {
  public:
-  BackgroundTestState() {}
+  BackgroundTestState() : child_token_(mojo::edk::GenerateRandomToken()) {}
   ~BackgroundTestState() {}
 
   // Prepares the command line and other setup for connecting the test to mojo.
-  // Must be paired with a clal to ChildProcessLaunched().
+  // Must be paired with a call to ChildProcessLaunched().
   void Connect(base::CommandLine* command_line,
                shell::Shell* shell,
                const std::string& instance,
@@ -103,7 +103,7 @@ class BackgroundTestState {
 #error "Unsupported"
 #endif
     shell::mojom::ShellClientPtr client =
-        shell::PassShellClientRequestOnCommandLine(command_line);
+        shell::PassShellClientRequestOnCommandLine(command_line, child_token_);
 
     std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
     params->set_source(shell::CreateShellIdentity());
@@ -127,11 +127,13 @@ class BackgroundTestState {
     mojo_ipc_channel_->ChildProcessLaunched();
     mojo::edk::ChildProcessLaunched(
         handle, mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
-                    mojo_ipc_channel_->PassServerHandle().release().handle)));
+                    mojo_ipc_channel_->PassServerHandle().release().handle)),
+        child_token_);
   }
 
  private:
   // Used to back the NodeChannel between the parent and child node.
+  const std::string child_token_;
   std::unique_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
 
   mojo::edk::HandlePassingInformation handle_passing_info_;

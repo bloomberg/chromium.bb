@@ -375,6 +375,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   const std::unique_ptr<SafeSenderProxy> immediate_sender_;
   const std::unique_ptr<SafeSenderProxy> io_thread_sender_;
 
+  std::string child_token_;
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 

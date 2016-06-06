@@ -36,6 +36,7 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
@@ -158,7 +159,8 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
 #endif
       started_(false),
       name_(base::ASCIIToUTF16("utility process")),
-      mojo_application_host_(new MojoApplicationHost),
+      child_token_(mojo::edk::GenerateRandomToken()),
+      mojo_application_host_(new MojoApplicationHost(child_token_)),
       weak_ptr_factory_(this) {
 }
 
@@ -250,7 +252,8 @@ bool UtilityProcessHostImpl::StartProcess() {
 
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
-  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this,
+                                                 child_token_));
   process_->SetName(name_);
 
   std::string channel_id = process_->GetHost()->CreateChannel();

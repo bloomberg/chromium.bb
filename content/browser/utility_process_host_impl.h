@@ -119,6 +119,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's ServiceRegistry.
+  const std::string child_token_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
 
   // Used to vend weak pointers, and should always be declared last.

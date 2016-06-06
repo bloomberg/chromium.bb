@@ -169,9 +169,16 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
 }
 
 void Core::AddChild(base::ProcessHandle process_handle,
-                    ScopedPlatformHandle platform_handle) {
+                    ScopedPlatformHandle platform_handle,
+                    const std::string& child_token) {
   GetNodeController()->ConnectToChild(process_handle,
-                                      std::move(platform_handle));
+                                      std::move(platform_handle),
+                                      child_token);
+}
+
+void Core::ChildLaunchFailed(const std::string& child_token) {
+  RequestContext request_context;
+  GetNodeController()->CloseChildPorts(child_token);
 }
 
 void Core::InitChild(ScopedPlatformHandle platform_handle) {
@@ -327,14 +334,14 @@ ScopedMessagePipeHandle Core::CreateMessagePipe(
 }
 
 ScopedMessagePipeHandle Core::CreateParentMessagePipe(
-    const std::string& token) {
+    const std::string& token, const std::string& child_token) {
   RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(
       new MessagePipeDispatcher(GetNodeController(), port0,
                                 kUnknownPipeIdForDebug, 0));
-  GetNodeController()->ReservePort(token, port1);
+  GetNodeController()->ReservePort(token, port1, child_token);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
 }
 

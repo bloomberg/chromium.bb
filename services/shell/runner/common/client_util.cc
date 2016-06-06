@@ -13,13 +13,14 @@
 namespace shell {
 
 mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
-    base::CommandLine* command_line) {
+    base::CommandLine* command_line, const std::string& child_token) {
   std::string token = mojo::edk::GenerateRandomToken();
   command_line->AppendSwitchASCII(switches::kPrimordialPipeToken, token);
 
   mojom::ShellClientPtr client;
   client.Bind(
-      mojom::ShellClientPtrInfo(mojo::edk::CreateParentMessagePipe(token), 0));
+      mojom::ShellClientPtrInfo(
+          mojo::edk::CreateParentMessagePipe(token, child_token), 0));
   return client;
 }
 

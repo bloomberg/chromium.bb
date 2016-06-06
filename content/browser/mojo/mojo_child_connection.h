@@ -27,7 +27,8 @@ class MojoChildConnection {
   // identified to the shell as |application_name|. |instance_id| must be
   // unique among all child connections using the same |application_name|.
   MojoChildConnection(const std::string& application_name,
-                      const std::string& instance_id);
+                      const std::string& instance_id,
+                      const std::string& child_token);
   ~MojoChildConnection();
 
   shell::Connection* connection() const {
