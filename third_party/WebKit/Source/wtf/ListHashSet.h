@@ -1026,7 +1026,7 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher>
 void ListHashSet<T, inlineCapacity, U, V>::trace(VisitorDispatcher visitor)
 {
-    static_assert(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, "ListHashSet does not support weakness");
+    static_assert(HashTraits<T>::weakHandlingFlag == NoWeakHandlingInCollections, "HeapListHashSet does not support weakness, consider using HeapLinkedHashSet instead.");
     // This marks all the nodes and their contents live that can be accessed
     // through the HashTable. That includes m_head and m_tail so we do not have
     // to explicitly trace them here.
