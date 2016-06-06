@@ -14,6 +14,7 @@
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection_ref.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace views {
@@ -46,6 +47,7 @@ class ViewImpl : public mojom::View,
       mus::mojom::WindowTreeClientRequest request) override;
   void ShowInterstitial(const mojo::String& html) override;
   void HideInterstitial() override;
+  void SetResizerSize(const gfx::Size& size) override;
 
   // content::WebContentsDelegate:
   void AddNewContents(content::WebContents* source,
@@ -61,6 +63,8 @@ class ViewImpl : public mojom::View,
                               content::InvalidateTypes changed_flags) override;
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
+  void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
+  gfx::Rect GetRootWindowResizerRect() const override;
 
   // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
@@ -82,6 +86,8 @@ class ViewImpl : public mojom::View,
   std::unique_ptr<content::WebContents> web_contents_;
 
   std::unique_ptr<views::Widget> widget_;
+
+  gfx::Size resizer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewImpl);
 };

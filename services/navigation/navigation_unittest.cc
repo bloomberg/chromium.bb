@@ -46,6 +46,7 @@ class NavigationTest : public shell::test::ShellTest,
                               bool can_go_back,
                               bool can_go_forward) override {}
   void LoadProgressChanged(double progress) override {}
+  void UpdateHoverURL(const GURL& url) override {}
   void ViewCreated(mojom::ViewPtr,
                    mojom::ViewClientRequest,
                    bool,

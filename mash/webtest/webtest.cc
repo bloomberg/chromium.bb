@@ -108,6 +108,7 @@ class UI : public views::WidgetDelegateView,
     GetWidget()->UpdateWindowTitle();
   }
   void LoadProgressChanged(double progress) override {}
+  void UpdateHoverURL(const GURL& url) override {}
   void ViewCreated(navigation::mojom::ViewPtr view,
                    navigation::mojom::ViewClientRequest request,
                    bool is_popup,

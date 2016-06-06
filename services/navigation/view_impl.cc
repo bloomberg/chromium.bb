@@ -95,6 +95,10 @@ void ViewImpl::HideInterstitial() {
     web_view_->GetWebContents()->GetInterstitialPage()->Proceed();
 }
 
+void ViewImpl::SetResizerSize(const gfx::Size& size) {
+  resizer_size_ = size;
+}
+
 void ViewImpl::AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
@@ -139,6 +143,17 @@ void ViewImpl::NavigationStateChanged(content::WebContents* source,
 void ViewImpl::LoadProgressChanged(content::WebContents* source,
                                    double progress) {
   client_->LoadProgressChanged(progress);
+}
+
+void ViewImpl::UpdateTargetURL(content::WebContents* source, const GURL& url) {
+  client_->UpdateHoverURL(url);
+}
+
+gfx::Rect ViewImpl::GetRootWindowResizerRect() const {
+  gfx::Rect bounds = web_view_->GetLocalBounds();
+  return gfx::Rect(bounds.right() - resizer_size_.width(),
+                   bounds.bottom() - resizer_size_.height(),
+                   resizer_size_.width(), resizer_size_.height());
 }
 
 void ViewImpl::OnEmbed(mus::Window* root) {

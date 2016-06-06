@@ -152,6 +152,7 @@ class UI : public views::WidgetDelegateView,
     AddChildView(progress_bar_);
     AddChildView(debug_view_);
     debug_view_->set_view(view_.get());
+    view_->SetResizerSize(gfx::Size(16, 16));
   }
   ~UI() override { browser_->RemoveWindow(GetWidget()); }
 
@@ -293,12 +294,19 @@ class UI : public views::WidgetDelegateView,
                               bool can_go_forward) override {
     EnableButton(back_button_, can_go_back);
     EnableButton(forward_button_, can_go_forward);
-    prompt_->SetText(base::UTF8ToUTF16(url.spec()));
+    current_url_ = url;
+    prompt_->SetText(base::UTF8ToUTF16(current_url_.spec()));
     current_title_ = base::UTF8ToUTF16(title.get());
     GetWidget()->UpdateWindowTitle();
   }
   void LoadProgressChanged(double progress) override {
     progress_bar_->SetProgress(progress);
+  }
+  void UpdateHoverURL(const GURL& url) override {
+    if (url.is_valid())
+      prompt_->SetText(base::UTF8ToUTF16(url.spec()));
+    else
+      prompt_->SetText(base::UTF8ToUTF16(current_url_.spec()));
   }
   void ViewCreated(navigation::mojom::ViewPtr view,
                    navigation::mojom::ViewClientRequest request,
@@ -340,6 +348,7 @@ class UI : public views::WidgetDelegateView,
 
   bool is_loading_ = false;
   base::string16 current_title_;
+  GURL current_url_;
 
   bool showing_debug_view_ = false;
 

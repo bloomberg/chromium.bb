@@ -19,6 +19,8 @@ interface ViewClient {
                          bool can_go_back,
                          bool can_go_forward);
   LoadProgressChanged(double progress);
+  UpdateHoverURL(url.mojom.Url url);
+
   ViewCreated(View view,
               ViewClient& client,
               bool is_popup,
@@ -42,4 +44,8 @@ interface View {
 
   ShowInterstitial(string html);
   HideInterstitial();
+
+  // The resize area is a rectangle in the bottom corner of the view that allows
+  // the top-level window containing the view to be interactively resized.
+  SetResizerSize(gfx.mojom.Size size);
 };
