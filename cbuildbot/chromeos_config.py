@@ -576,7 +576,7 @@ _moblab_boards = frozenset([
     'guado_moblab',
 ])
 
-_nofactory_boards = frozenset([
+_nofactory_boards = _lakitu_boards | frozenset([
     'smaug',
 ])
 
