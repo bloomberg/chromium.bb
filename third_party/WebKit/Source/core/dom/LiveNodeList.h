@@ -24,6 +24,7 @@
 #ifndef LiveNodeList_h
 #define LiveNodeList_h
 
+#include "core/CoreExport.h"
 #include "core/dom/LiveNodeListBase.h"
 #include "core/dom/NodeList.h"
 #include "core/html/CollectionItemsCache.h"
@@ -34,7 +35,7 @@ namespace blink {
 
 class Element;
 
-class LiveNodeList : public NodeList, public LiveNodeListBase {
+class CORE_EXPORT LiveNodeList : public NodeList, public LiveNodeListBase {
     USING_GARBAGE_COLLECTED_MIXIN(LiveNodeList);
 public:
     LiveNodeList(ContainerNode& ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListRootType::Node)

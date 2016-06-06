@@ -749,6 +749,9 @@ String AXObject::name(NameSources* nameSources) const
 
 String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabelledByTraversal, AXObjectSet& visited)
 {
+    if (visited.contains(&axObj) && !inAriaLabelledByTraversal)
+        return String();
+
     AXNameFrom tmpNameFrom;
     return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, tmpNameFrom, nullptr, nullptr);
 }
@@ -803,8 +806,10 @@ String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraver
             if (nameSources)
                 nameSources->last().attributeValue = ariaLabelledby;
 
-            textAlternative = textFromAriaLabelledby(visited, relatedObjects);
-
+            // Operate on a copy of |visited| so that if |nameSources| is not null,
+            // the set of visited objects is preserved unmodified for future calculations.
+            AXObjectSet visitedCopy = visited;
+            textAlternative = textFromAriaLabelledby(visitedCopy, relatedObjects);
             if (!textAlternative.isNull()) {
                 if (nameSources) {
                     NameSource& source = nameSources->last();

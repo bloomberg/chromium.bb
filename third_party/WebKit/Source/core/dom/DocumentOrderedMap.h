@@ -60,7 +60,6 @@ public:
     Element* getElementByMapName(const AtomicString&, const TreeScope*) const;
     HTMLSlotElement* getSlotByName(const AtomicString&, const TreeScope*) const;
     Element* getElementByLowercasedMapName(const AtomicString&, const TreeScope*) const;
-    Element* getElementByLabelForAttribute(const AtomicString&, const TreeScope*) const;
 
     DECLARE_TRACE();
 

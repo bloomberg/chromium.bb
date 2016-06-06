@@ -59,10 +59,6 @@ private:
 
     void focus(const FocusParams&) override;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-
-    void updateLabel(TreeScope&, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
-
     bool m_processingClick;
 };
 

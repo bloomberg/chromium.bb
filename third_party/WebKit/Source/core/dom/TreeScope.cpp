@@ -44,7 +44,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -303,36 +302,6 @@ HeapVector<Member<Element>> TreeScope::elementsFromPoint(int x, int y) const
     return elementsFromHitTestResult(result);
 }
 
-void TreeScope::addLabel(const AtomicString& forAttributeValue, HTMLLabelElement* element)
-{
-    DCHECK(m_labelsByForAttribute);
-    m_labelsByForAttribute->add(forAttributeValue, element);
-}
-
-void TreeScope::removeLabel(const AtomicString& forAttributeValue, HTMLLabelElement* element)
-{
-    DCHECK(m_labelsByForAttribute);
-    m_labelsByForAttribute->remove(forAttributeValue, element);
-}
-
-HTMLLabelElement* TreeScope::labelElementForId(const AtomicString& forAttributeValue)
-{
-    if (forAttributeValue.isEmpty())
-        return nullptr;
-
-    if (!m_labelsByForAttribute) {
-        // Populate the map on first access.
-        m_labelsByForAttribute = DocumentOrderedMap::create();
-        for (HTMLLabelElement& label : Traversal<HTMLLabelElement>::startsAfter(rootNode())) {
-            const AtomicString& forValue = label.fastGetAttribute(forAttr);
-            if (!forValue.isEmpty())
-                addLabel(forValue, &label);
-        }
-    }
-
-    return toHTMLLabelElement(m_labelsByForAttribute->getElementByLabelForAttribute(forAttributeValue, this));
-}
-
 DOMSelection* TreeScope::getSelection() const
 {
     if (!rootNode().document().frame())
@@ -534,7 +503,6 @@ DEFINE_TRACE(TreeScope)
     visitor->trace(m_selection);
     visitor->trace(m_elementsById);
     visitor->trace(m_imageMapsByName);
-    visitor->trace(m_labelsByForAttribute);
     visitor->trace(m_scopedStyleResolver);
     visitor->trace(m_radioButtonGroupScope);
 }

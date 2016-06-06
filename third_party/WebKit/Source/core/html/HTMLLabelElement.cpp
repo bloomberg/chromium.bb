@@ -228,28 +228,9 @@ void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)
         HTMLElement::accessKeyAction(sendMouseEvents);
 }
 
-void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
-{
-    if (!inShadowIncludingDocument())
-        return;
-
-    if (oldForAttributeValue == newForAttributeValue)
-        return;
-
-    if (!oldForAttributeValue.isEmpty())
-        scope.removeLabel(oldForAttributeValue, this);
-    if (!newForAttributeValue.isEmpty())
-        scope.addLabel(newForAttributeValue, this);
-}
-
 Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
-    if (insertionPoint->isInTreeScope()) {
-        TreeScope& scope = insertionPoint->treeScope();
-        if (scope == treeScope() && scope.shouldCacheLabelsByForAttribute())
-            updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
-    }
 
     // Trigger for elements outside of forms.
     if (!formOwner() && insertionPoint->inShadowIncludingDocument())
@@ -260,23 +241,8 @@ Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode*
 
 void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->isInTreeScope() && treeScope() == document()) {
-        TreeScope& treeScope = insertionPoint->treeScope();
-        if (treeScope.shouldCacheLabelsByForAttribute())
-            updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
-    }
     HTMLElement::removedFrom(insertionPoint);
     document().removeFormAssociation(this);
-}
-
-void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const AtomicString& oldValue, const AtomicString& attributeValue)
-{
-    if (attributeName == forAttr) {
-        TreeScope& scope = treeScope();
-        if (scope.shouldCacheLabelsByForAttribute())
-            updateLabel(scope, oldValue, attributeValue);
-    }
-    HTMLElement::parseAttribute(attributeName, oldValue, attributeValue);
 }
 
 } // namespace blink

@@ -112,15 +112,14 @@ test(function(t) {
 
 <div class="container">
     <label for="text9">label-for-text9</label>
-    <label>label-wrapping-text9
-        <input id="text9" type="text" title="text9-title" placeholder="text9-placeholder">
-    </label>
+    <label>label-wrapping-text9<input id="text9" type="text" title="text9-title" placeholder="text9-placeholder"></label>
 </div>
 
 <script>
 test(function(t) {
     var axTextInput9 = accessibilityController.accessibleElementById("text9");
-    assert_equals(axTextInput9.name, "label-for-text9");
+    assert_equals(axTextInput9.name,
+                  "label-for-text9 label-wrapping-text9");
     assert_equals(axTextInput9.nameFrom, "relatedElement");
 }, "Text input with title, placeholder, label-for and label-wrapped");
 </script>
@@ -140,6 +139,20 @@ test(function(t) {
 }, "Text input with placeholder and label-wrapped");
 </script>
 
+<div class="container">
+    <input id="text11" type="text">
+    <label for="text11">first-label-for-text11</label>
+    <label for="text11">second-label-for-text11</label>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput11 = accessibilityController.accessibleElementById("text11");
+    assert_equals(axTextInput11.name,
+                  "first-label-for-text11 second-label-for-text11");
+    assert_equals(axTextInput11.nameFrom, "relatedElement");
+}, "Text input with multiple label-for");
+</script>
 
 <script>
 if (window.testRunner)
