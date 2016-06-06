@@ -123,9 +123,34 @@ private:
         barrier->doEnterSafePoint(state, stackEnd);
     }
 
-    volatile int m_canResume;
+    // |m_unparkedThreadCount| tracks amount of unparked threads. It is
+    // positive if and only if a thread has requested the other threads
+    // to park themselves at safe-points in preparation for a GC.
+    //
+    // The last thread to park itself will make the counter hit zero
+    // and should notify GC-requesting thread that it is safe to proceed.
+    //
+    // If no other thread is waiting for other threads to park then
+    // this counter can be negative: if N threads are at safe-points
+    // the counter will be -N.
     volatile int m_unparkedThreadCount;
+
+    // |m_parkingRequested| is used to control the transition of threads parked
+    // at a safepoint back to running state. In the event a thread requests
+    // another GC, threads that have yet to leave their safepoint (due to lock
+    // contention, scheduling etc), shouldn't be allowed to leave, but continue
+    // being parked when they do end up getting to run.
+    //
+    // |m_parkingRequested| is set when parkOthers() runs, and cleared by
+    // resumeOthers(), when the global GC steps have completed.
+    //
+    // Threads that were parked after they were requested to and then signalled,
+    // check that no other thread has made another parking request when attempting
+    // to resume in doPark().
+    volatile int m_parkingRequested;
+
     Mutex m_mutex;
+
     ThreadCondition m_parked;
     ThreadCondition m_resume;
 };

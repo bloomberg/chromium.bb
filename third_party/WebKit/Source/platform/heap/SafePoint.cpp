@@ -20,8 +20,8 @@ static double lockingTimeout()
 }
 
 SafePointBarrier::SafePointBarrier()
-    : m_canResume(1)
-    , m_unparkedThreadCount(0)
+    : m_unparkedThreadCount(0)
+    , m_parkingRequested(0)
 {
 }
 
@@ -40,7 +40,7 @@ bool SafePointBarrier::parkOthers()
 
     MutexLocker locker(m_mutex);
     atomicAdd(&m_unparkedThreadCount, threads.size());
-    releaseStore(&m_canResume, 0);
+    releaseStore(&m_parkingRequested, 1);
 
     for (ThreadState* state : threads) {
         if (state == current)
@@ -68,7 +68,7 @@ void SafePointBarrier::resumeOthers(bool barrierLocked)
     ThreadState* current = ThreadState::current();
     const ThreadStateSet& threads = current->heap().threads();
     atomicSubtract(&m_unparkedThreadCount, threads.size());
-    releaseStore(&m_canResume, 1);
+    releaseStore(&m_parkingRequested, 0);
 
     if (UNLIKELY(barrierLocked)) {
         m_resume.broadcast();
@@ -86,7 +86,7 @@ void SafePointBarrier::resumeOthers(bool barrierLocked)
 void SafePointBarrier::checkAndPark(ThreadState* state, SafePointAwareMutexLocker* locker)
 {
     ASSERT(!state->sweepForbidden());
-    if (!acquireLoad(&m_canResume)) {
+    if (acquireLoad(&m_parkingRequested)) {
         // If we are leaving the safepoint from a SafePointAwareMutexLocker
         // call out to release the lock before going to sleep. This enables the
         // lock to be acquired in the sweep phase, e.g. during weak processing
@@ -116,7 +116,7 @@ void SafePointBarrier::doPark(ThreadState* state, intptr_t* stackEnd)
     MutexLocker locker(m_mutex);
     if (!atomicDecrement(&m_unparkedThreadCount))
         m_parked.signal();
-    while (!acquireLoad(&m_canResume))
+    while (acquireLoad(&m_parkingRequested))
         m_resume.wait(m_mutex);
     atomicIncrement(&m_unparkedThreadCount);
 }
@@ -125,14 +125,6 @@ void SafePointBarrier::doEnterSafePoint(ThreadState* state, intptr_t* stackEnd)
 {
     state->recordStackEnd(stackEnd);
     state->copyStackUntilSafePointScope();
-    // m_unparkedThreadCount tracks amount of unparked threads. It is
-    // positive if and only if we have requested other threads to park
-    // at safe-points in preparation for GC. The last thread to park
-    // itself will make the counter hit zero and should notify GC thread
-    // that it is safe to proceed.
-    // If no other thread is waiting for other threads to park then
-    // this counter can be negative: if N threads are at safe-points
-    // the counter will be -N.
     if (!atomicDecrement(&m_unparkedThreadCount)) {
         MutexLocker locker(m_mutex);
         m_parked.signal(); // Safe point reached.
