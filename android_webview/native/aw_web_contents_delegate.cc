@@ -14,10 +14,12 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -158,7 +160,7 @@ void AwWebContentsDelegate::AddNewContents(WebContents* source,
     // window, so we're done with the WebContents now. We use
     // DeleteSoon as WebContentsImpl may call methods on |new_contents|
     // after this method returns.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, new_contents);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, new_contents);
   }
 
   if (was_blocked) {

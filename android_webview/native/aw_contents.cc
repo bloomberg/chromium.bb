@@ -45,12 +45,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -968,7 +970,8 @@ void AwContents::SetPendingWebContentsForPopup(
     // TODO(benm): Support holding multiple pop up window requests.
     LOG(WARNING) << "Blocking popup window creation as an outstanding "
                  << "popup window is still pending.";
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, pending.release());
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                    pending.release());
     return;
   }
   pending_contents_.reset(new AwContents(std::move(pending)));
