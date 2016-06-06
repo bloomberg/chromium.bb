@@ -13,21 +13,42 @@
 
 namespace ash {
 
-WmShelfAura::WmShelfAura(Shelf* shelf)
-    : shelf_(shelf), shelf_layout_manager_(shelf->shelf_layout_manager()) {
+WmShelfAura::WmShelfAura() {}
+
+WmShelfAura::~WmShelfAura() {}
+
+void WmShelfAura::SetShelfLayoutManager(
+    ShelfLayoutManager* shelf_layout_manager) {
+  DCHECK(!shelf_layout_manager_);
+  shelf_layout_manager_ = shelf_layout_manager;
   shelf_layout_manager_->AddObserver(this);
+}
+
+void WmShelfAura::SetShelf(Shelf* shelf) {
+  DCHECK(!shelf_);
+  shelf_ = shelf;
   shelf_->AddIconObserver(this);
 }
 
-WmShelfAura::~WmShelfAura() {
-  shelf_->RemoveIconObserver(this);
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->RemoveObserver(this);
+void WmShelfAura::Shutdown() {
+  if (shelf_) {
+    shelf_->RemoveIconObserver(this);
+    shelf_ = nullptr;
+  }
+
+  ResetShelfLayoutManager();
 }
 
 // static
 Shelf* WmShelfAura::GetShelf(WmShelf* shelf) {
   return static_cast<WmShelfAura*>(shelf)->shelf_;
+}
+
+void WmShelfAura::ResetShelfLayoutManager() {
+  if (!shelf_layout_manager_)
+    return;
+  shelf_layout_manager_->RemoveObserver(this);
+  shelf_layout_manager_ = nullptr;
 }
 
 WmWindow* WmShelfAura::GetWindow() {
@@ -69,8 +90,7 @@ void WmShelfAura::RemoveObserver(WmShelfObserver* observer) {
 }
 
 void WmShelfAura::WillDeleteShelfLayoutManager() {
-  shelf_layout_manager_->RemoveObserver(this);
-  shelf_layout_manager_ = nullptr;
+  ResetShelfLayoutManager();
 }
 
 void WmShelfAura::OnBackgroundUpdated(

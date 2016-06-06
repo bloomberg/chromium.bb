@@ -78,9 +78,7 @@ AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {
 }
 
 WmShelf* WmRootWindowControllerAura::GetShelf() {
-  return root_window_controller_->shelf_widget()
-             ? root_window_controller_->shelf_widget()->shelf()->wm_shelf()
-             : nullptr;
+  return root_window_controller_->wm_shelf_aura();
 }
 
 WmWindow* WmRootWindowControllerAura::GetWindow() {

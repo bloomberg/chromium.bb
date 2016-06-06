@@ -15,6 +15,7 @@ class ASH_EXPORT WorkspaceLayoutManagerDelegate {
   virtual ~WorkspaceLayoutManagerDelegate() {}
 
   // Called when the visibility of the shelf needs to be updated.
+  // TODO(jamescook): Eliminate this and use WmShelf directly.
   virtual void UpdateShelfVisibility() = 0;
 
   // Called when the fullscreen state has changed to |is_fullscreen|.

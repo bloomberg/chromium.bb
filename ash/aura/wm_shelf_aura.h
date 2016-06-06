@@ -22,12 +22,21 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
                                public ShelfLayoutManagerObserver,
                                public ShelfIconObserver {
  public:
-  explicit WmShelfAura(Shelf* shelf);
+  WmShelfAura();
   ~WmShelfAura() override;
+
+  // This object is initialized in multiple steps as the RootWindowController
+  // constructs the components of the shelf.
+  void SetShelfLayoutManager(ShelfLayoutManager* shelf_layout_manager);
+  void SetShelf(Shelf* shelf);
+
+  void Shutdown();
 
   static Shelf* GetShelf(WmShelf* shelf);
 
  private:
+  void ResetShelfLayoutManager();
+
   // WmShelf:
   WmWindow* GetWindow() override;
   ShelfAlignment GetAlignment() const override;
@@ -48,11 +57,13 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   // ShelfIconObserver:
   void OnShelfIconPositionsChanged() override;
 
-  Shelf* shelf_;
+  // May be null during login.
+  Shelf* shelf_ = nullptr;
+
+  // Cached separately because it may be destroyed before |shelf_|.
+  ShelfLayoutManager* shelf_layout_manager_ = nullptr;
+
   base::ObserverList<WmShelfObserver> observers_;
-  // ShelfLayoutManager is cached separately as it may be destroyed before
-  // WmShelfAura.
-  ShelfLayoutManager* shelf_layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShelfAura);
 };

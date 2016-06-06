@@ -40,7 +40,6 @@ class FocusCycler;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
-class WmShelfAura;
 
 namespace test {
 class ShelfTestAPI;
@@ -155,12 +154,9 @@ class ASH_EXPORT Shelf {
   // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
-  WmShelfAura* wm_shelf() { return wm_shelf_.get(); }
-
  private:
   friend class test::ShelfTestAPI;
 
-  std::unique_ptr<WmShelfAura> wm_shelf_;
   ShelfDelegate* delegate_;
   ShelfWidget* shelf_widget_;
   ShelfView* shelf_view_;

@@ -403,12 +403,12 @@ void RootWindowController::ShowShelf() {
 void RootWindowController::CreateShelf() {
   if (shelf_widget_->shelf())
     return;
-  shelf_widget_->CreateShelf();
+  shelf_widget_->CreateShelf(wm_shelf_aura_.get());
 
   if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(shelf_widget_->shelf()->wm_shelf());
+    panel_layout_manager_->SetShelf(wm_shelf_aura_.get());
   if (docked_layout_manager_) {
-    docked_layout_manager_->SetShelf(shelf_widget_->shelf()->wm_shelf());
+    docked_layout_manager_->SetShelf(wm_shelf_aura_.get());
     if (shelf_widget_->shelf_layout_manager())
       docked_layout_manager_->AddObserver(
           shelf_widget_->shelf_layout_manager());
@@ -499,6 +499,8 @@ void RootWindowController::CloseChildWindows() {
 
   if (shelf_widget_)
     shelf_widget_->Shutdown();
+
+  wm_shelf_aura_->Shutdown();
 
   // Close background widget first as it depends on tooltip.
   wallpaper_controller_.reset();
@@ -663,6 +665,7 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 
 RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host),
+      wm_shelf_aura_(new WmShelfAura),
       docked_layout_manager_(NULL),
       panel_layout_manager_(NULL),
       touch_hud_debug_(NULL),
@@ -762,6 +765,7 @@ void RootWindowController::InitLayoutManagers() {
       WmWindowAura::Get(GetContainer(kShellWindowId_StatusContainer));
   shelf_widget_.reset(new ShelfWidget(shelf_container, status_container,
                                       workspace_controller()));
+  wm_shelf_aura_->SetShelfLayoutManager(shelf_widget_->shelf_layout_manager());
   workspace_layout_manager_delegate->set_shelf(
       shelf_widget_->shelf_layout_manager());
 

@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_widget.h"
 
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -715,12 +716,15 @@ bool ShelfWidget::GetDimsShelf() const {
   return delegate_view_->GetDimmed();
 }
 
-void ShelfWidget::CreateShelf() {
+void ShelfWidget::CreateShelf(WmShelfAura* wm_shelf_aura) {
   DCHECK(!shelf_);
 
   Shell* shell = Shell::GetInstance();
   ShelfDelegate* delegate = shell->GetShelfDelegate();
   shelf_.reset(new Shelf(shell->shelf_model(), delegate, this));
+  // Must be initialized before the delegate is notified because the delegate
+  // may try to access the WmShelf.
+  wm_shelf_aura->SetShelf(shelf_.get());
   delegate->OnShelfCreated(shelf_.get());
 
   SetFocusCycler(shell->focus_cycler());

@@ -67,6 +67,7 @@ class SystemModalContainerLayoutManager;
 class SystemTray;
 class TouchHudDebug;
 class TouchHudProjection;
+class WmShelfAura;
 class WmWindow;
 class WorkspaceController;
 
@@ -117,6 +118,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   AlwaysOnTopController* always_on_top_controller() {
     return always_on_top_controller_.get();
   }
+
+  WmShelfAura* wm_shelf_aura() const { return wm_shelf_aura_.get(); }
 
   // Access the shelf widget associated with this root window controller,
   // NULL if no such shelf exists.
@@ -186,6 +189,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void CreateShelf();
 
   // Returns the shelf controller for this root window.
+  // TODO(jamescook): Remove this and use WmRootWindowController::GetShelf().
   Shelf* GetShelf() const;
 
   // Called when the login status changes after login (such as lock/unlock).
@@ -274,6 +278,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<RootWindowControllerCommon> root_window_controller_common_;
 
   std::unique_ptr<StackingController> stacking_controller_;
+
+  // The shelf controller for this root window. Exists for the entire lifetime
+  // of the RootWindowController so that it is safe for observers to be added
+  // to it during construction of the shelf widget and status tray.
+  std::unique_ptr<WmShelfAura> wm_shelf_aura_;
 
   // The shelf widget for this root window.
   std::unique_ptr<ShelfWidget> shelf_widget_;

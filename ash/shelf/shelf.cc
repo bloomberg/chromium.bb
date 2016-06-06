@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "ash/aura/wm_shelf_aura.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/focus_cycler.h"
@@ -51,9 +50,6 @@ Shelf::Shelf(ShelfModel* shelf_model,
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
   shelf_widget_->GetNativeView()->SetName(kNativeViewName);
-  // This has to be done after the ShelfWidget and ShelfLayoutManager have
-  // been created.
-  wm_shelf_.reset(new WmShelfAura(this));
 }
 
 Shelf::~Shelf() {

@@ -20,6 +20,7 @@ class FocusCycler;
 class Shelf;
 class ShelfLayoutManager;
 class StatusAreaWidget;
+class WmShelfAura;
 class WmWindow;
 class WorkspaceController;
 
@@ -57,7 +58,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   Shelf* shelf() const { return shelf_.get(); }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
-  void CreateShelf();
+  void CreateShelf(WmShelfAura* wm_shelf_aura);
   void PostCreateShelf();
 
   // Set visibility of the shelf.
