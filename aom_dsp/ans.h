@@ -28,6 +28,7 @@ typedef uint8_t AnsP8;
 #define ANS_P8_SHIFT 8
 typedef uint16_t AnsP10;
 #define ANS_P10_PRECISION 1024u
+#define RANS_PROB_BITS 10
 
 #define RANS_PRECISION ANS_P10_PRECISION
 
