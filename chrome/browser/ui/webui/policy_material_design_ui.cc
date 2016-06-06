@@ -86,7 +86,7 @@ void PolicyMaterialDesignUIHandler::SendPolicyNames() const {
   for (size_t tag = 0; tag < policy::RISK_TAG_COUNT; ++tag)
     tags.AppendString(kPolicyRiskTags[tag].key);
 
-  web_ui()->CallJavascriptFunction("policy.Page.setPolicyGroups", tags);
+  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyGroups", tags);
   PolicyUIHandler::SendPolicyNames();
 }
 

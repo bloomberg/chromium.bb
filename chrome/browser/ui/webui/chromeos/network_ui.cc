@@ -112,8 +112,8 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     base::ListValue return_arg_list;
     return_arg_list.Append(dictionary_copy.release());
-    web_ui()->CallJavascriptFunction("NetworkUI.getShillPropertiesResult",
-                                     return_arg_list);
+    web_ui()->CallJavascriptFunctionUnsafe("NetworkUI.getShillPropertiesResult",
+                                           return_arg_list);
   }
 
   void ErrorCallback(
@@ -126,8 +126,8 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid);
     dictionary->SetStringWithoutPathExpansion("ShillError", error_name);
     return_arg_list.Append(dictionary.release());
-    web_ui()->CallJavascriptFunction("NetworkUI.getShillPropertiesResult",
-                                     return_arg_list);
+    web_ui()->CallJavascriptFunctionUnsafe("NetworkUI.getShillPropertiesResult",
+                                           return_arg_list);
   }
 
   base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_;

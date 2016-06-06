@@ -275,7 +275,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     PrivetRegisterOperation* operation,
     const std::string& token,
     const GURL& url) {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.onRegistrationConfirmedOnPrinter");
   if (!ContainsKey(device_descriptions_, current_http_client_->GetName())) {
     SendRegisterError();
@@ -304,13 +304,13 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
   if (reason == PrivetRegisterOperation::FAILURE_JSON_ERROR &&
       json->GetString(cloud_print::kPrivetKeyError, &error)) {
     if (error == cloud_print::kPrivetErrorTimeout) {
-        web_ui()->CallJavascriptFunction(
-            "local_discovery.onRegistrationTimeout");
+      web_ui()->CallJavascriptFunctionUnsafe(
+          "local_discovery.onRegistrationTimeout");
       return;
     }
     if (error == cloud_print::kPrivetErrorCancel) {
-      web_ui()->CallJavascriptFunction(
-            "local_discovery.onRegistrationCanceledPrinter");
+      web_ui()->CallJavascriptFunctionUnsafe(
+          "local_discovery.onRegistrationCanceledPrinter");
       return;
     }
   }
@@ -357,12 +357,12 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     info.SetString(kDictionaryKeyType, description.type);
     info.SetBoolean(kDictionaryKeyIsWifi, false);
 
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
   } else {
     std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
 
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, *null_value);
   }
 }
@@ -372,12 +372,13 @@ void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
   std::unique_ptr<base::Value> null_value = base::Value::CreateNullValue();
   base::StringValue name_value(kKeyPrefixMDns + name);
 
-  web_ui()->CallJavascriptFunction("local_discovery.onUnregisteredDeviceUpdate",
-                                   name_value, *null_value);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "local_discovery.onUnregisteredDeviceUpdate", name_value, *null_value);
 }
 
 void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
-  web_ui()->CallJavascriptFunction("local_discovery.onDeviceCacheFlushed");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "local_discovery.onDeviceCacheFlushed");
   privet_lister_->DiscoverNewDevices(false);
 }
 
@@ -406,7 +407,8 @@ void LocalDiscoveryUIHandler::GoogleSignedOut(const std::string& account_id,
 }
 
 void LocalDiscoveryUIHandler::SendRegisterError() {
-  web_ui()->CallJavascriptFunction("local_discovery.onRegistrationFailed");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "local_discovery.onRegistrationFailed");
 }
 
 void LocalDiscoveryUIHandler::SendRegisterDone(
@@ -433,8 +435,8 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
   device_value.SetString(kDictionaryKeyDescription, device.description);
   device_value.SetString(kDictionaryKeyServiceName, service_name);
 
-  web_ui()->CallJavascriptFunction("local_discovery.onRegistrationSuccess",
-                                   device_value);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "local_discovery.onRegistrationSuccess", device_value);
 }
 
 void LocalDiscoveryUIHandler::SetIsVisible(bool visible) {
@@ -471,8 +473,8 @@ void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
 void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
   base::FundamentalValue logged_in_value(!GetSyncAccount().empty());
   base::FundamentalValue is_supervised_value(IsUserSupervisedOrOffTheRecord());
-  web_ui()->CallJavascriptFunction(
-      "local_discovery.setUserLoggedIn", logged_in_value, is_supervised_value);
+  web_ui()->CallJavascriptFunctionUnsafe("local_discovery.setUserLoggedIn",
+                                         logged_in_value, is_supervised_value);
 }
 
 void LocalDiscoveryUIHandler::CheckListingDone() {
@@ -481,7 +483,7 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
     return;
 
   if (succeded_list_count_ <= 0) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "local_discovery.onCloudDeviceListUnavailable");
     return;
   }
@@ -494,7 +496,7 @@ void LocalDiscoveryUIHandler::CheckListingDone() {
 
   ReadDevicesList(cloud_devices_, local_ids, &devices_list);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.onCloudDeviceListAvailable", devices_list);
   cloud_print_printer_list_.reset();
 }
@@ -597,7 +599,7 @@ void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
   }
   base::StringValue label(label_str);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.setupCloudPrintConnectorSection", disabled, label,
       allowed);
 }

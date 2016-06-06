@@ -721,9 +721,9 @@ void ContentSettingsHandler::InitializePage() {
   // TODO(mgiuca): Remove this function and the global setting UI
   // (https://crbug.com/610900). Then, delete all the per-site data and remove
   // this content setting entirely (https://crbug.com/591896).
-  web_ui()->CallJavascriptFunction("ContentSettings.setExclusiveAccessVisible",
-                                   base::FundamentalValue(true),
-                                   base::FundamentalValue(false));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ContentSettings.setExclusiveAccessVisible", base::FundamentalValue(true),
+      base::FundamentalValue(false));
 }
 
 void ContentSettingsHandler::OnContentSettingChanged(
@@ -754,7 +754,7 @@ void ContentSettingsHandler::Observe(
           HostContentSettingsMapFactory::GetForProfile(profile);
       if (profile->IsOffTheRecord() &&
           observer_.IsObserving(settings_map)) {
-        web_ui()->CallJavascriptFunction(
+        web_ui()->CallJavascriptFunctionUnsafe(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
         observer_.Remove(settings_map);
       }
@@ -838,7 +838,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
       site_settings::ContentSettingsTypeToGroupName(type) + ".managedBy",
       provider_id);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
@@ -864,9 +864,8 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
   base::FundamentalValue handlers_enabled(
       GetProtocolHandlerRegistry()->enabled());
 
-  web_ui()->CallJavascriptFunction(
-      "ContentSettings.updateHandlersEnabledRadios",
-      handlers_enabled);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ContentSettings.updateHandlersEnabledRadios", handlers_enabled);
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
@@ -970,8 +969,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   base::StringValue type_string(site_settings::ContentSettingsTypeToGroupName(
       CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
-                                   type_string, exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
+                                         type_string, exceptions);
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
@@ -1010,8 +1009,8 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 
   base::StringValue type_string(site_settings::ContentSettingsTypeToGroupName(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
-  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
-                                   type_string, exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
+                                         type_string, exceptions);
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
@@ -1079,8 +1078,8 @@ void ContentSettingsHandler::UpdateChooserExceptionsViewFromModel(
   base::ListValue exceptions;
   GetChooserExceptionsFromProfile(false, chooser_type, &exceptions);
   base::StringValue type_string(chooser_type.name);
-  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
-                                   exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
+                                         type_string, exceptions);
 
   UpdateOTRChooserExceptionsViewFromModel(chooser_type);
 }
@@ -1093,8 +1092,8 @@ void ContentSettingsHandler::UpdateOTRChooserExceptionsViewFromModel(
   base::ListValue exceptions;
   GetChooserExceptionsFromProfile(true, chooser_type, &exceptions);
   base::StringValue type_string(chooser_type.name);
-  web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
-                                   type_string, exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setOTRExceptions",
+                                         type_string, exceptions);
 }
 
 void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
@@ -1158,8 +1157,8 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
   }
 
   base::StringValue type_string(kZoomContentType);
-  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
-                                   type_string, zoom_levels_exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
+                                         type_string, zoom_levels_exceptions);
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
@@ -1169,8 +1168,9 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
       GetContentSettingsMap(), type, web_ui(), &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
-  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
-                                   exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
+
+                                         type_string, exceptions);
 
   UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
 
@@ -1200,8 +1200,8 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
       otr_settings_map, type, web_ui(), &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
-  web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
-                                   type_string, exceptions);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setOTRExceptions",
+                                         type_string, exceptions);
 }
 
 void ContentSettingsHandler::GetChooserExceptionsFromProfile(
@@ -1511,10 +1511,9 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString(pattern_string);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.patternValidityCheckComplete",
-      base::StringValue(type_string),
-      base::StringValue(mode_string),
+      base::StringValue(type_string), base::StringValue(mode_string),
       base::StringValue(pattern_string),
       base::FundamentalValue(pattern.IsValid()));
 }
@@ -1579,14 +1578,13 @@ void ContentSettingsHandler::ShowFlashMediaLink(
       settings.show_flash_exceptions_link;
 
   if (show_link != show) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "ContentSettings.showMediaPepperFlashLink",
-        base::StringValue(
-            link_type == DEFAULT_SETTING ? "default" : "exceptions"),
-        base::StringValue(
-            content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-                ? "mic"
-                : "camera"),
+        base::StringValue(link_type == DEFAULT_SETTING ? "default"
+                                                       : "exceptions"),
+        base::StringValue(content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+                              ? "mic"
+                              : "camera"),
         base::FundamentalValue(show));
     show_link = show;
   }
@@ -1642,7 +1640,7 @@ void ContentSettingsHandler::UpdateMediaDeviceDropdownVisibility(
     ContentSettingsType type) {
   MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.setDevicesMenuVisibility",
       base::StringValue(site_settings::ContentSettingsTypeToGroupName(type)),
       base::FundamentalValue(!settings.policy_disable));
@@ -1658,7 +1656,7 @@ void ContentSettingsHandler::UpdateProtectedContentExceptionsButton() {
   // Exceptions apply only when the feature is enabled.
   PrefService* prefs = user_prefs::UserPrefs::Get(GetBrowserContext(web_ui()));
   bool enable_exceptions = prefs->GetBoolean(prefs::kEnableDRM);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ContentSettings.enableProtectedContentExceptions",
       base::FundamentalValue(enable_exceptions));
 }

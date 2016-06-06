@@ -155,8 +155,8 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
   // Update view about the token being removed.
   base::ListValue result;
   result.AppendString(token_revoker->access_token());
-  web_ui()->CallJavascriptFunction("identity_internals.tokenRevokeDone",
-                                   result);
+  web_ui()->CallJavascriptFunctionUnsafe("identity_internals.tokenRevokeDone",
+                                         result);
 
   // Erase the revoker.
   ScopedVector<IdentityInternalsTokenRevoker>::iterator iter =
@@ -238,7 +238,8 @@ void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
     results.Append(GetInfoForToken(iter->first, iter->second));
   }
 
-  web_ui()->CallJavascriptFunction("identity_internals.returnTokens", results);
+  web_ui()->CallJavascriptFunctionUnsafe("identity_internals.returnTokens",
+                                         results);
 }
 
 void IdentityInternalsUIMessageHandler::RegisterMessages() {

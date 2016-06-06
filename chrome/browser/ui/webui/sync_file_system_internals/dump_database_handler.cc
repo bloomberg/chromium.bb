@@ -37,7 +37,8 @@ void DumpDatabaseHandler::GetDatabaseDump(const base::ListValue*) {
 }
 
 void DumpDatabaseHandler::DidGetDatabaseDump(const base::ListValue& list) {
-  web_ui()->CallJavascriptFunction("DumpDatabase.onGetDatabaseDump", list);
+  web_ui()->CallJavascriptFunctionUnsafe("DumpDatabase.onGetDatabaseDump",
+                                         list);
 }
 
 }  // namespace syncfs_internals

@@ -755,7 +755,7 @@ void SimUnlockHandler::UpdatePage(const DeviceState* cellular,
     sim_dict.SetString(kError, error_msg);
   else
     sim_dict.SetString(kError, kErrorOk);
-  web_ui()->CallJavascriptFunction(kJsApiSimStatusChanged, sim_dict);
+  web_ui()->CallJavascriptFunctionUnsafe(kJsApiSimStatusChanged, sim_dict);
 }
 
 // SimUnlockUI -----------------------------------------------------------------

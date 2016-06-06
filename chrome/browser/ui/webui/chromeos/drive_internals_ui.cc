@@ -332,7 +332,7 @@ void DriveInternalsWebUIHandler::OnGetAboutResource(
   about_resource.SetString("root-resource-id",
                            parsed_about_resource->root_folder_id());
 
-  web_ui()->CallJavascriptFunction("updateAboutResource", about_resource);
+  web_ui()->CallJavascriptFunctionUnsafe("updateAboutResource", about_resource);
 }
 
 void DriveInternalsWebUIHandler::OnGetAppList(
@@ -362,7 +362,7 @@ void DriveInternalsWebUIHandler::OnGetAppList(
   }
   app_list.Set("items", items);
 
-  web_ui()->CallJavascriptFunction("updateAppList", app_list);
+  web_ui()->CallJavascriptFunctionUnsafe("updateAppList", app_list);
 }
 
 void DriveInternalsWebUIHandler::RegisterMessages() {
@@ -476,8 +476,8 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
     AppendKeyValue(&preferences, key, value);
   }
 
-  web_ui()->CallJavascriptFunction("updateDriveRelatedPreferences",
-                                   preferences);
+  web_ui()->CallJavascriptFunctionUnsafe("updateDriveRelatedPreferences",
+                                         preferences);
 }
 
 void DriveInternalsWebUIHandler::UpdateConnectionStatusSection(
@@ -510,7 +510,8 @@ void DriveInternalsWebUIHandler::UpdateConnectionStatusSection(
                                drive_service->HasRefreshToken());
   connection_status.SetBoolean("has-access-token",
                                drive_service->HasAccessToken());
-  web_ui()->CallJavascriptFunction("updateConnectionStatus", connection_status);
+  web_ui()->CallJavascriptFunctionUnsafe("updateConnectionStatus",
+                                         connection_status);
 }
 
 void DriveInternalsWebUIHandler::UpdateAboutResourceSection(
@@ -551,7 +552,7 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
   local_metadata.SetDouble("account-largest-changestamp-local",
                            metadata.largest_changestamp);
   local_metadata.SetBoolean("account-metadata-refreshing", metadata.refreshing);
-  web_ui()->CallJavascriptFunction("updateLocalMetadata", local_metadata);
+  web_ui()->CallJavascriptFunctionUnsafe("updateLocalMetadata", local_metadata);
 }
 
 void DriveInternalsWebUIHandler::ClearAccessToken(const base::ListValue* args) {
@@ -587,8 +588,8 @@ void DriveInternalsWebUIHandler::ResetDriveFileSystem(
 void DriveInternalsWebUIHandler::ResetFinished(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_ui()->CallJavascriptFunction("updateResetStatus",
-                                   base::FundamentalValue(success));
+  web_ui()->CallJavascriptFunctionUnsafe("updateResetStatus",
+                                         base::FundamentalValue(success));
 }
 
 void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {
@@ -630,8 +631,8 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
       "last-update-check-error",
       drive::FileErrorToString(metadata.last_update_check_error));
 
-  web_ui()->CallJavascriptFunction("updateDeltaUpdateStatus",
-                                   delta_update_status);
+  web_ui()->CallJavascriptFunctionUnsafe("updateDeltaUpdateStatus",
+                                         delta_update_status);
 }
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
@@ -654,8 +655,8 @@ void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
     dict->SetDouble("progress_total", info.num_total_bytes);
     in_flight_operations.Append(dict);
   }
-  web_ui()->CallJavascriptFunction("updateInFlightOperations",
-                                   in_flight_operations);
+  web_ui()->CallJavascriptFunctionUnsafe("updateInFlightOperations",
+                                         in_flight_operations);
 }
 
 void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
@@ -758,7 +759,7 @@ void DriveInternalsWebUIHandler::UpdateEventLogSection() {
     last_sent_event_id_ = log[i].id;
   }
   if (!list.empty())
-    web_ui()->CallJavascriptFunction("updateEventLog", list);
+    web_ui()->CallJavascriptFunctionUnsafe("updateEventLog", list);
 }
 
 void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
@@ -786,7 +787,7 @@ void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
                    profile->GetPrefs()->GetFilePath(key).AsUTF8Unsafe());
   }
 
-  web_ui()->CallJavascriptFunction("updatePathConfigurations", paths);
+  web_ui()->CallJavascriptFunctionUnsafe("updatePathConfigurations", paths);
 }
 
 void DriveInternalsWebUIHandler::OnGetGCacheContents(
@@ -796,9 +797,8 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
   DCHECK(gcache_contents);
   DCHECK(gcache_summary);
 
-  web_ui()->CallJavascriptFunction("updateGCacheContents",
-                                   *gcache_contents,
-                                   *gcache_summary);
+  web_ui()->CallJavascriptFunctionUnsafe("updateGCacheContents",
+                                         *gcache_contents, *gcache_summary);
 }
 
 void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
@@ -810,7 +810,7 @@ void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
   if (error == drive::FILE_ERROR_OK) {
     DCHECK(entry.get());
     const base::StringValue value(FormatEntry(path, *entry) + "\n");
-    web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
+    web_ui()->CallJavascriptFunctionUnsafe("updateFileSystemContents", value);
   }
 }
 
@@ -845,7 +845,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     // the page with what we have now. This results in progressive
     // updates, which is good for a large file system.
     const base::StringValue value(file_system_as_text);
-    web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
+    web_ui()->CallJavascriptFunctionUnsafe("updateFileSystemContents", value);
   }
 }
 
@@ -862,7 +862,7 @@ void DriveInternalsWebUIHandler::UpdateCacheEntry(
   value.SetBoolean("is_pinned", cache_entry.is_pinned());
   value.SetBoolean("is_dirty", cache_entry.is_dirty());
 
-  web_ui()->CallJavascriptFunction("updateCacheContents", value);
+  web_ui()->CallJavascriptFunctionUnsafe("updateCacheContents", value);
 }
 
 void DriveInternalsWebUIHandler::OnGetFreeDiskSpace(
@@ -870,8 +870,8 @@ void DriveInternalsWebUIHandler::OnGetFreeDiskSpace(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(local_storage_summary);
 
-  web_ui()->CallJavascriptFunction(
-      "updateLocalStorageUsage", *local_storage_summary);
+  web_ui()->CallJavascriptFunctionUnsafe("updateLocalStorageUsage",
+                                         *local_storage_summary);
 }
 
 void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {

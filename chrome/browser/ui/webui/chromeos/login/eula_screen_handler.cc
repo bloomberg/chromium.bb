@@ -49,7 +49,7 @@ class CreditsWebDialog : public chromeos::LoginWebDialog {
     // Remove visual elements that we can handle in EULA page.
     bool is_loading = source->IsLoading();
     if (!is_loading && source->GetWebUI()) {
-      source->GetWebUI()->CallJavascriptFunction(
+      source->GetWebUI()->CallJavascriptFunctionUnsafe(
           "(function () {"
           "  document.body.classList.toggle('dialog', true);"
           "  keyboard.initializeKeyboardFlow();"

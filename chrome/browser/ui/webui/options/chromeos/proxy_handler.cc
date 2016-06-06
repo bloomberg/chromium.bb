@@ -68,7 +68,7 @@ void ProxyHandler::InitializePage() {
   bool keyboard_driven_oobe =
       system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
   if (keyboard_driven_oobe) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "DetailsInternetPage.initializeKeyboardFlow");
   }
 }

@@ -87,15 +87,15 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
 
   template<typename A1>
   void CallJS(const std::string& method, const A1& arg1) {
-    web_ui()->CallJavascriptFunction(FullMethodPath(method),
-                                     ::login::MakeValue(arg1));
+    web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method),
+                                           ::login::MakeValue(arg1));
   }
 
   template<typename A1, typename A2>
   void CallJS(const std::string& method, const A1& arg1, const A2& arg2) {
-    web_ui()->CallJavascriptFunction(FullMethodPath(method),
-                                     ::login::MakeValue(arg1),
-                                     ::login::MakeValue(arg2));
+    web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method),
+                                           ::login::MakeValue(arg1),
+                                           ::login::MakeValue(arg2));
   }
 
   template<typename A1, typename A2, typename A3>
@@ -103,10 +103,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
               const A1& arg1,
               const A2& arg2,
               const A3& arg3) {
-    web_ui()->CallJavascriptFunction(FullMethodPath(method),
-                                     ::login::MakeValue(arg1),
-                                     ::login::MakeValue(arg2),
-                                     ::login::MakeValue(arg3));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        FullMethodPath(method), ::login::MakeValue(arg1),
+        ::login::MakeValue(arg2), ::login::MakeValue(arg3));
   }
 
   template<typename A1, typename A2, typename A3, typename A4>
@@ -115,11 +114,10 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
               const A2& arg2,
               const A3& arg3,
               const A4& arg4) {
-    web_ui()->CallJavascriptFunction(FullMethodPath(method),
-                                     ::login::MakeValue(arg1),
-                                     ::login::MakeValue(arg2),
-                                     ::login::MakeValue(arg3),
-                                     ::login::MakeValue(arg4));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        FullMethodPath(method), ::login::MakeValue(arg1),
+        ::login::MakeValue(arg2), ::login::MakeValue(arg3),
+        ::login::MakeValue(arg4));
   }
 
   // Shortcut methods for adding WebUI callbacks.

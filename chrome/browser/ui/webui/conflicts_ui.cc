@@ -138,7 +138,7 @@ void ConflictsDOMHandler::SendModuleList() {
   }
   results.SetString("modulesTableTitle", table_title);
 
-  web_ui()->CallJavascriptFunction("returnModuleList", results);
+  web_ui()->CallJavascriptFunctionUnsafe("returnModuleList", results);
 }
 
 void ConflictsDOMHandler::Observe(int type,

@@ -79,8 +79,8 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
                                              kProfileImageSize,
                                              &url)) {
     base::StringValue picture_url_value(url.spec());
-    web_ui()->CallJavascriptFunction(
-        "sync.confirmation.setUserImageURL", picture_url_value);
+    web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
+                                           picture_url_value);
   }
 }
 
@@ -138,5 +138,5 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   // TODO(anthonyvd): Figure out why this is needed on Mac and not other
   // platforms and if there's a way to start unfocused while avoiding this
   // workaround.
-  web_ui()->CallJavascriptFunction("sync.confirmation.clearFocus");
+  web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.clearFocus");
 }

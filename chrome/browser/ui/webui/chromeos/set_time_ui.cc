@@ -59,15 +59,15 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
  private:
   // system::SystemClockClient::Observer:
   void SystemClockUpdated() override {
-    web_ui()->CallJavascriptFunction("settime.TimeSetter.updateTime");
+    web_ui()->CallJavascriptFunctionUnsafe("settime.TimeSetter.updateTime");
   }
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override {
     base::StringValue timezone_id(
         system::TimezoneSettings::GetTimezoneID(timezone));
-    web_ui()->CallJavascriptFunction("settime.TimeSetter.setTimezone",
-                                     timezone_id);
+    web_ui()->CallJavascriptFunctionUnsafe("settime.TimeSetter.setTimezone",
+                                           timezone_id);
   }
 
   // Handler for Javascript call to set the system clock when the user sets a

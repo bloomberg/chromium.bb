@@ -273,7 +273,7 @@ void EnableDebuggingScreenHandler::UpdateUIState(
     prefs->CommitPendingWrite();
   }
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "login.EnableDebuggingScreen.updateState",
       base::FundamentalValue(static_cast<int>(state)));
 }

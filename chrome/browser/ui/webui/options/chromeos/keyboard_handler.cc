@@ -155,7 +155,7 @@ void KeyboardHandler::InitializePage() {
       chromeos::switches::kHasChromeOSDiamondKey);
   const base::FundamentalValue show_diamond_key_options(has_diamond_key);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.KeyboardOverlay.showDiamondKeyOptions",
       show_diamond_key_options);
 
@@ -180,9 +180,8 @@ void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
 
 void KeyboardHandler::UpdateCapsLockOptions() const {
   const base::FundamentalValue show_caps_lock_options(HasExternalKeyboard());
-  web_ui()->CallJavascriptFunction(
-      "options.KeyboardOverlay.showCapsLockOptions",
-      show_caps_lock_options);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "options.KeyboardOverlay.showCapsLockOptions", show_caps_lock_options);
 }
 
 }  // namespace options

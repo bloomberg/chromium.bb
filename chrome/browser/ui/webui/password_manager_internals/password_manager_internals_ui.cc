@@ -70,7 +70,7 @@ void PasswordManagerInternalsUI::DidStopLoading() {
           Profile::FromWebUI(web_ui()));
   // No service means the WebUI is displayed in Incognito.
   base::FundamentalValue is_incognito(!service);
-  web_ui()->CallJavascriptFunction("notifyAboutIncognito", is_incognito);
+  web_ui()->CallJavascriptFunctionUnsafe("notifyAboutIncognito", is_incognito);
 
   if (service) {
     registered_with_logging_service_ = true;
@@ -99,8 +99,8 @@ void PasswordManagerInternalsUI::LogSavePasswordProgress(
   std::string no_quotes(text);
   std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
   base::StringValue text_string_value(net::EscapeForHTML(no_quotes));
-  web_ui()->CallJavascriptFunction("addSavePasswordProgressLog",
-                                   text_string_value);
+  web_ui()->CallJavascriptFunctionUnsafe("addSavePasswordProgressLog",
+                                         text_string_value);
 }
 
 void PasswordManagerInternalsUI::UnregisterFromLoggingServiceIfNecessary() {

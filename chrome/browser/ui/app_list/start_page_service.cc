@@ -408,7 +408,7 @@ void StartPageService::AppListShown() {
   } else if (contents_->IsCrashed()) {
     LoadStartPageURL();
   } else if (contents_->GetWebUI()) {
-    contents_->GetWebUI()->CallJavascriptFunction(
+    contents_->GetWebUI()->CallJavascriptFunctionUnsafe(
         "appList.startPage.onAppListShown");
   }
 
@@ -690,7 +690,7 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
     recheck_delay = base::TimeDelta::FromMilliseconds(kMaximumRecheckDelayMs);
 
     if (contents_ && contents_->GetWebUI()) {
-      contents_->GetWebUI()->CallJavascriptFunction(
+      contents_->GetWebUI()->CallJavascriptFunctionUnsafe(
           "appList.startPage.onAppListDoodleUpdated", *doodle_json,
           base::StringValue(
               UIThreadSearchTermsData(profile_).GoogleBaseURLValue()));

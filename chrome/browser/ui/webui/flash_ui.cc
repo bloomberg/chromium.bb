@@ -373,7 +373,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   base::DictionaryValue flashInfo;
   flashInfo.Set("flashInfo", list);
-  web_ui()->CallJavascriptFunction("returnFlashInfo", flashInfo);
+  web_ui()->CallJavascriptFunctionUnsafe("returnFlashInfo", flashInfo);
 }
 
 }  // namespace

@@ -391,8 +391,8 @@ void NfcDebugMessageHandler::RegisterMessages() {
 void NfcDebugMessageHandler::Initialize(const base::ListValue* args) {
   bool nfc_available = NfcAdapterFactory::IsNfcAvailable();
   base::FundamentalValue available(nfc_available);
-  web_ui()->CallJavascriptFunction(kOnNfcAvailabilityDeterminedFunction,
-                                   available);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnNfcAvailabilityDeterminedFunction,
+                                         available);
   if (!nfc_available) {
     LOG(WARNING) << "NFC is not available on current platform.";
     return;
@@ -416,7 +416,7 @@ void NfcDebugMessageHandler::SetAdapterPower(const base::ListValue* args) {
 
 void NfcDebugMessageHandler::OnSetAdapterPowerError() {
   LOG(ERROR) << "Failed to set NFC adapter power.";
-  web_ui()->CallJavascriptFunction(kOnSetAdapterPowerFailedFunction);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnSetAdapterPowerFailedFunction);
 }
 
 void NfcDebugMessageHandler::SetAdapterPolling(const base::ListValue* args) {
@@ -442,7 +442,7 @@ void NfcDebugMessageHandler::SetAdapterPolling(const base::ListValue* args) {
 
 void NfcDebugMessageHandler::OnSetAdapterPollingError() {
   LOG(ERROR) << "Failed to start/stop polling.";
-  web_ui()->CallJavascriptFunction(kOnSetAdapterPollingFailedFunction);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnSetAdapterPollingFailedFunction);
 }
 
 void NfcDebugMessageHandler::SubmitRecordForm(const base::ListValue* args) {
@@ -518,8 +518,8 @@ void NfcDebugMessageHandler::SubmitRecordForm(const base::ListValue* args) {
 void NfcDebugMessageHandler::OnSubmitRecordFormFailed(
     const std::string& error_message) {
   LOG(ERROR) << "SubmitRecordForm failed: " << error_message;
-  web_ui()->CallJavascriptFunction(kOnSubmitRecordFormFailedFunction,
-                                   base::StringValue(error_message));
+  web_ui()->CallJavascriptFunctionUnsafe(kOnSubmitRecordFormFailedFunction,
+                                         base::StringValue(error_message));
 }
 
 void NfcDebugMessageHandler::OnGetAdapter(
@@ -645,19 +645,21 @@ void NfcDebugMessageHandler::GetRecordList(const NfcNdefMessage& message,
 void NfcDebugMessageHandler::UpdateAdapterInfo() {
   base::DictionaryValue data;
   GetAdapterProperties(&data);
-  web_ui()->CallJavascriptFunction(kOnNfcAdapterInfoChangedFunction, data);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnNfcAdapterInfoChangedFunction,
+                                         data);
 }
 
 void NfcDebugMessageHandler::UpdatePeerInfo() {
   base::DictionaryValue data;
   GetPeerProperties(&data);
-  web_ui()->CallJavascriptFunction(kOnNfcPeerDeviceInfoChangedFunction, data);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnNfcPeerDeviceInfoChangedFunction,
+                                         data);
 }
 
 void NfcDebugMessageHandler::UpdateTagInfo() {
   base::DictionaryValue data;
   GetTagProperties(&data);
-  web_ui()->CallJavascriptFunction(kOnNfcTagInfoChangedFunction, data);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnNfcTagInfoChangedFunction, data);
 }
 
 }  // namespace

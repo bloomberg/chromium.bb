@@ -241,8 +241,8 @@ void MediaRouterWebUIMessageHandler::UpdateSinks(
   DVLOG(2) << "UpdateSinks";
   std::unique_ptr<base::DictionaryValue> sinks_and_identity_val(
       SinksAndIdentityToValue(sinks, GetAccountInfo()));
-  web_ui()->CallJavascriptFunction(kSetSinkListAndIdentity,
-                                   *sinks_and_identity_val);
+  web_ui()->CallJavascriptFunctionUnsafe(kSetSinkListAndIdentity,
+                                         *sinks_and_identity_val);
 }
 
 void MediaRouterWebUIMessageHandler::UpdateRoutes(
@@ -250,7 +250,7 @@ void MediaRouterWebUIMessageHandler::UpdateRoutes(
     const std::vector<MediaRoute::Id>& joinable_route_ids) {
   std::unique_ptr<base::ListValue> routes_val(
       RoutesToValue(routes, joinable_route_ids));
-  web_ui()->CallJavascriptFunction(kSetRouteList, *routes_val);
+  web_ui()->CallJavascriptFunctionUnsafe(kSetRouteList, *routes_val);
 }
 
 void MediaRouterWebUIMessageHandler::UpdateCastModes(
@@ -259,7 +259,7 @@ void MediaRouterWebUIMessageHandler::UpdateCastModes(
   DVLOG(2) << "UpdateCastModes";
   std::unique_ptr<base::ListValue> cast_modes_val(
       CastModesToValue(cast_modes, source_host));
-  web_ui()->CallJavascriptFunction(kSetCastModeList, *cast_modes_val);
+  web_ui()->CallJavascriptFunctionUnsafe(kSetCastModeList, *cast_modes_val);
 }
 
 void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
@@ -270,35 +270,34 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
     std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
         *route, false, media_router_ui_->GetRouteProviderExtensionId(),
         off_the_record_));
-    web_ui()->CallJavascriptFunction(
-        kOnCreateRouteResponseReceived,
-        base::StringValue(sink_id), *route_value,
-        base::FundamentalValue(route->for_display()));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        kOnCreateRouteResponseReceived, base::StringValue(sink_id),
+        *route_value, base::FundamentalValue(route->for_display()));
   } else {
-    web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
-                                     base::StringValue(sink_id),
-                                     *base::Value::CreateNullValue(),
-                                     base::FundamentalValue(false));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        kOnCreateRouteResponseReceived, base::StringValue(sink_id),
+        *base::Value::CreateNullValue(), base::FundamentalValue(false));
   }
 }
 
 void MediaRouterWebUIMessageHandler::ReturnSearchResult(
     const std::string& sink_id) {
   DVLOG(2) << "ReturnSearchResult";
-  web_ui()->CallJavascriptFunction(kReceiveSearchResult,
-                                   base::StringValue(sink_id));
+  web_ui()->CallJavascriptFunctionUnsafe(kReceiveSearchResult,
+                                         base::StringValue(sink_id));
 }
 
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
   DVLOG(2) << "UpdateIssue";
-  web_ui()->CallJavascriptFunction(kSetIssue,
+  web_ui()->CallJavascriptFunctionUnsafe(
+      kSetIssue,
       issue ? *IssueToValue(*issue) : *base::Value::CreateNullValue());
 }
 
 void MediaRouterWebUIMessageHandler::UpdateMaxDialogHeight(int height) {
   DVLOG(2) << "UpdateMaxDialogHeight";
-  web_ui()->CallJavascriptFunction(kUpdateMaxHeight,
-                                   base::FundamentalValue(height));
+  web_ui()->CallJavascriptFunctionUnsafe(kUpdateMaxHeight,
+                                         base::FundamentalValue(height));
 }
 
 void MediaRouterWebUIMessageHandler::RegisterMessages() {
@@ -412,7 +411,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       cast_modes, media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
 
-  web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
+  web_ui()->CallJavascriptFunctionUnsafe(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
 }
 
@@ -779,7 +778,7 @@ bool MediaRouterWebUIMessageHandler::ActOnIssueType(
       return false;
     std::unique_ptr<base::ListValue> open_args(new base::ListValue);
     open_args->AppendString(learn_more_url);
-    web_ui()->CallJavascriptFunction(kWindowOpen, *open_args);
+    web_ui()->CallJavascriptFunctionUnsafe(kWindowOpen, *open_args);
     return true;
   } else {
     // Do nothing; no other issue action types require any other action.
@@ -836,7 +835,8 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
   first_run_flow_data.SetBoolean("wasFirstRunFlowAcknowledged",
                                  first_run_flow_acknowledged);
   first_run_flow_data.SetBoolean("showFirstRunFlowCloudPref", show_cloud_pref);
-  web_ui()->CallJavascriptFunction(kSetFirstRunFlowData, first_run_flow_data);
+  web_ui()->CallJavascriptFunctionUnsafe(kSetFirstRunFlowData,
+                                         first_run_flow_data);
 }
 
 AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {

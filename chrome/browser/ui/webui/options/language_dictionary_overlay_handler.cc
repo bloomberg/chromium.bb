@@ -84,8 +84,8 @@ void LanguageDictionaryOverlayHandler::OnCustomDictionaryChanged(
     remove_words.AppendString(word);
   }
 
-  web_ui()->CallJavascriptFunction("EditDictionaryOverlay.updateWords",
-                                   add_words, remove_words);
+  web_ui()->CallJavascriptFunctionUnsafe("EditDictionaryOverlay.updateWords",
+                                         add_words, remove_words);
 }
 
 void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
@@ -103,8 +103,8 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
   for (const std::string& word : dictionary_->GetWords()) {
     list_value.AppendString(word);
   }
-  web_ui()->CallJavascriptFunction("EditDictionaryOverlay.setWordList",
-                                   list_value);
+  web_ui()->CallJavascriptFunctionUnsafe("EditDictionaryOverlay.setWordList",
+                                         list_value);
 }
 
 void LanguageDictionaryOverlayHandler::RefreshWords(

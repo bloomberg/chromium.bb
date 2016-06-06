@@ -88,7 +88,9 @@ class CONTENT_EXPORT WebUIMessageHandler {
                               const Values&... values) {
     CHECK(IsJavascriptAllowed()) << "Cannot CallJavascriptFunction before "
                                     "explicitly allowing JavaScript.";
-    web_ui()->CallJavascriptFunction(function_name, values...);
+
+    // The CHECK above makes this call safe.
+    web_ui()->CallJavascriptFunctionUnsafe(function_name, values...);
   }
 
   // Returns the attached WebUI for this handler.

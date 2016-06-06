@@ -130,8 +130,8 @@ void StartupPagesHandler::OnModelChanged() {
     startup_pages.Append(entry);
   }
 
-  web_ui()->CallJavascriptFunction("StartupOverlay.updateStartupPages",
-                                   startup_pages);
+  web_ui()->CallJavascriptFunctionUnsafe("StartupOverlay.updateStartupPages",
+                                         startup_pages);
 }
 
 void StartupPagesHandler::OnItemsChanged(int start, int length) {
@@ -262,7 +262,7 @@ void StartupPagesHandler::OnResultChanged(bool default_match_changed) {
   const AutocompleteResult& result = autocomplete_controller_->result();
   base::ListValue suggestions;
   OptionsUI::ProcessAutocompleteSuggestions(result, &suggestions);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "StartupOverlay.updateAutocompleteSuggestions", suggestions);
 }
 

@@ -97,9 +97,9 @@ void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
   base::ListValue js_system_resumed_data;
   GetJsSystemResumedData(&js_system_resumed_data);
 
-  web_ui()->CallJavascriptFunction(kOnRequestBatteryChargeDataFunction,
-                                   js_power_supply_data,
-                                   js_system_resumed_data);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnRequestBatteryChargeDataFunction,
+                                         js_power_supply_data,
+                                         js_system_resumed_data);
 }
 
 void PowerMessageHandler::OnGetCpuIdleData(const base::ListValue* value) {
@@ -116,9 +116,8 @@ void PowerMessageHandler::OnGetCpuIdleData(const base::ListValue* value) {
   base::ListValue js_system_resumed_data;
   GetJsSystemResumedData(&js_system_resumed_data);
 
-  web_ui()->CallJavascriptFunction(kOnRequestCpuIdleDataFunction,
-                                   js_idle_data,
-                                   js_system_resumed_data);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnRequestCpuIdleDataFunction,
+                                         js_idle_data, js_system_resumed_data);
 }
 
 void PowerMessageHandler::OnGetCpuFreqData(const base::ListValue* value) {
@@ -135,9 +134,8 @@ void PowerMessageHandler::OnGetCpuFreqData(const base::ListValue* value) {
   base::ListValue js_system_resumed_data;
   GetJsSystemResumedData(&js_system_resumed_data);
 
-  web_ui()->CallJavascriptFunction(kOnRequestCpuFreqDataFunction,
-                                   js_freq_data,
-                                   js_system_resumed_data);
+  web_ui()->CallJavascriptFunctionUnsafe(kOnRequestCpuFreqDataFunction,
+                                         js_freq_data, js_system_resumed_data);
 }
 
 void PowerMessageHandler::GetJsSystemResumedData(base::ListValue *data) {

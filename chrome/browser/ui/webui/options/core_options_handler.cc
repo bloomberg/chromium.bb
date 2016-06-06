@@ -362,7 +362,7 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
   for (PreferenceCallbackMap::const_iterator iter = range.first;
        iter != range.second; ++iter) {
     const std::string& callback_function = iter->second;
-    web_ui()->CallJavascriptFunction(callback_function, result_value);
+    web_ui()->CallJavascriptFunctionUnsafe(callback_function, result_value);
   }
 }
 
@@ -471,8 +471,8 @@ void CoreOptionsHandler::HandleFetchPrefs(const base::ListValue* args) {
 
     result_value.Set(pref_name, FetchPref(pref_name));
   }
-  web_ui()->CallJavascriptFunction(base::UTF16ToASCII(callback_function),
-                                   result_value);
+  web_ui()->CallJavascriptFunctionUnsafe(base::UTF16ToASCII(callback_function),
+                                         result_value);
 }
 
 void CoreOptionsHandler::HandleObservePrefs(const base::ListValue* args) {
@@ -648,14 +648,14 @@ void CoreOptionsHandler::HandleDisableExtension(const base::ListValue* args) {
 void CoreOptionsHandler::UpdateClearPluginLSOData() {
   base::FundamentalValue enabled(
           plugin_status_pref_setter_.IsClearPluginLSODataEnabled());
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.OptionsPage.setClearPluginLSODataEnabled", enabled);
 }
 
 void CoreOptionsHandler::UpdatePepperFlashSettingsEnabled() {
   base::FundamentalValue enabled(
           plugin_status_pref_setter_.IsPepperFlashSettingsEnabled());
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.OptionsPage.setPepperFlashSettingsEnabled", enabled);
 }
 

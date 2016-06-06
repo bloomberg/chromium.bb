@@ -191,9 +191,9 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
     image_url_list.Append(std::move(avatar_info));
   }
 
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("profile-icons-received"),
-                                   image_url_list);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIListenerCallback", base::StringValue("profile-icons-received"),
+      image_url_list);
 
   SendNewProfileDefaults();
 }
@@ -204,10 +204,9 @@ void SigninCreateProfileHandler::SendNewProfileDefaults() {
   base::DictionaryValue profile_info;
   profile_info.SetString("name", storage.ChooseNameForNewProfile(0));
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback",
-      base::StringValue("profile-defaults-received"),
-      profile_info);
+      base::StringValue("profile-defaults-received"), profile_info);
 }
 
 void SigninCreateProfileHandler::RequestSignedInProfiles(
@@ -228,9 +227,9 @@ void SigninCreateProfileHandler::RequestSignedInProfiles(
 
     user_info_list.Append(std::move(user_info));
   }
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("signedin-users-received"),
-                                   user_info_list);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIListenerCallback", base::StringValue("signedin-users-received"),
+      user_info_list);
 }
 
 void SigninCreateProfileHandler::CreateProfile(const base::ListValue* args) {
@@ -400,10 +399,9 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   }
 #endif
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback",
-      GetWebUIListenerName(PROFILE_CREATION_SUCCESS),
-      dict);
+      GetWebUIListenerName(PROFILE_CREATION_SUCCESS), dict);
 
   if (open_new_window) {
     // Opening the new window must be the last action, after all callbacks
@@ -429,9 +427,9 @@ void SigninCreateProfileHandler::ShowProfileCreationError(
     Profile* profile,
     const base::string16& error) {
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   GetWebUIListenerName(PROFILE_CREATION_ERROR),
-                                   base::StringValue(error));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIListenerCallback", GetWebUIListenerName(PROFILE_CREATION_ERROR),
+      base::StringValue(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile) {
     webui::DeleteProfileAtPath(profile->GetPath(),
@@ -762,9 +760,9 @@ void SigninCreateProfileHandler::OnSupervisedUserRegistered(
 void SigninCreateProfileHandler::ShowProfileCreationWarning(
     const base::string16& warning) {
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("create-profile-warning"),
-                                   base::StringValue(warning));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIListenerCallback", base::StringValue("create-profile-warning"),
+      base::StringValue(warning));
 }
 
 void SigninCreateProfileHandler::RecordSupervisedProfileCreationMetrics(

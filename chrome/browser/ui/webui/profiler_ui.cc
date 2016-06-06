@@ -173,5 +173,6 @@ void ProfilerUI::ReceivedProfilerData(
       &json_data);
 
   // Send the data to the renderer.
-  web_ui()->CallJavascriptFunction("g_browserBridge.receivedData", json_data);
+  web_ui()->CallJavascriptFunctionUnsafe("g_browserBridge.receivedData",
+                                         json_data);
 }

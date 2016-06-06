@@ -59,8 +59,8 @@ void DateTimeOptionsHandler::RegisterMessages() {
 
 void DateTimeOptionsHandler::SystemClockCanSetTimeChanged(bool can_set_time) {
   if (page_initialized_) {
-    web_ui()->CallJavascriptFunction("BrowserOptions.setCanSetTime",
-                                     base::FundamentalValue(can_set_time));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "BrowserOptions.setCanSetTime", base::FundamentalValue(can_set_time));
   }
   can_set_time_ = can_set_time;
 }

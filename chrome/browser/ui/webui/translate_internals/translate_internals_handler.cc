@@ -188,7 +188,7 @@ void TranslateInternalsHandler::SendMessageToJs(const std::string& message,
                                                 const base::Value& value) {
   const char func[] = "cr.translateInternals.messageHandler";
   base::StringValue message_data(message);
-  web_ui()->CallJavascriptFunction(func, message_data, value);
+  web_ui()->CallJavascriptFunctionUnsafe(func, message_data, value);
 }
 
 void TranslateInternalsHandler::SendPrefsToJs() {

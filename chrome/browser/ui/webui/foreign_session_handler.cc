@@ -335,8 +335,8 @@ void ForeignSessionHandler::HandleGetForeignSessions(
     }
   }
   base::FundamentalValue tab_sync_enabled(IsTabSyncEnabled());
-  web_ui()->CallJavascriptFunction("setForeignSessions", session_list,
-                                   tab_sync_enabled);
+  web_ui()->CallJavascriptFunctionUnsafe("setForeignSessions", session_list,
+                                         tab_sync_enabled);
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(

@@ -46,7 +46,7 @@ void OptionsBrowserTest::ReportHistory(const base::ListValue* list_value) {
     GURL url = controller.GetEntryAtIndex(i)->GetVirtualURL();
     history.AppendString(url.spec());
   }
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "OptionsWebUIExtendedTest.verifyHistoryCallback", history);
 }
 

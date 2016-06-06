@@ -224,8 +224,9 @@ void AppLauncherLoginHandler::UpdateLogin() {
   base::StringValue sub_header_value(sub_header);
   base::StringValue icon_url_value(icon_url);
   base::FundamentalValue is_user_signed_in(!username.empty());
-  web_ui()->CallJavascriptFunction("ntp.updateLogin",
-      header_value, sub_header_value, icon_url_value, is_user_signed_in);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.updateLogin", header_value,
+                                         sub_header_value, icon_url_value,
+                                         is_user_signed_in);
 }
 
 // static

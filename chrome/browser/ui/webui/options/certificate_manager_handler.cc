@@ -602,7 +602,8 @@ void CertificateManagerHandler::View(const base::ListValue* args) {
 void CertificateManagerHandler::GetCATrust(const base::ListValue* args) {
   net::X509Certificate* cert = cert_id_map_->CallbackArgsToCert(args);
   if (!cert) {
-    web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -614,9 +615,9 @@ void CertificateManagerHandler::GetCATrust(const base::ListValue* args) {
       static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_EMAIL));
   base::FundamentalValue obj_sign_value(
       static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_OBJ_SIGN));
-  web_ui()->CallJavascriptFunction(
-      "CertificateEditCaTrustOverlay.populateTrust",
-      ssl_value, email_value, obj_sign_value);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CertificateEditCaTrustOverlay.populateTrust", ssl_value, email_value,
+      obj_sign_value);
 }
 
 void CertificateManagerHandler::EditCATrust(const base::ListValue* args) {
@@ -630,7 +631,8 @@ void CertificateManagerHandler::EditCATrust(const base::ListValue* args) {
   fail |= !CallbackArgsToBool(args, 3, &trust_obj_sign);
   if (fail) {
     LOG(ERROR) << "EditCATrust args fail";
-    web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -640,7 +642,8 @@ void CertificateManagerHandler::EditCATrust(const base::ListValue* args) {
       trust_ssl * net::NSSCertDatabase::TRUSTED_SSL +
           trust_email * net::NSSCertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::NSSCertDatabase::TRUSTED_OBJ_SIGN);
-  web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     // TODO(mattm): better error messages?
     ShowError(
@@ -682,14 +685,14 @@ void CertificateManagerHandler::ExportAllPersonal(const base::ListValue* args) {
 void CertificateManagerHandler::ExportPersonalFileSelected(
     const base::FilePath& path) {
   file_path_ = path;
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "CertificateManager.exportPersonalAskPassword");
 }
 
 void CertificateManagerHandler::ExportPersonalPasswordSelected(
     const base::ListValue* args) {
   if (!args->GetString(0, &password_)) {
-    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -716,7 +719,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
       password_,
       &output);
   if (!num_exported) {
-    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
@@ -733,7 +736,7 @@ void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
 
 void CertificateManagerHandler::ExportPersonalFileWritten(
     const int* write_errno, const int* bytes_written) {
-  web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
   ImportExportCleanup();
   if (*write_errno) {
     ShowError(
@@ -750,7 +753,7 @@ void CertificateManagerHandler::StartImportPersonal(
   if (!args->GetBoolean(0, &use_hardware_backed_)) {
     // Unable to retrieve the hardware backed attribute from the args,
     // so bail.
-    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -782,7 +785,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
     const int* read_errno, const std::string* data) {
   if (*read_errno) {
     ImportExportCleanup();
-    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
@@ -794,7 +797,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   file_data_ = *data;
 
   if (CouldBePFX(file_data_)) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "CertificateManager.importPersonalAskPassword");
     return;
   }
@@ -805,7 +808,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   // certificates.
   int result = certificate_manager_model_->ImportUserCert(file_data_);
   ImportExportCleanup();
-  web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
   int string_id;
   switch (result) {
     case net::OK:
@@ -828,7 +831,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 void CertificateManagerHandler::ImportPersonalPasswordSelected(
     const base::ListValue* args) {
   if (!args->GetString(0, &password_)) {
-    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
     ImportExportCleanup();
     return;
   }
@@ -859,7 +862,7 @@ void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
   int result = certificate_manager_model_->ImportFromPKCS12(
       module_.get(), file_data_, password_, is_extractable);
   ImportExportCleanup();
-  web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+  web_ui()->CallJavascriptFunctionUnsafe("CertificateRestoreOverlay.dismiss");
   int string_id;
   switch (result) {
     case net::OK:
@@ -1014,8 +1017,8 @@ void CertificateManagerHandler::ImportCAFileRead(const int* read_errno,
   // TODO(mattm): check here if root_cert is not a CA cert and show error.
 
   base::StringValue cert_name(root_cert->subject().GetDisplayName());
-  web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.showImport",
-                                   cert_name);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CertificateEditCaTrustOverlay.showImport", cert_name);
 }
 
 void CertificateManagerHandler::ImportCATrustSelected(
@@ -1030,7 +1033,8 @@ void CertificateManagerHandler::ImportCATrustSelected(
   if (fail) {
     LOG(ERROR) << "ImportCATrustSelected args fail";
     ImportExportCleanup();
-    web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "CertificateEditCaTrustOverlay.dismiss");
     return;
   }
 
@@ -1043,7 +1047,8 @@ void CertificateManagerHandler::ImportCATrustSelected(
           trust_email * net::NSSCertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::NSSCertDatabase::TRUSTED_OBJ_SIGN,
       &not_imported);
-  web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
@@ -1087,9 +1092,9 @@ void CertificateManagerHandler::CertificateManagerModelReady() {
       certificate_manager_model_->is_user_db_available());
   base::FundamentalValue tpm_available_value(
       certificate_manager_model_->is_tpm_available());
-  web_ui()->CallJavascriptFunction("CertificateManager.onModelReady",
-                                   user_db_available_value,
-                                   tpm_available_value);
+  web_ui()->CallJavascriptFunctionUnsafe("CertificateManager.onModelReady",
+                                         user_db_available_value,
+                                         tpm_available_value);
   certificate_manager_model_->Refresh();
 }
 
@@ -1183,7 +1188,8 @@ void CertificateManagerHandler::PopulateTree(
     base::ListValue args;
     args.AppendString(tree_name);
     args.Append(nodes);
-    web_ui()->CallJavascriptFunction("CertificateManager.onPopulateTree", args);
+    web_ui()->CallJavascriptFunctionUnsafe("CertificateManager.onPopulateTree",
+                                           args);
   }
 }
 
@@ -1196,7 +1202,7 @@ void CertificateManagerHandler::ShowError(const std::string& title,
   args.push_back(base::Value::CreateNullValue().release());  // cancelTitle
   args.push_back(base::Value::CreateNullValue().release());  // okCallback
   args.push_back(base::Value::CreateNullValue().release());  // cancelCallback
-  web_ui()->CallJavascriptFunction("AlertOverlay.show", args.get());
+  web_ui()->CallJavascriptFunctionUnsafe("AlertOverlay.show", args.get());
 }
 
 void CertificateManagerHandler::ShowImportErrors(
@@ -1222,10 +1228,9 @@ void CertificateManagerHandler::ShowImportErrors(
 
   base::StringValue title_value(title);
   base::StringValue error_value(error);
-  web_ui()->CallJavascriptFunction("CertificateImportErrorOverlay.show",
-                                   title_value,
-                                   error_value,
-                                   cert_error_list);
+  web_ui()->CallJavascriptFunctionUnsafe("CertificateImportErrorOverlay.show",
+                                         title_value, error_value,
+                                         cert_error_list);
 }
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {

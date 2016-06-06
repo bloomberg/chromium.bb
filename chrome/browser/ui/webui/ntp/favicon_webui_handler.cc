@@ -110,8 +110,8 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(
         base::StringValue dom_id_value(dom_id);
         std::unique_ptr<base::StringValue> color(
             SkColorToCss(prepopulated_page.color));
-        web_ui()->CallJavascriptFunction("ntp.setFaviconDominantColor",
-                                         dom_id_value, *color);
+        web_ui()->CallJavascriptFunctionUnsafe("ntp.setFaviconDominantColor",
+                                               dom_id_value, *color);
         return;
       }
     }
@@ -139,8 +139,8 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
     color_value.reset(new base::StringValue("#919191"));
 
   base::StringValue dom_id(dom_id_map_[id]);
-  web_ui()->CallJavascriptFunction("ntp.setFaviconDominantColor",
-                                   dom_id, *color_value);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.setFaviconDominantColor", dom_id,
+                                         *color_value);
   dom_id_map_.erase(id);
 }
 
@@ -170,6 +170,6 @@ void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   std::unique_ptr<base::StringValue> color_value(
       GetDominantColorCssString(bits_mem));
   base::StringValue id(extension_id);
-  web_ui()->CallJavascriptFunction(
-      "ntp.setFaviconDominantColor", id, *color_value);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.setFaviconDominantColor", id,
+                                         *color_value);
 }

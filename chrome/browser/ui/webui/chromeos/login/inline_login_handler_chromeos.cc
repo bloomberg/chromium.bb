@@ -43,7 +43,7 @@ class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
     // might trigger a permission dialog and if this dialog does not close,
     // a DCHECK would be triggered because attempting to activate a window
     // while there is a modal dialog.
-    web_ui_->CallJavascriptFunction("inline.login.closeDialog");
+    web_ui_->CallJavascriptFunctionUnsafe("inline.login.closeDialog");
 
     Profile* profile = Profile::FromWebUI(web_ui_);
     ProfileOAuth2TokenService* token_service =
@@ -53,7 +53,8 @@ class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
 
   void OnOAuth2TokensFetchFailed() override {
     LOG(ERROR) << "Failed to fetch oauth2 token with inline login.";
-    web_ui_->CallJavascriptFunction("inline.login.handleOAuth2TokenFailure");
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "inline.login.handleOAuth2TokenFailure");
   }
 
  private:

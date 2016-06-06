@@ -77,7 +77,8 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
     dict.Set("db", db);
   }
 
-  web_ui()->CallJavascriptFunction("updateAutocompleteActionPredictorDb", dict);
+  web_ui()->CallJavascriptFunctionUnsafe("updateAutocompleteActionPredictorDb",
+                                         dict);
 }
 
 void PredictorsHandler::RequestResourcePrefetchPredictorDb(
@@ -99,7 +100,8 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
     dict.Set("host_db", db);
   }
 
-  web_ui()->CallJavascriptFunction("updateResourcePrefetchPredictorDb", dict);
+  web_ui()->CallJavascriptFunctionUnsafe("updateResourcePrefetchPredictorDb",
+                                         dict);
 }
 
 void PredictorsHandler::AddPrefetchDataMapToListValue(

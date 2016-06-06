@@ -64,7 +64,7 @@ void HomePageOverlayHandler::OnResultChanged(bool default_match_changed) {
   const AutocompleteResult& result = autocomplete_controller_->result();
   base::ListValue suggestions;
   OptionsUI::ProcessAutocompleteSuggestions(result, &suggestions);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "HomePageOverlay.updateAutocompleteSuggestions", suggestions);
 }
 

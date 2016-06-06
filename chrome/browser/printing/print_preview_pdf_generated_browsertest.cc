@@ -207,7 +207,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     }
 
     ASSERT_FALSE(script_argument.empty());
-    GetUI()->web_ui()->CallJavascriptFunction(
+    GetUI()->web_ui()->CallJavascriptFunctionUnsafe(
         "onManipulateSettingsForTest", script_argument);
   }
 
@@ -281,7 +281,8 @@ class PrintPreviewObserver : public WebContentsObserver {
 
     // The |ui->web_ui()| owns the message handler.
     ui->web_ui()->AddMessageHandler(new UIDoneLoadingMessageHandler(this));
-    ui->web_ui()->CallJavascriptFunction("onEnableManipulateSettingsForTest");
+    ui->web_ui()->CallJavascriptFunctionUnsafe(
+        "onEnableManipulateSettingsForTest");
   }
 
   void DidCloneToNewWebContents(WebContents* old_web_contents,

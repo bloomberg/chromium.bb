@@ -43,7 +43,7 @@ void ThemeHandler::Observe(int type,
                            .HasCustomImage(IDR_THEME_NTP_BACKGROUND);
   base::DictionaryValue dictionary;
   dictionary.SetBoolean("hasCustomBackground", has_custom_bg);
-  web_ui()->CallJavascriptFunction("ntp.themeChanged", dictionary);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.themeChanged", dictionary);
 }
 
 void ThemeHandler::InitializeCSSCaches() {

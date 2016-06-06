@@ -120,8 +120,8 @@ void KioskAppMenuHandler::SendKioskApps() {
     apps_list.Append(app_info.release());
   }
 
-  web_ui()->CallJavascriptFunction(EnableNewKioskUI() ?
-      kKioskSetAppsNewAPI : kKioskSetAppsOldAPI,
+  web_ui()->CallJavascriptFunctionUnsafe(
+      EnableNewKioskUI() ? kKioskSetAppsNewAPI : kKioskSetAppsOldAPI,
       apps_list);
 }
 
@@ -149,8 +149,8 @@ void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(
 
   const std::string error_message = KioskAppLaunchError::GetErrorMessage(error);
   bool new_kiosk_ui = EnableNewKioskUI();
-  web_ui()->CallJavascriptFunction(new_kiosk_ui ?
-      kKioskShowErrorNewAPI : kKioskShowErrorOldAPI,
+  web_ui()->CallJavascriptFunctionUnsafe(
+      new_kiosk_ui ? kKioskShowErrorNewAPI : kKioskShowErrorOldAPI,
       base::StringValue(error_message));
 }
 

@@ -76,8 +76,8 @@ void QuotaInternalsHandler::ReportStatistics(const Statistics& stats) {
 
 void QuotaInternalsHandler::SendMessage(const std::string& message,
                                         const base::Value& value) {
-  web_ui()->CallJavascriptFunction(
-      "cr.quota.messageHandler", base::StringValue(message), value);
+  web_ui()->CallJavascriptFunctionUnsafe("cr.quota.messageHandler",
+                                         base::StringValue(message), value);
 }
 
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {

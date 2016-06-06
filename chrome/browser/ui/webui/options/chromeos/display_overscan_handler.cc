@@ -86,7 +86,7 @@ void DisplayOverscanHandler::OnDisplayAdded(
   if (!overscan_calibrator_)
     return;
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.DisplayOverscan.onOverscanCanceled");
 }
 
@@ -95,7 +95,7 @@ void DisplayOverscanHandler::OnDisplayRemoved(
   if (!overscan_calibrator_)
     return;
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.DisplayOverscan.onOverscanCanceled");
 }
 

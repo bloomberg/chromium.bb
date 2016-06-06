@@ -165,16 +165,17 @@ void ProximityAuthWebUIHandler::OnLogMessageAdded(
     const LogBuffer::LogMessage& log_message) {
   std::unique_ptr<base::DictionaryValue> dictionary =
       LogMessageToDictionary(log_message);
-  web_ui()->CallJavascriptFunction("LogBufferInterface.onLogMessageAdded",
-                                   *dictionary);
+  web_ui()->CallJavascriptFunctionUnsafe("LogBufferInterface.onLogMessageAdded",
+                                         *dictionary);
 }
 
 void ProximityAuthWebUIHandler::OnLogBufferCleared() {
-  web_ui()->CallJavascriptFunction("LogBufferInterface.onLogBufferCleared");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "LogBufferInterface.onLogBufferCleared");
 }
 
 void ProximityAuthWebUIHandler::OnEnrollmentStarted() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onEnrollmentStateChanged",
       *GetEnrollmentStateDictionary());
 }
@@ -184,12 +185,12 @@ void ProximityAuthWebUIHandler::OnEnrollmentFinished(bool success) {
       GetEnrollmentStateDictionary();
   PA_LOG(INFO) << "Enrollment attempt completed with success=" << success
                << ":\n" << *enrollment_state;
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onEnrollmentStateChanged", *enrollment_state);
 }
 
 void ProximityAuthWebUIHandler::OnSyncStarted() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onDeviceSyncStateChanged",
       *GetDeviceSyncStateDictionary());
 }
@@ -201,7 +202,7 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
       GetDeviceSyncStateDictionary();
   PA_LOG(INFO) << "Device sync completed with result="
                << static_cast<int>(sync_result) << ":\n" << *device_sync_state;
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "LocalStateInterface.onDeviceSyncStateChanged", *device_sync_state);
 
   if (device_change_result ==
@@ -209,8 +210,8 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
     std::unique_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
     PA_LOG(INFO) << "New unlock keys obtained after device sync:\n"
                  << *unlock_keys;
-    web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
-                                     *unlock_keys);
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "LocalStateInterface.onUnlockKeysChanged", *unlock_keys);
   }
 }
 
@@ -238,8 +239,8 @@ void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
   for (const auto& log : *LogBuffer::GetInstance()->logs()) {
     json_logs.Append(LogMessageToDictionary(log).release());
   }
-  web_ui()->CallJavascriptFunction("LogBufferInterface.onGotLogMessages",
-                                   json_logs);
+  web_ui()->CallJavascriptFunctionUnsafe("LogBufferInterface.onGotLogMessages",
+                                         json_logs);
 }
 
 void ProximityAuthWebUIHandler::ClearLogBuffer(const base::ListValue* args) {
@@ -367,12 +368,14 @@ void ProximityAuthWebUIHandler::OnCryptAuthClientError(
     const std::string& error_message) {
   PA_LOG(WARNING) << "CryptAuth request failed: " << error_message;
   base::StringValue error_string(error_message);
-  web_ui()->CallJavascriptFunction("CryptAuthInterface.onError", error_string);
+  web_ui()->CallJavascriptFunctionUnsafe("CryptAuthInterface.onError",
+                                         error_string);
 }
 
 void ProximityAuthWebUIHandler::OnEasyUnlockToggled(
     const cryptauth::ToggleEasyUnlockResponse& response) {
-  web_ui()->CallJavascriptFunction("CryptAuthInterface.onUnlockKeyToggled");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CryptAuthInterface.onUnlockKeyToggled");
   // TODO(tengs): Update the local state to reflect the toggle.
 }
 
@@ -391,8 +394,9 @@ void ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices(
   PA_LOG(INFO) << "Found " << eligible_devices.GetSize()
                << " eligible devices and " << ineligible_devices.GetSize()
                << " ineligible devices.";
-  web_ui()->CallJavascriptFunction("CryptAuthInterface.onGotEligibleDevices",
-                                   eligible_devices, ineligible_devices);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CryptAuthInterface.onGotEligibleDevices", eligible_devices,
+      ineligible_devices);
 }
 
 void ProximityAuthWebUIHandler::OnReachablePhonesFound(
@@ -402,8 +406,8 @@ void ProximityAuthWebUIHandler::OnReachablePhonesFound(
   for (const auto& external_device : reachable_phones) {
     device_list.Append(ExternalDeviceInfoToDictionary(external_device));
   }
-  web_ui()->CallJavascriptFunction("CryptAuthInterface.onGotReachableDevices",
-                                   device_list);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "CryptAuthInterface.onGotReachableDevices", device_list);
 }
 
 void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
@@ -417,9 +421,9 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
                << "Enrollment State: \n" << *enrollment_state
                << "Device Sync State: \n" << *device_sync_state
                << "Unlock Keys: \n" << *unlock_keys;
-  web_ui()->CallJavascriptFunction("LocalStateInterface.onGotLocalState",
-                                   *enrollment_state, *device_sync_state,
-                                   *unlock_keys);
+  web_ui()->CallJavascriptFunctionUnsafe("LocalStateInterface.onGotLocalState",
+                                         *enrollment_state, *device_sync_state,
+                                         *unlock_keys);
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -568,8 +572,8 @@ void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
   life_cycle_.reset();
   selected_remote_device_ = RemoteDevice();
   last_remote_status_update_.reset();
-  web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
-                                   *GetUnlockKeysList());
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "LocalStateInterface.onUnlockKeysChanged", *GetUnlockKeysList());
 }
 
 void ProximityAuthWebUIHandler::OnLifeCycleStateChanged(
@@ -591,8 +595,8 @@ void ProximityAuthWebUIHandler::OnLifeCycleStateChanged(
     life_cycle_->GetMessenger()->AddObserver(this);
   }
 
-  web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
-                                   *GetUnlockKeysList());
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "LocalStateInterface.onUnlockKeysChanged", *GetUnlockKeysList());
 }
 
 void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
@@ -607,8 +611,8 @@ void ProximityAuthWebUIHandler::OnRemoteStatusUpdate(
 
   last_remote_status_update_.reset(new RemoteStatusUpdate(status_update));
   std::unique_ptr<base::ListValue> unlock_keys = GetUnlockKeysList();
-  web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
-                                   *unlock_keys);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "LocalStateInterface.onUnlockKeysChanged", *unlock_keys);
 }
 
 }  // namespace proximity_auth

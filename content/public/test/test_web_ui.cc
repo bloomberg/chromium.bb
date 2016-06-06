@@ -55,43 +55,43 @@ bool TestWebUI::CanCallJavascript() {
   return true;
 }
 
-void TestWebUI::CallJavascriptFunction(const std::string& function_name) {
+void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name) {
   call_data_.push_back(new CallData(function_name));
 }
 
-void TestWebUI::CallJavascriptFunction(const std::string& function_name,
-                                       const base::Value& arg1) {
+void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1) {
   call_data_.push_back(new CallData(function_name));
   call_data_.back()->TakeAsArg1(arg1.DeepCopy());
 }
 
-void TestWebUI::CallJavascriptFunction(const std::string& function_name,
-                                       const base::Value& arg1,
-                                       const base::Value& arg2) {
+void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1,
+                                             const base::Value& arg2) {
   call_data_.push_back(new CallData(function_name));
   call_data_.back()->TakeAsArg1(arg1.DeepCopy());
   call_data_.back()->TakeAsArg2(arg2.DeepCopy());
 }
 
-void TestWebUI::CallJavascriptFunction(const std::string& function_name,
-                                       const base::Value& arg1,
-                                       const base::Value& arg2,
-                                       const base::Value& arg3) {
+void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1,
+                                             const base::Value& arg2,
+                                             const base::Value& arg3) {
   call_data_.push_back(new CallData(function_name));
   call_data_.back()->TakeAsArg1(arg1.DeepCopy());
   call_data_.back()->TakeAsArg2(arg2.DeepCopy());
   call_data_.back()->TakeAsArg3(arg3.DeepCopy());
 }
 
-void TestWebUI::CallJavascriptFunction(const std::string& function_name,
-                                       const base::Value& arg1,
-                                       const base::Value& arg2,
-                                       const base::Value& arg3,
-                                       const base::Value& arg4) {
+void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1,
+                                             const base::Value& arg2,
+                                             const base::Value& arg3,
+                                             const base::Value& arg4) {
   NOTREACHED();
 }
 
-void TestWebUI::CallJavascriptFunction(
+void TestWebUI::CallJavascriptFunctionUnsafe(
     const std::string& function_name,
     const std::vector<const base::Value*>& args) {
   NOTREACHED();

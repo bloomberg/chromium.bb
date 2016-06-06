@@ -58,14 +58,16 @@ void PointerHandler::GetLocalizedValues(
 void PointerHandler::TouchpadExists(bool exists) {
   has_touchpad_ = exists;
   base::FundamentalValue val(exists);
-  web_ui()->CallJavascriptFunction("PointerOverlay.showTouchpadControls", val);
+  web_ui()->CallJavascriptFunctionUnsafe("PointerOverlay.showTouchpadControls",
+                                         val);
   UpdateTitle();
 }
 
 void PointerHandler::MouseExists(bool exists) {
   has_mouse_ = exists;
   base::FundamentalValue val(exists);
-  web_ui()->CallJavascriptFunction("PointerOverlay.showMouseControls", val);
+  web_ui()->CallJavascriptFunctionUnsafe("PointerOverlay.showMouseControls",
+                                         val);
   UpdateTitle();
 }
 
@@ -78,7 +80,7 @@ void PointerHandler::UpdateTitle() {
     label = has_mouse_ ? "pointerOverlayTitleMouseOnly" : "";
   }
   base::StringValue val(label);
-  web_ui()->CallJavascriptFunction("PointerOverlay.setTitle", val);
+  web_ui()->CallJavascriptFunctionUnsafe("PointerOverlay.setTitle", val);
 }
 
 }  // namespace options

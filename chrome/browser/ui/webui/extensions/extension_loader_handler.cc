@@ -206,9 +206,8 @@ void ExtensionLoaderHandler::AddFailure(
 }
 
 void ExtensionLoaderHandler::NotifyFrontendOfFailure() {
-  web_ui()->CallJavascriptFunction(
-      "extensions.ExtensionLoader.notifyLoadFailed",
-      failures_);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "extensions.ExtensionLoader.notifyLoadFailed", failures_);
   failures_.Clear();
 }
 

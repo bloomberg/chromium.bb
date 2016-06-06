@@ -80,7 +80,7 @@ void PowerHandler::RegisterMessages() {
 }
 
 void PowerHandler::OnPowerStatusChanged() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.PowerOverlay.setBatteryStatusText",
       base::StringValue(GetStatusValue()));
   UpdatePowerSources();
@@ -158,9 +158,8 @@ void PowerHandler::UpdatePowerSources() {
     sources_list.Append(dict.release());
   }
 
-  web_ui()->CallJavascriptFunction(
-      "options.PowerOverlay.setPowerSources",
-      sources_list,
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "options.PowerOverlay.setPowerSources", sources_list,
       base::StringValue(status->GetCurrentPowerSourceID()),
       base::FundamentalValue(status->IsUsbChargerConnected()),
       base::FundamentalValue(status->IsBatteryTimeBeingCalculated()));

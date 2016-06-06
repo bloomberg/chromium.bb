@@ -74,8 +74,8 @@ void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
   if (!result)
     json = "Error loading Local State file.";
 
-  web_ui()->CallJavascriptFunction("localState.setLocalState",
-                                   base::StringValue(json));
+  web_ui()->CallJavascriptFunctionUnsafe("localState.setLocalState",
+                                         base::StringValue(json));
 }
 
 // Returns true if |pref_name| starts with one of the |valid_prefixes|.

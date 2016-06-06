@@ -130,7 +130,7 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
     void HandleStartAsyncTest(const base::ListValue* list_value) {
       const base::Value* test_name;
       ASSERT_TRUE(list_value->Get(0, &test_name));
-      web_ui()->CallJavascriptFunction("runAsync", *test_name);
+      web_ui()->CallJavascriptFunctionUnsafe("runAsync", *test_name);
     }
 
     DISALLOW_COPY_AND_ASSIGN(AsyncWebUIMessageHandler);

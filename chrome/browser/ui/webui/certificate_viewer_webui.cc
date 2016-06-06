@@ -427,8 +427,8 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
       x509_certificate_model::HashCertSHA1(cert));
 
   // Send certificate information to javascript.
-  web_ui()->CallJavascriptFunction("cert_viewer.getCertificateFields",
-      root_list);
+  web_ui()->CallJavascriptFunctionUnsafe("cert_viewer.getCertificateFields",
+                                         root_list);
 }
 
 int CertificateViewerDialogHandler::GetCertificateIndex(

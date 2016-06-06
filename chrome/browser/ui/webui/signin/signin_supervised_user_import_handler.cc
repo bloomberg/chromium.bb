@@ -190,10 +190,9 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
 
 void SigninSupervisedUserImportHandler::RejectCallback(
     const base::string16& error) {
-  web_ui()->CallJavascriptFunction("cr.webUIResponse",
-      base::StringValue(webui_callback_id_),
-      base::FundamentalValue(false),
-      base::StringValue(error));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIResponse", base::StringValue(webui_callback_id_),
+      base::FundamentalValue(false), base::StringValue(error));
   webui_callback_id_.clear();
 }
 
@@ -267,10 +266,9 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
   }
 
   // Resolve callback with response.
-  web_ui()->CallJavascriptFunction("cr.webUIResponse",
-      base::StringValue(webui_callback_id_),
-      base::FundamentalValue(true),
-      supervised_users);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIResponse", base::StringValue(webui_callback_id_),
+      base::FundamentalValue(true), supervised_users);
   webui_callback_id_.clear();
 }
 

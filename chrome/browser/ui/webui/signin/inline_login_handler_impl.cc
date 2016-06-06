@@ -851,8 +851,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   }
 
   if (params.handler)
-    params.handler->
-        web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+    params.handler->web_ui()->CallJavascriptFunctionUnsafe(
+        "inline.login.closeDialog");
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {

@@ -1072,7 +1072,7 @@ void BrowserOptionsHandler::InitializePage() {
       !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
       !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser();
   if (enable_factory_reset_) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.enableFactoryResetSection");
   }
 
@@ -1101,7 +1101,8 @@ void BrowserOptionsHandler::InitializePage() {
 
   if (arc::ArcAuthService::IsAllowedForProfile(profile) &&
       !arc::ArcAuthService::IsOptInVerificationDisabled()) {
-    web_ui()->CallJavascriptFunction("BrowserOptions.showAndroidAppsSection");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "BrowserOptions.showAndroidAppsSection");
   }
   OnSystemTimezoneAutomaticDetectionPolicyChanged();
 #endif
@@ -1199,9 +1200,9 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
        status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT));
 
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.updateDefaultBrowserState",
-      status_string, is_default, can_be_default);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.updateDefaultBrowserState", status_string, is_default,
+      can_be_default);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -1229,9 +1230,8 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
       default_index = i;
   }
 
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.updateSearchEngines",
-      search_engines,
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.updateSearchEngines", search_engines,
       base::FundamentalValue(default_index),
       base::FundamentalValue(
           template_url_service_->is_default_search_managed() ||
@@ -1374,8 +1374,8 @@ std::unique_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
 void BrowserOptionsHandler::SendProfilesInfo() {
   if (!ShouldShowMultiProfilesUserList())
     return;
-  web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesInfo",
-                                   *GetProfilesInfoList());
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.setProfilesInfo",
+                                         *GetProfilesInfoList());
 }
 
 void BrowserOptionsHandler::DeleteProfile(const base::ListValue* args) {
@@ -1407,15 +1407,15 @@ void BrowserOptionsHandler::ObserveThemeChanged() {
   is_system_theme = theme_service->UsingSystemTheme();
   base::FundamentalValue native_theme_enabled(!is_system_theme &&
                                               !profile_is_supervised);
-  web_ui()->CallJavascriptFunction("BrowserOptions.setNativeThemeButtonEnabled",
-                                   native_theme_enabled);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setNativeThemeButtonEnabled", native_theme_enabled);
 #endif
 
   bool is_classic_theme = !is_system_theme &&
                           theme_service->UsingDefaultTheme();
   base::FundamentalValue enabled(!is_classic_theme);
-  web_ui()->CallJavascriptFunction("BrowserOptions.setThemesResetButtonEnabled",
-                                   enabled);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setThemesResetButtonEnabled", enabled);
 }
 
 void BrowserOptionsHandler::ThemesReset(const base::ListValue* args) {
@@ -1437,28 +1437,29 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
   std::string email =
       user_manager::UserManager::Get()->GetLoggedInUser()->email();
   if (!email.empty()) {
-    web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "BrowserOptions.updateAccountPicture");
     base::StringValue email_value(email);
-    web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture",
-                                     email_value);
-    web_ui()->CallJavascriptFunction(
-        "AccountsOptions.getInstance().updateAccountPicture",
-        email_value);
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "BrowserOptions.updateAccountPicture", email_value);
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "AccountsOptions.getInstance().updateAccountPicture", email_value);
   }
 }
 
 void BrowserOptionsHandler::OnAccountPictureManagedChanged(bool managed) {
-  web_ui()->CallJavascriptFunction("BrowserOptions.setAccountPictureManaged",
-                                   base::FundamentalValue(managed));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setAccountPictureManaged",
+      base::FundamentalValue(managed));
 }
 
 void BrowserOptionsHandler::OnWallpaperManagedChanged(bool managed) {
-  web_ui()->CallJavascriptFunction("BrowserOptions.setWallpaperManaged",
-                                   base::FundamentalValue(managed));
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.setWallpaperManaged",
+                                         base::FundamentalValue(managed));
 }
 
 void BrowserOptionsHandler::OnSystemTimezonePolicyChanged() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setSystemTimezoneManaged",
       base::FundamentalValue(chromeos::system::HasSystemTimezonePolicy()));
 }
@@ -1474,7 +1475,7 @@ void BrowserOptionsHandler::OnSystemTimezoneAutomaticDetectionPolicyChanged() {
       prefs::kSystemTimezoneAutomaticDetectionPolicy);
   const int value =
       prefs->GetInteger(prefs::kSystemTimezoneAutomaticDetectionPolicy);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setSystemTimezoneAutomaticDetectionManaged",
       base::FundamentalValue(is_managed), base::FundamentalValue(value));
 }
@@ -1563,12 +1564,14 @@ void BrowserOptionsHandler::FileSelected(const base::FilePath& path, int index,
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::TouchpadExists(bool exists) {
   base::FundamentalValue val(exists);
-  web_ui()->CallJavascriptFunction("BrowserOptions.showTouchpadControls", val);
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.showTouchpadControls",
+                                         val);
 }
 
 void BrowserOptionsHandler::MouseExists(bool exists) {
   base::FundamentalValue val(exists);
-  web_ui()->CallJavascriptFunction("BrowserOptions.showMouseControls", val);
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.showMouseControls",
+                                         val);
 }
 
 void BrowserOptionsHandler::OnUserImagePolicyChanged(
@@ -1601,19 +1604,19 @@ void BrowserOptionsHandler::OnConsumerManagementStatusChanged() {
   const std::string& status = g_browser_process->platform_part()->
       browser_policy_connector_chromeos()->GetConsumerManagementService()->
           GetStatusString();
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setConsumerManagementStatus", base::StringValue(status));
 }
 
 #endif  // defined(OS_CHROMEOS)
 
 void BrowserOptionsHandler::UpdateSyncState() {
-  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",
-                                   *GetSyncStateDictionary());
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.updateSyncState",
+                                         *GetSyncStateDictionary());
 
   // A change in sign-in state also affects how hotwording and audio history are
   // displayed. Hide all hotwording and re-display properly.
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setAllHotwordSectionsVisible",
       base::FundamentalValue(false));
   HandleRequestHotwordAvailable(nullptr);
@@ -1714,10 +1717,9 @@ void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(
     const base::string16& audio_history_state,
     bool success, bool logging_enabled) {
   bool visible = logging_enabled && success;
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setAudioHistorySectionVisible",
-      base::FundamentalValue(visible),
-      base::StringValue(audio_history_state));
+      base::FundamentalValue(visible), base::StringValue(audio_history_state));
 }
 
 void BrowserOptionsHandler::HandleRequestGoogleNowAvailable(
@@ -1736,9 +1738,8 @@ void BrowserOptionsHandler::HandleRequestGoogleNowAvailable(
   bool has_field_trial = !group.empty() && group != "Disabled";
 
   bool should_show = is_search_provider_google && has_field_trial;
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setNowSectionVisible",
-      base::FundamentalValue(should_show));
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.setNowSectionVisible",
+                                         base::FundamentalValue(should_show));
 }
 
 void BrowserOptionsHandler::HandleRequestHotwordAvailable(
@@ -1769,7 +1770,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
   // provider. In either case it does not make sense to show the hotwording
   // options.
   if (!is_search_provider_google) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.setAllHotwordSectionsVisible",
         base::FundamentalValue(false));
     return;
@@ -1792,7 +1793,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
       // Show the retrain link if always-on is enabled.
       if (profile->GetPrefs()->GetBoolean(
               prefs::kHotwordAlwaysOnSearchEnabled)) {
-        web_ui()->CallJavascriptFunction(
+        web_ui()->CallJavascriptFunctionUnsafe(
             "BrowserOptions.setHotwordRetrainLinkVisible",
             base::FundamentalValue(true));
       }
@@ -1823,7 +1824,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     }
 
     if (!error) {
-      web_ui()->CallJavascriptFunction(function_name);
+      web_ui()->CallJavascriptFunctionUnsafe(function_name);
     } else {
       base::string16 hotword_help_url =
           base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
@@ -1832,7 +1833,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
         error_message = base::StringValue(
             l10n_util::GetStringFUTF16(error, hotword_help_url));
       }
-      web_ui()->CallJavascriptFunction(function_name, error_message);
+      web_ui()->CallJavascriptFunctionUnsafe(function_name, error_message);
     }
   }
 }
@@ -1914,7 +1915,7 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   PrefService* pref_service = g_browser_process->local_state();
   base::FundamentalValue virtual_keyboard_enabled(
       pref_service->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled));
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setVirtualKeyboardCheckboxState",
       virtual_keyboard_enabled);
 }
@@ -1925,7 +1926,7 @@ void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
   // Don't show the reporting setting if we are in the guest mode.
   if (Profile::FromWebUI(web_ui())->IsGuestSession()) {
     base::FundamentalValue visible(false);
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "BrowserOptions.setMetricsReportingSettingVisibility", visible);
   }
 #endif
@@ -1941,8 +1942,8 @@ void BrowserOptionsHandler::SetupNetworkPredictionControl() {
                   !pref_service->IsUserModifiablePreference(
                       prefs::kNetworkPredictionOptions));
 
-  web_ui()->CallJavascriptFunction("BrowserOptions.setNetworkPredictionValue",
-                                   dict);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setNetworkPredictionValue", dict);
 }
 
 void BrowserOptionsHandler::SetupFontSizeSelector() {
@@ -1974,7 +1975,7 @@ void BrowserOptionsHandler::SetupFontSizeSelector() {
       dict.SetString("controlledBy", "extension");
   }
 
-  web_ui()->CallJavascriptFunction("BrowserOptions.setFontSize", dict);
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.setFontSize", dict);
 }
 
 void BrowserOptionsHandler::SetupPageZoomSelector() {
@@ -2008,8 +2009,8 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
     zoom_factors_value.Append(option);
   }
 
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setupPageZoomSelector", zoom_factors_value);
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.setupPageZoomSelector",
+                                         zoom_factors_value);
 }
 
 void BrowserOptionsHandler::SetupAutoOpenFileTypes() {
@@ -2020,7 +2021,7 @@ void BrowserOptionsHandler::SetupAutoOpenFileTypes() {
   bool display = manager &&
       DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
   base::FundamentalValue value(display);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setAutoOpenFileTypesDisplayed", value);
 }
 
@@ -2035,8 +2036,9 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   base::FundamentalValue disabled(proxy_config &&
                                   !proxy_config->IsUserModifiable());
   base::FundamentalValue extension_controlled(is_extension_controlled);
-  web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsButton",
-                                   disabled, extension_controlled);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setupProxySettingsButton", disabled,
+      extension_controlled);
 
 #if defined(OS_WIN)
   SetupExtensionControlledIndicators();
@@ -2049,17 +2051,15 @@ void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
   bool has_users = !Profile::FromWebUI(web_ui())->
       GetPrefs()->GetDictionary(prefs::kSupervisedUsers)->empty();
   base::FundamentalValue has_users_value(has_users);
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.updateManagesSupervisedUsers",
-      has_users_value);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.updateManagesSupervisedUsers", has_users_value);
 }
 
 void BrowserOptionsHandler::SetupEasyUnlock() {
   base::FundamentalValue is_enabled(
       EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsEnabled());
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.updateEasyUnlock",
-      is_enabled);
+  web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.updateEasyUnlock",
+                                         is_enabled);
 }
 
 void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
@@ -2104,8 +2104,8 @@ void BrowserOptionsHandler::SetupExtensionControlledIndicators() {
       Profile::FromWebUI(web_ui()));
   AppendExtensionData("proxy", extension, &extension_controlled);
 
-  web_ui()->CallJavascriptFunction("BrowserOptions.toggleExtensionIndicators",
-                                   extension_controlled);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.toggleExtensionIndicators", extension_controlled);
 #endif  // defined(OS_WIN)
 }
 
@@ -2162,7 +2162,7 @@ void BrowserOptionsHandler::NotifyUIOfMetricsReportingChange(bool enabled) {
 void BrowserOptionsHandler::SetMetricsReportingCheckbox(bool checked,
                                                         bool policy_managed,
                                                         bool owner_managed) {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.setMetricsReportingCheckboxState",
       base::FundamentalValue(checked), base::FundamentalValue(policy_managed),
       base::FundamentalValue(owner_managed));

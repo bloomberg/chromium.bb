@@ -200,7 +200,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(bool create_shortcut,
       profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
   dict.SetBoolean("isSupervised", is_supervised);
 #endif
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
 
   // If the new profile is a supervised user, instead of opening a new window
@@ -228,7 +228,7 @@ void CreateProfileHandler::ShowProfileCreationError(
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   profile_path_being_created_.clear();
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       GetJavascriptMethodName(PROFILE_CREATION_ERROR),
       base::StringValue(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
@@ -431,8 +431,8 @@ void CreateProfileHandler::OnSupervisedUserRegistered(
 void CreateProfileHandler::ShowProfileCreationWarning(
     const base::string16& warning) {
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
-  web_ui()->CallJavascriptFunction("BrowserOptions.showCreateProfileWarning",
-                                   base::StringValue(warning));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.showCreateProfileWarning", base::StringValue(warning));
 }
 
 void CreateProfileHandler::RecordSupervisedProfileCreationMetrics(

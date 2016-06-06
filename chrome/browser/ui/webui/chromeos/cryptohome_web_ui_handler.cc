@@ -77,8 +77,8 @@ void CryptohomeWebUIHandler::SetCryptohomeProperty(
     const std::string& destination_id,
     const base::Value& value) {
   base::StringValue destination_id_value(destination_id);
-  web_ui()->CallJavascriptFunction(
-      "SetCryptohomeProperty", destination_id_value, value);
+  web_ui()->CallJavascriptFunctionUnsafe("SetCryptohomeProperty",
+                                         destination_id_value, value);
 }
 
 }  // namespace chromeos

@@ -284,7 +284,7 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
 
   base::DictionaryValue result;
   result.Set("sections", std::move(section_list));
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveBasicInfo", result);
 
   // Trigger retrieval of the user settings
@@ -297,7 +297,7 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
 
 void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
     const base::DictionaryValue* settings) {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveUserSettings",
       *(settings ? settings : base::Value::CreateNullValue().get()));
 }
@@ -320,7 +320,7 @@ void SupervisedUserInternalsMessageHandler::OnTryURLResult(
   result.SetBoolean("manual", reason == supervised_user_error_page::MANUAL &&
                                   behavior == SupervisedUserURLFilter::ALLOW);
   result.SetString("whitelists", whitelists_str);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveTryURLResult", result);
 }
 
@@ -334,6 +334,6 @@ void SupervisedUserInternalsMessageHandler::OnURLChecked(
   result.SetString("url", url.possibly_invalid_spec());
   result.SetString("result", FilteringBehaviorToString(behavior, uncertain));
   result.SetString("reason", FilteringBehaviorReasonToString(reason));
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.supervised_user_internals.receiveFilteringResult", result);
 }

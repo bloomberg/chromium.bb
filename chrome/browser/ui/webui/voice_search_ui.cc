@@ -163,7 +163,8 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     DCHECK(info);
     base::DictionaryValue voiceSearchInfo;
     voiceSearchInfo.Set("voiceSearchInfo", info.release());
-    web_ui()->CallJavascriptFunction("returnVoiceSearchInfo", voiceSearchInfo);
+    web_ui()->CallJavascriptFunctionUnsafe("returnVoiceSearchInfo",
+                                           voiceSearchInfo);
   }
 
   // Fill in the data to be displayed on the page.

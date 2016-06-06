@@ -231,7 +231,8 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
 
   SetExtraInitParams(params);
 
-  web_ui()->CallJavascriptFunction("inline.login.loadAuthExtension", params);
+  web_ui()->CallJavascriptFunctionUnsafe("inline.login.loadAuthExtension",
+                                         params);
 }
 
 void InlineLoginHandler::HandleCompleteLoginMessage(
@@ -269,7 +270,7 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   chrome::Navigate(&params);
 
-  web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+  web_ui()->CallJavascriptFunctionUnsafe("inline.login.closeDialog");
 }
 
 void InlineLoginHandler::HandleNavigationButtonClicked(

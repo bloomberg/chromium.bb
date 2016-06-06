@@ -112,8 +112,8 @@ void ImportDataHandler::StartImport(
     importer_host_->set_observer(NULL);
 
   base::FundamentalValue importing(true);
-  web_ui()->CallJavascriptFunction("ImportDataOverlay.setImportingState",
-                                   importing);
+  web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.setImportingState",
+                                         importing);
   import_did_succeed_ = false;
 
   importer_host_ = new ExternalProcessImporterHost();
@@ -195,8 +195,8 @@ void ImportDataHandler::InitializePage() {
     browser_profiles.Append(browser_profile);
   }
 
-  web_ui()->CallJavascriptFunction("ImportDataOverlay.updateSupportedBrowsers",
-                                   browser_profiles);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ImportDataOverlay.updateSupportedBrowsers", browser_profiles);
 }
 
 void ImportDataHandler::ImportStarted() {
@@ -223,12 +223,12 @@ void ImportDataHandler::ImportEnded() {
   importer_host_ = NULL;
 
   if (import_did_succeed_) {
-    web_ui()->CallJavascriptFunction("ImportDataOverlay.confirmSuccess");
+    web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.confirmSuccess");
   } else {
     base::FundamentalValue state(false);
-    web_ui()->CallJavascriptFunction("ImportDataOverlay.setImportingState",
-                                     state);
-    web_ui()->CallJavascriptFunction("ImportDataOverlay.dismiss");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "ImportDataOverlay.setImportingState", state);
+    web_ui()->CallJavascriptFunctionUnsafe("ImportDataOverlay.dismiss");
   }
 }
 

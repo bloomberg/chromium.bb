@@ -65,7 +65,8 @@ void NetworkMenuWebUI::UpdateMenu() {
   NetworkMenu::UpdateMenu();
   if (web_ui_) {
     std::unique_ptr<base::ListValue> list(ConvertMenuModel(GetMenuModel()));
-    web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworks", *list);
+    web_ui_->CallJavascriptFunctionUnsafe("cr.ui.DropDown.updateNetworks",
+                                          *list);
   }
 }
 
@@ -201,8 +202,8 @@ void NetworkDropdown::SetNetworkIconAndText() {
     icon_str = webui::GetBitmapDataUrl(icon_bitmap);
   base::StringValue title(text);
   base::StringValue icon(icon_str);
-  web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",
-                                  title, icon);
+  web_ui_->CallJavascriptFunctionUnsafe("cr.ui.DropDown.updateNetworkTitle",
+                                        title, icon);
 }
 
 void NetworkDropdown::RequestNetworkScan() {

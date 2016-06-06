@@ -264,8 +264,8 @@ bool WebUILoginView::AcceleratorPressed(
   content::WebUI* web_ui = GetWebUI();
   if (web_ui) {
     base::StringValue accel_name(entry->second);
-    web_ui->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
-                                   accel_name);
+    web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
+                                         accel_name);
   }
 
   return true;
@@ -421,7 +421,7 @@ void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
   if (event.type == blink::WebInputEvent::KeyDown) {
     content::WebUI* web_ui = GetWebUI();
     if (web_ui)
-      web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+      web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
   }
 }
 

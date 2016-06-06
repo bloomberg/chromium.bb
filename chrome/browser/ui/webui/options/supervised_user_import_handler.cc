@@ -167,7 +167,7 @@ void SupervisedUserImportHandler::OnSupervisedUsersChanged() {
 }
 
 void SupervisedUserImportHandler::FetchSupervisedUsers() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.SupervisedUserListData.resetPromise");
   RequestSupervisedUserImportUpdate(NULL);
 }
@@ -255,13 +255,13 @@ void SupervisedUserImportHandler::SendExistingSupervisedUsers(
     supervised_users.Append(supervised_user);
   }
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.SupervisedUserListData.receiveExistingSupervisedUsers",
       supervised_users);
 }
 
 void SupervisedUserImportHandler::ClearSupervisedUsersAndShowError() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.SupervisedUserListData.onSigninError");
 }
 

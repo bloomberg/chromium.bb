@@ -200,8 +200,8 @@ void WebRtcLogsDOMHandler::UpdateUI() {
 
   base::StringValue version(version_info::GetVersionNumber());
 
-  web_ui()->CallJavascriptFunction("updateWebRtcLogsList", upload_list,
-                                   version);
+  web_ui()->CallJavascriptFunctionUnsafe("updateWebRtcLogsList", upload_list,
+                                         version);
 }
 
 }  // namespace

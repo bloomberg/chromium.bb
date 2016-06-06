@@ -472,7 +472,7 @@ void OptionsUI::InitializeHandlers() {
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->InitializePage();
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "BrowserOptions.notifyInitializationComplete");
 }
 

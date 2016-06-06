@@ -87,8 +87,8 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
                      base::Owned(profile_path_buffer)));
 
   // Respond with the variations info immediately.
-  web_ui()->CallJavascriptFunction(version_ui::kReturnVariationInfo,
-                                   *version_ui::GetVariationsList());
+  web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnVariationInfo,
+                                         *version_ui::GetVariationsList());
 }
 
 void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
@@ -97,8 +97,8 @@ void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
 
   base::StringValue exec_path(*executable_path_data);
   base::StringValue profile_path(*profile_path_data);
-  web_ui()->CallJavascriptFunction(version_ui::kReturnFilePaths, exec_path,
-                                   profile_path);
+  web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFilePaths,
+                                         exec_path, profile_path);
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -122,6 +122,6 @@ void VersionHandler::OnGotPlugins(
   }
 
   base::StringValue arg(flash_version);
-  web_ui()->CallJavascriptFunction(version_ui::kReturnFlashVersion, arg);
+  web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFlashVersion, arg);
 }
 #endif  // defined(ENABLE_PLUGINS)

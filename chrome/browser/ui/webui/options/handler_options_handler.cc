@@ -140,9 +140,10 @@ void HandlerOptionsHandler::UpdateHandlerList() {
 
   std::unique_ptr<base::ListValue> ignored_handlers(new base::ListValue());
   GetIgnoredHandlers(ignored_handlers.get());
-  web_ui()->CallJavascriptFunction("HandlerOptions.setHandlers", handlers);
-  web_ui()->CallJavascriptFunction("HandlerOptions.setIgnoredHandlers",
-                                   *ignored_handlers);
+  web_ui()->CallJavascriptFunctionUnsafe("HandlerOptions.setHandlers",
+                                         handlers);
+  web_ui()->CallJavascriptFunctionUnsafe("HandlerOptions.setIgnoredHandlers",
+                                         *ignored_handlers);
 }
 
 void HandlerOptionsHandler::RemoveHandler(const base::ListValue* args) {

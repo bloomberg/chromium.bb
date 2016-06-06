@@ -372,7 +372,7 @@ void NaClDomHandler::MaybeRespondToPage() {
 
   base::DictionaryValue naclInfo;
   PopulatePageInformation(&naclInfo);
-  web_ui()->CallJavascriptFunction("nacl.returnNaClInfo", naclInfo);
+  web_ui()->CallJavascriptFunctionUnsafe("nacl.returnNaClInfo", naclInfo);
 }
 
 }  // namespace

@@ -37,7 +37,8 @@ void AutomaticSettingsResetHandler::InitializePage() {
   if (!then.is_null()) {
     const base::Time now = base::Time::Now();
     if ((now - then).InDays() < kBannerShowTimeInDays)
-      web_ui()->CallJavascriptFunction("AutomaticSettingsResetBanner.show");
+      web_ui()->CallJavascriptFunctionUnsafe(
+          "AutomaticSettingsResetBanner.show");
   }
 }
 

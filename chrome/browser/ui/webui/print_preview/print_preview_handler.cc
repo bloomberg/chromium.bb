@@ -708,7 +708,7 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
   if (!PrivetPrintingEnabled())
-    return web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
+    return web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterSearchDone");
 #if defined(ENABLE_SERVICE_DISCOVERY)
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
@@ -928,7 +928,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         width <= 0 || height <= 0) {
       NOTREACHED();
       base::FundamentalValue http_code_value(-1);
-      web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
+      web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
+                                             http_code_value);
       return;
     }
 
@@ -1289,13 +1290,14 @@ void PrintPreviewHandler::SendInitialSettings(
 
   if (print_preview_ui()->source_is_modifiable())
     GetNumberFormatAndMeasurementSystem(&initial_settings);
-  web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
+  web_ui()->CallJavascriptFunctionUnsafe("setInitialSettings",
+                                         initial_settings);
 
   if (PrintPreviewDistiller::IsEnabled()) {
     using dom_distiller::url_utils::IsUrlDistillable;
     WebContents* initiator = GetInitiator();
     if (initiator && IsUrlDistillable(initiator->GetLastCommittedURL()))
-      web_ui()->CallJavascriptFunction("allowDistillPage");
+      web_ui()->CallJavascriptFunctionUnsafe("allowDistillPage");
   }
 }
 
@@ -1306,9 +1308,9 @@ void PrintPreviewHandler::ClosePreviewDialog() {
 void PrintPreviewHandler::SendAccessToken(const std::string& type,
                                           const std::string& access_token) {
   VLOG(1) << "Get getAccessToken finished";
-  web_ui()->CallJavascriptFunction("onDidGetAccessToken",
-                                   base::StringValue(type),
-                                   base::StringValue(access_token));
+  web_ui()->CallJavascriptFunctionUnsafe("onDidGetAccessToken",
+                                         base::StringValue(type),
+                                         base::StringValue(access_token));
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
@@ -1316,13 +1318,13 @@ void PrintPreviewHandler::SendPrinterCapabilities(
     std::unique_ptr<base::DictionaryValue> settings_info) {
   if (!settings_info) {
     VLOG(1) << "Get printer capabilities failed";
-    web_ui()->CallJavascriptFunction("failedToGetPrinterCapabilities",
-                                     base::StringValue(printer_name));
+    web_ui()->CallJavascriptFunctionUnsafe("failedToGetPrinterCapabilities",
+                                           base::StringValue(printer_name));
     return;
   }
   VLOG(1) << "Get printer capabilities finished";
-  web_ui()->CallJavascriptFunction("updateWithPrinterCapabilities",
-                                   *settings_info);
+  web_ui()->CallJavascriptFunctionUnsafe("updateWithPrinterCapabilities",
+                                         *settings_info);
 }
 
 void PrintPreviewHandler::SetupPrinterList(const base::ListValue* printers) {
@@ -1331,7 +1333,7 @@ void PrintPreviewHandler::SetupPrinterList(const base::ListValue* printers) {
     has_logged_printers_count_ = true;
   }
 
-  web_ui()->CallJavascriptFunction("setPrinters", *printers);
+  web_ui()->CallJavascriptFunctionUnsafe("setPrinters", *printers);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
@@ -1343,7 +1345,7 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
     settings.SetString(kCloudPrintUrl,
                        GURL(cloud_devices::GetCloudPrintURL()).spec());
     settings.SetBoolean(kAppKioskMode, chrome::IsRunningInForcedAppMode());
-    web_ui()->CallJavascriptFunction("setUseCloudPrint", settings);
+    web_ui()->CallJavascriptFunctionUnsafe("setUseCloudPrint", settings);
   }
 }
 
@@ -1355,7 +1357,7 @@ void PrintPreviewHandler::SendCloudPrintJob(const base::RefCountedBytes* data) {
   base::Base64Encode(raw_data, &base64_data);
   base::StringValue data_value(base64_data);
 
-  web_ui()->CallJavascriptFunction("printToCloud", data_value);
+  web_ui()->CallJavascriptFunctionUnsafe("printToCloud", data_value);
 }
 
 WebContents* PrintPreviewHandler::GetInitiator() const {
@@ -1452,7 +1454,7 @@ void PrintPreviewHandler::FileSelected(const base::FilePath& path,
   sticky_settings->StoreSavePath(path.DirName());
   sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
-  web_ui()->CallJavascriptFunction("fileSelectionCompleted");
+  web_ui()->CallJavascriptFunctionUnsafe("fileSelectionCompleted");
   print_to_pdf_path_ = path;
   PostPrintToPdfTask();
 }
@@ -1515,7 +1517,7 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
 void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
     local_discovery::ServiceDiscoverySharedClient>& client) {
   if (!PrivetPrintingEnabled())
-    return web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
+    return web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterSearchDone");
 
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(!service_discovery_client_.get() ||
@@ -1535,7 +1537,7 @@ void PrintPreviewHandler::LocalPrinterChanged(
       command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
     base::DictionaryValue info;
     FillPrinterDescription(name, description, has_local_printing, &info);
-    web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
+    web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrinterChanged", info);
   }
 }
 
@@ -1600,7 +1602,8 @@ void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
 
   if (!GetPreviewDataAndTitle(&data, &title)) {
     base::FundamentalValue http_code_value(-1);
-    web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
+    web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
+                                           http_code_value);
     return;
   }
 
@@ -1642,10 +1645,8 @@ void PrintPreviewHandler::OnPrivetCapabilities(
 
   FillPrinterDescription(name, *description, true, &printer_info);
 
-  web_ui()->CallJavascriptFunction(
-      "onPrivetCapabilitiesSet",
-      printer_info,
-      *capabilities);
+  web_ui()->CallJavascriptFunctionUnsafe("onPrivetCapabilitiesSet",
+                                         printer_info, *capabilities);
 
   privet_capabilities_operation_.reset();
 }
@@ -1653,9 +1654,8 @@ void PrintPreviewHandler::OnPrivetCapabilities(
 void PrintPreviewHandler::SendPrivetCapabilitiesError(
     const std::string& device_name) {
   base::StringValue name_value(device_name);
-  web_ui()->CallJavascriptFunction(
-      "failedToGetPrivetPrinterCapabilities",
-      name_value);
+  web_ui()->CallJavascriptFunctionUnsafe("failedToGetPrivetPrinterCapabilities",
+                                         name_value);
 }
 
 void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& device_name,
@@ -1701,7 +1701,8 @@ void PrintPreviewHandler::OnPrivetPrintingError(
     const cloud_print::PrivetLocalPrintOperation* print_operation,
     int http_code) {
   base::FundamentalValue http_code_value(http_code);
-  web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
+  web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
+                                         http_code_value);
 }
 
 void PrintPreviewHandler::FillPrinterDescription(
@@ -1734,35 +1735,37 @@ void PrintPreviewHandler::EnsureExtensionPrinterHandlerSet() {
 void PrintPreviewHandler::OnGotPrintersForExtension(
     const base::ListValue& printers,
     bool done) {
-  web_ui()->CallJavascriptFunction("onExtensionPrintersAdded", printers,
-                                   base::FundamentalValue(done));
+  web_ui()->CallJavascriptFunctionUnsafe("onExtensionPrintersAdded", printers,
+                                         base::FundamentalValue(done));
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterInfo(
     const std::string& printer_id,
     const base::DictionaryValue& printer_info) {
   if (printer_info.empty()) {
-    web_ui()->CallJavascriptFunction("failedToResolveProvisionalPrinter",
-                                     base::StringValue(printer_id));
+    web_ui()->CallJavascriptFunctionUnsafe("failedToResolveProvisionalPrinter",
+                                           base::StringValue(printer_id));
     return;
   }
 
-  web_ui()->CallJavascriptFunction("onProvisionalPrinterResolved",
-                                   base::StringValue(printer_id),
-                                   printer_info);
+  web_ui()->CallJavascriptFunctionUnsafe("onProvisionalPrinterResolved",
+                                         base::StringValue(printer_id),
+                                         printer_info);
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(
     const std::string& printer_id,
     const base::DictionaryValue& capabilities) {
   if (capabilities.empty()) {
-    web_ui()->CallJavascriptFunction("failedToGetExtensionPrinterCapabilities",
-                                     base::StringValue(printer_id));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "failedToGetExtensionPrinterCapabilities",
+        base::StringValue(printer_id));
     return;
   }
 
-  web_ui()->CallJavascriptFunction("onExtensionCapabilitiesSet",
-                                   base::StringValue(printer_id), capabilities);
+  web_ui()->CallJavascriptFunctionUnsafe("onExtensionCapabilitiesSet",
+                                         base::StringValue(printer_id),
+                                         capabilities);
 }
 
 void PrintPreviewHandler::OnExtensionPrintResult(bool success,
@@ -1774,8 +1777,8 @@ void PrintPreviewHandler::OnExtensionPrintResult(bool success,
 
   // TODO(tbarzic): This function works for extension printers case too, but it
   // should be renamed to something more generic.
-  web_ui()->CallJavascriptFunction("onPrivetPrintFailed",
-                                   base::StringValue(status));
+  web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
+                                         base::StringValue(status));
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {

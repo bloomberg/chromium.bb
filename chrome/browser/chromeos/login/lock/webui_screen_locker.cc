@@ -131,11 +131,12 @@ void WebUIScreenLocker::ShowErrorMessage(
 }
 
 void WebUIScreenLocker::AnimateAuthenticationSuccess() {
-  GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.animateAuthenticationSuccess");
+  GetWebUI()->CallJavascriptFunctionUnsafe(
+      "cr.ui.Oobe.animateAuthenticationSuccess");
 }
 
 void WebUIScreenLocker::ClearErrors() {
-  GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+  GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
 }
 
 gfx::NativeWindow WebUIScreenLocker::GetNativeWindow() const {
@@ -150,13 +151,14 @@ void WebUIScreenLocker::FocusUserPod() {
   if (!webui_ready_)
     return;
   webui_login_->RequestFocus();
-  GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.forceLockedUserPodFocus");
+  GetWebUI()->CallJavascriptFunctionUnsafe(
+      "cr.ui.Oobe.forceLockedUserPodFocus");
 }
 
 void WebUIScreenLocker::ResetAndFocusUserPod() {
   if (!webui_ready_)
     return;
-  GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.clearUserPodPassword");
+  GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearUserPodPassword");
   FocusUserPod();
 }
 
@@ -303,7 +305,8 @@ void WebUIScreenLocker::OnLockStateEvent(
     // Release capture if any.
     aura::client::GetCaptureClient(GetNativeWindow()->GetRootWindow())->
         SetCapture(NULL);
-    GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.animateOnceFullyDisplayed");
+    GetWebUI()->CallJavascriptFunctionUnsafe(
+        "cr.ui.Oobe.animateOnceFullyDisplayed");
   }
 }
 

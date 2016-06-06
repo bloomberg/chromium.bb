@@ -71,7 +71,8 @@ void GcmInternalsUIMessageHandler::ReturnResults(
   base::DictionaryValue results;
   gcm_driver::SetGCMInternalsInfo(stats, profile_service, profile->GetPrefs(),
                                   &results);
-  web_ui()->CallJavascriptFunction(gcm_driver::kSetGcmInternalsInfo, results);
+  web_ui()->CallJavascriptFunctionUnsafe(gcm_driver::kSetGcmInternalsInfo,
+                                         results);
 }
 
 void GcmInternalsUIMessageHandler::RequestAllInfo(

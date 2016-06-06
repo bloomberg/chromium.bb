@@ -106,24 +106,25 @@ void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceAdded(
       owner_->GetDeviceInfo(object_path);
 
   // Request to add the device to the view's list of devices.
-  owner_->web_ui()->CallJavascriptFunction(kAddBluetoothDeviceJSCallback,
-      *device);
+  owner_->web_ui()->CallJavascriptFunctionUnsafe(kAddBluetoothDeviceJSCallback,
+                                                 *device);
 }
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DevicePropertyChanged(
   const dbus::ObjectPath& object_path,
   const std::string& property_name) {
   if (property_name == kPairedPropertyName) {
-    owner_->web_ui()->CallJavascriptFunction(kDevicePairedFromTrayJSCallback,
+    owner_->web_ui()->CallJavascriptFunctionUnsafe(
+        kDevicePairedFromTrayJSCallback,
         base::StringValue(object_path.value()));
   }
 }
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceRemoved(
     const dbus::ObjectPath& object_path) {
-  owner_->web_ui()->CallJavascriptFunction(
-    kDeviceRemovedFromMainAdapterJSCallback,
-    base::StringValue(object_path.value()));
+  owner_->web_ui()->CallJavascriptFunctionUnsafe(
+      kDeviceRemovedFromMainAdapterJSCallback,
+      base::StringValue(object_path.value()));
 }
 
 class DeviceEmulatorMessageHandler::CrasAudioObserver
@@ -185,8 +186,8 @@ void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
   power_properties.SetString("external_power_source_id",
                              proto.external_power_source_id());
 
-  owner_->web_ui()->CallJavascriptFunction(kUpdatePowerPropertiesJSCallback,
-                                           power_properties);
+  owner_->web_ui()->CallJavascriptFunctionUnsafe(
+      kUpdatePowerPropertiesJSCallback, power_properties);
 }
 
 DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
@@ -264,9 +265,9 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
       bluez::FakeBluetoothDeviceClient::kPairingActionFail);
 
   // Send the list of devices to the view.
-  web_ui()->CallJavascriptFunction(kUpdateBluetoothInfoJSCallback,
-      *predefined_devices, devices, pairing_method_options,
-      pairing_action_options);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      kUpdateBluetoothInfoJSCallback, *predefined_devices, devices,
+      pairing_method_options, pairing_action_options);
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
@@ -281,8 +282,8 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
   ash::Shell::GetInstance()->system_tray_delegate()->ConnectToBluetoothDevice(
       props->address.value());
   if (!props->paired.value()) {
-    web_ui()->CallJavascriptFunction(kPairFailedJSCallback,
-        base::StringValue(path));
+    web_ui()->CallJavascriptFunctionUnsafe(kPairFailedJSCallback,
+                                           base::StringValue(path));
   }
 }
 
@@ -304,7 +305,7 @@ void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
 
     audio_nodes.Append(std::move(audio_node));
   }
-  web_ui()->CallJavascriptFunction(kUpdateAudioNodes, audio_nodes);
+  web_ui()->CallJavascriptFunctionUnsafe(kUpdateAudioNodes, audio_nodes);
 }
 
 void DeviceEmulatorMessageHandler::HandleInsertAudioNode(

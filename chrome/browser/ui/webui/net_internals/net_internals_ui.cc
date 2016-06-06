@@ -514,12 +514,11 @@ void NetInternalsMessageHandler::SendJavascriptCommand(
   std::unique_ptr<base::Value> value(arg);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (value.get()) {
-    web_ui()->CallJavascriptFunction("g_browser.receive",
-                                     *command_value.get(),
-                                     *value.get());
+    web_ui()->CallJavascriptFunctionUnsafe("g_browser.receive",
+                                           *command_value.get(), *value.get());
   } else {
-    web_ui()->CallJavascriptFunction("g_browser.receive",
-                                     *command_value.get());
+    web_ui()->CallJavascriptFunctionUnsafe("g_browser.receive",
+                                           *command_value.get());
   }
 }
 

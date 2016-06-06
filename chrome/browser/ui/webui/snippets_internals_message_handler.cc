@@ -68,7 +68,7 @@ void SnippetsInternalsMessageHandler::NTPSnippetsServiceLoaded() {
 
   SendSnippets();
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.receiveJson",
       base::StringValue(
           ntp_snippets_service_->snippets_fetcher()->last_json()));
@@ -146,7 +146,7 @@ void SnippetsInternalsMessageHandler::SendInitialData() {
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
                                    chrome::android::kNTPSnippetsFeature));
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.setHostRestricted",
       base::FundamentalValue(
           ntp_snippets_service_->snippets_fetcher()->UsesHostRestrictions()));
@@ -178,8 +178,8 @@ void SnippetsInternalsMessageHandler::SendSnippets() {
 
   base::DictionaryValue result;
   result.Set("list", std::move(snippets_list));
-  web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveSnippets",
-                                   result);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals.receiveSnippets", result);
 
   const std::string& status =
       ntp_snippets_service_->snippets_fetcher()->last_status();
@@ -196,7 +196,7 @@ void SnippetsInternalsMessageHandler::SendDiscardedSnippets() {
 
   base::DictionaryValue result;
   result.Set("list", std::move(snippets_list));
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.receiveDiscardedSnippets", result);
 }
 
@@ -214,8 +214,8 @@ void SnippetsInternalsMessageHandler::SendHosts() {
 
   base::DictionaryValue result;
   result.Set("list", std::move(hosts_list));
-  web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveHosts",
-                                   result);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals.receiveHosts", result);
 }
 
 void SnippetsInternalsMessageHandler::SendBoolean(const std::string& name,
@@ -228,6 +228,6 @@ void SnippetsInternalsMessageHandler::SendString(const std::string& name,
   base::StringValue string_name(name);
   base::StringValue string_value(value);
 
-  web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveProperty",
-                                   string_name, string_value);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.SnippetsInternals.receiveProperty", string_name, string_value);
 }

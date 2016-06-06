@@ -210,8 +210,8 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
   results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
   results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
 #endif
-  web_ui()->CallJavascriptFunction(flags_ui::kReturnExperimentalFeatures,
-                                   results);
+  web_ui()->CallJavascriptFunctionUnsafe(flags_ui::kReturnExperimentalFeatures,
+                                         results);
 }
 
 void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(

@@ -175,7 +175,7 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
     NET_LOG_EVENT("ChooseMobileNetwork", "Device is scanning for networks.");
     scanning_ = true;
     if (is_page_ready_)
-      web_ui()->CallJavascriptFunction(kJsApiShowScanning);
+      web_ui()->CallJavascriptFunctionUnsafe(kJsApiShowScanning);
     return;
   }
   scanning_ = false;
@@ -203,7 +203,7 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
     }
   }
   if (is_page_ready_) {
-    web_ui()->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
+    web_ui()->CallJavascriptFunctionUnsafe(kJsApiShowNetworks, networks_list_);
     networks_list_.Clear();
     has_pending_results_ = false;
   } else {
@@ -252,11 +252,11 @@ void ChooseMobileNetworkHandler::HandlePageReady(const base::ListValue* args) {
   }
 
   if (has_pending_results_) {
-    web_ui()->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
+    web_ui()->CallJavascriptFunctionUnsafe(kJsApiShowNetworks, networks_list_);
     networks_list_.Clear();
     has_pending_results_ = false;
   } else if (scanning_) {
-    web_ui()->CallJavascriptFunction(kJsApiShowScanning);
+    web_ui()->CallJavascriptFunctionUnsafe(kJsApiShowScanning);
   }
   is_page_ready_ = true;
 }

@@ -297,7 +297,7 @@ UserManagerScreenHandler::~UserManagerScreenHandler() {
 
 void UserManagerScreenHandler::ShowBannerMessage(
     const base::string16& message) {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.showBannerMessage",
       base::StringValue(message));
 }
@@ -310,14 +310,14 @@ void UserManagerScreenHandler::ShowUserPodCustomIcon(
       icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.showUserPodCustomIcon",
       base::StringValue(account_id.GetUserEmail()), *icon);
 }
 
 void UserManagerScreenHandler::HideUserPodCustomIcon(
     const AccountId& account_id) {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "login.AccountPickerScreen.hideUserPodCustomIcon",
       base::StringValue(account_id.GetUserEmail()));
 }
@@ -335,10 +335,10 @@ void UserManagerScreenHandler::SetAuthType(
     return;
 
   user_auth_type_map_[account_id.GetUserEmail()] = auth_type;
-  web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setAuthType",
-                                   base::StringValue(account_id.GetUserEmail()),
-                                   base::FundamentalValue(auth_type),
-                                   base::StringValue(auth_value));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "login.AccountPickerScreen.setAuthType",
+      base::StringValue(account_id.GetUserEmail()),
+      base::FundamentalValue(auth_type), base::StringValue(auth_value));
 }
 
 proximity_auth::ScreenlockBridge::LockHandler::AuthType
@@ -374,7 +374,8 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   args->GetString(0, &url_hash_);
 
   SendUserList();
-  web_ui()->CallJavascriptFunction("cr.ui.UserManager.showUserManagerScreen",
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.ui.UserManager.showUserManagerScreen",
       base::FundamentalValue(IsGuestModeEnabled()),
       base::FundamentalValue(IsAddPersonEnabled()));
 
@@ -468,9 +469,8 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
   if (profiles::AreAllProfilesLocked()) {
-    web_ui()->CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::StringValue("show-error-dialog"),
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "cr.webUIListenerCallback", base::StringValue("show-error-dialog"),
         base::StringValue(l10n_util::GetStringUTF8(
             IDS_USER_MANAGER_REMOVE_PROFILE_PROFILES_LOCKED_ERROR)));
     return;
@@ -502,9 +502,8 @@ void UserManagerScreenHandler::HandleAreAllProfilesLocked(
   bool success = args->GetString(0, &webui_callback_id);
   DCHECK(success);
 
-  web_ui()->CallJavascriptFunction(
-      "cr.webUIResponse",
-      base::StringValue(webui_callback_id),
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "cr.webUIResponse", base::StringValue(webui_callback_id),
       base::FundamentalValue(true),
       base::FundamentalValue(profiles::AreAllProfilesLocked()));
 }
@@ -600,9 +599,9 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
       stats_success &= item.success;
     }
     if (stats_success) {
-      web_ui()->CallJavascriptFunction("updateRemoveWarningDialog",
-                                       base::StringValue(profile_path.value()),
-                                       return_value);
+      web_ui()->CallJavascriptFunctionUnsafe(
+          "updateRemoveWarningDialog", base::StringValue(profile_path.value()),
+          return_value);
       return;
     }
   }
@@ -624,9 +623,9 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
     stat->SetBooleanWithoutPathExpansion("success", item.success);
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
   }
-  web_ui()->CallJavascriptFunction("updateRemoveWarningDialog",
-                                   base::StringValue(profile_path.value()),
-                                   return_value);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "updateRemoveWarningDialog", base::StringValue(profile_path.value()),
+      return_value);
 }
 
 void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
@@ -657,10 +656,9 @@ void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
   base::StringValue message = base::StringValue(
       l10n_util::GetPluralStringFUTF16(message_id, total_count));
 
-  web_ui()->CallJavascriptFunction("updateRemoveWarningDialogSetMessage",
-                                   base::StringValue(profile_path),
-                                   message,
-                                   base::FundamentalValue(total_count));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "updateRemoveWarningDialogSetMessage", base::StringValue(profile_path),
+      message, base::FundamentalValue(total_count));
 }
 
 void UserManagerScreenHandler::OnGetTokenInfoResponse(
@@ -929,8 +927,9 @@ void UserManagerScreenHandler::SendUserList() {
     users_list.Append(profile_value);
   }
 
-  web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
-      users_list, base::FundamentalValue(IsGuestModeEnabled()));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "login.AccountPickerScreen.loadUsers", users_list,
+      base::FundamentalValue(IsGuestModeEnabled()));
 
   // This is the latest C++ code we have in the flow to show the UserManager.
   // This may be invoked more than once per UserManager lifetime; the
@@ -951,15 +950,13 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
                    weak_ptr_factory_.GetWeakPtr()),
         ProfileMetrics::SWITCH_PROFILE_UNLOCK);
   } else {
-    web_ui()->CallJavascriptFunction(
-        "cr.ui.UserManager.showSignInError",
-        base::FundamentalValue(0),
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "cr.ui.UserManager.showSignInError", base::FundamentalValue(0),
         base::StringValue(l10n_util::GetStringUTF8(
-            auth == ProfileMetrics::AUTH_FAILED_OFFLINE ?
-                IDS_LOGIN_ERROR_AUTHENTICATING_OFFLINE :
-                IDS_LOGIN_ERROR_AUTHENTICATING)),
-        base::StringValue(""),
-        base::FundamentalValue(0));
+            auth == ProfileMetrics::AUTH_FAILED_OFFLINE
+                ? IDS_LOGIN_ERROR_AUTHENTICATING_OFFLINE
+                : IDS_LOGIN_ERROR_AUTHENTICATING)),
+        base::StringValue(""), base::FundamentalValue(0));
   }
 }
 

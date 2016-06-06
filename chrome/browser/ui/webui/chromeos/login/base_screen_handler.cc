@@ -69,7 +69,7 @@ void BaseScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
 }
 
 void BaseScreenHandler::CallJS(const std::string& method) {
-  web_ui()->CallJavascriptFunction(FullMethodPath(method));
+  web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method));
 }
 
 void BaseScreenHandler::ShowScreen(OobeScreen screen) {
@@ -84,7 +84,8 @@ void BaseScreenHandler::ShowScreenWithData(OobeScreen screen,
   screen_params.SetString("id", GetOobeScreenName(screen));
   if (data)
     screen_params.SetWithoutPathExpansion("data", data->DeepCopy());
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
+  web_ui()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.showScreen",
+                                         screen_params);
 }
 
 OobeScreen BaseScreenHandler::GetCurrentScreen() const {

@@ -311,7 +311,7 @@ void AppLauncherHandler::Observe(int type,
         CreateAppInfo(extension,
                       extension_service_,
                       &app_info);
-        web_ui()->CallJavascriptFunction("ntp.appMoved", app_info);
+        web_ui()->CallJavascriptFunctionUnsafe("ntp.appMoved", app_info);
       } else {
         HandleGetApps(NULL);
       }
@@ -349,7 +349,7 @@ void AppLauncherHandler::OnExtensionLoaded(
   base::FundamentalValue highlight(prefs->IsFromBookmark(extension->id()) &&
                                    attempted_bookmark_app_install_);
   attempted_bookmark_app_install_ = false;
-  web_ui()->CallJavascriptFunction("ntp.appAdded", *app_info, highlight);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info, highlight);
 }
 
 void AppLauncherHandler::OnExtensionUnloaded(
@@ -450,7 +450,7 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
 
   SetAppToBeHighlighted();
   FillAppDictionary(&dictionary);
-  web_ui()->CallJavascriptFunction("ntp.getAppsCallback", dictionary);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
@@ -784,19 +784,20 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
     return;
 
   base::StringValue app_id(highlight_app_id_);
-  web_ui()->CallJavascriptFunction("ntp.setAppToBeHighlighted", app_id);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.setAppToBeHighlighted", app_id);
   highlight_app_id_.clear();
 }
 
 void AppLauncherHandler::OnExtensionPreferenceChanged() {
   base::DictionaryValue dictionary;
   FillAppDictionary(&dictionary);
-  web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback", dictionary);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.appsPrefChangeCallback",
+                                         dictionary);
 }
 
 void AppLauncherHandler::OnLocalStatePreferenceChanged() {
 #if defined(ENABLE_APP_LIST)
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ntp.appLauncherPromoPrefChangeCallback",
       base::FundamentalValue(g_browser_process->local_state()->GetBoolean(
           prefs::kShowAppLauncherPromo)));
@@ -831,7 +832,7 @@ void AppLauncherHandler::ExtensionEnableFlowFinished() {
   // icon disappears but isn't replaced by the enabled icon, making a poor
   // visual experience.
   base::StringValue app_id(extension_id_prompting_);
-  web_ui()->CallJavascriptFunction("ntp.launchAppAfterEnable", app_id);
+  web_ui()->CallJavascriptFunctionUnsafe("ntp.launchAppAfterEnable", app_id);
 
   extension_enable_flow_.reset();
   extension_id_prompting_ = "";
@@ -876,7 +877,7 @@ void AppLauncherHandler::AppRemoved(const Extension* extension,
   if (!app_info.get())
     return;
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ntp.appRemoved", *app_info, base::FundamentalValue(is_uninstall),
       base::FundamentalValue(!extension_id_prompting_.empty()));
 }

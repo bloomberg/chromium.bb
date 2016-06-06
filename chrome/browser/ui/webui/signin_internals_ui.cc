@@ -69,7 +69,7 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
     // empty in incognito mode. Alternatively, we could force about:signin to
     // open in non-incognito mode always (like about:settings for ex.).
     if (about_signin_internals) {
-      web_ui()->CallJavascriptFunction(
+      web_ui()->CallJavascriptFunctionUnsafe(
           "chrome.signin.getSigninInfo.handleReply",
           *about_signin_internals->GetSigninStatus());
 
@@ -99,12 +99,12 @@ void SignInInternalsUI::OnSigninStateChanged(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 SignInInternalsUI::OnSigninStateChanged"));
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.signin.onSigninInfoChanged.fire", *info);
 }
 
 void SignInInternalsUI::OnCookieAccountsFetched(
     const base::DictionaryValue* info) {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.signin.onCookieAccountsFetched.fire", *info);
 }

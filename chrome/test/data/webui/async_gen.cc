@@ -23,7 +23,7 @@ void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::HandleCallJS(
     const base::ListValue* list_value) {
   std::string call_js;
   ASSERT_TRUE(list_value->GetString(0, &call_js));
-  web_ui()->CallJavascriptFunction(call_js);
+  web_ui()->CallJavascriptFunctionUnsafe(call_js);
 }
 
 void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::RegisterMessages() {

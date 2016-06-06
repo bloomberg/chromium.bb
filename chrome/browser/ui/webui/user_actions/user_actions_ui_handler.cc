@@ -23,7 +23,7 @@ void UserActionsUIHandler::RegisterMessages() {}
 
 void UserActionsUIHandler::OnUserAction(const std::string& action) {
   base::StringValue user_action_name(action);
-  web_ui()->CallJavascriptFunction("userActions.observeUserAction",
-                                   user_action_name);
+  web_ui()->CallJavascriptFunctionUnsafe("userActions.observeUserAction",
+                                         user_action_name);
 }
 

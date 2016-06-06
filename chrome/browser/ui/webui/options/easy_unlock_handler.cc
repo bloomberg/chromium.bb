@@ -90,8 +90,9 @@ void EasyUnlockHandler::SendTurnOffOperationStatus() {
       status_string = "idle";
       break;
   }
-  web_ui()->CallJavascriptFunction("EasyUnlockTurnOffOverlay.updateUIState",
-                                   base::StringValue(status_string));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "EasyUnlockTurnOffOverlay.updateUIState",
+      base::StringValue(status_string));
 }
 
 void EasyUnlockHandler::HandleGetTurnOffFlowStatus(

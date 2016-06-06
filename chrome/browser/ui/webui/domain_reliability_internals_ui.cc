@@ -60,6 +60,6 @@ void DomainReliabilityInternalsUI::UpdateData(
 
 void DomainReliabilityInternalsUI::OnDataUpdated(
     std::unique_ptr<base::Value> data) const {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "DomainReliabilityInternals.onDataUpdated", *data);
 }

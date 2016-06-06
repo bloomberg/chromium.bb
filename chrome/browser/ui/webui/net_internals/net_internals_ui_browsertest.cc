@@ -189,7 +189,7 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
 
 void NetInternalsTest::MessageHandler::RunJavascriptCallback(
     base::Value* value) {
-  web_ui()->CallJavascriptFunction("NetInternalsTest.callback", *value);
+  web_ui()->CallJavascriptFunctionUnsafe("NetInternalsTest.callback", *value);
 }
 
 void NetInternalsTest::MessageHandler::GetTestServerURL(
@@ -264,7 +264,7 @@ void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(
 
   // Tell the test harness that creation is complete.
   base::StringValue command_value("onIncognitoBrowserCreatedForTest");
-  web_ui()->CallJavascriptFunction("g_browser.receive", command_value);
+  web_ui()->CallJavascriptFunctionUnsafe("g_browser.receive", command_value);
 }
 
 void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(

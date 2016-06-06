@@ -354,8 +354,8 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_displays->Append(js_display);
   }
 
-  web_ui()->CallJavascriptFunction("options.DisplayOptions.setDisplayInfo",
-                                   mode, *js_displays);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "options.DisplayOptions.setDisplayInfo", mode, *js_displays);
 }
 
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
@@ -368,7 +368,7 @@ void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   bool unified_enabled = display_manager->unified_desktop_enabled();
   bool mirrored_enabled = display_manager->num_connected_displays() == 2;
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "options.BrowserOptions.enableDisplaySettings",
       base::FundamentalValue(ui_enabled),
       base::FundamentalValue(unified_enabled),

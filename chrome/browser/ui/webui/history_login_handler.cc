@@ -32,6 +32,6 @@ void HistoryLoginHandler::HandleOtherDevicesInitialized(
 
 void HistoryLoginHandler::ProfileInfoChanged() {
   bool signed_in = !profile_info_watcher_->GetAuthenticatedUsername().empty();
-  web_ui()->CallJavascriptFunction(
-      "updateSignInState", base::FundamentalValue(signed_in));
+  web_ui()->CallJavascriptFunctionUnsafe("updateSignInState",
+                                         base::FundamentalValue(signed_in));
 }

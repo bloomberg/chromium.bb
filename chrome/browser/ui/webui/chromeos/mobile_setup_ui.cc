@@ -394,8 +394,8 @@ void MobileSetupHandler::OnActivationStateChanged(
   if (!network) {
     base::DictionaryValue device_dict;
     SetActivationStateAndError(state, error_description, &device_dict);
-    web_ui()->CallJavascriptFunction(kJsDeviceStatusChangedCallback,
-                                     device_dict);
+    web_ui()->CallJavascriptFunctionUnsafe(kJsDeviceStatusChangedCallback,
+                                           device_dict);
     return;
   }
 
@@ -416,7 +416,8 @@ void MobileSetupHandler::GetPropertiesAndCallStatusChanged(
   base::DictionaryValue device_dict;
   GetDeviceInfo(properties, &device_dict);
   SetActivationStateAndError(state, error_description, &device_dict);
-  web_ui()->CallJavascriptFunction(kJsDeviceStatusChangedCallback, device_dict);
+  web_ui()->CallJavascriptFunctionUnsafe(kJsDeviceStatusChangedCallback,
+                                         device_dict);
 }
 
 void MobileSetupHandler::RegisterMessages() {
@@ -521,8 +522,8 @@ void MobileSetupHandler::HandleGetDeviceInfo(const base::ListValue* args) {
       type_ = TYPE_PORTAL;
       // For non-LTE networks network state is ignored, so report the portal is
       // reachable, so it gets shown.
-      web_ui()->CallJavascriptFunction(kJsConnectivityChangedCallback,
-                                       base::FundamentalValue(true));
+      web_ui()->CallJavascriptFunctionUnsafe(kJsConnectivityChangedCallback,
+                                             base::FundamentalValue(true));
     }
   }
 
@@ -540,7 +541,7 @@ void MobileSetupHandler::GetPropertiesAndCallGetDeviceInfo(
     const base::DictionaryValue& properties) {
   base::DictionaryValue device_info;
   GetDeviceInfo(properties, &device_info);
-  web_ui()->CallJavascriptFunction(kJsGetDeviceInfoCallback, device_info);
+  web_ui()->CallJavascriptFunctionUnsafe(kJsGetDeviceInfoCallback, device_info);
 }
 
 void MobileSetupHandler::GetPropertiesFailure(
@@ -552,7 +553,7 @@ void MobileSetupHandler::GetPropertiesFailure(
                 service_path);
   // Invoke |callback_name| with an empty dictionary.
   base::DictionaryValue device_dict;
-  web_ui()->CallJavascriptFunction(callback_name, device_dict);
+  web_ui()->CallJavascriptFunctionUnsafe(callback_name, device_dict);
 }
 
 void MobileSetupHandler::DefaultNetworkChanged(
@@ -602,8 +603,9 @@ void MobileSetupHandler::UpdatePortalReachability(
         nsh->DefaultNetwork()->connection_state() == shill::kStateOnline));
 
   if (force_notification || portal_reachable != lte_portal_reachable_) {
-    web_ui()->CallJavascriptFunction(kJsConnectivityChangedCallback,
-                                     base::FundamentalValue(portal_reachable));
+    web_ui()->CallJavascriptFunctionUnsafe(
+        kJsConnectivityChangedCallback,
+        base::FundamentalValue(portal_reachable));
   }
 
   lte_portal_reachable_ = portal_reachable;
@@ -634,8 +636,7 @@ void MobileSetupUI::DidCommitProvisionalLoadForFrame(
   if (render_frame_host->GetFrameName() != "paymentForm")
     return;
 
-  web_ui()->CallJavascriptFunction(
-        kJsPortalFrameLoadCompletedCallback);
+  web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadCompletedCallback);
 }
 
 void MobileSetupUI::DidFailProvisionalLoad(
@@ -648,6 +649,6 @@ void MobileSetupUI::DidFailProvisionalLoad(
     return;
 
   base::FundamentalValue result_value(-error_code);
-  web_ui()->CallJavascriptFunction(kJsPortalFrameLoadFailedCallback,
-                                   result_value);
+  web_ui()->CallJavascriptFunctionUnsafe(kJsPortalFrameLoadFailedCallback,
+                                         result_value);
 }

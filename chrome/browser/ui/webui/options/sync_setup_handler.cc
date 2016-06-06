@@ -285,8 +285,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 
 void SyncSetupHandler::ConfigureSyncDone() {
   base::StringValue page("done");
-  web_ui()->CallJavascriptFunction(
-      "SyncSetupOverlay.showSyncSetupPage", page);
+  web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
+                                         page);
 
   // Suppress the sign in promo once the user starts sync. This way the user
   // doesn't see the sign in promo even if they sign out later on.
@@ -436,8 +436,8 @@ void SyncSetupHandler::DisplaySpinner() {
                               base::TimeDelta::FromSeconds(kTimeoutSec),
                               this, &SyncSetupHandler::DisplayTimeout);
 
-  web_ui()->CallJavascriptFunction(
-      "SyncSetupOverlay.showSyncSetupPage", page, args);
+  web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
+                                         page, args);
 }
 
 // TODO(kochi): Handle error conditions other than timeout.
@@ -451,8 +451,8 @@ void SyncSetupHandler::DisplayTimeout() {
 
   base::StringValue page("timeout");
   base::DictionaryValue args;
-  web_ui()->CallJavascriptFunction(
-      "SyncSetupOverlay.showSyncSetupPage", page, args);
+  web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
+                                         page, args);
 }
 
 void SyncSetupHandler::OnDidClosePage(const base::ListValue* args) {
@@ -794,8 +794,8 @@ void SyncSetupHandler::FocusUI() {
 void SyncSetupHandler::CloseUI() {
   CloseSyncSetup();
   base::StringValue page("done");
-  web_ui()->CallJavascriptFunction(
-      "SyncSetupOverlay.showSyncSetupPage", page);
+  web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
+                                         page);
 }
 
 bool SyncSetupHandler::IsExistingWizardPresent() {
@@ -938,8 +938,8 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
   }
 
   base::StringValue page("configure");
-  web_ui()->CallJavascriptFunction(
-      "SyncSetupOverlay.showSyncSetupPage", page, args);
+  web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
+                                         page, args);
 
   // Make sure the tab used for the Gaia sign in does not cover the settings
   // tab.

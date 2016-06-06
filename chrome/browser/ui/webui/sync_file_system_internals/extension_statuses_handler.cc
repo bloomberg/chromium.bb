@@ -108,8 +108,8 @@ void ExtensionStatusesHandler::GetExtensionStatuses(
 
 void ExtensionStatusesHandler::DidGetExtensionStatuses(
     const base::ListValue& list) {
-  web_ui()->CallJavascriptFunction("ExtensionStatuses.onGetExtensionStatuses",
-                                   list);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ExtensionStatuses.onGetExtensionStatuses", list);
 }
 
 }  // namespace syncfs_internals

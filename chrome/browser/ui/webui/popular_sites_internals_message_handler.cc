@@ -132,14 +132,14 @@ void PopularSitesInternalsMessageHandler::SendOverrides() {
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry);
   std::string version =
       prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.popular_sites_internals.receiveOverrides",
       base::StringValue(country), base::StringValue(version));
 }
 
 void PopularSitesInternalsMessageHandler::SendDownloadResult(bool success) {
   base::StringValue result(success ? "Success" : "Fail");
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.popular_sites_internals.receiveDownloadResult", result);
 }
 
@@ -156,13 +156,13 @@ void PopularSitesInternalsMessageHandler::SendSites() {
   result.Set("sites", std::move(sites_list));
   result.SetString("country", popular_sites_->GetCountry());
   result.SetString("version", popular_sites_->GetVersion());
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.popular_sites_internals.receiveSites", result);
 }
 
 void PopularSitesInternalsMessageHandler::SendJson(const std::string& json) {
-  web_ui()->CallJavascriptFunction("chrome.popular_sites_internals.receiveJson",
-                                   base::StringValue(json));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "chrome.popular_sites_internals.receiveJson", base::StringValue(json));
 }
 
 void PopularSitesInternalsMessageHandler::OnPopularSitesAvailable(

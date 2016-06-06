@@ -104,7 +104,7 @@ void ClearBrowserDataHandler::InitializeHandler() {
 }
 
 void ClearBrowserDataHandler::InitializePage() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.createFooter",
       base::FundamentalValue(AreCountersEnabled()),
       base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),
@@ -113,10 +113,11 @@ void ClearBrowserDataHandler::InitializePage() {
   UpdateInfoBannerVisibility();
   OnBrowsingHistoryPrefChanged();
   bool removal_in_progress = !!remover_;
-  web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setClearing",
-                                   base::FundamentalValue(removal_in_progress));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ClearBrowserDataOverlay.setClearing",
+      base::FundamentalValue(removal_in_progress));
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.markInitializationComplete");
 }
 
@@ -139,8 +140,8 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
     }
   }
 
-  web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setBannerText",
-                                   base::StringValue(text));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ClearBrowserDataOverlay.setBannerText", base::StringValue(text));
 }
 
 void ClearBrowserDataHandler::OnPageOpened(const base::ListValue* value) {
@@ -354,13 +355,12 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   UMA_HISTOGRAM_BOOLEAN(
       "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing", show_notice);
 
-  web_ui()->CallJavascriptFunction(
-      "ClearBrowserDataOverlay.doneClearing",
-      base::FundamentalValue(show_notice));
+  web_ui()->CallJavascriptFunctionUnsafe("ClearBrowserDataOverlay.doneClearing",
+                                         base::FundamentalValue(show_notice));
 }
 
 void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.setAllowDeletingHistory",
       base::FundamentalValue(*allow_deleting_browser_history_));
 }
@@ -379,14 +379,14 @@ void ClearBrowserDataHandler::AddCounter(
 void ClearBrowserDataHandler::UpdateCounterText(
     std::unique_ptr<BrowsingDataCounter::Result> result) {
   DCHECK(AreCountersEnabled());
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateCounter",
       base::StringValue(result->source()->GetPrefName()),
       base::StringValue(GetCounterTextFromResult(result.get())));
 }
 
 void ClearBrowserDataHandler::OnStateChanged() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateSyncWarningAndHistoryFooter",
       base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),
       base::FundamentalValue(should_show_history_notice_));

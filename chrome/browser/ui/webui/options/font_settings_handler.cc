@@ -252,43 +252,42 @@ void FontSettingsHandler::FontsListHasLoaded(
       MaybeGetLocalizedFontName(fixed_font_.GetValue()));
   selected_values.AppendString(font_encoding_.GetValue());
 
-  web_ui()->CallJavascriptFunction("FontSettings.setFontsData",
-                                   *list.get(), encoding_list,
-                                   selected_values);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "FontSettings.setFontsData", *list.get(), encoding_list, selected_values);
 }
 
 void FontSettingsHandler::SetUpStandardFontSample() {
   base::StringValue font_value(standard_font_.GetValue());
   base::FundamentalValue size_value(default_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction(
-      "FontSettings.setUpStandardFontSample", font_value, size_value);
+  web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpStandardFontSample",
+                                         font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSerifFontSample() {
   base::StringValue font_value(serif_font_.GetValue());
   base::FundamentalValue size_value(default_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction(
-      "FontSettings.setUpSerifFontSample", font_value, size_value);
+  web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpSerifFontSample",
+                                         font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpSansSerifFontSample() {
   base::StringValue font_value(sans_serif_font_.GetValue());
   base::FundamentalValue size_value(default_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "FontSettings.setUpSansSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpFixedFontSample() {
   base::StringValue font_value(fixed_font_.GetValue());
   base::FundamentalValue size_value(default_fixed_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction(
-      "FontSettings.setUpFixedFontSample", font_value, size_value);
+  web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpFixedFontSample",
+                                         font_value, size_value);
 }
 
 void FontSettingsHandler::SetUpMinimumFontSample() {
   base::FundamentalValue size_value(minimum_font_size_.GetValue());
-  web_ui()->CallJavascriptFunction("FontSettings.setUpMinimumFontSample",
-                                   size_value);
+  web_ui()->CallJavascriptFunctionUnsafe("FontSettings.setUpMinimumFontSample",
+                                         size_value);
 }
 
 const extensions::Extension*
@@ -302,7 +301,7 @@ FontSettingsHandler::GetAdvancedFontSettingsExtension() {
 }
 
 void FontSettingsHandler::NotifyAdvancedFontSettingsAvailability() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "FontSettings.notifyAdvancedFontSettingsAvailability",
       base::FundamentalValue(GetAdvancedFontSettingsExtension() != NULL));
 }

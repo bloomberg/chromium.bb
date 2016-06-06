@@ -230,7 +230,8 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRouteIdField, route_id);
     result->Set("error", new base::StringValue("Renderer no longer exists."));
-    web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
+    web_ui()->CallJavascriptFunctionUnsafe("accessibility.showTree",
+                                           *(result.get()));
     return;
   }
 
@@ -254,7 +255,8 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   result->Set("tree",
               new base::StringValue(
                   base::UTF16ToUTF8(accessibility_contents_utf16)));
-  web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
+  web_ui()->CallJavascriptFunctionUnsafe("accessibility.showTree",
+                                         *(result.get()));
 }
 
 }  // namespace content

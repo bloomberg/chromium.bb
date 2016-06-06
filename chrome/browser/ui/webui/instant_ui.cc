@@ -100,7 +100,7 @@ void InstantUIMessageHandler::GetPreferenceValue(const base::ListValue* args) {
   if (pref_name == prefs::kInstantUIZeroSuggestUrlPrefix) {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     base::StringValue arg(prefs->GetString(pref_name.c_str()));
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "instantConfig.getPreferenceValueResult", pref_name_value, arg);
   }
 }
@@ -143,7 +143,8 @@ void InstantUIMessageHandler::GetDebugInfo(const base::ListValue* args) {
   }
   data.Set("entries", entries);
 
-  web_ui()->CallJavascriptFunction("instantConfig.getDebugInfoResult", data);
+  web_ui()->CallJavascriptFunctionUnsafe("instantConfig.getDebugInfoResult",
+                                         data);
 #endif
 }
 

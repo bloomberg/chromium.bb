@@ -58,7 +58,7 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (internals) {
-    internals->web_ui()->CallJavascriptFunction(
+    internals->web_ui()->CallJavascriptFunctionUnsafe(
         "serviceworker.onOperationComplete",
         FundamentalValue(static_cast<int>(status)),
         FundamentalValue(callback_id));
@@ -239,8 +239,8 @@ void DidGetRegistrations(
   args.push_back(GetRegistrationListValue(stored_registrations));
   args.push_back(new FundamentalValue(partition_id));
   args.push_back(new StringValue(context_path.value()));
-  internals->web_ui()->CallJavascriptFunction("serviceworker.onPartitionData",
-                                              args.get());
+  internals->web_ui()->CallJavascriptFunctionUnsafe(
+      "serviceworker.onPartitionData", args.get());
 }
 
 }  // namespace
@@ -255,16 +255,15 @@ class ServiceWorkerInternalsUI::PartitionObserver
   void OnRunningStateChanged(int64_t version_id,
                              ServiceWorkerVersion::RunningStatus) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    web_ui_->CallJavascriptFunction(
+    web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
   void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    web_ui_->CallJavascriptFunction(
-        "serviceworker.onVersionStateChanged",
-        FundamentalValue(partition_id_),
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onVersionStateChanged", FundamentalValue(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
   void OnErrorReported(int64_t version_id,
@@ -283,8 +282,8 @@ class ServiceWorkerInternalsUI::PartitionObserver
     value->SetInteger("columnNumber", info.column_number);
     value->SetString("sourceURL", info.source_url.spec());
     args.push_back(value.release());
-    web_ui_->CallJavascriptFunction("serviceworker.onErrorReported",
-                                    args.get());
+    web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onErrorReported",
+                                          args.get());
   }
   void OnReportConsoleMessage(int64_t version_id,
                               int process_id,
@@ -303,19 +302,19 @@ class ServiceWorkerInternalsUI::PartitionObserver
     value->SetInteger("lineNumber", message.line_number);
     value->SetString("sourceURL", message.source_url.spec());
     args.push_back(value.release());
-    web_ui_->CallJavascriptFunction("serviceworker.onConsoleMessageReported",
-                                    args.get());
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onConsoleMessageReported", args.get());
   }
   void OnRegistrationStored(int64_t registration_id,
                             const GURL& pattern) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
-                                    StringValue(pattern.spec()));
+    web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onRegistrationStored",
+                                          StringValue(pattern.spec()));
   }
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override {
-    web_ui_->CallJavascriptFunction("serviceworker.onRegistrationDeleted",
-                                    StringValue(pattern.spec()));
+    web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onRegistrationDeleted",
+                                          StringValue(pattern.spec()));
   }
   int partition_id() const { return partition_id_; }
 
@@ -386,7 +385,7 @@ void ServiceWorkerInternalsUI::GetOptions(const ListValue* args) {
   options.SetBoolean("debug_on_start",
                      ServiceWorkerDevToolsManager::GetInstance()
                          ->debug_service_worker_on_start());
-  web_ui()->CallJavascriptFunction("serviceworker.onOptions", options);
+  web_ui()->CallJavascriptFunctionUnsafe("serviceworker.onOptions", options);
 }
 
 void ServiceWorkerInternalsUI::SetOption(const ListValue* args) {

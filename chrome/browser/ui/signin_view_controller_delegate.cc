@@ -52,9 +52,11 @@ void SigninViewControllerDelegate::LoadingStateChanged(
     content::WebContents* source,
     bool to_different_document) {
   if (CanGoBack(source))
-    source->GetWebUI()->CallJavascriptFunction("inline.login.showBackButton");
+    source->GetWebUI()->CallJavascriptFunctionUnsafe(
+        "inline.login.showBackButton");
   else
-    source->GetWebUI()->CallJavascriptFunction("inline.login.showCloseButton");
+    source->GetWebUI()->CallJavascriptFunctionUnsafe(
+        "inline.login.showCloseButton");
 }
 
 void SigninViewControllerDelegate::PerformNavigation() {

@@ -124,10 +124,9 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
 
   base::StringValue default_value(default_id);
   base::StringValue type_value(device_type);
-  web_ui()->CallJavascriptFunction("ContentSettings.updateDevicesMenu",
-                                   type_value,
-                                   device_list,
-                                   default_value);
+  web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.updateDevicesMenu",
+                                         type_value, device_list,
+                                         default_value);
 }
 
 void MediaDevicesSelectionHandler::UpdateDevicesMenuForType(DeviceType type) {

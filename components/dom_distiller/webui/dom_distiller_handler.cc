@@ -70,7 +70,7 @@ void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
         base::Bind(base::Bind(&DomDistillerHandler::OnArticleAdded,
                               base::Unretained(this))));
   } else {
-    web_ui()->CallJavascriptFunction("domDistiller.onArticleAddFailed");
+    web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onArticleAddFailed");
   }
 }
 
@@ -83,7 +83,7 @@ void DomDistillerHandler::HandleViewUrl(const base::ListValue* args) {
         ui::PAGE_TRANSITION_GENERATED,
         std::string());
   } else {
-    web_ui()->CallJavascriptFunction("domDistiller.onViewUrlFailed");
+    web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onViewUrlFailed");
   }
 }
 
@@ -117,7 +117,8 @@ void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {
     entries.Append(entry.release());
   }
   // TODO(nyquist): Write a test that ensures we sanitize the data we send.
-  web_ui()->CallJavascriptFunction("domDistiller.onReceivedEntries", entries);
+  web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onReceivedEntries",
+                                         entries);
 }
 
 void DomDistillerHandler::OnArticleAdded(bool article_available) {
@@ -125,7 +126,7 @@ void DomDistillerHandler::OnArticleAdded(bool article_available) {
   if (article_available) {
     HandleRequestEntries(NULL);
   } else {
-    web_ui()->CallJavascriptFunction("domDistiller.onArticleAddFailed");
+    web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onArticleAddFailed");
   }
 }
 

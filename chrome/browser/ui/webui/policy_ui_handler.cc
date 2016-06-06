@@ -614,7 +614,7 @@ void PolicyUIHandler::SendPolicyNames() const {
   names.Set("extensionPolicyNames", extension_policy_names);
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  web_ui()->CallJavascriptFunction("policy.Page.setPolicyNames", names);
+  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyNames", names);
 }
 
 void PolicyUIHandler::SendPolicyValues() const {
@@ -647,7 +647,8 @@ void PolicyUIHandler::SendPolicyValues() const {
   }
   all_policies.Set("extensionPolicies", extension_values);
 #endif
-  web_ui()->CallJavascriptFunction("policy.Page.setPolicyValues", all_policies);
+  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyValues",
+                                         all_policies);
 }
 
 void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
@@ -713,7 +714,7 @@ void PolicyUIHandler::SendStatus() const {
   if (!user_status->empty())
     status.Set("user", user_status.release());
 
-  web_ui()->CallJavascriptFunction("policy.Page.setStatus", status);
+  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setStatus", status);
 }
 
 void PolicyUIHandler::HandleInitialized(const base::ListValue* args) {
@@ -742,7 +743,7 @@ void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
 }
 
 void PolicyUIHandler::OnRefreshPoliciesDone() const {
-  web_ui()->CallJavascriptFunction("policy.Page.reloadPoliciesDone");
+  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.reloadPoliciesDone");
 }
 
 policy::PolicyService* PolicyUIHandler::GetPolicyService() const {

@@ -434,19 +434,19 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
 }
 
 void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "updateDiscoverUsbDevicesEnabled",
       *GetPrefValue(prefs::kDevToolsDiscoverUsbDevicesEnabled));
 }
 
 void InspectUI::UpdatePortForwardingEnabled() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "updatePortForwardingEnabled",
       *GetPrefValue(prefs::kDevToolsPortForwardingEnabled));
 }
 
 void InspectUI::UpdatePortForwardingConfig() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "updatePortForwardingConfig",
       *GetPrefValue(prefs::kDevToolsPortForwardingConfig));
 }
@@ -510,9 +510,8 @@ DevToolsTargetImpl* InspectUI::FindTarget(
 
 void InspectUI::PopulateTargets(const std::string& source,
                                 const base::ListValue& targets) {
-  web_ui()->CallJavascriptFunction("populateTargets",
-                                   base::StringValue(source),
-                                   targets);
+  web_ui()->CallJavascriptFunctionUnsafe("populateTargets",
+                                         base::StringValue(source), targets);
 }
 
 void InspectUI::ForceUpdateIfNeeded(const std::string& source_id,
@@ -527,9 +526,9 @@ void InspectUI::ForceUpdateIfNeeded(const std::string& source_id,
 }
 
 void InspectUI::PopulatePortStatus(const base::Value& status) {
-  web_ui()->CallJavascriptFunction("populatePortStatus", status);
+  web_ui()->CallJavascriptFunctionUnsafe("populatePortStatus", status);
 }
 
 void InspectUI::ShowIncognitoWarning() {
-  web_ui()->CallJavascriptFunction("showIncognitoWarning");
+  web_ui()->CallJavascriptFunctionUnsafe("showIncognitoWarning");
 }

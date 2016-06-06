@@ -211,7 +211,8 @@ void PasswordManagerHandler::InitializeHandler() {
 void PasswordManagerHandler::InitializePage() {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordImportExport)) {
-    web_ui()->CallJavascriptFunction("PasswordManager.showImportExportButton");
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "PasswordManager.showImportExportButton");
   }
 }
 
@@ -250,7 +251,7 @@ void PasswordManagerHandler::ShowPassword(
     const std::string& username,
     const base::string16& password_value) {
   // Call back the front end to reveal the password.
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "PasswordManager.showPassword",
       base::FundamentalValue(static_cast<int>(index)),
       base::StringValue(password_value));
@@ -285,8 +286,8 @@ void PasswordManagerHandler::SetPasswordList(
     entries.Append(entry.release());
   }
 
-  web_ui()->CallJavascriptFunction("PasswordManager.setSavedPasswordsList",
-                                   entries);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "PasswordManager.setSavedPasswordsList", entries);
 }
 
 void PasswordManagerHandler::SetPasswordExceptionList(
@@ -299,8 +300,8 @@ void PasswordManagerHandler::SetPasswordExceptionList(
     entries.Append(entry.release());
   }
 
-  web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
-                                   entries);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "PasswordManager.setPasswordExceptionsList", entries);
 }
 
 void PasswordManagerHandler::FileSelected(const base::FilePath& path,

@@ -178,7 +178,8 @@ void CrashesDOMHandler::UpdateUI() {
   args.push_back(&crash_list);
   args.push_back(&version);
   args.push_back(&os_string);
-  web_ui()->CallJavascriptFunction(crash::kCrashesUIUpdateCrashList, args);
+  web_ui()->CallJavascriptFunctionUnsafe(crash::kCrashesUIUpdateCrashList,
+                                         args);
 }
 
 }  // namespace

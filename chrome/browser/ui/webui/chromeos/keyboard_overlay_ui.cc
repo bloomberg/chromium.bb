@@ -374,7 +374,7 @@ void KeyboardOverlayHandler::GetInputMethodId(const base::ListValue* args) {
   const chromeos::input_method::InputMethodDescriptor& descriptor =
       manager->GetActiveIMEState()->GetCurrentInputMethod();
   base::StringValue param(descriptor.id());
-  web_ui()->CallJavascriptFunction("initKeyboardOverlayId", param);
+  web_ui()->CallJavascriptFunctionUnsafe("initKeyboardOverlayId", param);
 }
 
 void KeyboardOverlayHandler::GetLabelMap(const base::ListValue* args) {
@@ -397,7 +397,7 @@ void KeyboardOverlayHandler::GetLabelMap(const base::ListValue* args) {
     dict.SetString(ModifierKeyToLabel(i->first), ModifierKeyToLabel(i->second));
   }
 
-  web_ui()->CallJavascriptFunction("initIdentifierMap", dict);
+  web_ui()->CallJavascriptFunctionUnsafe("initIdentifierMap", dict);
 }
 
 void KeyboardOverlayHandler::OpenLearnMorePage(const base::ListValue* args) {

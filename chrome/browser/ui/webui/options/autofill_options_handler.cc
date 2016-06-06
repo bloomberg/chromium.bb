@@ -355,7 +355,8 @@ void AutofillOptionsHandler::LoadAutofillData() {
     addresses.Append(value.release());
   }
 
-  web_ui()->CallJavascriptFunction("AutofillOptions.setAddressList", addresses);
+  web_ui()->CallJavascriptFunctionUnsafe("AutofillOptions.setAddressList",
+                                         addresses);
 
   base::ListValue credit_cards;
   const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
@@ -363,8 +364,8 @@ void AutofillOptionsHandler::LoadAutofillData() {
     credit_cards.Append(CreditCardToDictionary(*card).release());
   }
 
-  web_ui()->CallJavascriptFunction("AutofillOptions.setCreditCardList",
-                                   credit_cards);
+  web_ui()->CallJavascriptFunctionUnsafe("AutofillOptions.setCreditCardList",
+                                         credit_cards);
 }
 
 void AutofillOptionsHandler::RemoveData(const base::ListValue* args) {
@@ -401,7 +402,8 @@ void AutofillOptionsHandler::LoadAddressEditor(const base::ListValue* args) {
   base::DictionaryValue address;
   AutofillProfileToDictionary(*prior_profile, &address);
 
-  web_ui()->CallJavascriptFunction("AutofillOptions.editAddress", address);
+  web_ui()->CallJavascriptFunctionUnsafe("AutofillOptions.editAddress",
+                                         address);
 }
 
 void AutofillOptionsHandler::LoadAddressEditorComponents(
@@ -420,7 +422,7 @@ void AutofillOptionsHandler::LoadAddressEditorComponents(
   input.Set(kComponents, components.release());
   input.SetString(kLanguageCode, language_code);
 
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "AutofillEditAddressOverlay.loadAddressComponents", input);
 }
 
@@ -457,8 +459,8 @@ void AutofillOptionsHandler::LoadCreditCardEditor(const base::ListValue* args) {
       "expirationYear",
       credit_card->GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
-  web_ui()->CallJavascriptFunction("AutofillOptions.editCreditCard",
-                                   credit_card_data);
+  web_ui()->CallJavascriptFunctionUnsafe("AutofillOptions.editCreditCard",
+                                         credit_card_data);
 }
 
 void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {

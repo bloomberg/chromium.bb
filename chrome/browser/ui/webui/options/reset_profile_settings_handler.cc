@@ -48,7 +48,7 @@ void ResetProfileSettingsHandler::InitializeHandler() {
 }
 
 void ResetProfileSettingsHandler::InitializePage() {
-  web_ui()->CallJavascriptFunction(
+  web_ui()->CallJavascriptFunctionUnsafe(
       "ResetProfileSettingsOverlay.setResettingState",
       base::FundamentalValue(resetter_->IsActive()));
 }
@@ -144,7 +144,8 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
 
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
     bool send_feedback) {
-  web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ResetProfileSettingsOverlay.doneResetting");
   if (send_feedback && setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
     ResettableSettingsSnapshot current_snapshot(profile);
@@ -223,9 +224,8 @@ void ResetProfileSettingsHandler::UpdateFeedbackUI() {
       Profile::FromWebUI(web_ui()), *setting_snapshot_);
   base::DictionaryValue feedback_info;
   feedback_info.Set("feedbackInfo", list.release());
-  web_ui()->CallJavascriptFunction(
-      "ResetProfileSettingsOverlay.setFeedbackInfo",
-      feedback_info);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "ResetProfileSettingsOverlay.setFeedbackInfo", feedback_info);
 }
 
 }  // namespace options

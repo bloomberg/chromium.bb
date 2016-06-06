@@ -105,7 +105,7 @@ void ComponentsDOMHandler::HandleRequestComponentsData(
   base::ListValue* list = ComponentsUI::LoadComponents();
   base::DictionaryValue result;
   result.Set("components", list);
-  web_ui()->CallJavascriptFunction("returnComponentsData", result);
+  web_ui()->CallJavascriptFunctionUnsafe("returnComponentsData", result);
 }
 
 // This function is called when user presses button from html UI.
@@ -256,5 +256,5 @@ void ComponentsUI::OnEvent(Events event, const std::string& id) {
     }
     parameters.SetString("id", id);
   }
-  web_ui()->CallJavascriptFunction("onComponentEvent", parameters);
+  web_ui()->CallJavascriptFunctionUnsafe("onComponentEvent", parameters);
 }

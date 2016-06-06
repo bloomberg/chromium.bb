@@ -94,7 +94,7 @@ DownloadsListTracker::~DownloadsListTracker() {}
 
 void DownloadsListTracker::Reset() {
   if (sending_updates_)
-    web_ui_->CallJavascriptFunction("downloads.Manager.clearAll");
+    web_ui_->CallJavascriptFunctionUnsafe("downloads.Manager.clearAll");
   sent_to_page_ = 0u;
 }
 
@@ -127,10 +127,9 @@ void DownloadsListTracker::StartAndSendChunk() {
     ++it;
   }
 
-  web_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunctionUnsafe(
       "downloads.Manager.insertItems",
-      base::FundamentalValue(static_cast<int>(sent_to_page_)),
-      list);
+      base::FundamentalValue(static_cast<int>(sent_to_page_)), list);
 
   sent_to_page_ += list.GetSize();
 }
@@ -389,10 +388,9 @@ void DownloadsListTracker::InsertItem(const SortedSet::iterator& insert) {
   base::ListValue list;
   list.Append(CreateDownloadItemValue(*insert));
 
-  web_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunctionUnsafe(
       "downloads.Manager.insertItems",
-      base::FundamentalValue(static_cast<int>(index)),
-      list);
+      base::FundamentalValue(static_cast<int>(index)), list);
 
   sent_to_page_++;
 }
@@ -401,7 +399,7 @@ void DownloadsListTracker::UpdateItem(const SortedSet::iterator& update) {
   if (!sending_updates_ || GetIndex(update) >= sent_to_page_)
     return;
 
-  web_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunctionUnsafe(
       "downloads.Manager.updateItem",
       base::FundamentalValue(static_cast<int>(GetIndex(update))),
       *CreateDownloadItemValue(*update));
@@ -416,7 +414,7 @@ void DownloadsListTracker::RemoveItem(const SortedSet::iterator& remove) {
   if (sending_updates_) {
     size_t index = GetIndex(remove);
     if (index < sent_to_page_) {
-      web_ui_->CallJavascriptFunction(
+      web_ui_->CallJavascriptFunctionUnsafe(
           "downloads.Manager.removeItem",
           base::FundamentalValue(static_cast<int>(index)));
       sent_to_page_--;

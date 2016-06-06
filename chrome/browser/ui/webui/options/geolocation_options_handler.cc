@@ -31,7 +31,7 @@ void GeolocationOptionsHandler::InitializePage() {
           0,
           enable_prefix.length(),
           enable_prefix) == 0) {
-    web_ui()->CallJavascriptFunction(
+    web_ui()->CallJavascriptFunctionUnsafe(
         "GeolocationOptions.showGeolocationOption");
   }
 }

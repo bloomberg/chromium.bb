@@ -244,7 +244,8 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
 void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
   std::unique_ptr<base::Value> value(arg);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_ui()->CallJavascriptFunction(net_log::kOnExportNetLogInfoChanged, *arg);
+  web_ui()->CallJavascriptFunctionUnsafe(net_log::kOnExportNetLogInfoChanged,
+                                         *arg);
 }
 
 }  // namespace

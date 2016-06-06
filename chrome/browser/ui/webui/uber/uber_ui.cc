@@ -127,7 +127,7 @@ void UpdateHistoryNavigation(content::WebUI* web_ui) {
   bool overrides_history =
       HasExtensionType(web_ui->GetWebContents()->GetBrowserContext(),
                        chrome::kChromeUIHistoryHost);
-  web_ui->CallJavascriptFunction(
+  web_ui->CallJavascriptFunctionUnsafe(
       "uber_frame.setNavigationOverride",
       base::StringValue(chrome::kChromeUIHistoryHost),
       base::StringValue(overrides_history ? "yes" : "no"));

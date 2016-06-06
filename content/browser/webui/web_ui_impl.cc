@@ -154,23 +154,23 @@ bool WebUIImpl::CanCallJavascript() {
           target_frame->GetLastCommittedURL().spec() == url::kAboutBlankURL);
 }
 
-void WebUIImpl::CallJavascriptFunction(const std::string& function_name) {
+void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name) {
   DCHECK(base::IsStringASCII(function_name));
   base::string16 javascript = base::ASCIIToUTF16(function_name + "();");
   ExecuteJavascript(javascript);
 }
 
-void WebUIImpl::CallJavascriptFunction(const std::string& function_name,
-                                       const base::Value& arg) {
+void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg) {
   DCHECK(base::IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg);
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUIImpl::CallJavascriptFunction(
-    const std::string& function_name,
-    const base::Value& arg1, const base::Value& arg2) {
+void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1,
+                                             const base::Value& arg2) {
   DCHECK(base::IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg1);
@@ -178,9 +178,10 @@ void WebUIImpl::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUIImpl::CallJavascriptFunction(
-    const std::string& function_name,
-    const base::Value& arg1, const base::Value& arg2, const base::Value& arg3) {
+void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1,
+                                             const base::Value& arg2,
+                                             const base::Value& arg3) {
   DCHECK(base::IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg1);
@@ -189,12 +190,11 @@ void WebUIImpl::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUIImpl::CallJavascriptFunction(
-    const std::string& function_name,
-    const base::Value& arg1,
-    const base::Value& arg2,
-    const base::Value& arg3,
-    const base::Value& arg4) {
+void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name,
+                                             const base::Value& arg1,
+                                             const base::Value& arg2,
+                                             const base::Value& arg3,
+                                             const base::Value& arg4) {
   DCHECK(base::IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg1);
@@ -204,7 +204,7 @@ void WebUIImpl::CallJavascriptFunction(
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 
-void WebUIImpl::CallJavascriptFunction(
+void WebUIImpl::CallJavascriptFunctionUnsafe(
     const std::string& function_name,
     const std::vector<const base::Value*>& args) {
   DCHECK(base::IsStringASCII(function_name));

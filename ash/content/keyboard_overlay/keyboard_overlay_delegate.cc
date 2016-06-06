@@ -54,7 +54,7 @@ void PaintMessageHandler::RegisterMessages() {
 void PaintMessageHandler::DidPaint(const base::ListValue* args) {
   // Show the widget after the web content has been painted.
   widget_->Show();
-  web_ui()->CallJavascriptFunction("onWidgetShown");
+  web_ui()->CallJavascriptFunctionUnsafe("onWidgetShown");
 }
 
 }  // namespace

@@ -502,7 +502,7 @@ void PrintPreviewUI::OnInitiatorClosed() {
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
   if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
-    web_ui()->CallJavascriptFunction("cancelPendingPrintRequest");
+    web_ui()->CallJavascriptFunctionUnsafe("cancelPendingPrintRequest");
   else
     OnClosePrintPreviewDialog();
 }
@@ -517,7 +517,7 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
 
 #if defined(ENABLE_BASIC_PRINTING)
 void PrintPreviewUI::OnShowSystemDialog() {
-  web_ui()->CallJavascriptFunction("onSystemDialogLinkClicked");
+  web_ui()->CallJavascriptFunctionUnsafe("onSystemDialogLinkClicked");
 }
 #endif  // ENABLE_BASIC_PRINTING
 
@@ -528,9 +528,8 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
     g_testing_delegate->DidGetPreviewPageCount(params.page_count);
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue request_id(params.preview_request_id);
-  web_ui()->CallJavascriptFunction("onDidGetPreviewPageCount",
-                                   count,
-                                   request_id);
+  web_ui()->CallJavascriptFunctionUnsafe("onDidGetPreviewPageCount", count,
+                                         request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
@@ -559,8 +558,8 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
                     printable_area.height());
 
   base::FundamentalValue has_page_size_style(has_custom_page_size_style);
-  web_ui()->CallJavascriptFunction("onDidGetDefaultPageLayout", layout,
-                                   has_page_size_style);
+  web_ui()->CallJavascriptFunctionUnsafe("onDidGetDefaultPageLayout", layout,
+                                         has_page_size_style);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number,
@@ -571,10 +570,10 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
   base::FundamentalValue request_id(preview_request_id);
   if (g_testing_delegate)
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
-  web_ui()->CallJavascriptFunction(
-      "onDidPreviewPage", number, ui_identifier, request_id);
+  web_ui()->CallJavascriptFunctionUnsafe("onDidPreviewPage", number,
+                                         ui_identifier, request_id);
   if (g_testing_delegate && g_testing_delegate->IsAutoCancelEnabled())
-    web_ui()->CallJavascriptFunction("autoCancelForTesting");
+    web_ui()->CallJavascriptFunctionUnsafe("autoCancelForTesting");
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
@@ -594,12 +593,12 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
   }
   base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
-  web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
-                                   ui_preview_request_id);
+  web_ui()->CallJavascriptFunctionUnsafe("updatePrintPreview", ui_identifier,
+                                         ui_preview_request_id);
 }
 
 void PrintPreviewUI::OnFileSelectionCancelled() {
-  web_ui()->CallJavascriptFunction("fileSelectionCancelled");
+  web_ui()->CallJavascriptFunctionUnsafe("fileSelectionCancelled");
 }
 
 void PrintPreviewUI::OnCancelPendingPreviewRequest() {
@@ -608,11 +607,11 @@ void PrintPreviewUI::OnCancelPendingPreviewRequest() {
 
 void PrintPreviewUI::OnPrintPreviewFailed() {
   handler_->OnPrintPreviewFailed();
-  web_ui()->CallJavascriptFunction("printPreviewFailed");
+  web_ui()->CallJavascriptFunctionUnsafe("printPreviewFailed");
 }
 
 void PrintPreviewUI::OnInvalidPrinterSettings() {
-  web_ui()->CallJavascriptFunction("invalidPrinterSettings");
+  web_ui()->CallJavascriptFunctionUnsafe("invalidPrinterSettings");
 }
 
 PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
@@ -646,7 +645,7 @@ void PrintPreviewUI::OnClosePrintPreviewDialog() {
 }
 
 void PrintPreviewUI::OnReloadPrintersList() {
-  web_ui()->CallJavascriptFunction("reloadPrintersList");
+  web_ui()->CallJavascriptFunctionUnsafe("reloadPrintersList");
 }
 
 void PrintPreviewUI::OnSetOptionsFromDocument(
@@ -656,7 +655,8 @@ void PrintPreviewUI::OnSetOptionsFromDocument(
                      params.is_scaling_disabled);
   options.SetInteger(printing::kSettingCopies, params.copies);
   options.SetInteger(printing::kSettingDuplexMode, params.duplex);
-  web_ui()->CallJavascriptFunction("printPresetOptionsFromDocument", options);
+  web_ui()->CallJavascriptFunctionUnsafe("printPresetOptionsFromDocument",
+                                         options);
 }
 
 // static
