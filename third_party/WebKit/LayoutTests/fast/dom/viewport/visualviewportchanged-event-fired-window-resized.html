@@ -19,7 +19,7 @@
         // Turn off smooth scrolling.
         internals.settings.setScrollAnimatorEnabled(false);
 
-        document.addEventListener('visualviewportchanged', function(e) {
+        window.addEventListener('visualviewportchanged', function(e) {
             numCalls++;
         });
 

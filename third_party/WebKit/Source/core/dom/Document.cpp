@@ -3928,7 +3928,7 @@ void Document::enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryList
 void Document::enqueueVisualViewportChangedEvent()
 {
     Event* event = Event::create(EventTypeNames::visualviewportchanged);
-    event->setTarget(this);
+    event->setTarget(domWindow());
     ensureScriptedAnimationController().enqueuePerFrameEvent(event);
 }
 
