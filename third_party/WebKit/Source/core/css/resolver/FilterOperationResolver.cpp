@@ -135,7 +135,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
         ASSERT(filterValue->length() <= 1);
 
         if (operationType == FilterOperation::REFERENCE) {
-            CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(filterValue->item(0));
+            const CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(filterValue->item(0));
             KURL url = state.document().completeURL(svgDocumentValue->url());
 
             ReferenceFilterOperation* operation = ReferenceFilterOperation::create(svgDocumentValue->url(), AtomicString(url.fragmentIdentifier()));

@@ -41,7 +41,7 @@ public:
     ~CSSSVGDocumentValue();
 
     DocumentResource* cachedSVGDocument() const { return m_document.get(); }
-    DocumentResource* load(Document*);
+    DocumentResource* load(Document*) const;
 
     String customCSSText() const;
     const String& url() const { return m_url; }
@@ -58,8 +58,10 @@ private:
     CSSSVGDocumentValue(const String& url);
 
     String m_url;
-    Member<DocumentResource> m_document;
-    bool m_loadRequested;
+
+    // Document cache.
+    mutable Member<DocumentResource> m_document;
+    mutable bool m_loadRequested;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSSVGDocumentValue, isSVGDocumentValue());

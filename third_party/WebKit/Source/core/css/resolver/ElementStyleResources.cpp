@@ -104,7 +104,7 @@ StyleImage* ElementStyleResources::cursorOrPendingFromValue(CSSPropertyID proper
     return value.cachedImage(m_deviceScaleFactor);
 }
 
-void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperation, CSSSVGDocumentValue* cssSVGDocumentValue)
+void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperation, const CSSSVGDocumentValue* cssSVGDocumentValue)
 {
     m_pendingSVGDocuments.set(filterOperation, cssSVGDocumentValue);
 }
@@ -120,7 +120,7 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
         if (filterOperation->type() == FilterOperation::REFERENCE) {
             ReferenceFilterOperation* referenceFilter = toReferenceFilterOperation(filterOperation);
 
-            CSSSVGDocumentValue* value = m_pendingSVGDocuments.get(referenceFilter);
+            const CSSSVGDocumentValue* value = m_pendingSVGDocuments.get(referenceFilter);
             if (!value)
                 continue;
             DocumentResource* resource = value->load(m_document);

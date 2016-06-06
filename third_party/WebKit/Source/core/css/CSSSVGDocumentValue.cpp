@@ -44,7 +44,7 @@ CSSSVGDocumentValue::~CSSSVGDocumentValue()
 {
 }
 
-DocumentResource* CSSSVGDocumentValue::load(Document* document)
+DocumentResource* CSSSVGDocumentValue::load(Document* document) const
 {
     ASSERT(document);
 
