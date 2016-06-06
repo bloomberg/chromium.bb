@@ -4,6 +4,7 @@
 
 #include "core/html/forms/EmailInputType.h"
 
+#include "bindings/core/v8/ScriptRegexp.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -12,16 +13,18 @@ namespace {
 
 void expectToSucceed(const String& source)
 {
-    String result = EmailInputType::convertEmailAddressToASCII(source);
+    std::unique_ptr<ScriptRegexp> emailRegexp = EmailInputType::createEmailRegexp();
+    String result = EmailInputType::convertEmailAddressToASCII(*emailRegexp, source);
     EXPECT_NE(source, result);
-    EXPECT_TRUE(EmailInputType::isValidEmailAddress(result));
+    EXPECT_TRUE(EmailInputType::isValidEmailAddress(*emailRegexp, result));
 }
 
 void expectToFail(const String& source)
 {
+    std::unique_ptr<ScriptRegexp> emailRegexp = EmailInputType::createEmailRegexp();
     // Conversion failed.  The resultant value might contains non-ASCII
     // characters, and not a valid email address.
-    EXPECT_FALSE(EmailInputType::isValidEmailAddress(EmailInputType::convertEmailAddressToASCII(source)));
+    EXPECT_FALSE(EmailInputType::isValidEmailAddress(*emailRegexp, EmailInputType::convertEmailAddressToASCII(*emailRegexp, source)));
 }
 
 } // namespace

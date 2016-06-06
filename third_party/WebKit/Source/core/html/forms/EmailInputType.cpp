@@ -30,8 +30,6 @@
 #include "core/page/ChromeClient.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
-#include "wtf/LeakAnnotations.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include <unicode/idna.h>
 #include <unicode/unistr.h>
@@ -53,7 +51,12 @@ static const int32_t maximumDomainNameLength = 255;
 // Use the same option as in url/url_canon_icu.cc
 static const int32_t idnaConversionOption = UIDNA_CHECK_BIDI;
 
-String EmailInputType::convertEmailAddressToASCII(const String& address)
+std::unique_ptr<ScriptRegexp> EmailInputType::createEmailRegexp()
+{
+    return std::unique_ptr<ScriptRegexp>(new ScriptRegexp(emailPattern, TextCaseInsensitive));
+}
+
+String EmailInputType::convertEmailAddressToASCII(const ScriptRegexp& regexp, const String& address)
 {
     if (address.containsOnlyASCII())
         return address;
@@ -82,7 +85,7 @@ String EmailInputType::convertEmailAddressToASCII(const String& address)
     builder.append(address, 0, atPosition + 1);
     builder.append(domainName.getBuffer(), domainName.length());
     String asciiEmail = builder.toString();
-    return isValidEmailAddress(asciiEmail) ? asciiEmail : address;
+    return isValidEmailAddress(regexp, asciiEmail) ? asciiEmail : address;
 }
 
 String EmailInputType::convertEmailAddressToUnicode(const String& address) const
@@ -128,19 +131,21 @@ static bool checkValidDotUsage(const String& domain)
     return domain.find("..") == kNotFound;
 }
 
-bool EmailInputType::isValidEmailAddress(const String& address)
+bool EmailInputType::isValidEmailAddress(const ScriptRegexp& regexp, const String& address)
 {
     int addressLength = address.length();
     if (!addressLength)
         return false;
 
-    LEAK_SANITIZER_DISABLED_SCOPE;
-    DEFINE_STATIC_LOCAL(const ScriptRegexp, regExp, (emailPattern, TextCaseInsensitive));
-
     int matchLength;
-    int matchOffset = regExp.match(address, 0, &matchLength);
+    int matchOffset = regexp.match(address, 0, &matchLength);
 
     return !matchOffset && matchLength == addressLength;
+}
+
+EmailInputType::EmailInputType(HTMLInputElement& element)
+    : BaseTextInputType(element)
+{
 }
 
 InputType* EmailInputType::create(HTMLInputElement& element)
@@ -166,6 +171,13 @@ const AtomicString& EmailInputType::formControlType() const
     return InputTypeNames::email;
 }
 
+ScriptRegexp& EmailInputType::ensureEmailRegexp() const
+{
+    if (!m_emailRegexp)
+        m_emailRegexp = createEmailRegexp();
+    return *m_emailRegexp;
+}
+
 // The return value is an invalid email address string if the specified string
 // contains an invalid email address. Otherwise, null string is returned.
 // If an empty string is returned, it means empty address is specified.
@@ -175,12 +187,12 @@ String EmailInputType::findInvalidAddress(const String& value) const
     if (value.isEmpty())
         return String();
     if (!element().multiple())
-        return isValidEmailAddress(value) ? String() : value;
+        return isValidEmailAddress(ensureEmailRegexp(), value) ? String() : value;
     Vector<String> addresses;
     value.split(',', true, addresses);
     for (unsigned i = 0; i < addresses.size(); ++i) {
         String stripped = stripLeadingAndTrailingHTMLSpaces(addresses[i]);
-        if (!isValidEmailAddress(stripped))
+        if (!isValidEmailAddress(ensureEmailRegexp(), stripped))
             return stripped;
     }
     return String();
@@ -268,7 +280,7 @@ String EmailInputType::convertFromVisibleValue(const String& visibleValue) const
 {
     String sanitizedValue = sanitizeValue(visibleValue);
     if (!element().multiple())
-        return convertEmailAddressToASCII(sanitizedValue);
+        return convertEmailAddressToASCII(ensureEmailRegexp(), sanitizedValue);
     Vector<String> addresses;
     sanitizedValue.split(',', true, addresses);
     StringBuilder builder;
@@ -276,7 +288,7 @@ String EmailInputType::convertFromVisibleValue(const String& visibleValue) const
     for (size_t i = 0; i < addresses.size(); ++i) {
         if (i > 0)
             builder.append(',');
-        builder.append(convertEmailAddressToASCII(addresses[i]));
+        builder.append(convertEmailAddressToASCII(ensureEmailRegexp(), addresses[i]));
     }
     return builder.toString();
 }
