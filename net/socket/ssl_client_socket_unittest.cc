@@ -2625,36 +2625,6 @@ TEST_F(SSLClientSocketTest, FallbackShardSessionCache) {
             SSLConnectionStatusToVersion(ssl_info.connection_status));
 }
 
-// Test that RC4 is only enabled if rc4_enabled and
-// deprecated_cipher_suites_enabled are both set.
-TEST_F(SSLClientSocketTest, RC4Enabled) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_RC4;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  // Normal handshakes with RC4 do not work.
-  SSLConfig ssl_config;
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
-
-  // RC4 is also not enabled in the fallback handshake.
-  ssl_config.deprecated_cipher_suites_enabled = true;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
-
-  // Even if RC4 is enabled, it is not sent in the initial handshake.
-  ssl_config.deprecated_cipher_suites_enabled = false;
-  ssl_config.rc4_enabled = true;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
-
-  // If enabled, RC4 works in the fallback handshake.
-  ssl_config.deprecated_cipher_suites_enabled = true;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_EQ(OK, rv);
-}
-
 // Test that DHE is only enabled if deprecated_cipher_suites_enabled is set.
 TEST_F(SSLClientSocketTest, DHEDeprecated) {
   SpawnedTestServer::SSLOptions ssl_options;

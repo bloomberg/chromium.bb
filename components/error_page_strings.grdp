@@ -96,7 +96,7 @@
     Unsupported protocol
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_UNSUPPORTED_CIPHER_BODY" desc="The detailed explanation body text displayed for SSL cipher and version errors.">
-    The client and server don't support a common SSL protocol version or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.
+    The client and server don't support a common SSL protocol version or cipher suite.
   </message>
   <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
     <ph name="SITE">$1<ex>google.com</ex></ph> is not available
