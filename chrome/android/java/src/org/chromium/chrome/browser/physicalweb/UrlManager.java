@@ -107,7 +107,7 @@ class UrlManager {
         mContext = context;
         mNotificationManager = new NotificationManagerProxyImpl(
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
-        mPwsClient = new PwsClientImpl();
+        mPwsClient = new PwsClientImpl(context);
         mObservers = new ObserverList<Listener>();
         mNearbyUrls = new HashSet<>();
         mResolvedUrls = new HashSet<>();

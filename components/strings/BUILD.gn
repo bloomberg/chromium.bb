@@ -115,6 +115,55 @@ grit("components_google_chrome_strings") {
   }
 }
 
+if (is_android) {
+  android_components_locale_settings_java_resources = [
+    "java/res/values-am/components_locale_settings.xml",
+    "java/res/values-ar/components_locale_settings.xml",
+    "java/res/values-bg/components_locale_settings.xml",
+    "java/res/values-ca/components_locale_settings.xml",
+    "java/res/values-cs/components_locale_settings.xml",
+    "java/res/values-da/components_locale_settings.xml",
+    "java/res/values-de/components_locale_settings.xml",
+    "java/res/values-el/components_locale_settings.xml",
+    "java/res/values-en-rGB/components_locale_settings.xml",
+    "java/res/values-es-rUS/components_locale_settings.xml",
+    "java/res/values-es/components_locale_settings.xml",
+    "java/res/values-fa/components_locale_settings.xml",
+    "java/res/values-fi/components_locale_settings.xml",
+    "java/res/values-fr/components_locale_settings.xml",
+    "java/res/values-hi/components_locale_settings.xml",
+    "java/res/values-hr/components_locale_settings.xml",
+    "java/res/values-hu/components_locale_settings.xml",
+    "java/res/values-in/components_locale_settings.xml",
+    "java/res/values-it/components_locale_settings.xml",
+    "java/res/values-iw/components_locale_settings.xml",
+    "java/res/values-ja/components_locale_settings.xml",
+    "java/res/values-ko/components_locale_settings.xml",
+    "java/res/values-lt/components_locale_settings.xml",
+    "java/res/values-lv/components_locale_settings.xml",
+    "java/res/values-nb/components_locale_settings.xml",
+    "java/res/values-nl/components_locale_settings.xml",
+    "java/res/values-pl/components_locale_settings.xml",
+    "java/res/values-pt-rBR/components_locale_settings.xml",
+    "java/res/values-pt-rPT/components_locale_settings.xml",
+    "java/res/values-ro/components_locale_settings.xml",
+    "java/res/values-ru/components_locale_settings.xml",
+    "java/res/values-sk/components_locale_settings.xml",
+    "java/res/values-sl/components_locale_settings.xml",
+    "java/res/values-sr/components_locale_settings.xml",
+    "java/res/values-sv/components_locale_settings.xml",
+    "java/res/values-sw/components_locale_settings.xml",
+    "java/res/values-th/components_locale_settings.xml",
+    "java/res/values-tl/components_locale_settings.xml",
+    "java/res/values-tr/components_locale_settings.xml",
+    "java/res/values-uk/components_locale_settings.xml",
+    "java/res/values-vi/components_locale_settings.xml",
+    "java/res/values-zh-rCN/components_locale_settings.xml",
+    "java/res/values-zh/components_locale_settings.xml",
+    "java/res/values/components_locale_settings.xml",
+  ]
+}
+
 # GYP version: components/components_strings.gyp:components_strings
 #              (generate_components_locale_settings action)
 grit("components_locale_settings") {
@@ -124,5 +173,22 @@ grit("components_locale_settings") {
   ]
   foreach(locale, locales_with_fake_bidi) {
     outputs += [ "components_locale_settings_$locale.pak" ]
+  }
+
+  if (is_android) {
+    outputs += android_components_locale_settings_java_resources
+  }
+}
+
+if (is_android) {
+  java_strings_grd_prebuilt("components_locale_settings_grd") {
+    grit_output_dir = "$root_gen_dir/components/strings/java/res"
+    generated_files =
+        rebase_path(android_components_locale_settings_java_resources,
+                    "java/res",
+                    ".")
+    deps = [
+      ":components_locale_settings",
+    ]
   }
 }

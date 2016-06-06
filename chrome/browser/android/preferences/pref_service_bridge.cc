@@ -1096,6 +1096,9 @@ bool PrefServiceBridge::RegisterPrefServiceBridge(JNIEnv* env) {
 }
 
 // static
+// This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
+// chrome/android/java/src/org/chromium/chrome/browser/
+//     physicalweb/PwsClientImpl.java
 void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
     const std::string& locale,
     std::string* accept_languages) {
@@ -1121,6 +1124,9 @@ void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
     std::vector<std::string> parts;
     parts.push_back(language_region);
     // If language is not in the accept languages list, also add language code.
+    // This will work with the IDS_ACCEPT_LANGUAGE localized strings bundled
+    // with Chrome but may fail on arbitrary lists of language tags due to
+    // differences in case and whitespace.
     if (accept_languages->find(language + ",") == std::string::npos &&
         !std::equal(language.rbegin(), language.rend(),
                     accept_languages->rbegin())) {

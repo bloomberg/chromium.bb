@@ -116,7 +116,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             }
         });
 
-        mPwsClient = new PwsClientImpl();
+        mPwsClient = new PwsClientImpl(this);
         int referer = getIntent().getIntExtra(REFERER_KEY, 0);
         if (savedInstanceState == null) {  // Ensure this is a newly-created activity.
             PhysicalWebUma.onActivityReferral(this, referer);
