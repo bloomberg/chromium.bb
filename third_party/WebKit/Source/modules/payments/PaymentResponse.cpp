@@ -5,6 +5,7 @@
 #include "modules/payments/PaymentResponse.h"
 
 #include "bindings/core/v8/JSONValuesForV8.h"
+#include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentCompleter.h"
 #include "wtf/Assertions.h"
 
@@ -13,6 +14,7 @@ namespace blink {
 PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response, PaymentCompleter* paymentCompleter)
     : m_methodName(response->method_name)
     , m_stringifiedDetails(response->stringified_details)
+    , m_shippingAddress(response->shipping_address ? new PaymentAddress(std::move(response->shipping_address)) : nullptr)
     , m_paymentCompleter(paymentCompleter)
 {
     DCHECK(m_paymentCompleter);
@@ -34,6 +36,7 @@ ScriptPromise PaymentResponse::complete(ScriptState* scriptState, bool success)
 
 DEFINE_TRACE(PaymentResponse)
 {
+    visitor->trace(m_shippingAddress);
     visitor->trace(m_paymentCompleter);
 }
 

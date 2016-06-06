@@ -7,9 +7,11 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/JSONValuesForV8.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/modules/v8/V8PaymentResponse.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/payments/CurrencyAmount.h"
+#include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentDetailsTestHelper.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/ShippingOption.h"
@@ -181,6 +183,32 @@ private:
     MOCK_METHOD1(call, ScriptValue(ScriptValue));
 };
 
+class PaymentResponseFunction : public ScriptFunction {
+public:
+    static v8::Local<v8::Function> create(ScriptState* scriptState, ScriptValue* outValue)
+    {
+        PaymentResponseFunction* self = new PaymentResponseFunction(scriptState, outValue);
+        return self->bindToV8Function();
+    }
+
+    ScriptValue call(ScriptValue value) override
+    {
+        DCHECK(!value.isEmpty());
+        *m_value = value;
+        return value;
+    }
+
+private:
+    PaymentResponseFunction(ScriptState* scriptState, ScriptValue* outValue)
+        : ScriptFunction(scriptState)
+        , m_value(outValue)
+    {
+        DCHECK(m_value);
+    }
+
+    ScriptValue* m_value;
+};
+
 TEST_F(PaymentRequestTest, CanAbortAfterShow)
 {
     ScriptState::Scope scope(getScriptState());
@@ -204,10 +232,26 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(mojom::blink::PaymentAddress::New());
 }
 
-TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddressInResponse)
+TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndEmptyShippingAddressInResponse)
 {
     ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
+
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
+
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(std::move(response));
+}
+
+TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingTrueAndInvalidShippingAddressInResponse)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
     response->shipping_address = mojom::blink::PaymentAddress::New();
@@ -217,25 +261,29 @@ TEST_F(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddressInResponse)
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(std::move(response));
 }
 
-TEST_F(PaymentRequestTest, DontRejectShowPromiseForValidShippingAddress)
+TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingFalseAndShippingAddressExistsInResponse)
 {
     ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    PaymentOptions options;
+    options.setRequestShipping(false);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentAddressPtr shippingAddress = mojom::blink::PaymentAddress::New();
     shippingAddress->region_code = "US";
     shippingAddress->language_code = "en";
     shippingAddress->script_code = "Latn";
 
-    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectCall(getScriptState()));
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnShippingAddressChange(std::move(shippingAddress));
 }
 
-TEST_F(PaymentRequestTest, ResolveShowPromiseWithValidShippingAddressInResponse)
+TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingTrueAndValidShippingAddressInResponse)
 {
     ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
     response->shipping_address = mojom::blink::PaymentAddress::New();
@@ -243,20 +291,33 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithValidShippingAddressInResponse)
     response->shipping_address->language_code = "en";
     response->shipping_address->script_code = "Latn";
 
-    request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    ScriptValue outValue;
+    request->show(getScriptState()).then(PaymentResponseFunction::create(getScriptState(), &outValue), MockFunction::expectNoCall(getScriptState()));
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(std::move(response));
+    v8::MicrotasksScope::PerformCheckpoint(getScriptState()->isolate());
+    PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(getScriptState()->isolate(), outValue.v8Value());
+
+    EXPECT_EQ("US", pr->shippingAddress()->regionCode());
+    EXPECT_EQ("en-Latn", pr->shippingAddress()->languageCode());
 }
 
-TEST_F(PaymentRequestTest, ResolveShowPromiseWithoutShippingAddressInResponse)
+TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingFalseAndEmptyShippingAddressInResponse)
 {
     ScriptState::Scope scope(getScriptState());
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    PaymentOptions options;
+    options.setRequestShipping(false);
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
 
-    request->show(getScriptState()).then(MockFunction::expectCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
+    ScriptValue outValue;
+    request->show(getScriptState()).then(PaymentResponseFunction::create(getScriptState(), &outValue), MockFunction::expectNoCall(getScriptState()));
 
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnPaymentResponse(mojom::blink::PaymentResponse::New());
+    v8::MicrotasksScope::PerformCheckpoint(getScriptState()->isolate());
+    PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(getScriptState()->isolate(), outValue.v8Value());
+
+    EXPECT_EQ(nullptr, pr->shippingAddress());
 }
 
 TEST_F(PaymentRequestTest, OnShippingOptionChange)

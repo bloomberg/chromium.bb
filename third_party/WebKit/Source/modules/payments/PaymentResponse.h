@@ -17,6 +17,7 @@
 namespace blink {
 
 class ExceptionState;
+class PaymentAddress;
 class PaymentCompleter;
 class ScriptState;
 
@@ -30,6 +31,7 @@ public:
 
     const String& methodName() const { return m_methodName; }
     ScriptValue details(ScriptState*, ExceptionState&) const;
+    PaymentAddress* shippingAddress() const { return m_shippingAddress.get(); }
 
     ScriptPromise complete(ScriptState*, bool success);
 
@@ -38,6 +40,7 @@ public:
 private:
     String m_methodName;
     String m_stringifiedDetails;
+    Member<PaymentAddress> m_shippingAddress;
     Member<PaymentCompleter> m_paymentCompleter;
 };
 

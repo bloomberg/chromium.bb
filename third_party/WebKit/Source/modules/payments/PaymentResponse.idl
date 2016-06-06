@@ -9,6 +9,7 @@
 ] interface PaymentResponse {
     readonly attribute DOMString methodName;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;
+    readonly attribute PaymentAddress? shippingAddress;
 
     [CallWith=ScriptState] Promise<void> complete(boolean success);
 };

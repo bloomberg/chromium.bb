@@ -427,7 +427,13 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
 
-    if (response->shipping_address) {
+    if (m_options.requestShipping()) {
+        if (!response->shipping_address) {
+            m_showResolver->reject(DOMException::create(SyntaxError));
+            clearResolversAndCloseMojoConnection();
+            return;
+        }
+
         String errorMessage;
         if (!PaymentsValidators::isValidShippingAddress(response->shipping_address, &errorMessage)) {
             m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
@@ -435,8 +441,14 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
             return;
         }
 
-        m_shippingAddress = new PaymentAddress(std::move(response->shipping_address));
+        m_shippingAddress = new PaymentAddress(response->shipping_address.Clone());
         m_shippingOption = response->shipping_option_id;
+    } else {
+        if (response->shipping_address) {
+            m_showResolver->reject(DOMException::create(SyntaxError));
+            clearResolversAndCloseMojoConnection();
+            return;
+        }
     }
 
     m_showResolver->resolve(new PaymentResponse(std::move(response), this));
