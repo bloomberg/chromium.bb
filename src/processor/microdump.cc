@@ -104,7 +104,7 @@ namespace google_breakpad {
 
 void MicrodumpModules::Add(const CodeModule* module) {
   linked_ptr<const CodeModule> module_ptr(module);
-  if (!map_->StoreRange(module->base_address(), module->size(), module_ptr)) {
+  if (!map_.StoreRange(module->base_address(), module->size(), module_ptr)) {
     BPLOG(ERROR) << "Module " << module->code_file() <<
                     " could not be stored";
   }

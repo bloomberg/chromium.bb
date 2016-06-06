@@ -2672,7 +2672,8 @@ const MinidumpModule* MinidumpModuleList::GetModuleForAddress(
   }
 
   unsigned int module_index;
-  if (!range_map_->RetrieveRange(address, &module_index, NULL, NULL)) {
+  if (!range_map_->RetrieveRange(address, &module_index, NULL /* base */,
+                                 NULL /* delta */, NULL /* size */)) {
     BPLOG(INFO) << "MinidumpModuleList has no module at " <<
                    HexString(address);
     return NULL;
@@ -2708,7 +2709,9 @@ const MinidumpModule* MinidumpModuleList::GetModuleAtSequence(
   }
 
   unsigned int module_index;
-  if (!range_map_->RetrieveRangeAtIndex(sequence, &module_index, NULL, NULL)) {
+  if (!range_map_->RetrieveRangeAtIndex(sequence, &module_index, 
+                                        NULL /* base */, NULL /* delta */,
+                                        NULL /* size */)) {
     BPLOG(ERROR) << "MinidumpModuleList has no module at sequence " << sequence;
     return NULL;
   }
@@ -2923,7 +2926,8 @@ MinidumpMemoryRegion* MinidumpMemoryList::GetMemoryRegionForAddress(
   }
 
   unsigned int region_index;
-  if (!range_map_->RetrieveRange(address, &region_index, NULL, NULL)) {
+  if (!range_map_->RetrieveRange(address, &region_index, NULL /* base */,
+                                 NULL /* delta */, NULL /* size */)) {
     BPLOG(INFO) << "MinidumpMemoryList has no memory region at " <<
                    HexString(address);
     return NULL;
@@ -4027,7 +4031,8 @@ const MinidumpMemoryInfo* MinidumpMemoryInfoList::GetMemoryInfoForAddress(
   }
 
   unsigned int info_index;
-  if (!range_map_->RetrieveRange(address, &info_index, NULL, NULL)) {
+  if (!range_map_->RetrieveRange(address, &info_index, NULL /* base */,
+                                 NULL /* delta */, NULL /* size */)) {
     BPLOG(INFO) << "MinidumpMemoryInfoList has no memory info at " <<
                    HexString(address);
     return NULL;
