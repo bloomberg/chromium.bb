@@ -2,14 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import multiprocessing
 import os
 import re
-import resource
 import sys
 import traceback
-
-import psutil
 
 import common.clovis_paths
 from common.clovis_task import ClovisTask
@@ -17,20 +13,9 @@ from common.loading_trace_database import LoadingTraceDatabase
 import controller
 from failure_database import FailureDatabase
 import loading_trace
+import multiprocessing_helper
 import options
 import xvfb_helper
-
-
-def LimitMemory(memory_share):
-  """Limits the memory available to this process, to avoid OOM issues.
-
-  Args:
-    memory_share: (float) Share coefficient of the total physical memory that
-                          the process can use.
-  """
-  total_memory = psutil.virtual_memory().total
-  memory_limit = memory_share * total_memory
-  resource.setrlimit(resource.RLIMIT_AS, (memory_limit, -1L))
 
 
 def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
@@ -64,6 +49,8 @@ def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
     try:
       sys.stderr = sys.stdout
 
+      sys.stdout.write('Starting trace generation for: %s.\n' % url)
+
       # Set up the controller.
       chrome_ctl = controller.LocalChromeController()
       chrome_ctl.SetChromeEnvOverride(xvfb_helper.GetChromeEnvironment())
@@ -79,6 +66,7 @@ def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
             url, connection, chrome_ctl.ChromeMetadata())
         trace_metadata['succeeded'] = True
         trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
+        sys.stdout.write('Trace generation success.\n')
     except controller.ChromeControllerError as e:
       e.Dump(sys.stderr)
     except Exception as e:
@@ -86,7 +74,12 @@ def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
       traceback.print_exc(file=sys.stderr)
 
     if trace:
+      sys.stdout.write('Dumping trace to file.\n')
       trace.ToJsonFile(filename)
+    else:
+      sys.stderr.write('No trace generated.\n')
+
+    sys.stdout.write('Trace generation finished.\n')
 
   sys.stdout = old_stdout
   sys.stderr = old_stderr
@@ -166,46 +159,19 @@ class TraceTaskHandler(object):
     and return values.
     """
     self._logger.info('Starting external process for trace generation.')
-    failed_metadata = {'succeeded':False, 'url':url}
-    failed = False
-    pool = multiprocessing.Pool(1, initializer=LimitMemory, initargs=(0.9,))
-
-    apply_result = pool.apply_async(
+    result = multiprocessing_helper.RunInSeparateProcess(
         GenerateTrace,
-        (url, emulate_device, emulate_network, filename, log_filename))
-    pool.close()
-    apply_result.wait(timeout=180)
+        (url, emulate_device, emulate_network, filename, log_filename),
+        self._logger, timeout_seconds=180, memory_share=0.9)
 
-    if not apply_result.ready():
-      self._logger.error('Process timeout for trace generation of URL: ' + url)
+    self._logger.info('Cleaning up Chrome processes.')
+    controller.LocalChromeController.KillChromeProcesses()
+
+    if not result:
       self._failure_database.AddFailure('trace_process_timeout', url)
-      # Explicitly kill Chrome now, or pool.terminate() will hang.
-      controller.LocalChromeController.KillChromeProcesses()
-      pool.terminate()
-      failed = True
-    elif not apply_result.successful():
-      # Try to reraise the exception that killed the subprocess and add it to
-      # the error log.
-      try:
-        apply_result.get()
-      except Exception as e:
-        with file(log_filename, 'w+') as error_log:
-          error_log.write('Unhandled exception caught by apply_result: {}'
-                          .format(e))
-          traceback.print_exc(file=error_log)
-      else:
-        with file(log_filename, 'w+') as error_log:
-          error_log.write('No exception found for unsuccessful apply_result')
-      self._logger.error('Process failure for trace generation of URL: ' + url)
-      self._failure_database.AddFailure('trace_process_error', url)
-      failed = True
+      return {'succeeded':False, 'url':url}
+    return result
 
-    self._logger.info('Cleaning up external process.')
-    pool.join()
-
-    if failed:
-      return failed_metadata
-    return apply_result.get()
 
   def _HandleTraceGenerationResults(self, local_filename, log_filename,
                                     remote_filename, trace_metadata):
