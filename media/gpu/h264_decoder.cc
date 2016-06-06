@@ -1196,7 +1196,15 @@ bool H264Decoder::IsNewPrimaryCodedPicture(
       slice_hdr->nal_ref_idc != curr_pic_->nal_ref_idc ||
       slice_hdr->idr_pic_flag != curr_pic_->idr ||
       (slice_hdr->idr_pic_flag &&
-       slice_hdr->idr_pic_id != curr_pic_->idr_pic_id))
+       (slice_hdr->idr_pic_id != curr_pic_->idr_pic_id ||
+        // If we have two consecutive IDR slices, and the second one has
+        // first_mb_in_slice == 0, treat it as a new picture.
+        // Per spec, idr_pic_id should not be equal in this case (and we should
+        // have hit the condition above instead, see spec 7.4.3 on idr_pic_id),
+        // but some encoders neglect changing idr_pic_id for two consecutive
+        // IDRs. Work around this by checking if the next slice contains the
+        // zeroth macroblock, i.e. data that belongs to the next picture.
+        slice_hdr->first_mb_in_slice == 0)))
     return true;
 
   const media::H264SPS* sps = parser_.GetSPS(curr_sps_id_);
