@@ -394,7 +394,6 @@ _arm_internal_release_boards = frozenset([
     'smaug-kasan',
     'storm',
     'veyron_fievel',
-    'veyron_gus',
     'veyron_jaq',
     'veyron_jerry',
     'veyron_mickey',
@@ -469,8 +468,6 @@ _x86_internal_release_boards = frozenset([
     'ninja',
     'orco',
     'panther',
-    'panther_embedded',
-    'panther_moblab',
     'parrot',
     'parrot_ivb',
     'parry',
@@ -490,7 +487,6 @@ _x86_internal_release_boards = frozenset([
     'stout',
     'strago',
     'stumpy',
-    'stumpy_moblab',
     'sumo',
     'swanky',
     'terra',
@@ -553,7 +549,6 @@ _internal_boards = _all_release_boards
 _brillo_boards = frozenset([
     'arkham',
     'gale',
-    'panther_embedded',
     'purin',
     'storm',
     'whirlwind',
@@ -578,8 +573,6 @@ _lakitu_boards = frozenset([
 ])
 
 _moblab_boards = frozenset([
-    'stumpy_moblab',
-    'panther_moblab',
     'guado_moblab',
 ])
 
@@ -1934,15 +1927,6 @@ def GetConfig():
 
   # Paladins (CQ builders) which do not run VM or Unit tests on the builder
   # itself.
-  external_brillo_paladin = paladin.derive(brillo)
-
-  site_config.Add(
-      'panther_embedded-minimal-paladin', external_brillo_paladin,
-      boards=['panther_embedded'],
-      profile='minimal',
-      trybot_list=True,
-  )
-
   internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
   site_config.Add(
@@ -2470,15 +2454,6 @@ def GetConfig():
   _AddInformationalConfigs()
   _AddReleaseConfigs()
 
-  site_config.Add(
-      'panther_embedded-minimal-release', _release,
-      _base_configs['panther_embedded'],
-      profile='minimal',
-      important=True,
-      paygen=False,
-      signer_tests=False,
-  )
-
   # beaglebone build doesn't generate signed images, so don't try to release
   # them.
   _beaglebone_release = _release.derive(beaglebone,
@@ -2538,18 +2513,8 @@ def GetConfig():
   )
 
   site_config.Add(
-      'stumpy_moblab-release', moblab_release,
-      _base_configs['stumpy_moblab'],
-  )
-
-  site_config.Add(
       'guado_moblab-release', moblab_release,
       _base_configs['guado_moblab'],
-  )
-
-  site_config.Add(
-      'panther_moblab-release', moblab_release,
-      _base_configs['panther_moblab'],
   )
 
   cheets_release = site_config.AddTemplate(
@@ -2898,7 +2863,6 @@ def GetConfig():
           'veyron_jerry',
           'veyron_mighty',
           'veyron_speedy',
-          'veyron_gus',
           'veyron_jaq',
           'veyron_minnie',
           'veyron_rialto',
