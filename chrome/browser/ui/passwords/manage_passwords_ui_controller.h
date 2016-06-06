@@ -103,6 +103,7 @@ class ManagePasswordsUIController
   void NavigateToExternalPasswordManager() override;
   void NavigateToSmartLockHelpPage() override;
   void NavigateToPasswordManagerSettingsPage() override;
+  void NavigateToChromeSignIn() override;
   void OnDialogHidden() override;
 
  protected:
@@ -149,6 +150,8 @@ class ManagePasswordsUIController
     // UpdateBubbleAndIconVisibility().
     SHOULD_POP_UP,
     SHOWN,
+    // Same as SHOWN but the icon is to be updated when the bubble is closed.
+    SHOWN_PENDING_ICON_UPDATE,
   };
 
   // Shows the password bubble without user interaction.

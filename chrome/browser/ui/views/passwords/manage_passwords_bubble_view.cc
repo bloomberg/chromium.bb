@@ -885,14 +885,14 @@ void ManagePasswordsBubbleView::CreateChild() {
   if (model_.state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     AddChildView(new PendingView(this));
   } else if (model_.state() ==
-      password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     AddChildView(new UpdatePendingView(this));
   } else if (model_.state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
   } else if (model_.state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     AddChildView(new AutoSigninView(this));
   } else if (model_.state() ==
-      password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+             password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
     AddChildView(new SignInPromoView(this));
   } else {
     AddChildView(new ManageView(this));

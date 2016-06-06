@@ -33,5 +33,11 @@ const char kWasAutoSignInFirstRunExperienceShown[] =
 const char kWasSavePrompFirstRunExperienceShown[] =
     "profile.was_save_prompt_first_run_experience_shown";
 
+const char kWasSignInPasswordPromoClicked[] =
+    "profile.was_sign_in_password_promo_clicked";
+
+const char kNumberSignInPasswordPromoShown[] =
+    "profile.number_sign_in_password_promo_shown";
+
 }  // namespace prefs
 }  // namespace password_manager

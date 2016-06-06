@@ -18,6 +18,8 @@
 namespace password_bubble_experiment {
 
 const char kBrandingExperimentName[] = "PasswordBranding";
+const char kChromeSignInPasswordPromoExperimentName[] = "SignInPasswordPromo";
+const char kChromeSignInPasswordPromoThresholdParam[] = "dismissal_threshold";
 const char kSmartBubbleExperimentName[] = "PasswordSmartBubble";
 const char kSmartBubbleThresholdParam[] = "dismissal_count";
 const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
@@ -31,6 +33,12 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+
+  registry->RegisterBooleanPref(
+      password_manager::prefs::kWasSignInPasswordPromoClicked, false);
+
+  registry->RegisterIntegerPref(
+      password_manager::prefs::kNumberSignInPasswordPromoShown, 0);
 }
 
 int GetSmartBubbleDismissalThreshold() {
@@ -92,6 +100,20 @@ void RecordAutoSignInPromptFirstRunExperienceWasShown(PrefService* prefs) {
 void TurnOffAutoSignin(PrefService* prefs) {
   prefs->SetBoolean(password_manager::prefs::kCredentialsEnableAutosignin,
                     false);
+}
+
+bool ShouldShowChromeSignInPasswordPromo(PrefService* prefs) {
+  // Query the group first for correct UMA reporting.
+  std::string param = variations::GetVariationParamValue(
+      kChromeSignInPasswordPromoExperimentName,
+      kChromeSignInPasswordPromoThresholdParam);
+  int threshold = 0;
+  return base::StringToInt(param, &threshold) &&
+         !prefs->GetBoolean(
+             password_manager::prefs::kWasSignInPasswordPromoClicked) &&
+         prefs->GetInteger(
+             password_manager::prefs::kNumberSignInPasswordPromoShown) <
+             threshold;
 }
 
 }  // namespace password_bubble_experiment

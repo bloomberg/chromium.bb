@@ -28,12 +28,15 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using password_bubble_experiment::kBrandingExperimentName;
+using password_bubble_experiment::kChromeSignInPasswordPromoExperimentName;
+using password_bubble_experiment::kChromeSignInPasswordPromoThresholdParam;
 using password_bubble_experiment::kSmartLockBrandingGroupName;
 using password_bubble_experiment::kSmartLockBrandingSavePromptOnlyGroupName;
 using ::testing::AnyNumber;
@@ -43,6 +46,8 @@ using ::testing::_;
 
 namespace {
 
+const char kFakeGroup[] = "FakeGroup";
+const char kSignInPromoDismissalReasonMetric[] = "PasswordManager.SignInPromo";
 const char kSiteOrigin[] = "http://example.com/login";
 const char kUsername[] = "Admin";
 const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
@@ -106,6 +111,8 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
     // Reset WebContents first. It can happen if the user closes the tab.
     test_web_contents_.reset();
     model_.reset();
+    variations::testing::ClearAllVariationIDs();
+    variations::testing::ClearAllVariationParams();
   }
 
   PrefService* prefs() { return profile_.GetPrefs(); }
@@ -358,6 +365,93 @@ TEST_F(ManagePasswordsBubbleModelTest, OnBrandLinkClicked) {
 
   EXPECT_CALL(*controller(), NavigateToSmartLockHelpPage());
   model()->OnBrandLinkClicked();
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
+  base::HistogramTester histogram_tester;
+  PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*controller(), SavePassword());
+  model()->OnSaveClicked();
+
+  EXPECT_FALSE(model()->ReplaceToShowSignInPromoIfNeeded());
+  DestroyModel();
+  histogram_tester.ExpectTotalCount(kSignInPromoDismissalReasonMetric, 0);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
+  variations::AssociateVariationParams(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
+      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
+  base::HistogramTester histogram_tester;
+  PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*controller(), SavePassword());
+  model()->OnSaveClicked();
+
+  EXPECT_TRUE(model()->ReplaceToShowSignInPromoIfNeeded());
+  EXPECT_CALL(*controller(), NavigateToChromeSignIn());
+  model()->OnSignInToChromeClicked();
+  DestroyModel();
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_SAVE, 1);
+  histogram_tester.ExpectUniqueSample(
+      kSignInPromoDismissalReasonMetric,
+      password_manager::metrics_util::CHROME_SIGNIN_OK, 1);
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked));
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
+  variations::AssociateVariationParams(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
+      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
+  base::HistogramTester histogram_tester;
+  PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*controller(), SavePassword());
+  model()->OnSaveClicked();
+
+  EXPECT_TRUE(model()->ReplaceToShowSignInPromoIfNeeded());
+  model()->OnSkipSignInClicked();
+  DestroyModel();
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_SAVE, 1);
+  histogram_tester.ExpectUniqueSample(
+      kSignInPromoDismissalReasonMetric,
+      password_manager::metrics_util::CHROME_SIGNIN_CANCEL, 1);
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked));
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
+  variations::AssociateVariationParams(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
+      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
+  base::HistogramTester histogram_tester;
+  PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*controller(), SavePassword());
+  model()->OnSaveClicked();
+
+  EXPECT_TRUE(model()->ReplaceToShowSignInPromoIfNeeded());
+  DestroyModel();
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_SAVE, 1);
+  histogram_tester.ExpectUniqueSample(
+      kSignInPromoDismissalReasonMetric,
+      password_manager::metrics_util::CHROME_SIGNIN_DISMISSED, 1);
+  EXPECT_FALSE(prefs()->GetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
 
 namespace {

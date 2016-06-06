@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -96,6 +97,11 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
     update_password_submission_event_ = event;
   }
 
+  void set_sign_in_promo_dismissal_reason(
+      password_manager::metrics_util::SyncSignInUserAction reason) {
+    sign_in_promo_dismissal_reason_ = reason;
+  }
+
   void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
     clock_ = std::move(clock);
   }
@@ -112,6 +118,10 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
   password_manager::metrics_util::UpdatePasswordSubmissionEvent
       update_password_submission_event_;
 
+  // Dismissal reason for the Chrome Sign in bubble.
+  password_manager::metrics_util::SyncSignInUserAction
+      sign_in_promo_dismissal_reason_;
+
   // Current statistics for the save password bubble;
   password_manager::InteractionsStats interaction_stats_;
 
@@ -127,9 +137,9 @@ ManagePasswordsBubbleModel::InteractionKeeper::InteractionKeeper(
     : display_disposition_(display_disposition),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
       update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION),
+      sign_in_promo_dismissal_reason_(metrics_util::CHROME_SIGNIN_DISMISSED),
       interaction_stats_(std::move(stats)),
-      clock_(new base::DefaultClock) {
-}
+      clock_(new base::DefaultClock) {}
 
 void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
     const ManagePasswordsBubbleModel* model) {
@@ -157,27 +167,43 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
     }
   }
 
-  if (model->state() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+  if (model->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+    metrics_util::LogAutoSigninPromoUserAction(sign_in_promo_dismissal_reason_);
+    if (sign_in_promo_dismissal_reason_ ==
+            password_manager::metrics_util::CHROME_SIGNIN_OK ||
+        sign_in_promo_dismissal_reason_ ==
+            password_manager::metrics_util::CHROME_SIGNIN_CANCEL) {
+      DCHECK(model->web_contents());
+      int show_count = model->GetProfile()->GetPrefs()->GetInteger(
+          password_manager::prefs::kNumberSignInPasswordPromoShown);
+      UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoCountTilClick",
+                               show_count);
+    }
+  } else if (model->state() !=
+             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     // We have separate metrics for the Update bubble so do not record dismissal
     // reason for it.
     metrics_util::LogUIDismissalReason(dismissal_reason_);
   }
 
-  PasswordsModelDelegate* delegate = model->web_contents()
-      ? PasswordsModelDelegateFromWebContents(model->web_contents())
-      : nullptr;
-  // Check if this was update password and record update statistics.
-  if (update_password_submission_event_ == metrics_util::NO_UPDATE_SUBMISSION &&
-      (model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
-          model->state() == password_manager::ui::PENDING_PASSWORD_STATE)) {
-    update_password_submission_event_ =
-        model->GetUpdateDismissalReason(NO_INTERACTION);
-    if (model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
-        delegate)
-      delegate->OnNoInteractionOnUpdate();
+  if (model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+      model->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
+    if (update_password_submission_event_ ==
+        metrics_util::NO_UPDATE_SUBMISSION) {
+      update_password_submission_event_ =
+          model->GetUpdateDismissalReason(NO_INTERACTION);
+      PasswordsModelDelegate* delegate =
+          model->web_contents()
+              ? PasswordsModelDelegateFromWebContents(model->web_contents())
+              : nullptr;
+      if (delegate &&
+          model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
+        delegate->OnNoInteractionOnUpdate();
+    }
+
+    if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
+      LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
   }
-  if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
-    LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
 }
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
@@ -396,11 +422,19 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
 }
 
 void ManagePasswordsBubbleModel::OnSignInToChromeClicked() {
-
+  interaction_keeper_->set_sign_in_promo_dismissal_reason(
+      metrics_util::CHROME_SIGNIN_OK);
+  GetProfile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked, true);
+  PasswordsModelDelegateFromWebContents(web_contents())
+      ->NavigateToChromeSignIn();
 }
 
 void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
-
+  interaction_keeper_->set_sign_in_promo_dismissal_reason(
+      metrics_util::CHROME_SIGNIN_CANCEL);
+  GetProfile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked, true);
 }
 
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
@@ -425,10 +459,16 @@ bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
 
 bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
-  if (false /*TODO(crbug.com/615825): there will be a real condition soon*/) {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(prefs)) {
+    interaction_keeper_->ReportInteractions(this);
     title_brand_link_range_ = gfx::Range();
     title_ = l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE);
     state_ = password_manager::ui::CHROME_SIGN_IN_PROMO_STATE;
+    int show_count = prefs->GetInteger(
+        password_manager::prefs::kNumberSignInPasswordPromoShown);
+    prefs->SetInteger(password_manager::prefs::kNumberSignInPasswordPromoShown,
+                      show_count + 1);
     return true;
   }
   return false;

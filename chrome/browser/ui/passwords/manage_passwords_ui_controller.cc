@@ -244,12 +244,15 @@ void ManagePasswordsUIController::OnBubbleShown() {
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
+  bool update_icon = (bubble_status_ == SHOWN_PENDING_ICON_UPDATE);
   bubble_status_ = NOT_SHOWN;
   if (GetState() == password_manager::ui::CONFIRMATION_STATE ||
       GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-    UpdateBubbleAndIconVisibility();
+    update_icon = true;
   }
+  if (update_icon)
+    UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnNoInteractionOnUpdate() {
@@ -281,7 +284,9 @@ void ManagePasswordsUIController::SavePassword() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
   SavePasswordInternal();
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-  UpdateBubbleAndIconVisibility();
+  // The icon is to be updated after the bubble (either "Save password" or "Sign
+  // in to Chrome") is closed.
+  bubble_status_ = SHOWN_PENDING_ICON_UPDATE;
 }
 
 void ManagePasswordsUIController::UpdatePassword(
@@ -325,6 +330,10 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
       chrome::kPasswordManagerSubPage);
+}
+
+void ManagePasswordsUIController::NavigateToChromeSignIn() {
+  // TODO(http://crbug.com/615825): do the job.
 }
 
 void ManagePasswordsUIController::OnDialogHidden() {
@@ -397,7 +406,7 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
 
   // It is possible that the user was not able to interact with the password
   // bubble.
-  if (bubble_status_ == SHOWN)
+  if (bubble_status_ == SHOWN || bubble_status_ == SHOWN_PENDING_ICON_UPDATE)
     return;
 
   // Otherwise, reset the password manager.

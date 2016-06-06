@@ -37448,6 +37448,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SignInPromo"
+    enum="PasswordBubbleSignInPromoDismissalReason">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    User action on the Chrome Sync promo that appears in the password bubble.
+    The promo offers to sign in to Chrome.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.SignInPromoCountTilClick">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The number of times the Sign In promo in the password bubble was shown
+    before user clicked on it.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.StorePasswordImportedFromCSVResult"
     enum="BooleanSuccess">
   <owner>xunlu@chromium.org</owner>
@@ -82859,6 +82876,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Opened automatically / Auto-signin toast"/>
   <int value="7" label="Opened manually / Offering a password to update"/>
   <int value="8" label="Opened automatically / Offering a password to update"/>
+</enum>
+
+<enum name="PasswordBubbleSignInPromoDismissalReason" type="int">
+  <int value="0" label="Dismissed"/>
+  <int value="1" label="Sign in"/>
+  <int value="2" label="No thanks"/>
 </enum>
 
 <enum name="PasswordFormQueryVolume" type="int">

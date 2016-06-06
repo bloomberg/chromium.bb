@@ -15,6 +15,8 @@ class SyncService;
 namespace password_bubble_experiment {
 
 extern const char kBrandingExperimentName[];
+extern const char kChromeSignInPasswordPromoExperimentName[];
+extern const char kChromeSignInPasswordPromoThresholdParam[];
 extern const char kSmartBubbleExperimentName[];
 extern const char kSmartBubbleThresholdParam[];
 extern const char kSmartLockBrandingGroupName[];
@@ -70,6 +72,9 @@ void RecordAutoSignInPromptFirstRunExperienceWasShown(PrefService* prefs);
 
 // Turns off the auto signin experience setting.
 void TurnOffAutoSignin(PrefService* prefs);
+
+// Returns true if the Chrome Sign In promo should be shown.
+bool ShouldShowChromeSignInPasswordPromo(PrefService* prefs);
 
 }  // namespace password_bubble_experiment
 

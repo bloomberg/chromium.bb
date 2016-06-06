@@ -63,6 +63,12 @@ extern const char kWasAutoSignInFirstRunExperienceShown[];
 // shown or not.
 extern const char kWasSavePrompFirstRunExperienceShown[];
 
+// Boolean that indicated if user interacted with the Chrome Sign in promo.
+extern const char kWasSignInPasswordPromoClicked[];
+
+// Number of times the Chrome Sign in promo popped up.
+extern const char kNumberSignInPasswordPromoShown[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

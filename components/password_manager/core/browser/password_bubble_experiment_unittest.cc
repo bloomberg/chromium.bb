@@ -7,11 +7,13 @@
 #include <ostream>
 
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_driver/fake_sync_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,9 +109,14 @@ class TestSyncService : public sync_driver::FakeSyncService {
 
 class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
  public:
-  PasswordManagerPasswordBubbleExperimentTest() : field_trial_list_(nullptr) {}
+  PasswordManagerPasswordBubbleExperimentTest() : field_trial_list_(nullptr) {
+    RegisterPrefs(pref_service_.registry());
+  }
 
-  void SetUp() override { RegisterPrefs(pref_service_.registry()); }
+  ~PasswordManagerPasswordBubbleExperimentTest() override {
+    variations::testing::ClearAllVariationIDs();
+    variations::testing::ClearAllVariationParams();
+  }
 
   PrefService* prefs() { return &pref_service_; }
 
@@ -306,6 +313,40 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
             password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));
     EXPECT_EQ(!test_case.result_pref_value,
               ShouldShowAutoSignInPromptFirstRunExperience(prefs()));
+  }
+}
+
+TEST_F(PasswordManagerPasswordBubbleExperimentTest,
+       ShouldShowChromeSignInPasswordPromo) {
+  // By default the promo is off.
+  EXPECT_FALSE(ShouldShowChromeSignInPasswordPromo(prefs()));
+  const struct {
+    bool was_already_clicked;
+    int current_shown_count;
+    int experiment_threshold;
+    bool result;
+  } kTestData[] = {
+      {false, 0, 5, true},
+      {false, 5, 5, false},
+      {true, 0, 5, false},
+      {true, 10, 5, false},
+  };
+  const char kFakeGroup[] = "FakeGroup";
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
+  for (const auto& test_case : kTestData) {
+    SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
+    prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
+                        test_case.was_already_clicked);
+    prefs()->SetInteger(
+        password_manager::prefs::kNumberSignInPasswordPromoShown,
+        test_case.current_shown_count);
+    variations::AssociateVariationParams(
+        kChromeSignInPasswordPromoExperimentName, kFakeGroup,
+        {{kChromeSignInPasswordPromoThresholdParam,
+          base::IntToString(test_case.experiment_threshold)}});
+
+    EXPECT_EQ(test_case.result, ShouldShowChromeSignInPasswordPromo(prefs()));
   }
 }
 
