@@ -365,6 +365,8 @@ crbug.com/600618 virtual/spv2/svg/css/max-width.html [ Pass ]
 
 crbug.com/537409 virtual/spv2/fast/clip [ Pass ]
 crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning [ Pass ]
+
 # PaintArtifactCompositor doesn't implement effects yet.
 crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
 # Sub-pixel differences in layout tests for SPv2
@@ -390,19 +392,8 @@ crbug.com/589265 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-ov
 crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
 crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
 
-# There are still a few real non-scrollbar failures in fast/block/positioning that need to be investigated.
-crbug.com/614257 virtual/spv2/fast/block/positioning/058.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-ltr-2.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-ltr-3.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-ltr.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-rtl-2.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-rtl-3.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-rtl.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-short-ltr.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-short-rtl.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/block/positioning/hiding-inside-relpositioned-inline.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/css/abs-pos-child-inside-rel-pos-inline-001.html [ Pass ]
-crbug.com/614257 virtual/spv2/fast/css/abs-pos-child-inside-rel-pos-inline-offset-001.html [ Pass ]
+# Multicolumn still fails to fragment in spv2.
+crbug.com/616287 virtual/spv2/fast/block/positioning/offsetLeft-offsetTop-multicolumn.html [ Failure ]
 
 # Implement scrollbars in FramePainter for SPv2
 crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
@@ -411,6 +402,18 @@ crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-y.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/overflow-x-y.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/position-fixed-transform-clipping.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/scrollRevealButton.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/047.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/051.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/055.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/auto/007.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/fixed-positioning-scrollbar-bug.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-block.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-replaced-float.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/relative-overflow-replaced.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/vertical-lr/002.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/vertical-rl/002.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/auto/vertical-lr/005.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/block/positioning/auto/vertical-rl/005.html [ Failure ]
 # Implement table walk in PaintPropertyTreeBuilder.
 crbug.com/593525 virtual/spv2/fast/overflow/002.html [ Failure ]
 crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl-vertical.html [ Failure ]

@@ -345,14 +345,17 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
         ASSERT_NOT_REACHED();
     }
     if (boxModelObject.isBox()) {
-        context.paintOffset += toLayoutBox(boxModelObject).locationOffset();
+        // TODO(pdr): Several calls in this function walk back up the tree to calculate containers
+        // (e.g., topLeftLocation, offsetForInFlowPosition*). The containing block and other
+        // containers can be stored on PaintPropertyTreeBuilderContext instead of recomputing them.
+        context.paintOffset.moveBy(toLayoutBox(boxModelObject).topLeftLocation());
         // This is a weird quirk that table cells paint as children of table rows,
         // but their location have the row's location baked-in.
         // Similar adjustment is done in LayoutTableCell::offsetFromContainer().
         if (boxModelObject.isTableCell()) {
             LayoutObject* parentRow = boxModelObject.parent();
             ASSERT(parentRow && parentRow->isTableRow());
-            context.paintOffset -= toLayoutBox(parentRow)->locationOffset();
+            context.paintOffset.moveBy(-toLayoutBox(parentRow)->topLeftLocation());
         }
     }
 }
