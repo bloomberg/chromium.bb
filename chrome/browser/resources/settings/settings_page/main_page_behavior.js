@@ -346,7 +346,8 @@ var RoutableBehaviorImpl = {
       if (!element)
         return;
 
-      if (element.parentNode.host.scrollHeight == 0) {
+      var host = findAncestor(element, function(n) { return n.host; }).host;
+      if (host.scrollHeight == 0) {
         setTimeout(pollForScrollHeight.bind(this), 100);
         return;
       }

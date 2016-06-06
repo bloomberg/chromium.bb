@@ -51,6 +51,27 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
         self.verifySubpagesHidden(section);
       }
     });
+
+    // This test checks for a regression that occurred with scrollToSection_
+    // failing to find its host element.
+    test('scroll to section', function() {
+      // Setting the page and section will cause a scrollToSection_.
+      self.getPage('basic').currentRoute = {
+        page: 'basic',
+        section: 'onStartup',
+        subpage: [],
+      };
+
+      return new Promise(function(resolve, reject) {
+        var intervalId = window.setInterval(function() {
+          var page = self.getPage('basic');
+          if (self.getSection(page, page.currentRoute.section)) {
+            window.clearInterval(intervalId);
+            resolve();
+          }
+        }, 55);
+      }.bind(self));
+    });
   });
 
   // Run all registered tests.
