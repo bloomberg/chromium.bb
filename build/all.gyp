@@ -386,7 +386,7 @@
             # to break because of differences between ninja and msbuild. Make
             # sure this target is built by the builders on the main waterfall.
             # See http://crbug.com/180600.
-            ['wix_exists == "True" and sas_dll_exists == "True"', {
+            ['wix_exists == "True"', {
               'dependencies': [
                 '../remoting/remoting.gyp:remoting_host_installation',
               ],
@@ -1146,8 +1146,7 @@
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
               ],
               'conditions': [
-                ['component != "shared_library" and wix_exists == "True" and \
-                    sas_dll_exists == "True"', {
+                ['component != "shared_library" and wix_exists == "True"', {
                   'dependencies': [
                     '../remoting/remoting.gyp:remoting_host_installation',
                   ],

@@ -1008,14 +1008,6 @@
           'enable_print_preview%': 0,
         }],
 
-        # Path to sas.dll, which provides the SendSAS function.
-        # http://msdn.microsoft.com/en-us/library/windows/desktop/dd979761(v=vs.85).aspx
-        ['target_arch=="x64"', {
-          'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/amd64',
-        }, {
-          'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
-        }],
-
         ['sysroot!=""', {
           'pkg-config': '<(chroot_cmd) <(DEPTH)/build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
         }, {
@@ -1253,7 +1245,6 @@
     'use_platform_icu_alternatives%': '<(use_platform_icu_alternatives)',
     'disable_brotli_filter%': '<(disable_brotli_filter)',
     'enable_task_manager%': '<(enable_task_manager)',
-    'sas_dll_path%': '<(sas_dll_path)',
     'wix_path%': '<(wix_path)',
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
@@ -1531,7 +1522,6 @@
     # Contains data about the attached devices for gyp_managed_install.
     'build_device_config_path': '<(PRODUCT_DIR)/build_devices.cfg',
 
-    'sas_dll_exists': '<!pymod_do_main(dir_exists "<(sas_dll_path)")',
     'wix_exists': '<!pymod_do_main(dir_exists "<(wix_path)")',
 
     'windows_sdk_path%': 'C:/Program Files (x86)/Windows Kits/10',
