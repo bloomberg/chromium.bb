@@ -46,6 +46,7 @@
 #include "cc/trees/task_runner_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
@@ -1407,8 +1408,70 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
   ASSERT_TRUE(parent->render_surface());
   EXPECT_EQ(2U, parent->render_surface()->layer_list().size());
   EXPECT_EQ(4U, render_surface_layer_list.size());
-  EXPECT_EQ(gfx::RectF(-30, -30, 160, 160),
+
+  // The rectangle enclosing child1 and child2 (0,0 50x50), expanded for the
+  // blur (-30,-30 110x110), and then scaled by the scale matrix
+  // (-60,-60 220x220).
+  EXPECT_EQ(gfx::RectF(-60, -60, 220, 220),
             parent->render_surface()->DrawableContentRect());
+}
+
+TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilter) {
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  child->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root, gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(25, 25), true, false,
+                               true);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(
+      SkOffsetImageFilter::Make(50, 50, nullptr)));
+  child->SetFilters(filters);
+
+  ExecuteCalculateDrawProperties(root);
+
+  // The render surface's size should be unaffected by the offset image filter;
+  // it need only have a drawable content rect large enough to contain the
+  // contents (at the new offset).
+  ASSERT_TRUE(child->render_surface());
+  EXPECT_EQ(gfx::RectF(50, 50, 25, 25),
+            child->render_surface()->DrawableContentRect());
+}
+
+TEST_F(LayerTreeHostCommonTest, DrawableContentRectForReferenceFilterHighDpi) {
+  const float device_scale_factor = 2.0f;
+
+  LayerImpl* root = root_layer();
+  root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  child->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root, gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(25, 25), true, false,
+                               true);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateReferenceFilter(
+      SkOffsetImageFilter::Make(50, 50, nullptr)));
+  child->SetFilters(filters);
+
+  ExecuteCalculateDrawProperties(root, device_scale_factor);
+
+  // The render surface's size should be unaffected by the offset image filter;
+  // it need only have a drawable content rect large enough to contain the
+  // contents (at the new offset). All coordinates should be scaled by 2,
+  // corresponding to the device scale factor.
+  ASSERT_TRUE(child->render_surface());
+  EXPECT_EQ(gfx::RectF(100, 100, 50, 50),
+            child->render_surface()->DrawableContentRect());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {

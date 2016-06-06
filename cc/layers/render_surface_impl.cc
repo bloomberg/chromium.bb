@@ -75,9 +75,11 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
 
   gfx::Rect surface_content_rect = content_rect();
   if (!owning_layer_->filters().IsEmpty()) {
-    int left, top, right, bottom;
-    owning_layer_->filters().GetOutsets(&top, &right, &bottom, &left);
-    surface_content_rect.Inset(-left, -top, -right, -bottom);
+    const gfx::Transform& owning_layer_draw_transform =
+        owning_layer_->DrawTransform();
+    DCHECK(owning_layer_draw_transform.IsScale2d());
+    surface_content_rect = owning_layer_->filters().MapRect(
+        surface_content_rect, owning_layer_draw_transform.matrix());
   }
   gfx::RectF drawable_content_rect = MathUtil::MapClippedRect(
       draw_transform(), gfx::RectF(surface_content_rect));
