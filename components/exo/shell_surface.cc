@@ -897,7 +897,7 @@ gfx::Rect ShellSurface::GetVisibleBounds() const {
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
-  gfx::Rect window_bounds = widget_->GetWindowBoundsInScreen();
+  gfx::Rect window_bounds = widget_->GetNativeWindow()->bounds();
 
   // If initial bounds were specified then surface origin is always relative
   // to those bounds.
