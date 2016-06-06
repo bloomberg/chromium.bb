@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
+
 class GURL;
 
 namespace content {
@@ -22,16 +24,29 @@ class OfflinePageUtils {
   static bool MightBeOfflineURL(const GURL& url);
 
   // Gets an offline URL of an offline page with |online_url| if one exists.
-  static GURL GetOfflineURLForOnlineURL(
+  // Deprecated.  Use |GetOfflineURLForOnlineURL|.
+  static GURL MaybeGetOfflineURLForOnlineURL(
       content::BrowserContext* browser_context,
       const GURL& online_url);
 
+  static void GetOfflineURLForOnlineURL(
+      content::BrowserContext* browser_context,
+      const GURL& online_url,
+      const base::Callback<void(const GURL&)>& callback);
+
   // Gets an online URL of an offline page with |offline_url| if one exists.
-  static GURL GetOnlineURLForOfflineURL(
+  // Deprecated.  Use |GetOnlineURLForOfflineURL|.
+  static GURL MaybeGetOnlineURLForOfflineURL(
       content::BrowserContext* browser_context,
       const GURL& offline_url);
 
+  static void GetOnlineURLForOfflineURL(
+      content::BrowserContext* browser_context,
+      const GURL& offline_url,
+      const base::Callback<void(const GURL&)>& callback);
+
   // Checks whether |offline_url| points to an offline page.
+  // Deprecated.  Use something else.
   static bool IsOfflinePage(content::BrowserContext* browser_context,
                             const GURL& offline_url);
 

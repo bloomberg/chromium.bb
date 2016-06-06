@@ -27,6 +27,8 @@ class OfflinePageTabHelper :
  private:
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
   friend class OfflinePageTabHelperTest;
+  FRIEND_TEST_ALL_PREFIXES(OfflinePageTabHelperTest,
+                           NewNavigationCancelsPendingRedirects);
 
   explicit OfflinePageTabHelper(content::WebContents* web_contents);
 
@@ -35,6 +37,12 @@ class OfflinePageTabHelper :
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  void GotRedirectURLForSupportedErrorCode(ui::PageTransition transition,
+                                           const GURL& from_url,
+                                           const GURL& redirect_url);
+  void GotRedirectURLForStartedNavigation(const GURL& from_url,
+                                          const GURL& redirect_url);
 
   void Redirect(const GURL& from_url, const GURL& to_url);
 

@@ -271,8 +271,9 @@ GURL AddToHomescreenDataFetcher::GetShortcutUrl(const GURL& actual_url) {
       dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(actual_url);
 
   // If URL points to an offline content, get original URL.
-  GURL online_url = offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(
-      web_contents()->GetBrowserContext(), original_url);
+  GURL online_url =
+      offline_pages::OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
+          web_contents()->GetBrowserContext(), original_url);
   if (online_url.is_valid())
     return online_url;
 

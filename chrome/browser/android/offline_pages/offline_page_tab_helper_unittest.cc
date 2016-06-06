@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -33,6 +34,10 @@ namespace {
 const GURL kTestPageUrl("http://test.org/page1");
 const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
 const int64_t kTestFileSize = 876543LL;
+const char kBadNetworkHistogram[] = "OfflinePages.ShowOfflinePageOnBadNetwork";
+const char kRedirectToOfflineHistogram[] =
+    "OfflinePages.RedirectToOfflineCount";
+const char kRedirectToOnlineHistogram[] = "OfflinePages.RedirectToOnlineCount";
 
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
@@ -78,6 +83,8 @@ class OfflinePageTabHelperTest :
   const GURL& online_url() const { return online_url_; }
   const GURL& offline_url() const { return offline_url_; }
 
+  const base::HistogramTester& histograms() const { return histogram_tester_; }
+
  private:
   // OfflinePageTestArchiver::Observer implementation:
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
@@ -93,6 +100,8 @@ class OfflinePageTabHelperTest :
 
   GURL online_url_;
   GURL offline_url_;
+
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelperTest);
 };
@@ -196,6 +205,9 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOnlineFromOfflineOnNetwork) {
   RunUntilIdle();
   // Redirection will be done immediately on navigation start.
   EXPECT_EQ(online_url(), controller().GetPendingEntry()->GetURL());
+  histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
+  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 0);
+  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 1);
 }
 
 TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnNoNetwork) {
@@ -206,6 +218,9 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnNoNetwork) {
   RunUntilIdle();
   // Redirection will be done immediately on navigation start.
   EXPECT_EQ(offline_url(), controller().GetPendingEntry()->GetURL());
+  histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
+  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 1);
+  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
 }
 
 TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnError) {
@@ -218,6 +233,35 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineFromOnlineOnError) {
   // Redirection will be done immediately on navigation end with error.
   FailLoad(online_url());
   EXPECT_EQ(offline_url(), controller().GetPendingEntry()->GetURL());
+
+  histograms().ExpectBucketCount(kBadNetworkHistogram, false, 0);
+  histograms().ExpectBucketCount(kBadNetworkHistogram, true, 1);
+  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 1);
+  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
 }
 
+TEST_F(OfflinePageTabHelperTest, NewNavigationCancelsPendingRedirects) {
+  SimulateHasNetworkConnectivity(false);
+
+  StartLoad(online_url());
+  const GURL unsaved_url("http://test.org/page2");
+
+  // We should have a pending task that will do the redirect.
+  ASSERT_TRUE(offline_page_tab_helper()->weak_ptr_factory_.HasWeakPtrs());
+  ASSERT_EQ(online_url(), controller().GetPendingEntry()->GetURL());
+
+  // Should cancel pending tasks for previous URL.
+  StartLoad(unsaved_url);
+
+  // Gives a chance to run delayed task to do redirection.
+  RunUntilIdle();
+
+  // Redirection should be cancelled so we should still navigate to
+  // |unsaved_url|.
+  EXPECT_EQ(unsaved_url, controller().GetPendingEntry()->GetURL());
+
+  histograms().ExpectTotalCount(kBadNetworkHistogram, 0);
+  histograms().ExpectTotalCount(kRedirectToOfflineHistogram, 0);
+  histograms().ExpectTotalCount(kRedirectToOnlineHistogram, 0);
+}
 }  // namespace offline_pages

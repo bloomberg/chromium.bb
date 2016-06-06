@@ -763,8 +763,8 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
 
   // If the url points to an offline page, then we need to get its original URL.
   if (offline_pages::OfflinePageUtils::IsOfflinePage(profile, url)) {
-    url = offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(profile,
-                                                                     url);
+    url = offline_pages::OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
+        profile, url);
   }
 
   // Get all the nodes for |url| and sort them by date added.
@@ -819,8 +819,8 @@ ScopedJavaLocalRef<jstring> TabAndroid::GetOfflinePageOriginalUrl(
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents()->GetURL());
   GURL original_url =
-      offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(GetProfile(),
-                                                                 url);
+      offline_pages::OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
+          GetProfile(), url);
   if (!original_url.is_valid())
     return ScopedJavaLocalRef<jstring>();
 

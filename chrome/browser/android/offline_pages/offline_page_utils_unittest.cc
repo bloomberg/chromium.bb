@@ -188,21 +188,23 @@ TEST_F(OfflinePageUtilsTest, MightBeOfflineURL) {
   EXPECT_TRUE(OfflinePageUtils::MightBeOfflineURL(GURL("file:///test.mhtml")));
 }
 
-TEST_F(OfflinePageUtilsTest, GetOfflineURLForOnlineURL) {
-  EXPECT_EQ(offline_url_page_1(), OfflinePageUtils::GetOfflineURLForOnlineURL(
-                                      profile(), kTestPage1Url));
-  EXPECT_EQ(offline_url_page_2(), OfflinePageUtils::GetOfflineURLForOnlineURL(
-                                      profile(), kTestPage2Url));
-  EXPECT_EQ(GURL(), OfflinePageUtils::GetOfflineURLForOnlineURL(
+TEST_F(OfflinePageUtilsTest, MaybeGetOfflineURLForOnlineURL) {
+  EXPECT_EQ(offline_url_page_1(),
+            OfflinePageUtils::MaybeGetOfflineURLForOnlineURL(profile(),
+                                                             kTestPage1Url));
+  EXPECT_EQ(offline_url_page_2(),
+            OfflinePageUtils::MaybeGetOfflineURLForOnlineURL(profile(),
+                                                             kTestPage2Url));
+  EXPECT_EQ(GURL(), OfflinePageUtils::MaybeGetOfflineURLForOnlineURL(
                         profile(), GURL(kTestPage3Url)));
 }
 
-TEST_F(OfflinePageUtilsTest, GetOnlineURLForOfflineURL) {
-  EXPECT_EQ(kTestPage1Url, OfflinePageUtils::GetOnlineURLForOfflineURL(
+TEST_F(OfflinePageUtilsTest, MaybeGetOnlineURLForOfflineURL) {
+  EXPECT_EQ(kTestPage1Url, OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
                                profile(), offline_url_page_1()));
-  EXPECT_EQ(kTestPage2Url, OfflinePageUtils::GetOnlineURLForOfflineURL(
+  EXPECT_EQ(kTestPage2Url, OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
                                profile(), offline_url_page_2()));
-  EXPECT_EQ(GURL::EmptyGURL(), OfflinePageUtils::GetOnlineURLForOfflineURL(
+  EXPECT_EQ(GURL::EmptyGURL(), OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
                                    profile(), offline_url_missing()));
 }
 
