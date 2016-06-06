@@ -76,16 +76,20 @@ def GetFileList(root):
   # they crash. Also ignores the content of the win_sdk/debuggers/x(86|64)/sym/
   # directories as this is just the temporarily location that Windbg might use
   # to store the symbol files.
+  #
+  # Note: These files are only created on a Windows host, so the
+  # ignored_directories list isn't relevant on non-Windows hosts.
+
   ignored_directories = ['wer\\reportqueue',
                          'win_sdk\\debuggers\\x86\\sym\\',
                          'win_sdk\\debuggers\\x64\\sym\\']
   for base, _, files in os.walk(root):
-    paths = [os.path.join(base, f).lower() for f in files]
+    paths = [os.path.join(base, f) for f in files]
     for p in paths:
-      if any(ignored_dir in p for ignored_dir in ignored_directories):
+      if any(ignored_dir in p.lower() for ignored_dir in ignored_directories):
         continue
       file_list.append(p)
-  return sorted(file_list, key=lambda s: s.replace('/', '\\'))
+  return sorted(file_list, key=lambda s: s.replace('/', '\\').lower())
 
 
 def MakeTimestampsFileName(root, sha1):
@@ -158,7 +162,7 @@ def CalculateHash(root, expected_hash):
     if expected_hash:
       path_without_hash = path_without_hash.replace(
           os.path.join(root, expected_hash).replace('/', '\\'), root)
-    digest.update(path_without_hash)
+    digest.update(path_without_hash.lower())
     with open(path, 'rb') as f:
       digest.update(f.read())
   return digest.hexdigest()
