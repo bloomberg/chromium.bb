@@ -119,6 +119,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       expensive_task_policy(ExpensiveTaskPolicy::RUN),
       renderer_hidden(false),
       renderer_backgrounded(false),
+      renderer_suspended(false),
       timer_queue_suspension_when_backgrounded_enabled(false),
       timer_queue_suspended_when_backgrounded(false),
       was_shutdown(false),
@@ -392,6 +393,7 @@ void RendererSchedulerImpl::OnRendererForegrounded() {
     return;
 
   MainThreadOnly().renderer_backgrounded = false;
+  MainThreadOnly().renderer_suspended = false;
   suspend_timers_when_backgrounded_closure_.Cancel();
   ResumeTimerQueueWhenForegrounded();
 }
@@ -404,6 +406,7 @@ void RendererSchedulerImpl::SuspendRenderer() {
   suspend_timers_when_backgrounded_closure_.Cancel();
   // TODO(hajimehoshi): We might need to suspend not only timer queue but also
   // e.g. loading tasks or postMessage.
+  MainThreadOnly().renderer_suspended = true;
   SuspendTimerQueueWhenBackgrounded();
 }
 
@@ -839,6 +842,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
     new_policy.timer_queue_policy.is_enabled = false;
     new_policy.timer_queue_policy.time_domain_type = TimeDomainType::REAL;
+  }
+
+  if (MainThreadOnly().renderer_suspended) {
+    new_policy.loading_queue_policy.is_enabled = false;
+    DCHECK(!new_policy.timer_queue_policy.is_enabled);
   }
 
   // Tracing is done before the early out check, because it's quite possible we

@@ -334,6 +334,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     ExpensiveTaskPolicy expensive_task_policy;
     bool renderer_hidden;
     bool renderer_backgrounded;
+    bool renderer_suspended;
     bool timer_queue_suspension_when_backgrounded_enabled;
     bool timer_queue_suspended_when_backgrounded;
     bool was_shutdown;
