@@ -121,6 +121,7 @@ action("protocol_version") {
 
   inputs = [
     "browser_protocol.json",
+    "../../platform/v8_inspector/js_protocol.json",
   ]
   output_file = "$blink_core_output_dir/inspector/protocol.json"
   outputs = [

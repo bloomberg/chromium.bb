@@ -140,6 +140,7 @@
           'inputs': [
             '../../platform/inspector_protocol/generate-inspector-protocol-version',
             'browser_protocol.json',
+            '../../platform/v8_inspector/js_protocol.json',
           ],
           'outputs': [
             '<(blink_core_output_dir)/inspector/protocol.json',
