@@ -162,10 +162,10 @@ def _RecordWebServerTestTrace(args):
   return 0
 
 
-def _GenerateBenchmarkTasks(args, url, output_subdirectory):
+def _GenerateBenchmarkTasks(args, android_device, url, output_subdirectory):
   MAIN_TRANSFORMER_LIST_NAME = 'no-network-emulation'
   common_builder = sandwich_utils.SandwichCommonBuilder(
-      android_device=_GetAndroidDeviceFromArgs(args),
+      android_device=android_device,
       url=url,
       output_directory=args.output,
       output_subdirectory=output_subdirectory)
@@ -219,6 +219,7 @@ def _RunAllMain(args):
   urls = ReadUrlsFromCorpus(args.corpus)
   domain_times_encountered_per_domain = {}
   default_final_tasks = []
+  android_device = _GetAndroidDeviceFromArgs(args)
   for url in urls:
     domain = '.'.join(urlparse(url).netloc.split('.')[-2:])
     domain_times_encountered = domain_times_encountered_per_domain.get(
@@ -226,7 +227,7 @@ def _RunAllMain(args):
     output_subdirectory = '{}.{}'.format(domain, domain_times_encountered)
     domain_times_encountered_per_domain[domain] = domain_times_encountered + 1
     default_final_tasks.extend(
-        _GenerateBenchmarkTasks(args, url, output_subdirectory))
+        _GenerateBenchmarkTasks(args, android_device, url, output_subdirectory))
   return task_manager.ExecuteWithCommandLine(args, default_final_tasks)
 
 

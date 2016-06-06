@@ -71,6 +71,7 @@ class SandwichCommonBuilder(task_manager.Builder):
       runner = self.CreateSandwichRunner()
       runner.wpr_archive_path = BuildOriginalWpr.path
       runner.wpr_record = True
+      runner.output_dir = BuildOriginalWpr.path[:-4] + '-run'
       runner.Run()
 
     self.original_wpr_task = BuildOriginalWpr

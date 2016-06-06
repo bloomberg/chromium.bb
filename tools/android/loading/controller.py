@@ -115,6 +115,10 @@ class ChromeControllerError(Exception):
     """Returns whether the error is an known intermittent error."""
     return self.error_type in self._INTERMITTENT_WHITE_LIST
 
+  def RaiseOriginal(self):
+    """Raises the original exception that has caused <self>."""
+    raise self.error_type, self.error_value, self.error_traceback
+
 
 class ChromeControllerBase(object):
   """Base class for all controllers.
@@ -326,6 +330,7 @@ class RemoteChromeController(ChromeControllerBase):
         subprocess.list2cmdline(chrome_args)))
     with device_setup.FlagReplacer(
         self._device, command_line_path, self._GetChromeArguments()):
+      self._DismissCrashDialogIfNeeded()
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
           data='about:blank')
@@ -362,6 +367,7 @@ class RemoteChromeController(ChromeControllerBase):
         raise ChromeControllerError(log=logcat)
       finally:
         self._device.ForceStop(package_info.package)
+        self._DismissCrashDialogIfNeeded()
 
   def ResetBrowserState(self):
     """Override resetting Chrome local state."""
@@ -401,6 +407,11 @@ class RemoteChromeController(ChromeControllerBase):
       self._wpr_attributes = wpr_attributes
       yield
     self._wpr_attributes = None
+
+  def _DismissCrashDialogIfNeeded(self):
+    for _ in xrange(10):
+      if not self._device.DismissCrashDialogIfNeeded():
+        break
 
 
 class LocalChromeController(ChromeControllerBase):

@@ -22,6 +22,7 @@ import loading_trace
 
 
 # Standard filenames in the sandwich runner's output directory.
+ERROR_FILENAME = 'error'
 TRACE_FILENAME = 'trace.json'
 VIDEO_FILENAME = 'video.mp4'
 WPR_LOG_FILENAME = 'wpr.log'
@@ -140,7 +141,7 @@ class SandwichRunner(object):
         trace or video will be saved.
     """
     run_path = None
-    if self.output_dir is not None and run_id is not None:
+    if run_id is not None:
       run_path = os.path.join(self.output_dir, str(run_id))
       if not os.path.isdir(run_path):
         os.makedirs(run_path)
@@ -191,13 +192,15 @@ class SandwichRunner(object):
         self._RunNavigation(clear_cache=clear_cache, run_id=run_id)
         break
       except controller.ChromeControllerError as error:
+        if error.IsIntermittent() and attempt_id + 1 != self._ATTEMPT_COUNT:
+          dump_filename = 'intermittent_failure{}'.format(attempt_id)
+          dump_path = os.path.join(self.output_dir, str(run_id), dump_filename)
+        else:
+          dump_path = os.path.join(self.output_dir, ERROR_FILENAME)
+        with open(dump_path, 'w') as dump_output:
+          error.Dump(dump_output)
         if not error.IsIntermittent():
-          raise
-        if self.output_dir is not None:
-          dump_path = os.path.join(self.output_dir, str(run_id),
-                                   'error{}'.format(attempt_id))
-          with open(dump_path, 'w') as dump_output:
-            error.Dump(dump_output)
+          error.RaiseOriginal()
     else:
       logging.error('Failed to navigate to %s after %d attemps' % \
                     (self.url, self._ATTEMPT_COUNT))
@@ -214,10 +217,10 @@ class SandwichRunner(object):
 
   def Run(self):
     """SandwichRunner main entry point meant to be called once configured."""
+    assert self.output_dir is not None
     assert self._chrome_ctl == None
     assert self._local_cache_directory_path == None
-    if self.output_dir:
-      self._CleanTraceOutputDirectory()
+    self._CleanTraceOutputDirectory()
 
     if self.android_device:
       self._chrome_ctl = controller.RemoteChromeController(self.android_device)
@@ -227,11 +230,6 @@ class SandwichRunner(object):
     self._chrome_ctl.AddChromeArguments(self.chrome_args)
     if self.cache_operation == CacheOperation.SAVE:
       self._chrome_ctl.SetSlowDeath()
-
-    wpr_log_path = None
-    if self.output_dir:
-      wpr_log_path = os.path.join(self.output_dir, WPR_LOG_FILENAME)
-
     try:
       if self.cache_operation == CacheOperation.PUSH:
         assert os.path.isfile(self.cache_archive_path)
@@ -243,7 +241,7 @@ class SandwichRunner(object):
           record=self.wpr_record,
           network_condition_name=self._GetEmulatorNetworkCondition('wpr'),
           disable_script_injection=self.disable_wpr_script_injection,
-          out_log_path=wpr_log_path):
+          out_log_path=os.path.join(self.output_dir, WPR_LOG_FILENAME)):
         for repeat_id in xrange(self.repeat):
           self._RunUrl(run_id=repeat_id)
     finally:
