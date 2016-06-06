@@ -486,9 +486,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
         // "For paged media, boxes with fixed positions are repeated on every page."
         // - https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
         ASSERT(view->firstChild() && view->firstChild()->isLayoutBlock());
-        int pages = toLayoutBlock(view->firstChild())->logicalHeight() / view->pageLogicalHeight();
+        int pages = static_cast<int>(ceilf(toLayoutBlock(view->firstChild())->logicalHeight() / view->pageLogicalHeight()));
         LayoutPoint paginationOffset;
-        for (int i = 0; i <= pages; i++) {
+        for (int i = 0; i < pages; i++) {
             PaintLayerFragment fragment;
             fragment.backgroundRect = paintingInfo.paintDirtyRect;
             fragment.paginationOffset = paginationOffset;
