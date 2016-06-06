@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
@@ -146,6 +147,9 @@ public:
     void addActiveScriptWrappable(ActiveScriptWrappable*);
     const ActiveScriptWrappableSet* activeScriptWrappables() const { return m_activeScriptWrappables.get(); }
 
+    void setScriptWrappableVisitor(std::unique_ptr<ScriptWrappableVisitor> visitor) { m_scriptWrappableVisitor = std::move(visitor); }
+    ScriptWrappableVisitor* scriptWrappableVisitor() { return m_scriptWrappableVisitor.get(); }
+
 private:
     V8PerIsolateData();
     ~V8PerIsolateData();
@@ -188,6 +192,7 @@ private:
     OwnPtr<ThreadDebugger> m_threadDebugger;
 
     Persistent<ActiveScriptWrappableSet> m_activeScriptWrappables;
+    std::unique_ptr<ScriptWrappableVisitor> m_scriptWrappableVisitor;
 };
 
 } // namespace blink
