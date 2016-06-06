@@ -18,7 +18,6 @@
 #include "base/rand_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "crypto/random.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
@@ -323,6 +322,10 @@ void Core::RequestShutdown(const base::Closure& callback) {
 
 ScopedMessagePipeHandle Core::CreateMessagePipe(
     ScopedPlatformHandle platform_handle) {
+#if defined(OS_NACL)
+  NOTREACHED();
+  return ScopedMessagePipeHandle();
+#else
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(
@@ -331,6 +334,7 @@ ScopedMessagePipeHandle Core::CreateMessagePipe(
   RemoteMessagePipeBootstrap::Create(
       GetNodeController(), std::move(platform_handle), port1);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
+#endif
 }
 
 ScopedMessagePipeHandle Core::CreateParentMessagePipe(

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")
 import("//testing/test.gni")
 import("../../../mojo/public/tools/bindings/mojom.gni")
 
@@ -100,8 +101,11 @@ component("system") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//crypto",
   ]
+
+  if (!is_nacl) {
+    deps += [ "//crypto" ]
+  }
 
   if (is_win) {
     cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
@@ -112,6 +116,14 @@ component("system") {
     sources += [
       "mach_port_relay.cc",
       "mach_port_relay.h",
+    ]
+  }
+
+  if (is_nacl && !is_nacl_nonsfi) {
+    sources -= [
+      "broker_host_posix.cc",
+      "broker_posix.cc",
+      "channel_posix.cc",
     ]
   }
 

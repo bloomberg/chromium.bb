@@ -4,6 +4,7 @@ include_rules = [
   "+crypto",
   "+build",
   "+gin",
+  "+native_client/src/public",
   "+testing",
   "+third_party/ashmem",
   "+v8",

@@ -14,9 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
+#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
-#include "crypto/random.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/broker.h"
@@ -28,13 +28,22 @@
 #include "mojo/edk/system/mach_port_relay.h"
 #endif
 
+#if !defined(OS_NACL)
+#include "crypto/random.h"
+#endif
+
 namespace mojo {
 namespace edk {
 
 namespace {
 
+#if defined(OS_NACL)
+template <typename T>
+void GenerateRandomName(T* out) { base::RandBytes(out, sizeof(T)); }
+#else
 template <typename T>
 void GenerateRandomName(T* out) { crypto::RandBytes(out, sizeof(T)); }
+#endif
 
 ports::NodeName GetRandomNodeName() {
   ports::NodeName name;
@@ -182,7 +191,7 @@ void NodeController::CloseChildPorts(const std::string& child_token) {
 
 void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
 // TODO(amistry): Consider the need for a broker on Windows.
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_NACL)
   // On posix, use the bootstrap channel for the broker and receive the node's
   // channel synchronously as the first message from the broker.
   base::ElapsedTimer timer;
@@ -279,7 +288,7 @@ int NodeController::MergeLocalPorts(const ports::PortRef& port0,
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_NACL)
   // Shared buffer creation failure is fatal, so always use the broker when we
   // have one. This does mean that a non-root process that has children will use
   // the broker for shared buffer creation even though that process is
@@ -307,7 +316,7 @@ void NodeController::ConnectToChildOnIOThread(
     ports::NodeName token) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_NACL)
   PlatformChannelPair node_channel;
   // BrokerHost owns itself.
   BrokerHost* broker_host = new BrokerHost(std::move(platform_handle));

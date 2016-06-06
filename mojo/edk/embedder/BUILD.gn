@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")
+
 source_set("headers") {
   sources = [
     "configuration.h",
@@ -59,9 +61,11 @@ source_set("embedder") {
     "//mojo/public/cpp/system",
   ]
 
-  deps = [
-    "//crypto",
-  ]
+  if (!is_nacl) {
+    deps = [
+      "//crypto",
+    ]
+  }
 }
 
 source_set("platform") {
@@ -106,6 +110,10 @@ source_set("platform") {
 
   if (is_android) {
     deps += [ "//third_party/ashmem" ]
+  }
+
+  if (is_nacl && !is_nacl_nonsfi) {
+    sources -= [ "platform_channel_utils_posix.cc" ]
   }
 }
 

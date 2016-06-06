@@ -147,7 +147,12 @@ scoped_refptr<NodeChannel> NodeChannel::Create(
     Delegate* delegate,
     ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_task_runner) {
+#if defined(OS_NACL)
+  LOG(FATAL) << "Multi-process not yet supported on NaCl";
+  return nullptr;
+#else
   return new NodeChannel(delegate, std::move(platform_handle), io_task_runner);
+#endif
 }
 
 // static
@@ -381,9 +386,12 @@ NodeChannel::NodeChannel(Delegate* delegate,
                          ScopedPlatformHandle platform_handle,
                          scoped_refptr<base::TaskRunner> io_task_runner)
     : delegate_(delegate),
-      io_task_runner_(io_task_runner),
-      channel_(
-          Channel::Create(this, std::move(platform_handle), io_task_runner_)) {
+      io_task_runner_(io_task_runner)
+#if !defined(OS_NACL)
+      , channel_(
+          Channel::Create(this, std::move(platform_handle), io_task_runner_))
+#endif
+      {
 }
 
 NodeChannel::~NodeChannel() {

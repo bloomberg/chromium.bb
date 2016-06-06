@@ -6,12 +6,15 @@
 
 #include <stddef.h>
 #include <sys/socket.h>
-#include <sys/uio.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
+
+#if !defined(OS_NACL)
+#include <sys/uio.h>
+#endif
 
 #if !defined(SO_PEEK_OFF)
 #define SO_PEEK_OFF 42

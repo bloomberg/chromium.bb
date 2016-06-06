@@ -5,7 +5,7 @@
 #include "mojo/edk/system/channel.h"
 
 #include <errno.h>
-#include <sys/uio.h>
+#include <sys/socket.h>
 
 #include <algorithm>
 #include <deque>
@@ -21,6 +21,10 @@
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
+
+#if !defined(OS_NACL)
+#include <sys/uio.h>
+#endif
 
 namespace mojo {
 namespace edk {

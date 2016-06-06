@@ -15,6 +15,11 @@
 #include "base/sys_info.h"
 #include "mojo/edk/embedder/platform_handle_utils.h"
 
+#if defined(OS_NACL)
+// For getpagesize() on NaCl.
+#include <unistd.h>
+#endif
+
 namespace mojo {
 namespace edk {
 
@@ -288,7 +293,13 @@ bool PlatformSharedBufferMapping::Map() {
   // Mojo shared buffers can be mapped at any offset. However,
   // base::SharedMemory must be mapped at a page boundary. So calculate what the
   // nearest whole page offset is, and build a mapping that's offset from that.
-  size_t offset_rounding = offset_ % base::SysInfo::VMAllocationGranularity();
+#if defined(OS_NACL)
+  // base::SysInfo isn't available under NaCl.
+  size_t page_size = getpagesize();
+#else
+  size_t page_size = base::SysInfo::VMAllocationGranularity();
+#endif
+  size_t offset_rounding = offset_ % page_size;
   size_t real_offset = offset_ - offset_rounding;
   size_t real_length = length_ + offset_rounding;
 
