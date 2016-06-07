@@ -23,7 +23,6 @@ include_rules = [
   "+services",
   "+sql",
   "+ui/aura_extra",
-  "+ui/views/mus",  # http://crbug.com/555767
   "+ui/webui",
   "+win8/util",
 

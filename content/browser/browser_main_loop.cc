@@ -186,11 +186,6 @@
 #include "crypto/nss_util.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
-#include "services/shell/public/cpp/connector.h"
-#include "ui/views/mus/window_manager_connection.h"
-#endif
-
 #if defined(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
@@ -1211,15 +1206,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   mojo_shell_context_.reset(new MojoShellContext);
   if (IsRunningInMojoShell()) {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+    // TODO(rockot): Remove the blocking wait for init.
+    // http://crbug.com/594852.
     MojoShellConnection* mojo_shell_connection = MojoShellConnection::Get();
-    if (mojo_shell_connection) {
-      // TODO(rockot): Remove the blocking wait for init.
-      // http://crbug.com/594852.
+    if (mojo_shell_connection)
       WaitForMojoShellInitialize();
-      views::WindowManagerConnection::Create(
-          mojo_shell_connection->GetConnector(),
-          mojo_shell_connection->GetIdentity());
-    }
 #endif
   }
 

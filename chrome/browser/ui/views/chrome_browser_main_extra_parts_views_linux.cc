@@ -92,6 +92,7 @@ void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreProfileInit() {
+  ChromeBrowserMainExtraPartsViews::PreProfileInit();
   // On the Linux desktop, we want to prevent the user from logging in as root,
   // so that we don't destroy the profile. Now that we have some minimal ui
   // initialized, check to see if we're running as root and bail if we are.

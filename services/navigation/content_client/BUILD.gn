@@ -20,5 +20,6 @@ static_library("content_client") {
     "//net",
     "//services/navigation:lib",
     "//ui/views:test_support",
+    "//ui/views/mus",
   ]
 }

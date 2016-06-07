@@ -14,6 +14,11 @@
 #include "ui/wm/core/wm_state.h"
 #endif
 
+#if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+#include "content/public/common/mojo_shell_connection.h"
+#include "ui/views/mus/window_manager_connection.h"
+#endif
+
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
@@ -37,5 +42,17 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
 void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   display::Screen::SetScreenInstance(views::CreateDesktopScreen());
+#endif
+}
+
+void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
+#if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+  content::MojoShellConnection* mojo_shell_connection =
+      content::MojoShellConnection::Get();
+  if (mojo_shell_connection && mojo_shell_connection->UsingExternalShell()) {
+    views::WindowManagerConnection::Create(
+        mojo_shell_connection->GetConnector(),
+        mojo_shell_connection->GetIdentity());
+  }
 #endif
 }
