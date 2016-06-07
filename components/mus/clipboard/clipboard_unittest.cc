@@ -58,14 +58,13 @@ class ClipboardAppTest : public shell::test::ShellTest {
     return types.To<std::vector<std::string>>();
   }
 
-  bool GetDataOfType(uint64_t sequence_number, const std::string& mime_type,
-                     std::string* data) {
+  bool GetDataOfType(const std::string& mime_type, std::string* data) {
     bool valid = false;
     Array<uint8_t> raw_data;
-    clipboard_->ReadMimeType(
-        sequence_number, Clipboard::Type::COPY_PASTE, mime_type,
-        &valid, &raw_data);
-    valid = valid && !raw_data.is_null();
+    uint64_t sequence_number = 0;
+    clipboard_->ReadClipboardData(Clipboard::Type::COPY_PASTE, mime_type,
+                                  &sequence_number, &raw_data);
+    valid = !raw_data.is_null();
     *data = raw_data.is_null() ? "" : raw_data.To<std::string>();
     return valid;
   }
@@ -73,7 +72,7 @@ class ClipboardAppTest : public shell::test::ShellTest {
   void SetStringText(const std::string& data) {
     uint64_t sequence_number;
     Map<String, Array<uint8_t>> mime_data;
-    mime_data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(data);
+    mime_data[mojom::kMimeTypeText] = Array<uint8_t>::From(data);
     clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,
                                    std::move(mime_data),
                                    &sequence_number);
@@ -89,26 +88,26 @@ TEST_F(ClipboardAppTest, EmptyClipboardOK) {
   EXPECT_EQ(0ul, GetSequenceNumber());
   EXPECT_TRUE(GetAvailableFormatMimeTypes().empty());
   std::string data;
-  EXPECT_FALSE(GetDataOfType(0ul, Clipboard::MIME_TYPE_TEXT, &data));
+  EXPECT_FALSE(GetDataOfType(mojom::kMimeTypeText, &data));
 }
 
 TEST_F(ClipboardAppTest, CanReadBackText) {
   std::string data;
   EXPECT_EQ(0ul, GetSequenceNumber());
-  EXPECT_FALSE(GetDataOfType(0ul, Clipboard::MIME_TYPE_TEXT, &data));
+  EXPECT_FALSE(GetDataOfType(mojom::kMimeTypeText, &data));
 
   SetStringText(kPlainTextData);
   EXPECT_EQ(1ul, GetSequenceNumber());
 
-  EXPECT_TRUE(GetDataOfType(1ul, Clipboard::MIME_TYPE_TEXT, &data));
+  EXPECT_TRUE(GetDataOfType(mojom::kMimeTypeText, &data));
   EXPECT_EQ(kPlainTextData, data);
 }
 
 TEST_F(ClipboardAppTest, CanSetMultipleDataTypesAtOnce) {
   Map<String, Array<uint8_t>> mime_data;
-  mime_data[Clipboard::MIME_TYPE_TEXT] =
+  mime_data[mojom::kMimeTypeText] =
       Array<uint8_t>::From(std::string(kPlainTextData));
-  mime_data[Clipboard::MIME_TYPE_HTML] =
+  mime_data[mojom::kMimeTypeHTML] =
       Array<uint8_t>::From(std::string(kHtmlData));
 
   uint64_t sequence_num = 0;
@@ -118,9 +117,9 @@ TEST_F(ClipboardAppTest, CanSetMultipleDataTypesAtOnce) {
   EXPECT_EQ(1ul, sequence_num);
 
   std::string data;
-  EXPECT_TRUE(GetDataOfType(1ul, Clipboard::MIME_TYPE_TEXT, &data));
+  EXPECT_TRUE(GetDataOfType(mojom::kMimeTypeText, &data));
   EXPECT_EQ(kPlainTextData, data);
-  EXPECT_TRUE(GetDataOfType(1ul, Clipboard::MIME_TYPE_HTML, &data));
+  EXPECT_TRUE(GetDataOfType(mojom::kMimeTypeHTML, &data));
   EXPECT_EQ(kHtmlData, data);
 }
 
@@ -129,7 +128,7 @@ TEST_F(ClipboardAppTest, CanClearClipboardWithZeroArray) {
   SetStringText(kPlainTextData);
   EXPECT_EQ(1ul, GetSequenceNumber());
 
-  EXPECT_TRUE(GetDataOfType(1ul, Clipboard::MIME_TYPE_TEXT, &data));
+  EXPECT_TRUE(GetDataOfType(mojom::kMimeTypeText, &data));
   EXPECT_EQ(kPlainTextData, data);
 
   Map<String, Array<uint8_t>> mime_data;
@@ -139,7 +138,7 @@ TEST_F(ClipboardAppTest, CanClearClipboardWithZeroArray) {
                                  &sequence_num);
 
   EXPECT_EQ(2ul, sequence_num);
-  EXPECT_FALSE(GetDataOfType(2ul, Clipboard::MIME_TYPE_TEXT, &data));
+  EXPECT_FALSE(GetDataOfType(mojom::kMimeTypeText, &data));
 }
 
 }  // namespace clipboard

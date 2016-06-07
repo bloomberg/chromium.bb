@@ -24,8 +24,6 @@ namespace ui {
 namespace {
 const char kMimeTypeFilename[] = "chromium/filename";
 const char kMimeTypeBitmap[] = "image/bmp";
-const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
-const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 const size_t kMaxClipboardSize = 1;
 
 // Clipboard data format used by AuraClipboard.
@@ -454,6 +452,12 @@ const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
   return GetUrlFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetMozUrlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeMozillaURL));
+  return type;
 }
 
 // static

@@ -6,10 +6,22 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_AURA)
+#include "ui/events/platform/platform_event_source.h"
+#endif
+
 namespace ui {
 
 struct TestClipboardTraits {
+#if defined(USE_AURA)
+  static std::unique_ptr<PlatformEventSource> GetEventSource() {
+    return nullptr;
+  }
+#endif
+
   static Clipboard* Create() { return TestClipboard::CreateForCurrentThread(); }
+
+  static bool IsMusTest() { return false; }
 
   static void Destroy(Clipboard* clipboard) {
     ASSERT_EQ(Clipboard::GetForCurrentThread(), clipboard);

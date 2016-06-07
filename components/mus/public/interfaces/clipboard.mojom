@@ -4,17 +4,20 @@
 
 module mus.mojom;
 
+const string kMimeTypeHTML = "text/html";
+const string kMimeTypeMozillaURL = "text/x-moz-url";
+const string kMimeTypePNG = "image/png";
+const string kMimeTypeRTF = "text/rtf";
+const string kMimeTypeText = "text/plain";
+const string kMimeTypeURIList = "text/uri-list";
+const string kMimeTypeURL = "text/url";
+
 interface Clipboard {
   enum Type {
     COPY_PASTE = 0,
     SELECTION = 1,
     DRAG = 2
   };
-
-  // Mime type constants
-  const string MIME_TYPE_TEXT = "text/plain";
-  const string MIME_TYPE_HTML = "text/html";
-  const string MIME_TYPE_URL = "text/url";
 
   // Returns a sequence number which uniquely identifies clipboard state.
   // Clients are able to assume that the clipboard contents are unchanged as
@@ -29,17 +32,14 @@ interface Clipboard {
   GetAvailableMimeTypes(Type clipboard_types)
       => (uint64 sequence, array<string> types);
 
-  // If the current sequence number is still |sequence|, returns true and the
-  // current data associated with the requested Mime type. When the sequence
-  // number has changed (because new data has been written to the clipboard),
-  // returns false and null for |data|.
+  // Returns the current data associated with the requested Mime type.
   //
   // We don't want to provide one API to return the entire clipboard state
   // because the combined size of the clipboard can be megabytes, especially
   // when image data is involved.
   [Sync]
-  ReadMimeType(uint64 sequence, Type clipboard_type, string mime_type)
-      => (bool sequence_valid, array<uint8>? data);
+  ReadClipboardData(Type clipboard_type, string mime_type)
+      => (uint64 sequence, array<uint8>? data);
 
   // Writes a set of mime types to the clipboard. This will increment the
   // sequence number and return that. In the case of an empty or null map,

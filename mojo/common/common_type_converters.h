@@ -47,6 +47,11 @@ struct MOJO_COMMON_EXPORT TypeConverter<Array<uint8_t>, std::string> {
 };
 
 template <>
+struct MOJO_COMMON_EXPORT TypeConverter<Array<uint8_t>, base::StringPiece> {
+  static Array<uint8_t> Convert(const base::StringPiece& input);
+};
+
+template <>
 struct MOJO_COMMON_EXPORT TypeConverter<base::string16, Array<uint8_t>> {
   static base::string16 Convert(const Array<uint8_t>& input);
 };

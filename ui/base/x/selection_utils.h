@@ -22,7 +22,6 @@ namespace ui {
 class SelectionData;
 class X11AtomCache;
 
-extern const char kMimeTypeMozillaURL[];
 extern const char kString[];
 extern const char kText[];
 extern const char kUtf8String[];
