@@ -17,6 +17,10 @@ extern const NSTimeInterval kWaitForUIElementTimeout;
 
 // Constant for timeout in seconds while waiting for JavaScript completion.
 extern const NSTimeInterval kWaitForJSCompletionTimeout;
-}
+
+// Waits until |condition| is true, or induces GREYAssert after |timeout|.
+void WaitUntilCondition(NSTimeInterval timeout, bool (^condition)(void));
+
+}  // namespace testing
 
 #endif  // IOS_TESTING_EARL_GREY_WAIT_UTIL_H_

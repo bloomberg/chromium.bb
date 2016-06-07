@@ -9,6 +9,11 @@ config("earl_grey_support_config") {
 
 source_set("earl_grey_support") {
   testonly = true
+
+  deps = [
+    "//ios/third_party/earl_grey",
+  ]
+
   sources = [
     "wait_util.h",
     "wait_util.mm",

@@ -27,14 +27,9 @@ void TapWebViewElementWithId(web::WebState* web_state,
         did_complete = true;
       }));
 
-  // TODO(crbug.com/610837): Re-factor wait code into common location.
-  NSDate* deadline = [NSDate
-      dateWithTimeIntervalSinceNow:testing::kWaitForJSCompletionTimeout];
-  while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
-         !did_complete) {
-    base::test::ios::SpinRunLoopWithMaxDelay(
-        base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-  }
+  testing::WaitUntilCondition(testing::kWaitForJSCompletionTimeout, ^{
+    return did_complete;
+  });
 }
 
 }  // namespace test

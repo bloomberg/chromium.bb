@@ -54,16 +54,10 @@ id<GREYMatcher> addressField() {
       return NO;
     }
     UITextField* textField = base::mac::ObjCCastStrict<UITextField>(view);
-    NSDate* deadline =
-        [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
-    while ([[NSDate date] compare:deadline] != NSOrderedDescending) {
-      if ([textField.text isEqualToString:base::SysUTF8ToNSString(text)]) {
-        return YES;
-      }
-      base::test::ios::SpinRunLoopWithMaxDelay(
-          base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-    }
-    return NO;
+    testing::WaitUntilCondition(testing::kWaitForUIElementTimeout, ^bool() {
+      return [textField.text isEqualToString:base::SysUTF8ToNSString(text)];
+    });
+    return YES;
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
