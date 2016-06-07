@@ -608,9 +608,9 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
 
 gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {
   if (!content_view_core_)
-    return gfx::Rect(default_size_).size();
+    return default_size_;
 
-  return gfx::Rect(content_view_core_->GetViewSize()).size();
+  return content_view_core_->GetViewSize();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
@@ -621,12 +621,10 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
 }
 
 bool RenderWidgetHostViewAndroid::DoTopControlsShrinkBlinkSize() const {
-  if (!content_view_core_)
-    return false;
-
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar.
-  return content_view_core_->DoTopControlsShrinkBlinkSize();
+  return content_view_core_ &&
+         content_view_core_->DoTopControlsShrinkBlinkSize();
 }
 
 float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
