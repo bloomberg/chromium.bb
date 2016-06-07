@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.InputType;
@@ -82,21 +81,19 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         getHolder().addCallback(this);
     }
 
+    @Override
+    public void init(Desktop desktop, Client client) {
+        Preconditions.isNull(mDesktop);
+        Preconditions.isNull(mClient);
+        Preconditions.notNull(desktop);
+        Preconditions.notNull(client);
+        mDesktop = desktop;
+        mClient = client;
+        mInputHandler.init(desktop, client);
+    }
+
     public Event<PaintEventParameter> onPaint() {
         return mOnPaint;
-    }
-
-    public void setDesktop(Desktop desktop) {
-        mDesktop = desktop;
-    }
-
-    public void setClient(Client client) {
-        mClient = client;
-    }
-
-    /** See {@link TouchInputHandler#onSoftInputMethodVisibilityChanged} for API details. */
-    public void onSoftInputMethodVisibilityChanged(boolean inputMethodVisible, Rect bounds) {
-        mInputHandler.onSoftInputMethodVisibilityChanged(inputMethodVisible, bounds);
     }
 
     /** Request repainting of the desktop view. */
@@ -315,36 +312,5 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             }
             mInputAnimationRunning = enabled;
         }
-    }
-
-    /** Updates the current InputStrategy used by the TouchInputHandler. */
-    public void changeInputMode(
-            Desktop.InputMode inputMode, CapabilityManager.HostCapability hostTouchCapability) {
-        // We need both input mode and host input capabilities to select the input strategy.
-        if (!inputMode.isSet() || !hostTouchCapability.isSet()) {
-            return;
-        }
-
-        switch (inputMode) {
-            case TRACKPAD:
-                mInputHandler.setInputStrategy(new TrackpadInputStrategy(mRenderData, mClient));
-                break;
-
-            case TOUCH:
-                if (hostTouchCapability.isSupported()) {
-                    mInputHandler.setInputStrategy(new TouchInputStrategy(mRenderData, mClient));
-                } else {
-                    mInputHandler.setInputStrategy(
-                            new SimulatedTouchInputStrategy(mRenderData, mClient, getContext()));
-                }
-                break;
-
-            default:
-                // Unreachable, but required by Google Java style and findbugs.
-                assert false : "Unreached";
-        }
-
-        // Ensure the cursor state is updated appropriately.
-        requestRepaint();
     }
 }

@@ -25,12 +25,23 @@ public final class Preconditions {
     }
 
     /**
-     * Checks whether input |ref| is not a null reference, and return its value. Throws
+     * Checks whether input |ref| is not a null reference, and returns its value. Throws
      * {@link NullPointerException} if |ref| is null.
      */
     public static final <T> T notNull(T ref) {
         if (ref == null) {
             throw new NullPointerException();
+        }
+        return ref;
+    }
+
+    /**
+     * Checks whether input |ref| is a null reference, and returns its value. Throws
+     * {@link IllegalArgumentException} if |ref| is not null.
+     */
+    public static final <T> T isNull(T ref) {
+        if (ref != null) {
+            throw new IllegalArgumentException();
         }
         return ref;
     }

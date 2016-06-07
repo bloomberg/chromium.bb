@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -66,8 +65,11 @@ public class Desktop
     /** The amount of time to wait to hide the Actionbar after user input is seen. */
     private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
 
-    /** The surface that displays the remote host's desktop feed. */
-    private DesktopView mRemoteHostDesktop;
+    private final Event.Raisable<SoftInputMethodVisibilityChangedEventParameter>
+            mOnSoftInputMethodVisibilityChanged = new Event.Raisable<>();
+
+    private final Event.Raisable<InputModeChangedEventParameter> mOnInputModeChanged =
+            new Event.Raisable<>();
 
     private Client mClient;
 
@@ -109,9 +111,8 @@ public class Desktop
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        mRemoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
-        mRemoteHostDesktop.setDesktop(this);
-        mRemoteHostDesktop.setClient(mClient);
+        DesktopView remoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
+        remoteHostDesktop.init(this, mClient);
         mSwitchToCardboardDesktopActivity = false;
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -160,7 +161,7 @@ public class Desktop
                 }
             });
         } else {
-            mRemoteHostDesktop.setFitsSystemWindows(true);
+            remoteHostDesktop.setFitsSystemWindows(true);
         }
     }
 
@@ -169,7 +170,8 @@ public class Desktop
         super.onStart();
         mActivityLifecycleListener.onActivityStarted(this);
         mClient.enableVideoChannel(true);
-        mRemoteHostDesktop.attachRedrawCallback();
+        DesktopView desktopView = (DesktopView) findViewById(R.id.desktop_view);
+        desktopView.attachRedrawCallback();
         mClient.getCapabilityManager().addListener(this);
     }
 
@@ -258,6 +260,15 @@ public class Desktop
         return super.onCreateOptionsMenu(menu);
     }
 
+    public Event<SoftInputMethodVisibilityChangedEventParameter>
+            onSoftInputMethodVisibilityChanged() {
+        return mOnSoftInputMethodVisibilityChanged;
+    }
+
+    public Event<InputModeChangedEventParameter> onInputModeChanged() {
+        return mOnInputModeChanged;
+    }
+
     private InputMode getInitialInputModeValue() {
         // Load the previously-selected input mode from Preferences.
         // TODO(joedow): Evaluate and determine if we should use a different input mode based on
@@ -297,7 +308,8 @@ public class Desktop
                 .putString(PREFERENCE_INPUT_MODE, mInputMode.name())
                 .apply();
 
-        mRemoteHostDesktop.changeInputMode(mInputMode, mHostTouchCapability);
+        mOnInputModeChanged.raise(
+                new InputModeChangedEventParameter(mInputMode, mHostTouchCapability));
     }
 
     @Override
@@ -308,7 +320,8 @@ public class Desktop
             mHostTouchCapability = CapabilityManager.HostCapability.UNSUPPORTED;
         }
 
-        mRemoteHostDesktop.changeInputMode(mInputMode, mHostTouchCapability);
+        mOnInputModeChanged.raise(
+                new InputModeChangedEventParameter(mInputMode, mHostTouchCapability));
     }
 
     // Any time an onTouchListener is attached, a lint warning about filtering touch events is
@@ -548,8 +561,9 @@ public class Desktop
                 // when the input method is changed so we want to send updates to the image canvas
                 // whenever they occur.
                 mSoftInputVisible = (bottom < mMaxBottomValue);
-                mRemoteHostDesktop.onSoftInputMethodVisibilityChanged(
-                        mSoftInputVisible, new Rect(left, top, right, bottom));
+                mOnSoftInputMethodVisibilityChanged.raise(
+                        new SoftInputMethodVisibilityChangedEventParameter(
+                                mSoftInputVisible, left, top, right, bottom));
 
                 if (!mSoftInputVisible && mHideSystemUIOnSoftKeyboardDismiss) {
                     // Queue a task which will run after the current action (OSK dismiss) has

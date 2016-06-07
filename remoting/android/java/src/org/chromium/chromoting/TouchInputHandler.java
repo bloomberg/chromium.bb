@@ -14,6 +14,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ViewConfiguration;
 
+import org.chromium.chromoting.jni.Client;
+
 /**
  * This class is responsible for handling Touch input from the user.  Touch events which manipulate
  * the local canvas are handled in this class and any input which should be sent to the remote host
@@ -21,6 +23,7 @@ import android.view.ViewConfiguration;
  */
 public class TouchInputHandler implements TouchInputHandlerInterface {
     private final DesktopViewInterface mViewer;
+    private final Context mContext;
     private final RenderData mRenderData;
     private final DesktopCanvas mDesktopCanvas;
     private InputStrategyInterface mInputStrategy;
@@ -180,6 +183,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
     public TouchInputHandler(DesktopViewInterface viewer, Context context, RenderData renderData) {
         mViewer = viewer;
+        mContext = context;
         mRenderData = renderData;
         mDesktopCanvas = new DesktopCanvas(mViewer, mRenderData);
 
@@ -257,20 +261,6 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     }
 
     @Override
-    public void onSoftInputMethodVisibilityChanged(boolean inputMethodVisible, Rect bounds) {
-        synchronized (mRenderData) {
-            if (inputMethodVisible) {
-                mDesktopCanvas.setInputMethodOffsetValues(mRenderData.screenWidth - bounds.right,
-                                                          mRenderData.screenHeight - bounds.bottom);
-            } else {
-                mDesktopCanvas.setInputMethodOffsetValues(0, 0);
-            }
-        }
-
-        mDesktopCanvas.repositionImage(true);
-    }
-
-    @Override
     public void processAnimation() {
         boolean active = mCursorAnimationJob.processAnimation();
         active |= mScrollAnimationJob.processAnimation();
@@ -281,7 +271,78 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     }
 
     @Override
-    public void setInputStrategy(InputStrategyInterface inputStrategy) {
+    public void init(Desktop desktop, final Client client) {
+        Preconditions.notNull(client);
+        desktop.onInputModeChanged().add(
+                new Event.ParameterRunnable<InputModeChangedEventParameter>() {
+                    @Override
+                    public void run(InputModeChangedEventParameter parameter) {
+                        handleInputModeChanged(parameter, client);
+                    }
+                });
+
+        desktop.onSoftInputMethodVisibilityChanged().add(
+                new Event.ParameterRunnable<SoftInputMethodVisibilityChangedEventParameter>() {
+                    @Override
+                    public void run(SoftInputMethodVisibilityChangedEventParameter parameter) {
+                        handleSoftInputMethodVisibilityChanged(parameter);
+                    }
+                });
+    }
+
+    private void handleInputModeChanged(InputModeChangedEventParameter parameter,
+                                        Client client) {
+        final Desktop.InputMode inputMode = parameter.inputMode;
+        final CapabilityManager.HostCapability hostTouchCapability =
+                parameter.hostCapability;
+        // We need both input mode and host input capabilities to select the input
+        // strategy.
+        if (!inputMode.isSet() || !hostTouchCapability.isSet()) {
+            return;
+        }
+
+        switch (inputMode) {
+            case TRACKPAD:
+                setInputStrategy(new TrackpadInputStrategy(mRenderData, client));
+                break;
+
+            case TOUCH:
+                if (hostTouchCapability.isSupported()) {
+                    setInputStrategy(new TouchInputStrategy(mRenderData, client));
+                } else {
+                    setInputStrategy(new SimulatedTouchInputStrategy(
+                            mRenderData, client, mContext));
+                }
+                break;
+
+            default:
+                // Unreachable, but required by Google Java style and findbugs.
+                assert false : "Unreached";
+        }
+
+        // Ensure the cursor state is updated appropriately.
+        // TODO (zijiehe): Move repaint control out of DesktopView.
+        if (mViewer instanceof DesktopView) {
+            ((DesktopView) mViewer).requestRepaint();
+        }
+    }
+
+    private void handleSoftInputMethodVisibilityChanged(
+            SoftInputMethodVisibilityChangedEventParameter parameter) {
+        synchronized (mRenderData) {
+            if (parameter.visible) {
+                mDesktopCanvas.setInputMethodOffsetValues(
+                        mRenderData.screenWidth - parameter.right,
+                        mRenderData.screenHeight - parameter.bottom);
+            } else {
+                mDesktopCanvas.setInputMethodOffsetValues(0, 0);
+            }
+        }
+
+        mDesktopCanvas.repositionImage(true);
+    }
+
+    private void setInputStrategy(InputStrategyInterface inputStrategy) {
         // Since the rules for flinging differ between input modes, we want to stop running the
         // current fling animation when the mode changes to prevent a wonky experience.
         mCursorAnimationJob.abortAnimation();

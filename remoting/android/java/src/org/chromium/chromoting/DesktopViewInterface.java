@@ -6,10 +6,18 @@ package org.chromium.chromoting;
 
 import android.graphics.Point;
 
+import org.chromium.chromoting.jni.Client;
+
 /**
  * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
  */
 public interface DesktopViewInterface {
+    /**
+     * Initializes the instance. Implementations can assume this function will be called exactly
+     * once after constructor but before other functions.
+     */
+    void init(Desktop desktop, Client client);
+
     /** Triggers a brief animation to indicate the existence and location of an input event. */
     void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow, Point pos);
 
