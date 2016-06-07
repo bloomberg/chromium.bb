@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import math
 import os
 import sys
 import time
@@ -359,8 +360,8 @@ def StartFromJsonString(http_body_str):
   # Compute the number of required instances if not specified.
   if not task.BackendParams().get('instance_count'):
     target_parallel_duration_s = 1800.0 # 30 minutes.
-    task.BackendParams()['instance_count'] = int(
-        sequential_duration_s / target_parallel_duration_s + 0.5)  # Rounded up.
+    task.BackendParams()['instance_count'] = math.ceil(
+        sequential_duration_s / target_parallel_duration_s)
 
   # Check the instance quotas.
   clovis_logger.info(
@@ -383,7 +384,7 @@ def StartFromJsonString(http_body_str):
     # Timeout is at least 1 hour.
     task.BackendParams()['timeout_hours'] = max(1, 5 * expected_duration_h)
   clovis_logger.info(
-      'Timeout delay: %i hours. ' % task.BackendParams()['timeout_hours'])
+      'Timeout delay: %.1f hours. ' % task.BackendParams()['timeout_hours'])
 
   if not EnqueueTasks(sub_tasks, task_tag):
     return Render('Task creation failed.', memory_logs)
