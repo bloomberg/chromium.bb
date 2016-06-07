@@ -3,6 +3,7 @@
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.setDumpConsoleMessages(false);
     testRunner.waitUntilDone();
     testRunner.setCanOpenWindows();
 }
@@ -23,6 +24,7 @@ window.addEventListener("message", function(e) {
     } else if (e.data == "pass") {
         target.document.body.innerHTML = "Should have navigated this window.  It should be still be same-origin.";
         log("PASS");
+        log("There are currently " + testRunner.windowCount() + " windows opened.");
         target.close();
         helper.postMessage("cleanup", "*");
     } else if (e.data == "done") {
