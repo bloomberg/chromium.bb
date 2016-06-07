@@ -235,7 +235,6 @@ protected:
 
     ScriptValue getInt64Parameter(ScriptState*, GLenum);
 
-    void texSubImage3DImpl(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, Image*, WebGLImageConversion::ImageHtmlDomSource, bool, bool);
     void samplerParameter(WebGLSampler*, GLenum, GLfloat, GLint, bool);
 
     bool isBufferBoundToTransformFeedback(WebGLBuffer*);
@@ -263,6 +262,7 @@ protected:
     GLint getMaxTextureLevelForTarget(GLenum target) override;
     void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName) override;
 
+    WebGLTexture* validateTexImageBinding(const char*, TexImageFunctionID, GLenum) override;
     // Helper function to check texture 3D target and texture bound to the target.
     // Generate GL errors and return 0 if target is invalid or texture bound is
     // null.  Otherwise, return the texture bound to the target.
