@@ -6,7 +6,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 
 group("deps") {
   if (use_prebuilt_instrumented_libraries) {
-    assert(prebuilt_available,
+    assert(prebuilt_instrumented_libraries_available,
            "Prebuilt instrumented libraries are only available when " +
                "is_msan = true and msan_track_origins = {0, 2}")
     deps = [
