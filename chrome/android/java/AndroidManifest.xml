@@ -103,6 +103,7 @@ by a child template that "extends" this file.
         android:largeHeap="false"
         android:allowBackup="true"
         android:fullBackupContent="@xml/chromebackupscheme"
+        android:restoreAnyVersion="true"
         {% block android_backup_agent %}
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
         {% endblock %}

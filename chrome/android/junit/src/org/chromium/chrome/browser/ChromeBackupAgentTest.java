@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -21,6 +23,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+
 /**
  * Unit tests for {@link org.chromium.chrome.browser.ChromeBackupAgent}.
  */
@@ -29,10 +39,41 @@ import org.robolectric.annotation.Config;
 public class ChromeBackupAgentTest {
 
     static class ChromeTestBackupAgent extends ChromeBackupAgent {
-        ChromeTestBackupAgent() {
+
+        private ByteArrayInputStream mInputStream;
+        private ByteArrayOutputStream mOutputStream;
+
+        ChromeTestBackupAgent(byte[] mChromeInputPrefs) {
             // This is protected in ContextWrapper, so can only be called within a derived
             // class.
             attachBaseContext(Robolectric.application);
+            mInputStream = new ByteArrayInputStream(mChromeInputPrefs);
+            mOutputStream = new ByteArrayOutputStream();
+        }
+
+        @Override
+        protected InputStream openInputStream(File prefsFile) throws FileNotFoundException {
+            return mInputStream;
+
+        }
+
+        @Override
+        protected OutputStream openOutputStream(File prefsFile) throws FileNotFoundException {
+            return mOutputStream;
+        }
+
+        @Override
+        public File getDir(String name, int mode) {
+            return null;
+        }
+
+        @Override
+        protected long getFileLength(File prefsFile) {
+            return mInputStream.available();
+        }
+
+        byte[] getOutputData() {
+            return mOutputStream.toByteArray();
         }
     }
 
@@ -46,7 +87,7 @@ public class ChromeBackupAgentTest {
     }
 
     @Test
-    public void testOnRestoreFinished() {
+    public void testOnRestoreFinished() throws UnsupportedEncodingException {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean("crash_dump_upload", false);
@@ -54,9 +95,25 @@ public class ChromeBackupAgentTest {
         editor.putString("junk", "junk");
         editor.commit();
 
-        new ChromeTestBackupAgent().onRestoreFinished();
+        String chromeInputPrefs =
+                "{\"junk1\":\"abc\", "
+                + "\"sync\":{ \"has_setup_completed\":\"true\", "
+                + "       \"keep_everything_synced\":\"false\", "
+                + "       \"junk2\":\"xxx\""
+                + "     }}";
+        byte[] chromePrefsBuffer = chromeInputPrefs.getBytes("UTF-8");
+        ChromeTestBackupAgent chromeTestBackupAgent = new ChromeTestBackupAgent(chromePrefsBuffer);
+        chromeTestBackupAgent.onRestoreFinished();
 
-        // Check that we have only restored the correct preferences
+        String chromeOutputPrefs = new String(chromeTestBackupAgent.getOutputData(), "UTF-8");
+
+        // Check that we have only restored the correct Chrome preferences
+        assertThat(chromeOutputPrefs, containsString("\"has_setup_completed\":\"true\""));
+        assertThat(chromeOutputPrefs, containsString("\"keep_everything_synced\":\"false\""));
+        assertThat(chromeOutputPrefs, not(containsString("junk")));
+
+
+        // Check that we have only restored the correct Android preferences
         assertThat(sharedPrefs.getBoolean("crash_dump_upload", true), equalTo(false));
         assertThat(sharedPrefs.getString("google.services.username", null), nullValue());
         assertThat(sharedPrefs.getString("junk", null), nullValue());
@@ -66,16 +123,28 @@ public class ChromeBackupAgentTest {
     }
 
     @Test
-    public void testOnRestoreFinishedNoUser() {
+    public void testOnRestoreFinishedNoUser() throws UnsupportedEncodingException {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean("crash_dump_upload", false);
         editor.putString("junk", "junk");
         editor.commit();
 
-        new ChromeTestBackupAgent().onRestoreFinished();
+        String chromeInputPrefs =
+                "{\"junk1\":\"abc\", "
+                + "\"sync\":{ \"has_setup_completed\":\"true\", "
+                + "       \"keep_everything_synced\":\"false\", "
+                + "       \"junk2\":\"xxx\""
+                + "     }}";
+        byte[] chromePrefsBuffer = chromeInputPrefs.getBytes("UTF-8");
+        ChromeTestBackupAgent chromeTestBackupAgent = new ChromeTestBackupAgent(chromePrefsBuffer);
+        chromeTestBackupAgent.onRestoreFinished();
 
-        // Check that we haven't restored any preferences
+        // Check that we haven't restored any Chrome preferences
+        String chromeOutputPrefs = new String(chromeTestBackupAgent.getOutputData(), "UTF-8");
+        assertThat(chromeOutputPrefs, equalTo(""));
+
+        // Check that we haven't restored any Android preferences
         assertThat(sharedPrefs.getBoolean("crash_dump_upload", true), equalTo(true));
         assertThat(sharedPrefs.getString("google.services.username", null), nullValue());
         assertThat(sharedPrefs.getString("junk", null), nullValue());
@@ -83,7 +152,7 @@ public class ChromeBackupAgentTest {
     }
 
     @Test
-    public void testOnRestoreFinishedWrongUser() {
+    public void testOnRestoreFinishedWrongUser() throws UnsupportedEncodingException {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean("crash_dump_upload", false);
@@ -91,9 +160,21 @@ public class ChromeBackupAgentTest {
         editor.putString("junk", "junk");
         editor.commit();
 
-        new ChromeTestBackupAgent().onRestoreFinished();
+        String chromeInputPrefs =
+                "{\"junk1\":\"abc\", "
+                + "\"sync\":{ \"has_setup_completed\":\"true\", "
+                + "       \"keep_everything_synced\":\"false\", "
+                + "       \"junk2\":\"xxx\""
+                + "     }}";
+        byte[] chromePrefsBuffer = chromeInputPrefs.getBytes("UTF-8");
+        ChromeTestBackupAgent chromeTestBackupAgent = new ChromeTestBackupAgent(chromePrefsBuffer);
+        chromeTestBackupAgent.onRestoreFinished();
 
-        // Check that we haven't restored any preferences
+        // Check that we haven't restored any Chrome preferences
+        String chromeOutputPrefs = new String(chromeTestBackupAgent.getOutputData(), "UTF-8");
+        assertThat(chromeOutputPrefs, equalTo(""));
+
+        // Check that we haven't restored any Android preferences
         assertThat(sharedPrefs.getBoolean("crash_dump_upload", true), equalTo(true));
         assertThat(sharedPrefs.getString("google.services.username", null), nullValue());
         assertThat(sharedPrefs.getString("junk", null), nullValue());

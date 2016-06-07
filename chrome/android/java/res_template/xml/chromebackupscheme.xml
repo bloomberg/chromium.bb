@@ -5,4 +5,5 @@
 
 <full-backup-content>
     <include domain="sharedpref" path="{{manifest_package}}_preferences.xml"/>
+    <include domain="root" path="app_chrome/Default/Preferences"/>
 </full-backup-content>
