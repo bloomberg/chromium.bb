@@ -78,9 +78,6 @@ public:
 
 protected:
     struct RunInfo;
-#if COMPILER(MSVC)
-    friend struct ::WTF::OwnedPtrDeleter<RunInfo>;
-#endif
 
     ShapeResult(const Font*, unsigned numCharacters, TextDirection);
     ShapeResult(const ShapeResult&);

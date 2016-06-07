@@ -177,9 +177,6 @@ private:
         }
     };
 
-#if COMPILER(MSVC)
-    friend struct ::WTF::OwnedPtrDeleter<DerivedFontData>;
-#endif
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
     RefPtr<CustomFontData> m_customFontData;

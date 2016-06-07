@@ -65,9 +65,6 @@ private:
     PaintArtifact m_paintArtifact;
 
     bool m_built;
-
-    // To make MSVC happy.
-    friend struct WTF::OwnedPtrDeleter<DummyRectClient>;
 };
 
 } // namespace blink

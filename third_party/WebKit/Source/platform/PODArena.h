@@ -195,10 +195,6 @@ protected:
     Chunk* m_current;
     size_t m_currentChunkSize;
     Vector<OwnPtr<Chunk>> m_chunks;
-
-#if COMPILER(MSVC)
-    friend struct ::WTF::OwnedPtrDeleter<Chunk>;
-#endif
 };
 
 } // namespace blink
