@@ -13,7 +13,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -261,7 +263,9 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
-  if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app))
+  const std::string mapped_app_id =
+      (app_id == ArcSupportHost::kHostAppId) ? arc::kPlayStoreAppId : app_id;
+  if (!apps || !apps->GetDictionaryWithoutPathExpansion(mapped_app_id, &app))
     return std::unique_ptr<AppInfo>();
 
   std::string name;
@@ -284,9 +288,9 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     }
   }
 
-  std::unique_ptr<AppInfo> app_info(new AppInfo(name, package_name, activity,
-                                                last_launch_time, sticky,
-                                                ready_apps_.count(app_id) > 0));
+  std::unique_ptr<AppInfo> app_info(
+      new AppInfo(name, package_name, activity, last_launch_time, sticky,
+                  ready_apps_.count(mapped_app_id) > 0));
   return app_info;
 }
 
