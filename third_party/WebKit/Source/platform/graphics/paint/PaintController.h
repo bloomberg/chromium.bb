@@ -44,6 +44,8 @@ public:
 
     ~PaintController()
     {
+        // New display items should be committed before PaintController is destructed.
+        DCHECK(m_newDisplayItemList.isEmpty());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
         DisplayItemClient::endShouldKeepAliveAllClients(this);
 #endif
