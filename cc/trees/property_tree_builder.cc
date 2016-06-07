@@ -1230,6 +1230,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.property_trees->effect_id_to_index_map.clear();
   data_for_recursion.property_trees->clip_id_to_index_map.clear();
   data_for_recursion.property_trees->scroll_id_to_index_map.clear();
+  data_for_recursion.property_trees->always_use_active_tree_opacity_effect_ids
+      .clear();
 
   ClipNode root_clip;
   root_clip.data.resets_clip = true;

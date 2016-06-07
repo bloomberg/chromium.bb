@@ -527,6 +527,18 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   layer_tree_root->SetBounds(gfx::Size(2, 2));
   scroll_layer->SetBounds(gfx::Size(10, 10));
 
+  // Building property trees twice shouldn't change the size of
+  // PropertyTrees::always_use_active_tree_opacity_effect_ids.
+  layer_tree_host_->BuildPropertyTreesForTesting();
+  EXPECT_EQ(layer_tree_host_->property_trees()
+                ->always_use_active_tree_opacity_effect_ids.size(),
+            1u);
+  layer_tree_host_->property_trees()->needs_rebuild = true;
+  layer_tree_host_->BuildPropertyTreesForTesting();
+  EXPECT_EQ(layer_tree_host_->property_trees()
+                ->always_use_active_tree_opacity_effect_ids.size(),
+            1u);
+
   // A solid color scrollbar layer's opacity is initialized to 0 on main thread
   layer_tree_host_->UpdateLayers();
   EffectNode* node = layer_tree_host_->property_trees()->effect_tree.Node(
