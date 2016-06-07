@@ -124,6 +124,16 @@ pip install -r requirements.txt -t lib
 gcloud preview app deploy app.yaml
 ```
 
+To deploy to a staging/test version of the server, you can do:
+
+```shell
+gcloud preview app deploy --no-promote --version $MY_VERSION
+```
+
+where `MY_VERSION` can be something like `staging` or something more unique to
+ensure there is no name collision. You can then access the application live on
+the web by prefixing the URL of the service with `$MY_VERSION-dot-`.
+
 ### Updating the Database Schema
 
 When a change is made to the dictionary returned by report.py, the BigQuery
