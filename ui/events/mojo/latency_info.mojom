@@ -5,6 +5,7 @@
 module ui.mojom;
 
 import "mojo/common/common_custom_types.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum LatencyComponentType {
   // ---------------------------BEGIN COMPONENT-------------------------------
@@ -107,18 +108,11 @@ struct LatencyComponentPair {
   LatencyComponent value;
 };
 
-// TODO(fsamuel): We should replace this with gfx.mojom.PointF here and in
-// ui/events/latency_info.h.
-struct InputCoordinate {
-  float x;
-  float y;
-};
-
 // See ui/events/latency_info.h
 struct LatencyInfo {
   string trace_name;
   array<LatencyComponentPair> latency_components;
-  array<InputCoordinate> input_coordinates;
+  array<gfx.mojom.PointF> input_coordinates;
   int64 trace_id;
   bool coalesced;
   bool terminated;
