@@ -6,15 +6,16 @@
 #define ScriptWrappableVisitor_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/WrapperVisitor.h"
+#include "wtf/Deque.h"
 #include "wtf/Vector.h"
 #include <v8.h>
 
 
 namespace blink {
 
-class ScriptWrappable;
 class HeapObjectHeader;
 template<typename T> class Member;
 
@@ -23,8 +24,9 @@ template<typename T> class Member;
  * references. It is used during V8 garbage collection.  When this visitor is
  * set to the v8::Isolate as its embedder heap tracer, V8 will call it during
  * its garbage collection. At the beginning, it will call TracePrologue, then
- * repeatedly (as v8 discovers more wrappers) it will call TraceWrappersFrom,
- * and at the end it will call TraceEpilogue.
+ * repeatedly it will call AdvanceTracing, and at the end it will call
+ * TraceEpilogue. Everytime V8 finds new wrappers, it will let the tracer know
+ * using RegisterV8References.
  */
 class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor, public v8::EmbedderHeapTracer {
 public:
@@ -45,10 +47,9 @@ public:
     }
 
     void TracePrologue() override;
-    void TraceWrappersFrom(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
+    void RegisterV8References(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
+    bool AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions) override;
     void TraceEpilogue() override;
-
-    void traceWrappersFrom(const ScriptWrappable*) const;
 
     template <typename T>
     void markWrapper(const v8::Persistent<T>* handle) const
@@ -71,8 +72,15 @@ private:
     bool markWrapperHeader(HeapObjectHeader*) const;
     bool markWrapperHeader(const ScriptWrappable*) const override;
     bool markWrapperHeader(const void* garbageCollected) const override;
-    inline void traceWrappersFrom(std::pair<void*, void*> internalFields);
     bool m_tracingInProgress = false;
+    /**
+     * Collection of ScriptWrappables we need to trace from. We assume it safe
+     * to hold on to the raw pointers because:
+     *     * oilpan object cannot move
+     *     * for the oilpan gc, this deque is part of the root set, so objects
+     *       in the deque will not die
+     */
+    mutable WTF::Deque<const ScriptWrappable*> m_markingDeque;
     /**
      * Collection of headers we need to unmark after the tracing finished. We
      * assume it is safe to hold on to the headers because:

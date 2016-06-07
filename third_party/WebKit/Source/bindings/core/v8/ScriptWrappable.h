@@ -31,7 +31,6 @@
 #ifndef ScriptWrappable_h
 #define ScriptWrappable_h
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"

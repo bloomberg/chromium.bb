@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/ElementRareData.h"
@@ -39,27 +38,37 @@ void ScriptWrappableVisitor::TraceEpilogue()
     m_tracingInProgress = false;
 }
 
-void ScriptWrappableVisitor::TraceWrappersFrom(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers)
+void ScriptWrappableVisitor::RegisterV8References(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers)
 {
-    ASSERT(m_tracingInProgress);
     // TODO(hlopko): Visit the vector in the V8 instead of passing it over if
     // there is no performance impact
     for (auto pair : internalFieldsOfPotentialWrappers) {
-        traceWrappersFrom(pair);
+        WrapperTypeInfo* wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(pair.first);
+        if (wrapperTypeInfo->ginEmbedder != gin::GinEmbedder::kEmbedderBlink)
+            continue;
+
+        ScriptWrappable* scriptWrappable = reinterpret_cast<ScriptWrappable*>(pair.second);
+        DCHECK(wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::NodeClassId
+            || wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::ObjectClassId);
+
+        m_markingDeque.append(scriptWrappable);
     }
 }
 
-void ScriptWrappableVisitor::traceWrappersFrom(std::pair<void*, void*> internalFields)
+bool ScriptWrappableVisitor::AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions actions)
 {
-    WrapperTypeInfo* wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(internalFields.first);
-    if (wrapperTypeInfo->ginEmbedder != gin::GinEmbedder::kEmbedderBlink)
-        return;
+    DCHECK(m_tracingInProgress);
+    while (actions.force_completion == v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION
+        || WTF::monotonicallyIncreasingTimeMS() < deadlineInMs) {
+        if (m_markingDeque.isEmpty()) {
+            return false;
+        }
 
-    ScriptWrappable* scriptWrappable = reinterpret_cast<ScriptWrappable*>(internalFields.second);
-    ASSERT(wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::NodeClassId
-        || wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::ObjectClassId);
-
-    scriptWrappable->traceWrappers(this);
+        const ScriptWrappable* scriptWrappable = m_markingDeque.takeFirst();
+        markWrapperHeader(scriptWrappable);
+        scriptWrappable->traceWrappers(this);
+    }
+    return true;
 }
 
 bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const
