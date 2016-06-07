@@ -37,11 +37,9 @@ static void temporal_filter_predictors_mb_c(
     uint8_t *pred, struct scale_factors *scale, int x, int y) {
   const int which_mv = 0;
   const MV mv = { mv_row, mv_col };
-  const InterpKernel *const kernel =
-      av1_filter_kernels[xd->mi[0]->mbmi.interp_filter];
-
   enum mv_precision mv_precision_uv;
   int uv_stride;
+  InterpFilter *interp_filter = &xd->mi[0]->mbmi.interp_filter;
   if (uv_block_width == 8) {
     uv_stride = (stride + 1) >> 1;
     mv_precision_uv = MV_PRECISION_Q4;
@@ -53,31 +51,31 @@ static void temporal_filter_predictors_mb_c(
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     av1_highbd_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale,
-                                     16, 16, which_mv, kernel, MV_PRECISION_Q3,
-                                     x, y, xd->bd);
+                                     16, 16, which_mv, interp_filter,
+                                     MV_PRECISION_Q3, x, y, xd->bd);
 
     av1_highbd_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256],
                                      uv_block_width, &mv, scale, uv_block_width,
-                                     uv_block_height, which_mv, kernel,
+                                     uv_block_height, which_mv, interp_filter,
                                      mv_precision_uv, x, y, xd->bd);
 
     av1_highbd_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512],
                                      uv_block_width, &mv, scale, uv_block_width,
-                                     uv_block_height, which_mv, kernel,
+                                     uv_block_height, which_mv, interp_filter,
                                      mv_precision_uv, x, y, xd->bd);
     return;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
-                            which_mv, kernel, MV_PRECISION_Q3, x, y);
+                            which_mv, interp_filter, MV_PRECISION_Q3, x, y);
 
   av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
-                            which_mv, kernel, mv_precision_uv, x, y);
+                            which_mv, interp_filter, mv_precision_uv, x, y);
 
   av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
-                            which_mv, kernel, mv_precision_uv, x, y);
+                            which_mv, interp_filter, mv_precision_uv, x, y);
 }
 
 void av1_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,

@@ -25,21 +25,36 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    uint8_t *dst, int dst_stride,
                                    const int subpel_x, const int subpel_y,
                                    const struct scale_factors *sf, int w, int h,
-                                   int ref, const InterpKernel *kernel, int xs,
-                                   int ys) {
+                                   int ref, const InterpFilter *interp_filter,
+                                   int xs, int ys) {
+  InterpFilterParams interp_filter_params =
+      get_interp_filter_params(*interp_filter);
+  const int16_t *filter_x =
+      get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
+  const int16_t *filter_y =
+      get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
+
   sf->predict[subpel_x != 0][subpel_y != 0][ref](
-      src, src_stride, dst, dst_stride, kernel[subpel_x], xs, kernel[subpel_y],
-      ys, w, h);
+      src, src_stride, dst, dst_stride, filter_x, xs, filter_y, ys, w, h);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
-static INLINE void high_inter_predictor(
-    const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
-    const int subpel_x, const int subpel_y, const struct scale_factors *sf,
-    int w, int h, int ref, const InterpKernel *kernel, int xs, int ys, int bd) {
+static INLINE void high_inter_predictor(const uint8_t *src, int src_stride,
+                                        uint8_t *dst, int dst_stride,
+                                        const int subpel_x, const int subpel_y,
+                                        const struct scale_factors *sf, int w,
+                                        int h, int ref,
+                                        const InterpFilter *interp_filter,
+                                        int xs, int ys, int bd) {
+  InterpFilterParams interp_filter_params =
+      get_interp_filter_params(*interp_filter);
+  const int16_t *filter_x =
+      get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
+  const int16_t *filter_y =
+      get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
+
   sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
-      src, src_stride, dst, dst_stride, kernel[subpel_x], xs, kernel[subpel_y],
-      ys, w, h, bd);
+      src, src_stride, dst, dst_stride, filter_x, xs, filter_y, ys, w, h, bd);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
@@ -131,15 +146,15 @@ void av1_build_inter_predictors_sb(MACROBLOCKD *xd, int mi_row, int mi_col,
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *mv_q3,
                                const struct scale_factors *sf, int w, int h,
-                               int do_avg, const InterpKernel *kernel,
+                               int do_avg, const InterpFilter *interp_filter,
                                enum mv_precision precision, int x, int y);
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_build_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
-    const InterpKernel *kernel, enum mv_precision precision, int x, int y,
-    int bd);
+    const InterpFilter *interp_filter, enum mv_precision precision, int x,
+    int y, int bd);
 #endif
 
 static INLINE int scaled_buffer_offset(int x_offset, int y_offset, int stride,

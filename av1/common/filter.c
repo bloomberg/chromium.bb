@@ -13,8 +13,8 @@
 
 #include "av1/common/filter.h"
 
-DECLARE_ALIGNED(256, static const InterpKernel,
-                bilinear_filters[SUBPEL_SHIFTS]) = {
+DECLARE_ALIGNED(256, static const int16_t,
+                bilinear_filters[SUBPEL_SHIFTS][8]) = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },  { 0, 0, 0, 120, 8, 0, 0, 0 },
   { 0, 0, 0, 112, 16, 0, 0, 0 }, { 0, 0, 0, 104, 24, 0, 0, 0 },
   { 0, 0, 0, 96, 32, 0, 0, 0 },  { 0, 0, 0, 88, 40, 0, 0, 0 },
@@ -26,8 +26,8 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 };
 
 // Lagrangian interpolation filter
-DECLARE_ALIGNED(256, static const InterpKernel,
-                sub_pel_filters_8[SUBPEL_SHIFTS]) = {
+DECLARE_ALIGNED(256, static const int16_t,
+                sub_pel_filters_8[SUBPEL_SHIFTS][8]) = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },        { 0, 1, -5, 126, 8, -3, 1, 0 },
   { -1, 3, -10, 122, 18, -6, 2, 0 },   { -1, 4, -13, 118, 27, -9, 3, -1 },
   { -1, 4, -16, 112, 37, -11, 4, -1 }, { -1, 5, -18, 105, 48, -14, 4, -1 },
@@ -39,8 +39,8 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 };
 
 // DCT based filter
-DECLARE_ALIGNED(256, static const InterpKernel,
-                sub_pel_filters_8s[SUBPEL_SHIFTS]) = {
+DECLARE_ALIGNED(256, static const int16_t,
+                sub_pel_filters_8sharp[SUBPEL_SHIFTS][8]) = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },         { -1, 3, -7, 127, 8, -3, 1, 0 },
   { -2, 5, -13, 125, 17, -6, 3, -1 },   { -3, 7, -17, 121, 27, -10, 5, -2 },
   { -4, 9, -20, 115, 37, -13, 6, -2 },  { -4, 10, -23, 108, 48, -16, 8, -3 },
@@ -52,8 +52,8 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 };
 
 // freqmultiplier = 0.5
-DECLARE_ALIGNED(256, static const InterpKernel,
-                sub_pel_filters_8lp[SUBPEL_SHIFTS]) = {
+DECLARE_ALIGNED(256, static const int16_t,
+                sub_pel_filters_8smooth[SUBPEL_SHIFTS][8]) = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },       { -3, -1, 32, 64, 38, 1, -3, 0 },
   { -2, -2, 29, 63, 41, 2, -3, 0 },   { -2, -2, 26, 63, 43, 4, -4, 0 },
   { -2, -3, 24, 62, 46, 5, -4, 0 },   { -2, -3, 21, 60, 49, 7, -4, 0 },
@@ -64,6 +64,18 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { 0, -3, 2, 41, 63, 29, -2, -2 },   { 0, -3, 1, 38, 64, 32, -1, -3 }
 };
 
-const InterpKernel *av1_filter_kernels[4] = {
-  sub_pel_filters_8, sub_pel_filters_8lp, sub_pel_filters_8s, bilinear_filters
-};
+const InterpKernel *av1_filter_kernels[4] = { sub_pel_filters_8,
+                                              sub_pel_filters_8smooth,
+                                              sub_pel_filters_8sharp,
+                                              bilinear_filters };
+static const InterpFilterParams
+    interp_filter_params_list[SWITCHABLE_FILTERS + 1] = {
+      { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS },
+      { (const int16_t *)sub_pel_filters_8smooth, SUBPEL_TAPS, SUBPEL_SHIFTS },
+      { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS },
+      { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS }
+    };
+
+InterpFilterParams get_interp_filter_params(InterpFilter interp_filter) {
+  return interp_filter_params_list[interp_filter];
+}

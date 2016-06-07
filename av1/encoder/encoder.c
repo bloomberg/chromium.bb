@@ -2077,7 +2077,7 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   const int src_strides[3] = { src->y_stride, src->uv_stride, src->uv_stride };
   uint8_t *const dsts[3] = { dst->y_buffer, dst->u_buffer, dst->v_buffer };
   const int dst_strides[3] = { dst->y_stride, dst->uv_stride, dst->uv_stride };
-  const InterpKernel *const kernel = av1_filter_kernels[EIGHTTAP];
+  InterpFilterParams interp_filter_params = get_interp_filter_params(EIGHTTAP);
   int x, y, i;
 
   for (y = 0; y < dst_h; y += 16) {
@@ -2086,30 +2086,34 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
         const int factor = (i == 0 || i == 3 ? 1 : 2);
         const int x_q4 = x * (16 / factor) * src_w / dst_w;
         const int y_q4 = y * (16 / factor) * src_h / dst_h;
+        const int subpel_x = x_q4 & 0xf;
+        const int subpel_y = y_q4 & 0xf;
         const int src_stride = src_strides[i];
         const int dst_stride = dst_strides[i];
         const uint8_t *src_ptr = srcs[i] +
                                  (y / factor) * src_h / dst_h * src_stride +
                                  (x / factor) * src_w / dst_w;
         uint8_t *dst_ptr = dsts[i] + (y / factor) * dst_stride + (x / factor);
+        const int16_t *filter_x =
+            get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
+        const int16_t *filter_y =
+            get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
 
 #if CONFIG_AOM_HIGHBITDEPTH
         if (src->flags & YV12_FLAG_HIGHBITDEPTH) {
           aom_highbd_convolve8(src_ptr, src_stride, dst_ptr, dst_stride,
-                               kernel[x_q4 & 0xf], 16 * src_w / dst_w,
-                               kernel[y_q4 & 0xf], 16 * src_h / dst_h,
-                               16 / factor, 16 / factor, bd);
+                               filter_x, 16 * src_w / dst_w, filter_y,
+                               16 * src_h / dst_h, 16 / factor, 16 / factor,
+                               bd);
         } else {
-          aom_convolve8(src_ptr, src_stride, dst_ptr, dst_stride,
-                        kernel[x_q4 & 0xf], 16 * src_w / dst_w,
-                        kernel[y_q4 & 0xf], 16 * src_h / dst_h, 16 / factor,
-                        16 / factor);
+          aom_convolve8(src_ptr, src_stride, dst_ptr, dst_stride, filter_x,
+                        16 * src_w / dst_w, filter_y, 16 * src_h / dst_h,
+                        16 / factor, 16 / factor);
         }
 #else
-        aom_convolve8(src_ptr, src_stride, dst_ptr, dst_stride,
-                      kernel[x_q4 & 0xf], 16 * src_w / dst_w,
-                      kernel[y_q4 & 0xf], 16 * src_h / dst_h, 16 / factor,
-                      16 / factor);
+        aom_convolve8(src_ptr, src_stride, dst_ptr, dst_stride, filter_x,
+                      16 * src_w / dst_w, filter_y, 16 * src_h / dst_h,
+                      16 / factor, 16 / factor);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
       }
     }

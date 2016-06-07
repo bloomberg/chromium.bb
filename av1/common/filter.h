@@ -33,7 +33,18 @@ extern "C" {
 
 typedef uint8_t InterpFilter;
 
-extern const InterpKernel *av1_filter_kernels[4];
+extern const InterpKernel* av1_filter_kernels[4];
+typedef struct InterpFilterParams {
+  const int16_t* filter_ptr;
+  uint16_t taps;
+  uint16_t subpel_shifts;
+} InterpFilterParams;
+
+static INLINE const int16_t* get_interp_filter_subpel_kernel(
+    const InterpFilterParams filter_params, const int subpel) {
+  return filter_params.filter_ptr + filter_params.taps * subpel;
+}
+InterpFilterParams get_interp_filter_params(InterpFilter interp_filter);
 
 #ifdef __cplusplus
 }  // extern "C"

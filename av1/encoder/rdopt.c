@@ -1558,7 +1558,6 @@ static void joint_motion_search(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                         mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
-  const InterpKernel *kernel = av1_filter_kernels[mbmi->interp_filter];
   struct scale_factors sf;
 
   // Do joint motion search in compound mode to get more accurate mv.
@@ -1631,19 +1630,19 @@ static void joint_motion_search(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
-          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, kernel, MV_PRECISION_Q3,
-          mi_col * MI_SIZE, mi_row * MI_SIZE, xd->bd);
+          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, &mbmi->interp_filter,
+          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd->bd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
-      av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
-                                second_pred, pw, &frame_mv[refs[!id]].as_mv,
-                                &sf, pw, ph, 0, kernel, MV_PRECISION_Q3,
-                                mi_col * MI_SIZE, mi_row * MI_SIZE);
+      av1_build_inter_predictor(
+          ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
+          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, 0, &mbmi->interp_filter,
+          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE);
     }
 #else
     av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
                               second_pred, pw, &frame_mv[refs[!id]].as_mv, &sf,
-                              pw, ph, 0, kernel, MV_PRECISION_Q3,
+                              pw, ph, 0, &mbmi->interp_filter, MV_PRECISION_Q3,
                               mi_col * MI_SIZE, mi_row * MI_SIZE);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
