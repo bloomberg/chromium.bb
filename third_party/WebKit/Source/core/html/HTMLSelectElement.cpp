@@ -2015,6 +2015,10 @@ public:
 private:
     void call(const HeapVector<Member<MutationRecord>>&, MutationObserver*) override
     {
+        // We disconnect the MutationObserver when a popuup is closed.  However
+        // MutationObserver can call back after disconnection.
+        if (!m_select->popupIsVisible())
+            return;
         m_select->didMutateSubtree();
     }
 
