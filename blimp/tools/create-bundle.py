@@ -35,14 +35,13 @@ def main():
                       help=('build output directory (e.g. out/Debug)'),
                       required=True,
                       metavar='DIR')
-  parser.add_argument('--dockerfile',
-                      help=('Dockerfile to add to the bundle'),
-                      required=True,
-                      metavar='FILE')
-  parser.add_argument('--startup-script',
-                      help=('optional startup script to add to the bundle'),
+  parser.add_argument('--filelist',
+                      help=('optional space separated list of files (e.g. '
+                            'Dockerfile and startup script) to add to the '
+                            'bundle'),
                       required=False,
-                      metavar='FILE')
+                      metavar='FILE',
+                      nargs='*')
   parser.add_argument('--manifest',
                       help=('file listing the set of files to include in '
                             'the bundle'),
@@ -55,11 +54,6 @@ def main():
 
   deps = ReadDependencies(args.manifest)
 
-  dockerfile_dirname, dockerfile_basename = os.path.split(args.dockerfile)
-  if args.startup_script:
-    startup_script_dirname, startup_script_basename = os.path.split(
-        args.startup_script)
-
   try:
     env = os.environ.copy()
     # Use fastest possible mode when gzipping.
@@ -71,13 +65,10 @@ def main():
         # use as part of a "docker build". That is group readable with
         # executable files also being group executable.
         "--mode=g+rX",
-        "-C", dockerfile_dirname, dockerfile_basename,
         "-C", args.build_dir] + deps
-    if args.startup_script:
-      startup_script_dirname, startup_script_basename = os.path.split(
-          args.startup_script)
-      subprocess_args.extend(
-          ["-C", startup_script_dirname, startup_script_basename])
+    for f in args.filelist:
+      dirname, basename = os.path.split(f)
+      subprocess_args.extend(["-C", dirname, basename])
     subprocess.check_output(
         subprocess_args,
         # Redirect stderr to stdout, so that its output is captured.

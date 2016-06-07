@@ -558,9 +558,8 @@ if (is_linux) {
     args = [
       "--build-dir",
       _rebased_out_dir,
-      "--dockerfile",
+      "--filelist",
       _rebased_dockerfile,
-      "--startup-script",
       _rebased_startup_script,
       "--manifest",
       _rebased_manifest,
