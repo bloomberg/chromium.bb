@@ -67,9 +67,6 @@ private:
         T m_data;
         OwnPtr<Node> m_next;
     };
-#if COMPILER(MSVC)
-    friend struct ::WTF::OwnedPtrDeleter<Node>;
-#endif
 
     OwnPtr<Node> m_head;
     size_t m_size;
