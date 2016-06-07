@@ -326,7 +326,7 @@ class ProcessManager : public KeyedService,
   // extension URLRequest is constructed and then destroyed without ever
   // starting, we can receive a completion notification without a corresponding
   // start notification. In that case we want to avoid decrementing keepalive.
-  std::set<int> pending_network_requests_;
+  std::map<int, ExtensionHost*> pending_network_requests_;
 
   // Must be last member, see doc on WeakPtrFactory.
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
