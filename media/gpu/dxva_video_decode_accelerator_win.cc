@@ -710,6 +710,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
 bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   TRACE_EVENT0("gpu", "DXVAVideoDecodeAccelerator_CreateD3DDevManager");
+  // The device may exist if the last state was a config change.
+  if (d3d9_.get())
+    return true;
 
   HRESULT hr = E_FAIL;
 
@@ -771,6 +774,9 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 }
 
 bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
+  // The device may exist if the last state was a config change.
+  if (d3d11_device_.get())
+    return true;
   HRESULT hr = create_dxgi_device_manager_(&dx11_dev_manager_reset_token_,
                                            d3d11_device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
@@ -1805,35 +1811,40 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
 
   decoder_thread_.Stop();
   weak_this_factory_.InvalidateWeakPtrs();
-  output_picture_buffers_.clear();
-  stale_output_picture_buffers_.clear();
   pending_output_samples_.clear();
-  // We want to continue processing pending input after detecting a config
-  // change.
-  if (GetState() != kConfigChange)
-    pending_input_buffers_.clear();
   decoder_.Release();
-  pictures_requested_ = false;
-
   config_change_detector_.reset();
 
-  if (use_dx11_) {
-    if (video_format_converter_mft_.get()) {
-      video_format_converter_mft_->ProcessMessage(
-          MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
-      video_format_converter_mft_.Release();
+  // If we are processing a config change, then leave the d3d9/d3d11 objects
+  // along with the output picture buffers intact as they can be reused. The
+  // output picture buffers may need to be recreated in case the video
+  // resolution changes. We already handle that in the
+  // HandleResolutionChanged() function.
+  if (GetState() != kConfigChange) {
+    output_picture_buffers_.clear();
+    stale_output_picture_buffers_.clear();
+    // We want to continue processing pending input after detecting a config
+    // change.
+    pending_input_buffers_.clear();
+    pictures_requested_ = false;
+    if (use_dx11_) {
+      if (video_format_converter_mft_.get()) {
+        video_format_converter_mft_->ProcessMessage(
+            MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
+        video_format_converter_mft_.Release();
+      }
+      d3d11_device_context_.Release();
+      d3d11_device_.Release();
+      d3d11_device_manager_.Release();
+      d3d11_query_.Release();
+      multi_threaded_.Release();
+      dx11_video_format_converter_media_type_needs_init_ = true;
+    } else {
+      d3d9_.Release();
+      d3d9_device_ex_.Release();
+      device_manager_.Release();
+      query_.Release();
     }
-    d3d11_device_context_.Release();
-    d3d11_device_.Release();
-    d3d11_device_manager_.Release();
-    d3d11_query_.Release();
-    dx11_video_format_converter_media_type_needs_init_ = true;
-    multi_threaded_.Release();
-  } else {
-    d3d9_.Release();
-    d3d9_device_ex_.Release();
-    device_manager_.Release();
-    query_.Release();
   }
 
   SetState(kUninitialized);
@@ -2643,7 +2654,6 @@ void DXVAVideoDecodeAccelerator::ConfigChanged(const Config& config) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   SetState(kConfigChange);
-  DismissStaleBuffers(true);
   Invalidate();
   Initialize(config_, client_);
   decoder_thread_task_runner_->PostTask(
