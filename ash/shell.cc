@@ -1107,7 +1107,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since TouchTransformerController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  touch_transformer_controller_.reset(new TouchTransformerController());
+  if (!in_mus_)
+    touch_transformer_controller_.reset(new TouchTransformerController());
 #endif  // defined(OS_CHROMEOS)
 
   keyboard_ui_ = init_params.keyboard_factory.is_null()
