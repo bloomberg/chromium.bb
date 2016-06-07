@@ -292,12 +292,23 @@ template("test") {
     }
 
     ios_app_bundle(_test_target) {
-      # TODO: Make this configurable and only provide a default that can be
-      # overridden.
-      info_plist = "//testing/gtest_ios/unittest-Info.plist"
-      entitlements_path = "//testing/gtest_ios"
-      code_signing_identity = ""
       testonly = true
+
+      # See above call.
+      set_sources_assignment_filter([])
+      forward_variables_from(invoker, "*", [ "testonly" ])
+
+      # Provide sensible defaults in case invoker did not define any of those
+      # required variables.
+      if (!defined(info_plist)) {
+        info_plist = "//testing/gtest_ios/unittest-Info.plist"
+      }
+      if (!defined(entitlements_path)) {
+        entitlements_path = "//testing/gtest_ios"
+      }
+      if (!defined(code_signing_identity)) {
+        code_signing_identity = ""
+      }
 
       # TODO(crbug.com/603102): remove this once gyp support is dropped and all
       # application uses the target name as value for BUNDLE_ID_TEST_NAME.
@@ -307,12 +318,10 @@ template("test") {
         app_name = target_name
       }
 
-      extra_substitutions = [ "BUNDLE_ID_TEST_NAME=$app_name" ]
-
-      # See above call.
-      set_sources_assignment_filter([])
-
-      forward_variables_from(invoker, "*")
+      if (!defined(extra_substitutions)) {
+        extra_substitutions = []
+      }
+      extra_substitutions += [ "BUNDLE_ID_TEST_NAME=$app_name" ]
 
       if (!defined(deps)) {
         deps = []
