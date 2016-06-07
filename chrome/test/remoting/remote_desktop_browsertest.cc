@@ -30,6 +30,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/switches.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace remoting {
 
@@ -405,34 +406,34 @@ void RemoteDesktopBrowserTest::DisconnectMe2Me() {
 
 void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
     ui::KeyboardCode keyCode,
-    const std::string& code) {
-  SimulateKeyPressWithCode(keyCode, code, false, false, false, false);
+    const std::string& codeStr) {
+  ui::DomCode code = ui::KeycodeConverter::CodeStringToDomCode(codeStr);
+  SimulateKeyPressWithCode(ui::DomKey(), code, keyCode, false, false, false,
+                           false);
 }
 
 void RemoteDesktopBrowserTest::SimulateKeyPressWithCode(
+    ui::DomKey key,
+    ui::DomCode code,
     ui::KeyboardCode keyCode,
-    const std::string& code,
     bool control,
     bool shift,
     bool alt,
     bool command) {
-  content::SimulateKeyPressWithCode(
-      active_web_contents(),
-      keyCode,
-      code,
-      control,
-      shift,
-      alt,
-      command);
+  content::SimulateKeyPress(active_web_contents(), key, code, keyCode, control,
+                            shift, alt, command);
 }
 
 void RemoteDesktopBrowserTest::SimulateCharInput(char c) {
-  const char* code;
+  const char* codeStr;
   ui::KeyboardCode keyboard_code;
   bool shift;
-  GetKeyValuesFromChar(c, &code, &keyboard_code, &shift);
-  ASSERT_TRUE(code != NULL);
-  SimulateKeyPressWithCode(keyboard_code, code, false, shift, false, false);
+  GetKeyValuesFromChar(c, &codeStr, &keyboard_code, &shift);
+  ui::DomKey key = ui::DomKey::FromCharacter(c);
+  ASSERT_TRUE(codeStr != NULL);
+  ui::DomCode code = ui::KeycodeConverter::CodeStringToDomCode(codeStr);
+  SimulateKeyPressWithCode(key, code, keyboard_code, false, shift, false,
+                           false);
 }
 
 void RemoteDesktopBrowserTest::SimulateStringInput(const std::string& input) {

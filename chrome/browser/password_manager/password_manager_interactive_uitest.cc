@@ -20,15 +20,20 @@ void SimulateUserTypingInField(content::RenderViewHost* render_view_host,
   std::string focus("document.getElementById('" + field_id + "').focus();");
   ASSERT_TRUE(content::ExecuteScript(render_view_host, focus));
 
-  content::SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false,
+  content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
+                            ui::DomCode::US_O, ui::VKEY_O, false, false, false,
                             false);
-  content::SimulateKeyPress(web_contents, ui::VKEY_R, false, false, false,
+  content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('R'),
+                            ui::DomCode::US_R, ui::VKEY_R, false, false, false,
                             false);
-  content::SimulateKeyPress(web_contents, ui::VKEY_A, false, false, false,
+  content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('A'),
+                            ui::DomCode::US_A, ui::VKEY_A, false, false, false,
                             false);
-  content::SimulateKeyPress(web_contents, ui::VKEY_R, false, false, false,
+  content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('R'),
+                            ui::DomCode::US_R, ui::VKEY_R, false, false, false,
                             false);
-  content::SimulateKeyPress(web_contents, ui::VKEY_Y, false, false, false,
+  content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('Y'),
+                            ui::DomCode::US_Y, ui::VKEY_Y, false, false, false,
                             false);
 }
 

@@ -216,11 +216,14 @@ bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
 }
 
 void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
+                            ui::DomKey key,
+                            ui::DomCode code,
                             ui::KeyboardCode key_code,
-                            int native_key_code,
                             int modifiers,
                             NativeWebKeyboardEvent* event) {
-  event->nativeKeyCode = native_key_code;
+  event->domKey = key;
+  event->domCode = static_cast<int>(code);
+  event->nativeKeyCode = ui::KeycodeConverter::DomCodeToNativeKeycode(code);
   event->windowsKeyCode = key_code;
   event->setKeyIdentifierFromWindowsKeyCode();
   event->type = type;
@@ -239,11 +242,12 @@ void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
 
 void InjectRawKeyEvent(WebContents* web_contents,
                        blink::WebInputEvent::Type type,
+                       ui::DomKey key,
+                       ui::DomCode code,
                        ui::KeyboardCode key_code,
-                       int native_key_code,
                        int modifiers) {
   NativeWebKeyboardEvent event;
-  BuildSimpleWebKeyEvent(type, key_code, native_key_code, modifiers, &event);
+  BuildSimpleWebKeyEvent(type, key, code, key_code, modifiers, &event);
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
   RenderWidgetHostImpl* main_frame_rwh =
@@ -590,100 +594,80 @@ void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
 #endif
 
 void SimulateKeyPress(WebContents* web_contents,
+                      ui::DomKey key,
+                      ui::DomCode code,
                       ui::KeyboardCode key_code,
                       bool control,
                       bool shift,
                       bool alt,
                       bool command) {
-  SimulateKeyPressWithCode(
-      web_contents, key_code, std::string(), control, shift, alt, command);
-}
-
-void SimulateKeyPressWithCode(WebContents* web_contents,
-                              ui::KeyboardCode key_code,
-                              const std::string& code,
-                              bool control,
-                              bool shift,
-                              bool alt,
-                              bool command) {
-  int native_key_code = ui::KeycodeConverter::DomCodeToNativeKeycode(
-      ui::KeycodeConverter::CodeStringToDomCode(code));
-
   int modifiers = 0;
 
   // The order of these key down events shouldn't matter for our simulation.
   // For our simulation we can use either the left keys or the right keys.
   if (control) {
     modifiers |= blink::WebInputEvent::ControlKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_CONTROL,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+                      ui::DomKey::CONTROL, ui::DomCode::CONTROL_LEFT,
+                      ui::VKEY_CONTROL, modifiers);
   }
 
   if (shift) {
     modifiers |= blink::WebInputEvent::ShiftKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_SHIFT,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::SHIFT_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+                      ui::DomKey::SHIFT, ui::DomCode::SHIFT_LEFT,
+                      ui::VKEY_SHIFT, modifiers);
   }
 
   if (alt) {
     modifiers |= blink::WebInputEvent::AltKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_MENU,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ALT_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+                      ui::DomKey::ALT, ui::DomCode::ALT_LEFT, ui::VKEY_MENU,
+                      modifiers);
   }
 
   if (command) {
     modifiers |= blink::WebInputEvent::MetaKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::META_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+                      ui::DomKey::META, ui::DomCode::META_LEFT,
+                      ui::VKEY_COMMAND, modifiers);
   }
-  InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown, key_code,
-                    native_key_code, modifiers);
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown, key, code,
+                    key_code, modifiers);
 
-  InjectRawKeyEvent(web_contents, blink::WebInputEvent::Char, key_code,
-                    native_key_code, modifiers);
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::Char, key, code,
+                    key_code, modifiers);
 
-  InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp, key_code,
-                    native_key_code, modifiers);
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp, key, code,
+                    key_code, modifiers);
 
   // The order of these key releases shouldn't matter for our simulation.
   if (control) {
     modifiers &= ~blink::WebInputEvent::ControlKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_CONTROL,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+                      ui::DomKey::CONTROL, ui::DomCode::CONTROL_LEFT,
+                      ui::VKEY_CONTROL, modifiers);
   }
 
   if (shift) {
     modifiers &= ~blink::WebInputEvent::ShiftKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_SHIFT,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::SHIFT_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+                      ui::DomKey::SHIFT, ui::DomCode::SHIFT_LEFT,
+                      ui::VKEY_SHIFT, modifiers);
   }
 
   if (alt) {
     modifiers &= ~blink::WebInputEvent::AltKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_MENU,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ALT_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+                      ui::DomKey::ALT, ui::DomCode::ALT_LEFT, ui::VKEY_MENU,
+                      modifiers);
   }
 
   if (command) {
     modifiers &= ~blink::WebInputEvent::MetaKey;
-    InjectRawKeyEvent(
-        web_contents, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
-        ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::META_LEFT),
-        modifiers);
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+                      ui::DomKey::META, ui::DomCode::META_LEFT,
+                      ui::VKEY_COMMAND, modifiers);
   }
 
   ASSERT_EQ(modifiers, 0);

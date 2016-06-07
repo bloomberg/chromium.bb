@@ -14,6 +14,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace {
 // Command line arguments specific to the chromoting browser tests.
@@ -110,8 +112,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   void SimulateKeyPressWithCode(ui::KeyboardCode keyCode,
                                 const std::string& code);
 
-  void SimulateKeyPressWithCode(ui::KeyboardCode keyCode,
-                                const std::string& code,
+  void SimulateKeyPressWithCode(ui::DomKey key,
+                                ui::DomCode code,
+                                ui::KeyboardCode keyCode,
                                 bool control,
                                 bool shift,
                                 bool alt,

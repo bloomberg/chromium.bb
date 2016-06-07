@@ -3109,8 +3109,9 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, FocusAccessibility) {
   // Now keep pressing the Tab key until focus lands on a button.
   while (content::GetFocusedAccessibilityNodeInfo(web_contents).role !=
              ui::AX_ROLE_BUTTON) {
-    content::SimulateKeyPress(
-        web_contents, ui::VKEY_TAB, false, false, false, false);
+    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('\t'),
+                              ui::DomCode::TAB, ui::VKEY_TAB, false, false,
+                              false, false);
     content::WaitForAccessibilityFocusChange();
   }
 

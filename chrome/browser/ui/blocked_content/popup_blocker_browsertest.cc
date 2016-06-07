@@ -551,38 +551,6 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
-void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
-                            ui::KeyboardCode key_code,
-                            int native_key_code,
-                            int modifiers,
-                            NativeWebKeyboardEvent* event) {
-  event->nativeKeyCode = native_key_code;
-  event->windowsKeyCode = key_code;
-  event->setKeyIdentifierFromWindowsKeyCode();
-  event->type = type;
-  event->modifiers = modifiers;
-  event->isSystemKey = false;
-  event->timeStampSeconds =
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  event->skip_in_browser = true;
-
-  if (type == blink::WebInputEvent::Char ||
-      type == blink::WebInputEvent::RawKeyDown) {
-    event->text[0] = key_code;
-    event->unmodifiedText[0] = key_code;
-  }
-}
-
-void InjectRawKeyEvent(WebContents* web_contents,
-                       blink::WebInputEvent::Type type,
-                       ui::KeyboardCode key_code,
-                       int native_key_code,
-                       int modifiers) {
-  NativeWebKeyboardEvent event;
-  BuildSimpleWebKeyEvent(type, key_code, native_key_code, modifiers, &event);
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
-}
-
 // Tests that Ctrl+Enter/Cmd+Enter keys on a link open the backgournd tab.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -595,40 +563,14 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
+  bool command = false;
 #if defined(OS_MACOSX)
-  int modifiers = blink::WebInputEvent::MetaKey;
-  InjectRawKeyEvent(
-      tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_COMMAND,
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::META_LEFT),
-      modifiers);
-#else
-  int modifiers = blink::WebInputEvent::ControlKey;
-  InjectRawKeyEvent(
-      tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_CONTROL,
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
-      modifiers);
+  command = true;
 #endif
 
-  InjectRawKeyEvent(tab, blink::WebInputEvent::RawKeyDown, ui::VKEY_RETURN,
-                    ui::KeycodeConverter::InvalidNativeKeycode(), modifiers);
+  SimulateKeyPress(tab, ui::DomKey::ENTER, ui::DomCode::ENTER, ui::VKEY_RETURN,
+                   !command, false, false, command);
 
-  InjectRawKeyEvent(tab, blink::WebInputEvent::Char, ui::VKEY_RETURN,
-                    ui::KeycodeConverter::InvalidNativeKeycode(), modifiers);
-
-  InjectRawKeyEvent(tab, blink::WebInputEvent::KeyUp, ui::VKEY_RETURN,
-                    ui::KeycodeConverter::InvalidNativeKeycode(), modifiers);
-
-#if defined(OS_MACOSX)
-  InjectRawKeyEvent(
-      tab, blink::WebInputEvent::KeyUp, ui::VKEY_COMMAND,
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::META_LEFT),
-      modifiers);
-#else
-  InjectRawKeyEvent(
-      tab, blink::WebInputEvent::KeyUp, ui::VKEY_CONTROL,
-      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::CONTROL_LEFT),
-      modifiers);
-#endif
   wait_for_new_tab.Wait();
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));

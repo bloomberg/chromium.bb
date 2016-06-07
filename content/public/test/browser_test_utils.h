@@ -27,6 +27,8 @@
 #include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 
@@ -148,37 +150,19 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
                                 const gfx::Point& point);
 
 // Sends a key press asynchronously.
-// The native code of the key event will be set to InvalidNativeKeycode().
+// |key| specifies the UIEvents (aka: DOM4Events) value of the key.
+// |code| specifies the UIEvents (aka: DOM4Events) value of the physical key.
 // |key_code| alone is good enough for scenarios that only need the char
 // value represented by a key event and not the physical key on the keyboard
 // or the keyboard layout.
-// For scenarios such as chromoting that need the native code,
-// SimulateKeyPressWithCode should be used.
 void SimulateKeyPress(WebContents* web_contents,
+                      ui::DomKey key,
+                      ui::DomCode code,
                       ui::KeyboardCode key_code,
                       bool control,
                       bool shift,
                       bool alt,
                       bool command);
-
-// Sends a key press asynchronously.
-// |code| specifies the UIEvents (aka: DOM4Events) value of the key:
-// https://dvcs.w3.org/hg/d4e/raw-file/tip/source_respec.htm
-// The native code of the key event will be set based on |code|.
-// See ui/base/keycodes/vi usb_keycode_map.h for mappings between |code|
-// and the native code.
-// Examples of the various codes:
-//   key_code: VKEY_A
-//   code: "KeyA"
-//   native key code: 0x001e (for Windows).
-//   native key code: 0x0026 (for Linux).
-void SimulateKeyPressWithCode(WebContents* web_contents,
-                              ui::KeyboardCode key_code,
-                              const std::string& code,
-                              bool control,
-                              bool shift,
-                              bool alt,
-                              bool command);
 
 // Allow ExecuteScript* methods to target either a WebContents or a
 // RenderFrameHost.  Targetting a WebContents means executing the script in the

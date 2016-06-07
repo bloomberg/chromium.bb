@@ -53,6 +53,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using base::ASCIIToUTF16;
@@ -286,9 +287,9 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     std::string js("document.getElementById('" + field_id + "').focus();");
     ASSERT_TRUE(content::ExecuteScript(GetRenderViewHost(), js));
 
-    SendKeyToPageAndWait(ui::VKEY_DOWN);
-    SendKeyToPopupAndWait(ui::VKEY_DOWN);
-    SendKeyToPopupAndWait(ui::VKEY_RETURN);
+    SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+    SendKeyToPopupAndWait(ui::DomKey::ENTER);
   }
 
   void ExpectFieldValue(const std::string& field_name,
@@ -426,10 +427,18 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     ExpectFieldValue("phone", "5125551234");
   }
 
-  void SendKeyToPageAndWait(ui::KeyboardCode key) {
+  void SendKeyToPageAndWait(ui::DomKey key) {
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    SendKeyToPageAndWait(key, code, key_code);
+  }
+
+  void SendKeyToPageAndWait(ui::DomKey key,
+                            ui::DomCode code,
+                            ui::KeyboardCode key_code) {
     test_delegate_.Reset();
-    content::SimulateKeyPress(
-        GetWebContents(), key, false, false, false, false);
+    content::SimulateKeyPress(GetWebContents(), key, code, key_code, false,
+                              false, false, false);
     test_delegate_.Wait();
   }
 
@@ -447,10 +456,20 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     return true;
   }
 
-  void SendKeyToPopupAndWait(ui::KeyboardCode key) {
+  void SendKeyToPopupAndWait(ui::DomKey key) {
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    SendKeyToPopupAndWait(key, code, key_code);
+  }
+
+  void SendKeyToPopupAndWait(ui::DomKey key,
+                             ui::DomCode code,
+                             ui::KeyboardCode key_code) {
     // Route popup-targeted key presses via the render view host.
     content::NativeWebKeyboardEvent event;
-    event.windowsKeyCode = key;
+    event.windowsKeyCode = key_code;
+    event.domCode = static_cast<int>(code);
+    event.domKey = key;
     event.type = blink::WebKeyboardEvent::RawKeyDown;
     test_delegate_.Reset();
     // Install the key press event sink to ensure that any events that are not
@@ -463,12 +482,22 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         key_press_event_sink_);
   }
 
+  void SendKeyToDataListPopup(ui::DomKey key) {
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    SendKeyToDataListPopup(key, code, key_code);
+  }
+
   // Datalist does not support autofill preview. There is no need to start
   // message loop for Datalist.
-  void SendKeyToDataListPopup(ui::KeyboardCode key) {
+  void SendKeyToDataListPopup(ui::DomKey key,
+                              ui::DomCode code,
+                              ui::KeyboardCode key_code) {
     // Route popup-targeted key presses via the render view host.
     content::NativeWebKeyboardEvent event;
-    event.windowsKeyCode = key;
+    event.windowsKeyCode = key_code;
+    event.domCode = static_cast<int>(code);
+    event.domKey = key;
     event.type = blink::WebKeyboardEvent::RawKeyDown;
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
@@ -484,11 +513,12 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
-    SendKeyToPageAndWait(ui::VKEY_M);
+    SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                         ui::VKEY_M);
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
-    SendKeyToPopupAndWait(ui::VKEY_DOWN);
+    SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 
     // The previewed values should not be accessible to JavaScript.
     ExpectFieldValue("firstname", "M");
@@ -504,7 +534,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     // displayed: http://crbug.com/57220
 
     // Press Enter to accept the autofill suggestions.
-    SendKeyToPopupAndWait(ui::VKEY_RETURN);
+    SendKeyToPopupAndWait(ui::DomKey::ENTER);
 
     // The form should be filled.
     ExpectFilledTestForm();
@@ -565,14 +595,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
 
   // Press the down arrow to initiate Autofill and wait for the popup to be
   // shown.
-  SendKeyToPageAndWait(ui::VKEY_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -596,14 +626,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
 
   // Press the down arrow to initiate Autofill and wait for the popup to be
   // shown.
-  SendKeyToPageAndWait(ui::VKEY_DOWN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press tab to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::VKEY_TAB);
+  SendKeyToPopupAndWait(ui::DomKey::TAB);
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -631,10 +661,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -703,9 +733,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
   ExpectFilledTestForm();
 
   // Delete the value of a filled field.
@@ -715,9 +746,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ExpectFieldValue("firstname", "");
 
   // Invoke and accept the Autofill popup and verify the field was filled.
-  SendKeyToPageAndWait(ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
   ExpectFieldValue("firstname", "Milton");
 }
 
@@ -750,9 +782,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   GetFieldBackgroundColor("firstname", &orginalcolor);
 
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::VKEY_DOWN);
-  SendKeyToDataListPopup(ui::VKEY_DOWN);
-  SendKeyToDataListPopup(ui::VKEY_RETURN);
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
   ExpectFieldValue("firstname", "Adam");
   std::string color;
   GetFieldBackgroundColor("firstname", &color);
@@ -799,14 +831,15 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
 
   // Start filling the first name field with "M" and wait for the popup to be
   // shown.
-  SendKeyToPageAndWait(ui::VKEY_M);
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M);
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -877,14 +910,15 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
 
   // Start filling the first name field with "M" and wait for the popup to be
   // shown.
-  SendKeyToPageAndWait(ui::VKEY_M);
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M);
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
 
   // The form should be filled.
   ExpectFilledTestForm();
@@ -949,9 +983,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
 
   // Invoke and accept the Autofill popup and verify the form was filled.
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::VKEY_M);
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
-  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
   ExpectFilledTestForm();
 
   int num_input_element_events = -1;
@@ -1660,7 +1695,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // Invoke Autofill: Start filling the first name field with "M" and wait for
   // the popup to be shown.
   FocusFirstNameField();
-  SendKeyToPageAndWait(ui::VKEY_M);
+  SendKeyToPageAndWait(ui::DomKey::FromCharacter('M'), ui::DomCode::US_M,
+                       ui::VKEY_M);
 
   // Now that the popup with suggestions is showing, disable autocomplete for
   // the active field.
@@ -1670,7 +1706,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
   // Press the down arrow to select the suggestion and attempt to preview the
   // autofilled form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,

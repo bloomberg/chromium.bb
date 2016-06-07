@@ -150,9 +150,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(child, web_contents->GetFocusedFrame());
 
   // Generate a few keyboard events and route them to currently focused frame.
-  SimulateKeyPress(web_contents, ui::VKEY_F, false, false, false, false);
-  SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false, false);
-  SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('f'),
+                   ui::DomCode::US_F, ui::VKEY_F, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
+                   ui::DomCode::US_O, ui::VKEY_O, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
+                   ui::DomCode::US_O, ui::VKEY_O, false, false, false, false);
 
   // Verify that the input field in the subframe received the keystrokes.
   EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -220,8 +223,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   auto press_tab_and_wait_for_message = [web_contents](bool reverse) {
     content::DOMMessageQueue msg_queue;
     std::string reply;
-    SimulateKeyPress(web_contents, ui::VKEY_TAB, false, reverse /* shift */,
-                     false, false);
+    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                     ui::VKEY_TAB, false, reverse /* shift */, false, false);
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
     return reply;
   };
