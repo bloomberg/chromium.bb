@@ -15,6 +15,7 @@ assert(host_os == "mac")
 
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
+import("//build/toolchain/concurrent_links.gni")
 
 if (use_goma) {
   goma_prefix = "$goma_dir/gomacc "
@@ -39,6 +40,8 @@ template("mac_toolchain") {
            "mac_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
            "mac_toolchain() must specify a \"toolchain_os\"")
+
+    # concurrent_links is picked up from the declare_arg().
 
     # We can't do string interpolation ($ in strings) on things with dots in
     # them. To allow us to use $cc below, for example, we create copies of

@@ -1127,9 +1127,19 @@ class MetaBuildWrapper(object):
     # to get rid of the arg and add the old var in, instead.
     # See crbug.com/582737 for more on this. This can hopefully all
     # go away with GYP.
-    if 'llvm_force_head_revision=1' in gyp_defines:
+    m = re.search('llvm_force_head_revision=1\s*', gyp_defines)
+    if m:
       env['LLVM_FORCE_HEAD_REVISION'] = '1'
-      gyp_defines = gyp_defines.replace('llvm_force_head_revision=1', '')
+      gyp_defines = gyp_defines.replace(m.group(0), '')
+
+    # This is another terrible hack to work around the fact that
+    # GYP sets the link concurrency to use via the GYP_LINK_CONCURRENCY
+    # environment variable, and not via a proper GYP_DEFINE. See
+    # crbug.com/611491 for more on this.
+    m = re.search('gyp_link_concurrency=(\d+)(\s*)', gyp_defines)
+    if m:
+      env['GYP_LINK_CONCURRENCY'] = m.group(1)
+      gyp_defines = gyp_defines.replace(m.group(0), '')
 
     env['GYP_GENERATORS'] = 'ninja'
     if 'GYP_CHROMIUM_NO_ACTION' in env:
@@ -1323,6 +1333,8 @@ class MetaBuildWrapper(object):
 
     print_env('GYP_CROSSCOMPILE')
     print_env('GYP_DEFINES')
+    print_env('GYP_LINK_CONCURRENCY')
+    print_env('LLVM_FORCE_HEAD_REVISION')
 
     if cmd[0] == self.executable:
       cmd = ['python'] + cmd[1:]

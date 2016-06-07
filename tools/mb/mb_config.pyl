@@ -640,9 +640,9 @@
       'precise64 beta': 'gn_official',
       'precise64 stable': 'gn_official',
       'precise64 trunk': 'gn_official',
-      'win beta': 'gyp_official',
-      'win stable': 'gyp_official',
-      'win trunk': 'gyp_official',
+      'win beta': 'gyp_official_six_concurrent_links',
+      'win stable': 'gyp_official_six_concurrent_links',
+      'win trunk': 'gyp_official_six_concurrent_links',
     },
 
     'tryserver.blink': {
@@ -1326,6 +1326,10 @@
 
     'gyp_official_syzyasan': [
       'gyp', 'official', 'syzyasan',
+    ],
+
+    'gyp_official_six_concurrent_links': [
+      'gyp', 'official', 'six_concurrent_links',
     ],
 
     # TODO(crbug.com/595947) - figure out how to handle PGO, which needs
@@ -2231,6 +2235,13 @@
 
     'shared_release_bot': {
       'mixins': ['shared', 'release', 'goma']
+    },
+
+    'six_concurrent_links': {
+      # TODO(crbug.com/611491) Adjust the get_concurrent_links script
+      # to be more conservative so that we don't need this.
+      'gn_args': 'concurrent_links=6',
+      'gyp_defines': 'gyp_link_concurrency=6',
     },
 
     'static': {

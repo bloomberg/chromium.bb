@@ -175,6 +175,31 @@ TEST_BAD_CONFIG = """\
 }
 """
 
+
+GYP_HACKS_CONFIG = """\
+{
+  'masters': {
+    'chromium': {},
+    'fake_master': {
+      'fake_builder': 'fake_config',
+    },
+  },
+  'configs': {
+    'fake_config': ['fake_mixin'],
+  },
+  'mixins': {
+    'fake_mixin': {
+      'type': 'gyp',
+      'gn_args': '',
+      'gyp_defines':
+         ('foo=bar llvm_force_head_revision=1 '
+          'gyp_link_concurrency=1 baz=1'),
+    },
+  },
+}
+"""
+
+
 class UnitTest(unittest.TestCase):
   def fake_mbw(self, files=None, win32=False):
     mbw = FakeMBW(win32=win32)
@@ -472,6 +497,16 @@ class UnitTest(unittest.TestCase):
     mbw = self.fake_mbw()
     mbw.files[mbw.default_config] = TEST_BAD_CONFIG
     self.check(['validate'], mbw=mbw, ret=1)
+
+  def test_gyp_env_hacks(self):
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config] = GYP_HACKS_CONFIG
+    self.check(['lookup', '-c', 'fake_config'], mbw=mbw,
+               ret=0,
+               out=("GYP_DEFINES='foo=bar baz=1'\n"
+                    "GYP_LINK_CONCURRENCY=1\n"
+                    "LLVM_FORCE_HEAD_REVISION=1\n"
+                    "python build/gyp_chromium -G output_dir=_path_\n"))
 
 
 if __name__ == '__main__':
