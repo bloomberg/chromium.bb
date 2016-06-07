@@ -1564,6 +1564,7 @@ doCompTrans (int start, int end)
          can't have any emphasis indicators.
          A better solution is to treat computer braille as its own mode. */
       emphasisBuffer[k] = 0;
+      transNoteBuffer[k] = 0;
       TranslationTableOffset compdots = 0;
       if (currentInput[k] == ENDSEGMENT)
 	{
