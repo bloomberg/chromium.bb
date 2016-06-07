@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -488,8 +489,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
     // GL_OES_surfaceless_context is also supported. We need a current context
     // to query for supported GL extensions.
     scoped_refptr<GLSurface> surface = new SurfacelessEGL(gfx::Size(1, 1));
-    scoped_refptr<GLContext> context = GLContext::CreateGLContext(
-      NULL, surface.get(), PreferIntegratedGpu);
+    scoped_refptr<GLContext> context = InitializeGLContext(
+        new GLContextEGL(nullptr), surface.get(), PreferIntegratedGpu);
     if (!context->MakeCurrent(surface.get()))
       g_egl_surfaceless_context_supported = false;
 

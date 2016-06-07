@@ -28,16 +28,31 @@ component("init") {
   ]
 
   if (is_android) {
-    sources += [ "gl_initializer_android.cc" ]
+    sources += [
+      "gl_factory_android.cc",
+      "gl_initializer_android.cc",
+    ]
   } else if (is_win) {
-    sources += [ "gl_initializer_win.cc" ]
+    sources += [
+      "gl_factory_win.cc",
+      "gl_initializer_win.cc",
+    ]
   } else if (is_mac) {
-    sources += [ "gl_initializer_mac.cc" ]
+    sources += [
+      "gl_factory_mac.cc",
+      "gl_initializer_mac.cc",
+    ]
 
     libs = [ "OpenGL.framework" ]
   } else if (use_x11) {
-    sources += [ "gl_initializer_x11.cc" ]
+    sources += [
+      "gl_factory_x11.cc",
+      "gl_initializer_x11.cc",
+    ]
   } else if (use_ozone) {
-    sources += [ "gl_initializer_ozone.cc" ]
+    sources += [
+      "gl_factory_ozone.cc",
+      "gl_initializer_ozone.cc",
+    ]
   }
 }

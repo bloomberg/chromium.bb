@@ -89,13 +89,6 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
 // of each function should be moved into a platform specific file and the
 // original static functions should be removed from GLSurface and GLContext.
 
-scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
-                                         GLSurface* compatible_surface,
-                                         GpuPreference gpu_preference) {
-  return GLContext::CreateGLContext(share_group, compatible_surface,
-                                    gpu_preference);
-}
-
 scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   return GLSurface::CreateViewGLSurface(window);
 }

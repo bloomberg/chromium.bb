@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_export.h"
 
 typedef void* EGLContext;
 typedef void* EGLDisplay;
@@ -20,7 +21,7 @@ namespace gl {
 class GLSurface;
 
 // Encapsulates an EGL OpenGL ES context.
-class GLContextEGL : public GLContextReal {
+class GL_EXPORT GLContextEGL : public GLContextReal {
  public:
   explicit GLContextEGL(GLShareGroup* share_group);
 

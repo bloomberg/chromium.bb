@@ -230,4 +230,12 @@ void GLContextReal::SetCurrent(GLSurface* surface) {
   current_real_context_.Pointer()->Set(surface ? this : nullptr);
 }
 
+scoped_refptr<GLContext> InitializeGLContext(scoped_refptr<GLContext> context,
+                                             GLSurface* compatible_surface,
+                                             GpuPreference gpu_preference) {
+  if (!context->Initialize(compatible_surface, gpu_preference))
+    return nullptr;
+  return context;
+}
+
 }  // namespace gl

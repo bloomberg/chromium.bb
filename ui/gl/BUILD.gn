@@ -46,15 +46,12 @@ component("gl") {
     "gl_bindings_autogen_osmesa.h",
     "gl_context.cc",
     "gl_context.h",
-    "gl_context_android.cc",
-    "gl_context_mac.mm",
     "gl_context_osmesa.cc",
     "gl_context_osmesa.h",
     "gl_context_stub.cc",
     "gl_context_stub.h",
     "gl_context_stub_with_extensions.cc",
     "gl_context_stub_with_extensions.h",
-    "gl_context_win.cc",
     "gl_enums.cc",
     "gl_enums.h",
     "gl_enums_implementation_autogen.h",
@@ -171,7 +168,6 @@ component("gl") {
   }
   if (use_x11) {
     sources += [
-      "gl_context_x11.cc",
       "gl_implementation_x11.cc",
       "gl_surface_egl_x11.cc",
       "gl_surface_egl_x11.h",
@@ -187,7 +183,6 @@ component("gl") {
   }
   if (use_ozone) {
     sources += [
-      "gl_context_ozone.cc",
       "gl_image_ozone_native_pixmap.cc",
       "gl_image_ozone_native_pixmap.h",
       "gl_implementation_ozone.cc",

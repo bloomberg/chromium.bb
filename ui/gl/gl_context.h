@@ -198,6 +198,14 @@ class GL_EXPORT GLContextReal : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);
 };
 
+// Wraps GLContext in scoped_refptr and tries to initializes it. Returns a
+// scoped_refptr containing the initialized GLContext or nullptr if
+// initialization fails.
+GL_EXPORT scoped_refptr<GLContext> InitializeGLContext(
+    scoped_refptr<GLContext> context,
+    GLSurface* compatible_surface,
+    GpuPreference gpu_preference);
+
 }  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_H_

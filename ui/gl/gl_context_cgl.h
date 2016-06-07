@@ -11,13 +11,14 @@
 
 #include "base/macros.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_export.h"
 
 namespace gl {
 
 class GLSurface;
 
 // Encapsulates a CGL OpenGL context.
-class GLContextCGL : public GLContextReal {
+class GL_EXPORT GLContextCGL : public GLContextReal {
  public:
   explicit GLContextCGL(GLShareGroup* share_group);
 

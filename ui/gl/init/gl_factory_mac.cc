@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
+#include "ui/gl/init/gl_factory.h"
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
@@ -10,46 +10,36 @@
 #include "ui/gl/gl_context_osmesa.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_switches.h"
 
 namespace gl {
+namespace init {
 
-class GLShareGroup;
-
-scoped_refptr<GLContext> GLContext::CreateGLContext(
-    GLShareGroup* share_group,
-    GLSurface* compatible_surface,
-    GpuPreference gpu_preference) {
-  TRACE_EVENT0("gpu", "GLContext::CreateGLContext");
+scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
+                                         GLSurface* compatible_surface,
+                                         GpuPreference gpu_preference) {
+  TRACE_EVENT0("gpu", "gl::init::CreateGLContext");
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
     case kGLImplementationDesktopGLCoreProfile:
-    case kGLImplementationAppleGL: {
-      scoped_refptr<GLContext> context;
+    case kGLImplementationAppleGL:
       // Note that with virtualization we might still be able to make current
       // a different onscreen surface with this context later. But we should
       // always be creating the context with an offscreen surface first.
       DCHECK(compatible_surface->IsOffscreen());
-      context = new GLContextCGL(share_group);
-      if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
-
-      return context;
-    }
-    case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
-      if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
-
-      return context;
-    }
+      return InitializeGLContext(new GLContextCGL(share_group),
+                                 compatible_surface, gpu_preference);
+    case kGLImplementationOSMesaGL:
+      return InitializeGLContext(new GLContextOSMesa(share_group),
+                                 compatible_surface, gpu_preference);
     case kGLImplementationMockGL:
       return new GLContextStub(share_group);
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 
+}  // namespace init
 }  // namespace gl

@@ -29,6 +29,11 @@
         'gl_initializer_x11.cc',
         'gl_factory.cc',
         'gl_factory.h',
+        'gl_factory_android.cc',
+        'gl_factory_mac.cc',
+        'gl_factory_ozone.cc',
+        'gl_factory_win.cc',
+        'gl_factory_x11.cc',
         'gl_init_export.h',
       ],
       'conditions': [
