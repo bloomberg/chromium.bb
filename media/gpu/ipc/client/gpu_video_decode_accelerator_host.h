@@ -64,6 +64,7 @@ class GpuVideoDecodeAcceleratorHost
   void OnInitializationComplete(bool success);
   void OnBitstreamBufferProcessed(int32_t bitstream_buffer_id);
   void OnProvidePictureBuffer(uint32_t num_requested_buffers,
+                              VideoPixelFormat format,
                               uint32_t textures_per_buffer,
                               const gfx::Size& dimensions,
                               uint32_t texture_target);

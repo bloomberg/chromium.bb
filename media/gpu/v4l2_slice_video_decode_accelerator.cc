@@ -755,10 +755,17 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
             << ", visible size=" << visible_size_.ToString()
             << ", coded size=" << coded_size_.ToString();
 
+  // With ALLOCATE mode the client can sample it as RGB and doesn't need to
+  // know the precise format.
+  VideoPixelFormat pixel_format =
+      (output_mode_ == Config::OutputMode::IMPORT)
+          ? V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_)
+          : PIXEL_FORMAT_UNKNOWN;
+
   child_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-                 client_, num_pictures, 1, coded_size_,
+                 client_, num_pictures, pixel_format, 1, coded_size_,
                  device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
@@ -2787,11 +2794,6 @@ bool V4L2SliceVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
   decode_client_ = decode_client_;
   decode_task_runner_ = decode_task_runner;
   return true;
-}
-
-media::VideoPixelFormat V4L2SliceVideoDecodeAccelerator::GetOutputFormat()
-    const {
-  return V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_);
 }
 
 // static

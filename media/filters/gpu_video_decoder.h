@@ -67,6 +67,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // VideoDecodeAccelerator::Client implementation.
   void NotifyInitializationComplete(bool success) override;
   void ProvidePictureBuffers(uint32_t count,
+                             VideoPixelFormat format,
                              uint32_t textures_per_buffer,
                              const gfx::Size& size,
                              uint32_t texture_target) override;
@@ -194,6 +195,9 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // The texture target used for decoded pictures.
   uint32_t decoder_texture_target_;
+
+  // The pixel format used for decoded pictures.
+  VideoPixelFormat pixel_format_;
 
   struct BufferData {
     BufferData(int32_t bbid,

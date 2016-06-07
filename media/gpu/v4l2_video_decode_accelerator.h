@@ -108,7 +108,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
       const base::WeakPtr<Client>& decode_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
-  media::VideoPixelFormat GetOutputFormat() const override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
   GetSupportedProfiles();

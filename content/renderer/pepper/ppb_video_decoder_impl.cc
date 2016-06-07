@@ -239,6 +239,7 @@ void PPB_VideoDecoder_Impl::Destroy() {
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    media::VideoPixelFormat format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {

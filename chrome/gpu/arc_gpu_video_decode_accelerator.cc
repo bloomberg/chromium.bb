@@ -304,6 +304,7 @@ void ArcGpuVideoDecodeAccelerator::Flush() {
 
 void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    media::VideoPixelFormat output_pixel_format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
@@ -312,7 +313,12 @@ void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
            << ", dimensions=" << dimensions.ToString() << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   coded_size_ = dimensions;
-  output_pixel_format_ = vda_->GetOutputFormat();
+  if ((output_pixel_format_ != media::PIXEL_FORMAT_UNKNOWN) &&
+      (output_pixel_format_ != output_pixel_format)) {
+    arc_client_->OnError(PLATFORM_FAILURE);
+    return;
+  }
+  output_pixel_format_ = output_pixel_format;
 
   VideoFormat video_format;
   switch (output_pixel_format_) {

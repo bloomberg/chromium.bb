@@ -637,6 +637,18 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(size_t num_pics,
   TryFinishSurfaceSetChange();
 }
 
+static VideoPixelFormat BufferFormatToVideoPixelFormat(
+    gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::BGRA_8888:
+      return PIXEL_FORMAT_ARGB;
+
+    default:
+      LOG(FATAL) << "Add more cases as needed";
+      return PIXEL_FORMAT_UNKNOWN;
+  }
+}
+
 void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
@@ -676,10 +688,12 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   DVLOG(1) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
+  VideoPixelFormat format =
+      BufferFormatToVideoPixelFormat(kOutputPictureFormat);
   message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&Client::ProvidePictureBuffers, client_, requested_num_pics_,
-                 1, requested_pic_size_, VaapiPicture::GetGLTextureTarget()));
+      FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
+                            requested_num_pics_, format, 1, requested_pic_size_,
+                            VaapiPicture::GetGLTextureTarget()));
 }
 
 void VaapiVideoDecodeAccelerator::Decode(
@@ -1042,22 +1056,6 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
     const base::WeakPtr<Client>& decode_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
   return false;
-}
-
-static VideoPixelFormat BufferFormatToVideoPixelFormat(
-    gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::BGRA_8888:
-      return PIXEL_FORMAT_ARGB;
-
-    default:
-      LOG(FATAL) << "Add more cases as needed";
-      return PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
-VideoPixelFormat VaapiVideoDecodeAccelerator::GetOutputFormat() const {
-  return BufferFormatToVideoPixelFormat(kOutputPictureFormat);
 }
 
 bool VaapiVideoDecodeAccelerator::DecodeSurface(

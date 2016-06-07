@@ -1873,8 +1873,9 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
     // They're shared to ANGLE using EGL_NV_stream_consumer_gltexture_yuv, so
     // they need to be GL_TEXTURE_EXTERNAL_OES.
     client_->ProvidePictureBuffers(
-        kNumPictureBuffers, share_nv12_textures_ ? 2 : 1,
-        gfx::Size(width, height),
+        kNumPictureBuffers,
+        share_nv12_textures_ ? PIXEL_FORMAT_NV12 : PIXEL_FORMAT_UNKNOWN,
+        share_nv12_textures_ ? 2 : 1, gfx::Size(width, height),
         share_nv12_textures_ ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D);
   }
 }
