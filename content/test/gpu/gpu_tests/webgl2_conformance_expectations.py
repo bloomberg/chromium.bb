@@ -115,6 +115,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win8'], bug=483282)
 
+    self.Fail('conformance2/textures/misc/tex-new-formats.html',
+        ['win8'], bug=483282)
+
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['win8'], bug=616176)
@@ -131,6 +134,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['win8'], bug=616176)
     self.Fail('conformance2/textures/svg_image/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=616176)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=616176)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=616176)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=616176)
+    self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=616176)
     self.Fail('conformance2/textures/video/' +
