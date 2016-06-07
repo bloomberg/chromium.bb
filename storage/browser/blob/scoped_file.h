@@ -9,8 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/move.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
@@ -27,8 +27,6 @@ namespace storage {
 // TODO(kinuko): Probably this can be moved under base or somewhere more
 // common place.
 class STORAGE_EXPORT ScopedFile {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedFile)
-
  public:
   typedef base::Callback<void(const base::FilePath&)> ScopeOutCallback;
   typedef std::pair<ScopeOutCallback, scoped_refptr<base::TaskRunner> >
@@ -48,8 +46,6 @@ class STORAGE_EXPORT ScopedFile {
              ScopeOutPolicy policy,
              const scoped_refptr<base::TaskRunner>& file_task_runner);
 
-  // Move constructor and operator. The data of r-value will be transfered
-  // in a destructive way. (See base/move.h)
   ScopedFile(ScopedFile&& other);
   ScopedFile& operator=(ScopedFile&& rhs) {
     MoveFrom(rhs);
@@ -84,6 +80,8 @@ class STORAGE_EXPORT ScopedFile {
   ScopeOutPolicy scope_out_policy_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   ScopeOutCallbackList scope_out_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedFile);
 };
 
 }  // namespace storage

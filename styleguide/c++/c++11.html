@@ -240,7 +240,7 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 <td>Reference that only binds to a temporary object</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/references#Rvalue_references">Rvalue references</a></td>
-<td>As per the <a href="https://google.github.io/styleguide/cppguide.html#Rvalue_references">Google Style Guide</a>: Only use these to define move constructors and move assignment operators, and for perfect forwarding. Most classes should not be copyable, even if movable. Continue to use DISALLOW_COPY_AND_ASSIGN (or DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND if needed) in most cases. <a href="https://groups.google.com/a/chromium.org/d/topic/chromium-dev/UnRaORb4TSw">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/Q526tkruXpM">Another discussion thread</a>.</td>
+<td>As per the <a href="https://google.github.io/styleguide/cppguide.html#Rvalue_references">Google Style Guide</a>: Only use these to define move constructors and move assignment operators, and for perfect forwarding. Most classes should not be copyable, even if movable. Continue to use DISALLOW_COPY_AND_ASSIGN in most cases. <a href="https://groups.google.com/a/chromium.org/d/topic/chromium-dev/UnRaORb4TSw">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/Q526tkruXpM">Another discussion thread</a>.</td>
 </tr>
 
 <tr>

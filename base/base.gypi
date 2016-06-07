@@ -429,7 +429,6 @@
           'metrics/user_metrics.cc',
           'metrics/user_metrics.h',
           'metrics/user_metrics_action.h',
-          'move.h',
           'native_library.h',
           'native_library_ios.mm',
           'native_library_mac.mm',

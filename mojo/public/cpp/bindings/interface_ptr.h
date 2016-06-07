@@ -36,8 +36,6 @@ class AssociatedGroup;
 // any thread.
 template <typename Interface>
 class InterfacePtr {
-  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr);
-
  public:
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
@@ -201,6 +199,7 @@ class InterfacePtr {
   // Allow InterfacePtr<> to be used in boolean expressions, but not
   // implicitly convertible to a real bool (which is dangerous).
  private:
+  // TODO(dcheng): Use an explicit conversion operator.
   typedef internal::InterfacePtrState<Interface,
                                       Interface::PassesAssociatedKinds_>
       InterfacePtr::*Testable;
@@ -222,6 +221,8 @@ class InterfacePtr {
   typedef internal::InterfacePtrState<Interface,
                                       Interface::PassesAssociatedKinds_> State;
   mutable State internal_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterfacePtr);
 };
 
 // If |info| is valid (containing a valid message pipe handle), returns an

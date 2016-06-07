@@ -52,14 +52,8 @@ struct NoType {
 // destructive way.
 template <typename T>
 struct IsMoveOnlyType {
-  template <typename U>
-  static YesType Test(const typename U::MoveOnlyTypeForCPP03*);
-
-  template <typename U>
-  static NoType Test(...);
-
-  static const bool value =
-      sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
+  static const bool value = std::is_constructible<T, T&&>::value &&
+                            !std::is_constructible<T, const T&>::value;
 };
 
 // This goop is a trick used to implement a template that can be used to

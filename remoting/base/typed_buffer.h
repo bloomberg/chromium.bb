@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/move.h"
+#include "base/macros.h"
 
 namespace remoting {
 
@@ -21,8 +21,6 @@ namespace remoting {
 // move-only semantics and typed buffer getters.
 template <typename T>
 class TypedBuffer {
-  MOVE_ONLY_TYPE_FOR_CPP_03(TypedBuffer)
-
  public:
   TypedBuffer() : TypedBuffer(0) {}
 
@@ -83,6 +81,8 @@ class TypedBuffer {
 
   // Length of the owned buffer in bytes.
   uint32_t length_;
+
+  DISALLOW_COPY_AND_ASSIGN(TypedBuffer);
 };
 
 }  // namespace remoting
