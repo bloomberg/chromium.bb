@@ -237,19 +237,6 @@ tests:
       italic: '    +++++                   '
 
   # 9.7.1 page 99
-
-- - plays (such as Romeo and Juliet)
-  - plays "<s* z .7,romeo & ,juliet.'">
-  - typeform:
-      italic:        '               ++++++++++++++++ '
-      passage_break: '       +                       +'
-
-- - '"Venite exultemus Domino!" his father sang.'
-  - 8~7,venite exultemus ,domino6~'0 8 "f sang4
-  - typeform:
-      passage_break: ' +                       +                 '
-      bold:          ' ++++++++++++++++++++++++                  '
-    xfail: true
     
   # 9.7.2 page 99
   

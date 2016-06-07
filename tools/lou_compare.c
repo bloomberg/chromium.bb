@@ -45,9 +45,6 @@ int italicLen;
 widechar scriptText[BUF_MAX];
 char scriptLine[BUF_MAX];
 int scriptLen;
-widechar breakText[BUF_MAX];
-char breakLine[BUF_MAX];
-int breakLen;
 widechar resetText[BUF_MAX];
 char resetLine[BUF_MAX];
 int resetLen;
@@ -346,12 +343,6 @@ int main(int argn, char **args)
 		else
 			return 1;
 		
-		if(!strncmp("~passage_break", inputLine, 14))
-		if(inputEmphasis(passage_break, breakLine, breakText, &breakLen))
-			continue;
-		else
-			return 1;
-		
 		if(!strncmp("~word_reset", inputLine, 11))
 		if(inputEmphasis(word_reset, resetLine, resetText, &resetLen))
 			continue;
@@ -479,8 +470,6 @@ int main(int argn, char **args)
 				outputEmphasis(outFile, 0, "~italic", italicText, italicLen);
 			if(scriptLen)
 				outputEmphasis(outFile, 0, "~script", scriptText, scriptLen);
-			if(breakLen)
-				outputEmphasis(outFile, 0, "~passage_break", breakText, breakLen);
 			if(resetLen)
 				outputEmphasis(outFile, 0, "~word_reset", resetText, resetLen);
 			if(tnoteLen)
@@ -594,8 +583,6 @@ int main(int argn, char **args)
 				outputEmphasis(failFile, 1, "ital:   ", italicText, italicLen);
 			if(scriptLen)
 				outputEmphasis(failFile, 1, "scpt:   ", scriptText, scriptLen);
-			if(breakLen)
-				outputEmphasis(failFile, 1, "pbrk:   ", breakText, breakLen);
 			if(resetLen)
 				outputEmphasis(failFile, 1, "wrst:   ", resetText, resetLen);
 			if(tnoteLen)
@@ -669,7 +656,6 @@ int main(int argn, char **args)
 		tnote1Len =
 		tnoteLen =
 		resetLen =
-		breakLen =
 		scriptLen = italicLen = underLen = boldLen = empLen = etnLen = 0;
 	}
 	

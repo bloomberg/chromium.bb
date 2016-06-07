@@ -244,19 +244,19 @@ the Globe's business section
 
 #   9.7.1 page 99
 
-~italic
-               ++++++++++++++++
-~passage_break
-       +                       +
-plays (such as Romeo and Juliet)
-plays "<s* z .7,romeo & ,juliet.'">
+#~italic
+#               ++++++++++++++++
+#~passage_break
+#       +                       +
+#plays (such as Romeo and Juliet)
+#plays "<s* z .7,romeo & ,juliet.'">
 
-~passage_break
- +                       +
-~bold
- ++++++++++++++++++++++++
-"Venite exultemus Domino!" his father sang.
-8~7,venite exultemus ,domino6~'0 8 "f sang4
+#~passage_break
+# +                       +
+#~bold
+# ++++++++++++++++++++++++
+#"Venite exultemus Domino!" his father sang.
+#8~7,venite exultemus ,domino6~'0 8 "f sang4
 
 #   9.7.2 page 99
 

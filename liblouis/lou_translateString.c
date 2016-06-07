@@ -1727,27 +1727,7 @@ resolveEmphasisWords(
 		//TODO:  give each emphasis its own whole word bit?
 		/*   clear out previous whole word markings   */
 		wordBuffer[i] &= ~WORD_WHOLE;
-		
-		if(typebuf[i] & passage_break)
-		{
-			if(in_emp && in_word)
-			
-			/*   if whole word is one symbol,
-				 turn it into a symbol   */
-			if(bit_symbol && word_start >= 0)
-			{
-				if(word_start + 1 == i)
-					buffer[word_start] |= bit_symbol;
-				else
-					buffer[word_start] |= bit_word;
-				wordBuffer[word_start] |= word_whole;
-			}
-			
-			in_word = 0;
-			word_whole = 0;
-			word_start = -1;
-		}
-	
+
 		/*   check if at beginning of emphasis   */
 		if(!in_emp)
 		if(buffer[i] & bit_begin)
@@ -1888,37 +1868,7 @@ resolveEmphasisPassages(
 	int i;
 	
 	for(i = 0; i < srcmax; i++)
-	{		
-		/*   hit passage_break   */
-		if(typebuf[i] & passage_break)
-		{
-			if(in_pass)
-			{
-				if(!in_word)
-				{
-					if(word_cnt >= table->emphRules[emphRule][lenPhraseOffset])
-					if(pass_end >= 0)
-					{
-						convertToPassage(
-							pass_start, pass_end, word_start, buffer, emphRule,
-							bit_begin, bit_end, bit_word, bit_symbol);
-					}
-				}
-				else
-				{
-					if(word_cnt >= table->emphRules[emphRule][lenPhraseOffset])
-					if(pass_end >= 0)
-					{
-						convertToPassage(
-							pass_start, i, word_start, buffer, emphRule,
-							bit_begin, bit_end, bit_word, bit_symbol);
-					}
-				}
-			}
-			in_pass = 0;
-			in_word = 0;
-		}
-		
+	{
 		/*   check if at beginning of word   */
 		if(!in_word)
 		if(wordBuffer[i] & WORD_CHAR)
@@ -2036,14 +1986,7 @@ resolveEmphasisResets(
 		
 		if(!in_pass)
 		if(buffer[i] & bit_begin)
-		{
 			in_pass = 1;
-			
-			//TODO:  passage break in middle of word
-			/*   passage break means no more word_reset   */
-			if(typebuf[i] & passage_break)
-				word_reset = 0;
-		}
 		else
 		{		
 			if(!in_word)
@@ -2936,7 +2879,7 @@ translateString ()
 		//insertEmphases();
 		if(!dontContract)
 			dontContract = typebuf[src] & no_contract;
-		if(typebuf[src] & computer_braille)
+		if(typebuf[src] & no_translate)
 		{
 			if(currentInput[src] < 32 || currentInput[src] > 126)
 				goto failure;
