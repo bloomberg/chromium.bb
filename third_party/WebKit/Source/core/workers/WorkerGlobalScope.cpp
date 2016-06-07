@@ -210,16 +210,7 @@ void WorkerGlobalScope::dispose()
     clearScript();
     clearInspector();
     m_eventQueue->close();
-
-    // We do not clear the thread field of the
-    // WorkerGlobalScope. Other objects keep the worker global scope
-    // alive because they need its thread field to check that work is
-    // being carried out on the right thread. We therefore cannot clear
-    // the thread field before all references to the worker global
-    // scope are gone.
-    //
-    // TODO(haraken): It's nasty to keep a raw pointer to WorkerThread
-    // after disposing WorkerGlobalScope. m_thread should be cleared here.
+    m_thread = nullptr;
 }
 
 void WorkerGlobalScope::didEvaluateWorkerScript()
