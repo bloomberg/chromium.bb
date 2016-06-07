@@ -39,9 +39,6 @@ struct weston_view;
 struct weston_surface;
 struct ivi_layout_surface;
 
-struct weston_view *
-ivi_layout_get_weston_view(struct ivi_layout_surface *surface);
-
 void
 ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
 			     int32_t width, int32_t height);

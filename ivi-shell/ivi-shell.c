@@ -339,18 +339,10 @@ bind_ivi_application(struct wl_client *client,
 struct weston_view *
 get_default_view(struct weston_surface *surface)
 {
-	struct ivi_shell_surface *shsurf;
 	struct weston_view *view;
 
 	if (!surface || wl_list_empty(&surface->views))
 		return NULL;
-
-	shsurf = get_ivi_shell_surface(surface);
-	if (shsurf && shsurf->layout_surface) {
-		view = ivi_layout_get_weston_view(shsurf->layout_surface);
-		if (view)
-			return view;
-	}
 
 	wl_list_for_each(view, &surface->views, surface_link) {
 		if (weston_view_is_mapped(view))

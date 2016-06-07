@@ -1875,14 +1875,6 @@ ivi_layout_surface_dump(struct weston_surface *surface,
 /**
  * methods of interaction between ivi-shell with ivi-layout
  */
-struct weston_view *
-ivi_layout_get_weston_view(struct ivi_layout_surface *surface)
-{
-	if (surface == NULL)
-		return NULL;
-
-	return get_weston_view(surface);
-}
 
 void
 ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
