@@ -25,30 +25,33 @@ class WebsiteSettingsRegistryTest : public testing::Test {
 };
 
 TEST_F(WebsiteSettingsRegistryTest, Get) {
-  // CONTENT_SETTINGS_TYPE_APP_BANNER should be registered.
+  // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE should be registered.
   const WebsiteSettingsInfo* info =
-      registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER);
+      registry()->Get(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   ASSERT_TRUE(info);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_APP_BANNER, info->type());
-  EXPECT_EQ("app-banner", info->name());
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, info->type());
+  EXPECT_EQ("auto-select-certificate", info->name());
 }
 
 TEST_F(WebsiteSettingsRegistryTest, GetByName) {
   // Random string shouldn't be registered.
   EXPECT_FALSE(registry()->GetByName("abc"));
 
-  // "app-banner" should be registered.
-  const WebsiteSettingsInfo* info = registry()->GetByName("app-banner");
+  // "auto-select-certificate" should be registered.
+  const WebsiteSettingsInfo* info =
+      registry()->GetByName("auto-select-certificate");
   ASSERT_TRUE(info);
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_APP_BANNER, info->type());
-  EXPECT_EQ("app-banner", info->name());
-  EXPECT_EQ(registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER), info);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, info->type());
+  EXPECT_EQ("auto-select-certificate", info->name());
+  EXPECT_EQ(registry()->Get(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE),
+            info);
 
   // Register a new setting.
   registry()->Register(static_cast<ContentSettingsType>(10), "test", nullptr,
                        WebsiteSettingsInfo::UNSYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+                       WebsiteSettingsRegistry::ALL_PLATFORMS,
                        WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   info = registry()->GetByName("test");
   ASSERT_TRUE(info);
@@ -57,17 +60,31 @@ TEST_F(WebsiteSettingsRegistryTest, GetByName) {
   EXPECT_EQ(registry()->Get(static_cast<ContentSettingsType>(10)), info);
 }
 
+TEST_F(WebsiteSettingsRegistryTest, GetPlatformDependent) {
+#if defined(OS_IOS)
+  // App banner shouldn't be registered on iOS.
+  EXPECT_FALSE(registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER));
+#else
+  // App banner should be registered on other platforms.
+  EXPECT_TRUE(registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER));
+#endif
+
+  // Auto select certificate is registered on all platforms.
+  EXPECT_TRUE(registry()->Get(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE));
+}
+
 TEST_F(WebsiteSettingsRegistryTest, Properties) {
-  // "app-banner" should be registered.
+  // "auto-select-certificate" should be registered.
   const WebsiteSettingsInfo* info =
-      registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER);
+      registry()->Get(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   ASSERT_TRUE(info);
-  EXPECT_EQ("profile.content_settings.exceptions.app_banner",
+  EXPECT_EQ("profile.content_settings.exceptions.auto_select_certificate",
             info->pref_name());
-  EXPECT_EQ("profile.default_content_setting_values.app_banner",
+  EXPECT_EQ("profile.default_content_setting_values.auto_select_certificate",
             info->default_value_pref_name());
   ASSERT_FALSE(info->initial_default_value());
-  EXPECT_EQ(PrefRegistry::LOSSY_PREF, info->GetPrefRegistrationFlags());
+  EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
+            info->GetPrefRegistrationFlags());
 
   // Register a new setting.
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
@@ -75,6 +92,7 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
                        WebsiteSettingsInfo::SYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+                       WebsiteSettingsRegistry::ALL_PLATFORMS,
                        WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   info = registry()->Get(static_cast<ContentSettingsType>(10));
   ASSERT_TRUE(info);
@@ -84,9 +102,13 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
   int setting;
   ASSERT_TRUE(info->initial_default_value()->GetAsInteger(&setting));
   EXPECT_EQ(999, setting);
+#if defined(OS_IOS)
+  EXPECT_EQ(PrefRegistry::LOSSY_PREF, info->GetPrefRegistrationFlags());
+#else
   EXPECT_EQ(PrefRegistry::LOSSY_PREF |
                 user_prefs::PrefRegistrySyncable::SYNCABLE_PREF,
             info->GetPrefRegistrationFlags());
+#endif
   EXPECT_EQ(WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
             info->scoping_type());
   EXPECT_EQ(WebsiteSettingsInfo::INHERIT_IN_INCOGNITO,
@@ -99,6 +121,7 @@ TEST_F(WebsiteSettingsRegistryTest, Iteration) {
                        WebsiteSettingsInfo::SYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+                       WebsiteSettingsRegistry::ALL_PLATFORMS,
                        WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
 
   bool found = false;

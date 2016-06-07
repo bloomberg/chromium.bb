@@ -54,6 +54,8 @@ class ContentSettingsRegistry {
 
   void Init();
 
+  typedef uint32_t Platforms;
+
   // Register a new content setting. This maps an origin to an ALLOW/ASK/BLOCK
   // value (see the ContentSetting enum).
   void Register(ContentSettingsType type,
@@ -63,6 +65,7 @@ class ContentSettingsRegistry {
                 const std::vector<std::string>& whitelisted_schemes,
                 const std::set<ContentSetting>& valid_settings,
                 WebsiteSettingsInfo::ScopingType scoping_type,
+                Platforms platforms,
                 ContentSettingsInfo::IncognitoBehavior incognito_behavior);
 
   Map content_settings_info_;

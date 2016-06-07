@@ -122,6 +122,12 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
           GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES))),
       CONTENT_SETTING_NUM_SETTINGS);
   UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultPopupsSetting",
+      IntToContentSetting(prefs_->GetInteger(
+          GetPrefName(CONTENT_SETTINGS_TYPE_POPUPS))),
+      CONTENT_SETTING_NUM_SETTINGS);
+#if !defined(OS_IOS)
+  UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultImagesSetting",
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_IMAGES))),
@@ -135,11 +141,6 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       "ContentSettings.DefaultPluginsSetting",
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS))),
-      CONTENT_SETTING_NUM_SETTINGS);
-  UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.DefaultPopupsSetting",
-      IntToContentSetting(prefs_->GetInteger(
-          GetPrefName(CONTENT_SETTINGS_TYPE_POPUPS))),
       CONTENT_SETTING_NUM_SETTINGS);
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultLocationSetting",
@@ -186,7 +187,7 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD))),
       CONTENT_SETTING_NUM_SETTINGS);
-
+#endif
   pref_change_registrar_.Init(prefs_);
   PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
       &DefaultProvider::OnPreferenceChanged, base::Unretained(this));

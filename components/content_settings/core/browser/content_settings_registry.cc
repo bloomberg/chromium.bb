@@ -124,6 +124,7 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_SESSION_ONLY),
            WebsiteSettingsInfo::REQUESTING_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::ALL_PLATFORMS,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_IMAGES, "images", CONTENT_SETTING_ALLOW,
@@ -132,6 +133,8 @@ void ContentSettingsRegistry::Init() {
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript",
@@ -140,6 +143,8 @@ void ContentSettingsRegistry::Init() {
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
@@ -150,6 +155,8 @@ void ContentSettingsRegistry::Init() {
                          CONTENT_SETTING_ASK,
                          CONTENT_SETTING_DETECT_IMPORTANT_CONTENT),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_POPUPS, "popups", CONTENT_SETTING_BLOCK,
@@ -158,6 +165,7 @@ void ContentSettingsRegistry::Init() {
                               kExtensionScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::ALL_PLATFORMS,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_GEOLOCATION, "geolocation",
@@ -166,6 +174,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications",
@@ -174,6 +184,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            // See also NotificationPermissionContext::DecidePermission which
            // implements additional incognito exceptions.
            ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW);
@@ -183,6 +195,8 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock", CONTENT_SETTING_ASK,
@@ -191,6 +205,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic",
@@ -199,6 +215,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera",
@@ -207,6 +225,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker",
@@ -215,6 +235,7 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "automatic-downloads",
@@ -224,6 +245,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex", CONTENT_SETTING_ASK,
@@ -231,6 +254,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging",
@@ -239,30 +264,35 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW);
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   Register(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
            "protected-media-identifier", CONTENT_SETTING_ASK,
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           WebsiteSettingsRegistry::PLATFORM_ANDROID |
+               WebsiteSettingsRegistry::PLATFORM_CHROMEOS,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
-#endif
 
   Register(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, "durable-storage",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
-  Register(CONTENT_SETTINGS_TYPE_KEYGEN, "keygen",
-           CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::SYNCABLE,
-           WhitelistedSchemes(),
+  Register(CONTENT_SETTINGS_TYPE_KEYGEN, "keygen", CONTENT_SETTING_BLOCK,
+           WebsiteSettingsInfo::SYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync",
@@ -270,13 +300,16 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
-  Register(CONTENT_SETTINGS_TYPE_AUTOPLAY, "autoplay",
-           CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::UNSYNCABLE,
-           WhitelistedSchemes(),
+  Register(CONTENT_SETTINGS_TYPE_AUTOPLAY, "autoplay", CONTENT_SETTING_ALLOW,
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   // Content settings that aren't used to store any data. TODO(raymes): use a
@@ -287,12 +320,14 @@ void ContentSettingsRegistry::Init() {
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(), ValidSettings(),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script",
            CONTENT_SETTING_DEFAULT, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(), ValidSettings(),
            WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 
   Register(CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, "bluetooth-guard",
@@ -300,6 +335,8 @@ void ContentSettingsRegistry::Init() {
            WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
@@ -311,6 +348,7 @@ void ContentSettingsRegistry::Register(
     const std::vector<std::string>& whitelisted_schemes,
     const std::set<ContentSetting>& valid_settings,
     WebsiteSettingsInfo::ScopingType scoping_type,
+    Platforms platforms,
     ContentSettingsInfo::IncognitoBehavior incognito_behavior) {
   // Ensure that nothing has been registered yet for the given type.
   DCHECK(!website_settings_registry_->Get(type));
@@ -324,8 +362,14 @@ void ContentSettingsRegistry::Register(
   const WebsiteSettingsInfo* website_settings_info =
       website_settings_registry_->Register(
           type, name, std::move(default_value), sync_status,
-          WebsiteSettingsInfo::NOT_LOSSY, scoping_type,
+          WebsiteSettingsInfo::NOT_LOSSY, scoping_type, platforms,
           WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+
+  // WebsiteSettingsInfo::Register() will return nullptr if content setting type
+  // is not used on the current platform and doesn't need to be registered.
+  if (!website_settings_info)
+    return;
+
   DCHECK(!ContainsKey(content_settings_info_, type));
   content_settings_info_[type] = base::WrapUnique(
       new ContentSettingsInfo(website_settings_info, whitelisted_schemes,
