@@ -172,13 +172,27 @@ buzz::QName GetQNameByField(Field attr, bool from) {
 }
 
 SignalingAddress ParseAddress(
-    const buzz::XmlElement* stanza, bool from, std::string* error) {
+    const buzz::XmlElement* iq, bool from, std::string* error) {
   SignalingAddress empty_instance;
 
-  std::string jid(stanza->Attr(GetQNameByField(Field::JID, from)));
+  std::string jid(iq->Attr(GetQNameByField(Field::JID, from)));
+
+  const XmlElement* jingle = iq->FirstNamed(QName(kJingleNamespace, "jingle"));
+
+  if (!jingle) {
+    return SignalingAddress(jid);
+  }
+
+  std::string type(iq->Attr(QName(std::string(), "type")));
+  // For error IQs, flips the |from| flag as the jingle node represents the
+  // original request.
+  if (type == "error") {
+    from = !from;
+  }
+
   std::string endpoint_id(
-      stanza->Attr(GetQNameByField(Field::ENDPOINT_ID, from)));
-  std::string channel_str(stanza->Attr(GetQNameByField(Field::CHANNEL, from)));
+      jingle->Attr(GetQNameByField(Field::ENDPOINT_ID, from)));
+  std::string channel_str(jingle->Attr(GetQNameByField(Field::CHANNEL, from)));
   SignalingAddress::Channel channel;
 
   if (channel_str.empty()) {
@@ -199,27 +213,35 @@ SignalingAddress ParseAddress(
   return SignalingAddress(jid, endpoint_id, channel);
 }
 
-void SetAddress(buzz::XmlElement* iqElement,
+void SetAddress(buzz::XmlElement* iq,
+                buzz::XmlElement* jingle,
                 const SignalingAddress& address,
                 bool from) {
-  // Start from a fresh slate regardless of the previous address format.
-  iqElement->ClearAttr(GetQNameByField(Field::JID, from));
-  iqElement->ClearAttr(GetQNameByField(Field::CHANNEL, from));
-  iqElement->ClearAttr(GetQNameByField(Field::ENDPOINT_ID, from));
-
   if (address.empty()) {
     return;
   }
 
   // Always set the JID.
-  iqElement->AddAttr(GetQNameByField(Field::JID, from), address.jid);
+  iq->SetAttr(GetQNameByField(Field::JID, from), address.jid);
+
+  // Do not tamper the routing-info in the jingle tag for error IQ's, as
+  // it corresponds to the original message.
+  std::string type(iq->Attr(QName(std::string(), "type")));
+  if (type == "error") {
+    return;
+  }
+
+  // Start from a fresh slate regardless of the previous address format.
+  jingle->ClearAttr(GetQNameByField(Field::CHANNEL, from));
+  jingle->ClearAttr(GetQNameByField(Field::ENDPOINT_ID, from));
 
   // Only set the channel and endpoint_id in the LCS channel.
   if (address.channel == SignalingAddress::Channel::LCS) {
-    iqElement->AddAttr(GetQNameByField(Field::ENDPOINT_ID, from),
-                       address.endpoint_id);
-    const char* channel_str = ValueToName(kChannelTypes, address.channel);
-    iqElement->AddAttr(GetQNameByField(Field::CHANNEL, from), channel_str);
+    jingle->AddAttr(
+        GetQNameByField(Field::ENDPOINT_ID, from), address.endpoint_id);
+    jingle->AddAttr(
+        GetQNameByField(Field::CHANNEL, from),
+        ValueToName(kChannelTypes, address.channel));
   }
 }
 
@@ -398,14 +420,14 @@ std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
       new XmlElement(QName("jabber:client", "iq"), true));
 
   DCHECK(!to.empty());
-  SetAddress(root.get(), to, false);
-  SetAddress(root.get(), from, true);
   root->SetAttr(QName(kEmptyNamespace, "type"), "set");
 
   XmlElement* jingle_tag =
       new XmlElement(QName(kJingleNamespace, "jingle"), true);
   root->AddElement(jingle_tag);
   jingle_tag->AddAttr(QName(kEmptyNamespace, "sid"), sid);
+  SetAddress(root.get(), jingle_tag, to, false);
+  SetAddress(root.get(), jingle_tag, from, true);
 
   const char* action_attr = ValueToName(kActionTypes, action);
   if (!action_attr)
@@ -479,23 +501,27 @@ std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
   std::unique_ptr<XmlElement> iq(
       new XmlElement(QName(kJabberNamespace, "iq"), true));
 
+  iq->SetAttr(QName(kEmptyNamespace, "id"),
+              request_stanza->Attr(QName(kEmptyNamespace, "id")));
+
   SignalingAddress original_from;
   std::string error_message;
   original_from = ParseAddress(request_stanza, true, &error_message);
   DCHECK(error_message.empty());
-  SetAddress(iq.get(), original_from, false);
-
-  iq->SetAttr(QName(kEmptyNamespace, "id"),
-              request_stanza->Attr(QName(kEmptyNamespace, "id")));
 
   if (type == REPLY_RESULT) {
     iq->SetAttr(QName(kEmptyNamespace, "type"), "result");
+    XmlElement* jingle =
+        new XmlElement(QName(kJingleNamespace, "jingle"), true);
+    iq->AddElement(jingle);
+    SetAddress(iq.get(), jingle, original_from, false);
     return iq;
   }
 
   DCHECK_EQ(type, REPLY_ERROR);
 
   iq->SetAttr(QName(kEmptyNamespace, "type"), "error");
+  SetAddress(iq.get(), nullptr, original_from, false);
 
   for (const buzz::XmlElement* child = request_stanza->FirstElement();
        child != nullptr; child = child->NextElement()) {

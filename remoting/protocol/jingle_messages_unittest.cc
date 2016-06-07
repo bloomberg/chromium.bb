@@ -403,15 +403,18 @@ TEST(JingleMessageTest, SessionInfo) {
               buzz::QName("urn:xmpp:jingle:1", "test-info"));
 }
 
-TEST(JingleMessageTest, Address) {
+TEST(JingleMessageTest, ParseAddress) {
   const char* kTestSessionInfoMessage =
       "<cli:iq from='remoting@talk.google.com' "
-      "from-channel='lcs' "
-      "from-endpoint-id='user@gmail.com/xBrnereror=' "
-      "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
-      "xmlns:cli='jabber:client'><jingle action='session-info' "
-      "sid='2227053353' xmlns='urn:xmpp:jingle:1'><test-info>TestMessage"
-      "</test-info></jingle></cli:iq>";
+              "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
+              "xmlns:cli='jabber:client'>"
+        "<jingle action='session-info' "
+                "sid='2227053353' xmlns='urn:xmpp:jingle:1' "
+                "from-channel='lcs' "
+                "from-endpoint-id='user@gmail.com/xBrnereror='>"
+          "<test-info>TestMessage</test-info>"
+        "</jingle>"
+      "</cli:iq>";
 
   JingleMessage message;
   ParseFormatAndCompare(kTestSessionInfoMessage, &message);
@@ -437,9 +440,9 @@ TEST(JingleMessageReplyTest, ToXml) {
       "</reason></jingle></cli:iq>";
   const char* kTestIncomingMessage2 =
       "<cli:iq from='remoting@talk.google.com' id='4' "
-      "from-channel='lcs' from-endpoint-id='from@gmail.com/AbCdEf1234=' "
       "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
       "xmlns:cli='jabber:client'><jingle action='session-terminate' "
+      "from-channel='lcs' from-endpoint-id='from@gmail.com/AbCdEf1234=' "
       "sid='2227053353' xmlns='urn:xmpp:jingle:1'><reason><success/>"
       "</reason></jingle></cli:iq>";
 
@@ -493,17 +496,17 @@ TEST(JingleMessageReplyTest, ToXml) {
        kTestIncomingMessage1},
       {JingleMessageReply::INVALID_SID, "ErrorText",
        "<iq xmlns='jabber:client' "
-       "to='remoting@talk.google.com' to-channel='lcs' "
-       "to-endpoint-id='from@gmail.com/AbCdEf1234=' id='4' "
+       "to='remoting@talk.google.com' id='4' "
        "type='error'><jingle "
-       "action='session-terminate' sid='2227053353' xmlns='urn:xmpp:jingle:1'>"
+       "action='session-terminate' sid='2227053353' xmlns='urn:xmpp:jingle:1' "
+       "from-channel='lcs' from-endpoint-id='from@gmail.com/AbCdEf1234='>"
        "<reason><success/></reason></jingle><error type='modify'>"
        "<item-not-found/><text xml:lang='en'>ErrorText</text></error></iq>",
        kTestIncomingMessage2},
       {JingleMessageReply::NONE, "",
-       "<iq xmlns='jabber:client' "
-       "to='remoting@talk.google.com' to-channel='lcs' "
-       "to-endpoint-id='from@gmail.com/AbCdEf1234=' id='4' type='result'></iq>",
+       "<iq xmlns='jabber:client' to='remoting@talk.google.com' id='4' "
+       "type='result'><jingle xmlns='urn:xmpp:jingle:1' to-channel='lcs' "
+       "to-endpoint-id='from@gmail.com/AbCdEf1234='/></iq>",
        kTestIncomingMessage2},
   };
 
@@ -512,6 +515,7 @@ TEST(JingleMessageReplyTest, ToXml) {
         XmlElement::ForStr(tests[i].incoming_message));
     ASSERT_TRUE(incoming_message.get());
 
+    SCOPED_TRACE(testing::Message() << "Running test case: " << i);
     JingleMessageReply reply_msg;
     if (tests[i].error_text.empty()) {
       reply_msg = JingleMessageReply(tests[i].error);
