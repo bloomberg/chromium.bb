@@ -18,15 +18,17 @@
 #include "base/format_macros.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "sql/connection_memory_dump_provider.h"
 #include "sql/meta_table.h"
@@ -159,18 +161,18 @@ void InitializeSqlite() {
     sqlite3_initialize();
 
     // Schedule callback to record memory footprint histograms at 10m, 1h, and
-    // 1d.  There may not be a message loop in tests.
-    if (base::MessageLoop::current()) {
-      base::MessageLoop::current()->PostDelayedTask(
+    // 1d. There may not be a registered thread task runner in tests.
+    if (base::ThreadTaskRunnerHandle::IsSet()) {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemory10Min),
           base::TimeDelta::FromMinutes(10));
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryHour),
           base::TimeDelta::FromHours(1));
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryDay),
           base::TimeDelta::FromDays(1));
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryWeek),
           base::TimeDelta::FromDays(7));
     }
