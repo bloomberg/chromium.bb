@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_MRU_WINDOW_TRACKER_H_
-#define ASH_WM_MRU_WINDOW_TRACKER_H_
+#ifndef ASH_COMMON_WM_MRU_WINDOW_TRACKER_H_
+#define ASH_COMMON_WM_MRU_WINDOW_TRACKER_H_
 
 #include <list>
 #include <vector>
@@ -65,4 +65,4 @@ class ASH_EXPORT MruWindowTracker : public WmActivationObserver,
 
 }  // namespace ash
 
-#endif  // ASH_WM_MRU_WINDOW_TRACKER_H_
+#endif  // ASH_COMMON_WM_MRU_WINDOW_TRACKER_H_

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -12,7 +13,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"

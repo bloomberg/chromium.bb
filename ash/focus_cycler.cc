@@ -5,9 +5,9 @@
 #include "ash/focus_cycler.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"

@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_window.h"
@@ -11,7 +12,6 @@
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/user_metrics.h"

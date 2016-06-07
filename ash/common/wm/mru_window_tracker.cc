@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/mru_window_tracker.h"
+#include "ash/common/wm/mru_window_tracker.h"
 
 #include <algorithm>
 
@@ -122,8 +122,8 @@ MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList() const {
   return BuildWindowListInternal(&mru_windows_, base::Bind(&CallCanActivate));
 }
 
-MruWindowTracker::WindowList
-MruWindowTracker::BuildWindowListIgnoreModal() const {
+MruWindowTracker::WindowList MruWindowTracker::BuildWindowListIgnoreModal()
+    const {
   return BuildWindowListInternal(nullptr,
                                  base::Bind(&IsWindowConsideredActivatable));
 }

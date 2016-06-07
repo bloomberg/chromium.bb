@@ -4,10 +4,10 @@
 
 #include "ash/wm/window_cycle_list.h"
 
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 

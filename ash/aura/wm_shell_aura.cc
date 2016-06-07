@@ -5,6 +5,7 @@
 #include "ash/aura/wm_shell_aura.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_overview_mode_observer.h"
@@ -13,7 +14,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
