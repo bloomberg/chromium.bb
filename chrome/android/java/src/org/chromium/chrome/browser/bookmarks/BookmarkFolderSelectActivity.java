@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -38,7 +39,7 @@ import java.util.List;
  * Note this fragment will not be restarted by OS. It will be dismissed if chrome is killed in
  * background.
  */
-public class BookmarkFolderSelectActivity extends BookmarkActivityBase implements
+public class BookmarkFolderSelectActivity extends SynchronousInitializationActivity implements
         AdapterView.OnItemClickListener {
     static final String
             INTENT_SELECTED_FOLDER = "BookmarkFolderSelectActivity.selectedFolder";

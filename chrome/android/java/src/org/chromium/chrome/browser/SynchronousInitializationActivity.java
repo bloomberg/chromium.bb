@@ -1,23 +1,26 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmarks;
+package org.chromium.chrome.browser;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
 /**
- * Activity base class that all the bookmark activities inherit. Currently it's responsible
- * for ensuring native library initialization.
+ * Ensures that the native library is loaded by synchronously initializing it on creation.
+ *
+ * This is needed for Activities that can be started without going through the regular asynchronous
+ * browser startup pathway, which could happen if the user restarted Chrome after it died in the
+ * background with the Activity visible.  One example is {@link BookmarkActivity} and its kin.
  */
-abstract class BookmarkActivityBase extends AppCompatActivity {
-    private static final String TAG = "BookmarkActivityBase";
+public abstract class SynchronousInitializationActivity extends AppCompatActivity {
+    private static final String TAG = "SyncInitActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

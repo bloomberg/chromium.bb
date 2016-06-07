@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.WindowManager;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -20,7 +21,8 @@ import org.chromium.components.bookmarks.BookmarkId;
  * inside of it and creates a snackbar manager. This activity should only be shown on phones; on
  * tablet the bookmark UI is shown inside of a tab (see {@link BookmarkPage}).
  */
-public class BookmarkActivity extends BookmarkActivityBase implements SnackbarManageable {
+public class BookmarkActivity extends SynchronousInitializationActivity
+        implements SnackbarManageable {
 
     private BookmarkManager mBookmarkManager;
     private SnackbarManager mSnackbarManager;

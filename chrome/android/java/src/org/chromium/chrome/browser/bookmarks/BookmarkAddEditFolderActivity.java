@@ -15,6 +15,7 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
@@ -29,7 +30,7 @@ import java.util.List;
  * mode and editing mode. Depending on different modes, it should be started via two static creator
  * functions.
  */
-public class BookmarkAddEditFolderActivity extends BookmarkActivityBase
+public class BookmarkAddEditFolderActivity extends SynchronousInitializationActivity
         implements OnClickListener {
     static final String INTENT_IS_ADD_MODE = "BookmarkAddEditFolderActivity.isAddMode";
     static final String INTENT_BOOKMARK_ID = "BookmarkAddEditFolderActivity.BookmarkId";
