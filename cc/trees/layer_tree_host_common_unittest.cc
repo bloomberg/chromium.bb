@@ -9722,34 +9722,115 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   EXPECT_EQ(root->layer_tree_impl()->property_trees()->clip_tree.size(), 5u);
 }
 
-TEST_F(LayerTreeHostCommonTest, MaskLayerScreenSpaceTransform) {
-  // Tests that the mask layer gets its owning layer's screen space transform.
+TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {
+  // Tests that a mask layer's draw properties are computed correctly.
   LayerImpl* root = root_layer();
   LayerImpl* child = AddChild<LayerImpl>(root);
+  child->SetMaskLayer(LayerImpl::Create(root->layer_tree_impl(), 100));
 
   const gfx::Transform identity_matrix;
   gfx::Transform transform;
   transform.Translate(10, 10);
 
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               gfx::PointF(), gfx::Size(40, 40), true, false,
                                true);
   SetLayerPropertiesForTesting(child, transform, gfx::Point3F(), gfx::PointF(),
                                gfx::Size(30, 30), true, false, false);
+  SetLayerPropertiesForTesting(child->mask_layer(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, false);
   root->SetDrawsContent(true);
   child->SetDrawsContent(false);
-  child->SetMaskLayer(LayerImpl::Create(root->layer_tree_impl(), 100));
   ExecuteCalculateDrawProperties(root);
 
+  // The render surface created for the mask has no contributing content, so the
+  // mask isn't a drawn RSLL member. This means it has an empty visible rect,
+  // but its screen space transform can still be computed correctly on-demand.
+  EXPECT_FALSE(
+      child->mask_layer()->is_drawn_render_surface_layer_list_member());
+  EXPECT_EQ(gfx::Rect(), child->mask_layer()->visible_layer_rect());
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   child->mask_layer()->ScreenSpaceTransform());
+
+  // Make the child's render surface have contributing content.
+  child->SetDrawsContent(true);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_TRUE(child->mask_layer()->is_drawn_render_surface_layer_list_member());
+  EXPECT_EQ(gfx::Rect(20, 20), child->mask_layer()->visible_layer_rect());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
+                                  child->mask_layer()->ScreenSpaceTransform());
+
   transform.Translate(10, 10);
   child->SetTransform(transform);
-  child->SetDrawsContent(true);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   child->mask_layer()->ScreenSpaceTransform());
+  EXPECT_EQ(gfx::Rect(20, 20), child->mask_layer()->visible_layer_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest, ReplicaMaskLayerDrawProperties) {
+  // Tests that a replica mask layer's draw properties are computed correctly.
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  child->SetReplicaLayer(LayerImpl::Create(root->layer_tree_impl(), 100));
+  child->replica_layer()->SetParent(child);
+  child->replica_layer()->SetMaskLayer(
+      LayerImpl::Create(root->layer_tree_impl(), 200));
+
+  const gfx::Transform identity_matrix;
+  gfx::Transform transform;
+  transform.Translate(10, 10);
+
+  gfx::PointF replica_position(3.f, 3.f);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(40, 40), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, transform, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(30, 30), true, false, false);
+  SetLayerPropertiesForTesting(child->replica_layer(), identity_matrix,
+                               gfx::Point3F(), replica_position,
+                               gfx::Size(30, 30), true, false, false);
+  SetLayerPropertiesForTesting(child->replica_layer()->mask_layer(),
+                               identity_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(20, 20), true, false, false);
+  root->SetDrawsContent(true);
+  child->SetDrawsContent(false);
+  ExecuteCalculateDrawProperties(root);
+
+  // The render surface created for the replica has no contributing content, so
+  // the replica's mask isn't a drawn RSLL member. This means it has an empty
+  // visible rect, but its screen space transform can still be computed
+  // correctly on-demand.
+  EXPECT_FALSE(child->replica_layer()
+                   ->mask_layer()
+                   ->is_drawn_render_surface_layer_list_member());
+  EXPECT_EQ(gfx::Rect(),
+            child->replica_layer()->mask_layer()->visible_layer_rect());
+
+  gfx::Transform expected_screen_space_transform = transform;
+  expected_screen_space_transform.Translate(replica_position.x(),
+                                            replica_position.y());
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_screen_space_transform,
+      child->replica_layer()->mask_layer()->ScreenSpaceTransform());
+
+  // Make the child's render surface have contributing content.
+  child->SetDrawsContent(true);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_TRUE(child->replica_layer()
+                  ->mask_layer()
+                  ->is_drawn_render_surface_layer_list_member());
+  EXPECT_EQ(gfx::Rect(20, 20),
+            child->replica_layer()->mask_layer()->visible_layer_rect());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_screen_space_transform,
+      child->replica_layer()->mask_layer()->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest,

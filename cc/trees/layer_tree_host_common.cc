@@ -186,13 +186,19 @@ void ScrollAndScaleSet::FromProtobuf(const proto::ScrollAndScaleSet& proto) {
 }
 
 static inline void SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(
-    LayerImpl* layer) {
-  if (layer->mask_layer())
+    LayerImpl* layer,
+    PropertyTrees* property_trees) {
+  if (layer->mask_layer()) {
     layer->mask_layer()->set_is_drawn_render_surface_layer_list_member(true);
+    draw_property_utils::ComputeMaskDrawProperties(layer->mask_layer(),
+                                                   property_trees);
+  }
   if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
     layer->replica_layer()
         ->mask_layer()
         ->set_is_drawn_render_surface_layer_list_member(true);
+    draw_property_utils::ComputeMaskDrawProperties(
+        layer->replica_layer()->mask_layer(), property_trees);
   }
 }
 
@@ -458,7 +464,7 @@ static void ComputeListOfNonEmptySurfaces(LayerTreeImpl* layer_tree_impl,
       }
       continue;
     }
-    SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(layer);
+    SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(layer, property_trees);
     final_surface_list->push_back(layer);
   }
 }
@@ -489,20 +495,6 @@ static void CalculateRenderSurfaceLayerList(
 
   ComputeLayerScrollsDrawnDescendants(layer_tree_impl,
                                       &property_trees->scroll_tree);
-}
-
-static void ComputeMaskLayerDrawProperties(const LayerImpl* layer,
-                                           LayerImpl* mask_layer) {
-  DrawProperties& mask_layer_draw_properties = mask_layer->draw_properties();
-  mask_layer_draw_properties.visible_layer_rect = gfx::Rect(layer->bounds());
-  mask_layer_draw_properties.target_space_transform =
-      layer->draw_properties().target_space_transform;
-  mask_layer_draw_properties.screen_space_transform =
-      layer->draw_properties().screen_space_transform;
-  mask_layer_draw_properties.maximum_animation_contents_scale =
-      layer->draw_properties().maximum_animation_contents_scale;
-  mask_layer_draw_properties.starting_animation_contents_scale =
-      layer->draw_properties().starting_animation_contents_scale;
 }
 
 void CalculateDrawPropertiesInternal(
@@ -590,12 +582,6 @@ void CalculateDrawPropertiesInternal(
   for (LayerImpl* layer : visible_layer_list) {
     draw_property_utils::ComputeLayerDrawProperties(layer,
                                                     inputs->property_trees);
-    if (layer->mask_layer())
-      ComputeMaskLayerDrawProperties(layer, layer->mask_layer());
-    LayerImpl* replica_mask_layer =
-        layer->replica_layer() ? layer->replica_layer()->mask_layer() : nullptr;
-    if (replica_mask_layer)
-      ComputeMaskLayerDrawProperties(layer, replica_mask_layer);
   }
 
   CalculateRenderSurfaceLayerList(

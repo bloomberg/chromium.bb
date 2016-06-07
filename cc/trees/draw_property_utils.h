@@ -77,6 +77,9 @@ void CC_EXPORT ComputeVisibleRects(LayerImpl* root_layer,
 void CC_EXPORT ComputeLayerDrawProperties(LayerImpl* layer,
                                           const PropertyTrees* property_trees);
 
+void CC_EXPORT ComputeMaskDrawProperties(LayerImpl* mask_layer,
+                                         const PropertyTrees* property_trees);
+
 void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                             RenderSurfaceImpl* render_surface);
 

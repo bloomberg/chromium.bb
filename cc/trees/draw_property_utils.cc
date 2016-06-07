@@ -1181,6 +1181,18 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
       layer, bounds_in_target_space, layer->draw_properties().clip_rect);
 }
 
+void ComputeMaskDrawProperties(LayerImpl* mask_layer,
+                               const PropertyTrees* property_trees) {
+  // Mask draw properties are used only for rastering, so most of the draw
+  // properties computed for other layers are not needed.
+  mask_layer->draw_properties().screen_space_transform =
+      ScreenSpaceTransformInternal(mask_layer,
+                                   property_trees->transform_tree.Node(
+                                       mask_layer->transform_tree_index()));
+  mask_layer->draw_properties().visible_layer_rect =
+      gfx::Rect(mask_layer->bounds());
+}
+
 void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                   RenderSurfaceImpl* render_surface) {
   const ClipNode* clip_node =

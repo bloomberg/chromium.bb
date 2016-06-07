@@ -476,8 +476,6 @@ bool AddTransformNodeIfNeeded(
     layer->set_should_flatten_transform_from_property_tree(
         data_from_ancestor.should_flatten);
     layer->SetTransformTreeIndex(parent_index);
-    if (layer->mask_layer())
-      layer->mask_layer()->SetTransformTreeIndex(parent_index);
     return false;
   }
 
@@ -489,8 +487,6 @@ bool AddTransformNodeIfNeeded(
   layer->SetTransformTreeIndex(node->id);
   data_for_children->property_trees->transform_id_to_index_map[layer->id()] =
       node->id;
-  if (layer->mask_layer())
-    layer->mask_layer()->SetTransformTreeIndex(node->id);
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;
@@ -1059,9 +1055,6 @@ void BuildPropertyTreesInternal(
     DataForRecursionFromChild<LayerType>* data_to_parent) {
   layer->set_property_tree_sequence_number(
       data_from_parent.property_trees->sequence_number);
-  if (layer->mask_layer())
-    layer->mask_layer()->set_property_tree_sequence_number(
-        data_from_parent.property_trees->sequence_number);
 
   DataForRecursion<LayerType> data_for_children(data_from_parent);
 
@@ -1120,6 +1113,17 @@ void BuildPropertyTreesInternal(
     BuildPropertyTreesInternal(layer->replica_layer(), data_for_children,
                                &data_from_child);
     data_to_parent->Merge(data_from_child);
+  }
+
+  if (layer->mask_layer()) {
+    layer->mask_layer()->set_property_tree_sequence_number(
+        data_from_parent.property_trees->sequence_number);
+    layer->mask_layer()->set_offset_to_transform_parent(
+        layer->offset_to_transform_parent());
+    layer->mask_layer()->SetTransformTreeIndex(layer->transform_tree_index());
+    layer->mask_layer()->SetClipTreeIndex(layer->clip_tree_index());
+    layer->mask_layer()->SetEffectTreeIndex(layer->effect_tree_index());
+    layer->mask_layer()->SetScrollTreeIndex(layer->scroll_tree_index());
   }
 
   EffectNode* effect_node = data_for_children.property_trees->effect_tree.Node(
