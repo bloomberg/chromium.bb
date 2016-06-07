@@ -231,9 +231,8 @@ class NavigationController {
   // nullptr.
   virtual WebContents* GetWebContents() const = 0;
 
-  // Get/set the browser context for this controller. It can never be nullptr.
+  // Get the browser context for this controller. It can never be nullptr.
   virtual BrowserContext* GetBrowserContext() const = 0;
-  virtual void SetBrowserContext(BrowserContext* browser_context) = 0;
 
   // Initializes this NavigationController with the given saved navigations,
   // using |selected_navigation| as the currently loaded entry. Before this call

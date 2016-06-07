@@ -256,11 +256,6 @@ BrowserContext* NavigationControllerImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
-void NavigationControllerImpl::SetBrowserContext(
-    BrowserContext* browser_context) {
-  browser_context_ = browser_context;
-}
-
 void NavigationControllerImpl::Restore(
     int selected_navigation,
     RestoreType type,

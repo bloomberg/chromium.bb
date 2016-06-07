@@ -42,7 +42,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // NavigationController implementation:
   WebContents* GetWebContents() const override;
   BrowserContext* GetBrowserContext() const override;
-  void SetBrowserContext(BrowserContext* browser_context) override;
   void Restore(int selected_navigation,
                RestoreType type,
                std::vector<std::unique_ptr<NavigationEntry>>* entries) override;
