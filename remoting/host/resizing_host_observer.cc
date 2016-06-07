@@ -118,13 +118,15 @@ class CandidateResolution {
 }  // namespace
 
 ResizingHostObserver::ResizingHostObserver(
-    std::unique_ptr<DesktopResizer> desktop_resizer)
+    std::unique_ptr<DesktopResizer> desktop_resizer,
+    bool restore)
     : desktop_resizer_(std::move(desktop_resizer)),
+      restore_(restore),
       now_function_(base::Bind(base::Time::Now)),
       weak_factory_(this) {}
 
 ResizingHostObserver::~ResizingHostObserver() {
-  if (!original_resolution_.IsEmpty())
+  if (restore_ && !original_resolution_.IsEmpty())
     desktop_resizer_->RestoreResolution(original_resolution_);
 }
 

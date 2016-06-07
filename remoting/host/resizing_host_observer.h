@@ -27,11 +27,12 @@ class DesktopResizer;
 
 // Uses the specified DesktopResizer to match host desktop size to the client
 // view size as closely as is possible. When the connection closes, restores
-// the original desktop size.
+// the original desktop size if restore is true.
 class ResizingHostObserver : public ScreenControls {
  public:
   explicit ResizingHostObserver(
-      std::unique_ptr<DesktopResizer> desktop_resizer);
+      std::unique_ptr<DesktopResizer> desktop_resizer,
+      bool restore);
   ~ResizingHostObserver() override;
 
   // ScreenControls interface.
@@ -46,6 +47,7 @@ class ResizingHostObserver : public ScreenControls {
  private:
   std::unique_ptr<DesktopResizer> desktop_resizer_;
   ScreenResolution original_resolution_;
+  bool restore_;
 
   // State to manage rate-limiting of desktop resizes.
   base::OneShotTimer deferred_resize_timer_;

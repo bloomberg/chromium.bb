@@ -39,7 +39,13 @@ std::unique_ptr<ScreenControls>
 Me2MeDesktopEnvironment::CreateScreenControls() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return base::WrapUnique(new ResizingHostObserver(DesktopResizer::Create()));
+  // We only want to restore the host resolution on disconnect if we are not
+  // curtained so we don't mess up the user's window layout unnecessarily if
+  // they disconnect and reconnect. Both OS X and Windows will restore the
+  // resolution automatically when the user logs back in on the console, and on
+  // Linux the curtain-mode uses a separate session.
+  return base::WrapUnique(new ResizingHostObserver(DesktopResizer::Create(),
+                                                   curtain_ == nullptr));
 }
 
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
@@ -80,10 +86,12 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
     curtain_ = CurtainMode::Create(caller_task_runner(),
                                    ui_task_runner(),
                                    client_session_control);
-    bool active = curtain_->Activate();
-    if (!active)
+    if (!curtain_->Activate()) {
       LOG(ERROR) << "Failed to activate the curtain mode.";
-    return active;
+      curtain_ = nullptr;
+      return false;
+    }
+    return true;
   }
 
   // Otherwise, if the session is shared with the local user start monitoring
