@@ -64,7 +64,7 @@ SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url,
 
     MessageChannel* channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
-    OwnPtr<WebMessagePortChannel> remotePort = channel->port2()->disentangle();
+    WebMessagePortChannelUniquePtr remotePort = channel->port2()->disentangle();
     DCHECK(remotePort);
 
     worker->suspendIfNeeded();

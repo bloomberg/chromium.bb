@@ -56,7 +56,7 @@ namespace blink {
 // Callback class that keeps the SharedWorker and WebSharedWorker objects alive while connecting.
 class SharedWorkerConnector : private WebSharedWorkerConnector::ConnectListener {
 public:
-    SharedWorkerConnector(SharedWorker* worker, const KURL& url, const String& name, PassOwnPtr<WebMessagePortChannel> channel, PassOwnPtr<WebSharedWorkerConnector> webWorkerConnector)
+    SharedWorkerConnector(SharedWorker* worker, const KURL& url, const String& name, WebMessagePortChannelUniquePtr channel, PassOwnPtr<WebSharedWorkerConnector> webWorkerConnector)
         : m_worker(worker)
         , m_url(url)
         , m_name(name)
@@ -75,7 +75,7 @@ private:
     KURL m_url;
     String m_name;
     OwnPtr<WebSharedWorkerConnector> m_webWorkerConnector;
-    OwnPtr<WebMessagePortChannel> m_channel;
+    WebMessagePortChannelUniquePtr m_channel;
 };
 
 SharedWorkerConnector::~SharedWorkerConnector()
@@ -86,7 +86,7 @@ SharedWorkerConnector::~SharedWorkerConnector()
 void SharedWorkerConnector::connect()
 {
     m_worker->setIsBeingConnected(true);
-    m_webWorkerConnector->connect(m_channel.leakPtr(), this);
+    m_webWorkerConnector->connect(m_channel.release(), this);
 }
 
 void SharedWorkerConnector::connected()
@@ -108,7 +108,7 @@ static WebSharedWorkerRepositoryClient::DocumentID getId(void* document)
     return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(document);
 }
 
-void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<WebMessagePortChannel> port, const KURL& url, const String& name, ExceptionState& exceptionState)
+void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, WebMessagePortChannelUniquePtr port, const KURL& url, const String& name, ExceptionState& exceptionState)
 {
     DCHECK(m_client);
 

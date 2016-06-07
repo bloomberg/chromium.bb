@@ -51,7 +51,7 @@ public:
 
     ~SharedWorkerRepositoryClientImpl() override { }
 
-    void connect(SharedWorker*, PassOwnPtr<WebMessagePortChannel>, const KURL&, const String& name, ExceptionState&) override;
+    void connect(SharedWorker*, WebMessagePortChannelUniquePtr, const KURL&, const String& name, ExceptionState&) override;
     void documentDetached(Document*) override;
 
 private:

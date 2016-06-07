@@ -78,7 +78,7 @@ WebMessagePortChannelArray WebDOMMessageEvent::releaseChannels()
     WebMessagePortChannelArray webChannels(channels ? channels->size() : 0);
     if (channels) {
         for (size_t i = 0; i < channels->size(); ++i)
-            webChannels[i] = (*channels)[i].leakPtr();
+            webChannels[i] = (*channels)[i].release();
     }
     return webChannels;
 }

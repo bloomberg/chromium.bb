@@ -98,7 +98,7 @@ PassOwnPtr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray
     if (channels && channels->size()) {
         webChannels = adoptPtr(new WebMessagePortChannelArray(channels->size()));
         for (size_t i = 0; i < channels->size(); ++i)
-            (*webChannels)[i] = (*channels)[i].leakPtr();
+            (*webChannels)[i] = (*channels)[i].release();
     }
     return webChannels;
 }
@@ -108,11 +108,11 @@ MessagePortArray* MessagePort::toMessagePortArray(ExecutionContext* context, con
 {
     OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
     for (size_t i = 0; i < webChannels.size(); ++i)
-        (*channels)[i] = adoptPtr(webChannels[i]);
+        (*channels)[i] = WebMessagePortChannelUniquePtr(webChannels[i]);
     return MessagePort::entanglePorts(*context, std::move(channels));
 }
 
-PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
+WebMessagePortChannelUniquePtr MessagePort::disentangle()
 {
     DCHECK(m_entangledChannel);
     m_entangledChannel->setClient(0);
@@ -148,7 +148,7 @@ void MessagePort::close()
     m_closed = true;
 }
 
-void MessagePort::entangle(PassOwnPtr<WebMessagePortChannel> remote)
+void MessagePort::entangle(WebMessagePortChannelUniquePtr remote)
 {
     // Only invoked to set our initial entanglement.
     DCHECK(!m_entangledChannel);
@@ -173,7 +173,7 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
     if (webChannels.size()) {
         channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
         for (size_t i = 0; i < webChannels.size(); ++i)
-            (*channels)[i] = adoptPtr(webChannels[i]);
+            (*channels)[i] = WebMessagePortChannelUniquePtr(webChannels[i]);
     }
     message = SerializedScriptValue::create(messageString);
     return true;

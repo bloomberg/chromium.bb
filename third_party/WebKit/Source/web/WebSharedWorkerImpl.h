@@ -122,7 +122,7 @@ private:
     void didReceiveScriptLoaderResponse();
     void onScriptLoaderFinished();
 
-    static void connectTask(PassOwnPtr<WebMessagePortChannel>, ExecutionContext*);
+    static void connectTask(WebMessagePortChannelUniquePtr, ExecutionContext*);
     // Tasks that are run on the main thread.
     void workerGlobalScopeClosedOnMainThread();
     void workerThreadTerminatedOnMainThread();

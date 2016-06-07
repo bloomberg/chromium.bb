@@ -40,6 +40,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
 
@@ -49,8 +50,8 @@ class MessagePort;
 class ScriptState;
 class SerializedScriptValue;
 
-// Not to be confused with WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
-typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
+// Not to be confused with WebMessagePortChannelArray; this one uses Vector and std::unique_ptr instead of WebVector and raw pointers.
+typedef Vector<WebMessagePortChannelUniquePtr, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort
     : public EventTargetWithInlineData
@@ -68,8 +69,8 @@ public:
     void start();
     void close();
 
-    void entangle(PassOwnPtr<WebMessagePortChannel>);
-    PassOwnPtr<WebMessagePortChannel> disentangle();
+    void entangle(WebMessagePortChannelUniquePtr);
+    WebMessagePortChannelUniquePtr disentangle();
 
     // Returns nullptr if the passed-in array is nullptr/empty.
     static PassOwnPtr<WebMessagePortChannelArray> toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray>);
@@ -119,7 +120,7 @@ private:
     void messageAvailable() override;
     void dispatchMessages();
 
-    OwnPtr<WebMessagePortChannel> m_entangledChannel;
+    WebMessagePortChannelUniquePtr m_entangledChannel;
 
     bool m_started;
     bool m_closed;

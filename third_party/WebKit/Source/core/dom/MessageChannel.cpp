@@ -41,8 +41,8 @@ static void createChannel(MessagePort* port1, MessagePort* port2)
     DCHECK(channel2);
 
     // Now entangle the proxies with the appropriate local ports.
-    port1->entangle(adoptPtr(channel2));
-    port2->entangle(adoptPtr(channel1));
+    port1->entangle(WebMessagePortChannelUniquePtr(channel2));
+    port2->entangle(WebMessagePortChannelUniquePtr(channel1));
 }
 
 MessageChannel::MessageChannel(ExecutionContext* context)

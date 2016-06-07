@@ -276,10 +276,10 @@ bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionC
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 {
     workerThread()->postTask(
-        BLINK_FROM_HERE, createCrossThreadTask(&connectTask, passed(adoptPtr(webChannel))));
+        BLINK_FROM_HERE, createCrossThreadTask(&connectTask, passed(WebMessagePortChannelUniquePtr(webChannel))));
 }
 
-void WebSharedWorkerImpl::connectTask(PassOwnPtr<WebMessagePortChannel> channel, ExecutionContext* context)
+void WebSharedWorkerImpl::connectTask(WebMessagePortChannelUniquePtr channel, ExecutionContext* context)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     MessagePort* port = MessagePort::create(*context);

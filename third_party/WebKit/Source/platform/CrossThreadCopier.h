@@ -144,11 +144,11 @@ struct CrossThreadCopier<PassOwnPtr<T>> {
     }
 };
 
-template <typename T>
-struct CrossThreadCopier<std::unique_ptr<T>> {
+template <typename T, typename Deleter>
+struct CrossThreadCopier<std::unique_ptr<T, Deleter>> {
     STATIC_ONLY(CrossThreadCopier);
-    using Type = std::unique_ptr<T>;
-    static std::unique_ptr<T> copy(std::unique_ptr<T> pointer)
+    using Type = std::unique_ptr<T, Deleter>;
+    static std::unique_ptr<T, Deleter> copy(std::unique_ptr<T, Deleter> pointer)
     {
         return pointer; // This is in fact a move.
     }
