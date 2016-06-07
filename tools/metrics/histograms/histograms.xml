@@ -46002,6 +46002,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4UpdateHttpResponseOrErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Response or error codes when fetching updates from the SafeBrowsing PVer4
+    service.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4UpdateResult"
     enum="SafeBrowsingV4OperationResult">
   <owner>vakh@chromium.org</owner>
