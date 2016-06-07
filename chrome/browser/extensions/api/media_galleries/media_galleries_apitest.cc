@@ -448,7 +448,10 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, ToURL) {
   ASSERT_TRUE(RunMediaGalleriesTestWithArg("tourl", custom_args)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, GetMetadata) {
+// The test failed continuosly on linux_ChromeOS. Disable it until the root
+// cause if fixed. crbug.com/618121.
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
+                       DISABLED_GetMetadata) {
   RemoveAllGalleries();
   MakeSingleFakeGallery(NULL);
 
