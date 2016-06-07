@@ -4,6 +4,7 @@
 
 #include "core/css/cssom/InlineStylePropertyMap.h"
 
+#include "bindings/core/v8/Iterable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -115,6 +116,24 @@ void InlineStylePropertyMap::append(CSSPropertyID propertyID, StyleValueOrStyleV
 void InlineStylePropertyMap::remove(CSSPropertyID propertyID, ExceptionState& exceptionState)
 {
     m_ownerElement->removeInlineStyleProperty(propertyID);
+}
+
+HeapVector<StylePropertyMap::StylePropertyMapEntry> InlineStylePropertyMap::getIterationEntries()
+{
+    HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
+    StylePropertySet& inlineStyleSet = m_ownerElement->ensureMutableInlineStyle();
+    for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
+        StylePropertySet::PropertyReference propertyReference = inlineStyleSet.propertyAt(i);
+        CSSPropertyID propertyID = propertyReference.id();
+        StyleValueVector styleValueVector = cssValueToStyleValueVector(propertyID, *propertyReference.value());
+        StyleValueOrStyleValueSequence value;
+        if (styleValueVector.size() == 1)
+            value.setStyleValue(styleValueVector[0]);
+        else
+            value.setStyleValueSequence(styleValueVector);
+        result.append(std::make_pair(getPropertyNameString(propertyID), value));
+    }
+    return result;
 }
 
 } // namespace blink

@@ -22,6 +22,7 @@ class CORE_EXPORT StylePropertyMap : public GarbageCollectedFinalized<StylePrope
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef HeapVector<Member<StyleValue>> StyleValueVector;
+    typedef std::pair<String, StyleValueOrStyleValueSequence> StylePropertyMapEntry;
 
     virtual ~StylePropertyMap() { }
 
@@ -47,7 +48,8 @@ public:
 protected:
     StylePropertyMap() { }
 
-    IterationSource* startIteration(ScriptState*, ExceptionState&) override { return nullptr; }
+    virtual HeapVector<StylePropertyMapEntry> getIterationEntries() = 0;
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
     StyleValueVector cssValueToStyleValueVector(CSSPropertyID, const CSSValue&);
 };
 

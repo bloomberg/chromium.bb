@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+
+<script>
+
+test(function() {
+  testElement.style = "";
+
+  var entryIterator = testElement.styleMap.entries();
+  var keyIterator = testElement.styleMap.keys();
+  var valueIterator = testElement.styleMap.values();
+
+  assert_true(entryIterator.next().done);
+  assert_true(keyIterator.next().done);
+  assert_true(valueIterator.next().done);
+}, "Iteration over empty StyleMap returns empty iterator");
+
+test(function() {
+  testElement.style = "width: 50px";
+
+  var iterator = testElement.styleMap.entries();
+  var entry = iterator.next();
+  assert_false(entry.done);
+  // Should only be one entry.
+  assert_true(iterator.next().done);
+
+  assert_equals(entry.value[0], 'width');
+  assert_true(entry.value[1] instanceof CSSSimpleLength);
+  assert_equals(entry.value[1].cssString, '50px');
+}, "Iterator for single entry returns iterator with a single value");
+
+test(function() {
+  testElement.style = "width: 60px";
+
+  var iterator = testElement.styleMap.keys();
+  var entry = iterator.next();
+  assert_false(entry.done);
+  // Should only be one entry.
+  assert_true(iterator.next().done);
+
+  assert_equals(entry.value, 'width');
+}, "Iterator for single key returns iterator with a single value");
+
+test(function() {
+  testElement.style = "width: 70px";
+
+  var iterator = testElement.styleMap.values();
+  var entry = iterator.next();
+  assert_false(entry.done);
+  // Should only be one entry.
+  assert_true(iterator.next().done);
+
+  assert_true(entry.value instanceof CSSSimpleLength);
+  assert_equals(entry.value.cssString, '70px');
+}, "Iterator for single value returns iterator with a single value");
+
+test(function() {
+  testElement.style = "border: 5px solid lightcoral";
+
+  var entries = {};
+  var numEntries = 0;
+  for (let value of testElement.styleMap.entries()) {
+    numEntries++;
+    entries[value[0]] = value[1];
+  }
+  assert_equals(numEntries, 17);
+
+  assert_equals(entries['border-top-width'].cssString, '5px');
+  assert_equals(entries['border-right-width'].cssString, '5px');
+  assert_equals(entries['border-bottom-width'].cssString, '5px');
+  assert_equals(entries['border-left-width'].cssString, '5px');
+
+  assert_equals(entries['border-top-style'].cssString, 'solid');
+  assert_equals(entries['border-right-style'].cssString, 'solid');
+  assert_equals(entries['border-bottom-style'].cssString, 'solid');
+  assert_equals(entries['border-left-style'].cssString, 'solid');
+
+  assert_equals(entries['border-top-color'].cssString, 'lightcoral');
+  assert_equals(entries['border-right-color'].cssString, 'lightcoral');
+  assert_equals(entries['border-bottom-color'].cssString, 'lightcoral');
+  assert_equals(entries['border-left-color'].cssString, 'lightcoral');
+
+  assert_equals(entries['border-image-source'].cssString, 'initial');
+  assert_equals(entries['border-image-slice'].cssString, 'initial'); 
+  assert_equals(entries['border-image-width'].cssString, 'initial');
+  assert_equals(entries['border-image-outset'].cssString, 'initial');
+  assert_equals(entries['border-image-repeat'].cssString, 'initial');
+}, "Iterating entries over border element expansion");
+
+</script>

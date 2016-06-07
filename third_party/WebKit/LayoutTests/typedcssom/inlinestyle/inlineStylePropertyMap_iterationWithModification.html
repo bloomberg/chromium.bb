@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+
+<script>
+
+test(function() {
+  testElement.style = "width: 60px; border-left-width: 30px;";
+
+  var iterator = testElement.styleMap.entries();
+  var entry = iterator.next();
+  assert_equals(entry.value[0], 'width');
+  assert_true(entry.value[1] instanceof CSSSimpleLength);
+  assert_equals(entry.value[1].cssString, '60px');
+
+  // This shouldn't appear in the iterator.
+  testElement.style.borderTopWidth = '10px';
+
+  entry = iterator.next();
+  assert_equals(entry.value[0], 'border-left-width');
+  assert_true(entry.value[1] instanceof CSSSimpleLength);
+  assert_equals(entry.value[1].cssString, '30px');
+
+  assert_true(iterator.next().done);
+}, "Adding a property while iterating over entries() doesn't affect iterator");
+
+test(function() {
+  testElement.style = "width: 60px; border-left-width: 30px;";
+
+  var iterator = testElement.styleMap.values();
+  var entry = iterator.next();
+  assert_true(entry.value instanceof CSSSimpleLength);
+  assert_equals(entry.value.cssString, '60px');
+
+  // This shouldn't appear in the iterator.
+  testElement.style.borderTopWidth = '10px';
+
+  entry = iterator.next();
+  assert_true(entry.value instanceof CSSSimpleLength);
+  assert_equals(entry.value.cssString, '30px');
+
+  assert_true(iterator.next().done);
+}, "Adding a property while iterating over values() doesn't affect current iterator");
+
+test(function() {
+  testElement.style = "width: 60px; border-left-width: 30px;";
+
+  var iterator = testElement.styleMap.keys();
+  var entry = iterator.next();
+  assert_equals(entry.value, 'width');
+
+  // This shouldn't appear in the iterator.
+  testElement.style.borderTopWidth = '10px';
+
+  entry = iterator.next();
+  assert_equals(entry.value, 'border-left-width');
+
+  assert_true(iterator.next().done);
+}, "Adding a property while iterating over keys() doesn't affect iterator");
+
+</script>

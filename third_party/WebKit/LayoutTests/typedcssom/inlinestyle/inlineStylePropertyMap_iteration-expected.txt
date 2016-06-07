@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Iteration over empty StyleMap returns empty iterator 
+PASS Iterator for single entry returns iterator with a single value 
+PASS Iterator for single key returns iterator with a single value 
+PASS Iterator for single value returns iterator with a single value 
+FAIL Iterating entries over border element expansion assert_equals: expected (string) "solid" but got (undefined) undefined
+Harness: the test ran to completion.
+

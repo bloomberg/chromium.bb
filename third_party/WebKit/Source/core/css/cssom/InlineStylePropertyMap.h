@@ -29,6 +29,9 @@ public:
         MutableStylePropertyMap::trace(visitor);
     }
 
+protected:
+    HeapVector<StylePropertyMapEntry> getIterationEntries() override;
+
 private:
     Member<Element> m_ownerElement;
 };

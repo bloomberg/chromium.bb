@@ -12,6 +12,40 @@
 
 namespace blink {
 
+namespace {
+
+class StylePropertyMapIterationSource final : public PairIterable<String, StyleValueOrStyleValueSequence>::IterationSource {
+public:
+    explicit StylePropertyMapIterationSource(HeapVector<StylePropertyMap::StylePropertyMapEntry> values)
+        : m_index(0)
+        , m_values(values)
+    {
+    }
+
+    bool next(ScriptState*, String& key, StyleValueOrStyleValueSequence& value, ExceptionState&) override
+    {
+        if (m_index >= m_values.size())
+            return false;
+
+        const StylePropertyMap::StylePropertyMapEntry& pair = m_values.at(m_index++);
+        key = pair.first;
+        value = pair.second;
+        return true;
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_values);
+        PairIterable<String, StyleValueOrStyleValueSequence>::IterationSource::trace(visitor);
+    }
+
+private:
+    size_t m_index;
+    const HeapVector<StylePropertyMap::StylePropertyMapEntry> m_values;
+};
+
+} // namespace
+
 StyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
@@ -101,6 +135,11 @@ StylePropertyMap::StyleValueVector StylePropertyMap::cssValueToStyleValueVector(
         styleValueVector.append(styleValue);
     }
     return styleValueVector;
+}
+
+StylePropertyMap::IterationSource* StylePropertyMap::startIteration(ScriptState*, ExceptionState&)
+{
+    return new StylePropertyMapIterationSource(getIterationEntries());
 }
 
 } // namespace blink

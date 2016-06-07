@@ -33,7 +33,7 @@ protected:
         : ImmutableStylePropertyMap()
         , m_computedStyleDeclaration(computedStyleDeclaration) { }
 
-    IterationSource* startIteration(ScriptState*, ExceptionState&) override { return nullptr; }
+    HeapVector<StylePropertyMapEntry> getIterationEntries() override { return HeapVector<StylePropertyMapEntry>(); }
 
     Member<CSSStyleDeclaration> m_computedStyleDeclaration;
 };
