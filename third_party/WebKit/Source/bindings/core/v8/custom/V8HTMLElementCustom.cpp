@@ -82,7 +82,7 @@ void V8HTMLElement::constructorCustom(
         isolate,
         element,
         wrapperType,
-        info.This());
+        info.Holder());
     // If the element had a wrapper, we now update and return that
     // instead.
     v8SetReturnValue(info, wrapper);

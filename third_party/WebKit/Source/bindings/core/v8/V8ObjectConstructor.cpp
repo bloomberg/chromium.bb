@@ -58,7 +58,7 @@ void V8ObjectConstructor::isValidConstructorMode(const v8::FunctionCallbackInfo<
         V8ThrowException::throwTypeError(info.GetIsolate(), "Illegal constructor");
         return;
     }
-    v8SetReturnValue(info, info.This());
+    v8SetReturnValue(info, info.Holder());
 }
 
 } // namespace blink

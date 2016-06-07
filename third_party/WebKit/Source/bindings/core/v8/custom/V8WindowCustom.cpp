@@ -146,12 +146,12 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
         toLocalFrame(impl->frame())->loader().setOpener(0);
     }
 
-    // Delete the accessor from this object.
+    // Delete the accessor from the inner object.
     info.Holder()->Delete(isolate->GetCurrentContext(), v8AtomicString(isolate, "opener"));
 
-    // Put property on the front (this) object.
-    if (info.This()->IsObject()) {
-        v8::Maybe<bool> unused = v8::Local<v8::Object>::Cast(info.This())->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "opener"), value);
+    // Put property on the inner object.
+    if (info.Holder()->IsObject()) {
+        v8::Maybe<bool> unused = v8::Local<v8::Object>::Cast(info.Holder())->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "opener"), value);
         ALLOW_UNUSED_LOCAL(unused);
     }
 }

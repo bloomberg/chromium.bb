@@ -151,7 +151,7 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
         arguments[i] = info[i];
 
     v8::Local<v8::Value> retVal;
-    if (!instance->CallAsFunction(info.GetIsolate()->GetCurrentContext(), info.This(), info.Length(), arguments.get()).ToLocal(&retVal))
+    if (!instance->CallAsFunction(info.GetIsolate()->GetCurrentContext(), info.Holder(), info.Length(), arguments.get()).ToLocal(&retVal))
         return;
     v8SetReturnValue(info, retVal);
 }
