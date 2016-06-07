@@ -895,7 +895,8 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
     EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
 }
 
-TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationConcaveClipPath)
+// Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).
+TEST_F(PaintControllerTest, DISABLED_IsNotSuitableForGpuRasterizationConcaveClipPath)
 {
     Path path;
     path.addLineTo(FloatPoint(50, 50));
