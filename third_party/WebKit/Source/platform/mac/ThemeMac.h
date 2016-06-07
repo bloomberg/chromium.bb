@@ -62,12 +62,10 @@ public:
     // Inflate an IntRect to account for any bleeding that would happen due to anti-aliasing.
     static PLATFORM_EXPORT IntRect inflateRectForAA(const IntRect&);
 
-    // Inflate an IntRect to account for its focus ring. This is only used when
-    // drawWithFrameDrawsFocusRing() returns true (otherwise, the focus ring's
-    // bounds could be accurately computed with -[NSCell focusRingMaskBoundsForFrame:inView:]).
+    // Inflate an IntRect to account for its focus ring.
+    // TODO: Consider using computing the focus ring's bounds with
+    // -[NSCell focusRingMaskBoundsForFrame:inView:]).
     static PLATFORM_EXPORT IntRect inflateRectForFocusRing(const IntRect&);
-
-    static PLATFORM_EXPORT bool drawWithFrameDrawsFocusRing();
 };
 
 } // namespace blink

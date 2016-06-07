@@ -183,7 +183,7 @@ bool ThemePainterMac::paintMenuList(const LayoutObject& o, const PaintInfo& pain
 
     NSView *view = m_layoutTheme.documentViewFor(o);
     [popupButton drawWithFrame:inflatedRect inView:view];
-    if (!ThemeMac::drawWithFrameDrawsFocusRing() && LayoutTheme::isFocused(o) && o.styleRef().outlineStyleIsAuto())
+    if (LayoutTheme::isFocused(o) && o.styleRef().outlineStyleIsAuto())
         [popupButton cr_drawFocusRingWithFrame:inflatedRect inView:view];
     [popupButton setControlView:nil];
 

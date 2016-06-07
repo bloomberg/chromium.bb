@@ -238,9 +238,9 @@ void LayoutThemeMac::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, F
 
 bool LayoutThemeMac::needsHackForTextControlWithFontFamily(const AtomicString& family) const
 {
-    // This hack is only applied on OSX 10.9 and earlier.
+    // This hack is only applied on OSX 10.9.
     // https://code.google.com/p/chromium/issues/detail?id=515989#c8
-    return IsOSMavericksOrEarlier() && family == "BlinkMacSystemFont";
+    return IsOSMavericks() && family == "BlinkMacSystemFont";
 }
 
 static RGBA32 convertNSColorToColor(NSColor *color)
@@ -793,8 +793,6 @@ void LayoutThemeMac::setPopupButtonCellState(const LayoutObject& object, const I
     updateCheckedState(popupButton, object);
     updateEnabledState(popupButton, object);
     updatePressedState(popupButton, object);
-    if (ThemeMac::drawWithFrameDrawsFocusRing())
-        updateFocusedState(popupButton, object);
 }
 
 const IntSize* LayoutThemeMac::menuListSizes() const

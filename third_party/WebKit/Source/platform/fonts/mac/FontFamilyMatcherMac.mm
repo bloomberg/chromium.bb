@@ -146,7 +146,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits
         }
 
         NSFont* font = nil;
-        if (IsOSMavericksOrEarlier()) {
+        if (IsOSMavericks()) {
             // On older OSX versions, only bold and regular are available.
             if (desiredWeight >= blink::FontWeightBold)
                 font = [NSFont boldSystemFontOfSize:size];

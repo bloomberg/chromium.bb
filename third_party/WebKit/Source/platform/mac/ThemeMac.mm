@@ -129,14 +129,6 @@ static void updateStates(NSCell* cell, ControlStates states)
     if (enabled != oldEnabled)
         [cell setEnabled:enabled];
 
-    if (ThemeMac::drawWithFrameDrawsFocusRing()) {
-        // Focused state
-        bool oldFocused = [cell showsFirstResponder];
-        bool focused = states & FocusControlState;
-        if (focused != oldFocused)
-            [cell setShowsFirstResponder:focused];
-    }
-
     // Checked and Indeterminate
     bool oldIndeterminate = [cell state] == NSMixedState;
     bool indeterminate = (states & IndeterminateControlState);
@@ -289,7 +281,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext& context, const 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     NSView* view = ensuredView(scrollableArea);
     [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
-    if (!ThemeMac::drawWithFrameDrawsFocusRing() && states & FocusControlState)
+    if (states & FocusControlState)
         [checkboxCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
     [checkboxCell setControlView:nil];
 
@@ -370,7 +362,7 @@ static void paintRadio(ControlStates states, GraphicsContext& context, const Int
     BEGIN_BLOCK_OBJC_EXCEPTIONS
     NSView* view = ensuredView(scrollableArea);
     [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
-    if (!ThemeMac::drawWithFrameDrawsFocusRing() && states & FocusControlState)
+    if (states & FocusControlState)
         [radioCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
     [radioCell setControlView:nil];
     END_BLOCK_OBJC_EXCEPTIONS
@@ -461,7 +453,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext&
     NSView* view = ensuredView(scrollableArea);
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
-    if (!ThemeMac::drawWithFrameDrawsFocusRing() && states & FocusControlState)
+    if (states & FocusControlState)
         [buttonCell cr_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
     [buttonCell setControlView:nil];
 
@@ -694,19 +686,6 @@ void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext& co
         default:
             break;
     }
-}
-
-bool ThemeMac::drawWithFrameDrawsFocusRing()
-{
-#if defined(MAC_OS_X_VERSION_10_8) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
-// If compiling against an OSX 10.8+ SDK, only 10.7 and older OSes will draw a
-// focus ring with the frame.
-    return IsOSLionOrEarlier();
-#else
-// If compiling an OSX 10.7 or older SDK, OSes up through 10.9 will draw a focus
-// ring with the frame.
-    return IsOSMavericksOrEarlier();
-#endif
 }
 
 }

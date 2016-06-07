@@ -7,10 +7,6 @@
 #include <AppKit/AppKit.h>
 #include <gtest/gtest.h>
 
-#ifndef NSAppKitVersionNumber10_7
-#define NSAppKitVersionNumber10_7 1138
-#endif
-
 #ifndef NSAppKitVersionNumber10_9
 #define NSAppKitVersionNumber10_9 1265
 #endif
@@ -32,27 +28,7 @@
 // code.
 TEST(VersionUtilMac, AppKitVersions)
 {
-    if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_7) {
-        EXPECT_TRUE(blink::IsOSLionOrEarlier());
-        EXPECT_TRUE(blink::IsOSMavericksOrEarlier());
-        EXPECT_FALSE(blink::IsOSMavericks());
-        EXPECT_FALSE(blink::IsOSYosemite());
-        EXPECT_FALSE(blink::IsOSElCapitan());
-        return;
-    }
-
-    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_9) {
-        EXPECT_FALSE(blink::IsOSLionOrEarlier());
-        EXPECT_TRUE(blink::IsOSMavericksOrEarlier());
-        EXPECT_FALSE(blink::IsOSMavericks());
-        EXPECT_FALSE(blink::IsOSYosemite());
-        EXPECT_FALSE(blink::IsOSElCapitan());
-        return;
-    }
-
     if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9) {
-        EXPECT_FALSE(blink::IsOSLionOrEarlier());
-        EXPECT_TRUE(blink::IsOSMavericksOrEarlier());
         EXPECT_TRUE(blink::IsOSMavericks());
         EXPECT_FALSE(blink::IsOSYosemite());
         EXPECT_FALSE(blink::IsOSElCapitan());
@@ -61,8 +37,6 @@ TEST(VersionUtilMac, AppKitVersions)
 
     if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_10Max &&
         floor(NSAppKitVersionNumber) >=  NSAppKitVersionNumber10_10) {
-        EXPECT_FALSE(blink::IsOSLionOrEarlier());
-        EXPECT_FALSE(blink::IsOSMavericksOrEarlier());
         EXPECT_FALSE(blink::IsOSMavericks());
         EXPECT_TRUE(blink::IsOSYosemite());
         EXPECT_FALSE(blink::IsOSElCapitan());
@@ -70,8 +44,6 @@ TEST(VersionUtilMac, AppKitVersions)
     }
 
     if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_11Max) {
-        EXPECT_FALSE(blink::IsOSLionOrEarlier());
-        EXPECT_FALSE(blink::IsOSMavericksOrEarlier());
         EXPECT_FALSE(blink::IsOSMavericks());
         EXPECT_FALSE(blink::IsOSYosemite());
         EXPECT_TRUE(blink::IsOSElCapitan());
