@@ -33,7 +33,7 @@ public:
 
     CSSValue* toCSSValue() const override;
 
-    StyleValueType type() const override { return TransformValueType; }
+    StyleValueType type() const override { return TransformType; }
 
     TransformComponent* componentAtIndex(int index) { return m_transformComponents.at(index); }
 

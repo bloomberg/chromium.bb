@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+
+<script>
+
+test(function() {
+  var transform = new TransformValue([new CSSRotation(20)]);
+
+  assert_equals(testElement.styleMap.get('transform'), null);
+
+  testElement.styleMap.set('transform', transform);
+  assert_equals(testElement.style.transform, 'rotate(20deg)');
+}, "Setting transform works on a regular element.");
+
+
+</script>

@@ -26,7 +26,7 @@ public:
         NumberType,
         PositionType,
         SimpleLengthType,
-        TransformValueType,
+        TransformType,
     };
 
     virtual ~CSSStyleValue() { }

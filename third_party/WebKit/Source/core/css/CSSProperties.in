@@ -321,7 +321,7 @@ text-transform inherited
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top interpolable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>, type_name=TouchAction
-transform interpolable, custom_value
+transform typedom_types=[Transform], keywords=[none], interpolable, custom_value
 transform-origin interpolable, converter=convertTransformOrigin
 transform-style name_for_methods=TransformStyle3D
 translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate, interpolable
