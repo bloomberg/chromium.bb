@@ -15,3 +15,7 @@ class GpuRasterizationExpectations(GpuTestExpectations):
     # Failing on Nexus 5 and 6
     self.Fail('GpuRasterization.ConcavePaths',
               ['android', 'qualcomm'], bug=499555)
+
+    # Failing on Nexus 9
+    self.Fail('GpuRasterization.ConcavePaths',
+              ['android', 'nvidia'], bug=617805)
