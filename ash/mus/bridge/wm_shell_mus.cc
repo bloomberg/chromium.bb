@@ -119,6 +119,11 @@ bool WmShellMus::IsScreenLocked() {
   return false;
 }
 
+bool WmShellMus::CanShowWindowForUser(WmWindow* window) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 void WmShellMus::LockCursor() {
   NOTIMPLEMENTED();
 }
@@ -181,15 +186,8 @@ void WmShellMus::RemoveOverviewModeObserver(WmOverviewModeObserver* observer) {
 
 // static
 bool WmShellMus::IsActivationParent(::mus::Window* window) {
-  if (!window)
-    return false;
-
-  const int shell_window_id = WmWindowMus::Get(window)->GetShellWindowId();
-  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
-    if (shell_window_id == kActivatableShellWindowIds[i])
-      return true;
-  }
-  return false;
+  return window && IsActivatableShellWindowId(
+                       WmWindowMus::Get(window)->GetShellWindowId());
 }
 
 void WmShellMus::RemoveClientObserver() {

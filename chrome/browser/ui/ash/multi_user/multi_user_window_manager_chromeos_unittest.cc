@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -1495,8 +1496,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   activation_client->ActivateWindow(window(0));
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
-  ash::MruWindowTracker::WindowList mru_list =
-      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+  aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
+      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));
@@ -1511,8 +1512,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowsOrderPreservedTests) {
   EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
   EXPECT_EQ(wm::GetActiveWindow(), window(0));
 
-  mru_list =
-      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+  mru_list = ash::WmWindowAura::ToAuraWindows(
+      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));

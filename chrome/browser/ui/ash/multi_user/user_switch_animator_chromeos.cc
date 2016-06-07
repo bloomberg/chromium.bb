@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -362,8 +363,10 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
     }
     case ANIMATION_STEP_FINALIZE: {
       // Reactivate the MRU window of the new user.
-      ash::MruWindowTracker::WindowList mru_list =
-          ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+      aura::Window::Windows mru_list =
+          ash::WmWindowAura::ToAuraWindows(ash::Shell::GetInstance()
+                                               ->mru_window_tracker()
+                                               ->BuildMruWindowList());
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);

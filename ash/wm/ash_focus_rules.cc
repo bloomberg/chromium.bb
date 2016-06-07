@@ -4,7 +4,9 @@
 
 #include "ash/wm/ash_focus_rules.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/focus_rules.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -37,49 +39,23 @@ AshFocusRules::~AshFocusRules() {
 }
 
 bool AshFocusRules::IsWindowConsideredActivatable(aura::Window* window) const {
-  // Only toplevel windows can be activated.
-  if (!IsToplevelWindow(window))
-    return false;
-
-  // The window must be visible.
-  if (!IsWindowConsideredVisibleForActivation(window))
-    return false;
-
-  return true;
+  return ash::IsWindowConsideredActivatable(WmWindowAura::Get(window));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, ::wm::FocusRules:
 
-bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
-  if (window->id() == kShellWindowId_DefaultContainer)
-    return true;
+bool AshFocusRules::IsToplevelWindow(aura::Window* window) const {
+  return ash::IsToplevelWindow(WmWindowAura::Get(window));
+}
 
-  for (size_t i = 0; i < kNumActivatableShellWindowIds; i++) {
-    if (window->id() == kActivatableShellWindowIds[i])
-      return true;
-  }
-  return false;
+bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
+  return ash::IsActivatableShellWindowId(window->id());
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
     aura::Window* window) const {
-  // If the |window| doesn't belong to the current active user and also doesn't
-  // show for the current active user, then it should not be activated.
-  if (!Shell::GetInstance()->delegate()->CanShowWindowForUser(window))
-    return false;
-
-  if (BaseFocusRules::IsWindowConsideredVisibleForActivation(window))
-    return true;
-
-  // Minimized windows are hidden in their minimized state, but they can always
-  // be activated.
-  if (wm::GetWindowState(window)->IsMinimized())
-    return true;
-
-  return window->TargetVisibility() &&
-         (window->parent()->id() == kShellWindowId_DefaultContainer ||
-          window->parent()->id() == kShellWindowId_LockScreenContainer);
+  return ash::IsWindowConsideredVisibleForActivation(WmWindowAura::Get(window));
 }
 
 bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
@@ -106,8 +82,9 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   // MRU windows is empty, then start from the container of the window that just
   // lost focus |ignore|.
   ash::MruWindowTracker* mru = ash::Shell::GetInstance()->mru_window_tracker();
-  std::vector<aura::Window*> windows = mru->BuildMruWindowList();
-  aura::Window* starting_window = windows.empty() ? ignore : windows[0];
+  std::vector<WmWindow*> windows = mru->BuildMruWindowList();
+  aura::Window* starting_window =
+      windows.empty() ? ignore : WmWindowAura::GetAuraWindow(windows[0]);
 
   // Look for windows to focus in |starting_window|'s container. If none are
   // found, we look in all the containers in front of |starting_window|'s

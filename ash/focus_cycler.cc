@@ -4,6 +4,7 @@
 
 #include "ash/focus_cycler.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -87,9 +88,10 @@ void FocusCycler::RotateFocus(Direction direction) {
           Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
       if (mru_windows.empty())
         break;
-      aura::Window* window = mru_windows.front();
-      wm::GetWindowState(window)->Activate();
-      views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+      WmWindow* window = mru_windows.front();
+      window->GetWindowState()->Activate();
+      views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+          WmWindowAura::GetAuraWindow(window));
       if (!widget)
         break;
       views::FocusManager* focus_manager = widget->GetFocusManager();

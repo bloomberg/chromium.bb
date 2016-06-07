@@ -30,6 +30,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
 
   static std::vector<WmWindow*> FromAuraWindows(
       const std::vector<aura::Window*>& aura_windows);
+  static std::vector<aura::Window*> ToAuraWindows(
+      const std::vector<WmWindow*>& windows);
 
   static aura::Window* GetAuraWindow(WmWindow* wm_window) {
     return const_cast<aura::Window*>(
@@ -149,6 +151,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
 
  private:
   // aura::WindowObserver:
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowPropertyChanged(aura::Window* window,
@@ -158,6 +161,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowTitleChanged(aura::Window* window) override;
 

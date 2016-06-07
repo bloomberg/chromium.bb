@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -770,8 +771,9 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
 
   // The windows should be in the reverse order of creation in the MRU list.
   {
-    MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
-        mru_window_tracker()->BuildMruWindowList();
+    aura::Window::Windows windows = WmWindowAura::ToAuraWindows(
+        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
     EXPECT_EQ(w3.get(), windows[2]);
@@ -784,8 +786,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   ASSERT_TRUE(manager);
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
-    MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
-        mru_window_tracker()->BuildMruWindowList();
+    aura::Window::Windows windows = WmWindowAura::ToAuraWindows(
+        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -797,8 +799,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // Destroying should still keep the order.
   DestroyMaximizeModeWindowManager();
   {
-    MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
-          mru_window_tracker()->BuildMruWindowList();
+    aura::Window::Windows windows = WmWindowAura::ToAuraWindows(
+        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);

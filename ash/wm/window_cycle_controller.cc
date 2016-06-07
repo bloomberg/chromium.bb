@@ -10,7 +10,6 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_list.h"
 #include "base/metrics/histogram.h"
-#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 
@@ -20,7 +19,7 @@ namespace {
 
 // Returns the most recently active window from the |window_list| or nullptr
 // if the list is empty.
-aura::Window* GetActiveWindow(const MruWindowTracker::WindowList& window_list) {
+WmWindow* GetActiveWindow(const MruWindowTracker::WindowList& window_list) {
   return window_list.empty() ? nullptr : window_list[0];
 }
 
@@ -110,7 +109,7 @@ void WindowCycleController::Step(Direction direction) {
 void WindowCycleController::StopCycling() {
   window_cycle_list_.reset();
 
-  aura::Window* active_window_after_window_cycle = GetActiveWindow(
+  WmWindow* active_window_after_window_cycle = GetActiveWindow(
       Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
 
   // Remove our key event filter.

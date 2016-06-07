@@ -54,6 +54,8 @@ class ASH_EXPORT WmWindow {
     USE_SCREEN_COORDINATES,
   };
 
+  using Windows = std::vector<WmWindow*>;
+
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetRootWindow());
@@ -132,7 +134,7 @@ class ASH_EXPORT WmWindow {
         const_cast<const WmWindow*>(this)->GetTransientParent());
   }
   virtual const WmWindow* GetTransientParent() const = 0;
-  virtual std::vector<WmWindow*> GetTransientChildren() = 0;
+  virtual Windows GetTransientChildren() = 0;
 
   virtual void SetLayoutManager(
       std::unique_ptr<WmLayoutManager> layout_manager) = 0;
@@ -227,7 +229,7 @@ class ASH_EXPORT WmWindow {
   virtual void StackChildAbove(WmWindow* child, WmWindow* target) = 0;
   virtual void StackChildBelow(WmWindow* child, WmWindow* target) = 0;
 
-  virtual std::vector<WmWindow*> GetChildren() = 0;
+  virtual Windows GetChildren() = 0;
 
   // Shows/hides the resize shadow. |component| is the component to show the
   // shadow for (one of the constants in ui/base/hit_test.h).

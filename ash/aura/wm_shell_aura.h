@@ -40,6 +40,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   bool IsForceMaximizeOnFirstRun() override;
   bool IsUserSessionBlocked() override;
   bool IsScreenLocked() override;
+  bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
   std::vector<WmWindow*> GetAllRootWindows() override;

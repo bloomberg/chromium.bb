@@ -109,6 +109,15 @@ std::vector<WmWindow*> WmWindowAura::FromAuraWindows(
 }
 
 // static
+std::vector<aura::Window*> WmWindowAura::ToAuraWindows(
+    const std::vector<WmWindow*>& windows) {
+  std::vector<aura::Window*> result(windows.size());
+  for (size_t i = 0; i < windows.size(); ++i)
+    result[i] = WmWindowAura::GetAuraWindow(windows[i]);
+  return result;
+}
+
+// static
 const aura::Window* WmWindowAura::GetAuraWindow(const WmWindow* wm_window) {
   return wm_window ? static_cast<const WmWindowAura*>(wm_window)->aura_window()
                    : nullptr;
@@ -609,6 +618,16 @@ WmWindowAura::~WmWindowAura() {
   window_->RemoveObserver(this);
 }
 
+void WmWindowAura::OnWindowHierarchyChanging(
+    const HierarchyChangeParams& params) {
+  WmWindowObserver::TreeChangeParams wm_params;
+  wm_params.target = Get(params.target);
+  wm_params.new_parent = Get(params.new_parent);
+  wm_params.old_parent = Get(params.old_parent);
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_,
+                    OnWindowTreeChanging(this, wm_params));
+}
+
 void WmWindowAura::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   WmWindowObserver::TreeChangeParams wm_params;
@@ -656,6 +675,10 @@ void WmWindowAura::OnWindowBoundsChanged(aura::Window* window,
 
 void WmWindowAura::OnWindowDestroying(aura::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroying(this));
+}
+
+void WmWindowAura::OnWindowDestroyed(aura::Window* window) {
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroyed(this));
 }
 
 void WmWindowAura::OnWindowVisibilityChanging(aura::Window* window,

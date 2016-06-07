@@ -58,10 +58,6 @@ bool CanActivateWindow(aura::Window* window) {
   return ::wm::CanActivateWindow(window);
 }
 
-bool IsWindowMinimized(aura::Window* window) {
-  return ash::wm::GetWindowState(window)->IsMinimized();
-}
-
 bool IsWindowUserPositionable(aura::Window* window) {
   return GetWindowState(window)->IsUserPositionable();
 }

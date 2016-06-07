@@ -15,13 +15,10 @@ namespace ui {
 class EventHandler;
 }
 
-namespace aura {
-class Window;
-}  // namespace aura
-
 namespace ash {
 
 class WindowCycleList;
+class WmWindow;
 
 // Controls cycling through windows with the keyboard via alt-tab.
 // Windows are sorted primarily by most recently used, and then by screen order.
@@ -70,7 +67,7 @@ class ASH_EXPORT WindowCycleController {
 
   // Tracks what Window was active when starting to cycle and used to determine
   // if the active Window changed in when ending cycling.
-  aura::Window* active_window_before_window_cycle_ = nullptr;
+  WmWindow* active_window_before_window_cycle_ = nullptr;
 
   // Event handler to watch for release of alt key.
   std::unique_ptr<ui::EventHandler> event_handler_;

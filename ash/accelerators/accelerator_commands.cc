@@ -6,6 +6,7 @@
 
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
@@ -26,7 +27,7 @@ bool ToggleMinimized() {
     MruWindowTracker::WindowList mru_windows(
         Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
     if (!mru_windows.empty())
-      wm::GetWindowState(mru_windows.front())->Activate();
+      mru_windows.front()->GetWindowState()->Activate();
     return true;
   }
   wm::WindowState* window_state = wm::GetWindowState(window);

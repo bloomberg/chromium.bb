@@ -5,6 +5,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -223,10 +224,8 @@ void MaximizeModeWindowManager::MaximizeAllWindows() {
   MruWindowTracker::WindowList windows = ash::Shell::GetInstance()->
       mru_window_tracker()->BuildWindowListIgnoreModal();
   // Add all existing Mru windows.
-  for (MruWindowTracker::WindowList::iterator window = windows.begin();
-      window != windows.end(); ++window) {
-    MaximizeAndTrackWindow(*window);
-  }
+  for (WmWindow* window : windows)
+    MaximizeAndTrackWindow(WmWindowAura::GetAuraWindow(window));
 }
 
 void MaximizeModeWindowManager::RestoreAllWindows() {

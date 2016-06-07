@@ -27,4 +27,12 @@ const int kActivatableShellWindowIds[] = {
 const size_t kNumActivatableShellWindowIds =
     arraysize(kActivatableShellWindowIds);
 
+bool IsActivatableShellWindowId(int id) {
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; i++) {
+    if (id == kActivatableShellWindowIds[i])
+      return true;
+  }
+  return false;
+}
+
 }  // namespace ash

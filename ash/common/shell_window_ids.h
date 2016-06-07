@@ -115,6 +115,9 @@ const int kShellWindowId_Max = kShellWindowId_PowerButtonAnimationContainer;
 ASH_EXPORT extern const int kActivatableShellWindowIds[];
 ASH_EXPORT extern const size_t kNumActivatableShellWindowIds;
 
+// Returns true if |id| is in |kActivatableShellWindowIds|.
+ASH_EXPORT bool IsActivatableShellWindowId(int id);
+
 }  // namespace ash
 
 #endif  // ASH_COMMON_SHELL_WINDOW_IDS_H_

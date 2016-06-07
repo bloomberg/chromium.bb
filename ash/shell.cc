@@ -1048,8 +1048,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   magnification_controller_.reset(
       MagnificationController::CreateInstance());
-  mru_window_tracker_.reset(new MruWindowTracker(activation_client_,
-                                                 focus_rules));
+  mru_window_tracker_.reset(new MruWindowTracker);
 
   partial_magnification_controller_.reset(
       new PartialMagnificationController());

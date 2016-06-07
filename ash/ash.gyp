@@ -97,6 +97,8 @@
       'common/wm/dock/docked_window_resizer.h',
       'common/wm/drag_details.cc',
       'common/wm/drag_details.h',
+      'common/wm/focus_rules.cc',
+      'common/wm/focus_rules.h',
       'common/wm/fullscreen_window_finder.cc',
       'common/wm/fullscreen_window_finder.h',
       'common/wm/panels/panel_layout_manager.cc',

@@ -28,6 +28,8 @@ class ASH_EXPORT WmWindowObserver {
 
   // |window| is the window the observer was added to, which is not necessarily
   // the window that was added/removed.
+  virtual void OnWindowTreeChanging(WmWindow* window,
+                                    const TreeChangeParams& params) {}
   virtual void OnWindowTreeChanged(WmWindow* window,
                                    const TreeChangeParams& params) {}
 
@@ -37,6 +39,7 @@ class ASH_EXPORT WmWindowObserver {
   virtual void OnWindowStackingChanged(WmWindow* window) {}
 
   virtual void OnWindowDestroying(WmWindow* window) {}
+  virtual void OnWindowDestroyed(WmWindow* window) {}
 
   virtual void OnWindowBoundsChanged(WmWindow* window,
                                      const gfx::Rect& old_bounds,

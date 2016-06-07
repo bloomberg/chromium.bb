@@ -688,6 +688,15 @@ void WmWindowMus::RemoveObserver(WmWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WmWindowMus::OnTreeChanging(const TreeChangeParams& params) {
+  WmWindowObserver::TreeChangeParams wm_params;
+  wm_params.target = Get(params.target);
+  wm_params.new_parent = Get(params.new_parent);
+  wm_params.old_parent = Get(params.old_parent);
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_,
+                    OnWindowTreeChanging(this, wm_params));
+}
+
 void WmWindowMus::OnTreeChanged(const TreeChangeParams& params) {
   WmWindowObserver::TreeChangeParams wm_params;
   wm_params.target = Get(params.target);
@@ -733,6 +742,10 @@ void WmWindowMus::OnWindowBoundsChanged(::mus::Window* window,
 
 void WmWindowMus::OnWindowDestroying(::mus::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroying(this));
+}
+
+void WmWindowMus::OnWindowDestroyed(::mus::Window* window) {
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroyed(this));
 }
 
 }  // namespace mus

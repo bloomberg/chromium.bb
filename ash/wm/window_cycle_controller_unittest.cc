@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/session/session_state_delegate.h"
@@ -55,6 +56,10 @@ class KeyEventCounter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(KeyEventCounter);
 };
 
+bool IsWindowMinimized(aura::Window* window) {
+  return WmWindowAura::Get(window)->GetWindowState()->IsMinimized();
+}
+
 }  // namespace
 
 using aura::test::CreateTestWindowWithId;
@@ -84,9 +89,9 @@ class WindowCycleControllerTest : public test::AshTestBase {
     return window;
   }
 
-  const WindowCycleList::WindowList& GetWindows(
-      WindowCycleController* controller) {
-    return controller->window_cycle_list()->windows();
+  const aura::Window::Windows GetWindows(WindowCycleController* controller) {
+    return WmWindowAura::ToAuraWindows(
+        controller->window_cycle_list()->windows());
   }
 
  private:
@@ -517,19 +522,19 @@ TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
   wm::ActivateWindow(window1.get());
   wm::GetWindowState(window1.get())->Minimize();
   wm::ActivateWindow(window0.get());
-  EXPECT_TRUE(wm::IsWindowMinimized(window1.get()));
+  EXPECT_TRUE(IsWindowMinimized(window1.get()));
 
   // On window 2.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_FALSE(wm::IsWindowMinimized(window1.get()));
+  EXPECT_FALSE(IsWindowMinimized(window1.get()));
 
   // Back on window 1.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsWindowMinimized(window1.get()));
+  EXPECT_TRUE(IsWindowMinimized(window1.get()));
 
   controller->StopCycling();
 
-  EXPECT_TRUE(wm::IsWindowMinimized(window1.get()));
+  EXPECT_TRUE(IsWindowMinimized(window1.get()));
 }
 
 // Tests cycles between panel and normal windows.

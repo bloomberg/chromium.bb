@@ -9,6 +9,7 @@
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility_delegate.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/container_delegate_aura.h"
 #include "ash/content/gpu_support_impl.h"
@@ -83,8 +84,8 @@ void InitAfterFirstSessionStart() {
   // windows can be opened in background while login UI is still active because
   // we currently restore browser windows before login UI is deleted.
   ash::Shell* shell = ash::Shell::GetInstance();
-  ash::MruWindowTracker::WindowList mru_list =
-      shell->mru_window_tracker()->BuildMruWindowList();
+  aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
+      shell->mru_window_tracker()->BuildMruWindowList());
   if (!mru_list.empty())
     mru_list.front()->Focus();
 

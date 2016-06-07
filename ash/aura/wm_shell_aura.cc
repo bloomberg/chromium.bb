@@ -29,10 +29,10 @@ WmShellAura::WmShellAura() {
 
 WmShellAura::~WmShellAura() {
   WmShell::Set(nullptr);
-  if (added_activation_observer_) {
-    aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
-        ->RemoveObserver(this);
-  }
+
+  if (added_activation_observer_)
+    Shell::GetInstance()->activation_client()->RemoveObserver(this);
+
   if (added_display_observer_)
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
@@ -70,13 +70,17 @@ WmWindow* WmShellAura::GetRootWindowForNewWindows() {
 }
 
 std::vector<WmWindow*> WmShellAura::GetMruWindowList() {
-  return WmWindowAura::FromAuraWindows(
-      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+  // TODO(sky): remove this and provide accessor for MruWindowTracker.
+  // http://crbug.com/617789.
+  return Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
 }
 
 std::vector<WmWindow*> WmShellAura::GetMruWindowListIgnoreModals() {
-  return WmWindowAura::FromAuraWindows(
-      Shell::GetInstance()->mru_window_tracker()->BuildWindowListIgnoreModal());
+  // TODO(sky): remove this and provide accessor for MruWindowTracker.
+  // http://crbug.com/617789.
+  return Shell::GetInstance()
+      ->mru_window_tracker()
+      ->BuildWindowListIgnoreModal();
 }
 
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
@@ -89,6 +93,11 @@ bool WmShellAura::IsUserSessionBlocked() {
 
 bool WmShellAura::IsScreenLocked() {
   return Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
+}
+
+bool WmShellAura::CanShowWindowForUser(WmWindow* window) {
+  return Shell::GetInstance()->delegate()->CanShowWindowForUser(
+      WmWindowAura::GetAuraWindow(window));
 }
 
 void WmShellAura::LockCursor() {
@@ -135,8 +144,7 @@ bool WmShellAura::IsOverviewModeRestoringMinimizedWindows() {
 void WmShellAura::AddActivationObserver(WmActivationObserver* observer) {
   if (!added_activation_observer_) {
     added_activation_observer_ = true;
-    aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
-        ->AddObserver(this);
+    Shell::GetInstance()->activation_client()->AddObserver(this);
   }
   activation_observers_.AddObserver(observer);
 }

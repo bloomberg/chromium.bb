@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/wm/mru_window_tracker.h"
+
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_shelf_delegate.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "base/compiler_specific.h"
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
@@ -44,8 +43,8 @@ TEST_F(MruWindowTrackerTest, Basic) {
   wm::ActivateWindow(w2.get());
   wm::ActivateWindow(w1.get());
 
-  MruWindowTracker::WindowList window_list =
-      mru_window_tracker()->BuildMruWindowList();
+  aura::Window::Windows window_list =
+      WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(w1.get(), window_list[0]);
   EXPECT_EQ(w2.get(), window_list[1]);
   EXPECT_EQ(w3.get(), window_list[2]);
@@ -73,8 +72,8 @@ TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
 
   // Expect the relative order of minimized windows to remain the same, but all
   // minimized windows to be at the end of the list.
-  MruWindowTracker::WindowList window_list =
-      mru_window_tracker()->BuildMruWindowList();
+  aura::Window::Windows window_list =
+      WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(w2.get(), window_list[0]);
   EXPECT_EQ(w3.get(), window_list[1]);
   EXPECT_EQ(w6.get(), window_list[2]);
@@ -99,8 +98,8 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
   EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
 
   // The dragged window should only be in the list once.
-  MruWindowTracker::WindowList window_list =
-      mru_window_tracker()->BuildWindowListIgnoreModal();
+  aura::Window::Windows window_list = WmWindowAura::ToAuraWindows(
+      mru_window_tracker()->BuildWindowListIgnoreModal());
   EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1.get()));
 }
 

@@ -207,6 +207,7 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
 
  private:
   // mus::WindowObserver:
+  void OnTreeChanging(const TreeChangeParams& params) override;
   void OnTreeChanged(const TreeChangeParams& params) override;
   void OnWindowReordered(::mus::Window* window,
                          ::mus::Window* relative_window,
@@ -220,6 +221,7 @@ class WmWindowMus : public WmWindow, public ::mus::WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(::mus::Window* window) override;
+  void OnWindowDestroyed(::mus::Window* window) override;
 
   ::mus::Window* window_;
 

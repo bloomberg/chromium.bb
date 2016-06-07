@@ -72,6 +72,11 @@ class ASH_EXPORT WmShell {
   virtual bool IsUserSessionBlocked() = 0;
   virtual bool IsScreenLocked() = 0;
 
+  // Returns true if |window| can be shown for the current user. This is
+  // intended to check if the current user matches the user associated with
+  // |window|.
+  virtual bool CanShowWindowForUser(WmWindow* window) = 0;
+
   // See aura::client::CursorClient for details on these.
   virtual void LockCursor() = 0;
   virtual void UnlockCursor() = 0;

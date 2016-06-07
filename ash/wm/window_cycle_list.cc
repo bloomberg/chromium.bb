@@ -5,51 +5,48 @@
 #include "ash/wm/window_cycle_list.h"
 
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 
 // Returns the window immediately below |window| in the current container.
-aura::Window* GetWindowBelow(aura::Window* window) {
-  aura::Window* parent = window->parent();
+WmWindow* GetWindowBelow(WmWindow* window) {
+  WmWindow* parent = window->GetParent();
   if (!parent)
-    return NULL;
-  aura::Window::Windows::const_iterator iter =
-      std::find(parent->children().begin(), parent->children().end(), window);
+    return nullptr;
+  const WmWindow::Windows children = parent->GetChildren();
+  auto iter = std::find(children.begin(), children.end(), window);
   CHECK(*iter == window);
-  if (iter != parent->children().begin())
-    return *(iter - 1);
-  else
-    return NULL;
+  return (iter != children.begin()) ? *(iter - 1) : nullptr;
 }
 
 // This class restores and moves a window to the front of the stacking order for
 // the duration of the class's scope.
-class ScopedShowWindow : public aura::WindowObserver {
+class ScopedShowWindow : public WmWindowObserver {
  public:
   ScopedShowWindow();
   ~ScopedShowWindow() override;
 
   // Show |window| at the top of the stacking order.
-  void Show(aura::Window* window);
+  void Show(WmWindow* window);
 
   // Cancel restoring the window on going out of scope.
   void CancelRestore();
 
  private:
-  // aura::WindowObserver:
-  void OnWillRemoveWindow(aura::Window* window) override;
+  // WmWindowObserver:
+  void OnWindowTreeChanging(WmWindow* window,
+                            const TreeChangeParams& params) override;
 
   // The window being shown.
-  aura::Window* window_;
+  WmWindow* window_;
 
   // The window immediately below where window_ belongs.
-  aura::Window* stack_window_above_;
+  WmWindow* stack_window_above_;
 
   // If true, minimize window_ on going out of scope.
   bool minimized_;
@@ -58,48 +55,50 @@ class ScopedShowWindow : public aura::WindowObserver {
 };
 
 ScopedShowWindow::ScopedShowWindow()
-    : window_(NULL),
-      stack_window_above_(NULL),
-      minimized_(false) {
-}
+    : window_(nullptr), stack_window_above_(nullptr), minimized_(false) {}
 
 ScopedShowWindow::~ScopedShowWindow() {
   if (window_) {
-    window_->parent()->RemoveObserver(this);
+    window_->GetParent()->RemoveObserver(this);
 
     // Restore window's stacking position.
     if (stack_window_above_)
-      window_->parent()->StackChildAbove(window_, stack_window_above_);
+      window_->GetParent()->StackChildAbove(window_, stack_window_above_);
     else
-      window_->parent()->StackChildAtBottom(window_);
+      window_->GetParent()->StackChildAtBottom(window_);
 
     // Restore minimized state.
     if (minimized_)
-      wm::GetWindowState(window_)->Minimize();
+      window_->GetWindowState()->Minimize();
   }
 }
 
-void ScopedShowWindow::Show(aura::Window* window) {
+void ScopedShowWindow::Show(WmWindow* window) {
   DCHECK(!window_);
   window_ = window;
   stack_window_above_ = GetWindowBelow(window);
-  minimized_ = wm::GetWindowState(window)->IsMinimized();
-  window_->parent()->AddObserver(this);
+  minimized_ = window->GetWindowState()->IsMinimized();
+  window_->GetParent()->AddObserver(this);
   window_->Show();
-  wm::GetWindowState(window_)->Activate();
+  window_->GetWindowState()->Activate();
 }
 
 void ScopedShowWindow::CancelRestore() {
   if (!window_)
     return;
-  window_->parent()->RemoveObserver(this);
-  window_ = stack_window_above_ = NULL;
+  window_->GetParent()->RemoveObserver(this);
+  window_ = stack_window_above_ = nullptr;
 }
 
-void ScopedShowWindow::OnWillRemoveWindow(aura::Window* window) {
-  if (window == window_) {
+void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
+                                            const TreeChangeParams& params) {
+  // Only interested in removal.
+  if (params.new_parent != nullptr)
+    return;
+
+  if (params.target == window_) {
     CancelRestore();
-  } else if (window == stack_window_above_) {
+  } else if (params.target == stack_window_above_) {
     // If the window this window was above is removed, use the next window down
     // as the restore marker.
     stack_window_above_ = GetWindowBelow(stack_window_above_);
@@ -111,13 +110,13 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
       current_index_(0) {
   ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
 
-  for (auto* window : windows_)
+  for (WmWindow* window : windows_)
     window->AddObserver(this);
 }
 
 WindowCycleList::~WindowCycleList() {
   ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
-  for (auto* window : windows_) {
+  for (WmWindow* window : windows_) {
     // TODO(oshima): Remove this once crbug.com/483491 is fixed.
     CHECK(window);
     window->RemoveObserver(this);
@@ -133,9 +132,9 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   // When there is only one window, we should give feedback to the user. If the
   // window is minimized, we should also show it.
   if (windows_.size() == 1) {
-    ::wm::AnimateWindow(windows_[0], ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+    windows_[0]->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     windows_[0]->Show();
-    wm::GetWindowState(windows_[0])->Activate();
+    windows_[0]->GetWindowState()->Activate();
     return;
   }
 
@@ -153,7 +152,7 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   showing_window_->Show(windows_[current_index_]);
 }
 
-void WindowCycleList::OnWindowDestroying(aura::Window* window) {
+void WindowCycleList::OnWindowDestroying(WmWindow* window) {
   window->RemoveObserver(this);
 
   WindowList::iterator i = std::find(windows_.begin(), windows_.end(), window);

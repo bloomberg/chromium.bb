@@ -9,38 +9,22 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
-
-namespace aura {
-class RootWindow;
-class Window;
-namespace client {
-class ActivationClient;
-}
-}
 
 namespace ash {
 
-namespace wm {
-
-class AshFocusRules;
-
-}  // namespace wm
-
+class WmWindow;
 
 // Maintains a most recently used list of windows. This is used for window
 // cycling using Alt+Tab and overview mode.
-class ASH_EXPORT MruWindowTracker
-    : public aura::client::ActivationChangeObserver,
-      public aura::WindowObserver {
+class ASH_EXPORT MruWindowTracker : public WmActivationObserver,
+                                    public WmWindowObserver {
  public:
-  typedef std::vector<aura::Window*> WindowList;
+  using WindowList = std::vector<WmWindow*>;
 
-  MruWindowTracker(
-      aura::client::ActivationClient* activation_client,
-      ash::wm::AshFocusRules* focus_rules);
+  MruWindowTracker();
   ~MruWindowTracker() override;
 
   // Returns the set of windows which can be cycled through using the tracked
@@ -61,28 +45,18 @@ class ASH_EXPORT MruWindowTracker
  private:
   // Updates the mru_windows_ list to insert/move |active_window| at/to the
   // front.
-  void SetActiveWindow(aura::Window* active_window);
+  void SetActiveWindow(WmWindow* active_window);
 
-  // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // Overridden from WmActivationObserver:
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
 
-  // Overridden from WindowObserver:
-  void OnWindowDestroyed(aura::Window* window) override;
-
-  // Uses the focus rules to check whether the window can be activateable,
-  // regardless of the state of the System modal dialog.
-  bool IsWindowConsideredActivateable(aura::Window* window) const;
+  // Overridden from WmWindowObserver:
+  void OnWindowDestroyed(WmWindow* window) override;
 
   // List of windows that have been activated in containers that we cycle
   // through, sorted by most recently used.
-  std::list<aura::Window*> mru_windows_;
-
-  aura::client::ActivationClient* activation_client_;  // Not owned.
-
-  wm::AshFocusRules* focus_rules_;  // Not owned.
+  std::list<WmWindow*> mru_windows_;
 
   bool ignore_window_activations_;
 
