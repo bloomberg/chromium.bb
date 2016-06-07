@@ -114,6 +114,7 @@ void TabListSceneLayer::PutTabLayer(
     jfloat saturation,
     jfloat brightness,
     jboolean show_toolbar,
+    jint default_theme_color,
     jint toolbar_background_color,
     jboolean anonymize_toolbar,
     jint toolbar_textbox_resource_id,
@@ -138,7 +139,7 @@ void TabListSceneLayer::PutTabLayer(
         contour_alpha, shadow_alpha, close_alpha, border_scale, saturation,
         brightness, close_btn_width, static_to_view_blend, content_width,
         content_height, content_width, visible_content_height, show_toolbar,
-        toolbar_background_color, anonymize_toolbar,
+        default_theme_color, toolbar_background_color, anonymize_toolbar,
         toolbar_textbox_resource_id, toolbar_textbox_background_color,
         toolbar_textbox_alpha, toolbar_alpha, toolbar_y_offset,
         side_border_scale, attach_content, inset_border);

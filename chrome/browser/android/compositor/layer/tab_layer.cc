@@ -134,6 +134,7 @@ void TabLayer::SetProperties(int id,
                              float view_width,
                              float view_height,
                              bool show_toolbar,
+                             int default_theme_color,
                              int toolbar_background_color,
                              bool anonymize_toolbar,
                              int toolbar_textbox_resource_id,
@@ -479,15 +480,20 @@ void TabLayer::SetProperties(int id,
     front_border_->SetOpacity(border_alpha);
     front_border_->SetNearestNeighbor(toolbar_visible);
 
-    // Colorize the tab decoration.
-    if (tab_switcher_themes_enabled_ && !incognito_
-        && toolbar_background_color != toolbar_background_color_) {
+    int tab_switcher_color = default_theme_color;
+
+    // Colorize the tab decoration if enabled.
+    if (tab_switcher_themes_enabled_) {
+        tab_switcher_color = toolbar_background_color;
+    }
+
+    if (toolbar_background_color != toolbar_background_color_) {
       toolbar_background_color_ = toolbar_background_color;
       cc::FilterOperations filters;
       SkScalar colorMatrix[] = {
-          SkColorGetR(toolbar_background_color) / 255.0f, 0, 0, 0, 0,
-          0, SkColorGetG(toolbar_background_color) / 255.0f, 0, 0, 0,
-          0, 0, SkColorGetB(toolbar_background_color) / 255.0f, 0, 0,
+          SkColorGetR(tab_switcher_color) / 255.0f, 0, 0, 0, 0,
+          0, SkColorGetG(tab_switcher_color) / 255.0f, 0, 0, 0,
+          0, 0, SkColorGetB(tab_switcher_color) / 255.0f, 0, 0,
           0, 0, 0, 1, 0,
       };
       filters.Append(cc::FilterOperation::CreateColorMatrixFilter(colorMatrix));
