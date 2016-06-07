@@ -5,12 +5,11 @@
 #ifndef InputEvent_h
 #define InputEvent_h
 
+#include "core/dom/StaticRange.h"
 #include "core/events/InputEventInit.h"
 #include "core/events/UIEvent.h"
 
 namespace blink {
-
-class Range;
 
 class InputEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();
@@ -56,8 +55,7 @@ public:
     bool isComposing() const { return m_isComposing; }
     // Returns a copy of target ranges during event dispatch, and returns an empty
     // vector after dispatch.
-    // TODO(chongz): Return Vector<StaticRange>.
-    HeapVector<Member<Range>> getRanges() const { return m_ranges; };
+    StaticRangeVector getRanges() const;
 
     bool isInputEvent() const override;
 

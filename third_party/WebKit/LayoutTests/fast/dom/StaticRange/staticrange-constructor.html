@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>StaticRange: constructor</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+abcdefg
+<script>
+test(function() {
+    // Basic interface.
+    assert_equals(typeof new StaticRange, 'object');
+    assert_equals(Object.prototype.toString.call(new StaticRange), '[object StaticRange]');
+    assert_true(new StaticRange instanceof StaticRange);
+    assert_equals(Object.getPrototypeOf(new StaticRange), StaticRange.prototype);
+
+    // Initialize new StaticRange.
+    var txt = document.body.firstChild;
+    var staticRange = new StaticRange();
+    staticRange.setStart(txt, 0);
+    staticRange.setEnd(txt, 5);
+    assert_equals(staticRange.startContainer, txt);
+    assert_equals(staticRange.startOffset, 0);
+    assert_equals(staticRange.endContainer, txt);
+    assert_equals(staticRange.endOffset, 5);
+    assert_false(staticRange.collapsed);
+
+    // Property mutable.
+    staticRange.startContainer = document.body;
+    staticRange.startOffset = 0;
+    staticRange.endContainer = document.body;
+    staticRange.endOffset = 0;
+    assert_equals(staticRange.startContainer, document.body);
+    assert_equals(staticRange.startOffset, 0);
+    assert_equals(staticRange.endContainer, document.body);
+    assert_equals(staticRange.endOffset, 0);
+    assert_true(staticRange.collapsed);
+}, 'Testing StaticRange constructor');
+</script>
+</body>
+</html>

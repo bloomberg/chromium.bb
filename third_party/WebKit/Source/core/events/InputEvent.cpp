@@ -90,6 +90,14 @@ String InputEvent::inputType() const
     return convertInputTypeToString(m_inputType);
 }
 
+StaticRangeVector InputEvent::getRanges() const
+{
+    StaticRangeVector staticRanges;
+    for (const auto& range : m_ranges)
+        staticRanges.append(StaticRange::create(range->ownerDocument(), range->startContainer(), range->startOffset(), range->endContainer(), range->endOffset()));
+    return staticRanges;
+}
+
 bool InputEvent::isInputEvent() const
 {
     return true;

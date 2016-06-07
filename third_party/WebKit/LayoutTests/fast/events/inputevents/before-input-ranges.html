@@ -29,6 +29,7 @@ test(function() {
         var ranges = event.getRanges();
         assert_equals(ranges.length, 1);
         var range = ranges[0];
+        assert_true(range instanceof StaticRange);
         assert_equals(range.startOffset, 3);
         assert_equals(range.startContainer.textContent, 'lo wo');
         assert_equals(range.endOffset, 3);

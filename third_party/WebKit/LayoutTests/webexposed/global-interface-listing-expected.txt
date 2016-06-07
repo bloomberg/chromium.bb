@@ -5903,6 +5903,21 @@ interface SpeechSynthesisUtterance : EventTarget
     setter text
     setter voice
     setter volume
+interface StaticRange
+    attribute @@toStringTag
+    getter collapsed
+    getter endContainer
+    getter endOffset
+    getter startContainer
+    getter startOffset
+    method constructor
+    method setEnd
+    method setStart
+    method toRange
+    setter endContainer
+    setter endOffset
+    setter startContainer
+    setter startOffset
 interface Storage
     attribute @@toStringTag
     getter length
