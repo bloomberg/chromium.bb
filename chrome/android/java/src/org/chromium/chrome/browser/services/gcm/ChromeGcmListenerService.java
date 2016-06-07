@@ -5,13 +5,15 @@
 package org.chromium.chrome.browser.services.gcm;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
-import org.chromium.base.PathUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.gcm_driver.GCMDriver;
 
 /**
@@ -19,7 +21,6 @@ import org.chromium.components.gcm_driver.GCMDriver;
  */
 public class ChromeGcmListenerService extends GcmListenerService {
     private static final String TAG = "ChromeGcmListener";
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
@@ -59,10 +60,18 @@ public class ChromeGcmListenerService extends GcmListenerService {
         final String appId = data.getString(bundleSubtype);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
+            @SuppressFBWarnings("DM_EXIT")
             public void run() {
-                PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
-                        getApplicationContext());
-                GCMDriver.onMessageReceived(getApplicationContext(), appId, from, data);
+                try {
+                    ChromeBrowserInitializer.getInstance(getApplicationContext())
+                        .handleSynchronousStartup();
+                    GCMDriver.onMessageReceived(appId, from, data);
+                } catch (ProcessInitException e) {
+                    Log.e(TAG, "ProcessInitException while starting the browser process");
+                    // Since the library failed to initialize nothing in the application
+                    // can work, so kill the whole application not just the activity.
+                    System.exit(-1);
+                }
             }
         });
     }

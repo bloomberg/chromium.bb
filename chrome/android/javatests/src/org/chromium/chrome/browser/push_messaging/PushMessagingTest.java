@@ -14,9 +14,10 @@ import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestBase;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.tab.Tab;
@@ -173,8 +174,12 @@ public class PushMessagingTest
             public void run() {
                 Context context = getInstrumentation().getTargetContext().getApplicationContext();
                 Bundle extras = new Bundle();
-                PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
-                GCMDriver.onMessageReceived(context, appId, senderId, extras);
+                try {
+                    ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+                    GCMDriver.onMessageReceived(appId, senderId, extras);
+                } catch (ProcessInitException e) {
+                    fail("Chrome browser failed to initialize.");
+                }
             }
         });
         mMessageHandledHelper.waitForCallback(mMessageHandledHelper.getCallCount());

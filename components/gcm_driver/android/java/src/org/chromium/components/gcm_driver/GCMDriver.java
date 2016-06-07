@@ -7,16 +7,12 @@ package org.chromium.components.gcm_driver;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.BrowserStartupController;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -118,39 +114,37 @@ public class GCMDriver {
         }.execute();
     }
 
-    // The caller of this function is responsible for setting the PathUtils Private Data Directory
-    // Suffix before calling onMessageReceived().
-    public static void onMessageReceived(
-            Context context, final String appId, final String senderId, final Bundle extras) {
+    // The caller of this function is responsible for ensuring the browser process is initialized.
+    public static void onMessageReceived(String appId, String senderId, Bundle extras) {
         // TODO(johnme): Store message and redeliver later if Chrome is killed before delivery.
         ThreadUtils.assertOnUiThread();
-        launchNativeThen(context, new Runnable() {
-            @Override public void run() {
-                final String bundleSubtype = "subtype";
-                final String bundleSenderId = "from";
-                final String bundleCollapseKey = "collapse_key";
-                final String bundleRawData = "rawData";
-                final String bundleGcmplex = "com.google.ipc.invalidation.gcmmplex.";
+        if (sInstance == null) {
+            // Change of behaviour, throw exception instead of failing silently with Log.e.
+            throw new RuntimeException("Failed to instantiate GCMDriver.");
+        }
+        final String bundleSubtype = "subtype";
+        final String bundleSenderId = "from";
+        final String bundleCollapseKey = "collapse_key";
+        final String bundleRawData = "rawData";
+        final String bundleGcmplex = "com.google.ipc.invalidation.gcmmplex.";
 
-                String collapseKey = extras.getString(bundleCollapseKey);  // May be null.
-                byte[] rawData = extras.getByteArray(bundleRawData);  // May be null.
+        String collapseKey = extras.getString(bundleCollapseKey);  // May be null.
+        byte[] rawData = extras.getByteArray(bundleRawData);  // May be null.
 
-                List<String> dataKeysAndValues = new ArrayList<String>();
-                for (String key : extras.keySet()) {
-                    // TODO(johnme): Check there aren't other keys that we need to exclude.
-                    if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
-                            || key.equals(bundleCollapseKey) || key.equals(bundleRawData)
-                            || key.startsWith(bundleGcmplex))
-                        continue;
-                    dataKeysAndValues.add(key);
-                    dataKeysAndValues.add(extras.getString(key));
-                }
+        List<String> dataKeysAndValues = new ArrayList<String>();
+        for (String key : extras.keySet()) {
+            // TODO(johnme): Check there aren't other keys that we need to exclude.
+            if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
+                    || key.equals(bundleCollapseKey) || key.equals(bundleRawData)
+                    || key.startsWith(bundleGcmplex))
+                continue;
+            dataKeysAndValues.add(key);
+            dataKeysAndValues.add(extras.getString(key));
+        }
 
-                sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
-                        appId, senderId, collapseKey, rawData,
-                        dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
-            }
-        });
+        sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
+                appId, senderId, collapseKey, rawData,
+                dataKeysAndValues.toArray(new String[dataKeysAndValues.size()]));
     }
 
     @VisibleForTesting
@@ -166,28 +160,4 @@ public class GCMDriver {
             boolean success);
     private native void nativeOnMessageReceived(long nativeGCMDriverAndroid, String appId,
             String senderId, String collapseKey, byte[] rawData, String[] dataKeysAndValues);
-
-    private static void launchNativeThen(Context context, Runnable task) {
-        if (sInstance != null) {
-            task.run();
-            return;
-        }
-
-        ContentApplication.initCommandLine(context);
-
-        try {
-            BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
-            if (sInstance != null) {
-                task.run();
-            } else {
-                Log.e(TAG, "Started browser process, but failed to instantiate GCMDriver.");
-            }
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            System.exit(-1);
-        }
-
-        // TODO(johnme): Now we should probably exit?
-    }
 }
