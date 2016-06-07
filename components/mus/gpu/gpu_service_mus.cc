@@ -37,7 +37,7 @@ const uint64_t kLocalGpuChannelClientTracingId = 1;
 
 void EstablishGpuChannelDone(
     int client_id,
-    std::unique_ptr<IPC::ChannelHandle> channel_handle,
+    const IPC::ChannelHandle* channel_handle,
     const GpuServiceMus::EstablishGpuChannelCallback& callback) {
   callback.Run(channel_handle ? client_id : -1, *channel_handle);
 }
@@ -75,15 +75,15 @@ void GpuServiceMus::EstablishGpuChannel(
   }
 
   const int client_id = ++next_client_id_;
-  std::unique_ptr<IPC::ChannelHandle> channel_handle(new IPC::ChannelHandle);
+  IPC::ChannelHandle* channel_handle = new IPC::ChannelHandle;
   gpu_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GpuServiceMus::EstablishGpuChannelOnGpuThread,
                  base::Unretained(this), client_id, client_tracing_id, preempts,
                  allow_view_command_buffers, allow_real_time_streams,
-                 base::Unretained(channel_handle.get())),
+                 base::Unretained(channel_handle)),
       base::Bind(&EstablishGpuChannelDone, client_id,
-                 base::Passed(&channel_handle), callback));
+                 base::Owned(channel_handle), callback));
 }
 
 gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBuffer(
