@@ -203,8 +203,8 @@ void Check(const NavigationEntry& entry, net::CertStatus error) {
     EXPECT_EQ(error, entry.GetSSL().cert_status & error);
     net::CertStatus extra_cert_errors =
         error ^ (entry.GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
-    if (extra_cert_errors)
-      LOG(WARNING) << "Got unexpected cert error: " << extra_cert_errors;
+    EXPECT_FALSE(extra_cert_errors) << "Got unexpected cert error: "
+                                    << extra_cert_errors;
   } else {
     EXPECT_EQ(0U, entry.GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
   }
@@ -213,13 +213,13 @@ void Check(const NavigationEntry& entry, net::CertStatus error) {
 }  // namespace CertError
 
 void CheckSecurityState(WebContents* tab,
-                        net::CertStatus error,
+                        net::CertStatus expected_error,
                         content::SecurityStyle expected_security_style,
                         int expected_authentication_state) {
   ASSERT_FALSE(tab->IsCrashed());
   NavigationEntry* entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
-  CertError::Check(*entry, error);
+  CertError::Check(*entry, expected_error);
   SecurityStyle::Check(*entry, expected_security_style);
   AuthState::Check(*entry, expected_authentication_state);
 }
@@ -812,42 +812,29 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndProceed) {
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
 }
 
-#ifndef NEDBUG
-// Flaky on Windows debug (http://crbug.com/280537).
-#define MAYBE_TestHTTPSExpiredCertAndDontProceed \
-        DISABLED_TestHTTPSExpiredCertAndDontProceed
-#else
-#define MAYBE_TestHTTPSExpiredCertAndDontProceed \
-        TestHTTPSExpiredCertAndDontProceed
-#endif
-
 // Visits a page with https error and don't proceed (and ensure we can still
 // navigate at that point):
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialCrossSiteNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
-  ASSERT_TRUE(https_server_expired_.Start());
+  ASSERT_TRUE(https_server_mismatched_.Start());
 
   // First navigate to an OK page.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  GURL initial_url = https_server_.GetURL("/ssl/google.html");
+  ASSERT_EQ("127.0.0.1", initial_url.host());
+  ui_test_utils::NavigateToURL(browser(), initial_url);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   NavigationEntry* entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
 
-  GURL cross_site_url = https_server_expired_.GetURL("/ssl/google.html");
-  // Change the host name from 127.0.0.1 to localhost so it triggers a
-  // cross-site navigation so we can test http://crbug.com/5800 is gone.
-  ASSERT_EQ("127.0.0.1", cross_site_url.host());
-  GURL::Replacements replacements;
-  replacements.SetHostStr("localhost");
-  cross_site_url = cross_site_url.ReplaceComponents(replacements);
-
-  // Now go to a bad HTTPS page.
+  // Navigate from 127.0.0.1 to localhost so it triggers a
+  // cross-site navigation to make sure http://crbug.com/5800 is gone.
+  GURL cross_site_url = https_server_mismatched_.GetURL("/ssl/google.html");
+  ASSERT_EQ("localhost", cross_site_url.host());
   ui_test_utils::NavigateToURL(browser(), cross_site_url);
-
   // An interstitial should be showing.
+  WaitForInterstitialAttach(tab);
   CheckAuthenticationBrokenState(tab,
                                  net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::SHOWING_INTERSTITIAL);
@@ -858,11 +845,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
   ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
             interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
   interstitial_page->DontProceed();
+  WaitForInterstitialDetach(tab);
 
   // We should be back to the original good page.
   CheckAuthenticatedState(tab, AuthState::NONE);
 
-  // Try to navigate to a new page. (to make sure bug 5800 is fixed).
+  // Navigate to a new page to make sure bug 5800 is fixed.
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
   CheckUnauthenticatedState(tab, AuthState::NONE);
