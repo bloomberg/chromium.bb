@@ -212,7 +212,7 @@ public:
     bool canReuseRedirectChain();
     bool mustRevalidateDueToCacheHeaders();
     bool canUseCacheValidator();
-    bool isCacheValidator() const { return !m_revalidatingRequest.isNull(); }
+    bool isCacheValidator() const { return m_isRevalidating; }
     bool hasCacheControlNoStoreHeader() const;
     bool hasVaryHeader() const;
     virtual bool mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const { return false; }
@@ -291,7 +291,6 @@ protected:
     String getMemoryDumpName() const;
 
     ResourceRequest m_resourceRequest;
-    ResourceRequest m_revalidatingRequest;
     Member<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
 
@@ -345,6 +344,7 @@ private:
 
     unsigned m_needsSynchronousCacheHit : 1;
     unsigned m_linkPreload : 1;
+    bool m_isRevalidating : 1;
 
     // Ordered list of all redirects followed while fetching this resource.
     Vector<RedirectPair> m_redirectChain;

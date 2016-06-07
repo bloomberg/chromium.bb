@@ -311,6 +311,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_status(NotStarted)
     , m_needsSynchronousCacheHit(false)
     , m_linkPreload(false)
+    , m_isRevalidating(false)
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
@@ -342,17 +343,13 @@ void Resource::load(ResourceFetcher* fetcher)
     ASSERT(stillNeedsLoad());
     m_status = Pending;
 
-    ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
-    KURL url = request.url();
-    request.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
+    KURL url = m_resourceRequest.url();
+    m_resourceRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
 
     m_fetcherSecurityOrigin = fetcher->context().getSecurityOrigin();
     m_loader = ResourceLoader::create(fetcher, this);
-    m_loader->start(request);
-    // If the request reference is null (i.e., a synchronous revalidation will
-    // null the request), don't make the request non-null by setting the url.
-    if (!request.isNull())
-        request.setURL(url);
+    m_loader->start(m_resourceRequest);
+    m_resourceRequest.setURL(url);
 }
 
 void Resource::checkNotify()
@@ -368,7 +365,7 @@ void Resource::checkNotify()
 void Resource::appendData(const char* data, size_t length)
 {
     TRACE_EVENT0("blink", "Resource::appendData");
-    ASSERT(m_revalidatingRequest.isNull());
+    DCHECK(!m_isRevalidating);
     ASSERT(!errorOccurred());
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return;
@@ -381,7 +378,7 @@ void Resource::appendData(const char* data, size_t length)
 
 void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer)
 {
-    ASSERT(m_revalidatingRequest.isNull());
+    DCHECK(!m_isRevalidating);
     ASSERT(!errorOccurred());
     ASSERT(m_options.dataBufferingPolicy == BufferData);
     m_data = resourceBuffer;
@@ -410,8 +407,7 @@ void Resource::error(const ResourceError& error)
 {
     ASSERT(!error.isNull());
     m_error = error;
-    if (!m_revalidatingRequest.isNull())
-        m_revalidatingRequest = ResourceRequest();
+    m_isRevalidating = false;
 
     if (m_error.isCancellation() || !isPreloaded())
         memoryCache()->remove(this);
@@ -426,7 +422,7 @@ void Resource::error(const ResourceError& error)
 
 void Resource::finish(double loadFinishTime)
 {
-    ASSERT(m_revalidatingRequest.isNull());
+    DCHECK(!m_isRevalidating);
     m_loadFinishTime = loadFinishTime;
     if (!errorOccurred())
         m_status = Cached;
@@ -549,13 +545,15 @@ const ResourceRequest& Resource::lastResourceRequest() const
 void Resource::setRevalidatingRequest(const ResourceRequest& request)
 {
     SECURITY_CHECK(m_redirectChain.isEmpty());
-    m_revalidatingRequest = request;
+    DCHECK(!request.isNull());
+    m_isRevalidating = true;
+    m_resourceRequest = request;
     m_status = NotStarted;
 }
 
 void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
-    if (!m_revalidatingRequest.isNull())
+    if (m_isRevalidating)
         revalidationFailed();
 
     newRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
@@ -577,7 +575,7 @@ bool Resource::unlock()
     if (!m_data->isLocked())
         return true;
 
-    if (!memoryCache()->contains(this) || hasClientsOrObservers() || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
+    if (!memoryCache()->contains(this) || hasClientsOrObservers() || !isLoaded() || !isSafeToUnlock())
         return false;
 
     if (RuntimeEnabledFeatures::doNotUnlockSharedBufferEnabled())
@@ -596,7 +594,7 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
         preloadDiscoveryToFirstByteHistogram.count(timeSinceDiscovery);
     }
 
-    if (!m_revalidatingRequest.isNull()) {
+    if (m_isRevalidating) {
         if (response.httpStatusCode() == 304) {
             revalidationSucceeded(response);
             return;
@@ -611,7 +609,7 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
 
 void Resource::setSerializedCachedMetadata(const char* data, size_t size)
 {
-    ASSERT(m_revalidatingRequest.isNull());
+    DCHECK(!m_isRevalidating);
     ASSERT(!m_response.isNull());
     if (m_cacheHandler)
         m_cacheHandler->setSerializedCachedMetadata(data, size);
@@ -714,7 +712,7 @@ void Resource::addClient(ResourceClient* client)
 {
     willAddClientOrObserver();
 
-    if (!m_revalidatingRequest.isNull()) {
+    if (m_isRevalidating) {
         m_clients.add(client);
         return;
     }
@@ -935,18 +933,16 @@ void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)
         m_response.setHTTPHeaderField(header.key, header.value);
     }
 
-    m_resourceRequest = m_revalidatingRequest;
-    m_revalidatingRequest = ResourceRequest();
+    m_isRevalidating = false;
 }
 
 void Resource::revalidationFailed()
 {
-    m_resourceRequest = m_revalidatingRequest;
-    m_revalidatingRequest = ResourceRequest();
     SECURITY_CHECK(m_redirectChain.isEmpty());
     m_data.clear();
     m_cacheHandler.clear();
     destroyDecodedDataForFailedRevalidation();
+    m_isRevalidating = false;
 }
 
 bool Resource::canReuseRedirectChain()

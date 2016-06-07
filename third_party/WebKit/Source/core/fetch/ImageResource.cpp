@@ -123,7 +123,7 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
 
     m_observers.add(observer);
 
-    if (!m_revalidatingRequest.isNull())
+    if (isCacheValidator())
         return;
 
     if (m_data && !m_image && !errorOccurred()) {
