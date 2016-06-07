@@ -1034,6 +1034,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   profiles::CloseGuestProfileWindows();
 }
 
+- (IBAction)goIncognito:(id)sender {
+  DCHECK([self shouldShowGoIncognito]);
+  chrome::NewIncognitoWindow(browser_);
+  [self postActionPerformed:
+      ProfileMetrics::PROFILE_DESKTOP_MENU_GO_INCOGNITO];
+}
+
 - (IBAction)showAccountManagement:(id)sender {
   [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
@@ -1961,9 +1968,27 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     viewRect.origin.y = NSMaxY([separator frame]);
   }
 
+  if (!switches::IsMaterialDesignUserMenu() && [self shouldShowGoIncognito]) {
+    NSButton* goIncognitoButton =
+        [self hoverButtonWithRect:viewRect
+                             text:l10n_util::GetNSString(
+                                  IDS_PROFILES_GO_INCOGNITO_BUTTON)
+                  imageResourceId:IDR_ICON_PROFILES_MENU_INCOGNITO
+                           action:@selector(goIncognito:)];
+    viewRect.origin.y = NSMaxY([goIncognitoButton frame]);
+    [container addSubview:goIncognitoButton];
+
+    NSBox* separator = [self horizontalSeparatorWithFrame:viewRect];
+    [container addSubview:separator];
+    viewRect.origin.y = NSMaxY([separator frame]);
+  }
+
   NSString* text = isGuestSession_ ?
       l10n_util::GetNSString(IDS_PROFILES_EXIT_GUEST) :
-      l10n_util::GetNSString(IDS_PROFILES_MANAGE_USERS_BUTTON);
+      l10n_util::GetNSString(IDS_PROFILES_SWITCH_USERS_BUTTON);
+  if (!isGuestSession_ && switches::IsMaterialDesignUserMenu()) {
+    text = l10n_util::GetNSString(IDS_PROFILES_MANAGE_USERS_BUTTON);
+  }
   NSButton* switchUsersButton =
       [self hoverButtonWithRect:viewRect
                            text:text

@@ -181,11 +181,31 @@ TEST_F(ProfileChooserControllerTest, InitialLayoutWithNewMenu) {
 
   // There should be one button in the option buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  ASSERT_EQ(1U, [buttonSubviews count]);
-
-  // There should be a user switcher button.
-  NSButton* userSwitcherButton =
+  NSButton* userSwitcherButton;
+  if (switches::IsMaterialDesignUserMenu()) {
+    ASSERT_EQ(1U, [buttonSubviews count]);
+    // There should be a user switcher button.
+    userSwitcherButton =
       base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+  } else {
+    // For non-material-design user menu, there should be two buttons and a
+    // separator in the option buttons view.
+    ASSERT_EQ(3U, [buttonSubviews count]);
+
+    // There should be an incognito button.
+    NSButton* incognitoButton =
+        base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+    EXPECT_EQ(@selector(goIncognito:), [incognitoButton action]);
+    EXPECT_EQ(controller(), [incognitoButton target]);
+
+    // There should be a separator.
+    EXPECT_TRUE([[subviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
+
+    // There should be a user switcher button.
+    userSwitcherButton =
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:2]);
+  }
+
   EXPECT_EQ(@selector(showUserManager:), [userSwitcherButton action]);
   EXPECT_EQ(controller(), [userSwitcherButton target]);
 
@@ -422,13 +442,33 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   // and one option buttons view.
   ASSERT_EQ(5U, [subviews count]);
 
-  // There should be one button in the option buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  ASSERT_EQ(1U, [buttonSubviews count]);
+  NSButton* userSwitcherButton;
+  if (switches::IsMaterialDesignUserMenu()) {
+    // There should be one button in the option buttons view.
+    ASSERT_EQ(1U, [buttonSubviews count]);
+    // There should be a user switcher button.
+    userSwitcherButton =
+        base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+  } else {
+    // For non-material-design user menu, there should be two buttons and one
+    // separator in the option buttons view.
+    ASSERT_EQ(3U, [buttonSubviews count]);
 
-  // There should be a user switcher button.
-  NSButton* userSwitcherButton =
-      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+    // There should be an incognito button.
+    NSButton* incognitoButton =
+        base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+    EXPECT_EQ(@selector(goIncognito:), [incognitoButton action]);
+    EXPECT_EQ(controller(), [incognitoButton target]);
+
+    // There should be a separator.
+    EXPECT_TRUE([[buttonSubviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
+
+    // There should be a user switcher button.
+    userSwitcherButton =
+        base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:2]);
+  }
+
   EXPECT_EQ(@selector(showUserManager:), [userSwitcherButton action]);
   EXPECT_EQ(controller(), [userSwitcherButton target]);
 
@@ -508,9 +548,15 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
   ASSERT_EQ(2U, [subviews count]);
   subviews = [[subviews objectAtIndex:0] subviews];
 
-  // There will be one button in the option buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  ASSERT_EQ(1U, [buttonSubviews count]);
+  if (switches::IsMaterialDesignUserMenu()) {
+    // There will be one button in the option buttons view.
+    ASSERT_EQ(1U, [buttonSubviews count]);
+  } else {
+    // For non-material-design user menu, there will be two buttons and one
+    // separators in the option buttons view.
+    ASSERT_EQ(3U, [buttonSubviews count]);
+  }
 
   // The last button should not be the lock button.
   NSButton* lastButton =
@@ -538,9 +584,15 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
   ASSERT_EQ(2U, [subviews count]);
   subviews = [[subviews objectAtIndex:0] subviews];
 
-  // There will be two buttons and one separator in the option buttons view.
   NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
-  ASSERT_EQ(3U, [buttonSubviews count]);
+  if (switches::IsMaterialDesignUserMenu()) {
+    // There will be two buttons and one separator in the option buttons view.
+    ASSERT_EQ(3U, [buttonSubviews count]);
+  } else {
+    // FOr non-material-design user menu, There will be three buttons and two
+    // separators in the option buttons view.
+    ASSERT_EQ(5U, [buttonSubviews count]);
+  }
 
   // There should be a lock button.
   NSButton* lockButton =
