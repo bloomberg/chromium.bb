@@ -25,7 +25,8 @@ const int kPort = 8888;
 class SocketsTcpServerApiTest : public ShellApiTest {
  public:
   SocketsTcpServerApiTest()
-      : resolver_event_(true, false),
+      : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
         resolver_creator_(new MockHostResolverCreator()) {}
 
   void SetUpOnMainThread() override {

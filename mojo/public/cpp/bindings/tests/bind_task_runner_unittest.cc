@@ -25,7 +25,8 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
   TestTaskRunner()
       : thread_id_(base::PlatformThread::CurrentRef()),
         quit_called_(false),
-        task_ready_(false, false) {}
+        task_ready_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,

@@ -46,7 +46,8 @@ void EstablishGpuChannelDone(
 GpuServiceMus::GpuServiceMus()
     : next_client_id_(kLocalGpuChannelClientId),
       main_message_loop_(base::MessageLoop::current()),
-      shutdown_event_(true, false),
+      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_thread_("GpuThread"),
       io_thread_("GpuIOThread") {
   Initialize();

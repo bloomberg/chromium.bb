@@ -16,8 +16,9 @@ const std::string MockHostResolverCreator::kHostname = "www.sowbug.com";
 const std::string MockHostResolverCreator::kAddress = "9.8.7.6";
 
 MockHostResolverCreator::MockHostResolverCreator()
-    : resolver_event_(true, false), mock_host_resolver_(NULL) {
-}
+    : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+      mock_host_resolver_(NULL) {}
 
 MockHostResolverCreator::~MockHostResolverCreator() {
 }

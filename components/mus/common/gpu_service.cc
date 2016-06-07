@@ -30,7 +30,8 @@ void GpuChannelEstablishCallback(int* client_id_out,
 
 GpuService::GpuService()
     : main_message_loop_(base::MessageLoop::current()),
-      shutdown_event_(false, false),
+      shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       io_thread_("GPUIOThread"),
       gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager) {
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);

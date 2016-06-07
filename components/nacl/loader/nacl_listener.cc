@@ -155,7 +155,8 @@ class BrowserValidationDBProxy : public NaClValidationDB {
 };
 
 NaClListener::NaClListener()
-    : shutdown_event_(true, false),
+    : shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       io_thread_("NaCl_IOThread"),
 #if defined(OS_LINUX)
       prereserved_sandbox_size_(0),

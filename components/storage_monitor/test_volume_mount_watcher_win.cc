@@ -122,7 +122,9 @@ void TestVolumeMountWatcherWin::DeviceCheckComplete(
 }
 
 void TestVolumeMountWatcherWin::BlockDeviceCheckForTesting() {
-  device_check_complete_event_.reset(new base::WaitableEvent(false, false));
+  device_check_complete_event_.reset(
+      new base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED));
   devices_checked_.clear();
 }
 

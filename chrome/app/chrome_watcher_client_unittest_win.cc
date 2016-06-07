@@ -130,7 +130,8 @@ class ChromeWatcherClientThread : public base::SimpleThread {
       : SimpleThread("ChromeWatcherClientTest thread"),
         client_(base::Bind(&ChromeWatcherClientThread::GenerateCommandLine,
                            base::Unretained(this))),
-        complete_(false, false),
+        complete_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                  base::WaitableEvent::InitialState::NOT_SIGNALED),
         result_(false) {}
 
   // Waits up to |timeout| for the call to EnsureInitialized to complete. If it

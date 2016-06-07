@@ -55,7 +55,8 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   FakeAudioInputCallback()
       : num_received_audio_frames_(0),
-        data_event_(false, false),
+        data_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED),
         error_(false) {}
 
   bool error() const { return error_; }

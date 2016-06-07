@@ -26,7 +26,8 @@ const std::string kHostname = "127.0.0.1";
 class SocketsTcpApiTest : public ShellApiTest {
  public:
   SocketsTcpApiTest()
-      : resolver_event_(true, false),
+      : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
         resolver_creator_(new MockHostResolverCreator()) {}
 
   void SetUpOnMainThread() override {

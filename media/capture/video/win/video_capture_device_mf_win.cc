@@ -273,7 +273,8 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
 
 void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
   DCHECK(CalledOnValidThread());
-  base::WaitableEvent flushed(false, false);
+  base::WaitableEvent flushed(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   const int kFlushTimeOutInMs = 1000;
   bool wait = false;
   {

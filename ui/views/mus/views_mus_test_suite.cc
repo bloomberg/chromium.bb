@@ -98,7 +98,8 @@ class ShellConnection {
  private:
   shell::Connector* GetConnector() {
     shell_connector_.reset();
-    base::WaitableEvent wait(false, false);
+    base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(FROM_HERE,
                                     base::Bind(&ShellConnection::CloneConnector,
                                                base::Unretained(this), &wait));

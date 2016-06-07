@@ -325,7 +325,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   // Use videos_.size() != 0 as a proxy for the class having already been
   // Initialize()'d, and UnInitialize() before continuing.
   if (videos_.size()) {
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     UnInitialize(&done);
     done.Wait();
   }

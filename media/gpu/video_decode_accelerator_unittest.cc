@@ -239,7 +239,8 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   void SetUp() override {
     rendering_thread_.Start();
 
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     rendering_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&RenderingHelper::InitializeOneOff, &done));
     done.Wait();
@@ -663,7 +664,8 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
   texture_target_ = texture_target;
   for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
     uint32_t texture_id;
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     rendering_helper_->CreateTexture(texture_target_, &texture_id, dimensions,
                                      &done);
     done.Wait();
@@ -1118,7 +1120,8 @@ void VideoDecodeAcceleratorTest::TearDown() {
       FROM_HERE, base::Bind(&STLDeleteElements<std::vector<TestVideoFile*>>,
                             &test_video_files_));
 
-  base::WaitableEvent done(false, false);
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&RenderingHelper::UnInitialize,
                             base::Unretained(&rendering_helper_), &done));
@@ -1196,7 +1199,8 @@ void VideoDecodeAcceleratorTest::InitializeRenderingHelper(
     const RenderingHelperParams& helper_params) {
   rendering_helper_.Setup();
 
-  base::WaitableEvent done(false, false);
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::Initialize,
@@ -1222,7 +1226,8 @@ void VideoDecodeAcceleratorTest::WaitUntilDecodeFinish(
 }
 
 void VideoDecodeAcceleratorTest::WaitUntilIdle() {
-  base::WaitableEvent done(false, false);
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
@@ -1429,7 +1434,8 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   if (render_as_thumbnails) {
     std::vector<unsigned char> rgb;
     bool alpha_solid;
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     g_env->GetRenderingTaskRunner()->PostTask(
         FROM_HERE, base::Bind(&RenderingHelper::GetThumbnailsAsRGB,
                               base::Unretained(&rendering_helper_), &rgb,
