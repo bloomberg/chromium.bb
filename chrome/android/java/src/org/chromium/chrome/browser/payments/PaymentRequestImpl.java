@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileEditor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.safejson.JsonSanitizer;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
@@ -39,6 +40,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -466,9 +468,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         JSONObject result;
         try {
-            result = new JSONObject(stringifiedData);
-        } catch (JSONException e) {
-            // Payment method specific data should be a JSON object.
+            result = new JSONObject(JsonSanitizer.sanitize(stringifiedData));
+        } catch (JSONException | IOException | IllegalStateException e) {
+            // Payment method specific data should be a valid JSON object.
             return null;
         }
 

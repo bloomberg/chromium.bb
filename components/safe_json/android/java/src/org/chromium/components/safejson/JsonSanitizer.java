@@ -34,12 +34,19 @@ public class JsonSanitizer {
      */
     private static final int MAX_NESTING_DEPTH = 100;
 
-    @CalledByNative
-    public static void sanitize(long nativePtr, String unsafeJson) {
+    /**
+     * Validates input JSON string and returns the sanitized version of the string that's safe to
+     * parse.
+     *
+     * @param unsafeJson The input string to validate and sanitize.
+     * @return The sanitized version of the input string.
+     */
+    public static String sanitize(String unsafeJson) throws IOException, IllegalStateException {
         JsonReader reader = new JsonReader(new StringReader(unsafeJson));
         StringWriter stringWriter = new StringWriter(unsafeJson.length());
         JsonWriter writer = new JsonWriter(stringWriter);
         StackChecker stackChecker = new StackChecker();
+        String result = null;
         try {
             boolean end = false;
             while (!end) {
@@ -94,14 +101,24 @@ public class JsonSanitizer {
                         break;
                 }
             }
-        } catch (IOException | IllegalStateException e) {
-            nativeOnError(nativePtr, e.getMessage());
-            return;
+            result = stringWriter.toString();
         } finally {
             StreamUtil.closeQuietly(reader);
             StreamUtil.closeQuietly(writer);
         }
-        nativeOnSuccess(nativePtr, stringWriter.toString());
+        return result;
+    }
+
+    @CalledByNative
+    public static void sanitize(long nativePtr, String unsafeJson) {
+        String result = null;
+        try {
+            result = sanitize(unsafeJson);
+        } catch (IOException | IllegalStateException e) {
+            nativeOnError(nativePtr, e.getMessage());
+            return;
+        }
+        nativeOnSuccess(nativePtr, result);
     }
 
     /**
