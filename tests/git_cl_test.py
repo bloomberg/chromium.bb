@@ -876,8 +876,10 @@ class TestGitCl(TestCase):
     """Generic gerrit upload test framework."""
     reviewers = reviewers or []
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
+    self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
+    self.mock(git_cl._GerritChangelistImpl, '_GerritCommitMsgHookCheck',
+              lambda _, offer_removal: None)
     self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
@@ -1580,6 +1582,50 @@ class TestGitCl(TestCase):
          ''),
     ]
     self.assertEqual(0, git_cl.main(['issue', '0']))
+
+  def _common_GerritCommitMsgHookCheck(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.mock(git_cl.os.path, 'abspath',
+              lambda path: self._mocked_call(['abspath', path]))
+    self.mock(git_cl.os.path, 'exists',
+              lambda path: self._mocked_call(['exists', path]))
+    self.mock(git_cl.gclient_utils, 'FileRead',
+              lambda path: self._mocked_call(['FileRead', path]))
+    self.mock(git_cl.gclient_utils, 'rm_file_or_tree',
+              lambda path: self._mocked_call(['rm_file_or_tree', path]))
+    self.calls = [
+        ((['git', 'rev-parse', '--show-cdup'],), '../'),
+        ((['abspath', '../'],), '/abs/git_repo_root'),
+    ]
+    return git_cl.Changelist(codereview='gerrit', issue=123)
+
+  def test_GerritCommitMsgHookCheck_custom_hook(self):
+    cl = self._common_GerritCommitMsgHookCheck()
+    self.calls += [
+        ((['exists', '/abs/git_repo_root/.git/hooks/commit-msg'],), True),
+        ((['FileRead', '/abs/git_repo_root/.git/hooks/commit-msg'],),
+         '#!/bin/sh\necho "custom hook"')
+    ]
+    cl._codereview_impl._GerritCommitMsgHookCheck(offer_removal=True)
+
+  def test_GerritCommitMsgHookCheck_not_exists(self):
+    cl = self._common_GerritCommitMsgHookCheck()
+    self.calls += [
+        ((['exists', '/abs/git_repo_root/.git/hooks/commit-msg'],), False),
+    ]
+    cl._codereview_impl._GerritCommitMsgHookCheck(offer_removal=True)
+
+  def test_GerritCommitMsgHookCheck(self):
+    cl = self._common_GerritCommitMsgHookCheck()
+    self.calls += [
+        ((['exists', '/abs/git_repo_root/.git/hooks/commit-msg'],), True),
+        ((['FileRead', '/abs/git_repo_root/.git/hooks/commit-msg'],),
+         '...\n# From Gerrit Code Review\n...\nadd_ChangeId()\n'),
+        (('Do you want to remove it now? [Yes/No]',), 'Yes'),
+        ((['rm_file_or_tree', '/abs/git_repo_root/.git/hooks/commit-msg'],),
+         ''),
+    ]
+    cl._codereview_impl._GerritCommitMsgHookCheck(offer_removal=True)
 
 
 if __name__ == '__main__':

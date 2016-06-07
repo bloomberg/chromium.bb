@@ -2314,6 +2314,27 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           hostname=parsed_url.netloc)
     return None
 
+  def _GerritCommitMsgHookCheck(self, offer_removal):
+    hook = os.path.join(settings.GetRoot(), '.git', 'hooks', 'commit-msg')
+    if not os.path.exists(hook):
+      return
+    # Crude attempt to distinguish Gerrit Codereview hook from potentially
+    # custom developer made one.
+    data = gclient_utils.FileRead(hook)
+    if not('From Gerrit Code Review' in data and 'add_ChangeId()' in data):
+      return
+    print('Warning: you have Gerrit commit-msg hook installed.\n'
+          'It is not neccessary for uploading with git cl in squash mode, '
+          'and may interfere with it in subtle ways.\n'
+          'We recommend you remove the commit-msg hook.')
+    if offer_removal:
+      reply = ask_for_data('Do you want to remove it now? [Yes/No]')
+      if reply.lower().startswith('y'):
+        gclient_utils.rm_file_or_tree(hook)
+        print('Gerrit commit-msg hook removed.')
+      else:
+        print('OK, will keep Gerrit commit-msg hook in place.')
+
   def CMDUploadChange(self, options, args, change):
     """Upload the current branch to Gerrit."""
     if options.squash and options.no_squash:
@@ -2329,6 +2350,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                           pending_prefix='')
 
     if options.squash:
+      self._GerritCommitMsgHookCheck(offer_removal=not options.force)
       if not self.GetIssue():
         # TODO(tandrii): deperecate this after 2016Q2.  Backwards compatibility
         # with shadow branch, which used to contain change-id for a given
