@@ -434,8 +434,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_audioTracks(AudioTrackList::create(*this))
     , m_videoTracks(VideoTrackList::create(*this))
     , m_textTracks(nullptr)
-    , m_playPromiseResolveTask(CancellableTaskFactory::create(this, &HTMLMediaElement::resolvePlayPromises))
-    , m_playPromiseRejectTask(CancellableTaskFactory::create(this, &HTMLMediaElement::rejectPlayPromises))
+    , m_playPromiseResolveTask(CancellableTaskFactory::create(this, &HTMLMediaElement::resolveScheduledPlayPromises))
+    , m_playPromiseRejectTask(CancellableTaskFactory::create(this, &HTMLMediaElement::rejectScheduledPlayPromises))
     , m_audioSourceNode(nullptr)
     , m_autoplayHelperClient(AutoplayHelperClientImpl::create(this))
     , m_autoplayHelper(AutoplayExperimentHelper::create(m_autoplayHelperClient.get()))
@@ -1394,7 +1394,9 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
         source->cancelPendingErrorEvent();
 
     m_playPromiseResolveTask->cancel();
+    m_playPromiseResolveList.clear();
     m_playPromiseRejectTask->cancel();
+    m_playPromiseRejectList.clear();
 }
 
 void HTMLMediaElement::networkStateChanged()
@@ -2021,8 +2023,20 @@ WebMediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
 
 ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState)
 {
+    // We have to share the same logic for internal and external callers. The
+    // internal callers do not want to receive a Promise back but when ::play()
+    // is called, |m_playPromiseResolvers| needs to be populated. What this code
+    // does is to populate |m_playPromiseResolvers| before calling ::play() and
+    // remove the Promise if ::play() failed.
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    m_playPromiseResolvers.append(resolver);
+
     Nullable<ExceptionCode> code = play();
     if (!code.isNull()) {
+        DCHECK(!m_playPromiseResolvers.isEmpty());
+        m_playPromiseResolvers.removeLast();
+
         String message;
         switch (code.get()) {
         case NotAllowedError:
@@ -2037,10 +2051,6 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(code.get(), message));
     }
 
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    m_playResolvers.append(resolver);
     return promise;
 }
 
@@ -3602,7 +3612,9 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_cueTimeline);
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
-    visitor->trace(m_playResolvers);
+    visitor->trace(m_playPromiseResolvers);
+    visitor->trace(m_playPromiseResolveList);
+    visitor->trace(m_playPromiseRejectList);
     visitor->trace(m_audioSourceProvider);
     visitor->trace(m_autoplayHelperClient);
     visitor->trace(m_autoplayHelper);
@@ -3699,10 +3711,19 @@ void HTMLMediaElement::triggerAutoplayViewportCheckForTesting()
 
 void HTMLMediaElement::scheduleResolvePlayPromises()
 {
-    // Per spec, if there are two tasks in the queue, the first task will remove
-    // all the pending promises making the second task useless unless a promise
-    // can be added between the first and second task being run which is not
-    // possible at the moment.
+    // TODO(mlamouri): per spec, we should create a new task but we can't create
+    // a new cancellable task without cancelling the previous one. There are two
+    // approaches then: cancel the previous task and create a new one with the
+    // appended promise list or append the new promise to the current list. The
+    // latter approach is preferred because it might be the less observable
+    // change.
+    DCHECK(m_playPromiseResolveList.isEmpty() || m_playPromiseResolveTask->isPending());
+    if (m_playPromiseResolvers.isEmpty())
+        return;
+
+    m_playPromiseResolveList.appendVector(m_playPromiseResolvers);
+    m_playPromiseResolvers.clear();
+
     if (m_playPromiseResolveTask->isPending())
         return;
 
@@ -3711,10 +3732,19 @@ void HTMLMediaElement::scheduleResolvePlayPromises()
 
 void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code)
 {
-    // Per spec, if there are two tasks in the queue, the first task will remove
-    // all the pending promises making the second task useless unless a promise
-    // can be added between the first and second task being run which is not
-    // possible at the moment.
+    // TODO(mlamouri): per spec, we should create a new task but we can't create
+    // a new cancellable task without cancelling the previous one. There are two
+    // approaches then: cancel the previous task and create a new one with the
+    // appended promise list or append the new promise to the current list. The
+    // latter approach is preferred because it might be the less observable
+    // change.
+    DCHECK(m_playPromiseRejectList.isEmpty() || m_playPromiseRejectTask->isPending());
+    if (m_playPromiseResolvers.isEmpty())
+        return;
+
+    m_playPromiseRejectList.appendVector(m_playPromiseResolvers);
+    m_playPromiseResolvers.clear();
+
     if (m_playPromiseRejectTask->isPending())
         return;
 
@@ -3730,34 +3760,41 @@ void HTMLMediaElement::scheduleNotifyPlaying()
     scheduleResolvePlayPromises();
 }
 
-void HTMLMediaElement::resolvePlayPromises()
+void HTMLMediaElement::resolveScheduledPlayPromises()
 {
-    for (auto& resolver: m_playResolvers)
+    for (auto& resolver: m_playPromiseResolveList)
         resolver->resolve();
 
-    m_playResolvers.clear();
+    m_playPromiseResolveList.clear();
 }
 
-void HTMLMediaElement::rejectPlayPromises()
+void HTMLMediaElement::rejectScheduledPlayPromises()
 {
     // TODO(mlamouri): the message is generated based on the code because
     // arguments can't be passed to a cancellable task. In order to save space
     // used by the object, the string isn't saved.
     DCHECK(m_playPromiseErrorCode == AbortError || m_playPromiseErrorCode == NotSupportedError);
     if (m_playPromiseErrorCode == AbortError)
-        rejectPlayPromises(AbortError, "The play() request was interrupted by a call to pause().");
+        rejectPlayPromisesInternal(AbortError, "The play() request was interrupted by a call to pause().");
     else
-        rejectPlayPromises(NotSupportedError, "Failed to load because no supported source was found.");
+        rejectPlayPromisesInternal(NotSupportedError, "Failed to load because no supported source was found.");
 }
 
 void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& message)
 {
+    m_playPromiseRejectList.appendVector(m_playPromiseResolvers);
+    m_playPromiseResolvers.clear();
+    rejectPlayPromisesInternal(code, message);
+}
+
+void HTMLMediaElement::rejectPlayPromisesInternal(ExceptionCode code, const String& message)
+{
     DCHECK(code == AbortError || code == NotSupportedError);
 
-    for (auto& resolver: m_playResolvers)
+    for (auto& resolver: m_playPromiseRejectList)
         resolver->reject(DOMException::create(code, message));
 
-    m_playResolvers.clear();
+    m_playPromiseRejectList.clear();
 }
 
 EnumerationHistogram& HTMLMediaElement::showControlsHistogram() const

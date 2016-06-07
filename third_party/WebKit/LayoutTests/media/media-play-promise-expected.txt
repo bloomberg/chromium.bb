@@ -167,5 +167,20 @@ play()
 RUN(mediaElement.volume = 0.2)
 arguments.length: 1
 Promise failed with NotSupportedError: The element has no supported sources.
+
+pausePlayAfterPlaybackStarted()
+RUN(mediaElement = document.createElement('audio'))
+RUN(mediaElement.src = 'content/test.wav')
+EVENT(volumechange)
+EVENT(volumechange)
+EVENT(canplaythrough)
+RUN(mediaElement.play())
+EVENT(playing)
+EXPECTED (mediaElement.readyState == '4') OK
+EXPECTED (mediaElement.paused == 'false') OK
+RUN(mediaElement.pause())
+play()
+arguments.length: 1
+Promise resolved with undefined
 END OF TEST
 

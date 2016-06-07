@@ -478,12 +478,10 @@ private:
     void scheduleResolvePlayPromises();
     void scheduleRejectPlayPromises(ExceptionCode);
     void scheduleNotifyPlaying();
-
-    void resolvePlayPromises();
-    // TODO(mlamouri): this is used for cancellable tasks because we can't pass
-    // parameters.
-    void rejectPlayPromises();
+    void resolveScheduledPlayPromises();
+    void rejectScheduledPlayPromises();
     void rejectPlayPromises(ExceptionCode, const String&);
+    void rejectPlayPromisesInternal(ExceptionCode, const String&);
 
     EnumerationHistogram& showControlsHistogram() const;
 
@@ -591,9 +589,11 @@ private:
 
     Member<CueTimeline> m_cueTimeline;
 
-    HeapVector<Member<ScriptPromiseResolver>> m_playResolvers;
+    HeapVector<Member<ScriptPromiseResolver>> m_playPromiseResolvers;
     OwnPtr<CancellableTaskFactory> m_playPromiseResolveTask;
     OwnPtr<CancellableTaskFactory> m_playPromiseRejectTask;
+    HeapVector<Member<ScriptPromiseResolver>> m_playPromiseResolveList;
+    HeapVector<Member<ScriptPromiseResolver>> m_playPromiseRejectList;
     ExceptionCode m_playPromiseErrorCode;
 
     // This is a weak reference, since m_audioSourceNode holds a reference to us.

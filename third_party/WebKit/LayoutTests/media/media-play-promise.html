@@ -65,7 +65,7 @@
 
     var TESTS = [
         // Test that play() on an element that doesn't have enough data will
-        // return a promise that resolves successfuly.
+        // return a promise that resolves successfully.
         function playBeforeCanPlay()
         {
             consoleWrite("playBeforeCanPlay()");
@@ -85,7 +85,7 @@
         },
 
         // Test that play() on an element that has enough data will return a
-        // promise that resolves successfuly.
+        // promise that resolves successfully.
         function playWhenCanPlay()
         {
             consoleWrite("playWhenCanPlay()");
@@ -105,6 +105,8 @@
             });
         },
 
+        // Test that play() on an element that is already playing returns a
+        // promise that resolves successfully.
         function playAfterPlaybackStarted()
         {
             consoleWrite("playAfterPlaybackStarted()");
@@ -391,7 +393,32 @@
                 run("mediaElement.volume = 0.2");
             });
 
-        }
+        },
+
+        // Test that calling pause() then play() on an element that is already
+        // playing returns a promise that resolves successfully.
+        function pausePlayAfterPlaybackStarted()
+        {
+            consoleWrite("pausePlayAfterPlaybackStarted()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            mediaElement.preload = "auto";
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing', function() {
+                testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_ENOUGH_DATA);
+                testExpected("mediaElement.paused", false);
+
+                run("mediaElement.pause()");
+                play();
+            });
+
+            waitForEvent('canplaythrough', function() {
+                run("mediaElement.play()");
+            });
+        },
     ];
 
     function start()
