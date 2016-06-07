@@ -41,6 +41,7 @@ import urlparse
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import clovis_constants
 import controller
 import loading_trace
 import options
@@ -234,7 +235,8 @@ def RunTest(webserver, test_page, expected):
     connection.ClearCache()
     observed_seq = InitiatorSequence(
         loading_trace.LoadingTrace.RecordUrlNavigation(
-            url, connection, chrome_controller.ChromeMetadata()))
+            url, connection, chrome_controller.ChromeMetadata(),
+            categories=clovis_constants.DEFAULT_CATEGORIES))
   if observed_seq == expected:
     sys.stdout.write(' ok\n')
     return True

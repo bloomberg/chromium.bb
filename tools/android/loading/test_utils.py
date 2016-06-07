@@ -4,6 +4,7 @@
 
 """Common utilities used in unit tests, within this directory."""
 
+import clovis_constants
 import dependency_graph
 import devtools_monitor
 import loading_trace
@@ -140,7 +141,8 @@ def LoadingTraceFromEvents(requests, page_events=None, trace_events=None):
   request = FakeRequestTrack(requests)
   page_event_track = FakePageTrack(page_events if page_events else [])
   if trace_events is not None:
-    tracing_track = tracing.TracingTrack(None)
+    tracing_track = tracing.TracingTrack(None,
+        clovis_constants.DEFAULT_CATEGORIES)
     tracing_track.Handle('Tracing.dataCollected',
                          {'params': {'value': [e for e in trace_events]}})
   else:

@@ -76,7 +76,7 @@ class LoadingTrace(object):
 
   @classmethod
   def RecordUrlNavigation(
-      cls, url, connection, chrome_metadata, additional_categories=None,
+      cls, url, connection, chrome_metadata, categories,
       timeout_seconds=devtools_monitor.DEFAULT_TIMEOUT_SECONDS):
     """Create a loading trace by using controller to fetch url.
 
@@ -84,8 +84,7 @@ class LoadingTrace(object):
       url: (str) url to fetch.
       connection: An opened devtools connection.
       chrome_metadata: Dictionary of chrome metadata.
-      additional_categories: ([str] or None) TracingTrack additional categories
-                             to capture.
+      categories: as in tracing.TracingTrack
       timeout_seconds: monitoring connection timeout in seconds.
 
     Returns:
@@ -93,9 +92,7 @@ class LoadingTrace(object):
     """
     page = page_track.PageTrack(connection)
     request = request_track.RequestTrack(connection)
-    trace = tracing.TracingTrack(
-        connection,
-        additional_categories=additional_categories)
+    trace = tracing.TracingTrack(connection, categories)
     start_date_str = datetime.datetime.utcnow().isoformat()
     seconds_since_epoch=time.time()
     connection.MonitorUrl(url, timeout_seconds=timeout_seconds)

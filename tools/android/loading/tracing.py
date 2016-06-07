@@ -4,23 +4,12 @@
 
 """Monitor tracing events on chrome via chrome remote debugging."""
 
-import bisect
 import itertools
 import logging
 import operator
 
+import clovis_constants
 import devtools_monitor
-
-
-QUEUING_CATEGORY = 'disabled-by-default-loading.resource'
-_ENABLED_CATEGORIES = (
-    ('toplevel', 'blink', 'v8', 'java', 'devtools.timeline',
-     'blink.user_timing', 'blink.net', 'disabled-by-default-blink.debug.layout')
-    + (QUEUING_CATEGORY,))
-_DISABLED_CATEGORIES = ('cc',) # Contains a lot of events, none of which we use.
-INITIAL_CATEGORIES = (
-    _ENABLED_CATEGORIES
-    + tuple('-' + cat for cat in _DISABLED_CATEGORIES))
 
 
 class TracingTrack(devtools_monitor.Track):
@@ -28,19 +17,14 @@ class TracingTrack(devtools_monitor.Track):
 
   See https://goo.gl/Qabkqk for details on the protocol.
   """
-  def __init__(self, connection, additional_categories=None,
-               disabled_categories=None,
-               fetch_stream=False):
+  def __init__(self, connection, categories, fetch_stream=False):
     """Initialize this TracingTrack.
 
     Args:
       connection: a DevToolsConnection.
-      additional_categories: ([str] or None) If set, a list of additional
-                             categories to add. This cannot be used to re-enable
-                             a category which is disabled by default (see
-                             _DISABLED_CATEGORIES), nor to disable a category.
-      disabled_categories: If set, a set of categories from _ENABLED_CATEGORIES
-                           to disable.
+      categories: ([str] or None) If set, a list of categories to enable or
+                  disable in Chrome tracing. Categories prefixed with '-' are
+                  disabled.
       fetch_stream: if true, use a websocket stream to fetch tracing data rather
         than dataCollected events. It appears based on very limited testing that
         a stream is slower than the default reporting as dataCollected events.
@@ -49,28 +33,7 @@ class TracingTrack(devtools_monitor.Track):
     if connection:
       connection.RegisterListener('Tracing.dataCollected', self)
 
-    categories_to_enable = _ENABLED_CATEGORIES
-    categories_to_disable = _DISABLED_CATEGORIES
-
-    if disabled_categories:
-      assert not any(cat.startswith('-') for cat in disabled_categories), (
-          'Specify categories to disable without an initial -')
-      assert set(disabled_categories).issubset(set(_ENABLED_CATEGORIES)), (
-          'Can only disable categories that are enabled by default')
-      categories_to_enable = (
-          set(categories_to_enable).difference(set(disabled_categories)))
-      categories_to_disable += disabled_categories
-
-    if additional_categories:
-      assert not any(cat.startswith('-') for cat in additional_categories), (
-          'Use disabled_categories to disable a category')
-      assert not (set(additional_categories) & set(_DISABLED_CATEGORIES)), (
-          'Cannot enable a disabled category')
-      categories_to_enable += tuple(additional_categories)
-
-    self._categories = set(
-        itertools.chain(categories_to_enable,
-                        tuple('-' + cat for cat in categories_to_disable)))
+    self._categories = set(categories)
     params = {}
     params['categories'] = ','.join(self._categories)
     if fetch_stream:
@@ -171,7 +134,7 @@ class TracingTrack(devtools_monitor.Track):
       events = filter(
           lambda e : set(e.category.split(',')).intersection(categories),
           events)
-    tracing_track = TracingTrack(None)
+    tracing_track = TracingTrack(None, clovis_constants.DEFAULT_CATEGORIES)
     tracing_track._events = events
     tracing_track._categories = self._categories
     if categories is not None:
@@ -188,7 +151,7 @@ class TracingTrack(devtools_monitor.Track):
       return None
     assert 'events' in json_dict
     events = [Event(e) for e in json_dict['events']]
-    tracing_track = TracingTrack(None)
+    tracing_track = TracingTrack(None, clovis_constants.DEFAULT_CATEGORIES)
     tracing_track._categories = set(json_dict.get('categories', []))
     tracing_track._events = events
     tracing_track._base_msec = events[0].start_msec if events else 0

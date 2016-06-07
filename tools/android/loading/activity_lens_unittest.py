@@ -7,6 +7,7 @@ import copy
 import unittest
 
 from activity_lens import (ActivityLens, _EventsTree)
+import clovis_constants
 import test_utils
 import tracing
 
@@ -14,13 +15,15 @@ import tracing
 class ActivityLensTestCase(unittest.TestCase):
   @classmethod
   def _EventsFromRawEvents(cls, raw_events):
-    tracing_track = tracing.TracingTrack(None)
+    tracing_track = tracing.TracingTrack(None,
+        clovis_constants.DEFAULT_CATEGORIES)
     tracing_track.Handle(
         'Tracing.dataCollected', {'params': {'value': raw_events}})
     return tracing_track.GetEvents()
 
   def setUp(self):
-    self.tracing_track = tracing.TracingTrack(None)
+    self.tracing_track = tracing.TracingTrack(None,
+        clovis_constants.DEFAULT_CATEGORIES)
 
   def testGetRendererMainThread(self):
     first_renderer_tid = 12345

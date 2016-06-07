@@ -25,6 +25,7 @@ import devil_chromium
 from pylib import constants
 
 import activity_lens
+import clovis_constants
 import content_classification_lens
 import controller
 import device_setup
@@ -121,7 +122,8 @@ def _LogRequests(url, clear_cache_override=None):
       if clear_cache:
         connection.ClearCache()
       trace = loading_trace.LoadingTrace.RecordUrlNavigation(
-          url, connection, chrome_ctl.ChromeMetadata())
+          url, connection, chrome_ctl.ChromeMetadata(),
+          categories=clovis_constants.DEFAULT_CATEGORIES)
   except controller.ChromeControllerError as e:
     e.Dump(sys.stderr)
     raise

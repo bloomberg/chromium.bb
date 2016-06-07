@@ -12,12 +12,12 @@ import collections
 import itertools
 import logging
 
-import tracing
+import clovis_constants
 
 
 class QueuingLens(object):
   """Attaches queuing related trace events to request objects."""
-  QUEUING_CATEGORY = tracing.QUEUING_CATEGORY
+  QUEUING_CATEGORY = clovis_constants.QUEUING_CATEGORY
   ASYNC_NAME = 'ScheduledResourceRequest'
   READY_NAME = 'ScheduledResourceRequest.Ready'
   SET_PRIORITY_NAME = 'ScheduledResourceRequest.SetPriority'

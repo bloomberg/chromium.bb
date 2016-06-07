@@ -53,8 +53,8 @@ _MINIMALIST_TRACE_EVENTS = [
 def TracingTrack(events):
   return tracing.TracingTrack.FromJsonDict({
       'events': events,
-      'categories': (tracing.INITIAL_CATEGORIES +
-          (sandwich_runner.MEMORY_DUMP_CATEGORY,))})
+      'categories': (sandwich_runner._TRACING_CATEGORIES +
+          [sandwich_runner.MEMORY_DUMP_CATEGORY])})
 
 
 def LoadingTrace(events):
