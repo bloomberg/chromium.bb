@@ -49,6 +49,17 @@ class SyncService;
 
 namespace ntp_snippets {
 
+enum class DisabledReason {
+  // Snippets are enabled
+  NONE,
+  // Snippets have been disabled as part of the service configuration.
+  EXPLICITLY_DISABLED,
+  // History sync is not enabled, and the service requires it to be enabled.
+  HISTORY_SYNC_DISABLED,
+  // The sync service is not completely initialized, and the status is unknown.
+  HISTORY_SYNC_STATE_UNKNOWN
+};
+
 class NTPSnippetsDatabase;
 class NTPSnippetsServiceObserver;
 
@@ -79,9 +90,14 @@ class NTPSnippetsService : public KeyedService,
   // Inherited from KeyedService.
   void Shutdown() override;
 
-  // Returns whether the initial set of snippets has been loaded from the
-  // database. While this is false, the list of snippets will be empty.
-  bool loaded() const { return state_ == State::LOADED; }
+  // Returns whether the service is ready. While this is false, the list of
+  // snippets will be empty, and all modifications to it (fetch, discard, etc)
+  // will be ignored.
+  bool ready() const { return state_ == State::READY; }
+
+  // Returns whether the service is initialized. While this is false, some
+  // calls may trigger DCHECKs.
+  bool initialized() const { return ready() || state_ == State::DISABLED; }
 
   // Fetches snippets from the server and adds them to the current ones.
   void FetchSnippets();
@@ -131,14 +147,54 @@ class NTPSnippetsService : public KeyedService,
   void AddObserver(NTPSnippetsServiceObserver* observer);
   void RemoveObserver(NTPSnippetsServiceObserver* observer);
 
+  // Returns a reason why the service could be disabled, or DisabledReason::NONE
+  // if it's not.
+  DisabledReason GetDisabledReason() const;
+
   // Returns the maximum number of snippets that will be shown at once.
   static int GetMaxSnippetCountForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceWithSyncTest,
-                           SyncStateCompatibility);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceWithSyncTest,
-                           HistorySyncStateChanges);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, SyncStateCompatibility);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, HistorySyncStateChanges);
+
+  // Possible state transitions:
+  //  +------- NOT_INITED ------+
+  //  |        /       \        |
+  //  |   READY <--> DISABLED <-+
+  //  |       \        /
+  //  +-----> SHUT_DOWN
+  enum class State {
+    // The service has just been created. Can change to states:
+    // - DISABLED: if the constructor was called with |enabled == false| . In
+    //             that case the service will stay disabled until it is shut
+    //             down. It can also enter this state after the database is
+    //             done loading and GetStateForDependenciesStatus identifies
+    //             the next state to be DISABLED.
+    // - READY: if GetStateForDependenciesStatus returns it, after the database
+    //          is done loading.
+    NOT_INITED,
+
+    // The service registered observers, timers, etc. and is ready to answer to
+    // queries, fetch snippets... Can change to states:
+    // - READY: noop
+    // - DISABLED: when the global Chrome state changes, for example after
+    //             |OnStateChanged| is called and sync is disabled.
+    // - SHUT_DOWN: when |Shutdown| is called, during the browser shutdown.
+    READY,
+
+    // The service is disabled and unregistered the related resources.
+    // Can change to states:
+    // - DISABLED: noop
+    // - READY: when the global Chrome state changes, for example after
+    //          |OnStateChanged| is called and sync is enabled.
+    // - SHUT_DOWN: when |Shutdown| is called, during the browser shutdown.
+    DISABLED,
+
+    // The service shutdown and can't be used anymore. This state is checked
+    // for early exit in callbacks from observers.
+    SHUT_DOWN
+  };
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
@@ -160,24 +216,32 @@ class NTPSnippetsService : public KeyedService,
 
   void LoadingSnippetsFinished();
 
-  // Checks whether the state of the sync service is incompatible with showing
-  // snippets. We need history sync to be active.
-  // Note: The state is considered compatible if the service is still
-  // initializing and the sync state is not known.
-  bool IsSyncStateIncompatible();
+  // Returns whether the service should be enabled or disable depending on its
+  // internal state and the state of its dependencies.
+  State GetStateForDependenciesStatus();
+
+  // Verifies state transitions (see |State|'s documentation) and applies them.
+  void EnterState(State state);
+
+  // Enables the service and triggers a fetch if required. Do not call directly,
+  // use |EnterState| instead.
+  void EnterStateEnabled(bool fetch_snippets);
+
+  // Disables the service. Do not call directly, use |EnterState| instead.
+  void EnterStateDisabled();
+
+  // Applies the effects of the transition to the SHUT_DOWN state. Do not call
+  // directly, use |EnterState| instead.
+  void EnterStateShutdown();
 
   void ClearDeprecatedPrefs();
 
-  enum class State {
-    INITED,    // Initial state before the DB has been loaded; no snippets yet.
-    LOADED,    // DB has been loaded and the service is ready for action.
-    SHUT_DOWN  // Shutdown has been called, service is inactive.
-  } state_;
+  State state_;
 
-  // When |enabled_| is true the service will fetch snippets from the server
-  // using |snippets_fetcher_|, load snippets from device storage, and schedule
-  // the |scheduler_|.
-  bool enabled_;
+  // The service was set up to be disabled and should not be enabled by any
+  // state change. We track this to make sure we clear scheduled tasks, which
+  // persist even when Chrome is stopped.
+  bool explicitly_disabled_;
 
   PrefService* pref_service_;
 

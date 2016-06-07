@@ -243,7 +243,7 @@ class WaitForDBLoad : public NTPSnippetsServiceObserver {
  public:
   WaitForDBLoad(NTPSnippetsService* service) : service_(service) {
     service_->AddObserver(this);
-    if (!service_->loaded())
+    if (!service_->ready())
       run_loop_.Run();
   }
 
@@ -253,7 +253,7 @@ class WaitForDBLoad : public NTPSnippetsServiceObserver {
 
  private:
   void NTPSnippetsServiceLoaded() override {
-    EXPECT_TRUE(service_->loaded());
+    EXPECT_TRUE(service_->ready());
     run_loop_.Quit();
   }
 
@@ -301,6 +301,7 @@ class NTPSnippetsServiceTest : public testing::Test {
   }
 
   void SetUp() override {
+    ResetSyncServiceMock();
     EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
     CreateSnippetsService(/*enabled=*/true);
   }
@@ -386,14 +387,6 @@ class NTPSnippetsServiceTest : public testing::Test {
   base::ScopedTempDir database_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
-};
-
-class NTPSnippetsServiceWithSyncTest : public NTPSnippetsServiceTest {
- public:
-  void SetUp() override {
-    ResetSyncServiceMock();
-    NTPSnippetsServiceTest::SetUp();
-  }
 };
 
 class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
@@ -881,14 +874,15 @@ TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
   ASSERT_THAT(service()->snippets(), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceWithSyncTest, SyncStateCompatibility) {
+TEST_F(NTPSnippetsServiceTest, SyncStateCompatibility) {
   // The default test setup has a compatible sync state.
-  EXPECT_FALSE(service()->IsSyncStateIncompatible());
+  EXPECT_EQ(DisabledReason::NONE, service()->GetDisabledReason());
 
   // History sync disabled.
   ON_CALL(*mock_sync_service(), GetActiveDataTypes())
       .WillByDefault(Return(syncer::ModelTypeSet()));
-  EXPECT_TRUE(service()->IsSyncStateIncompatible());
+  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
+            service()->GetDisabledReason());
   ResetSyncServiceMock();
 
   // Not done loading.
@@ -896,20 +890,23 @@ TEST_F(NTPSnippetsServiceWithSyncTest, SyncStateCompatibility) {
       .WillByDefault(Return(false));
   ON_CALL(*mock_sync_service(), GetActiveDataTypes())
       .WillByDefault(Return(syncer::ModelTypeSet()));
-  EXPECT_FALSE(service()->IsSyncStateIncompatible());
+  EXPECT_EQ(DisabledReason::HISTORY_SYNC_STATE_UNKNOWN,
+            service()->GetDisabledReason());
   ResetSyncServiceMock();
 
   // Sync disabled.
   ON_CALL(*mock_sync_service(), CanSyncStart()).WillByDefault(Return(false));
-  EXPECT_TRUE(service()->IsSyncStateIncompatible());
+  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
+            service()->GetDisabledReason());
   ResetSyncServiceMock();
 
   // No service.
   service()->sync_service_ = nullptr;
-  EXPECT_TRUE(service()->IsSyncStateIncompatible());
+  EXPECT_EQ(DisabledReason::HISTORY_SYNC_DISABLED,
+            service()->GetDisabledReason());
 }
 
-TEST_F(NTPSnippetsServiceWithSyncTest, HistorySyncStateChanges) {
+TEST_F(NTPSnippetsServiceTest, HistorySyncStateChanges) {
   MockServiceObserver mock_observer;
   service()->AddObserver(&mock_observer);
 
@@ -921,14 +918,17 @@ TEST_F(NTPSnippetsServiceWithSyncTest, HistorySyncStateChanges) {
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
   service()->OnStateChanged();
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(NTPSnippetsService::State::DISABLED, service()->state_);
   EXPECT_THAT(service()->snippets(), IsEmpty()); // No fetch should be made.
 
   // Simulate user sign in.
   ResetSyncServiceMock();
   // The service should be ready again and load snippets.
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
   service()->OnStateChanged();
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(NTPSnippetsService::State::READY, service()->state_);
   EXPECT_FALSE(service()->snippets().empty());
 
   service()->RemoveObserver(&mock_observer);
