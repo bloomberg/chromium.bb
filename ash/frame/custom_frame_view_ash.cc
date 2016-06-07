@@ -12,6 +12,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
@@ -249,7 +250,7 @@ int CustomFrameViewAsh::HeaderView::GetMinimumWidth() const {
 void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
   SessionStateDelegate* delegate =
       Shell::GetInstance()->session_state_delegate();
-  aura::Window* window = frame_->GetNativeView();
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(frame_);
   bool show = delegate->ShouldShowAvatar(window);
   if (!show) {
     if (!avatar_icon_)

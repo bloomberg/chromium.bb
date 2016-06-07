@@ -40,8 +40,8 @@ class SessionStateDelegateChromeos
   SessionState GetSessionState() const override;
   const user_manager::UserInfo* GetUserInfo(
       ash::UserIndex index) const override;
-  bool ShouldShowAvatar(aura::Window* window) const override;
-  gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override;
+  bool ShouldShowAvatar(ash::WmWindow* window) const override;
+  gfx::ImageSkia GetAvatarImageForWindow(ash::WmWindow* window) const override;
   void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(CycleUser cycle_user) override;
   bool IsMultiProfileAllowedByPrimaryUserPolicy() const override;

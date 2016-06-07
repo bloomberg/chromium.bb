@@ -212,12 +212,12 @@ const user_manager::UserInfo* TestSessionStateDelegate::GetUserInfo(
   return user_list_[index < max ? index : max - 1];
 }
 
-bool TestSessionStateDelegate::ShouldShowAvatar(aura::Window* window) const {
+bool TestSessionStateDelegate::ShouldShowAvatar(WmWindow* window) const {
   return !GetActiveUserInfo()->GetImage().isNull();
 }
 
 gfx::ImageSkia TestSessionStateDelegate::GetAvatarImageForWindow(
-    aura::Window* window) const {
+    WmWindow* window) const {
   return gfx::ImageSkia();
 }
 

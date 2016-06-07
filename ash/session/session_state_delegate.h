@@ -12,10 +12,6 @@
 
 class AccountId;
 
-namespace aura {
-class Window;
-}
-
 namespace gfx {
 class ImageSkia;
 }
@@ -27,6 +23,7 @@ class UserInfo;
 namespace ash {
 
 class SessionStateObserver;
+class WmWindow;
 
 // Delegate for checking and modifying the session state.
 class ASH_EXPORT SessionStateDelegate {
@@ -59,7 +56,7 @@ class ASH_EXPORT SessionStateDelegate {
     SESSION_STATE_LOGIN_SECONDARY,
   };
 
-  virtual ~SessionStateDelegate() {};
+  virtual ~SessionStateDelegate() {}
 
   // Returns the maximum possible number of logged in users.
   virtual int GetMaximumNumberOfLoggedInUsers() const = 0;
@@ -109,11 +106,10 @@ class ASH_EXPORT SessionStateDelegate {
   virtual const user_manager::UserInfo* GetUserInfo(UserIndex index) const = 0;
 
   // Whether or not the window's title should show the avatar.
-  virtual bool ShouldShowAvatar(aura::Window* window) const = 0;
+  virtual bool ShouldShowAvatar(WmWindow* window) const = 0;
 
   // Returns the avatar image for the specified window.
-  virtual gfx::ImageSkia GetAvatarImageForWindow(
-      aura::Window* window) const = 0;
+  virtual gfx::ImageSkia GetAvatarImageForWindow(WmWindow* window) const = 0;
 
   // Switches to another active user with |account_id|
   // (if that user has already signed in).

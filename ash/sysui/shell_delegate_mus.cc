@@ -56,10 +56,12 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   const user_manager::UserInfo* GetUserInfo(UserIndex index) const override {
     return user_info_.get();
   }
-  bool ShouldShowAvatar(aura::Window* window) const override {
+  bool ShouldShowAvatar(WmWindow* window) const override {
+    NOTIMPLEMENTED();
     return !user_info_->GetImage().isNull();
   }
-  gfx::ImageSkia GetAvatarImageForWindow(aura::Window* window) const override {
+  gfx::ImageSkia GetAvatarImageForWindow(WmWindow* window) const override {
+    NOTIMPLEMENTED();
     return gfx::ImageSkia();
   }
   void SwitchActiveUser(const AccountId& account_id) override {}
