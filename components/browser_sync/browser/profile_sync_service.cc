@@ -1154,9 +1154,7 @@ void ProfileSyncService::OnConnectionStatusChange(
       // possible that sync flips between OK and auth error states rapidly,
       // thus hammers token server. To be safe, only reset backoff delay when
       // no scheduled request.
-      if (request_access_token_retry_timer_.IsRunning()) {
-        NOTREACHED();
-      } else {
+      if (!request_access_token_retry_timer_.IsRunning()) {
         request_access_token_backoff_.Reset();
       }
     }
