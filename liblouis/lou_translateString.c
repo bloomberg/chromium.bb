@@ -1560,6 +1560,10 @@ doCompTrans (int start, int end)
       return 0;
   for (k = start; k < end; k++)
     {
+      /* HACK: computer braille is one-to-one so it
+         can't have any emphasis indicators.
+         A better solution is to treat computer braille as its own mode. */
+      emphasisBuffer[k] = 0;
       TranslationTableOffset compdots = 0;
       if (currentInput[k] == ENDSEGMENT)
 	{
