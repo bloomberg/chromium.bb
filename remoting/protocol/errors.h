@@ -5,12 +5,15 @@
 #ifndef REMOTING_PROTOCOL_ERROR_H_
 #define REMOTING_PROTOCOL_ERROR_H_
 
+#include <string>
+
 namespace remoting {
 namespace protocol {
 
 // The UI implementations maintain corresponding definitions of this
-// enumeration in webapp/error.js and
-// android/java/src/org/chromium/chromoting/jni/JniInterface.java.
+// enumeration in webapp/base/js/error.js, webapp/base/js/chromoting_event.js,
+// android/java/src/org/chromium/chromoting/jni/ConnectionListener.java and
+// remoting/protocol/errors.cc.
 // Be sure to update these locations if you make any changes to the ordering.
 enum ErrorCode {
   OK = 0,
@@ -29,6 +32,8 @@ enum ErrorCode {
 
   ERROR_CODE_MAX = UNKNOWN_ERROR,
 };
+
+bool ParseErrorCode(const std::string& name, ErrorCode* result);
 
 // Returns the literal string of |error|.
 const char* ErrorCodeToString(ErrorCode error);

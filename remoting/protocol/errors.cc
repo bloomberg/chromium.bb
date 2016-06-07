@@ -5,32 +5,37 @@
 #include "remoting/protocol/errors.h"
 
 #include "base/logging.h"
+#include "remoting/protocol/name_value_map.h"
 
 namespace remoting {
 namespace protocol {
 
-#define RETURN_STRING_LITERAL(x) \
-case x: \
-return #x;
+namespace {
+
+const NameMapElement<ErrorCode> kErrorCodeNames[] = {
+  { OK, "OK" },
+  { PEER_IS_OFFLINE, "PEER_IS_OFFLINE" },
+  { SESSION_REJECTED, "SESSION_REJECTED" },
+  { INCOMPATIBLE_PROTOCOL, "INCOMPATIBLE_PROTOCOL" },
+  { AUTHENTICATION_FAILED, "AUTHENTICATION_FAILED" },
+  { INVALID_ACCOUNT, "INVALID_ACCOUNT" },
+  { CHANNEL_CONNECTION_ERROR, "CHANNEL_CONNECTION_ERROR" },
+  { SIGNALING_ERROR, "SIGNALING_ERROR" },
+  { SIGNALING_TIMEOUT, "SIGNALING_TIMEOUT" },
+  { HOST_OVERLOAD, "HOST_OVERLOAD" },
+  { MAX_SESSION_LENGTH, "MAX_SESSION_LENGTH" },
+  { HOST_CONFIGURATION_ERROR, "HOST_CONFIGURATION_ERROR" },
+  { UNKNOWN_ERROR, "UNKNOWN_ERROR" },
+};
+
+}  // namespace
 
 const char* ErrorCodeToString(ErrorCode error) {
-  switch (error) {
-    RETURN_STRING_LITERAL(OK);
-    RETURN_STRING_LITERAL(PEER_IS_OFFLINE);
-    RETURN_STRING_LITERAL(SESSION_REJECTED);
-    RETURN_STRING_LITERAL(INCOMPATIBLE_PROTOCOL);
-    RETURN_STRING_LITERAL(AUTHENTICATION_FAILED);
-    RETURN_STRING_LITERAL(INVALID_ACCOUNT);
-    RETURN_STRING_LITERAL(CHANNEL_CONNECTION_ERROR);
-    RETURN_STRING_LITERAL(SIGNALING_ERROR);
-    RETURN_STRING_LITERAL(SIGNALING_TIMEOUT);
-    RETURN_STRING_LITERAL(HOST_OVERLOAD);
-    RETURN_STRING_LITERAL(MAX_SESSION_LENGTH);
-    RETURN_STRING_LITERAL(HOST_CONFIGURATION_ERROR);
-    RETURN_STRING_LITERAL(UNKNOWN_ERROR);
-  }
-  NOTREACHED();
-  return nullptr;
+  return ValueToName(kErrorCodeNames, error);
+}
+
+bool ParseErrorCode(const std::string& name, ErrorCode* result) {
+  return NameToValue(kErrorCodeNames, name, result);
 }
 
 }  // namespace protocol

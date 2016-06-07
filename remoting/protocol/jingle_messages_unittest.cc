@@ -570,5 +570,35 @@ TEST(JingleMessageTest, ErrorMessage) {
   EXPECT_FALSE(error.empty());
 }
 
+TEST(JingleMessageTest, RemotingErrorCode) {
+  const char* kTestSessionTerminateMessageBegin =
+      "<cli:iq from='user@gmail.com/chromoting016DBB07' "
+      "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
+      "xmlns:cli='jabber:client'><jingle action='session-terminate' "
+      "sid='2227053353' xmlns='urn:xmpp:jingle:1'><reason><decline/></reason>"
+      "<gr:error-code xmlns:gr='google:remoting'>";
+  const char* kTestSessionTerminateMessageEnd =
+      "</gr:error-code>"
+      "</jingle></cli:iq>";
+
+  for (int i = OK; i <= ERROR_CODE_MAX; i++) {
+    ErrorCode error = static_cast<ErrorCode>(i);
+    std::string message_str = kTestSessionTerminateMessageBegin;
+    message_str.append(ErrorCodeToString(error));
+    message_str.append(kTestSessionTerminateMessageEnd);
+    JingleMessage message;
+    if (error == UNKNOWN_ERROR) {
+      // We do not include UNKNOWN_ERROR in xml output, so VerifyXml will fail.
+      ParseJingleMessageFromXml(message_str.c_str(), &message);
+    } else {
+      ParseFormatAndCompare(message_str.c_str(), &message);
+    }
+
+    EXPECT_EQ(message.action, JingleMessage::SESSION_TERMINATE);
+    EXPECT_EQ(message.reason, JingleMessage::DECLINE);
+    EXPECT_EQ(message.error_code, error);
+  }
+}
+
 }  // namespace protocol
 }  // namespace remoting

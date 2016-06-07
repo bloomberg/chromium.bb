@@ -49,7 +49,6 @@ const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
 const NameMapElement<JingleMessage::Reason> kReasons[] = {
   { JingleMessage::SUCCESS, "success" },
   { JingleMessage::DECLINE, "decline" },
-  { JingleMessage::SECURITY_ERROR, "security-error" },
   { JingleMessage::CANCEL, "cancel" },
   { JingleMessage::EXPIRED, "expired" },
   { JingleMessage::GENERAL_ERROR, "general-error" },
@@ -365,6 +364,16 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     }
   }
 
+  const XmlElement* error_code_tag =
+      jingle_tag->FirstNamed(QName(kChromotingXmlNamespace, "error-code"));
+  if (error_code_tag && !error_code_tag->BodyText().empty()) {
+    if (!ParseErrorCode(error_code_tag->BodyText(), &error_code)) {
+      LOG(WARNING) << "Unknown error-code received "
+                   << error_code_tag->BodyText();
+      error_code = UNKNOWN_ERROR;
+    }
+  }
+
   if (action == SESSION_TERMINATE)
     return true;
 
@@ -382,7 +391,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   }
 
   const XmlElement* webrtc_transport_tag = content_tag->FirstNamed(
-      QName("google:remoting:webrtc", "transport"));
+      QName(kWebrtcTransportNamespace, "transport"));
   if (webrtc_transport_tag) {
     transport_info.reset(new buzz::XmlElement(*webrtc_transport_tag));
   }
@@ -446,12 +455,15 @@ std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
   if (reason != UNKNOWN_REASON) {
     XmlElement* reason_tag = new XmlElement(QName(kJingleNamespace, "reason"));
     jingle_tag->AddElement(reason_tag);
-    const char* reason_string =
-        ValueToName(kReasons, reason);
-    if (!reason_string)
-      LOG(FATAL) << "Invalid reason: " << reason;
     reason_tag->AddElement(new XmlElement(
-        QName(kJingleNamespace, reason_string)));
+        QName(kJingleNamespace, ValueToName(kReasons, reason))));
+
+    if (error_code != UNKNOWN_ERROR) {
+      XmlElement* error_code_tag =
+          new XmlElement(QName(kChromotingXmlNamespace, "error-code"));
+      jingle_tag->AddElement(error_code_tag);
+      error_code_tag->SetBodyText(ErrorCodeToString(error_code));
+    }
   }
 
   if (action != SESSION_TERMINATE) {

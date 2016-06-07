@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "remoting/protocol/errors.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/p2p/base/candidate.h"
 
@@ -67,7 +68,6 @@ struct JingleMessage {
     GENERAL_ERROR,
     FAILED_APPLICATION,
     INCOMPATIBLE_PARAMETERS,
-    SECURITY_ERROR,
   };
 
 
@@ -105,6 +105,11 @@ struct JingleMessage {
   // message. Useful mainly for session-terminate messages, but Jingle
   // spec allows it in any message.
   Reason reason = UNKNOWN_REASON;
+
+  // Value from the <google:remoting:error-code> tag if it is present in the
+  // message. Useful mainly for session-terminate messages. If it's UNKNOWN,
+  // or reason is UNKNOWN_REASON, this field will be ignored in the xml output.
+  ErrorCode error_code = UNKNOWN_ERROR;
 };
 
 struct JingleMessageReply {

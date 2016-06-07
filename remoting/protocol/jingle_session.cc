@@ -246,12 +246,8 @@ void JingleSession::Close(protocol::ErrorCode error) {
         break;
       case SESSION_REJECTED:
       case AUTHENTICATION_FAILED:
-        reason = JingleMessage::DECLINE;
-        break;
       case INVALID_ACCOUNT:
-        // TODO(zijiehe): Instead of using SECURITY_ERROR Jingle reason, add a
-        // new tag under crd namespace to export detail error reason to client.
-        reason = JingleMessage::SECURITY_ERROR;
+        reason = JingleMessage::DECLINE;
         break;
       case INCOMPATIBLE_PROTOCOL:
         reason = JingleMessage::INCOMPATIBLE_PARAMETERS;
@@ -272,6 +268,7 @@ void JingleSession::Close(protocol::ErrorCode error) {
     JingleMessage message(peer_address_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
     message.reason = reason;
+    message.error_code = error;
     SendMessage(message);
   }
 
@@ -481,37 +478,45 @@ void JingleSession::OnTerminate(const JingleMessage& message,
 
   reply_callback.Run(JingleMessageReply::NONE);
 
-  switch (message.reason) {
-    case JingleMessage::SUCCESS:
-      if (state_ == CONNECTING) {
-        error_ = SESSION_REJECTED;
-      } else {
-        error_ = OK;
-      }
-      break;
-    case JingleMessage::DECLINE:
-      error_ = AUTHENTICATION_FAILED;
-      break;
-    case JingleMessage::SECURITY_ERROR:
-      error_ = INVALID_ACCOUNT;
-      break;
-    case JingleMessage::CANCEL:
-      error_ = HOST_OVERLOAD;
-      break;
-    case JingleMessage::EXPIRED:
-      error_ = MAX_SESSION_LENGTH;
-      break;
-    case JingleMessage::INCOMPATIBLE_PARAMETERS:
-      error_ = INCOMPATIBLE_PROTOCOL;
-      break;
-    case JingleMessage::FAILED_APPLICATION:
-      error_ = HOST_CONFIGURATION_ERROR;
-      break;
-    case JingleMessage::GENERAL_ERROR:
-      error_ = CHANNEL_CONNECTION_ERROR;
-      break;
-    default:
-      error_ = UNKNOWN_ERROR;
+  error_ = message.error_code;
+  if (error_ == UNKNOWN_ERROR) {
+    // get error code from message.reason for compatibility with older versions
+    // that do not add <error-code>.
+    switch (message.reason) {
+      case JingleMessage::SUCCESS:
+        if (state_ == CONNECTING) {
+          error_ = SESSION_REJECTED;
+        } else {
+          error_ = OK;
+        }
+        break;
+      case JingleMessage::DECLINE:
+        error_ = AUTHENTICATION_FAILED;
+        break;
+      case JingleMessage::CANCEL:
+        error_ = HOST_OVERLOAD;
+        break;
+      case JingleMessage::EXPIRED:
+        error_ = MAX_SESSION_LENGTH;
+        break;
+      case JingleMessage::INCOMPATIBLE_PARAMETERS:
+        error_ = INCOMPATIBLE_PROTOCOL;
+        break;
+      case JingleMessage::FAILED_APPLICATION:
+        error_ = HOST_CONFIGURATION_ERROR;
+        break;
+      case JingleMessage::GENERAL_ERROR:
+        error_ = CHANNEL_CONNECTION_ERROR;
+        break;
+      default:
+        error_ = UNKNOWN_ERROR;
+    }
+  } else if (error_ == SESSION_REJECTED) {
+    // For backward compatibility, we still use AUTHENTICATION_FAILED for
+    // SESSION_REJECTED error.
+    // TODO(zijiehe): Handle SESSION_REJECTED error in WebApp. Tracked by
+    // http://crbug.com/618036.
+    error_ = AUTHENTICATION_FAILED;
   }
 
   if (error_ != OK) {

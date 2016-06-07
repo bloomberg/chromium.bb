@@ -4,6 +4,9 @@
 //
 // Helper functions that allow to map enum values to strings.
 
+#ifndef REMOTING_PROTOCOL_NAME_VALUE_MAP_H_
+#define REMOTING_PROTOCOL_NAME_VALUE_MAP_H_
+
 #include <stddef.h>
 
 #include "base/logging.h"
@@ -42,3 +45,5 @@ bool NameToValue(const NameMapElement<T> (&map)[N],
 
 }  // namespace protocol
 }  // namespace remoting
+
+#endif  // REMOTING_PROTOCOL_NAME_VALUE_MAP_H_
