@@ -36,7 +36,10 @@ struct ArrayTraits<WTF::Vector<U>> {
     return input[index];
   }
 
-  static void Resize(WTF::Vector<U>& input, size_t size) { input.resize(size); }
+  static bool Resize(WTF::Vector<U>& input, size_t size) {
+    input.resize(size);
+    return true;
+  }
 };
 
 }  // namespace mojo

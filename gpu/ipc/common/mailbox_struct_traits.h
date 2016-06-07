@@ -26,7 +26,7 @@ struct ArrayTraits<MailboxName> {
   static const int8_t* GetData(const MailboxName& b);
   static int8_t& GetAt(MailboxName& b, size_t i);
   static const int8_t& GetAt(const MailboxName& b, size_t i);
-  static void Resize(MailboxName& b, size_t size);
+  static bool Resize(MailboxName& b, size_t size);
 };
 
 template <>

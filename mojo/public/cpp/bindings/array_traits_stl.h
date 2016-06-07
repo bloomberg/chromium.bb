@@ -42,7 +42,10 @@ struct ArrayTraits<std::vector<T>> {
     return input[index];
   }
 
-  static void Resize(std::vector<T>& input, size_t size) { input.resize(size); }
+  static bool Resize(std::vector<T>& input, size_t size) {
+    input.resize(size);
+    return true;
+  }
 };
 
 }  // namespace mojo

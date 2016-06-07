@@ -32,8 +32,8 @@ const int8_t& ArrayTraits<MailboxName>::GetAt(const MailboxName& b, size_t i) {
 }
 
 // static
-void ArrayTraits<MailboxName>::Resize(MailboxName& b, size_t size) {
-  DCHECK(GL_MAILBOX_SIZE_CHROMIUM == size);
+bool ArrayTraits<MailboxName>::Resize(MailboxName& b, size_t size) {
+  return GL_MAILBOX_SIZE_CHROMIUM == size;
 }
 
 // static

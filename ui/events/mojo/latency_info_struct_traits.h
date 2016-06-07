@@ -43,7 +43,7 @@ struct ArrayTraits<InputCoordinateArray> {
   static const Element* GetData(const InputCoordinateArray& b);
   static Element& GetAt(InputCoordinateArray& b, size_t i);
   static const Element& GetAt(const InputCoordinateArray& b, size_t i);
-  static void Resize(InputCoordinateArray& b, size_t size);
+  static bool Resize(InputCoordinateArray& b, size_t size);
 };
 
 template <>

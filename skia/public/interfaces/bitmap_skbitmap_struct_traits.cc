@@ -138,8 +138,8 @@ const uint8_t& ArrayTraits<BitmapBuffer>::GetAt(const BitmapBuffer& b,
 }
 
 // static
-void ArrayTraits<BitmapBuffer>::Resize(BitmapBuffer& b, size_t size) {
-  CHECK_EQ(size, b.size);
+bool ArrayTraits<BitmapBuffer>::Resize(BitmapBuffer& b, size_t size) {
+  return b.size == size;
 }
 
 // static

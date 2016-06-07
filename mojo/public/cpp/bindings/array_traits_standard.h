@@ -32,7 +32,10 @@ struct ArrayTraits<Array<T>> {
     return input[index];
   }
 
-  static void Resize(Array<T>& input, size_t size) { input.resize(size); }
+  static bool Resize(Array<T>& input, size_t size) {
+    input.resize(size);
+    return true;
+  }
 };
 
 }  // namespace mojo

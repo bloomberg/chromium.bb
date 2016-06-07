@@ -137,7 +137,8 @@ struct ArraySerializer<MojomType,
   static bool DeserializeElements(Data* input,
                                   UserType* output,
                                   SerializationContext* context) {
-    Traits::Resize(*output, input->size());
+    if (!Traits::Resize(*output, input->size()))
+      return false;
     if (input->size()) {
       auto data = CallGetDataIfExists<Traits>(*output);
       if (data) {
@@ -188,7 +189,8 @@ struct ArraySerializer<MojomType,
   static bool DeserializeElements(Data* input,
                                   UserType* output,
                                   SerializationContext* context) {
-    Traits::Resize(*output, input->size());
+    if (!Traits::Resize(*output, input->size()))
+      return false;
     for (size_t i = 0; i < input->size(); ++i)
       Traits::GetAt(*output, i) = input->at(i);
     return true;
@@ -240,7 +242,8 @@ struct ArraySerializer<MojomType,
                                   UserType* output,
                                   SerializationContext* context) {
     using HandleType = typename Element::RawHandleType;
-    Traits::Resize(*output, input->size());
+    if (!Traits::Resize(*output, input->size()))
+      return false;
     for (size_t i = 0; i < input->size(); ++i) {
       Traits::GetAt(*output, i) = MakeScopedHandle(
           HandleType(context->handles.TakeHandle(input->at(i)).value()));
@@ -299,7 +302,8 @@ struct ArraySerializer<MojomType,
                                   UserType* output,
                                   SerializationContext* context) {
     bool success = true;
-    Traits::Resize(*output, input->size());
+    if (!Traits::Resize(*output, input->size()))
+      return false;
     for (size_t i = 0; i < input->size(); ++i) {
       // Note that we rely on complete deserialization taking place in order to
       // transfer ownership of all encoded handles. Therefore we don't
@@ -391,7 +395,8 @@ struct ArraySerializer<MojomType,
                                   UserType* output,
                                   SerializationContext* context) {
     bool success = true;
-    Traits::Resize(*output, input->size());
+    if (!Traits::Resize(*output, input->size()))
+      return false;
     for (size_t i = 0; i < input->size(); ++i) {
       // Note that we rely on complete deserialization taking place in order to
       // transfer ownership of all encoded handles. Therefore we don't

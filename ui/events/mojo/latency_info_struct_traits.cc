@@ -211,11 +211,12 @@ ArrayTraits<InputCoordinateArray>::GetAt(const InputCoordinateArray& b,
 }
 
 // static
-void ArrayTraits<InputCoordinateArray>::Resize(InputCoordinateArray& b,
+bool ArrayTraits<InputCoordinateArray>::Resize(InputCoordinateArray& b,
                                                size_t size) {
-  // TODO(fsamuel): We should update ArrayTraits<T>::Resize to return a bool.
-  CHECK_LE(size, ui::LatencyInfo::kMaxInputCoordinates);
+  if (size > ui::LatencyInfo::kMaxInputCoordinates)
+    return false;
   b.size = size;
+  return true;
 }
 
 // static

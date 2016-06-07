@@ -29,7 +29,10 @@ struct ArrayTraits<WTFArray<U>> {
     return input[index];
   }
 
-  static void Resize(WTFArray<U>& input, size_t size) { input.resize(size); }
+  static bool Resize(WTFArray<U>& input, size_t size) {
+    input.resize(size);
+    return true;
+  }
 };
 
 }  // namespace mojo
