@@ -1658,23 +1658,6 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(
 }
 
 void BrowserOptionsHandler::HandleRestartBrowser(const base::ListValue* args) {
-#if defined(OS_WIN)
-  // On Windows Breakpad will upload crash reports if the breakpad pipe name
-  // environment variable is defined. So we undefine this environment variable
-  // before restarting, as the restarted processes will inherit their
-  // environment variables from ours, thus suppressing crash uploads.
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (exe_module) {
-      typedef void (__cdecl *ClearBreakpadPipeEnvVar)();
-      ClearBreakpadPipeEnvVar clear = reinterpret_cast<ClearBreakpadPipeEnvVar>(
-          GetProcAddress(exe_module, "ClearBreakpadPipeEnvironmentVariable"));
-      if (clear)
-        clear();
-    }
-  }
-#endif
-
   chrome::AttemptRestart();
 }
 

@@ -22,6 +22,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 
+#if defined(OS_WIN)
+#include "components/metrics/metrics_pref_names.h"
+#endif
+
 typedef BrowserWithTestWindowTest BrowserListTest;
 
 namespace {
@@ -171,8 +175,11 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   testing_pref_service.registry()->RegisterBooleanPref(
       prefs::kWasRestarted, false);
   testing_pref_service.registry()->RegisterBooleanPref(
-      prefs::kRestartLastSessionOnShutdown,
-      false);
+      prefs::kRestartLastSessionOnShutdown, false);
+#if defined(OS_WIN)
+  testing_pref_service.registry()->RegisterBooleanPref(
+      metrics::prefs::kMetricsReportingEnabled, false);
+#endif
   testing_pref_service.registry()->RegisterListPref(
       prefs::kProfilesLastActive);
 

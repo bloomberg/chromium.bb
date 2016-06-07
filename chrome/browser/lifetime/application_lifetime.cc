@@ -6,6 +6,10 @@
 
 #include <memory>
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -47,6 +51,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/common/chrome_constants.h"
 #endif
 
 namespace chrome {
@@ -188,6 +194,23 @@ void AttemptUserExit() {
 // The Android implementation is in application_lifetime_android.cc
 #if !defined(OS_ANDROID)
 void AttemptRestart() {
+#if defined(OS_WIN)
+  // On Windows, Breakpad will upload crash reports if the breakpad pipe name
+  // environment variable is defined. So we undefine this environment variable
+  // before restarting, as the restarted processes will inherit their
+  // environment variables from ours, thus suppressing crash uploads.
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (exe_module) {
+      typedef void (__cdecl *ClearBreakpadPipeEnvVar)();
+      ClearBreakpadPipeEnvVar clear = reinterpret_cast<ClearBreakpadPipeEnvVar>(
+          GetProcAddress(exe_module, "ClearBreakpadPipeEnvironmentVariable"));
+      if (clear)
+        clear();
+    }
+  }
+#endif  // defined(OS_WIN)
+
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
   for (auto* browser : *BrowserList::GetInstance())
     content::BrowserContext::SaveSessionState(browser->profile());
@@ -210,7 +233,7 @@ void AttemptRestart() {
   AttemptExit();
 #endif
 }
-#endif
+#endif  // !defined(OS_ANDROID)
 
 void AttemptExit() {
 #if defined(OS_CHROMEOS)
