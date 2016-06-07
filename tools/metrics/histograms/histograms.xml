@@ -91367,6 +91367,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1961263039" label="chrome://profiler/"/>
   <int value="1975618905" label="chrome://app-list/"/>
   <int value="2114840772" label="chrome://drive-internals/"/>
+  <int value="3251925547" label="chrome://offline-internals/"/>
 </enum>
 
 <enum name="WebUsbChooserClosed" type="int">

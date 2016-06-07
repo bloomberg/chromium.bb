@@ -67,7 +67,6 @@ extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPolicyURL[];
 extern const char kChromeUIProfileSigninConfirmationURL[];
 extern const char kChromeUIMdUserManagerUrl[];
-extern const char kChromeUIUserManagerURL[];
 extern const char kChromeUIPrintURL[];
 extern const char kChromeUIQuitURL[];
 extern const char kChromeUIRestartURL[];
@@ -85,6 +84,7 @@ extern const char kChromeUIThumbnailURL[];
 extern const char kChromeUIThumbnailListURL[];
 extern const char kChromeUIUberFrameURL[];
 extern const char kChromeUIUserActionsURL[];
+extern const char kChromeUIUserManagerURL[];
 extern const char kChromeUIVersionURL[];
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -203,6 +203,7 @@ extern const char kChromeUINaClHost[];
 extern const char kChromeUINetExportHost[];
 extern const char kChromeUINetInternalsHost[];
 extern const char kChromeUINewTabHost[];
+extern const char kChromeUIOfflineInternalsHost[];
 extern const char kChromeUIOmniboxHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIComponentsHost[];
@@ -254,6 +255,7 @@ extern const char kChromeUISandboxHost[];
 
 #if defined(OS_ANDROID)
 extern const char kChromeUIContextualSearchPromoHost[];
+extern const char kChromeUIOfflineInternalsURL[];
 extern const char kChromeUIPhysicalWebHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUISnippetsInternalsHost[];

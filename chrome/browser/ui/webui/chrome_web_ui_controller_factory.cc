@@ -103,6 +103,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/net_export_ui.h"
+#include "chrome/browser/ui/webui/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
 #else
@@ -493,6 +494,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUINetExportHost)
     return &NewWebUI<NetExportUI>;
+  if (url.host() == chrome::kChromeUIOfflineInternalsHost)
+    return &NewWebUI<OfflineInternalsUI>;
   if (url.host() == chrome::kChromeUIPopularSitesInternalsHost)
     return &NewWebUI<PopularSitesInternalsUI>;
   if (url.host() == chrome::kChromeUISnippetsInternalsHost)
