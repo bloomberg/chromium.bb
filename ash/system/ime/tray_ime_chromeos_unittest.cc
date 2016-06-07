@@ -4,7 +4,7 @@
 
 #include "ash/system/ime/tray_ime_chromeos.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_notifier.h"

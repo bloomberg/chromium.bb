@@ -4,8 +4,8 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 
-#include "ash/accessibility_delegate.h"
 #include "ash/audio/sounds.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"

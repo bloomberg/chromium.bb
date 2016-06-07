@@ -8,10 +8,10 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
+#include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/container_delegate_aura.h"
-#include "ash/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"

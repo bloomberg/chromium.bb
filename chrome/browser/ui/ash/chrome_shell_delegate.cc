@@ -8,8 +8,8 @@
 
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ash/accessibility_delegate.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/container_delegate_aura.h"

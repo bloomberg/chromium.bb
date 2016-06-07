@@ -5,9 +5,9 @@
 #include "ash/accelerators/accelerator_controller.h"
 
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_positioning_utils.h"

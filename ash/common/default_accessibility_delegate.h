@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEFAULT_ACCESSIBILITY_DELEGATE_H_
-#define ASH_DEFAULT_ACCESSIBILITY_DELEGATE_H_
+#ifndef ASH_COMMON_DEFAULT_ACCESSIBILITY_DELEGATE_H_
+#define ASH_COMMON_DEFAULT_ACCESSIBILITY_DELEGATE_H_
 
-#include "ash/accessibility_delegate.h"
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
+#include "ash/common/accessibility_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -75,4 +74,4 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
 
 }  // namespace ash
 
-#endif  // DEFAULT_ACCESSIBILITY_DELEGATE_H_
+#endif  // ASH_COMMON_DEFAULT_ACCESSIBILITY_DELEGATE_H_

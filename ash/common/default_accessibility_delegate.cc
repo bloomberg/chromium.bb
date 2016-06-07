@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/default_accessibility_delegate.h"
+#include "ash/common/default_accessibility_delegate.h"
 
 #include <limits>
 
@@ -113,29 +113,23 @@ bool DefaultAccessibilityDelegate::IsSwitchAccessEnabled() const {
 }
 
 bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
-  return spoken_feedback_enabled_ ||
-         high_contrast_enabled_ ||
-         screen_magnifier_enabled_ ||
-         large_cursor_enabled_ ||
-         autoclick_enabled_ ||
-         virtual_keyboard_enabled_ ||
-         mono_audio_enabled_;
+  return spoken_feedback_enabled_ || high_contrast_enabled_ ||
+         screen_magnifier_enabled_ || large_cursor_enabled_ ||
+         autoclick_enabled_ || virtual_keyboard_enabled_ || mono_audio_enabled_;
 }
 
 bool DefaultAccessibilityDelegate::IsBrailleDisplayConnected() const {
   return false;
 }
 
-void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {
-}
+void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {}
 
 void DefaultAccessibilityDelegate::ToggleSpokenFeedback(
     ui::AccessibilityNotificationVisibility notify) {
   spoken_feedback_enabled_ = !spoken_feedback_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SaveScreenMagnifierScale(double scale) {
-}
+void DefaultAccessibilityDelegate::SaveScreenMagnifierScale(double scale) {}
 
 double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
@@ -151,8 +145,7 @@ DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
   return accessibility_alert_;
 }
 
-void DefaultAccessibilityDelegate::PlayEarcon(int sound_key) {
-}
+void DefaultAccessibilityDelegate::PlayEarcon(int sound_key) {}
 
 base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
   return base::TimeDelta();

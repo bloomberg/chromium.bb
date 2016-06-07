@@ -4,7 +4,7 @@
 
 #include "ash/system/tray_accessibility.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"

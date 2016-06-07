@@ -4,7 +4,7 @@
 
 #include "ash/sysui/shell_delegate_mus.h"
 
-#include "ash/default_accessibility_delegate.h"
+#include "ash/common/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/session/session_state_delegate.h"

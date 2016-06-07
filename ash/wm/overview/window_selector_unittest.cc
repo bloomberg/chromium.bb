@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"

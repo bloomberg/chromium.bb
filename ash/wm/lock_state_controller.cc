@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/cancel_mode.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"

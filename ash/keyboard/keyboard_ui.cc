@@ -4,7 +4,7 @@
 
 #include "ash/keyboard/keyboard_ui.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/keyboard/keyboard_ui_observer.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"

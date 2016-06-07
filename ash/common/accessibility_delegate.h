@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCESSIBILITY_DELEGATE_H_
-#define ASH_ACCESSIBILITY_DELEGATE_H_
+#ifndef ASH_COMMON_ACCESSIBILITY_DELEGATE_H_
+#define ASH_COMMON_ACCESSIBILITY_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "base/time/time.h"
@@ -133,4 +133,4 @@ class ASH_EXPORT AccessibilityDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_ACCESSIBILITY_DELEGATE_H_
+#endif  // ASH_COMMON_ACCESSIBILITY_DELEGATE_H_

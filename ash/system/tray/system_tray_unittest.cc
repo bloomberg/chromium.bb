@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "ash/accessibility_delegate.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"

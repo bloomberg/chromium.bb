@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/system/chromeos/power/battery_notification.h"
