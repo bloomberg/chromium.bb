@@ -52,11 +52,13 @@ struct VideoFormat {
 // Chromium and the output buffers are returned back to Android side.
 class ArcVideoAccelerator {
  public:
-  enum Error {
+  enum Result {
+    SUCCESS = 0,
     ILLEGAL_STATE = 1,
     INVALID_ARGUMENT = 2,
     UNREADABLE_INPUT = 3,
     PLATFORM_FAILURE = 4,
+    INSUFFICIENT_RESOURCES = 5,
   };
 
   struct Config {
@@ -79,9 +81,9 @@ class ArcVideoAccelerator {
     virtual ~Client() {}
 
     // Called when an asynchronous error happens. The errors in Initialize()
-    // will not be reported here, but will be indicated by a false return value
+    // will not be reported here, but will be indicated by a return value
     // there.
-    virtual void OnError(Error error) = 0;
+    virtual void OnError(Result error) = 0;
 
     // Called when a buffer with the specified |index| and |port| has been
     // processed and is no longer used in the accelerator. For input buffers,
@@ -104,8 +106,8 @@ class ArcVideoAccelerator {
 
   // Initializes the ArcVideoAccelerator with specific configuration. This
   // must be called before any other methods. This call is synchronous and
-  // returns true iff initialization is successful.
-  virtual bool Initialize(const Config& config, Client* client) = 0;
+  // returns SUCCESS iff initialization is successful.
+  virtual Result Initialize(const Config& config, Client* client) = 0;
 
   // Assigns a shared memory to be used for the accelerator at the specified
   // port and index. A buffer must be successfully bound before it can be passed

@@ -13,6 +13,37 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
+// Make sure arc::mojom::VideoAcceleratorService::Result and
+// chromeos::arc::ArcVideoAccelerator::Result match.
+static_assert(
+    static_cast<int>(arc::mojom::VideoAcceleratorService::Result::SUCCESS) ==
+        chromeos::arc::ArcVideoAccelerator::SUCCESS,
+    "enum mismatch");
+static_assert(static_cast<int>(
+                  arc::mojom::VideoAcceleratorService::Result::ILLEGAL_STATE) ==
+                  chromeos::arc::ArcVideoAccelerator::ILLEGAL_STATE,
+              "enum mismatch");
+static_assert(
+    static_cast<int>(
+        arc::mojom::VideoAcceleratorService::Result::INVALID_ARGUMENT) ==
+        chromeos::arc::ArcVideoAccelerator::INVALID_ARGUMENT,
+    "enum mismatch");
+static_assert(
+    static_cast<int>(
+        arc::mojom::VideoAcceleratorService::Result::UNREADABLE_INPUT) ==
+        chromeos::arc::ArcVideoAccelerator::UNREADABLE_INPUT,
+    "enum mismatch");
+static_assert(
+    static_cast<int>(
+        arc::mojom::VideoAcceleratorService::Result::PLATFORM_FAILURE) ==
+        chromeos::arc::ArcVideoAccelerator::PLATFORM_FAILURE,
+    "enum mismatch");
+static_assert(
+    static_cast<int>(
+        arc::mojom::VideoAcceleratorService::Result::INSUFFICIENT_RESOURCES) ==
+        chromeos::arc::ArcVideoAccelerator::INSUFFICIENT_RESOURCES,
+    "enum mismatch");
+
 namespace {
 void OnConnectionError() {
   DVLOG(2) << "OnConnectionError";
@@ -106,10 +137,11 @@ void GpuArcVideoService::Connect(
   client_->Init(std::move(service));
 }
 
-void GpuArcVideoService::OnError(ArcVideoAccelerator::Error error) {
+void GpuArcVideoService::OnError(ArcVideoAccelerator::Result error) {
   DVLOG(2) << "OnError " << error;
+  DCHECK_NE(error, ArcVideoAccelerator::SUCCESS);
   client_->OnError(
-      static_cast<::arc::mojom::VideoAcceleratorServiceClient::Error>(error));
+      static_cast<::arc::mojom::VideoAcceleratorService::Result>(error));
 }
 
 void GpuArcVideoService::OnBufferDone(PortType port,
@@ -139,9 +171,19 @@ void GpuArcVideoService::Initialize(
     ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
     const InitializeCallback& callback) {
   DVLOG(2) << "Initialize";
-  bool result =
+  ArcVideoAccelerator::Result result =
       accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
-  callback.Run(result);
+  callback.Run(
+      static_cast<::arc::mojom::VideoAcceleratorService::Result>(result));
+}
+
+void GpuArcVideoService::DeprecatedInitialize(
+    ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+    const DeprecatedInitializeCallback& callback) {
+  DVLOG(2) << "DeprecatedInitialize";
+  ArcVideoAccelerator::Result result =
+      accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
+  callback.Run(result == ArcVideoAccelerator::SUCCESS);
 }
 
 base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
@@ -149,7 +191,7 @@ base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
   if (!handle.is_valid()) {
     LOG(ERROR) << "handle is invalid";
     client_->OnError(
-        ::arc::mojom::VideoAcceleratorServiceClient::Error::INVALID_ARGUMENT);
+        ::arc::mojom::VideoAcceleratorService::Result::INVALID_ARGUMENT);
     return base::ScopedFD();
   }
 
@@ -159,7 +201,7 @@ base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
   if (mojo_result != MOJO_RESULT_OK) {
     LOG(ERROR) << "UnwrapPlatformFile failed: " << mojo_result;
     client_->OnError(
-        ::arc::mojom::VideoAcceleratorServiceClient::Error::PLATFORM_FAILURE);
+        ::arc::mojom::VideoAcceleratorService::Result::PLATFORM_FAILURE);
     return base::ScopedFD();
   }
 

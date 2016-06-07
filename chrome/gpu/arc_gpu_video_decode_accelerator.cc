@@ -14,6 +14,21 @@
 namespace chromeos {
 namespace arc {
 
+namespace {
+
+// An arbitrary chosen limit of the number of buffers. The number of
+// buffers used is requested from the untrusted client side.
+const size_t kMaxBufferCount = 128;
+
+// Maximum number of concurrent ARC video clients.
+// Currently we have no way to know the resources are not enough to create more
+// VDA. Arbitrarily chosen a reasonable constant as the limit.
+const int kMaxConcurrentClients = 8;
+
+}  // anonymous namespace
+
+int ArcGpuVideoDecodeAccelerator::client_count_ = 0;
+
 ArcGpuVideoDecodeAccelerator::InputRecord::InputRecord(
     int32_t bitstream_buffer_id,
     uint32_t buffer_index,
@@ -42,17 +57,14 @@ ArcGpuVideoDecodeAccelerator::ArcGpuVideoDecodeAccelerator()
       output_pixel_format_(media::PIXEL_FORMAT_UNKNOWN),
       output_buffer_size_(0) {}
 
-ArcGpuVideoDecodeAccelerator::~ArcGpuVideoDecodeAccelerator() {}
+ArcGpuVideoDecodeAccelerator::~ArcGpuVideoDecodeAccelerator() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (vda_) {
+    client_count_--;
+  }
+}
 
-namespace {
-
-// An arbitrary chosen limit of the number of buffers. The number of
-// buffers used is requested from the untrusted client side.
-const size_t kMaxBufferCount = 128;
-
-}  // anonymous namespace
-
-bool ArcGpuVideoDecodeAccelerator::Initialize(
+ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::Initialize(
     const Config& config,
     ArcVideoAccelerator::Client* client) {
   DVLOG(5) << "Initialize(device=" << config.device_type
@@ -60,19 +72,25 @@ bool ArcGpuVideoDecodeAccelerator::Initialize(
            << ", num_input_buffers=" << config.num_input_buffers << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (config.device_type != Config::DEVICE_DECODER)
-    return false;
+    return INVALID_ARGUMENT;
   DCHECK(client);
 
   if (arc_client_) {
     DLOG(ERROR) << "Re-Initialize() is not allowed";
-    return false;
+    return ILLEGAL_STATE;
+  }
+
+  if (client_count_ >= kMaxConcurrentClients) {
+    LOG(WARNING) << "Reject to Initialize() due to too many clients: "
+                 << client_count_;
+    return INSUFFICIENT_RESOURCES;
   }
 
   arc_client_ = client;
 
   if (config.num_input_buffers > kMaxBufferCount) {
     DLOG(ERROR) << "Request too many buffers: " << config.num_input_buffers;
-    return false;
+    return INVALID_ARGUMENT;
   }
   input_buffer_info_.resize(config.num_input_buffers);
 
@@ -86,7 +104,7 @@ bool ArcGpuVideoDecodeAccelerator::Initialize(
       break;
     default:
       DLOG(ERROR) << "Unsupported input format: " << config.input_pixel_format;
-      return false;
+      return INVALID_ARGUMENT;
   }
   vda_config.output_mode =
       media::VideoDecodeAccelerator::Config::OutputMode::IMPORT;
@@ -96,9 +114,14 @@ bool ArcGpuVideoDecodeAccelerator::Initialize(
   vda_ = vda_factory->CreateVDA(this, vda_config);
   if (!vda_) {
     DLOG(ERROR) << "Failed to create VDA.";
-    return false;
+    return PLATFORM_FAILURE;
   }
-  return true;
+
+  client_count_++;
+  DVLOG(5) << "Number of concurrent ArcVideoAccelerator clients: "
+           << client_count_;
+
+  return SUCCESS;
 }
 
 void ArcGpuVideoDecodeAccelerator::SetNumberOfOutputBuffers(size_t number) {
@@ -400,7 +423,7 @@ void ArcGpuVideoDecodeAccelerator::NotifyResetDone() {
   arc_client_->OnResetDone();
 }
 
-static ArcVideoAccelerator::Error ConvertErrorCode(
+static ArcVideoAccelerator::Result ConvertErrorCode(
     media::VideoDecodeAccelerator::Error error) {
   switch (error) {
     case media::VideoDecodeAccelerator::ILLEGAL_STATE:
