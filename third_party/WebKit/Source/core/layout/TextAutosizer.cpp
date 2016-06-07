@@ -44,6 +44,8 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
@@ -529,8 +531,8 @@ void TextAutosizer::updatePageInfo()
     if (!m_pageInfo.m_settingEnabled || m_document->printing()) {
         m_pageInfo.m_pageNeedsAutosizing = false;
     } else {
-        LayoutView* layoutView = m_document->layoutView();
-        bool horizontalWritingMode = isHorizontalWritingMode(layoutView->style()->getWritingMode());
+        LayoutViewItem layoutViewItem = m_document->layoutViewItem();
+        bool horizontalWritingMode = isHorizontalWritingMode(layoutViewItem.style()->getWritingMode());
 
         // FIXME: With out-of-process iframes, the top frame can be remote and
         // doesn't have sizing information. Just return if this is the case.
@@ -585,7 +587,7 @@ IntSize TextAutosizer::windowSize() const
 
 void TextAutosizer::resetMultipliers()
 {
-    LayoutObject* layoutObject = m_document->layoutView();
+    LayoutObject* layoutObject = LayoutAPIShim::layoutObjectFrom(m_document->layoutViewItem());
     while (layoutObject) {
         if (const ComputedStyle* style = layoutObject->style()) {
             if (style->textAutosizingMultiplier() != 1)
@@ -597,11 +599,11 @@ void TextAutosizer::resetMultipliers()
 
 void TextAutosizer::setAllTextNeedsLayout()
 {
-    LayoutObject* layoutObject = m_document->layoutView();
-    while (layoutObject) {
-        if (layoutObject->isText())
-            layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
-        layoutObject = layoutObject->nextInPreOrder();
+    LayoutItem layoutItem = m_document->layoutViewItem();
+    while (!layoutItem.isNull()) {
+        if (layoutItem.isText())
+            layoutItem.setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
+        layoutItem = layoutItem.nextInPreOrder();
     }
 }
 

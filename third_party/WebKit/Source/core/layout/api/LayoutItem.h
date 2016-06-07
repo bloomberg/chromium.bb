@@ -162,6 +162,11 @@ public:
         return m_layoutObject->document();
     }
 
+    LayoutItem nextInPreOrder() const
+    {
+        return LayoutItem(m_layoutObject->nextInPreOrder());
+    }
+
     void updateStyleAndLayout()
     {
         return m_layoutObject->document().updateStyleAndLayout();
@@ -220,6 +225,11 @@ public:
     FloatPoint absoluteToLocal(const FloatPoint& point, MapCoordinatesFlags mode = 0) const
     {
         return m_layoutObject->absoluteToLocal(point, mode);
+    }
+
+    void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing reason, MarkingBehavior behavior = MarkContainerChain, SubtreeLayoutScope* scope = nullptr)
+    {
+        m_layoutObject->setNeedsLayoutAndFullPaintInvalidation(reason, behavior, scope);
     }
 
     void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
