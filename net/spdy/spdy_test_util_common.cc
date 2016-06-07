@@ -295,16 +295,15 @@ MockECSignatureCreator::MockECSignatureCreator(crypto::ECPrivateKey* key)
 bool MockECSignatureCreator::Sign(const uint8_t* data,
                                   int data_len,
                                   std::vector<uint8_t>* signature) {
-  std::vector<uint8_t> private_key_value;
-  if (!key_->ExportValueForTesting(&private_key_value))
+  std::vector<uint8_t> private_key;
+  if (!key_->ExportPrivateKey(&private_key))
     return false;
   std::string head = "fakesignature";
   std::string tail = "/fakesignature";
 
   signature->clear();
   signature->insert(signature->end(), head.begin(), head.end());
-  signature->insert(signature->end(), private_key_value.begin(),
-                    private_key_value.end());
+  signature->insert(signature->end(), private_key.begin(), private_key.end());
   signature->insert(signature->end(), '-');
   signature->insert(signature->end(), data, data + data_len);
   signature->insert(signature->end(), tail.begin(), tail.end());
