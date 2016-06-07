@@ -20,7 +20,7 @@
 // https://html.spec.whatwg.org/#htmlfontelement
 
 interface HTMLFontElement : HTMLElement {
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString color;
-    [Reflect] attribute DOMString face;
-    [Reflect] attribute DOMString size;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString color;
+    [CEReactions, Reflect] attribute DOMString face;
+    [CEReactions, Reflect] attribute DOMString size;
 };

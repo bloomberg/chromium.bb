@@ -9,6 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRegistrationOptions.h"
+#include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDefinitionBuilder.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
@@ -302,11 +303,14 @@ TEST_F(CustomElementsRegistryFrameTest, define_upgradesInDocumentElements)
 
     LogUpgradeBuilder builder;
     NonThrowableExceptionState shouldNotThrow;
-    registry().define(
-        "a-a",
-        builder,
-        ElementRegistrationOptions(),
-        shouldNotThrow);
+    {
+        CEReactionsScope reactions;
+        registry().define(
+            "a-a",
+            builder,
+            ElementRegistrationOptions(),
+            shouldNotThrow);
+    }
     LogUpgradeDefinition* definition =
         static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
     EXPECT_EQ(1u, definition->m_invocationCount)

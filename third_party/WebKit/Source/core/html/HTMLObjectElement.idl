@@ -25,14 +25,14 @@
     Custom=LegacyCallAsFunction,
     OverrideBuiltins,
 ] interface HTMLObjectElement : HTMLElement {
-    [Reflect, URL] attribute DOMString data;
-    [Reflect] attribute DOMString type;
+    [CEReactions, Reflect, URL] attribute DOMString data;
+    [CEReactions, Reflect] attribute DOMString type;
     // TODO(foolip): attribute boolean typeMustMatch;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString useMap;
+    [CEReactions, Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString useMap;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
-    [Reflect] attribute DOMString width;
-    [Reflect] attribute DOMString height;
+    [CEReactions, Reflect] attribute DOMString width;
+    [CEReactions, Reflect] attribute DOMString height;
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     // TODO(foolip): readonly attribute WindowProxy? contentWindow;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
@@ -48,18 +48,18 @@
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLObjectElement-partial
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString archive;
-    [Reflect] attribute DOMString code;
-    [Reflect] attribute boolean declare;
+    [CEReactions, Reflect] attribute DOMString align;
+    [CEReactions, Reflect] attribute DOMString archive;
+    [CEReactions, Reflect] attribute DOMString code;
+    [CEReactions, Reflect] attribute boolean declare;
     // TODO(foolip): hspace and vspace should be unsigned long.
-    [Reflect] attribute long hspace;
-    [Reflect] attribute DOMString standby;
-    [Reflect] attribute long vspace;
-    [Reflect, URL] attribute DOMString codeBase;
-    [Reflect] attribute DOMString codeType;
+    [CEReactions, Reflect] attribute long hspace;
+    [CEReactions, Reflect] attribute DOMString standby;
+    [CEReactions, Reflect] attribute long vspace;
+    [CEReactions, Reflect, URL] attribute DOMString codeBase;
+    [CEReactions, Reflect] attribute DOMString codeType;
 
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString border;
 
     // TODO(foolip): These getters and setters are not in the spec.
     [Custom, NotEnumerable] getter boolean (unsigned long index);

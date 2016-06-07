@@ -24,8 +24,8 @@
 [
     OverrideBuiltins,
 ] interface HTMLFrameSetElement : HTMLElement {
-    [Reflect] attribute DOMString cols;
-    [Reflect] attribute DOMString rows;
+    [CEReactions, Reflect] attribute DOMString cols;
+    [CEReactions, Reflect] attribute DOMString rows;
 
     // TODO(foolip): These event handler attributes should be inherited from
     // HTMLElement (which implements GlobalEventHandlers), but have different

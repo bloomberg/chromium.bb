@@ -29,8 +29,8 @@
     [MeasureAs=NamedNodeMapGetNamedItem] Attr? getNamedItem(DOMString name);
     [NotEnumerable, ImplementedAs=getNamedItem] getter Attr? (DOMString name);
     [MeasureAs=NamedNodeMapGetNamedItemNS] Attr? getNamedItemNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr? setNamedItem(Attr attr);
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr? setNamedItemNS(Attr attr);
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem(DOMString name);
-    [RaisesException, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Attr removeNamedItemNS(DOMString? namespaceURI, DOMString localName);
+    [RaisesException, CEReactions, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItem] Attr? setNamedItem(Attr attr);
+    [RaisesException, CEReactions, CustomElementCallbacks, MeasureAs=NamedNodeMapSetNamedItemNS] Attr? setNamedItemNS(Attr attr);
+    [RaisesException, CEReactions, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItem] Attr removeNamedItem(DOMString name);
+    [RaisesException, CEReactions, CustomElementCallbacks, MeasureAs=NamedNodeMapRemoveNamedItemNS] Attr removeNamedItemNS(DOMString? namespaceURI, DOMString localName);
 };

@@ -140,6 +140,16 @@ These are defined in the [ECMAScript-specific extended attributes](http://heycam
 Unsupported: `[ArrayClass]`, `[ImplicitThis]`, `[LenientThis]`, `[NamedPropertiesObject]`, `[TreatNonCallableAsNull]`
 ***
 
+### [CEReactions] _(m, a)_
+
+Standard: [CEReactions](https://html.spec.whatwg.org/multipage/scripting.html#cereactions)
+
+Summary: `[CEReactoins]` indicates that
+[custom element reactions](https://html.spec.whatwg.org/multipage/scripting.html#concept-custom-element-reaction)
+are triggered for this method or attribute.
+
+Usage: `[CEReactions]` takes no arguments.
+
 ### [Clamp] _(a, p)_
 
 Standard: [Clamp](https://heycam.github.io/webidl/#Clamp)
@@ -853,6 +863,11 @@ void V8XXX::visitDOMWrapper(DOMDataStore* store, void* object, v8::Persistent<v8
 ### [CustomElementCallbacks] _(m, a)_
 
 Summary: Wraps the method/accessor with a Custom Elements "callback delivery scope" which will dispatch Custom Element callbacks (createdCallback, attributeChangedCallback, etc.) before returning to script.
+
+*** note
+This attribute is only for Custom Elements V0,
+and is superceded by `[CEReactions]` for V1.
+***
 
 If the method/accessor creates elements or modifies DOM nodes in any way, it should be tagged with this extended attribute. Even if you're not a Node, this may apply to you! For example [DOMTokenList.toggle](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/core/dom/DOMTokenList.idl&l=34) can be reflected in the attribute of its associated element, so it needs to be tagged with CustomElementCallbacks. If the method/accessor only calls something that may modify the DOM (for example, it runs user script as a callback) you don't need to tag your method with `[CustomElementCallbacks]`; that is the responsibility of the binding that actually modifies the DOM. In general over-applying this extended attribute is safe, with one caveat:
 

@@ -20,11 +20,11 @@
 // https://html.spec.whatwg.org/#the-meta-element
 
 interface HTMLMetaElement : HTMLElement {
-    [Reflect] attribute DOMString name;
-    [Reflect=http_equiv] attribute DOMString httpEquiv;
-    [Reflect] attribute DOMString content;
+    [CEReactions, Reflect] attribute DOMString name;
+    [CEReactions, Reflect=http_equiv] attribute DOMString httpEquiv;
+    [CEReactions, Reflect] attribute DOMString content;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLMetaElement-partial
-    [Reflect] attribute DOMString scheme;
+    [CEReactions, Reflect] attribute DOMString scheme;
 };

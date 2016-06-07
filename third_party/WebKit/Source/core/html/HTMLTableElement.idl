@@ -22,33 +22,33 @@
 
 interface HTMLTableElement : HTMLElement {
     // TODO(foolip): The caption, tHead and tFoot setters should never throw.
-    [RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
-    HTMLTableCaptionElement createCaption();
-    void deleteCaption();
-    [RaisesException=Setter] attribute HTMLTableSectionElement? tHead;
-    HTMLTableSectionElement createTHead();
-    void deleteTHead();
-    [RaisesException=Setter] attribute HTMLTableSectionElement? tFoot;
-    HTMLTableSectionElement createTFoot();
-    void deleteTFoot();
+    [CEReactions, RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
+    [CEReactions] HTMLTableCaptionElement createCaption();
+    [CEReactions] void deleteCaption();
+    [CEReactions, RaisesException=Setter] attribute HTMLTableSectionElement? tHead;
+    [CEReactions] HTMLTableSectionElement createTHead();
+    [CEReactions] void deleteTHead();
+    [CEReactions, RaisesException=Setter] attribute HTMLTableSectionElement? tFoot;
+    [CEReactions] HTMLTableSectionElement createTFoot();
+    [CEReactions] void deleteTFoot();
     readonly attribute HTMLCollection tBodies;
-    HTMLTableSectionElement createTBody();
+    [CEReactions] HTMLTableSectionElement createTBody();
     readonly attribute HTMLCollection rows;
-    [RaisesException] HTMLTableRowElement insertRow(optional long index = -1);
-    [RaisesException] void deleteRow(long index);
+    [CEReactions, RaisesException] HTMLTableRowElement insertRow(optional long index = -1);
+    [CEReactions, RaisesException] void deleteRow(long index);
     // attribute boolean sortable;
     // void stopSorting();
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLTableElement-partial
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString border;
-    [Reflect] attribute DOMString frame;
-    [Reflect] attribute DOMString rules;
-    [Reflect] attribute DOMString summary;
-    [Reflect] attribute DOMString width;
+    [CEReactions, Reflect] attribute DOMString align;
+    [CEReactions, Reflect] attribute DOMString border;
+    [CEReactions, Reflect] attribute DOMString frame;
+    [CEReactions, Reflect] attribute DOMString rules;
+    [CEReactions, Reflect] attribute DOMString summary;
+    [CEReactions, Reflect] attribute DOMString width;
 
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString cellPadding;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString cellSpacing;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString cellPadding;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString cellSpacing;
 };

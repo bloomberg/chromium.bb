@@ -61,8 +61,8 @@ interface Document : Node {
     [NewObject] Comment createComment(DOMString data);
     [NewObject, RaisesException] ProcessingInstruction createProcessingInstruction(DOMString target, DOMString data);
 
-    [NewObject, CustomElementCallbacks, RaisesException] Node importNode(Node node, optional boolean deep = false);
-    [RaisesException, CustomElementCallbacks] Node adoptNode(Node node);
+    [NewObject, CEReactions, CustomElementCallbacks, RaisesException] Node importNode(Node node, optional boolean deep = false);
+    [RaisesException, CEReactions, CustomElementCallbacks] Node adoptNode(Node node);
 
     [NewObject, RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute(DOMString localName);
     [NewObject, RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS(DOMString? namespaceURI, DOMString qualifiedName);
@@ -104,9 +104,9 @@ interface Document : Node {
     readonly attribute DocumentReadyState readyState;
 
     // DOM tree accessors
-    [CustomElementCallbacks] attribute DOMString title;
-    [CustomElementCallbacks] attribute DOMString dir;
-    [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings] attribute HTMLElement? body;
+    [CEReactions, CustomElementCallbacks] attribute DOMString title;
+    [CEReactions, CustomElementCallbacks] attribute DOMString dir;
+    [CEReactions, RaisesException=Setter, CustomElementCallbacks, PerWorldBindings] attribute HTMLElement? body;
     readonly attribute HTMLHeadElement? head;
     [SameObject, Measure] readonly attribute HTMLCollection images;
     [SameObject, Measure] readonly attribute HTMLCollection embeds;
@@ -119,16 +119,16 @@ interface Document : Node {
 
     // dynamic markup insertion
     // FIXME: There are two open() methods in the spec.
-    [Custom, CustomElementCallbacks, RaisesException] void open();
-    [RaisesException] void close();
-    [CallWith=EnteredWindow, CustomElementCallbacks, RaisesException] void write(DOMString... text);
-    [CallWith=EnteredWindow, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
+    [Custom, CEReactions, CustomElementCallbacks, RaisesException] void open();
+    [CEReactions, RaisesException] void close();
+    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
+    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // user interaction
     [ImplementedAs=domWindow] readonly attribute Window? defaultView;
     boolean hasFocus();
-    [CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
-    [CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
+    [CEReactions, CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
+    [CEReactions, CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
     [RaisesException] boolean queryCommandEnabled(DOMString commandId);
     [RaisesException] boolean queryCommandIndeterm(DOMString commandId);
     [RaisesException] boolean queryCommandState(DOMString commandId);

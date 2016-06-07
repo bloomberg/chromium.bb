@@ -101,6 +101,9 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    {% if setter.is_ce_reactions %}
+    CEReactionsScope ceReactionsScope;
+    {% endif %}
     {% if setter.is_custom %}
     {{v8_class}}::indexedPropertySetterCustom(index, v8Value, info);
     {% else %}
@@ -150,6 +153,9 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 {% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    {% if deleter.is_ce_reactions %}
+    CEReactionsScope ceReactionsScope;
+    {% endif %}
     {% if deleter.is_custom %}
     {{v8_class}}::indexedPropertyDeleterCustom(index, info);
     {% else %}
@@ -275,6 +281,9 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
 {
     if (!name->IsString())
         return;
+    {% if setter.is_ce_reactions %}
+    CEReactionsScope ceReactionsScope;
+    {% endif %}
     {% if setter.is_custom %}
     {{v8_class}}::namedPropertySetterCustom(name, v8Value, info);
     {% else %}
@@ -379,6 +388,9 @@ static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::Pro
 {
     if (!name->IsString())
         return;
+    {% if deleter.is_ce_reactions %}
+    CEReactionsScope ceReactionsScope;
+    {% endif %}
     {% if deleter.is_custom %}
     {{v8_class}}::namedPropertyDeleterCustom(name, info);
     {% else %}

@@ -25,17 +25,17 @@
     Custom=LegacyCallAsFunction,
     OverrideBuiltins,
 ] interface HTMLEmbedElement : HTMLElement {
-    [Reflect, URL] attribute DOMString src;
-    [Reflect] attribute DOMString type;
-    [Reflect] attribute DOMString width;
-    [Reflect] attribute DOMString height;
+    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect] attribute DOMString type;
+    [CEReactions, Reflect] attribute DOMString width;
+    [CEReactions, Reflect] attribute DOMString height;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
     // FIXME: The spec has a legacycaller any (any... arguments); crbug.com/465009
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLEmbedElement-partial
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString align;
+    [CEReactions, Reflect] attribute DOMString name;
 
     // FIXME: None of these getters and setters are in the spec.
     [Custom, NotEnumerable] getter boolean (unsigned long index);

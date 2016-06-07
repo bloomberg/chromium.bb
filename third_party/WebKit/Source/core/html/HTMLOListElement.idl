@@ -20,11 +20,11 @@
 // https://html.spec.whatwg.org/#the-ol-element
 
 interface HTMLOListElement : HTMLElement {
-    [Reflect] attribute boolean reversed;
-    attribute long start;
-    [Reflect] attribute DOMString type;
+    [CEReactions, Reflect] attribute boolean reversed;
+    [CEReactions] attribute long start;
+    [CEReactions, Reflect] attribute DOMString type;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLOListElement-partial
-    [Reflect] attribute boolean compact;
+    [CEReactions, Reflect] attribute boolean compact;
 };

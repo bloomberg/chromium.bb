@@ -388,6 +388,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
         contextData->activityLogger()->logSetter("{{interface_name}}.{{attribute.name}}", v8Value);
     }
     {% endif %}
+    {% if attribute.is_ce_reactions %}
+    CEReactionsScope ceReactionsScope;
+    {% endif %}
     {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
     V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     {% endif %}

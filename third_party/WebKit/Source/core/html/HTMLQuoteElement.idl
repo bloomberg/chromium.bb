@@ -21,5 +21,5 @@
 // https://html.spec.whatwg.org/#the-q-element
 
 interface HTMLQuoteElement : HTMLElement {
-    [Reflect, URL] attribute DOMString cite;
+    [CEReactions, Reflect, URL] attribute DOMString cite;
 };

@@ -20,5 +20,5 @@
 // https://html.spec.whatwg.org/#htmldirectoryelement
 
 interface HTMLDirectoryElement : HTMLElement {
-    [Reflect] attribute boolean compact;
+    [CEReactions, Reflect] attribute boolean compact;
 };

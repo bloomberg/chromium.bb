@@ -26,11 +26,11 @@
 interface HTMLDocument : Document {
     // https://html.spec.whatwg.org/#Document-partial
 
-    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString fgColor;
-    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString linkColor;
-    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString vlinkColor;
-    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString alinkColor;
-    [TreatNullAs=EmptyString, CustomElementCallbacks] attribute DOMString bgColor;
+    [TreatNullAs=EmptyString, CEReactions, CustomElementCallbacks] attribute DOMString fgColor;
+    [TreatNullAs=EmptyString, CEReactions, CustomElementCallbacks] attribute DOMString linkColor;
+    [TreatNullAs=EmptyString, CEReactions, CustomElementCallbacks] attribute DOMString vlinkColor;
+    [TreatNullAs=EmptyString, CEReactions, CustomElementCallbacks] attribute DOMString alinkColor;
+    [TreatNullAs=EmptyString, CEReactions, CustomElementCallbacks] attribute DOMString bgColor;
 
     [MeasureAs=DocumentClear] void clear();
     [MeasureAs=DocumentCaptureEvents] void captureEvents();

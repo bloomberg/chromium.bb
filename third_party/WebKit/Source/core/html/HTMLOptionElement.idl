@@ -28,14 +28,14 @@
     ConstructorCallWith=Document,
     RaisesException=Constructor
 ] interface HTMLOptionElement : HTMLElement {
-    [Reflect] attribute boolean disabled;
+    [CEReactions, Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement? form;
-    attribute DOMString label;
-    [Reflect=selected] attribute boolean defaultSelected;
+    [CEReactions] attribute DOMString label;
+    [CEReactions, Reflect=selected] attribute boolean defaultSelected;
     [ImplementedAs=selectedForBinding] attribute boolean selected;
-    attribute DOMString value;
+    [CEReactions] attribute DOMString value;
 
     // TODO(foolip): The text setter should never throw.
-    [RaisesException=Setter] attribute DOMString text;
+    [CEReactions, RaisesException=Setter] attribute DOMString text;
     readonly attribute long index;
 };

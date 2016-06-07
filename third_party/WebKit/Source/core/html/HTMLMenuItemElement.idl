@@ -7,12 +7,12 @@
 [
     RuntimeEnabled=ContextMenu,
 ] interface HTMLMenuItemElement : HTMLElement {
-    [Reflect] attribute DOMString type;
-    [Reflect] attribute DOMString label;
-    [Reflect] attribute DOMString icon;
-    [Reflect] attribute boolean disabled;
-    [Reflect] attribute boolean checked;
-    [Reflect] attribute DOMString radiogroup;
-    [Reflect] attribute boolean default;
+    [CEReactions, Reflect] attribute DOMString type;
+    [CEReactions, Reflect] attribute DOMString label;
+    [CEReactions, Reflect] attribute DOMString icon;
+    [CEReactions, Reflect] attribute boolean disabled;
+    [CEReactions, Reflect] attribute boolean checked;
+    [CEReactions, Reflect] attribute DOMString radiogroup;
+    [CEReactions, Reflect] attribute boolean default;
     // FIXME: readonly attribute HTMLElement? command;
 };

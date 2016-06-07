@@ -90,8 +90,6 @@ void CustomElementsRegistry::define(
     const ElementRegistrationOptions& options,
     ExceptionState& exceptionState)
 {
-    CEReactionsScope reactions;
-
     if (!builder.checkConstructorIntrinsics())
         return;
 
@@ -155,11 +153,8 @@ void CustomElementsRegistry::define(
 
     HeapVector<Member<Element>> candidates;
     collectCandidates(descriptor, &candidates);
-    for (Element* candidate : candidates) {
-        reactions.enqueue(
-            candidate,
-            new CustomElementUpgradeReaction(definition));
-    }
+    for (Element* candidate : candidates)
+        CustomElement::enqueueUpgradeReaction(candidate, definition);
 
     // TODO(dominicc): Implement steps:
     // 20: when-defined promise processing

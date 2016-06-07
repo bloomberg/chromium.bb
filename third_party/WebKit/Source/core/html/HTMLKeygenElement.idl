@@ -31,12 +31,12 @@
 // https://html.spec.whatwg.org/#the-keygen-element
 
 interface HTMLKeygenElement : HTMLElement {
-    [Reflect] attribute boolean autofocus;
-    [Reflect] attribute DOMString challenge;
-    [Reflect] attribute boolean disabled;
+    [CEReactions, Reflect] attribute boolean autofocus;
+    [CEReactions, Reflect] attribute DOMString challenge;
+    [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
-    [Reflect, ReflectOnly="rsa", ReflectMissing="rsa"] attribute DOMString keytype;
-    [Reflect] attribute DOMString name;
+    [CEReactions, Reflect, ReflectOnly="rsa", ReflectMissing="rsa"] attribute DOMString keytype;
+    [CEReactions, Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
 

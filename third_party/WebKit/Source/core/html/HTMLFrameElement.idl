@@ -21,15 +21,15 @@
 // https://html.spec.whatwg.org/#htmlframeelement
 
 interface HTMLFrameElement : HTMLElement {
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString scrolling;
-    [Reflect, URL] attribute DOMString src;
-    [Reflect] attribute DOMString frameBorder;
-    [Reflect, URL] attribute DOMString longDesc;
-    [Reflect] attribute boolean noResize;
+    [CEReactions, Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString scrolling;
+    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect] attribute DOMString frameBorder;
+    [CEReactions, Reflect, URL] attribute DOMString longDesc;
+    [CEReactions, Reflect] attribute boolean noResize;
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
     readonly attribute Window? contentWindow;
 
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
 };

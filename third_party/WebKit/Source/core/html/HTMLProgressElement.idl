@@ -20,8 +20,8 @@
 // https://html.spec.whatwg.org/#the-progress-element
 
 interface HTMLProgressElement : HTMLElement {
-    attribute double value;
-    attribute double max;
+    [CEReactions] attribute double value;
+    [CEReactions] attribute double max;
     readonly attribute double position;
     readonly attribute NodeList labels;
 };

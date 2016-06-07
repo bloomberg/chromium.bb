@@ -21,25 +21,25 @@
 // https://html.spec.whatwg.org/#the-a-element
 
 interface HTMLAnchorElement : HTMLElement {
-    [Reflect] attribute DOMString target;
-    [Reflect] attribute DOMString download;
+    [CEReactions, Reflect] attribute DOMString target;
+    [CEReactions, Reflect] attribute DOMString download;
     // FIXME: ping should be a DOMTokenList.
-    [Reflect] attribute DOMString ping;
-    [Reflect] attribute DOMString rel;
+    [CEReactions, Reflect] attribute DOMString ping;
+    [CEReactions, Reflect] attribute DOMString rel;
     // FIXME: readonly attribute DOMTokenList relList;
-    [Reflect] attribute DOMString hreflang;
-    [Reflect] attribute DOMString type;
-    [Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
+    [CEReactions, Reflect] attribute DOMString hreflang;
+    [CEReactions, Reflect] attribute DOMString type;
+    [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
 
-    [ImplementedAs=textContent] attribute DOMString text;
+    [CEReactions, ImplementedAs=textContent] attribute DOMString text;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLAnchorElement-partial
-    [Reflect] attribute DOMString coords;
-    [Reflect] attribute DOMString charset;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString rev;
-    [Reflect] attribute DOMString shape;
+    [CEReactions, Reflect] attribute DOMString coords;
+    [CEReactions, Reflect] attribute DOMString charset;
+    [CEReactions, Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString rev;
+    [CEReactions, Reflect] attribute DOMString shape;
 };
 
 HTMLAnchorElement implements HTMLHyperlinkElementUtils;

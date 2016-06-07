@@ -29,6 +29,6 @@
 [
     RuntimeEnabled=ShadowDOMV1,
 ] interface HTMLSlotElement : HTMLElement {
-    [Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString name;
     [ImplementedAs=assignedNodesForBinding] sequence<Node> assignedNodes(optional AssignedNodesOptions options);
 };

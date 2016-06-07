@@ -22,6 +22,6 @@
 interface HTMLUListElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLUListElement-partial
-    [Reflect] attribute boolean compact;
-    [Reflect] attribute DOMString type;
+    [CEReactions, Reflect] attribute boolean compact;
+    [CEReactions, Reflect] attribute DOMString type;
 };

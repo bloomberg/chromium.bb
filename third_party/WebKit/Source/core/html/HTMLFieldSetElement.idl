@@ -20,9 +20,9 @@
 // https://html.spec.whatwg.org/#the-fieldset-element
 
 interface HTMLFieldSetElement : HTMLElement {
-    [Reflect] attribute boolean disabled;
+    [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
-    [Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
 

@@ -20,9 +20,9 @@
 // https://html.spec.whatwg.org/#the-li-element
 
 interface HTMLLIElement : HTMLElement {
-    [Reflect] attribute long value;
+    [CEReactions, Reflect] attribute long value;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLLIElement-partial
-    [Reflect] attribute DOMString type;
+    [CEReactions, Reflect] attribute DOMString type;
 };

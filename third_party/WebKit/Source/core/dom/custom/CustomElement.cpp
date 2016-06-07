@@ -6,6 +6,8 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/custom/CEReactionsScope.h"
+#include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -96,6 +98,15 @@ HTMLElement* CustomElement::createCustomElement(Document& document, const Qualif
     element->setCustomElementState(CustomElementState::Undefined);
 
     return element;
+}
+
+void CustomElement::enqueueUpgradeReaction(Element* element, CustomElementDefinition* definition)
+{
+    // CEReactionsScope must be created by [CEReactions] in IDL,
+    // or callers must setup explicitly if it does not go through bindings.
+    DCHECK(CEReactionsScope::current());
+    CEReactionsScope::current()->enqueue(element,
+        new CustomElementUpgradeReaction(definition));
 }
 
 } // namespace blink

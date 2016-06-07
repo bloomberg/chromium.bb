@@ -23,5 +23,5 @@
 interface HTMLPreElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLPreElement-partial
-    [Reflect] attribute long width;
+    [CEReactions, Reflect] attribute long width;
 };

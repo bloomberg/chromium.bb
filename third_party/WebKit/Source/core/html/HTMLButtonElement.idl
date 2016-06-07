@@ -21,17 +21,17 @@
 // https://html.spec.whatwg.org/#the-button-element
 
 interface HTMLButtonElement : HTMLElement {
-    [Reflect] attribute boolean autofocus;
-    [Reflect] attribute boolean disabled;
+    [CEReactions, Reflect] attribute boolean autofocus;
+    [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
-    attribute DOMString formAction;
-    attribute DOMString formEnctype;
-    attribute DOMString formMethod;
-    [Reflect] attribute boolean formNoValidate;
-    [Reflect] attribute DOMString formTarget;
-    [Reflect] attribute DOMString name;
-    attribute DOMString type;
-    [Reflect] attribute DOMString value;
+    [CEReactions] attribute DOMString formAction;
+    [CEReactions] attribute DOMString formEnctype;
+    [CEReactions] attribute DOMString formMethod;
+    [CEReactions, Reflect] attribute boolean formNoValidate;
+    [CEReactions, Reflect] attribute DOMString formTarget;
+    [CEReactions, Reflect] attribute DOMString name;
+    [CEReactions] attribute DOMString type;
+    [CEReactions, Reflect] attribute DOMString value;
     // FIXME: attribute HTMLMenuElement? menu;
 
     readonly attribute boolean willValidate;

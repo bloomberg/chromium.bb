@@ -26,11 +26,11 @@
 // https://html.spec.whatwg.org/#the-track-element
 
 interface HTMLTrackElement : HTMLElement {
-    attribute DOMString kind;
-    [Reflect, URL] attribute DOMString src;
-    [Reflect] attribute DOMString srclang;
-    [Reflect] attribute DOMString label;
-    [Reflect] attribute boolean default;
+    [CEReactions] attribute DOMString kind;
+    [CEReactions, Reflect, URL] attribute DOMString src;
+    [CEReactions, Reflect] attribute DOMString srclang;
+    [CEReactions, Reflect] attribute DOMString label;
+    [CEReactions, Reflect] attribute boolean default;
 
     const unsigned short NONE = 0;
     const unsigned short LOADING = 1;

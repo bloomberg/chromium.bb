@@ -23,12 +23,12 @@
 interface HTMLBodyElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLBodyElement-partial
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString text;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString link;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString vLink;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString aLink;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
-    [Reflect] attribute DOMString background;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString text;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString link;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString vLink;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString aLink;
+    [CEReactions, Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
+    [CEReactions, Reflect] attribute DOMString background;
 
     // TODO(foolip): These event handler attributes should be inherited from
     // HTMLElement (which implements GlobalEventHandlers), but have different

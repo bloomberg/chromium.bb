@@ -14,8 +14,10 @@
 namespace blink {
 
 class Document;
+class Element;
 class HTMLElement;
 class QualifiedName;
+class CustomElementDefinition;
 class CustomElementRegistry;
 
 class CORE_EXPORT CustomElement {
@@ -53,6 +55,8 @@ public:
 
     static HTMLElement* createCustomElement(Document&, const AtomicString& localName, CreateElementFlags);
     static HTMLElement* createCustomElement(Document&, const QualifiedName&, CreateElementFlags);
+
+    static void enqueueUpgradeReaction(Element*, CustomElementDefinition*);
 };
 
 } // namespace blink

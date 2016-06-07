@@ -232,6 +232,18 @@ def interface_context(interface):
         if 'Unscopeable' in method.extended_attributes:
             unscopeables.append((method.name, v8_utilities.runtime_enabled_function_name(method)))
 
+    # [CEReactions]
+    setter_or_deleters = (
+        interface.indexed_property_setter,
+        interface.indexed_property_deleter,
+        interface.named_property_setter,
+        interface.named_property_deleter,
+    )
+    has_ce_reactions = any(setter_or_deleter and 'CEReactions' in setter_or_deleter.extended_attributes
+                           for setter_or_deleter in setter_or_deleters)
+    if has_ce_reactions:
+        includes.add('core/dom/custom/CEReactionsScope.h')
+
     context.update({
         'constructors': constructors,
         'has_custom_constructor': bool(custom_constructors),
@@ -1335,6 +1347,7 @@ def property_setter(setter, interface):
     idl_type.add_includes_for_type(extended_attributes)
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(setter, 'CallWith', 'ScriptState')
     is_raises_exception = 'RaisesException' in extended_attributes
+    is_ce_reactions = 'CEReactions' in extended_attributes
 
     # [LegacyInterfaceTypeChecking]
     has_type_checking_interface = (
@@ -1347,6 +1360,7 @@ def property_setter(setter, interface):
         'has_type_checking_interface': has_type_checking_interface,
         'idl_type': idl_type.base_type,
         'is_call_with_script_state': is_call_with_script_state,
+        'is_ce_reactions': is_ce_reactions,
         'is_custom': 'Custom' in extended_attributes,
         'is_nullable': idl_type.is_nullable,
         'is_raises_exception': is_raises_exception,
@@ -1363,8 +1377,10 @@ def property_deleter(deleter):
     extended_attributes = deleter.extended_attributes
     idl_type = deleter.idl_type
     is_call_with_script_state = v8_utilities.has_extended_attribute_value(deleter, 'CallWith', 'ScriptState')
+    is_ce_reactions = 'CEReactions' in extended_attributes
     return {
         'is_call_with_script_state': is_call_with_script_state,
+        'is_ce_reactions': is_ce_reactions,
         'is_custom': 'Custom' in extended_attributes,
         'is_raises_exception': 'RaisesException' in extended_attributes,
         'name': cpp_name(deleter),

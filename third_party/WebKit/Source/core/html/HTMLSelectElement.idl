@@ -23,26 +23,26 @@
 
 interface HTMLSelectElement : HTMLElement {
     // TODO(foolip): attribute DOMString autocomplete;
-    [Reflect] attribute boolean autofocus;
-    [Reflect] attribute boolean disabled;
+    [CEReactions, Reflect] attribute boolean autofocus;
+    [CEReactions, Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
-    [Reflect] attribute boolean multiple;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute boolean required;
-    attribute unsigned long size;
+    [CEReactions, Reflect] attribute boolean multiple;
+    [CEReactions, Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute boolean required;
+    [CEReactions] attribute unsigned long size;
 
     readonly attribute DOMString type;
 
     readonly attribute HTMLOptionsCollection options;
     // TODO(foolip): The length setter should never throw.
-    [RaisesException=Setter] attribute unsigned long length;
+    [CEReactions, RaisesException=Setter] attribute unsigned long length;
     getter Element? item(unsigned long index);
     HTMLOptionElement? namedItem(DOMString name);
-    [RaisesException] void add((HTMLOptionElement or HTMLOptGroupElement) element,
+    [CEReactions, RaisesException] void add((HTMLOptionElement or HTMLOptGroupElement) element,
                                optional (HTMLElement or long)? before = null);
-    [RaisesException] void remove(); // ChildNode overload
-    void remove(long index);
-    [RaisesException] setter void (unsigned long index, HTMLOptionElement? option);
+    [CEReactions, RaisesException] void remove(); // ChildNode overload
+    [CEReactions] void remove(long index);
+    [CEReactions, RaisesException] setter void (unsigned long index, HTMLOptionElement? option);
 
     readonly attribute HTMLCollection selectedOptions;
     attribute long selectedIndex;

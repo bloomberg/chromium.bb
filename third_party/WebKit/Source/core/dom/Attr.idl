@@ -26,9 +26,9 @@ interface Attr : Node {
     readonly attribute DOMString? prefix;
     readonly attribute DOMString localName;
     readonly attribute DOMString name;
-    [ImplementedAs=valueForBindings, CustomElementCallbacks] attribute DOMString value;
-    [TreatNullAs=EmptyString, ImplementedAs=valueForBindings, MeasureAs=AttrNodeValue] attribute DOMString nodeValue; // legacy alias of .value
-    [TreatNullAs=EmptyString, ImplementedAs=valueForBindings, MeasureAs=AttrTextContent] attribute DOMString textContent; // legacy alias of .value
+    [ImplementedAs=valueForBindings, CEReactions, CustomElementCallbacks] attribute DOMString value;
+    [TreatNullAs=EmptyString, ImplementedAs=valueForBindings, MeasureAs=AttrNodeValue, CEReactions] attribute DOMString nodeValue; // legacy alias of .value
+    [TreatNullAs=EmptyString, ImplementedAs=valueForBindings, MeasureAs=AttrTextContent, CEReactions] attribute DOMString textContent; // legacy alias of .value
 
     [MeasureAs=AttributeOwnerElement] readonly attribute Element? ownerElement;
 

@@ -25,13 +25,13 @@
 // https://html.spec.whatwg.org/#the-output-element
 
 interface HTMLOutputElement : HTMLElement {
-    [PutForwards=value] readonly attribute DOMTokenList htmlFor;
+    [CEReactions, PutForwards=value] readonly attribute DOMTokenList htmlFor;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
-    [Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
-    attribute DOMString defaultValue;
-    attribute DOMString value;
+    [CEReactions] attribute DOMString defaultValue;
+    [CEReactions] attribute DOMString value;
 
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;

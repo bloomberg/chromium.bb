@@ -20,5 +20,5 @@
 // https://html.spec.whatwg.org/#the-title-element
 
 interface HTMLTitleElement : HTMLElement {
-    attribute DOMString text;
+    [CEReactions] attribute DOMString text;
 };

@@ -22,26 +22,26 @@
 [CustomConstructor]
 interface HTMLElement : Element {
     // metadata attributes
-    [Reflect] attribute DOMString title;
-    [Reflect] attribute DOMString lang;
-    attribute boolean translate;
-    attribute DOMString dir;
+    [CEReactions, Reflect] attribute DOMString title;
+    [CEReactions, Reflect] attribute DOMString lang;
+    [CEReactions] attribute boolean translate;
+    [CEReactions] attribute DOMString dir;
     [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
 
     // user interaction
-    [Reflect] attribute boolean hidden;
+    [CEReactions, Reflect] attribute boolean hidden;
     [ImplementedAs=clickForBindings] void click();
-    [CustomElementCallbacks] attribute long tabIndex;
+    [CEReactions, CustomElementCallbacks] attribute long tabIndex;
     void focus();
     void blur();
-    [Reflect] attribute DOMString accessKey;
-    [CustomElementCallbacks] attribute boolean draggable;
-    [RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
-    attribute boolean spellcheck;
+    [CEReactions, Reflect] attribute DOMString accessKey;
+    [CEReactions, CustomElementCallbacks] attribute boolean draggable;
+    [CEReactions, RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
+    [CEReactions] attribute boolean spellcheck;
 
     // HTMLElement implements ElementContentEditable
     // https://html.spec.whatwg.org/#contenteditable
-    [CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
+    [CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
 
     // CSSOM View Module
@@ -62,7 +62,7 @@ interface HTMLElement : Element {
     // Non-standard APIs
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;
-    [Reflect, TreatNullAs=NullString, MeasureAs=PrefixedHTMLElementDropzone] attribute DOMString webkitdropzone;
+    [CEReactions, Reflect, TreatNullAs=NullString, MeasureAs=PrefixedHTMLElementDropzone] attribute DOMString webkitdropzone;
 };
 
 HTMLElement implements GlobalEventHandlers;

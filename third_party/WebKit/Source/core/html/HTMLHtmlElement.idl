@@ -22,5 +22,5 @@
 interface HTMLHtmlElement : HTMLElement {
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLHtmlElement-partial
-    [Reflect] attribute DOMString version;
+    [CEReactions, Reflect] attribute DOMString version;
 };

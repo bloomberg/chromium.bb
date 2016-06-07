@@ -21,6 +21,6 @@
 // https://html.spec.whatwg.org/#the-map-element
 
 interface HTMLMapElement : HTMLElement {
-    [Reflect] attribute DOMString name;
+    [CEReactions, Reflect] attribute DOMString name;
     readonly attribute HTMLCollection areas;
 };
