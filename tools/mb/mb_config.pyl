@@ -37,7 +37,6 @@
           'android_cronet_gn_release_bot_minimal_symbols_x86',
       'Android Cronet x86 Builder (dbg)':
           'android_cronet_gn_debug_static_bot_x86',
-      'Android GN Builder (dbg)': 'android_gn_debug_bot_minimal_symbols',
       'Android MIPS Builder (dbg)':
           'android_gn_debug_static_minimal_symbols_mipsel',
       'Android N5X Swarm Builder':
@@ -90,8 +89,6 @@
       'Android Remoting Tests': 'none',
       'Android Tests (trial)(dbg)': 'none',
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
-      'Android Asan Builder Tests (dbg)':
-          'android_asan_gn_clang_shared_debug_minimal_symbols',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
       'Blimp Linux (dbg)':
         '//build/args/bots/chromium.fyi/blimp_linux_dbg.gn',
@@ -199,6 +196,7 @@
       'CrWinClngLLDdbg':
         'swarming_gyp_clang_tot_minimal_symbols_shared_debug_use_lld_x86',
       'CrWinClngLLDdbg tester': 'none',
+      'EarlGreyiOS': 'ios_gyp',
       'Headless Linux (dbg)':
         '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
       'MD Top Chrome ChromeOS material-hybrid':
@@ -303,8 +301,6 @@
       'Android Builder': 'swarming_android_gn_release_bot_minimal_symbols',
       'Android Clang Builder (dbg)':
         'android_clang_asan_findbugs_gn_debug_bot_minimal_symbols',
-      'Android GN (dbg)': 'android_gn_debug_bot_minimal_symbols',
-      'Android GN': 'android_gn_release_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gn_debug_static_bot',
       'Android Tests': 'swarming_android_gn_release_bot_minimal_symbols',
       'Cast Android (dbg)': 'android_cast_gn_debug_static_bot',
@@ -369,14 +365,14 @@
     },
 
     'chromium.memory': {
-      'Linux ASAN LSAN Builder': 'swarming_asan_lsan_gn_release_bot',
-      'Linux ASAN LSAN Tests (1)': 'none',
-      'Linux ASAN LSAN Tests (sandboxed)': 'none',
-      'Mac ASAN 64 Builder': 'swarming_asan_lsan_full_symbols_gyp_release_bot',
-      'Mac ASAN 64 Tests (1)': 'none',
-      'Linux Chromium OS ASAN LSAN Builder':
+      'Linux ASan LSan Builder': 'swarming_asan_lsan_gn_release_bot',
+      'Linux ASan LSan Tests (1)': 'none',
+      'Linux ASan LSan Tests (sandboxed)': 'none',
+      'Mac ASan 64 Builder': 'swarming_asan_lsan_full_symbols_gyp_release_bot',
+      'Mac ASan 64 Tests (1)': 'none',
+      'Linux Chromium OS ASan LSan Builder':
         'swarming_asan_lsan_chromeos_gyp_release_bot',
-      'Linux Chromium OS ASAN LSAN Tests (1)': 'none',
+      'Linux Chromium OS ASan LSan Tests (1)': 'none',
     },
 
     'chromium.memory.fyi': {
@@ -437,6 +433,9 @@
       'Android Nexus5X Perf (1)': 'none',
       'Android Nexus5X Perf (2)': 'none',
       'Android Nexus5X Perf (3)': 'none',
+      'Android Nexus5X WebView Perf (1)': 'none',
+      'Android Nexus5X WebView Perf (2)': 'none',
+      'Android Nexus5X WebView Perf (3)': 'none',
       'Android Nexus6 Perf (1)': 'none',
       'Android Nexus6 Perf (2)': 'none',
       'Android Nexus6 Perf (3)': 'none',
@@ -670,9 +669,6 @@
       'android_archive_rel_ng': 'android_gn_release_trybot',
       'android_arm64_dbg_recipe': 'swarming_android_gn_debug_trybot_arm64',
       'android_blink_rel': 'swarming_android_gn_release_trybot',
-      'android_chromium_gn_compile_dbg': 'android_gn_debug_trybot',
-      'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
-      'android_chromium_gn_rel': 'android_gn_release_trybot',
       'android_chromium_variable': 'findit',
       'android_chromium_variable_archive': 'findit',
       'android_chromium_variable_arm64': 'findit',
@@ -771,6 +767,7 @@
       'linux_chromium_webkit_leak_variable': 'findit',
       'linux_chromium_webkit_msan_variable': 'findit',
       'linux_chromium_webkit_variable': 'findit',
+      'linux_chromiumos_full_variable': 'findit',
       'linux_nacl_sdk': 'gn_release_bot',
       'linux_nacl_sdk_build': 'gn_release_bot',
       'linux_optional_gpu_tests_rel':
@@ -785,6 +782,7 @@
       'ios-simulator': 'ios_gyp',
       'ios-simulator-gn': 'ios_gn',
       'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
+      'mac_chromium_10.10_macviews': 'mac_views_browser_gyp_release_trybot',
       'mac_chromium_archive_rel_ng': 'noswarming_gyp_release_trybot',
       'mac_chromium_asan_rel_ng': 'swarming_asan_dcheck_gyp_release_bot',
       'mac_chromium_asan_variable': 'findit',
@@ -797,7 +795,10 @@
       'mac_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'mac_chromium_variable': 'findit',
       'mac_chromium_variable_10.10': 'findit',
+      'mac_chromium_variable_10.10_macviews': 'findit',
       'mac_chromium_variable_10.10_layout': 'findit',
+      'mac_chromium_variable_10.11': 'findit',
+      'mac_chromium_variable_10.11_layout': 'findit',
       'mac_chromium_variable_archive': 'findit',
       'mac_chromium_variable_chrome': 'findit',
       'mac_chromium_variable_gn': 'findit',
@@ -869,6 +870,7 @@
       'win_chromium_variable': 'findit',
       'win_chromium_variable_archive': 'findit',
       'win_chromium_variable_chrome': 'findit',
+      'win_chromium_variable_clang': 'findit',
       'win_chromium_variable_gn': 'findit',
       'win_chromium_variable_webkit_builder': 'findit',
       'win_chromium_variable_webkit_layout': 'findit',
@@ -887,6 +889,7 @@
       'win_pgo': 'gyp_official_winpgo',
       'win_upload_clang': 'gn_release_bot',
       'win_chrome_official': 'gn_official_goma_minimal_symbols_x86',
+      'win_x64_chromium_variable_builder': 'findit',
     },
 
     'tryserver.v8': {
@@ -903,10 +906,6 @@
   # is not necessarily so (i.e., we might have mac, win, and linux
   # bots all using the 'gn_release_bot' config).
   'configs': {
-    'android_asan_gn_clang_shared_debug_minimal_symbols': [
-      'android', 'asan', 'gn', 'clang', 'shared', 'debug', 'minimal_symbols',
-    ],
-
     'android_cast_gn_debug_static_bot': [
       'android', 'cast', 'gn', 'clang', 'debug_static_bot',
     ],
@@ -966,10 +965,6 @@
       'android', 'gn', 'debug_bot',
     ],
 
-    'android_gn_debug_bot_minimal_symbols': [
-      'android', 'gn', 'debug_bot_minimal_symbols',
-    ],
-
     'android_gn_debug_static_bot': [
       'android', 'gn', 'debug_static_bot',
     ],
@@ -996,10 +991,6 @@
 
     'android_gn_debug_static_trybot_arm64': [
       'android', 'gn', 'debug_static_trybot', 'arm64',
-    ],
-
-    'android_gn_debug_trybot': [
-      'android', 'gn', 'debug_trybot',
     ],
 
     'android_gn_debug_trybot_java_coverage': [
@@ -1398,6 +1389,10 @@
 
     'mac_views_browser_gyp_release_bot': [
       'mac_views_browser', 'gyp', 'release_bot',
+    ],
+
+    'mac_views_browser_gyp_release_trybot': [
+      'mac_views_browser', 'gyp', 'release_trybot',
     ],
 
     # This is used to indicate that the bot runs the nacl annotator-based
