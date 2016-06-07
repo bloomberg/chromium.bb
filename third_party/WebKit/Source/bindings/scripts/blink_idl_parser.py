@@ -308,33 +308,6 @@ class BlinkIDLParser(IDLParser):
                              | ExtendedAttributeStringLiteralList"""
         p[0] = p[1]
 
-    # [59]
-    # FIXME: Upstream UnionType
-    def p_UnionType(self, p):
-        """UnionType : '(' UnionMemberType OR UnionMemberType UnionMemberTypes ')'"""
-        members = ListFromConcat(p[2], p[4], p[5])
-        p[0] = self.BuildProduction('UnionType', p, 1, members)
-
-    # [60]
-    def p_UnionMemberType(self, p):
-        """UnionMemberType : NonAnyType
-                           | UnionType TypeSuffix
-                           | ANY '[' ']' TypeSuffix"""
-        if len(p) == 2:
-            p[0] = self.BuildProduction('Type', p, 1, p[1])
-        elif len(p) == 3:
-            p[0] = self.BuildProduction('Type', p, 1, ListFromConcat(p[1], p[2]))
-        else:
-            any_node = ListFromConcat(self.BuildProduction('Any', p, 1), p[4])
-            p[0] = self.BuildProduction('Type', p, 1, any_node)
-
-    # [61]
-    def p_UnionMemberTypes(self, p):
-        """UnionMemberTypes : OR UnionMemberType UnionMemberTypes
-                            |"""
-        if len(p) > 2:
-            p[0] = ListFromConcat(p[2], p[3])
-
     # [70] Override base parser to remove non-standard sized array
     # FIXME: Upstream
     def p_TypeSuffix(self, p):

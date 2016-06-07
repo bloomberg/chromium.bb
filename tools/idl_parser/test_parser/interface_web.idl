@@ -381,3 +381,17 @@ interface MyIfaceSerializer {
 interface MyIfaceFrozenArray {
   readonly attribute FrozenArray<DOMString> foo;
 };
+
+/* TREE
+ *Interface(MyIfaceUnion)
+ *  Attribute(foo)
+ *    Type()
+ *      UnionType()
+ *        Type()
+ *          PrimitiveType(DOMString)
+ *        Type()
+ *          PrimitiveType(long)
+ */
+interface MyIfaceUnion {
+  attribute (DOMString or long) foo;
+};
