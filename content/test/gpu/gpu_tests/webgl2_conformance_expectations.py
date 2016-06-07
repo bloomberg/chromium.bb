@@ -279,11 +279,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win', 'intel'], bug=483282)
+    self.Skip('conformance2/textures/misc/copy-texture-image.html',
+        ['win', 'intel'], bug=617449)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_depth.html',
         ['win', 'intel'], bug=614418)
+    self.Skip('deqp/functional/gles3/texturespecification/' +
+        'teximage3d_depth_pbo.html',
+        ['win', 'intel'], bug=617449)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_depth.html',
         ['win', 'intel'], bug=614418)
