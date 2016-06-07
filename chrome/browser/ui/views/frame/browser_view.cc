@@ -479,6 +479,12 @@ BrowserView::~BrowserView() {
   }
 #endif
 
+  extensions::ExtensionCommandsGlobalRegistry* global_registry =
+      extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
+  if (global_registry->registry_for_active_window() ==
+          extension_keybinding_registry_.get())
+    global_registry->set_registry_for_active_window(nullptr);
+
   // We destroy the download shelf before |browser_| to remove its child
   // download views from the set of download observers (since the observed
   // downloads can be destroyed along with |browser_| and the observer
