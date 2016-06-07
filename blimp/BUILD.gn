@@ -137,4 +137,40 @@ if (is_linux) {
       ":blimp_engine_env_tests_group",
     ]
   }
+
+  # Builds and bundles the tests into a tarball that can be used to build a
+  # Docker image.
+  action("blimp_engine_env_tests_bundle") {
+    testonly = true
+    script = "//blimp/tools/create-bundle.py"
+
+    # These form the arguments to the script.
+    _rebased_out_dir = rebase_path(root_out_dir)
+    _rebased_dockerfile = rebase_path("//blimp/Dockerfile")
+    _bundle = "$root_out_dir/blimp_engine_env_tests_bundle.tar.gz"
+
+    # Depending on this ensures that both the manifest is generated
+    # and everything listed in the manifest has been built.
+    deps = [
+      ":generate_blimp_engine_env_tests_manifest",
+    ]
+
+    sources = [
+      _blimp_engine_env_tests_manifest,
+      _rebased_dockerfile,
+    ]
+    outputs = [
+      _bundle,
+    ]
+    args = [
+      "--build-dir",
+      _rebased_out_dir,
+      "--dockerfile",
+      _rebased_dockerfile,
+      "--manifest",
+      _rebased_blimp_engine_env_tests_manifest,
+      "--output",
+      rebase_path(_bundle),
+    ]
+  }
 }

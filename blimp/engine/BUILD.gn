@@ -531,7 +531,7 @@ if (is_linux) {
   # Builds and bundles the engine into a tarball that can be used to build a
   # Docker image.
   action("blimp_engine_bundle") {
-    script = "//blimp/tools/bundle-engine.py"
+    script = "//blimp/tools/create-bundle.py"
 
     # These form the arguments to the script.
     _rebased_out_dir = rebase_path(root_out_dir)

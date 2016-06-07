@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''Bundles the Blimp Engine and its runtime dependencies into a tarball.
+'''Bundles the Blimp target and its runtime dependencies into a tarball.
 
    The created bundle can be passed as input to docker build.  E.g.
    docker build - < ../../out-linux/Debug/blimp_engine_deps.tar.gz
@@ -40,11 +40,12 @@ def main():
                       required=True,
                       metavar='FILE')
   parser.add_argument('--startup-script',
-                      help=('Engine startup script to add to the bundle'),
-                      required=True,
+                      help=('optional startup script to add to the bundle'),
+                      required=False,
                       metavar='FILE')
   parser.add_argument('--manifest',
-                      help=('engine manifest'),
+                      help=('file listing the set of files to include in '
+                            'the bundle'),
                       required=True)
   parser.add_argument('--output',
                       help=('name and path of bundle to create'),
@@ -55,23 +56,30 @@ def main():
   deps = ReadDependencies(args.manifest)
 
   dockerfile_dirname, dockerfile_basename = os.path.split(args.dockerfile)
-  startup_script_dirname, startup_script_basename = os.path.split(
-      args.startup_script)
+  if args.startup_script:
+    startup_script_dirname, startup_script_basename = os.path.split(
+        args.startup_script)
 
   try:
     env = os.environ.copy()
     # Use fastest possible mode when gzipping.
     env["GZIP"] = "-1"
+    subprocess_args = [
+        "tar",
+        "-zcf", args.output,
+        # Ensure tarball content group permissions are appropriately set for
+        # use as part of a "docker build". That is group readable with
+        # executable files also being group executable.
+        "--mode=g+rX",
+        "-C", dockerfile_dirname, dockerfile_basename,
+        "-C", args.build_dir] + deps
+    if args.startup_script:
+      startup_script_dirname, startup_script_basename = os.path.split(
+          args.startup_script)
+      subprocess_args.extend(
+          ["-C", startup_script_dirname, startup_script_basename])
     subprocess.check_output(
-        ["tar",
-         "-zcf", args.output,
-         # Ensure tarball content group permissions are appropriately set for
-         # use as part of a "docker build". That is group readable with
-         # executable files also being group executable.
-         "--mode=g+rX",
-         "-C", dockerfile_dirname, dockerfile_basename,
-         "-C", startup_script_dirname, startup_script_basename,
-         "-C", args.build_dir] + deps,
+        subprocess_args,
         # Redirect stderr to stdout, so that its output is captured.
         stderr=subprocess.STDOUT,
         env=env)
