@@ -2151,8 +2151,8 @@
   the number of tasks that may run simultaneously.
 
   As the file containing the pool definition may be executed in the
-  of more than one toolchain it is recommended to specify an explicit
-  toolchain when definining and referencing a pool.
+  context of more than one toolchain it is recommended to specify an
+  explicit toolchain when defining and referencing a pool.
 
   A pool is referenced by its label just like a target.
 
