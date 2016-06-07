@@ -81,10 +81,11 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Always do this before posting the |compositor_| for deletion.
+  get_client()->setWebLayer(nullptr);
+
   if (compositor_ && !compositor_task_runner_->BelongsToCurrentThread())
     compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_.release());
-
-  get_client()->setWebLayer(nullptr);
 
   if (video_frame_provider_)
     video_frame_provider_->Stop();
