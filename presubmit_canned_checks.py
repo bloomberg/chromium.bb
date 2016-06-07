@@ -211,6 +211,26 @@ def CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api,
       items=eof_files))
   return outputs
 
+def CheckGenderNeutral(input_api, output_api, source_file_filter=None):
+  """Checks that there are no gendered pronouns in any of the text files to be
+  submitted.
+  """
+  gendered_re = input_api.re.compile(
+      '(^|\s|\(|\[)([Hh]e|[Hh]is|[Hh]ers?|[Hh]im|[Ss]he|[Gg]uys?)\\b')
+
+  errors = []
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=source_file_filter):
+    for line_num, line in f.ChangedContents():
+      if gendered_re.search(line):
+        errors.append('%s (%d): %s' % (f.LocalPath(), line_num, line))
+
+  if len(errors):
+    return [output_api.PresubmitPromptWarning('Found a gendered pronoun in:',
+                                              long_text='\n'.join(errors))]
+  return []
+
+
 
 def _ReportErrorFileAndLine(filename, line_num, dummy_line):
   """Default error formatter for _FindNewViolationsOfRule."""

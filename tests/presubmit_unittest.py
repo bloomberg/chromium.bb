@@ -1876,6 +1876,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeWasUploaded',
       'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
+      'CheckGenderNeutral',
       'CheckLongLines', 'CheckTreeIsOpen', 'PanProjectChecks',
       'CheckLicense',
       'CheckOwners',
