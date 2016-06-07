@@ -140,7 +140,9 @@ public:
     }
 
 private:
-    CORE_EXPORT static HeapHashCountedSet<Member<Node>>& disabledSubtreeRoots();
+    using SubtreeRootSet = HeapHashCountedSet<Member<Node>>;
+
+    CORE_EXPORT static SubtreeRootSet& disabledSubtreeRoots();
 
     Member<Node> m_root;
 };

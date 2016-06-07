@@ -394,13 +394,10 @@ void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
 
 void Resource::markClientsAndObserversFinished()
 {
-    while (!m_clients.isEmpty()) {
-        HashCountedSet<ResourceClient*>::iterator it = m_clients.begin();
-        for (int i = it->value; i; i--) {
-            m_finishedClients.add(it->key);
-            m_clients.remove(it);
-        }
-    }
+    HashCountedSet<ResourceClient*> clients;
+    m_clients.swap(clients);
+    for (const auto& it : clients)
+        m_finishedClients.add(it.key, it.value);
 }
 
 void Resource::error(const ResourceError& error)

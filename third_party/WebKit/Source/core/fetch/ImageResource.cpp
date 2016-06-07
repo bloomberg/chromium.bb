@@ -106,13 +106,10 @@ void ImageResource::checkNotify()
 
 void ImageResource::markClientsAndObserversFinished()
 {
-    while (!m_observers.isEmpty()) {
-        HashCountedSet<ImageResourceObserver*>::iterator it = m_observers.begin();
-        for (int i = it->value; i; i--) {
-            m_finishedObservers.add(it->key);
-            m_observers.remove(it);
-        }
-    }
+    HashCountedSet<ImageResourceObserver*> observers;
+    m_observers.swap(observers);
+    for (const auto& it : observers)
+        m_finishedObservers.add(it.key, it.value);
 
     Resource::markClientsAndObserversFinished();
 }

@@ -71,6 +71,9 @@ public:
     // true if an new entry was added.
     AddResult add(const ValueType&);
 
+    // Generalized add(), adding the value N times.
+    AddResult add(const ValueType&, unsigned);
+
     // Reduces the count of the value, and removes it if count goes down to
     // zero, returns true if the value is removed.
     bool remove(const ValueType& value) { return remove(find(value)); }
@@ -91,11 +94,18 @@ private:
 };
 
 template <typename T, typename U, typename V, typename W>
+inline typename HashCountedSet<T, U, V, W>::AddResult HashCountedSet<T, U, V, W>::add(const ValueType& value, unsigned count)
+{
+    DCHECK_GT(count, 0u);
+    AddResult result = m_impl.add(value, 0);
+    result.storedValue->value += count;
+    return result;
+}
+
+template <typename T, typename U, typename V, typename W>
 inline typename HashCountedSet<T, U, V, W>::AddResult HashCountedSet<T, U, V, W>::add(const ValueType& value)
 {
-    AddResult result = m_impl.add(value, 0);
-    ++result.storedValue->value;
-    return result;
+    return add(value, 1u);
 }
 
 template <typename T, typename U, typename V, typename W>

@@ -45,7 +45,7 @@ static WidgetToParentMap& widgetNewParentMap()
     return map;
 }
 
-typedef HeapHashSet<Member<Widget>> WidgetSet;
+using WidgetSet = HeapHashSet<Member<Widget>>;
 static WidgetSet& widgetsPendingTemporaryRemovalFromParent()
 {
     // Widgets in this set will not leak because it will be cleared in
@@ -54,9 +54,9 @@ static WidgetSet& widgetsPendingTemporaryRemovalFromParent()
     return set;
 }
 
-HeapHashCountedSet<Member<Node>>& SubframeLoadingDisabler::disabledSubtreeRoots()
+SubframeLoadingDisabler::SubtreeRootSet& SubframeLoadingDisabler::disabledSubtreeRoots()
 {
-    DEFINE_STATIC_LOCAL(HeapHashCountedSet<Member<Node>>, nodes, (new HeapHashCountedSet<Member<Node>>));
+    DEFINE_STATIC_LOCAL(SubtreeRootSet, nodes, (new SubtreeRootSet));
     return nodes;
 }
 
