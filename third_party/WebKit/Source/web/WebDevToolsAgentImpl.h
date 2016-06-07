@@ -150,7 +150,7 @@ private:
 
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorPageAgent> m_pageAgent;
-    Member<InspectorResourceAgent> m_resourceAgent;
+    Member<InspectorNetworkAgent> m_networkAgent;
     Member<InspectorLayerTreeAgent> m_layerTreeAgent;
     Member<InspectorTracingAgent> m_tracingAgent;
 

@@ -46,7 +46,7 @@ class CSSStyleSheet;
 class Document;
 class Element;
 class ExceptionState;
-class InspectorResourceAgent;
+class InspectorNetworkAgent;
 class InspectorResourceContainer;
 class InspectorStyleSheetBase;
 
@@ -120,7 +120,7 @@ private:
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
 public:
-    static InspectorStyleSheet* create(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener*, InspectorResourceContainer*);
+    static InspectorStyleSheet* create(InspectorNetworkAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener*, InspectorResourceContainer*);
 
     ~InspectorStyleSheet() override;
     DECLARE_VIRTUAL_TRACE();
@@ -154,7 +154,7 @@ protected:
     InspectorStyle* inspectorStyle(CSSStyleDeclaration*) override;
 
 private:
-    InspectorStyleSheet(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener*, InspectorResourceContainer*);
+    InspectorStyleSheet(InspectorNetworkAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener*, InspectorResourceContainer*);
     CSSRuleSourceData* ruleSourceDataAfterSourceRange(const SourceRange&);
     CSSRuleSourceData* findRuleByHeaderRange(const SourceRange&);
     CSSRuleSourceData* findRuleByBodyRange(const SourceRange&);
@@ -177,7 +177,7 @@ private:
     Element* ownerStyleElement();
 
     Member<InspectorResourceContainer> m_resourceContainer;
-    Member<InspectorResourceAgent> m_resourceAgent;
+    Member<InspectorNetworkAgent> m_networkAgent;
     Member<CSSStyleSheet> m_pageStyleSheet;
     String m_origin;
     String m_documentURL;

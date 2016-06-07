@@ -46,7 +46,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

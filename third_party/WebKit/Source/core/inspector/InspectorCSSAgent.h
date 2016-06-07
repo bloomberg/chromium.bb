@@ -52,7 +52,7 @@ class CSSStyleSheet;
 class Document;
 class Element;
 class InspectedFrames;
-class InspectorResourceAgent;
+class InspectorNetworkAgent;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class MediaList;
@@ -99,9 +99,9 @@ public:
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
     static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
-    static InspectorCSSAgent* create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
+    static InspectorCSSAgent* create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorNetworkAgent* networkAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
     {
-        return new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader, resourceContainer);
+        return new InspectorCSSAgent(domAgent, inspectedFrames, networkAgent, resourceContentLoader, resourceContainer);
     }
 
     static void collectAllDocumentStyleSheets(Document*, HeapVector<Member<CSSStyleSheet>>&);
@@ -158,7 +158,7 @@ private:
 
     static void collectStyleSheets(CSSStyleSheet*, HeapVector<Member<CSSStyleSheet>>&);
 
-    InspectorCSSAgent(InspectorDOMAgent*, InspectedFrames*, InspectorResourceAgent*, InspectorResourceContentLoader*, InspectorResourceContainer*);
+    InspectorCSSAgent(InspectorDOMAgent*, InspectedFrames*, InspectorNetworkAgent*, InspectorResourceContentLoader*, InspectorResourceContainer*);
 
     typedef HeapHashMap<String, Member<InspectorStyleSheet>> IdToInspectorStyleSheet;
     typedef HeapHashMap<String, Member<InspectorStyleSheetForInlineStyle>> IdToInspectorStyleSheetForInlineStyle;
@@ -207,7 +207,7 @@ private:
 
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectedFrames> m_inspectedFrames;
-    Member<InspectorResourceAgent> m_resourceAgent;
+    Member<InspectorNetworkAgent> m_networkAgent;
     Member<InspectorResourceContentLoader> m_resourceContentLoader;
     Member<InspectorResourceContainer> m_resourceContainer;
 

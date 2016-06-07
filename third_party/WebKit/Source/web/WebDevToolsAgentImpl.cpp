@@ -46,8 +46,8 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorTaskRunner.h"
@@ -303,7 +303,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_resourceContainer(new InspectorResourceContainer(m_inspectedFrames))
     , m_domAgent(nullptr)
     , m_pageAgent(nullptr)
-    , m_resourceAgent(nullptr)
+    , m_networkAgent(nullptr)
     , m_layerTreeAgent(nullptr)
     , m_tracingAgent(nullptr)
     , m_includeViewAgents(includeViewAgents)
@@ -340,7 +340,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_resourceContainer);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
-    visitor->trace(m_resourceAgent);
+    visitor->trace(m_networkAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
     visitor->trace(m_session);
@@ -372,11 +372,11 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_layerTreeAgent = layerTreeAgent;
     m_session->append(layerTreeAgent);
 
-    InspectorResourceAgent* resourceAgent = InspectorResourceAgent::create(m_inspectedFrames.get());
-    m_resourceAgent = resourceAgent;
-    m_session->append(resourceAgent);
+    InspectorNetworkAgent* networkAgent = InspectorNetworkAgent::create(m_inspectedFrames.get());
+    m_networkAgent = networkAgent;
+    m_session->append(networkAgent);
 
-    InspectorCSSAgent* cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get(), m_resourceContainer.get());
+    InspectorCSSAgent* cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_networkAgent, m_resourceContentLoader.get(), m_resourceContainer.get());
     m_session->append(cssAgent);
 
     m_session->append(new InspectorAnimationAgent(m_inspectedFrames.get(), m_domAgent, cssAgent, m_session->v8Session()));
@@ -405,7 +405,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_session->append(pageAgent);
 
     m_tracingAgent->setLayerTreeId(m_layerTreeId);
-    m_resourceAgent->setHostId(hostId);
+    m_networkAgent->setHostId(hostId);
 
     if (m_includeViewAgents) {
         // TODO(dgozman): we should actually pass the view instead of frame, but during
@@ -435,7 +435,7 @@ void WebDevToolsAgentImpl::destroySession()
 
     m_tracingAgent.clear();
     m_layerTreeAgent.clear();
-    m_resourceAgent.clear();
+    m_networkAgent.clear();
     m_pageAgent.clear();
     m_domAgent.clear();
 

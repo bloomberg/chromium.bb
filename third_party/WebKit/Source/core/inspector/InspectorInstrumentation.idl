@@ -136,79 +136,79 @@ class XMLHttpRequest;
     [LayerTree]
     void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
 
-    [Resource]
+    [Network]
     void didScheduleStyleRecalculation([Keep] Document*);
 
-    [Resource]
+    [Network]
     void applyUserAgentOverride(LocalFrame*, String* userAgent);
 
-    [Resource]
+    [Network]
     void didBlockRequest([Keep] LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
 
-    [Resource]
+    [Network]
     void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
 
-    [Resource]
+    [Network]
     void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 
-    [Resource]
+    [Network]
     void markResourceAsCached(LocalFrame*, unsigned long identifier);
 
-    [Resource]
+    [Network]
     void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
-    [Resource]
+    [Network]
     void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
-    [Resource]
+    [Network]
     void didFinishLoading(LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength);
 
-    [Resource]
+    [Network]
     void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
-    [Resource]
+    [Network]
     void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
 
-    [Resource]
+    [Network]
     void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
 
-    [Resource]
+    [Network]
     void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
 
-    [Resource]
+    [Network]
     void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
 
-    [Resource]
+    [Network]
     void willDispatchEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data);
 
-    [Resource]
+    [Network]
     void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
 
-    [Resource]
+    [Network]
     void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap& headers, bool includeCredentials);
 
-    [Resource]
+    [Network]
     void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
 
-    [Resource]
+    [Network]
     void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
 
-    [Resource]
+    [Network]
     void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);
 
-    [Resource]
+    [Network]
     void didFailFetch(ExecutionContext*, ThreadableLoaderClient*);
 
-    [Resource]
+    [Network]
     void didFinishFetch([Keep] ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
 
-    [Resource]
+    [Network]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 
     [V8]
     void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
 
-    [Resource]
+    [Network]
     void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
 
     [V8]
@@ -226,7 +226,7 @@ class XMLHttpRequest;
     [Page]
     void frameDetachedFromParent([Keep] LocalFrame*);
 
-    [Resource, DOM, Page]
+    [Network, DOM, Page]
     void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
     [DOM]
@@ -238,10 +238,10 @@ class XMLHttpRequest;
     [Page]
     void frameStoppedLoading([Keep] LocalFrame*);
 
-    [Page, Resource]
+    [Page, Network]
     void frameScheduledNavigation([Keep] LocalFrame*, double delay);
 
-    [Page, Resource]
+    [Page, Network]
     void frameClearedScheduledNavigation([Keep] LocalFrame*);
 
     [Worker]
@@ -250,25 +250,25 @@ class XMLHttpRequest;
     [Worker]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
-    [Resource]
+    [Network]
     void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
 
-    [Resource]
+    [Network]
     void willSendWebSocketHandshakeRequest([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest* request);
 
-    [Resource]
+    [Network]
     void didReceiveWebSocketHandshakeResponse([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response);
 
-    [Resource]
+    [Network]
     void didCloseWebSocket([Keep] Document*, unsigned long identifier);
 
-    [Resource]
+    [Network]
     void didReceiveWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
 
-    [Resource]
+    [Network]
     void didSendWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
 
-    [Resource]
+    [Network]
     void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
 
     [ApplicationCache]
@@ -328,9 +328,9 @@ interface InspectorOverrides {
     [Worker]
     bool shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context);
 
-    [Resource]
+    [Network]
     bool shouldForceCORSPreflight(Document*);
 
-    [Resource]
+    [Network]
     bool shouldBlockRequest(LocalFrame*, const ResourceRequest&);
 }

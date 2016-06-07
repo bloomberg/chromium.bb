@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorResourceAgent_h
-#define InspectorResourceAgent_h
+#ifndef InspectorNetworkAgent_h
+#define InspectorNetworkAgent_h
 
 #include "bindings/core/v8/ScriptString.h"
 #include "core/CoreExport.h"
@@ -43,17 +43,17 @@
 
 namespace blink {
 
-class Resource;
-struct FetchInitiatorInfo;
 class Document;
 class DocumentLoader;
 class EncodedFormData;
 class ExecutionContext;
+struct FetchInitiatorInfo;
 class LocalFrame;
 class HTTPHeaderMap;
 class InspectedFrames;
 class KURL;
 class NetworkResourcesData;
+class Resource;
 class ResourceError;
 class ResourceResponse;
 class ThreadableLoaderClient;
@@ -67,16 +67,16 @@ namespace protocol {
 class DictionaryValue;
 }
 
-class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<protocol::Network::Metainfo> {
+class CORE_EXPORT InspectorNetworkAgent final : public InspectorBaseAgent<protocol::Network::Metainfo> {
 public:
-    static InspectorResourceAgent* create(InspectedFrames* inspectedFrames)
+    static InspectorNetworkAgent* create(InspectedFrames* inspectedFrames)
     {
-        return new InspectorResourceAgent(inspectedFrames);
+        return new InspectorNetworkAgent(inspectedFrames);
     }
 
     void restore() override;
 
-    ~InspectorResourceAgent() override;
+    ~InspectorNetworkAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Called from instrumentation.
@@ -113,7 +113,7 @@ public:
 
     void applyUserAgentOverride(String* userAgent);
 
-    // FIXME: InspectorResourceAgent should not be aware of style recalculation.
+    // FIXME: InspectorNetworkAgent should not be aware of style recalculation.
     void willRecalculateStyle(Document*);
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
@@ -152,12 +152,12 @@ public:
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
 
 private:
-    explicit InspectorResourceAgent(InspectedFrames*);
+    explicit InspectorNetworkAgent(InspectedFrames*);
 
     void enable(int totalBufferSize, int resourceBufferSize);
     void willSendRequestInternal(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void delayedRemoveReplayXHR(XMLHttpRequest*);
-    void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
+    void removeFinishedReplayXHRFired(Timer<InspectorNetworkAgent>*);
     void didFinishXHRInternal(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&, bool);
 
     bool canGetResponseBodyBlob(const String& requestId);
@@ -183,16 +183,16 @@ private:
     typedef HashMap<String, std::unique_ptr<protocol::Network::Initiator>> FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
 
-    // FIXME: InspectorResourceAgent should now be aware of style recalculation.
+    // FIXME: InspectorNetworkAgent should now be aware of style recalculation.
     std::unique_ptr<protocol::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
     HeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
     HeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;
-    Timer<InspectorResourceAgent> m_removeFinishedReplayXHRTimer;
+    Timer<InspectorNetworkAgent> m_removeFinishedReplayXHRTimer;
 };
 
 } // namespace blink
 
 
-#endif // !defined(InspectorResourceAgent_h)
+#endif // !defined(InspectorNetworkAgent_h)

@@ -49,7 +49,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
@@ -918,15 +918,15 @@ bool InspectorStyleSheetBase::lineNumberAndColumnToOffset(unsigned lineNumber, u
     return true;
 }
 
-InspectorStyleSheet* InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener* listener, InspectorResourceContainer* resourceContainer)
+InspectorStyleSheet* InspectorStyleSheet::create(InspectorNetworkAgent* networkAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener* listener, InspectorResourceContainer* resourceContainer)
 {
-    return new InspectorStyleSheet(resourceAgent, pageStyleSheet, origin, documentURL, listener, resourceContainer);
+    return new InspectorStyleSheet(networkAgent, pageStyleSheet, origin, documentURL, listener, resourceContainer);
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener* listener, InspectorResourceContainer* resourceContainer)
+InspectorStyleSheet::InspectorStyleSheet(InspectorNetworkAgent* networkAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener* listener, InspectorResourceContainer* resourceContainer)
     : InspectorStyleSheetBase(listener)
     , m_resourceContainer(resourceContainer)
-    , m_resourceAgent(resourceAgent)
+    , m_networkAgent(networkAgent)
     , m_pageStyleSheet(pageStyleSheet)
     , m_origin(origin)
     , m_documentURL(documentURL)
@@ -946,7 +946,7 @@ InspectorStyleSheet::~InspectorStyleSheet()
 DEFINE_TRACE(InspectorStyleSheet)
 {
     visitor->trace(m_resourceContainer);
-    visitor->trace(m_resourceAgent);
+    visitor->trace(m_networkAgent);
     visitor->trace(m_pageStyleSheet);
     visitor->trace(m_sourceData);
     visitor->trace(m_cssomFlatRules);
@@ -1675,7 +1675,7 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result)
         return true;
 
     bool base64Encoded;
-    bool success = m_resourceAgent->fetchResourceContent(m_pageStyleSheet->ownerDocument(), url, result, &base64Encoded);
+    bool success = m_networkAgent->fetchResourceContent(m_pageStyleSheet->ownerDocument(), url, result, &base64Encoded);
     return success && !base64Encoded;
 }
 

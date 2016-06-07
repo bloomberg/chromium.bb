@@ -38,8 +38,8 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -106,19 +106,19 @@ NativeBreakpoint::~NativeBreakpoint()
 StyleRecalc::StyleRecalc(Document* document)
     : m_instrumentingAgents(instrumentingAgentsFor(document))
 {
-    if (!m_instrumentingAgents || m_instrumentingAgents->hasInspectorResourceAgents())
+    if (!m_instrumentingAgents || m_instrumentingAgents->hasInspectorNetworkAgents())
         return;
-    for (InspectorResourceAgent* resourceAgent : m_instrumentingAgents->inspectorResourceAgents())
-        resourceAgent->willRecalculateStyle(document);
+    for (InspectorNetworkAgent* networkAgent : m_instrumentingAgents->inspectorNetworkAgents())
+        networkAgent->willRecalculateStyle(document);
 }
 
 StyleRecalc::~StyleRecalc()
 {
     if (!m_instrumentingAgents)
         return;
-    if (m_instrumentingAgents->hasInspectorResourceAgents()) {
-        for (InspectorResourceAgent* resourceAgent : m_instrumentingAgents->inspectorResourceAgents())
-            resourceAgent->didRecalculateStyle();
+    if (m_instrumentingAgents->hasInspectorNetworkAgents()) {
+        for (InspectorNetworkAgent* networkAgent : m_instrumentingAgents->inspectorNetworkAgents())
+            networkAgent->didRecalculateStyle();
     }
     if (m_instrumentingAgents->hasInspectorPageAgents()) {
         for (InspectorPageAgent* pageAgent : m_instrumentingAgents->inspectorPageAgents())

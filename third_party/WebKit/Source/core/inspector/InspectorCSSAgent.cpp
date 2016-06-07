@@ -62,7 +62,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/layout/HitTestResult.h"
@@ -609,10 +609,10 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
     return toCSSMediaRule(rule);
 }
 
-InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
+InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorNetworkAgent* networkAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
     : m_domAgent(domAgent)
     , m_inspectedFrames(inspectedFrames)
-    , m_resourceAgent(resourceAgent)
+    , m_networkAgent(networkAgent)
     , m_resourceContentLoader(resourceContentLoader)
     , m_resourceContainer(resourceContainer)
     , m_creatingViaInspectorStyleSheet(false)
@@ -1579,7 +1579,7 @@ InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet
     InspectorStyleSheet* inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
     if (!inspectorStyleSheet) {
         Document* document = styleSheet->ownerDocument();
-        inspectorStyleSheet = InspectorStyleSheet::create(m_resourceAgent, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this, m_resourceContainer);
+        inspectorStyleSheet = InspectorStyleSheet::create(m_networkAgent, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this, m_resourceContainer);
         m_idToInspectorStyleSheet.set(inspectorStyleSheet->id(), inspectorStyleSheet);
         m_cssStyleSheetToInspectorStyleSheet.set(styleSheet, inspectorStyleSheet);
         if (m_creatingViaInspectorStyleSheet)
@@ -2064,7 +2064,7 @@ DEFINE_TRACE(InspectorCSSAgent)
 {
     visitor->trace(m_domAgent);
     visitor->trace(m_inspectedFrames);
-    visitor->trace(m_resourceAgent);
+    visitor->trace(m_networkAgent);
     visitor->trace(m_resourceContentLoader);
     visitor->trace(m_resourceContainer);
     visitor->trace(m_idToInspectorStyleSheet);
