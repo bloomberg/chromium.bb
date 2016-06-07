@@ -84,6 +84,10 @@ class MetaBuildWrapper(object):
                             '(default is //tools/mb/mb_config.pyl)')
       subp.add_argument('-g', '--goma-dir',
                         help='path to goma directory')
+      subp.add_argument('--gyp-script', metavar='PATH',
+                        default=self.PathJoin('build', 'gyp_chromium'),
+                        help='path to gyp script relative to project root '
+                             '(default is %(default)s)')
       subp.add_argument('--android-version-code',
                         help='Sets GN arg android_default_version_code and '
                              'GYP_DEFINE app_manifest_version_code')
@@ -1108,7 +1112,7 @@ class MetaBuildWrapper(object):
 
     cmd = [
         self.executable,
-        self.PathJoin('build', 'gyp_chromium'),
+        self.args.gyp_script,
         '-G',
         'output_dir=' + output_dir,
     ]

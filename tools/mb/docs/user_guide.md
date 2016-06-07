@@ -135,6 +135,8 @@ incorporated into the appropriate flags for GYP or GN as needed.
 
 If gen ends up using GYP, the path must have a valid GYP configuration as the
 last component of the path (i.e., specify `//out/Release_x64`, not `//out`).
+The gyp script defaults to `//build/gyp_chromium`, but can be overridden with
+the `--gyp-script` flag, e.g. `--gyp-script=gypfiles/gyp_v8`.
 
 ### `mb help`
 
