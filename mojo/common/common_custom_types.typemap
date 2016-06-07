@@ -9,7 +9,7 @@ public_headers = [
   "//base/time/time.h",
 ]
 traits_headers = [ "//ipc/ipc_message_utils.h" ]
-deps = [
+public_deps = [
   "//ipc",
 ]
 

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 # GYP version: mojo/mojo_converters.gypi:mojo_input_events_lib
 component("mojo") {
   output_name = "input_events"
@@ -23,5 +25,26 @@ component("mojo") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/geometry/mojo",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "latency_info.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
+}
+
+mojom("test_interfaces") {
+  testonly = true
+  sources = [
+    "traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":interfaces",
   ]
 }

@@ -19,9 +19,16 @@
 
 #if !defined(OS_IOS)
 #include "ipc/ipc_param_traits.h"  // nogncheck
+#include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
 #endif
 
 namespace ui {
+
+#if !defined(OS_IOS)
+namespace mojom {
+class LatencyInfo;
+}
+#endif
 
 // When adding new components, or new metrics based on LatencyInfo,
 // please update latency_info.dot.
@@ -129,7 +136,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // Empirically determined constant based on a typical scroll sequence.
   enum { kTypicalMaxComponentsPerLatencyInfo = 10 };
 
-  enum { kMaxInputCoordinates = 2 };
+  enum : size_t { kMaxInputCoordinates = 2 };
 
   // Map a Latency Component (with a component-specific int64_t id) to a
   // component info.
@@ -240,6 +247,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
 
 #if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;
+  friend struct mojo::StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>;
 #endif
 };
 

@@ -379,8 +379,8 @@ test("events_unittests") {
     ":gesture_detection",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//mojo/edk/test:run_all_unittests",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -396,14 +396,18 @@ test("events_unittests") {
       "blink/input_scroll_elasticity_controller_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "ipc/latency_info_param_traits_unittest.cc",
+      "mojo/struct_traits_unittest.cc",
     ]
     deps += [
       "//cc",
       "//ipc:test_support",
+      "//mojo/edk/system",
+      "//mojo/public/cpp/bindings",
       "//third_party/WebKit/public:blink_headers",
       "//ui/events/blink",
       "//ui/events/gestures/blink",
       "//ui/events/ipc",
+      "//ui/events/mojo:test_interfaces",
     ]
   }
 
