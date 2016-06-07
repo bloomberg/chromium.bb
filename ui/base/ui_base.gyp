@@ -123,6 +123,7 @@
         'clipboard/clipboard_win.h',
         'clipboard/custom_data_helper.cc',
         'clipboard/custom_data_helper.h',
+        'clipboard/custom_data_helper_linux.cc',
         'clipboard/custom_data_helper_mac.mm',
         'clipboard/scoped_clipboard_writer.cc',
         'clipboard/scoped_clipboard_writer.h',

@@ -6,7 +6,6 @@ include_rules = [
   "+components/gpu",
   "+components/mus",
   "+mojo/cc",
-  "+mojo/common",
   "+mojo/converters",
   "+mojo/public",
   "+services/catalog/public",

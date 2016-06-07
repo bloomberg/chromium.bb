@@ -56,15 +56,13 @@ class ClipboardTest : public PlatformTest {
  public:
 #if defined(USE_AURA)
   ClipboardTest()
-      : event_source_(ClipboardTraits::GetEventSource()),
+      : event_source_(PlatformEventSource::CreateDefault()),
         clipboard_(ClipboardTraits::Create()) {}
 #else
   ClipboardTest() : clipboard_(ClipboardTraits::Create()) {}
 #endif
 
   ~ClipboardTest() override { ClipboardTraits::Destroy(clipboard_); }
-
-  bool IsMusTest() { return ClipboardTraits::IsMusTest(); }
 
  protected:
   Clipboard& clipboard() { return *clipboard_; }
@@ -88,7 +86,6 @@ class ClipboardTest : public PlatformTest {
 // Hack for tests that need to call static methods of ClipboardTest.
 struct NullClipboardTraits {
   static Clipboard* Create() { return nullptr; }
-  static bool IsMusTest() { return false; }
   static void Destroy(Clipboard*) {}
 };
 
@@ -369,11 +366,9 @@ TYPED_TEST(ClipboardTest, URLTest) {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
-  if (!this->IsMusTest()) {
-    ascii_text.clear();
-    this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_SELECTION, &ascii_text);
-    EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
-  }
+  ascii_text.clear();
+  this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_SELECTION, &ascii_text);
+  EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 #endif
 }
 

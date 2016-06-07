@@ -15,8 +15,6 @@ component("mus") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
-    "clipboard_mus.cc",
-    "clipboard_mus.h",
     "display_list.cc",
     "display_list.h",
     "input_method_mus.cc",
@@ -60,7 +58,6 @@ component("mus") {
     "//components/mus/public/cpp",
     "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
-    "//mojo/common",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/cpp",
@@ -252,7 +249,6 @@ test("views_mus_interactive_ui_tests") {
 
   sources = [
     "../widget/widget_interactive_uitest.cc",
-    "clipboard_unittest.cc",
     "interactive_ui_tests_mus.cc",
   ]
 
@@ -261,8 +257,6 @@ test("views_mus_interactive_ui_tests") {
     ":test_support",
     "//base",
     "//services/shell/background:main",  # Provides main().
-    "//testing/gmock",
-    "//testing/gtest",
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",

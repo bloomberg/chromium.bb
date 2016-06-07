@@ -5,7 +5,6 @@
 #include "ui/base/test/test_clipboard.h"
 
 #include <stddef.h>
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -22,7 +21,7 @@ Clipboard* TestClipboard::CreateForCurrentThread() {
   base::AutoLock lock(Clipboard::clipboard_map_lock_.Get());
   Clipboard* clipboard = new TestClipboard;
   Clipboard::clipboard_map_.Get()[base::PlatformThread::CurrentId()] =
-      base::WrapUnique(clipboard);
+      clipboard;
   return clipboard;
 }
 

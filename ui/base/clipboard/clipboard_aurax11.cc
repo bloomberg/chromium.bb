@@ -41,21 +41,25 @@ namespace {
 const char kClipboard[] = "CLIPBOARD";
 const char kClipboardManager[] = "CLIPBOARD_MANAGER";
 const char kMimeTypeFilename[] = "chromium/filename";
+const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
+const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 const char kSaveTargets[] = "SAVE_TARGETS";
 const char kTargets[] = "TARGETS";
 
-const char* kAtomsToCache[] = {kClipboard,
-                               kClipboardManager,
-                               Clipboard::kMimeTypePNG,
-                               kMimeTypeFilename,
-                               Clipboard::kMimeTypeMozillaURL,
-                               Clipboard::kMimeTypeWebkitSmartPaste,
-                               kSaveTargets,
-                               kString,
-                               kTargets,
-                               kText,
-                               kUtf8String,
-                               nullptr};
+const char* kAtomsToCache[] = {
+  kClipboard,
+  kClipboardManager,
+  Clipboard::kMimeTypePNG,
+  kMimeTypeFilename,
+  kMimeTypeMozillaURL,
+  kMimeTypeWebkitSmartPaste,
+  kSaveTargets,
+  kString,
+  kTargets,
+  kText,
+  kUtf8String,
+  NULL
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -590,12 +594,6 @@ const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
   return GetUrlFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetMozUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeMozillaURL));
-  return type;
 }
 
 // static

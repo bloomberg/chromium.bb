@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -33,32 +32,32 @@ void Clipboard::SetAllowedThreads(
 }
 
 // static
-void Clipboard::SetClipboardForCurrentThread(
-    std::unique_ptr<Clipboard> platform_clipboard) {
-  base::AutoLock lock(clipboard_map_lock_.Get());
-  base::PlatformThreadId id = Clipboard::GetAndValidateThreadID();
-
-  ClipboardMap* clipboard_map = clipboard_map_.Pointer();
-  ClipboardMap::const_iterator it = clipboard_map->find(id);
-  if (it != clipboard_map->end()) {
-    // This shouldn't happen. The clipboard should not already exist.
-    NOTREACHED();
-  }
-  clipboard_map->insert(std::make_pair(id, std::move(platform_clipboard)));
-}
-
-// static
 Clipboard* Clipboard::GetForCurrentThread() {
   base::AutoLock lock(clipboard_map_lock_.Get());
-  base::PlatformThreadId id = GetAndValidateThreadID();
+
+  base::PlatformThreadId id = base::PlatformThread::CurrentId();
+
+  AllowedThreadsVector* allowed_threads = allowed_threads_.Pointer();
+  if (!allowed_threads->empty()) {
+    bool found = false;
+    for (AllowedThreadsVector::const_iterator it = allowed_threads->begin();
+         it != allowed_threads->end(); ++it) {
+      if (*it == id) {
+        found = true;
+        break;
+      }
+    }
+
+    DCHECK(found);
+  }
 
   ClipboardMap* clipboard_map = clipboard_map_.Pointer();
   ClipboardMap::const_iterator it = clipboard_map->find(id);
   if (it != clipboard_map->end())
-    return it->second.get();
+    return it->second;
 
   Clipboard* clipboard = Clipboard::Create();
-  clipboard_map->insert(std::make_pair(id, base::WrapUnique(clipboard)));
+  clipboard_map->insert(std::make_pair(id, clipboard));
   return clipboard;
 }
 
@@ -68,8 +67,10 @@ void Clipboard::DestroyClipboardForCurrentThread() {
   ClipboardMap* clipboard_map = clipboard_map_.Pointer();
   base::PlatformThreadId id = base::PlatformThread::CurrentId();
   ClipboardMap::iterator it = clipboard_map->find(id);
-  if (it != clipboard_map->end())
+  if (it != clipboard_map->end()) {
+    delete it->second;
     clipboard_map->erase(it);
+  }
 }
 
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
@@ -129,27 +130,6 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
     default:
       NOTREACHED();
   }
-}
-
-base::PlatformThreadId Clipboard::GetAndValidateThreadID() {
-  base::PlatformThreadId id = base::PlatformThread::CurrentId();
-#ifndef NDEBUG
-  AllowedThreadsVector* allowed_threads = allowed_threads_.Pointer();
-  if (!allowed_threads->empty()) {
-    bool found = false;
-    for (AllowedThreadsVector::const_iterator it = allowed_threads->begin();
-         it != allowed_threads->end(); ++it) {
-      if (*it == id) {
-        found = true;
-        break;
-      }
-    }
-
-    DCHECK(found);
-  }
-#endif
-
-  return id;
 }
 
 }  // namespace ui

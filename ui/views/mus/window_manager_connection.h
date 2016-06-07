@@ -22,7 +22,6 @@ class Connector;
 }
 
 namespace views {
-class ClipboardMus;
 class NativeWidget;
 class PointerWatcher;
 class ScreenMus;
@@ -32,7 +31,6 @@ class NativeWidgetDelegate;
 
 // Provides configuration to mus in views. This consists of the following:
 // . Provides a Screen implementation backed by mus.
-// . Provides a Clipboard implementation backed by mus.
 // . Creates and owns a WindowTreeClient.
 // . Registers itself as the factory for creating NativeWidgets so that a
 //   NativeWidgetMus is created.
