@@ -332,3 +332,6 @@ a0ee5fb8a4dbf546b8da197a055dd3997f3dc475
 4d43bc26cc5d105edb1e976582803ea931e572e1
 # Convert //components/[f-n]* from scoped_ptr to std::unique_ptr
 84c358e7a3b1658bf396d39716fb0fffbb0aa018
+
+# Move code in ui/gl/* from gfx:: to gl::
+7a4638457b6cb7ba351c57b98f1871209604cb81
