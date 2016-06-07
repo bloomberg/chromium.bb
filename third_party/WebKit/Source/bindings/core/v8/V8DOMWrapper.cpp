@@ -37,6 +37,8 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 
 namespace blink {
 
@@ -107,8 +109,20 @@ void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<
     // If the context is different, we need to make sure that the current
     // context has access to the creation context.
     Frame* frame = toFrameIfNotDetached(contextForWrapper);
-    if (!frame)
+    if (!frame) {
+        // Sandbox detached frames - they can't create cross origin objects.
+        LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
+        DOMWindow* targetWindow = toDOMWindow(contextForWrapper);
+        if (callingWindow->document()->getSecurityOrigin()->canAccessCheckSuborigins(targetWindow->document()->getSecurityOrigin()))
+            return;
+
+        // TODO(jochen): Currently, Location is the only object for which we can reach this code path. Should be generalized.
+        ExceptionState exceptionState(ExceptionState::ConstructionContext, "Location", contextForWrapper->Global(), isolate);
+        // We can't create a better message for a detached frame.
+        exceptionState.throwSecurityError(String(), String());
+        exceptionState.throwIfNeeded();
         return;
+    }
     const DOMWrapperWorld& currentWorld = DOMWrapperWorld::world(m_context);
     RELEASE_ASSERT(currentWorld.worldId() == DOMWrapperWorld::world(contextForWrapper).worldId());
     if (currentWorld.isMainWorld()) {
