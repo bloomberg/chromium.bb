@@ -315,6 +315,8 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
     return;
   }
 
+  last_triggered_rule_.reset(new base::DictionaryValue);
+  triggered_rule->IntoDict(last_triggered_rule_.get());
   int trace_delay = triggered_rule->GetTraceDelay();
 
   if (config_->tracing_mode() == BackgroundTracingConfigImpl::REACTIVE) {
@@ -473,13 +475,15 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
 }
 
 void BackgroundTracingManagerImpl::AddCustomMetadata(
-    TracingControllerImpl::TraceDataSink* trace_data_sink) const {
+    TracingControllerImpl::TraceDataSink* trace_data_sink) {
   base::DictionaryValue metadata_dict;
 
   std::unique_ptr<base::DictionaryValue> config_dict(
       new base::DictionaryValue());
   config_->IntoDict(config_dict.get());
   metadata_dict.Set("config", std::move(config_dict));
+  if (last_triggered_rule_)
+    metadata_dict.Set("last_triggered_rule", std::move(last_triggered_rule_));
 
   trace_data_sink->AddMetadata(metadata_dict);
 }
