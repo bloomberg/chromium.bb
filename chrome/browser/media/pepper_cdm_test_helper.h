@@ -13,18 +13,6 @@ namespace base {
 class CommandLine;
 }
 
-// Base path for Clear Key CDM (relative to the chrome executable).
-extern const char kClearKeyCdmBaseDirectory[];
-
-// Platform-specific filename relative to kClearKeyCdmBaseDirectory.
-extern const char kClearKeyCdmAdapterFileName[];
-
-// Display name for Clear Key CDM.
-extern const char kClearKeyCdmDisplayName[];
-
-// Pepper type for Clear Key CDM.
-extern const char kClearKeyCdmPepperMimeType[];
-
 // Returns the path a pepper CDM adapter.
 base::FilePath GetPepperCdmPath(const std::string& adapter_base_dir,
                                 const std::string& adapter_file_name);

@@ -1576,6 +1576,11 @@ if (!is_android) {
       "../browser/load_library_perf_test.cc",
     ]
 
+    # This test deliberately does not depend in chrome's test support targets.
+    # This is a small test and Chrome's test support targets bring in the
+    # world, causing link time to explode. Please don't add more dependencies
+    # here without understanding how it affects link time (and factor them
+    # differently if possible).
     deps = [
       "//base/test:test_support_perf",
       "//testing/gtest",
@@ -1585,7 +1590,7 @@ if (!is_android) {
 
     if (enable_pepper_cdms) {
       deps += [
-        ":test_support",
+        "//chrome/browser:pepper_cdm_test_constants",
         "//media:cdm_paths",
       ]
       data_deps = [

@@ -8,27 +8,13 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/media/pepper_cdm_test_constants.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
 #include "media/cdm/cdm_paths.h"
 
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
-
-const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
-
-const char kClearKeyCdmAdapterFileName[] =
-#if defined(OS_MACOSX)
-    "clearkeycdmadapter.plugin";
-#elif defined(OS_WIN)
-    "clearkeycdmadapter.dll";
-#elif defined(OS_POSIX)
-    "libclearkeycdmadapter.so";
-#endif
-
-const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
-
-const char kClearKeyCdmPepperMimeType[] = "application/x-ppapi-clearkey-cdm";
 
 base::FilePath GetPepperCdmPath(const std::string& adapter_base_dir,
                                 const std::string& adapter_file_name) {
