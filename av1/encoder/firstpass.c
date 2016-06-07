@@ -525,7 +525,6 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     pd[i].dqcoeff = ctx->dqcoeff_pbuf[i][1];
     p[i].eobs = ctx->eobs_pbuf[i][1];
   }
-  x->skip_recode = 0;
 
   av1_init_mv_probs(cm);
   av1_initialize_rd_consts(cpi);
