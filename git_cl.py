@@ -4462,7 +4462,10 @@ def CMDtry(parser, args):
               # Skip presubmit builders, because these will fail without LGTM.
               masters.setdefault(master, {})[builder] = ['defaulttests']
           if masters:
+            print('Loaded default bots from CQ config (%s)' % cq_cfg)
             return masters
+          else:
+            print('CQ config exists (%s) but has no try bots listed' % cq_cfg)
 
     if not options.bot:
       parser.error('No default try builder to try, use --bot')
