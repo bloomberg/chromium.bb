@@ -50,8 +50,8 @@ bool ReadAsInt(base::PickleIterator* iter, T* target_value) {
   return true;
 }
 
-bool DeserializeCommonSection1(base::PickleIterator* iter,
-                               FormFieldData* field_data) {
+bool DeserializeSection1(base::PickleIterator* iter,
+                         FormFieldData* field_data) {
   return iter->ReadString16(&field_data->label) &&
          iter->ReadString16(&field_data->name) &&
          iter->ReadString16(&field_data->value) &&
@@ -65,20 +65,20 @@ bool DeserializeCommonSection1(base::PickleIterator* iter,
          iter->ReadBool(&field_data->should_autocomplete);
 }
 
-bool DeserializeCommonSection2(base::PickleIterator* iter,
-                               FormFieldData* field_data) {
+bool DeserializeSection3(base::PickleIterator* iter,
+                         FormFieldData* field_data) {
   return ReadAsInt(iter, &field_data->text_direction) &&
          ReadStringVector(iter, &field_data->option_values) &&
          ReadStringVector(iter, &field_data->option_contents);
 }
 
-bool DeserializeVersion2Specific(base::PickleIterator* iter,
-                                 FormFieldData* field_data) {
+bool DeserializeSection2(base::PickleIterator* iter,
+                         FormFieldData* field_data) {
   return ReadAsInt(iter, &field_data->role);
 }
 
-bool DeserializeVersion3Specific(base::PickleIterator* iter,
-                                 FormFieldData* field_data) {
+bool DeserializeSection4(base::PickleIterator* iter,
+                         FormFieldData* field_data) {
   return iter->ReadString16(&field_data->placeholder);
 }
 
@@ -188,27 +188,27 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
 
   switch (version) {
     case 1: {
-      if (!DeserializeCommonSection1(iter, &temp_form_field_data) ||
-          !DeserializeCommonSection2(iter, &temp_form_field_data)) {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection3(iter, &temp_form_field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
       break;
     }
     case 2: {
-      if (!DeserializeCommonSection1(iter, &temp_form_field_data) ||
-          !DeserializeVersion2Specific(iter, &temp_form_field_data) ||
-          !DeserializeCommonSection2(iter, &temp_form_field_data)) {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection2(iter, &temp_form_field_data) ||
+          !DeserializeSection3(iter, &temp_form_field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
       break;
     }
     case 3: {
-      if (!DeserializeCommonSection1(iter, &temp_form_field_data) ||
-          !DeserializeVersion2Specific(iter, &temp_form_field_data) ||
-          !DeserializeCommonSection2(iter, &temp_form_field_data) ||
-          !DeserializeVersion3Specific(iter, &temp_form_field_data)) {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection2(iter, &temp_form_field_data) ||
+          !DeserializeSection3(iter, &temp_form_field_data) ||
+          !DeserializeSection4(iter, &temp_form_field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
