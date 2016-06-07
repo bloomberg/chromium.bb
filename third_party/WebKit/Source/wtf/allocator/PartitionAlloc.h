@@ -734,7 +734,7 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int f
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
-    RELEASE_ASSERT(result);
+    RELEASE_ASSERT(result || flags & PartitionAllocReturnNull);
     return result;
 #else
     ASSERT(root->initialized);
