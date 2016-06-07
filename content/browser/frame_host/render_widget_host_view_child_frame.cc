@@ -497,14 +497,16 @@ void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseEvent(
-    const blink::WebMouseEvent& event) {
-  host_->ForwardMouseEvent(event);
+    const blink::WebMouseEvent& event,
+    const ui::LatencyInfo& latency) {
+  host_->ForwardMouseEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
-    const blink::WebMouseWheelEvent& event) {
+    const blink::WebMouseWheelEvent& event,
+    const ui::LatencyInfo& latency) {
   if (event.deltaX != 0 || event.deltaY != 0)
-    host_->ForwardWheelEvent(event);
+    host_->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessTouchEvent(

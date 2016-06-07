@@ -890,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.y = 110;
   scroll_event.deltaX = 0.0f;
   scroll_event.deltaY = -30.0f;
-  rwhv_root->ProcessMouseWheelEvent(scroll_event);
+  rwhv_root->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->Wait();
 
@@ -976,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.y = 1;
   scroll_event.deltaX = 0.0f;
   scroll_event.deltaY = -5.0f;
-  rwhv_parent->ProcessMouseWheelEvent(scroll_event);
+  rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure that the view position is propagated to the child properly.
   filter->Wait();
@@ -988,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The upscroll exceeds the amount that the frame was initially scrolled
   // down to account for rounding.
   scroll_event.deltaY = 6.0f;
-  rwhv_nested->ProcessMouseWheelEvent(scroll_event);
+  rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->Wait();
   // This loop isn't great, but it accounts for the possibility of multiple
@@ -1011,7 +1011,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Scroll the parent down again in order to test scroll bubbling from
   // gestures.
   scroll_event.deltaY = -5.0f;
-  rwhv_parent->ProcessMouseWheelEvent(scroll_event);
+  rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure ensuing offset change is received, and then reset the filter.
   filter->Wait();
@@ -5350,12 +5350,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
   click_event.x = 15;
   click_event.y = 15;
   click_event.clickCount = 1;
-  rwhv_child->ProcessMouseEvent(click_event);
+  rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   // Dismiss the popup.
   click_event.x = 1;
   click_event.y = 1;
-  rwhv_child->ProcessMouseEvent(click_event);
+  rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
   gfx::Rect popup_rect = filter->last_initial_rect();
@@ -5425,12 +5425,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   click_event.x = 15;
   click_event.y = 15;
   click_event.clickCount = 1;
-  rwhv_c_node->ProcessMouseEvent(click_event);
+  rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   // Prompt the WebContents to dismiss the popup by clicking elsewhere.
   click_event.x = 1;
   click_event.y = 1;
-  rwhv_c_node->ProcessMouseEvent(click_event);
+  rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
 
@@ -5475,11 +5475,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   click_event.x = 15;
   click_event.y = 15;
   click_event.clickCount = 1;
-  rwhv_c_node->ProcessMouseEvent(click_event);
+  rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   click_event.x = 1;
   click_event.y = 1;
-  rwhv_c_node->ProcessMouseEvent(click_event);
+  rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
 

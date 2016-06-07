@@ -2004,7 +2004,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             this, &mouse_wheel_event);
       } else {
-        ProcessMouseWheelEvent(mouse_wheel_event);
+        ProcessMouseWheelEvent(mouse_wheel_event, *event->latency());
       }
     }
   } else {
@@ -2023,7 +2023,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         host_->delegate()->GetInputEventRouter()->RouteMouseEvent(this,
                                                                   &mouse_event);
       } else {
-        ProcessMouseEvent(mouse_event);
+        ProcessMouseEvent(mouse_event, *event->latency());
       }
 
       // Ensure that we get keyboard focus on mouse down as a plugin window may
@@ -2072,13 +2072,15 @@ uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
 }
 
 void RenderWidgetHostViewAura::ProcessMouseEvent(
-    const blink::WebMouseEvent& event) {
-  host_->ForwardMouseEvent(event);
+    const blink::WebMouseEvent& event,
+    const ui::LatencyInfo& latency) {
+  host_->ForwardMouseEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewAura::ProcessMouseWheelEvent(
-    const blink::WebMouseWheelEvent& event) {
-  host_->ForwardWheelEvent(event);
+    const blink::WebMouseWheelEvent& event,
+    const ui::LatencyInfo& latency) {
+  host_->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewAura::ProcessTouchEvent(
@@ -2137,7 +2139,8 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
     host_->ForwardGestureEvent(gesture_event);
     blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(*event);
-    host_->ForwardWheelEvent(mouse_wheel_event);
+    host_->ForwardWheelEventWithLatencyInfo(mouse_wheel_event,
+                                            *event->latency());
     RecordAction(base::UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
              event->type() == ui::ET_SCROLL_FLING_CANCEL) {

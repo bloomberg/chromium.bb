@@ -459,7 +459,10 @@ void BrowserPluginGuest::ResendEventToEmbedder(
     resent_wheel_event.x += offset_from_embedder.x();
     resent_wheel_event.y += offset_from_embedder.y();
     resent_wheel_event.resendingPluginId = browser_plugin_instance_id_;
-    view->ProcessMouseWheelEvent(resent_wheel_event);
+    // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+    // https://crbug.com/613628
+    ui::LatencyInfo latency_info;
+    view->ProcessMouseWheelEvent(resent_wheel_event, latency_info);
   } else {
     NOTIMPLEMENTED();
   }

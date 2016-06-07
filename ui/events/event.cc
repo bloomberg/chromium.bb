@@ -458,6 +458,10 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       changed_button_flags_(GetChangedMouseButtonFlagsFromNative(native_event)),
       pointer_details_(GetMousePointerDetailsFromNative(native_event)) {
+  latency()->AddLatencyNumberWithTimestamp(
+      INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0,
+      base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()), 1);
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
     SetClickCount(GetRepeatCount(*this));
 }
@@ -511,6 +515,7 @@ MouseEvent::MouseEvent(EventType type,
                    flags),
       changed_button_flags_(changed_button_flags),
       pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_MOUSE)) {
+  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
 }

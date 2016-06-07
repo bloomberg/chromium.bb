@@ -887,6 +887,21 @@ TEST(EventTest, PointerEventClone) {
   }
 }
 
+TEST(EventTest, MouseEventLatencyUIComponentExists) {
+  const gfx::Point origin(0, 0);
+  MouseEvent mouseev(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0, 0);
+  EXPECT_TRUE(mouseev.latency()->FindLatency(
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, nullptr));
+}
+
+TEST(EventTest, MouseWheelEventLatencyUIComponentExists) {
+  const gfx::Point origin(0, 0);
+  MouseWheelEvent mouseWheelev(gfx::Vector2d(), origin, origin,
+                               EventTimeForNow(), 0, 0);
+  EXPECT_TRUE(mouseWheelev.latency()->FindLatency(
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, nullptr));
+}
+
 TEST(EventTest, PointerEventToMouseEvent) {
   const struct {
     ui::EventType in_type;
@@ -1008,6 +1023,5 @@ TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
 #endif
 }
-
 
 }  // namespace ui

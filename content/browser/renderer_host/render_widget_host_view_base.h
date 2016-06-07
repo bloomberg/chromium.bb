@@ -225,8 +225,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       const gfx::Point& point,
       gfx::Point* transformed_point);
   virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) {}
-  virtual void ProcessMouseEvent(const blink::WebMouseEvent& event) {}
-  virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) {}
+  virtual void ProcessMouseEvent(const blink::WebMouseEvent& event,
+                                 const ui::LatencyInfo& latency) {}
+  virtual void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
+                                      const ui::LatencyInfo& latency) {}
   virtual void ProcessTouchEvent(const blink::WebTouchEvent& event,
                                  const ui::LatencyInfo& latency) {}
   virtual void ProcessGestureEvent(const blink::WebGestureEvent& event,

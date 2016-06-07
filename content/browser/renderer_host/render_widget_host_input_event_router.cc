@@ -142,8 +142,10 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
 
   event->x = transformed_point.x();
   event->y = transformed_point.y();
-
-  target->ProcessMouseEvent(*event);
+  // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+  // https://crbug.com/613628
+  ui::LatencyInfo latency_info;
+  target->ProcessMouseEvent(*event, latency_info);
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
@@ -157,8 +159,10 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
 
   event->x = transformed_point.x();
   event->y = transformed_point.y();
-
-  target->ProcessMouseWheelEvent(*event);
+  // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+  // https://crbug.com/613628
+  ui::LatencyInfo latency_info;
+  target->ProcessMouseWheelEvent(*event, latency_info);
 }
 
 void RenderWidgetHostInputEventRouter::RouteGestureEvent(

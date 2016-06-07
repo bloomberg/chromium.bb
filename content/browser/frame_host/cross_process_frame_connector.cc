@@ -172,7 +172,10 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
     memcpy(&resent_wheel_event, &event, sizeof(resent_wheel_event));
     resent_wheel_event.x += offset_from_parent.x();
     resent_wheel_event.y += offset_from_parent.y();
-    parent_view->ProcessMouseWheelEvent(resent_wheel_event);
+    // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+    // https://crbug.com/613628
+    ui::LatencyInfo latency_info;
+    parent_view->ProcessMouseWheelEvent(resent_wheel_event, latency_info);
   } else {
     NOTIMPLEMENTED();
   }
@@ -217,13 +220,20 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
   }
 
   if (blink::WebInputEvent::isMouseEventType(event->type)) {
-    view_->ProcessMouseEvent(*static_cast<const blink::WebMouseEvent*>(event));
+    // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+    // https://crbug.com/613628
+    ui::LatencyInfo latency_info;
+    view_->ProcessMouseEvent(*static_cast<const blink::WebMouseEvent*>(event),
+                              latency_info);
     return;
   }
 
   if (event->type == blink::WebInputEvent::MouseWheel) {
+    // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+    // https://crbug.com/613628
+    ui::LatencyInfo latency_info;
     view_->ProcessMouseWheelEvent(
-        *static_cast<const blink::WebMouseWheelEvent*>(event));
+        *static_cast<const blink::WebMouseWheelEvent*>(event), latency_info);
     return;
   }
 }

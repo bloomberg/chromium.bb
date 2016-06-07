@@ -140,8 +140,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UnlockMouse() override;
   uint32_t GetSurfaceIdNamespace() override;
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) override;
-  void ProcessMouseEvent(const blink::WebMouseEvent& event) override;
-  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event) override;
+  void ProcessMouseEvent(const blink::WebMouseEvent& event,
+                         const ui::LatencyInfo& latency) override;
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
+                              const ui::LatencyInfo& latency) override;
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
   void ProcessGestureEvent(const blink::WebGestureEvent& event,

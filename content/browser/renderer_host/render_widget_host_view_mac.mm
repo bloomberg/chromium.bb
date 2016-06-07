@@ -1655,14 +1655,14 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
 }
 
 void RenderWidgetHostViewMac::ProcessMouseEvent(
-    const blink::WebMouseEvent& event) {
-  render_widget_host_->ForwardMouseEvent(event);
+    const blink::WebMouseEvent& event,
+    const ui::LatencyInfo& latency) {
+  render_widget_host_->ForwardMouseEventWithLatencyInfo(event, latency);
 }
 void RenderWidgetHostViewMac::ProcessMouseWheelEvent(
-    const blink::WebMouseWheelEvent& event) {
-  ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-  render_widget_host_->ForwardWheelEventWithLatencyInfo(event, latency_info);
+    const blink::WebMouseWheelEvent& event,
+    const ui::LatencyInfo& latency) {
+  render_widget_host_->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewMac::ProcessTouchEvent(
@@ -2013,7 +2013,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
             ->GetInputEventRouter()
             ->RouteMouseEvent(renderWidgetHostView_.get(), &enterEvent);
       } else {
-        renderWidgetHostView_->ProcessMouseEvent(enterEvent);
+        ui::LatencyInfo latency_info;
+        latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT,
+                                      0, 0);
+        renderWidgetHostView_->ProcessMouseEvent(enterEvent, latency_info);
       }
     }
   }
@@ -2048,7 +2051,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
         ->GetInputEventRouter()
         ->RouteMouseEvent(renderWidgetHostView_.get(), &event);
   } else {
-    renderWidgetHostView_->ProcessMouseEvent(event);
+    ui::LatencyInfo latency_info;
+    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+    renderWidgetHostView_->ProcessMouseEvent(event, latency_info);
   }
 }
 
@@ -2563,7 +2568,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
           ->GetInputEventRouter()
           ->RouteMouseWheelEvent(renderWidgetHostView_.get(), &webEvent);
     } else {
-      renderWidgetHostView_->ProcessMouseWheelEvent(webEvent);
+      ui::LatencyInfo latency_info;
+      latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+      renderWidgetHostView_->ProcessMouseWheelEvent(webEvent, latency_info);
     }
   }
 }
