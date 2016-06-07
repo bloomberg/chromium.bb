@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "base/base_paths.h"
 #include "base/big_endian.h"
@@ -268,6 +269,44 @@ TEST_F(ResourceBundleTest, DelegateLoadDataResourceBytes) {
   scoped_refptr<base::RefCountedMemory> result =
       resource_bundle->LoadDataResourceBytesForScale(resource_id, scale_factor);
   EXPECT_EQ(static_memory, result);
+}
+
+TEST_F(ResourceBundleTest, LoadDataResourceBytesGzip) {
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+
+  char kCompressedEntryPakContents[] = {
+      0x04u, 0x00u, 0x00u, 0x00u,                // header(version
+      0x01u, 0x00u, 0x00u, 0x00u,                //        no. entries
+      0x01u,                                     //        encoding)
+      0x04u, 0x00u, 0x15u, 0x00u, 0x00u, 0x00u,  // index entry 4
+      0x00u, 0x00u, 0x3bu, 0x00u, 0x00u,
+      0x00u,  // extra entry for the size of last
+      // Entry 4 is a compressed gzip file (with custom leading byte) saying:
+      // "This is compressed\n"
+      ResourceBundle::CUSTOM_GZIP_HEADER[0], 0x1fu, 0x8bu, 0x08u, 0x00u, 0x00u,
+      0x00u, 0x00u, 0x00u, 0x00u, 0x03u, 0x0bu, 0xc9u, 0xc8u, 0x2cu, 0x56u,
+      0x00u, 0xa2u, 0xe4u, 0xfcu, 0xdcu, 0x82u, 0xa2u, 0xd4u, 0xe2u, 0xe2u,
+      0xd4u, 0x14u, 0x2eu, 0x00u, 0xd9u, 0xf8u, 0xc4u, 0x6fu, 0x13u, 0x00u,
+      0x00u, 0x00u};
+
+  size_t compressed_entry_pak_size = sizeof(kCompressedEntryPakContents);
+
+  // Dump contents into the pak file.
+  ASSERT_EQ(base::WriteFile(data_path, kCompressedEntryPakContents,
+      compressed_entry_pak_size), static_cast<int>(compressed_entry_pak_size));
+
+  ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_NONE);
+
+  // Load the compressed resource.
+  scoped_refptr<base::RefCountedMemory> result =
+      resource_bundle->LoadDataResourceBytes(4);
+  EXPECT_EQ(
+      strncmp("This is compressed\n",
+              reinterpret_cast<const char*>(result->front()), result->size()),
+      0);
 }
 
 TEST_F(ResourceBundleTest, DelegateGetRawDataResource) {

@@ -8,8 +8,8 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HTML" file="translate_internals/translate_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_JS" file="translate_internals/translate_internals.js" type="BINDATA" />
+      <include name="IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HTML" file="translate_internals/translate_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_JS" file="translate_internals/translate_internals.js" compress="gzip" type="BINDATA" />
     </includes>
   </release>
 </grit>
