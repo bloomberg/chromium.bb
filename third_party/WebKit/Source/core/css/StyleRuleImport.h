@@ -58,6 +58,7 @@ private:
     // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
     // to avoid adding a vptr to StyleRuleImport.
     class ImportedStyleSheetClient final : public GarbageCollectedFinalized<ImportedStyleSheetClient>, public StyleSheetResourceClient {
+        USING_GARBAGE_COLLECTED_MIXIN(ImportedStyleSheetClient);
     public:
         ImportedStyleSheetClient(StyleRuleImport* ownerRule) : m_ownerRule(ownerRule) { }
         ~ImportedStyleSheetClient() override { }
@@ -70,6 +71,7 @@ private:
         DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_ownerRule);
+            StyleSheetResourceClient::trace(visitor);
         }
 
     private:

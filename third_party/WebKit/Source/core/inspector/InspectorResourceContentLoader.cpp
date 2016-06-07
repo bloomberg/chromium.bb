@@ -24,6 +24,7 @@
 namespace blink {
 
 class InspectorResourceContentLoader::ResourceClient final : public GarbageCollectedFinalized<InspectorResourceContentLoader::ResourceClient>, private RawResourceClient, private StyleSheetResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(ResourceClient);
 public:
     explicit ResourceClient(InspectorResourceContentLoader* loader)
         : m_loader(loader)
@@ -41,6 +42,7 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_loader);
+        StyleSheetResourceClient::trace(visitor);
     }
 
 private:
