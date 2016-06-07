@@ -286,6 +286,7 @@ public:
     bool checkConstructorIntrinsics() override { return true; }
     bool checkConstructorNotRegistered() override { return true; }
     bool checkPrototype() override { return true; }
+    bool rememberOriginalProperties() override { return true; }
     CustomElementDefinition* build(
         const CustomElementDescriptor& descriptor) {
         return new LogUpgradeDefinition(descriptor);

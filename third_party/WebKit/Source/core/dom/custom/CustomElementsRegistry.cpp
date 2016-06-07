@@ -123,7 +123,10 @@ void CustomElementsRegistry::define(
     // TODO(dominicc): Implement steps:
     // 5: localName
     // 6-7: extends processing
-    // 8-9: observed attributes caching
+
+    // 8-9: observed attributes caching is done below, together with callbacks.
+    // TODO(kojii): https://github.com/whatwg/html/issues/1373 for the ordering.
+    // When it's resolved, revisit if this code needs changes.
 
     // TODO(dominicc): Add a test where the prototype getter destroys
     // the context.
@@ -131,10 +134,13 @@ void CustomElementsRegistry::define(
     if (!builder.checkPrototype())
         return;
 
-    // TODO(dominicc): Implement steps:
+    // 8-9: observed attributes caching
     // 12-13: connected callback
     // 14-15: disconnected callback
     // 16-17: attribute changed callback
+
+    if (!builder.rememberOriginalProperties())
+        return;
 
     // TODO(dominicc): Add a test where retrieving the prototype
     // recursively calls define with the same name.

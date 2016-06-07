@@ -10,8 +10,11 @@
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "v8.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -32,7 +35,11 @@ public:
         CustomElementsRegistry*,
         const CustomElementDescriptor&,
         const v8::Local<v8::Object>& constructor,
-        const v8::Local<v8::Object>& prototype);
+        const v8::Local<v8::Object>& prototype,
+        const v8::Local<v8::Object>& connectedCallback,
+        const v8::Local<v8::Object>& disconnectedCallback,
+        const v8::Local<v8::Object>& attributeChangedCallback,
+        const HashSet<AtomicString>& observedAttributes);
 
     virtual ~ScriptCustomElementDefinition() = default;
 
@@ -44,7 +51,11 @@ private:
         ScriptState*,
         const CustomElementDescriptor&,
         const v8::Local<v8::Object>& constructor,
-        const v8::Local<v8::Object>& prototype);
+        const v8::Local<v8::Object>& prototype,
+        const v8::Local<v8::Object>& connectedCallback,
+        const v8::Local<v8::Object>& disconnectedCallback,
+        const v8::Local<v8::Object>& attributeChangedCallback,
+        const HashSet<AtomicString>& observedAttributes);
 
     // Implementations of |CustomElementDefinition|
     ScriptValue getConstructorForScript() final;
@@ -53,6 +64,10 @@ private:
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_constructor;
     ScopedPersistent<v8::Object> m_prototype;
+    ScopedPersistent<v8::Object> m_connectedCallback;
+    ScopedPersistent<v8::Object> m_disconnectedCallback;
+    ScopedPersistent<v8::Object> m_attributeChangedCallback;
+    HashSet<AtomicString> m_observedAttributes;
 };
 
 } // namespace blink

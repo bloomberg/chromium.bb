@@ -81,17 +81,26 @@ bool ScriptCustomElementDefinitionBuilder::checkConstructorNotRegistered()
     return true;
 }
 
-bool ScriptCustomElementDefinitionBuilder::checkPrototype()
+bool ScriptCustomElementDefinitionBuilder::valueForName(
+    const v8::Local<v8::Object>& object, const String& name,
+    v8::Local<v8::Value>& value) const
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Local<v8::Context> context = m_scriptState->context();
-    v8::Local<v8::String> prototypeString =
-        v8AtomicString(isolate, "prototype");
-    v8::Local<v8::Value> prototypeValue;
-    if (!v8Call(
-        m_constructor->Get(context, prototypeString), prototypeValue)) {
+    v8::Local<v8::String> nameString = v8String(isolate, name);
+    v8::TryCatch tryCatch(isolate);
+    if (!v8Call(object->Get(context, nameString), value, tryCatch)) {
+        m_exceptionState.rethrowV8Exception(tryCatch.Exception());
         return false;
     }
+    return true;
+}
+
+bool ScriptCustomElementDefinitionBuilder::checkPrototype()
+{
+    v8::Local<v8::Value> prototypeValue;
+    if (!valueForName(m_constructor, "prototype", prototypeValue))
+        return false;
     if (!prototypeValue->IsObject()) {
         m_exceptionState.throwTypeError(
             "constructor prototype is not an object");
@@ -103,6 +112,62 @@ bool ScriptCustomElementDefinitionBuilder::checkPrototype()
     return true;
 }
 
+bool ScriptCustomElementDefinitionBuilder::callableForName(const String& name,
+    v8::Local<v8::Object>& callback) const
+{
+    v8::Local<v8::Value> value;
+    if (!valueForName(m_prototype, name, value))
+        return false;
+    // "undefined" means "omitted", so return true.
+    if (value->IsUndefined())
+        return true;
+    if (!value->IsObject()) {
+        m_exceptionState.throwTypeError(
+            String::format("\"%s\" is not an object", name.ascii().data()));
+        return false;
+    }
+    callback = value.As<v8::Object>();
+    if (!callback->IsCallable()) {
+        m_exceptionState.throwTypeError(
+            String::format("\"%s\" is not callable", name.ascii().data()));
+        return false;
+    }
+    return true;
+}
+
+bool ScriptCustomElementDefinitionBuilder::retrieveObservedAttributes()
+{
+    const String kObservedAttributes = "observedAttributes";
+    v8::Local<v8::Value> observedAttributesValue;
+    if (!valueForName(m_constructor, kObservedAttributes, observedAttributesValue))
+        return false;
+    if (observedAttributesValue->IsUndefined())
+        return true;
+    Vector<AtomicString> list = toImplArray<Vector<AtomicString>>(
+        observedAttributesValue, 0, m_scriptState->isolate(), m_exceptionState);
+    if (m_exceptionState.hadException())
+        return false;
+    if (list.isEmpty())
+        return true;
+    m_observedAttributes.reserveCapacityForSize(list.size());
+    for (const auto& attribute : list)
+        m_observedAttributes.add(attribute);
+    return true;
+}
+
+bool ScriptCustomElementDefinitionBuilder::rememberOriginalProperties()
+{
+    // Spec requires to use values of these properties at the point
+    // CustomElementDefinition is built, even if JS changes them afterwards.
+    const String kConnectedCallback = "connectedCallback";
+    const String kDisconnectedCallback = "disconnectedCallback";
+    const String kAttributeChangedCallback = "attributeChangedCallback";
+    return retrieveObservedAttributes()
+        && callableForName(kConnectedCallback, m_connectedCallback)
+        && callableForName(kDisconnectedCallback, m_disconnectedCallback)
+        && callableForName(kAttributeChangedCallback, m_attributeChangedCallback);
+}
+
 CustomElementDefinition* ScriptCustomElementDefinitionBuilder::build(
     const CustomElementDescriptor& descriptor)
 {
@@ -111,7 +176,11 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::build(
         m_registry,
         descriptor,
         m_constructor,
-        m_prototype);
+        m_prototype,
+        m_connectedCallback,
+        m_disconnectedCallback,
+        m_attributeChangedCallback,
+        m_observedAttributes);
 }
 
 } // namespace blink

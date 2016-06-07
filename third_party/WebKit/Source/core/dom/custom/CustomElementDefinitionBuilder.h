@@ -43,6 +43,10 @@ public:
     // processing should not proceed.
     virtual bool checkPrototype() = 0;
 
+    // Cache properties for build to use. Return false if processing
+    // should not proceed.
+    virtual bool rememberOriginalProperties() = 0;
+
     // Produce the definition. This must produce a definition.
     virtual CustomElementDefinition* build(const CustomElementDescriptor&) = 0;
 };

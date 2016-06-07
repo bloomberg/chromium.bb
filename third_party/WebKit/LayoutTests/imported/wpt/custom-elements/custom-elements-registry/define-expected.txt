@@ -73,53 +73,27 @@ FAIL If extends is spacer, should throw a NotSupportedError assert_throws: funct
 FAIL If extends is elementnametobeunknownelement, should throw a NotSupportedError assert_throws: function "() =>  {
         customElements.define('test-define-extend-' + name, class {}, { extends: name });
       }" did not throw
-FAIL If constructor.observedAttributes throws, should rethrow assert_throws: function "() => {
-      customElements.define('test-define-observedattributes-rethrow', C);
-    }" did not throw
+PASS If constructor.observedAttributes throws, should rethrow 
 PASS If constructor.prototype throws, should rethrow 
 PASS If Type(constructor.prototype) is undefined, should throw a TypeError 
 PASS If Type(constructor.prototype) is string, should throw a TypeError 
-FAIL If constructor.prototype.connectedCallback throws, should rethrow assert_throws: function "() => {
-        customElements.define(`test-define-${name.toLowerCase()}-rethrow`, C);
-      }" did not throw
+PASS If constructor.prototype.connectedCallback throws, should rethrow 
 PASS If constructor.prototype.connectedCallback is undefined, should succeed 
 PASS If constructor.prototype.connectedCallback is function, should succeed 
-FAIL If constructor.prototype.connectedCallback is null, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.connectedCallback is object, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.connectedCallback is integer, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.disconnectedCallback throws, should rethrow assert_throws: function "() => {
-        customElements.define(`test-define-${name.toLowerCase()}-rethrow`, C);
-      }" did not throw
+PASS If constructor.prototype.connectedCallback is null, should throw a TypeError 
+PASS If constructor.prototype.connectedCallback is object, should throw a TypeError 
+PASS If constructor.prototype.connectedCallback is integer, should throw a TypeError 
+PASS If constructor.prototype.disconnectedCallback throws, should rethrow 
 PASS If constructor.prototype.disconnectedCallback is undefined, should succeed 
 PASS If constructor.prototype.disconnectedCallback is function, should succeed 
-FAIL If constructor.prototype.disconnectedCallback is null, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.disconnectedCallback is object, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.disconnectedCallback is integer, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.attributeChangedCallback throws, should rethrow assert_throws: function "() => {
-        customElements.define(`test-define-${name.toLowerCase()}-rethrow`, C);
-      }" did not throw
+PASS If constructor.prototype.disconnectedCallback is null, should throw a TypeError 
+PASS If constructor.prototype.disconnectedCallback is object, should throw a TypeError 
+PASS If constructor.prototype.disconnectedCallback is integer, should throw a TypeError 
+PASS If constructor.prototype.attributeChangedCallback throws, should rethrow 
 PASS If constructor.prototype.attributeChangedCallback is undefined, should succeed 
 PASS If constructor.prototype.attributeChangedCallback is function, should succeed 
-FAIL If constructor.prototype.attributeChangedCallback is null, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.attributeChangedCallback is object, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
-FAIL If constructor.prototype.attributeChangedCallback is integer, should throw a TypeError assert_throws: function "() => {
-            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
-          }" did not throw
+PASS If constructor.prototype.attributeChangedCallback is null, should throw a TypeError 
+PASS If constructor.prototype.attributeChangedCallback is object, should throw a TypeError 
+PASS If constructor.prototype.attributeChangedCallback is integer, should throw a TypeError 
 Harness: the test ran to completion.
 

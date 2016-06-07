@@ -10,8 +10,11 @@
 #include "platform/heap/Handle.h"
 #include "v8.h"
 #include "wtf/Allocator.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -35,6 +38,7 @@ public:
     bool checkConstructorIntrinsics() override;
     bool checkConstructorNotRegistered() override;
     bool checkPrototype() override;
+    bool rememberOriginalProperties() override;
     CustomElementDefinition* build(const CustomElementDescriptor&) override;
 
 private:
@@ -46,7 +50,15 @@ private:
     v8::Local<v8::Value> m_constructorValue;
     v8::Local<v8::Object> m_constructor;
     v8::Local<v8::Object> m_prototype;
+    v8::Local<v8::Object> m_connectedCallback;
+    v8::Local<v8::Object> m_disconnectedCallback;
+    v8::Local<v8::Object> m_attributeChangedCallback;
+    HashSet<AtomicString> m_observedAttributes;
     ExceptionState& m_exceptionState;
+
+    bool valueForName(const v8::Local<v8::Object>&, const String&, v8::Local<v8::Value>&) const;
+    bool callableForName(const String&, v8::Local<v8::Object>&) const;
+    bool retrieveObservedAttributes();
 };
 
 } // namespace blink

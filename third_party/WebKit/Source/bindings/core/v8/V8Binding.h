@@ -775,6 +775,17 @@ struct NativeValueTraits<String> {
 };
 
 template<>
+struct NativeValueTraits<AtomicString> {
+    static inline AtomicString nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
+    {
+        V8StringResource<> stringValue(value);
+        if (!stringValue.prepare(exceptionState))
+            return AtomicString();
+        return stringValue;
+    }
+};
+
+template<>
 struct NativeValueTraits<int> {
     static inline int nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
     {

@@ -80,19 +80,41 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
     return static_cast<ScriptCustomElementDefinition*>(definition);
 }
 
+static void keepAlive(v8::Local<v8::Array>& array, uint32_t index,
+    const v8::Local<v8::Object>& value,
+    ScopedPersistent<v8::Object>& persistent,
+    ScriptState* scriptState)
+{
+    if (value.IsEmpty())
+        return;
+
+    v8CallOrCrash(array->Set(scriptState->context(), index, value));
+
+    persistent.set(scriptState->isolate(), value);
+    persistent.setPhantom();
+}
+
 ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     ScriptState* scriptState,
     CustomElementsRegistry* registry,
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
-    const v8::Local<v8::Object>& prototype)
+    const v8::Local<v8::Object>& prototype,
+    const v8::Local<v8::Object>& connectedCallback,
+    const v8::Local<v8::Object>& disconnectedCallback,
+    const v8::Local<v8::Object>& attributeChangedCallback,
+    const HashSet<AtomicString>& observedAttributes)
 {
     ScriptCustomElementDefinition* definition =
         new ScriptCustomElementDefinition(
             scriptState,
             descriptor,
             constructor,
-            prototype);
+            prototype,
+            connectedCallback,
+            disconnectedCallback,
+            attributeChangedCallback,
+            observedAttributes);
 
     // Add a constructor -> name mapping to the registry.
     v8::Local<v8::Value> nameValue =
@@ -100,11 +122,16 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     v8::Local<v8::Map> map =
         ensureCustomElementsRegistryMap(scriptState, registry);
     v8CallOrCrash(map->Set(scriptState->context(), constructor, nameValue));
-    // We add the prototype here to keep it alive; we make it a value
-    // not a key so authors cannot return another constructor as a
-    // prototype to overwrite a constructor in this map. We use the
-    // name because it is unique per-registry.
-    v8CallOrCrash(map->Set(scriptState->context(), nameValue, prototype));
+    definition->m_constructor.setPhantom();
+
+    // We add the prototype and callbacks here to keep them alive. We use the
+    // name as the key because it is unique per-registry.
+    v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), 4);
+    keepAlive(array, 0, prototype, definition->m_prototype, scriptState);
+    keepAlive(array, 1, connectedCallback, definition->m_connectedCallback, scriptState);
+    keepAlive(array, 2, disconnectedCallback, definition->m_disconnectedCallback, scriptState);
+    keepAlive(array, 3, attributeChangedCallback, definition->m_attributeChangedCallback, scriptState);
+    v8CallOrCrash(map->Set(scriptState->context(), nameValue, array));
 
     return definition;
 }
@@ -113,17 +140,16 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     ScriptState* scriptState,
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
-    const v8::Local<v8::Object>& prototype)
+    const v8::Local<v8::Object>& prototype,
+    const v8::Local<v8::Object>& connectedCallback,
+    const v8::Local<v8::Object>& disconnectedCallback,
+    const v8::Local<v8::Object>& attributeChangedCallback,
+    const HashSet<AtomicString>& observedAttributes)
     : CustomElementDefinition(descriptor)
     , m_scriptState(scriptState)
     , m_constructor(scriptState->isolate(), constructor)
-    , m_prototype(scriptState->isolate(), prototype)
+    , m_observedAttributes(observedAttributes)
 {
-    // These objects are kept alive by references from the
-    // CustomElementsRegistry wrapper set up by
-    // ScriptCustomElementDefinition::create.
-    m_constructor.setPhantom();
-    m_prototype.setPhantom();
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
