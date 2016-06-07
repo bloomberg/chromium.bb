@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
@@ -64,6 +65,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testFullscreenVideoInSoftwareModeDoesNotDeadlock() throws Throwable {
         // Although fullscreen video is not supported without hardware acceleration
         // we should not deadlock if apps try to use it.
@@ -81,6 +83,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     @DisableHardwareAccelerationForTest
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testFullscreenForNonVideoElementIsSupportedInSoftwareMode() throws Throwable {
         // Fullscreen for non-video elements is supported and works as expected. Note that
         // this test is the same as testOnShowAndHideCustomViewWithCallback_videoInsideDiv below.
@@ -89,12 +92,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowAndHideCustomViewWithCallback_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_TEST_URL);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowAndHideCustomViewWithCallback_videoInsideDiv() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
     }
@@ -110,12 +115,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowAndHideCustomViewWithJavascript_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_TEST_URL);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowAndHideCustomViewWithJavascript_videoInsideDiv()
             throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_INSIDE_DIV_TEST_URL);
@@ -133,12 +140,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     @MediumTest
     @Feature({"AndroidWebView"})
     @ParameterizedTest.Set  // crbug.com/616501
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowAndHideCustomViewWithBackKey_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_TEST_URL);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv()
             throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_INSIDE_DIV_TEST_URL);
@@ -165,6 +174,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView() throws Throwable {
         mContentsClient.setOnHideCustomViewRunnable(new Runnable() {
             @Override
@@ -177,12 +187,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowCustomViewAndPlayWithHtmlControl_video() throws Throwable {
         doTestOnShowCustomViewAndPlayWithHtmlControl(VIDEO_TEST_URL);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv() throws Throwable {
         doTestOnShowCustomViewAndPlayWithHtmlControl(VIDEO_INSIDE_DIV_TEST_URL);
     }
@@ -197,6 +209,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testHolePunchingSurfaceNotCreatedForClearVideo()
             throws Throwable {
         loadTestPage(VIDEO_TEST_URL);
@@ -213,6 +226,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowCustomViewTransfersHolePunchingSurfaceForVideoInsideDiv()
             throws Throwable {
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -247,6 +261,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testOnShowCustomViewRemovesHolePunchingSurfaceForVideo()
             throws Throwable {
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -285,12 +300,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testFullscreenNotSupported_video() throws Throwable {
         doTestFullscreenNotSupported(VIDEO_TEST_URL);
     }
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testFullscreenNotSupported_videoInsideDiv() throws Throwable {
         doTestFullscreenNotSupported(VIDEO_INSIDE_DIV_TEST_URL);
     }
@@ -308,6 +325,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_video()
             throws Throwable {
         doTestPowerSaveBlockerIsEnabledDuringFullscreenPlayback(VIDEO_TEST_URL);
@@ -315,6 +333,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_videoInsideDiv()
             throws Throwable {
         doTestPowerSaveBlockerIsEnabledDuringFullscreenPlayback(VIDEO_INSIDE_DIV_TEST_URL);
@@ -340,6 +359,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback()
             throws Throwable {
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
@@ -359,6 +379,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testPowerSaveBlockerIsTransferredToFullscreen()
             throws Throwable {
         assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
@@ -387,6 +408,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
     public void testPowerSaveBlockerIsTransferredToEmbedded()
             throws Throwable {
         // Enter fullscreen.
