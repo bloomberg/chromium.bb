@@ -32,6 +32,19 @@
 
 namespace blink {
 
+#if USE(QCMSLIB)
+struct QCMSProfileDeleter {
+    void operator()(qcms_profile* profile)
+    {
+        if (profile)
+            qcms_profile_release(profile);
+    }
+};
+
+using QCMSProfileUniquePtr = std::unique_ptr<qcms_profile, QCMSProfileDeleter>;
+#endif // USE(QCMSLIB)
+
+
 inline bool matchesJPEGSignature(const char* contents)
 {
     return !memcmp(contents, "\xFF\xD8\xFF", 3);
@@ -309,9 +322,9 @@ void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned icc
     m_sourceToOutputDeviceColorTransform.reset();
 
     // Create the input profile
-    OwnPtr<qcms_profile> inputProfile;
+    QCMSProfileUniquePtr inputProfile;
     if (useSRGB) {
-        inputProfile = adoptPtr(qcms_profile_sRGB());
+        inputProfile.reset(qcms_profile_sRGB());
     } else {
         // Only accept RGB color profiles from input class devices.
         if (iccLength < kIccColorProfileHeaderLength)
@@ -320,7 +333,7 @@ void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned icc
             return;
         if (!inputDeviceColorProfile(iccData, iccLength))
             return;
-        inputProfile = adoptPtr(qcms_profile_from_memory(iccData, iccLength));
+        inputProfile.reset(qcms_profile_from_memory(iccData, iccLength));
     }
     if (!inputProfile)
         return;
@@ -357,7 +370,7 @@ void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned icc
     qcms_data_type dataFormat = hasAlpha ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
 
     // FIXME: Don't force perceptual intent if the image profile contains an intent.
-    m_sourceToOutputDeviceColorTransform = adoptPtr(qcms_transform_create(inputProfile.get(), dataFormat, gOutputDeviceProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));
+    m_sourceToOutputDeviceColorTransform.reset(qcms_transform_create(inputProfile.get(), dataFormat, gOutputDeviceProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));
 }
 
 #endif // USE(QCMSLIB)

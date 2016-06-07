@@ -41,39 +41,25 @@
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 #if USE(QCMSLIB)
 #include "qcms.h"
+#endif
 
-namespace WTF {
+namespace blink {
 
-template <typename T>
-struct OwnedPtrDeleter;
-template <>
-struct OwnedPtrDeleter<qcms_transform> {
-    static void deletePtr(qcms_transform* transform)
+#if USE(QCMSLIB)
+struct QCMSTransformDeleter {
+    void operator()(qcms_transform* transform)
     {
         if (transform)
             qcms_transform_release(transform);
     }
 };
 
-template <typename T>
-struct OwnedPtrDeleter;
-template <>
-struct OwnedPtrDeleter<qcms_profile> {
-    static void deletePtr(qcms_profile* profile)
-    {
-        if (profile)
-            qcms_profile_release(profile);
-    }
-};
-
-} // namespace WTF
-
+using QCMSTransformUniquePtr = std::unique_ptr<qcms_transform, QCMSTransformDeleter>;
 #endif // USE(QCMSLIB)
-
-namespace blink {
 
 // ImagePlanes can be used to decode color components into provided buffers instead of using an ImageFrame.
 class PLATFORM_EXPORT ImagePlanes final {
@@ -347,7 +333,7 @@ private:
     bool m_failed;
 
 #if USE(QCMSLIB)
-    OwnPtr<qcms_transform> m_sourceToOutputDeviceColorTransform;
+    QCMSTransformUniquePtr m_sourceToOutputDeviceColorTransform;
 #endif
 };
 
