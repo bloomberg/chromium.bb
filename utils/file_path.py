@@ -798,6 +798,8 @@ def atomic_replace(path, body):
   try:
     with os.fdopen(fd, 'wb') as f:
       f.write(body)
+      f.flush()
+      os.fsync(fd)
     if sys.platform != 'win32':
       os.rename(tmp_name, path)
     else:
