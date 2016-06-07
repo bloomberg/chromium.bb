@@ -837,7 +837,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 // Test that view source mode for a webui page can be opened.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ViewSourceWebUI) {
-  const char kUrl[] = "view-source:chrome://chrome/settings";
+  const std::string kUrl =
+      "view-source:chrome://" + std::string(kChromeUIGpuHost);
   const GURL kGURL(kUrl);
   NavigateToURL(shell(), kGURL);
   EXPECT_EQ(base::ASCIIToUTF16(kUrl), shell()->web_contents()->GetTitle());
