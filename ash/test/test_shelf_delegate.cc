@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/shelf/shelf_item_delegate_manager.h"
-#include "ash/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_item_delegate_manager.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/test/test_shelf_item_delegate.h"

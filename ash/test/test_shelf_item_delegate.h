@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 #define ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 
-#include "ash/shelf/shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_item_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 

@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/common/shelf/shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_item_delegate_manager.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/focus_cycler.h"
@@ -14,10 +17,7 @@
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_delegate.h"
-#include "ash/shelf/shelf_item_delegate.h"
-#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"

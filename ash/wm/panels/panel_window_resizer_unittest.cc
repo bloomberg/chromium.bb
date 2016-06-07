@@ -5,6 +5,7 @@
 #include "ash/common/wm/panels/panel_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
@@ -12,7 +13,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"

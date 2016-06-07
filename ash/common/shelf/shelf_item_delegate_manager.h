@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_
-#define ASH_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_
+#define ASH_COMMON_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_
 
 #include <map>
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_item_types.h"
-#include "ash/shelf/shelf_model_observer.h"
-#include "base/compiler_specific.h"
+#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_model_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -82,4 +81,4 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_ITEM_DELEGATE_MANAGER_H_

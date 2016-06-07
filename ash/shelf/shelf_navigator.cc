@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_navigator.h"
 
-#include "ash/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_model.h"
 
 namespace ash {
 

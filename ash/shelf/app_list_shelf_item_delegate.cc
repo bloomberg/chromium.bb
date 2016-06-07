@@ -4,7 +4,7 @@
 
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 
-#include "ash/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
 #include "ui/app_list/app_list_switches.h"

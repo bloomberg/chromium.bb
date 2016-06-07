@@ -5,9 +5,9 @@
 #include "ash/shelf/shelf_navigator.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_item_types.h"
-#include "ash/shelf/shelf_model.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

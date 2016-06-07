@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/shelf/shelf_item_delegate_manager.h"
-#include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_model_observer.h"
+#include "ash/common/shelf/shelf_item_delegate_manager.h"
+#include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_item_delegate_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"

@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_item_types.h"
 
 namespace ash {
 class Shelf;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_MODEL_OBSERVER_H_
-#define ASH_SHELF_SHELF_MODEL_OBSERVER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_MODEL_OBSERVER_H_
+#define ASH_COMMON_SHELF_SHELF_MODEL_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_item_types.h"
 
 namespace ash {
 
@@ -35,4 +35,4 @@ class ASH_EXPORT ShelfModelObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_MODEL_OBSERVER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_MODEL_OBSERVER_H_

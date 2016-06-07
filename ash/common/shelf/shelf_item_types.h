@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_ITEM_TYPES_H_
-#define ASH_SHELF_SHELF_ITEM_TYPES_H_
+#ifndef ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
+#define ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
 
 #include <vector>
 
@@ -93,4 +93,4 @@ struct ASH_EXPORT ShelfItemDetails {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_ITEM_TYPES_H_
+#endif  // ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_

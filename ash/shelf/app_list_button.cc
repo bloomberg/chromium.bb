@@ -5,7 +5,7 @@
 #include "ash/shelf/app_list_button.h"
 
 #include "ash/ash_constants.h"
-#include "ash/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"

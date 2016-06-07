@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_model.h"
 
 #include <set>
 #include <string>
 
-#include "ash/ash_switches.h"
-#include "ash/shelf/shelf_model_observer.h"
-#include "base/command_line.h"
+#include "ash/common/shelf/shelf_model_observer.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -4,8 +4,8 @@
 
 #include "ash/test/shelf_item_delegate_manager_test_api.h"
 
-#include "ash/shelf/shelf_item_delegate.h"
-#include "ash/shelf/shelf_item_delegate_manager.h"
+#include "ash/common/shelf/shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "base/stl_util.h"
 
 namespace ash {

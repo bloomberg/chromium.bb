@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
+#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_item_types.h"
-#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
