@@ -3266,10 +3266,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
   grand_child->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
 
-  // The visible rect is expanded to integer coordinates in target space before
-  // being projected back to layer space, where it is once again expanded to
-  // integer coordinates.
-  EXPECT_EQ(gfx::Rect(49, 49), grand_child->visible_layer_rect());
+  // The visible rect is expanded to integer coordinates.
+  EXPECT_EQ(gfx::Rect(41, 41), grand_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -4193,9 +4191,7 @@ TEST_F(LayerTreeHostCommonTest,
   // On the clipped surface, only a quarter  of the child1 is visible, but when
   // rotating it back to  child1's content space, the actual enclosing rect ends
   // up covering the full left half of child1.
-  //
-  // Given the floating point math, this number is a little bit fuzzy.
-  EXPECT_EQ(gfx::Rect(0, 0, 26, 50), child1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(0, 0, 25, 50), child1->visible_layer_rect());
 
   // The child's DrawableContentRect is unclipped.
   EXPECT_EQ(unclipped_surface_content, child1->drawable_content_rect());
@@ -9180,7 +9176,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   ClipTree& clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
   EXPECT_FALSE(clip_node->data.applies_local_clip);
-  EXPECT_EQ(gfx::Rect(22, 21), test_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(20, 20), test_layer->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
