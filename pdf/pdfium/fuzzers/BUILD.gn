@@ -51,4 +51,11 @@ if (pdf_enable_xfa) {
     ]
     dict = "dicts/pdf_xml.dict"
   }
+
+  fuzzer_test("pdf_codec_png_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_codec_png_fuzzer",
+    ]
+  }
 }
