@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -257,7 +258,7 @@ class Surface : public aura::Window,
   cc::SurfaceId surface_id_;
 
   // The next resource id the buffer will be attached to.
-  int next_resource_id_ = 0;
+  int next_resource_id_ = 1;
 
   // The damage region to schedule paint for when Commit() is called.
   SkRegion pending_damage_;
@@ -314,6 +315,9 @@ class Surface : public aura::Window,
 
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;
+
+  // The last resource that was sent to a surface.
+  cc::TransferableResource current_resource_;
 
   // The active input region used for hit testing.
   SkRegion input_region_;
