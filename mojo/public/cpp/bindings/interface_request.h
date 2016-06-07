@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -22,6 +21,7 @@ namespace mojo {
 // if the client did not provide a message pipe.
 template <typename Interface>
 class InterfaceRequest {
+  MOVE_ONLY_TYPE_FOR_CPP_03(InterfaceRequest);
  public:
   // Constructs an empty InterfaceRequest, representing that the client is not
   // requesting an implementation of Interface.
@@ -66,8 +66,6 @@ class InterfaceRequest {
 
  private:
   ScopedMessagePipeHandle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterfaceRequest);
 };
 
 // Makes an InterfaceRequest bound to the specified message pipe. If |handle|

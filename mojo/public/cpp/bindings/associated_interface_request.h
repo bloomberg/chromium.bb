@@ -16,6 +16,8 @@ namespace mojo {
 // similar to InterfaceRequest except that it doesn't own a message pipe handle.
 template <typename Interface>
 class AssociatedInterfaceRequest {
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfaceRequest);
+
  public:
   // Constructs an empty AssociatedInterfaceRequest, representing that the
   // client is not requesting an implementation of Interface.
@@ -66,8 +68,6 @@ class AssociatedInterfaceRequest {
 
  private:
   ScopedInterfaceEndpointHandle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfaceRequest);
 };
 
 // Makes an AssociatedInterfaceRequest bound to the specified associated

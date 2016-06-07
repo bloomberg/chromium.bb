@@ -25,6 +25,8 @@ namespace mojo {
 // InterfacePtr, except that it doesn't own a message pipe handle.
 template <typename Interface>
 class AssociatedInterfacePtr {
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfacePtr)
+
  public:
   // Constructs an unbound AssociatedInterfacePtr.
   AssociatedInterfacePtr() {}
@@ -155,7 +157,6 @@ class AssociatedInterfacePtr {
   // Allow AssociatedInterfacePtr<> to be used in boolean expressions, but not
   // implicitly convertible to a real bool (which is dangerous).
  private:
-  // TODO(dcheng): Use an explicit conversion operator.
   typedef internal::AssociatedInterfacePtrState<Interface>
       AssociatedInterfacePtr::*Testable;
 
@@ -175,8 +176,6 @@ class AssociatedInterfacePtr {
 
   typedef internal::AssociatedInterfacePtrState<Interface> State;
   mutable State internal_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfacePtr);
 };
 
 // Creates an associated interface. The output |ptr| should be used locally

@@ -118,6 +118,8 @@ class PdfToEmfUtilityProcessHostClient
 
  private:
   class GetPageCallbackData {
+    MOVE_ONLY_TYPE_FOR_CPP_03(GetPageCallbackData);
+
    public:
     GetPageCallbackData(int page_number,
                         PdfToEmfConverter::GetPageCallback callback)
@@ -145,8 +147,6 @@ class PdfToEmfUtilityProcessHostClient
     int page_number_;
     PdfToEmfConverter::GetPageCallback callback_;
     ScopedTempFile emf_;
-
-    DISALLOW_COPY_AND_ASSIGN(GetPageCallbackData);
   };
 
   ~PdfToEmfUtilityProcessHostClient() override;

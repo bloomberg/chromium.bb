@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/move.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 
@@ -15,6 +15,8 @@ namespace mojo {
 namespace internal {
 
 class FilterChain {
+  MOVE_ONLY_TYPE_FOR_CPP_03(FilterChain)
+
  public:
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
@@ -39,12 +41,9 @@ class FilterChain {
 
  private:
   // Owned by this object.
-  // TODO(dcheng): Use unique_ptr.
   std::vector<MessageFilter*> filters_;
 
   MessageReceiver* sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilterChain);
 };
 
 template <typename FilterType>

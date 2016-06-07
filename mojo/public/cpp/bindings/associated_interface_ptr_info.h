@@ -18,6 +18,8 @@ namespace mojo {
 // it doesn't own a message pipe handle.
 template <typename Interface>
 class AssociatedInterfacePtrInfo {
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(AssociatedInterfacePtrInfo);
+
  public:
   AssociatedInterfacePtrInfo() : version_(0u) {}
 
@@ -67,8 +69,6 @@ class AssociatedInterfacePtrInfo {
  private:
   ScopedInterfaceEndpointHandle handle_;
   uint32_t version_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfacePtrInfo);
 };
 
 }  // namespace mojo

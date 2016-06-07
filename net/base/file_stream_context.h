@@ -33,6 +33,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/move.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"
@@ -112,6 +113,7 @@ class FileStream::Context {
   };
 
   struct OpenResult {
+    MOVE_ONLY_TYPE_FOR_CPP_03(OpenResult)
    public:
     OpenResult();
     OpenResult(base::File file, IOResult error_code);
@@ -120,9 +122,6 @@ class FileStream::Context {
 
     base::File file;
     IOResult error_code;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(OpenResult);
   };
 
   ////////////////////////////////////////////////////////////////////////////

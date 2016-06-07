@@ -6,7 +6,7 @@
 #define BASE_PROCESS_PROCESS_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
+#include "base/move.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -31,6 +31,8 @@ namespace base {
 // the process dies, and it may be reused by the system, which means that it may
 // end up pointing to the wrong process.
 class BASE_EXPORT Process {
+  MOVE_ONLY_TYPE_FOR_CPP_03(Process)
+
  public:
   explicit Process(ProcessHandle handle = kNullProcessHandle);
 
@@ -134,8 +136,6 @@ class BASE_EXPORT Process {
 #else
   ProcessHandle process_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(Process);
 };
 
 #if defined(OS_CHROMEOS)

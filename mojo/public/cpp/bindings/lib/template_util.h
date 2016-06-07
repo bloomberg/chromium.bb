@@ -7,8 +7,6 @@
 
 #include <type_traits>
 
-#include "base/template_util.h"
-
 namespace mojo {
 namespace internal {
 
@@ -54,8 +52,14 @@ struct NoType {
 // destructive way.
 template <typename T>
 struct IsMoveOnlyType {
+  template <typename U>
+  static YesType Test(const typename U::MoveOnlyTypeForCPP03*);
+
+  template <typename U>
+  static NoType Test(...);
+
   static const bool value =
-      base::is_move_assignable<T>::value && !base::is_copy_assignable<T>::value;
+      sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
 };
 
 // This goop is a trick used to implement a template that can be used to

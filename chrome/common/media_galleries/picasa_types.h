@@ -13,7 +13,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/move.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace picasa {
@@ -58,6 +58,7 @@ struct AlbumInfo {
 };
 
 struct AlbumTableFiles {
+  MOVE_ONLY_TYPE_FOR_CPP_03(AlbumTableFiles)
  public:
   AlbumTableFiles();
   explicit AlbumTableFiles(const base::FilePath& directory_path);
@@ -75,9 +76,6 @@ struct AlbumTableFiles {
   base::File name_file;
   base::File token_file;
   base::File uid_file;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AlbumTableFiles);
 };
 
 // A mirror of AlbumTableFiles but for transit.

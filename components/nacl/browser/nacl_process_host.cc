@@ -216,6 +216,8 @@ unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
 // that this only takes a transferred IPC::ChannelHandle or one to be
 // transferred via IPC.
 class NaClProcessHost::ScopedChannelHandle {
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedChannelHandle);
+
  public:
   ScopedChannelHandle() {
   }
@@ -273,8 +275,6 @@ class NaClProcessHost::ScopedChannelHandle {
   }
 
   IPC::ChannelHandle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedChannelHandle);
 };
 
 NaClProcessHost::NaClProcessHost(
