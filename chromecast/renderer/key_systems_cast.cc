@@ -54,12 +54,8 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
   }
 
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
-#if defined(OS_ANDROID)
-    return EmeSessionTypeSupport::NOT_SUPPORTED;
-#else
     return persistent_license_support_ ? EmeSessionTypeSupport::SUPPORTED
         : EmeSessionTypeSupport::NOT_SUPPORTED;
-#endif
   }
 
   EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
@@ -86,6 +82,9 @@ void AddChromecastKeySystems(
         key_systems_properties,
     bool enable_persistent_license_support) {
 #if defined(PLAYREADY_CDM_AVAILABLE)
+#if defined(OS_ANDROID)
+  CHECK(!enable_persistent_license_support);
+#endif
   key_systems_properties->emplace_back(
       new PlayReadyKeySystemProperties(enable_persistent_license_support));
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
