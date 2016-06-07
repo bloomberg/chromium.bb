@@ -42,10 +42,15 @@ struct VTVideoEncodeAccelerator::InProgressFrameEncode {
 };
 
 struct VTVideoEncodeAccelerator::EncodeOutput {
-  EncodeOutput(VTEncodeInfoFlags info_flags, CMSampleBufferRef sbuf)
-      : info(info_flags), sample_buffer(sbuf, base::scoped_policy::RETAIN) {}
+  EncodeOutput(VTEncodeInfoFlags info_flags,
+               CMSampleBufferRef sbuf,
+               base::TimeDelta timestamp)
+      : info(info_flags),
+        sample_buffer(sbuf, base::scoped_policy::RETAIN),
+        capture_timestamp(timestamp) {}
   const VTEncodeInfoFlags info;
   const base::ScopedCFTypeRef<CMSampleBufferRef> sample_buffer;
+  const base::TimeDelta capture_timestamp;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(EncodeOutput);
@@ -393,15 +398,14 @@ void VTVideoEncodeAccelerator::CompressionCallback(void* encoder_opaque,
   auto encoder = reinterpret_cast<VTVideoEncodeAccelerator*>(encoder_opaque);
   DCHECK(encoder);
 
-  // Release InProgressFrameEncode, since we don't have support to return
-  // timestamps at this point.
-  std::unique_ptr<InProgressFrameEncode> request(
+  // InProgressFrameEncode holds timestamp information of the encoded frame.
+  std::unique_ptr<InProgressFrameEncode> frame_info(
       reinterpret_cast<InProgressFrameEncode*>(request_opaque));
-  request.reset();
 
   // EncodeOutput holds onto CMSampleBufferRef when posting task between
   // threads.
-  std::unique_ptr<EncodeOutput> encode_output(new EncodeOutput(info, sbuf));
+  std::unique_ptr<EncodeOutput> encode_output(
+      new EncodeOutput(info, sbuf, frame_info->timestamp));
 
   // This method is NOT called on |encoder_thread_|, so we still need to
   // post a task back to it to do work.
@@ -446,7 +450,7 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
     client_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id, 0,
-                   false, base::Time::Now() - base::Time()));
+                   false, encode_output->capture_timestamp));
     return;
   }
 
@@ -470,7 +474,7 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id,
-                 used_buffer_size, keyframe, base::Time::Now() - base::Time()));
+                 used_buffer_size, keyframe, encode_output->capture_timestamp));
 }
 
 bool VTVideoEncodeAccelerator::ResetCompressionSession() {
