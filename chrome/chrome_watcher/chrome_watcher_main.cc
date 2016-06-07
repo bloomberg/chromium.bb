@@ -101,9 +101,8 @@ BrowserMonitor::BrowserMonitor(base::StringPiece16 registry_path,
           base::Bind(&BrowserMonitor::OnEndSessionMessage,
                      base::Unretained(this))),
       background_thread_("BrowserWatcherThread"),
-      browser_exited_(
-          base::WaitableEvent::ResetPolicy::MANUAL,
-          base::WaitableEvent::InitialState::NOT_SIGNALED),
+      browser_exited_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       run_loop_(run_loop),
       main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 

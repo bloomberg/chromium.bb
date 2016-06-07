@@ -439,7 +439,9 @@ class AudioAndroidOutputTest : public testing::Test {
   // Synchronously runs the provided callback/closure on the audio thread.
   void RunOnAudioThread(const base::Closure& closure) {
     if (!audio_manager()->GetTaskRunner()->BelongsToCurrentThread()) {
-      base::WaitableEvent event(false, false);
+      base::WaitableEvent event(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED);
       audio_manager()->GetTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&AudioAndroidOutputTest::RunOnAudioThreadImpl,
@@ -858,7 +860,8 @@ TEST_F(AudioAndroidOutputTest, DISABLED_RunOutputStreamWithFileAsSource) {
     return;
   }
 
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   FileAudioSource source(&event, file_name);
 
   OpenAndStartAudioOutputStreamOnAudioThread(&source);
@@ -881,7 +884,8 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunSimplexInputStreamWithFileAsSink) {
                                              params.frames_per_buffer(),
                                              params.channels());
 
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   FileAudioSink sink(&event, params, file_name);
 
   OpenAndStartAudioInputStreamOnAudioThread(&sink);
@@ -908,7 +912,8 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
                                              in_params.frames_per_buffer(),
                                              in_params.channels());
 
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   FileAudioSink sink(&event, in_params, file_name);
   MockAudioSourceCallback source;
 

@@ -2135,7 +2135,8 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
     return;
   }
 
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   // Create a thread on which to invoke the blocked syscall.
   pthread_t thread;

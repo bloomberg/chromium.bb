@@ -580,7 +580,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       channel_connected_(false),
       sent_render_process_ready_(false),
 #if defined(OS_ANDROID)
-      never_signaled_(true, false),
+      never_signaled_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
 #endif
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();

@@ -5,8 +5,8 @@
 #include "chrome/browser/android/provider/blocking_ui_thread_async_request.h"
 
 BlockingUIThreadAsyncRequest::BlockingUIThreadAsyncRequest()
-    : request_completed_(false, false) {
-}
+    : request_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                         base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 void BlockingUIThreadAsyncRequest::RequestCompleted() {
   // Currently all our use cases receive their request response in the UI

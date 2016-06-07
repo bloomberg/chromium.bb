@@ -14,7 +14,9 @@
 namespace media {
 
 AVDASharedState::AVDASharedState()
-    : surface_texture_service_id_(0), frame_available_event_(false, false) {}
+    : surface_texture_service_id_(0),
+      frame_available_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 AVDASharedState::~AVDASharedState() {
   if (!surface_texture_service_id_)

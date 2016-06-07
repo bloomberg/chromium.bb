@@ -157,7 +157,9 @@ void SchedGetParamThread(base::WaitableEvent* thread_run) {
 BPF_TEST_C(ParameterRestrictions,
            sched_getparam_allowed,
            RestrictSchedPolicy) {
-  base::WaitableEvent thread_run(true, false);
+  base::WaitableEvent thread_run(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   // Run the actual test in a new thread so that the current pid and tid are
   // different.
   base::Thread getparam_thread("sched_getparam_thread");

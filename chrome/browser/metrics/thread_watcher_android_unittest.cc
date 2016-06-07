@@ -28,7 +28,9 @@ void PostAndWaitForWatchdogThread(base::WaitableEvent* event) {
 }
 
 void NotifyApplicationStateChange(base::android::ApplicationState state) {
-  base::WaitableEvent watchdog_thread_event(false, false);
+  base::WaitableEvent watchdog_thread_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   base::android::ApplicationStatusListener::NotifyApplicationStateChange(state);
   base::RunLoop().RunUntilIdle();

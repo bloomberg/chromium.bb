@@ -96,7 +96,8 @@ void DeltaFileService::PageDeleted(const GURL& url) {
 
 int64_t DeltaFileService::Trim(int64_t lower_bound) {
   int64_t result;
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   pool->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
@@ -115,7 +116,8 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
     int64_t last_seq_no,
     int32_t limit) {
   std::unique_ptr<std::vector<DeltaFileEntryWithData>> result;
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   pool->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
@@ -133,7 +135,8 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
 
 bool DeltaFileService::Recreate(const std::vector<std::string>& urls) {
   bool result = false;
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   pool->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
@@ -160,7 +163,8 @@ void DeltaFileService::Clear() {
 
 std::string DeltaFileService::Dump() {
   std::string dump;
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   pool->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,

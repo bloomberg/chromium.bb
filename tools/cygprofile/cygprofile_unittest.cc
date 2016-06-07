@@ -61,8 +61,12 @@ TEST(CygprofileTest, ThreadLogBasic) {
 }
 
 TEST(CygprofileTest, ManagerBasic) {
-  base::WaitableEvent wait_event(true, false);
-  base::WaitableEvent notify_event(true, false);
+  base::WaitableEvent wait_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent notify_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   ThreadLogsManager manager(
       base::Bind(&base::WaitableEvent::Wait, base::Unretained(&wait_event)),

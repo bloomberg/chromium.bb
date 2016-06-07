@@ -96,7 +96,8 @@ void UsageReportsBufferService::AddVisit(const std::string& id,
 std::unique_ptr<std::vector<UsageReport>>
 UsageReportsBufferService::GetUsageReportsBatch(int32_t batch_size) {
   std::unique_ptr<std::vector<UsageReport>> result;
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.
@@ -115,7 +116,8 @@ UsageReportsBufferService::GetUsageReportsBatch(int32_t batch_size) {
 
 void UsageReportsBufferService::Remove(
     const std::vector<std::string>& report_ids) {
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.
@@ -131,7 +133,8 @@ void UsageReportsBufferService::Remove(
 }
 
 void UsageReportsBufferService::Clear() {
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.
@@ -147,7 +150,8 @@ void UsageReportsBufferService::Clear() {
 
 std::string UsageReportsBufferService::Dump() {
   std::string dump;
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.

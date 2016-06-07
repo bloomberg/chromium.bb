@@ -106,7 +106,8 @@ void BrowserSurfaceViewManager::SendDestroyingVideoSurfaceIfRequired(
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 18)
     return;
 
-  base::WaitableEvent waiter(false, false);
+  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   // Unretained is okay because we're waiting on the callback.
   if (BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,

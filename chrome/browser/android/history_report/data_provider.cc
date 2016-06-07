@@ -38,7 +38,8 @@ struct Context {
           base::CancelableTaskTracker* tracker)
       : history_service(hservice),
         history_task_tracker(tracker),
-        finished(false, false) {}
+        finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                 base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 };
 
 void UpdateUrl(Context* context,
@@ -156,7 +157,8 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
 
 void DataProvider::StartVisitMigrationToUsageBuffer(
     UsageReportsBufferService* buffer_service) {
-  base::WaitableEvent finished(false, false);
+  base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   buffer_service->Clear();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -172,7 +174,9 @@ void DataProvider::StartVisitMigrationToUsageBuffer(
 void DataProvider::RecreateLog() {
   std::vector<std::string> urls;
   {
-    base::WaitableEvent finished(false, false);
+    base::WaitableEvent finished(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     std::unique_ptr<history::HistoryDBTask> task =
         std::unique_ptr<history::HistoryDBTask>(

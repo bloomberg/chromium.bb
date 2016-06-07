@@ -47,8 +47,9 @@ BlimpInputManager::BlimpInputManager(
 BlimpInputManager::~BlimpInputManager() {
   DCHECK(IsMainThread());
 
-  base::WaitableEvent shutdown_event(false /* manual_reset */,
-                                     false /* initially_signaled */);
+  base::WaitableEvent shutdown_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   {
     base::AutoReset<bool> auto_reset_main_thread_blocked(
         &main_thread_blocked_, true);

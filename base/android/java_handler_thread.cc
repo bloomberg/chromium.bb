@@ -32,7 +32,9 @@ void JavaHandlerThread::Start() {
   DCHECK(!message_loop_);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::WaitableEvent initialize_event(false, false);
+  base::WaitableEvent initialize_event(
+      WaitableEvent::ResetPolicy::AUTOMATIC,
+      WaitableEvent::InitialState::NOT_SIGNALED);
   Java_JavaHandlerThread_start(env,
                                java_thread_.obj(),
                                reinterpret_cast<intptr_t>(this),
@@ -45,7 +47,8 @@ void JavaHandlerThread::Start() {
 
 void JavaHandlerThread::Stop() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::WaitableEvent shutdown_event(false, false);
+  base::WaitableEvent shutdown_event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                                     WaitableEvent::InitialState::NOT_SIGNALED);
   Java_JavaHandlerThread_stop(env,
                               java_thread_.obj(),
                               reinterpret_cast<intptr_t>(this),

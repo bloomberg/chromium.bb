@@ -266,7 +266,8 @@ CookieManager::~CookieManager() {
 // Ignore a bool callback.
 void CookieManager::ExecCookieTaskSync(
     const base::Callback<void(BoolCallback)>& task) {
-  WaitableEvent completion(false, false);
+  WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(
       base::Bind(task, BoolCallbackAdapter(SignalEventClosure(&completion))));
   ScopedAllowWaitForLegacyWebViewApi wait;
@@ -276,7 +277,8 @@ void CookieManager::ExecCookieTaskSync(
 // Ignore an int callback.
 void CookieManager::ExecCookieTaskSync(
     const base::Callback<void(IntCallback)>& task) {
-  WaitableEvent completion(false, false);
+  WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(
       base::Bind(task, IntCallbackAdapter(SignalEventClosure(&completion))));
   ScopedAllowWaitForLegacyWebViewApi wait;
@@ -287,7 +289,8 @@ void CookieManager::ExecCookieTaskSync(
 // continue.
 void CookieManager::ExecCookieTaskSync(
     const base::Callback<void(base::Closure)>& task) {
-  WaitableEvent completion(false, false);
+  WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(base::Bind(task, SignalEventClosure(&completion)));
   ScopedAllowWaitForLegacyWebViewApi wait;
   completion.Wait();

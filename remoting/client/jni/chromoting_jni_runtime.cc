@@ -94,7 +94,9 @@ ChromotingJniRuntime::~ChromotingJniRuntime() {
   // The singleton should only ever be destroyed on the main thread.
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   network_task_runner()->PostTask(
       FROM_HERE, base::Bind(&ChromotingJniRuntime::DetachFromVmAndSignal,
                             base::Unretained(this), &done_event));

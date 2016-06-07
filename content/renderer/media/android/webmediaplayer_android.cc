@@ -287,7 +287,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     // Part of |media_source_delegate_| needs to be stopped on the media thread.
     // Wait until |media_source_delegate_| is fully stopped before tearing
     // down other objects.
-    base::WaitableEvent waiter(false, false);
+    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     media_source_delegate_->Stop(
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
     waiter.Wait();

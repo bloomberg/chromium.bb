@@ -43,10 +43,10 @@ class MultiThreadedTest {
  public:
   MultiThreadedTest()
       : state_(kInvalidApplicationState),
-        event_(false, false),
+        event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+               WaitableEvent::InitialState::NOT_SIGNALED),
         thread_("ApplicationStatusTest thread"),
-        main_() {
-  }
+        main_() {}
 
   void Run() {
     // Start the thread and tell it to register for events.

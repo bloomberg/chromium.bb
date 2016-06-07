@@ -61,7 +61,9 @@ FakeWindow::FakeWindow(BrowserViewRenderer* view,
 FakeWindow::~FakeWindow() {
   CheckCurrentlyOnUIThread();
   if (render_thread_loop_) {
-    base::WaitableEvent completion(true, false);
+    base::WaitableEvent completion(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     render_thread_loop_->PostTask(
         FROM_HERE, base::Bind(&FakeWindow::DestroyOnRT, base::Unretained(this),
                               &completion));
@@ -79,7 +81,9 @@ void FakeWindow::Detach() {
 void FakeWindow::RequestInvokeGL(FakeFunctor* functor,
                                  bool wait_for_completion) {
   CheckCurrentlyOnUIThread();
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   render_thread_loop_->PostTask(
       FROM_HERE,
       base::Bind(&FakeWindow::InvokeFunctorOnRT, base::Unretained(this),
@@ -127,7 +131,9 @@ void FakeWindow::OnDrawHardware() {
   if (success && functor) {
     CreateRenderThreadIfNeeded();
 
-    base::WaitableEvent completion(true, false);
+    base::WaitableEvent completion(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     render_thread_loop_->PostTask(
         FROM_HERE, base::Bind(&FakeWindow::DrawFunctorOnRT,
                               base::Unretained(this), functor, &completion));
@@ -169,7 +175,9 @@ void FakeWindow::CreateRenderThreadIfNeeded() {
   render_thread_loop_ = render_thread_->task_runner();
   rt_checker_.DetachFromSequence();
 
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   render_thread_loop_->PostTask(
       FROM_HERE, base::Bind(&FakeWindow::InitializeOnRT, base::Unretained(this),
                             &completion));

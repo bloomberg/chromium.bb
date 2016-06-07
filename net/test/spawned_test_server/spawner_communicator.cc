@@ -104,7 +104,8 @@ class SpawnerRequestData : public base::SupportsUserData::Data {
 
 SpawnerCommunicator::SpawnerCommunicator(uint16_t port)
     : io_thread_("spawner_communicator"),
-      event_(false, false),
+      event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+             base::WaitableEvent::InitialState::NOT_SIGNALED),
       port_(port),
       next_id_(0),
       is_running_(false),

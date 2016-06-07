@@ -62,8 +62,8 @@ class Waitable {
   friend struct base::DefaultSingletonTraits<Waitable>;
 
   Waitable()
-      : waitable_event_(false, false) {
-  }
+      : waitable_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   base::WaitableEvent waitable_event_;
 

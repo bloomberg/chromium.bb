@@ -50,7 +50,10 @@ struct MessagePumpMojo::RunState {
 };
 
 MessagePumpMojo::MessagePumpMojo()
-    : run_state_(NULL), next_handler_id_(0), event_(false, false) {
+    : run_state_(NULL),
+      next_handler_id_(0),
+      event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+             base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DCHECK(!current())
       << "There is already a MessagePumpMojo instance on this thread.";
   g_tls_current_pump.Pointer()->Set(this);
