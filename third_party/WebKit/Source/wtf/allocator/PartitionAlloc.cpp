@@ -1360,17 +1360,20 @@ void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* part
 
     size_t directMappedAllocationsTotalSize = 0;
     for (size_t i = 0; i < numDirectMappedAllocations; ++i) {
+        uint32_t size = directMapLengths[i];
+        directMappedAllocationsTotalSize += size;
+        if (isLightDump)
+            continue;
+
         PartitionBucketMemoryStats stats;
         memset(&stats, '\0', sizeof(stats));
         stats.isValid = true;
         stats.isDirectMap = true;
         stats.numFullPages = 1;
-        uint32_t size = directMapLengths[i];
         stats.allocatedPageSize = size;
         stats.bucketSlotSize = size;
         stats.activeBytes = size;
         stats.residentBytes = size;
-        directMappedAllocationsTotalSize += size;
         partitionStatsDumper->partitionsDumpBucketStats(partitionName, &stats);
     }
     partitionStats.totalResidentBytes += directMappedAllocationsTotalSize;
