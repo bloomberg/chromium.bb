@@ -121,15 +121,15 @@ public class ExternalNavigationHandler {
         return result;
     }
 
-    private boolean intentsHaveSameResolvers(Intent intent, Intent previousIntent) {
-        HashSet<ComponentName> previousHandlers = new HashSet<>();
-        for (ResolveInfo r : mDelegate.queryIntentActivities(previousIntent)) {
-            previousHandlers.add(new ComponentName(r.activityInfo.packageName,
-                    r.activityInfo.name));
+    private boolean resolversSubsetOf(List<ResolveInfo> infos, List<ResolveInfo> container) {
+        HashSet<ComponentName> containerSet = new HashSet<>();
+        for (ResolveInfo info : container) {
+            containerSet.add(
+                    new ComponentName(info.activityInfo.packageName, info.activityInfo.name));
         }
-        for (ResolveInfo r : mDelegate.queryIntentActivities(intent)) {
-            if (!previousHandlers.contains(new ComponentName(
-                    r.activityInfo.packageName, r.activityInfo.name))) {
+        for (ResolveInfo info : infos) {
+            if (!containerSet.contains(new ComponentName(
+                    info.activityInfo.packageName, info.activityInfo.name))) {
                 return false;
             }
         }
@@ -377,10 +377,10 @@ public class ExternalNavigationHandler {
                         previousIntent = null;
                     }
 
-                    if (previousIntent != null)  {
-                        if (intentsHaveSameResolvers(intent, previousIntent)) {
-                            return OverrideUrlLoadingResult.NO_OVERRIDE;
-                        }
+                    if (previousIntent != null
+                            && resolversSubsetOf(resolvingInfos,
+                                       mDelegate.queryIntentActivities(previousIntent))) {
+                        return OverrideUrlLoadingResult.NO_OVERRIDE;
                     }
                 }
             }
