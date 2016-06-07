@@ -325,3 +325,9 @@ CONTENT OF TEST
                  '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '', }
         host = MockSystemHost(filesystem=MockFileSystem(files=files))
         convert_for_webkit('', '/file', '', host)
+
+    def test_for_capital_end_tags(self):
+        test_html = """<FONT></FONT>"""
+        converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
+        converter.feed(test_html)
+        self.assertEqual(converter.output(), ([], """<FONT></FONT>"""))

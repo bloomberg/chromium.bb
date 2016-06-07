@@ -75,7 +75,6 @@ class _W3CTestConverter(HTMLParser):
         self.style_data = []
         self.filename = filename
         self.reference_support_info = reference_support_info
-
         resources_path = self.path_from_webkit_root('LayoutTests', 'resources')
         resources_relpath = self._filesystem.relpath(resources_path, new_path)
         self.resources_relpath = resources_relpath
@@ -183,6 +182,14 @@ class _W3CTestConverter(HTMLParser):
 
         self.converted_data.append(converted)
 
+    def parse_endtag(self, i):
+        # parse_endtag is being overridden here instead of handle_endtag
+        # so we can get the original end tag text with the original
+        # capitalization
+        endpos = HTMLParser.parse_endtag(self, i)
+        self.converted_data.extend([self.rawdata[i:endpos]])
+        return endpos
+
     def handle_starttag(self, tag, attrs):
         if tag == 'style':
             self.in_style_tag = True
@@ -193,7 +200,6 @@ class _W3CTestConverter(HTMLParser):
             self.converted_data.append(self.convert_style_data(''.join(self.style_data)))
             self.in_style_tag = False
             self.style_data = []
-        self.converted_data.extend(['</', tag, '>'])
 
     def handle_startendtag(self, tag, attrs):
         self.convert_attributes_if_needed(tag, attrs)
