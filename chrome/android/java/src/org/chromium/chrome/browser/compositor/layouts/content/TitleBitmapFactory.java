@@ -62,8 +62,7 @@ public class TitleBitmapFactory {
         int shadowYOffset = res.getDimensionPixelOffset(incognito
                 ? R.dimen.compositor_tab_title_bar_shadow_y_offset_incognito
                 : R.dimen.compositor_tab_title_bar_shadow_y_offset);
-        float textSize = res.getDimensionPixelSize(R.dimen.compositor_tab_title_text_size);
-        float adjustedTextSize = textSize * res.getConfiguration().fontScale;
+        float textSize = res.getDimension(R.dimen.compositor_tab_title_text_size);
 
         boolean fakeBoldText = res.getBoolean(R.bool.compositor_tab_title_fake_bold_text);
 
@@ -72,7 +71,7 @@ public class TitleBitmapFactory {
         if (shadowXOffset != 0 && shadowYOffset != 0) {
             mTextPaint.setShadowLayer(0.001f, shadowXOffset, shadowYOffset, shadowColor);
         }
-        mTextPaint.setTextSize(adjustedTextSize);
+        mTextPaint.setTextSize(textSize);
         mTextPaint.setFakeBoldText(fakeBoldText);
         mTextPaint.density = res.getDisplayMetrics().density;
 

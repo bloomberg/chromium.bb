@@ -137,7 +137,7 @@
     <dimen name="compositor_tab_title_bar_shadow_x_offset_incognito">-0.6667dp</dimen> <!-- -1px hdpi -->
     <dimen name="compositor_tab_title_bar_shadow_y_offset_incognito">-0.6667dp</dimen> <!-- -1px hdpi -->
     <!-- The size of the text for tab titles. -->
-    <dimen name="compositor_tab_title_text_size">13dp</dimen>
+    <dimen name="compositor_tab_title_text_size">13sp</dimen>
     <!-- The size of the bounding box for favicons. -->
     <dimen name="compositor_tab_title_favicon_size">16dp</dimen>
     <!-- Slop value for allowing slight misses on the compositor button. -->
