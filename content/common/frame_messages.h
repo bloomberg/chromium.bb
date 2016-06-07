@@ -822,6 +822,24 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
 IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 
 #if defined(OS_ANDROID)
+// Request the distance to the nearest find result in a frame from the point at
+// (x, y), defined in fractions of the content document's width and height. The
+// distance will be returned via FrameHostMsg_GetNearestFindResult_Reply.  Note
+// that |nfr_request_id| is a completely seperate ID from the |request_id| used
+// in other find-related IPCs. It is specifically used to uniquely identify a
+// nearest find result request, rather than a find request.
+IPC_MESSAGE_ROUTED3(FrameMsg_GetNearestFindResult,
+                    int /* nfr_request_id */,
+                    float /* x */,
+                    float /* y */)
+
+// Activates a find result. The point (x,y) is in fractions of the content
+// document's width and height.
+IPC_MESSAGE_ROUTED3(FrameMsg_ActivateNearestFindResult,
+                    int /* request_id */,
+                    float /* x */,
+                    float /* y */)
+
 // Sent when the browser wants the bounding boxes of the current find matches.
 //
 // If match rects are already cached on the browser side, |current_version|
@@ -899,7 +917,12 @@ IPC_MESSAGE_ROUTED3(FrameMsg_Find,
                     base::string16 /* search_text */,
                     blink::WebFindOptions)
 
-// This message notifies the renderer that the user has closed the find-in-page
+// This message notifies the frame that it is no longer the active frame in the
+// current find session, and so it should clear its active find match (and no
+// longer highlight it with special coloring).
+IPC_MESSAGE_ROUTED0(FrameMsg_ClearActiveFindMatch)
+
+// This message notifies the frame that the user has closed the find-in-page
 // window (and what action to take regarding the selection).
 IPC_MESSAGE_ROUTED1(FrameMsg_StopFinding, content::StopFindAction /* action */)
 
@@ -1478,6 +1501,12 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_FindMatchRects_Reply,
                     int /* version */,
                     std::vector<gfx::RectF> /* rects */,
                     gfx::RectF /* active_rect */)
+
+// Response to FrameMsg_GetNearestFindResult. |distance| is the distance to the
+// nearest find result in the sending frame.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_GetNearestFindResult_Reply,
+                    int /* nfr_request_id */,
+                    float /* distance */)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

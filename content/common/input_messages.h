@@ -247,13 +247,6 @@ IPC_MESSAGE_ROUTED1(InputMsg_MoveCaret,
                     gfx::Point /* location */)
 
 #if defined(OS_ANDROID)
-// Sent when the user clicks on the find result bar to activate a find result.
-// The point (x,y) is in fractions of the content document's width and height.
-IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
-                    int /* request_id */,
-                    float /* x */,
-                    float /* y */)
-
 // Sent by the browser as ACK to ViewHostMsg_TextInputState when necessary.
 // NOTE: ImeEventAck and other Ime* messages should be of the same type,
 // otherwise a race condition can happen.

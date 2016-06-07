@@ -704,6 +704,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FindMatchRects_Reply,
                         OnFindMatchRectsReply)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_GetNearestFindResult_Reply,
+                        OnGetNearestFindResultReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
 #endif
@@ -3618,6 +3620,12 @@ void WebContentsImpl::OnFindMatchRectsReply(
       render_frame_message_source_, version, rects, active_rect);
 }
 
+void WebContentsImpl::OnGetNearestFindResultReply(int request_id,
+                                                  float distance) {
+  GetOrCreateFindRequestManager()->OnGetNearestFindResultReply(
+      render_frame_message_source_, request_id, distance);
+}
+
 void WebContentsImpl::OnOpenDateTimeDialog(
     const ViewHostMsg_DateTimeDialogValue_Params& value) {
   date_time_chooser_->ShowDialog(GetTopLevelNativeWindow(),
@@ -4983,6 +4991,19 @@ WebUI* WebContentsImpl::CreateWebUI(const GURL& url,
 
   delete web_ui;
   return NULL;
+}
+
+// TODO(paulmeyer): This method will not be used until find-in-page across
+// GuestViews is implemented.
+WebContentsImpl* WebContentsImpl::GetOutermostWebContents() {
+  // Find the outer-most WebContents.
+  WebContentsImpl* outermost_web_contents = this;
+  while (outermost_web_contents->node_ &&
+         outermost_web_contents->node_->outer_web_contents()) {
+    outermost_web_contents =
+        outermost_web_contents->node_->outer_web_contents();
+  }
+  return outermost_web_contents;
 }
 
 FindRequestManager* WebContentsImpl::GetOrCreateFindRequestManager() {

@@ -659,7 +659,7 @@ bool TestRunnerForSpecificView::FindString(
   WebLocalFrame* frame = web_view()->mainFrame()->toWebLocalFrame();
   const bool find_result = frame->find(0, WebString::fromUTF8(search_text),
                                        find_options, wrap_around, 0);
-  frame->stopFinding(false);
+  frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
   return find_result;
 }
 

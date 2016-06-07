@@ -229,7 +229,7 @@ public:
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
         bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow = nullptr) override;
-    void stopFinding(bool clearSelection) override;
+    void stopFinding(StopFindAction) override;
     void scopeStringMatches(
         int identifier, const WebString& searchText, const WebFindOptions&,
         bool reset) override;
@@ -240,8 +240,10 @@ public:
     WebFloatRect activeFindMatchRect() override;
     void findMatchRects(WebVector<WebFloatRect>&) override;
     int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) override;
+    float distanceToNearestFindMatch(const WebFloatPoint&) override;
     void setTickmarks(const WebVector<WebRect>&) override;
     WebFrameWidget* frameWidget() const override;
+    void clearActiveFindMatch() override;
 
     // WebFrameImplBase methods:
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;
@@ -350,6 +352,9 @@ private:
 
     WebPlugin* focusedPluginIfInputMethodSupported();
     ScrollableArea* layoutViewportScrollableArea() const;
+
+    // Returns true if the frame is focused.
+    bool isFocused() const;
 
     Member<FrameLoaderClientImpl> m_frameLoaderClientImpl;
 

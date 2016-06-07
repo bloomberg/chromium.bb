@@ -301,6 +301,10 @@ using blink::WebFloatPoint;
 using blink::WebFloatRect;
 #endif
 
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
+
 namespace content {
 
 namespace {
@@ -1496,13 +1500,16 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
     IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
+    IPC_MESSAGE_HANDLER(FrameMsg_ClearActiveFindMatch, OnClearActiveFindMatch)
     IPC_MESSAGE_HANDLER(FrameMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
+    IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
+    IPC_MESSAGE_HANDLER(FrameMsg_GetNearestFindResult,
+                        OnGetNearestFindResult)
     IPC_MESSAGE_HANDLER(FrameMsg_FindMatchRects, OnFindMatchRects)
 #endif
 
@@ -4109,20 +4116,19 @@ void RenderFrameImpl::willInsertBody(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::reportFindInPageMatchCount(int request_id,
                                                  int count,
                                                  bool final_update) {
-  int active_match_ordinal = -1;  // -1 = don't update active match ordinal
-  if (!count)
-    active_match_ordinal = 0;
+  // -1 here means don't update the active match ordinal.
+  int active_match_ordinal = count ? -1 : 0;
 
-  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, count, gfx::Rect(),
-                                   active_match_ordinal, final_update));
+  SendFindReply(request_id, count, active_match_ordinal, gfx::Rect(),
+                final_update);
 }
 
 void RenderFrameImpl::reportFindInPageSelection(
     int request_id,
     int active_match_ordinal,
     const blink::WebRect& selection_rect) {
-  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, -1, selection_rect,
-                                   active_match_ordinal, false));
+  SendFindReply(request_id, -1 /* match_count */, active_match_ordinal,
+                selection_rect, false /* final_status_update */);
 }
 
 void RenderFrameImpl::requestStorageQuota(
@@ -5028,13 +5034,6 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 void RenderFrameImpl::OnFind(int request_id,
                              const base::string16& search_text,
                              const WebFindOptions& options) {
-  // This should only be received on the main frame, since find-in-page is
-  // currently orchestrated by the main frame.
-  if (!is_main_frame_) {
-    NOTREACHED();
-    return;
-  }
-
   DCHECK(!search_text.empty());
 
   blink::WebPlugin* plugin = GetWebPluginForFind();
@@ -5046,152 +5045,78 @@ void RenderFrameImpl::OnFind(int request_id,
     } else {
       if (!plugin->startFind(search_text, options.matchCase, request_id)) {
         // Send "no results".
-        SendFindReply(request_id, 0, 0, gfx::Rect(), true);
+        SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
+                      gfx::Rect(), true /* final_status_update */ );
       }
     }
     return;
   }
 
-  WebLocalFrame* main_frame = GetWebFrame();
-  WebLocalFrame* focused_frame =
-      render_view_->webview()->focusedFrame()->toWebLocalFrame();
-  // Start searching in the focused frame.
-  WebLocalFrame* search_frame = focused_frame;
-
-  // Check for multiple searchable frames.
-  bool multi_frame = (main_frame->traverseNextLocal(true) != main_frame);
-
-  // If we have multiple frames, we don't want to wrap the search within the
-  // frame, so we check here if we only have |main_frame| in the chain.
-  bool wrap_within_frame = !multi_frame;
+  // Send "no results" if this frame has no visible content.
+  if (!frame_->hasVisibleContent()) {
+    SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
+                  gfx::Rect(), true /* final_status_update */ );
+    return;
+  }
 
   WebRect selection_rect;
-  bool result = false;
   bool active_now = false;
 
   // If something is selected when we start searching it means we cannot just
   // increment the current match ordinal; we need to re-generate it.
-  WebRange current_selection = focused_frame->selectionRange();
+  WebRange current_selection = frame_->selectionRange();
 
-  do {
-    result =
-        search_frame->find(request_id, search_text, options, wrap_within_frame,
-                           &selection_rect, &active_now);
-
-    if (!result) {
-      // Don't leave text selected as you move to the next frame.
-      search_frame->executeCommand(WebString::fromUTF8("Unselect"));
-
-      // Find the next frame, but skip the invisible ones.
-      do {
-        // What is the next frame to search (we might be going backwards)? Note
-        // that we specify wrap=true so that search_frame never becomes NULL.
-        search_frame = options.forward
-                ? search_frame->traverseNextLocal(true)
-                : search_frame->traversePreviousLocal(true);
-      } while (!search_frame->hasVisibleContent() &&
-               search_frame != focused_frame);
-
-      // Make sure selection doesn't affect the search operation in new frame.
-      search_frame->executeCommand(WebString::fromUTF8("Unselect"));
-
-      // If we have multiple frames and we have wrapped back around to the
-      // focused frame, we need to search it once more allowing wrap within
-      // the frame, otherwise it will report 'no match' if the focused frame has
-      // reported matches, but no frames after the focused_frame contain a
-      // match for the search word(s).
-      if (multi_frame && search_frame == focused_frame) {
-        result = search_frame->find(request_id, search_text, options,
-                                    true,  // Force wrapping.
-                                    &selection_rect, &active_now);
-      }
-    }
-
-    render_view_->webview()->setFocusedFrame(search_frame);
-  } while (!result && search_frame != focused_frame);
+  if (frame_->find(request_id, search_text, options,
+                   false /* wrapWithinFrame */, &selection_rect, &active_now)) {
+    // Indicate that at least one match has been found. 1 here means possibly
+    // more matches could be coming. -1 here means that the exact active match
+    // ordinal is not yet known.
+    SendFindReply(request_id, 1 /* match_count */, -1 /* ordinal */,
+                  gfx::Rect(), false /* final_status_update */ );
+  }
 
   if (options.findNext && current_selection.isNull() && active_now) {
-    // Force the main_frame to report the actual count.
-    main_frame->increaseMatchCount(0, request_id);
-  } else {
-    // If nothing is found, set result to "0 of 0", otherwise, set it to
-    // "-1 of 1" to indicate that we found at least one item, but we don't know
-    // yet what is active.
-    int ordinal = result ? -1 : 0;  // -1 here means we might know more later.
-    int match_count = result ? 1 : 0;  // 1 here means possibly more coming.
-
-    // If we find no matches then this will be our last status update.
-    // Otherwise the scoping effort will send more results.
-    bool final_status_update = !result;
-
-    SendFindReply(request_id, match_count, ordinal, selection_rect,
-                  final_status_update);
-
-    // Scoping effort begins, starting with the main frame.
-    search_frame = main_frame;
-
-    main_frame->resetMatchCount();
-
-    do {
-      // Cancel all old scoping requests before starting a new one.
-      search_frame->cancelPendingScopingEffort();
-
-      // We don't start another scoping effort unless at least one match has
-      // been found.
-      if (result) {
-        // Start new scoping request. If the scoping function determines that it
-        // needs to scope, it will defer until later.
-        search_frame->scopeStringMatches(request_id, search_text, options,
-                                         true);  // reset the tickmarks
-      }
-
-      // Iterate to the next frame. The frame will not necessarily scope, for
-      // example if it is not visible.
-      search_frame = search_frame->traverseNextLocal(true);
-    } while (search_frame != main_frame);
+    // Force report of the actual count.
+    frame_->increaseMatchCount(0, request_id);
+    return;
   }
+
+  // Scoping effort begins.
+  frame_->resetMatchCount();
+
+  // Cancel all old scoping requests before starting a new one.
+  frame_->cancelPendingScopingEffort();
+
+  // Start new scoping request. If the scoping function determines that it
+  // needs to scope, it will defer until later.
+  frame_->scopeStringMatches(request_id,
+                             search_text,
+                             options,
+                             true);  // reset the tickmarks
 }
 
+void RenderFrameImpl::OnClearActiveFindMatch() {
+  frame_->executeCommand(WebString::fromUTF8("Unselect"));
+  frame_->clearActiveFindMatch();
+}
+
+// Ensure that content::StopFindAction and blink::WebLocalFrame::StopFindAction
+// are kept in sync.
+STATIC_ASSERT_ENUM(STOP_FIND_ACTION_CLEAR_SELECTION,
+                   WebLocalFrame::StopFindActionClearSelection);
+STATIC_ASSERT_ENUM(STOP_FIND_ACTION_KEEP_SELECTION,
+                   WebLocalFrame::StopFindActionKeepSelection);
+STATIC_ASSERT_ENUM(STOP_FIND_ACTION_ACTIVATE_SELECTION,
+                   WebLocalFrame::StopFindActionActivateSelection);
+
 void RenderFrameImpl::OnStopFinding(StopFindAction action) {
-  // This should only be received on the main frame, since find-in-page is
-  // currently orchestrated by the main frame.
-  if (!is_main_frame_) {
-    NOTREACHED();
-    return;
-  }
-
-  WebView* view = render_view_->webview();
-  if (!view)
-    return;
-
   blink::WebPlugin* plugin = GetWebPluginForFind();
   if (plugin) {
     plugin->stopFind();
     return;
   }
 
-  bool clear_selection = action == STOP_FIND_ACTION_CLEAR_SELECTION;
-  if (clear_selection) {
-    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
-  }
-
-  WebLocalFrame* frame = GetWebFrame();
-  while (frame) {
-    frame->stopFinding(clear_selection);
-    frame = frame->traverseNextLocal(false);
-  }
-
-  if (action == STOP_FIND_ACTION_ACTIVATE_SELECTION) {
-    WebFrame* focused_frame = view->focusedFrame();
-    if (focused_frame) {
-      WebDocument doc = focused_frame->document();
-      if (!doc.isNull()) {
-        WebElement element = doc.focusedElement();
-        if (!element.isNull())
-          element.simulateClick();
-      }
-    }
-  }
+  frame_->stopFinding(static_cast<WebLocalFrame::StopFindAction>(action));
 }
 
 void RenderFrameImpl::OnEnableViewSourceMode() {
@@ -5221,6 +5146,14 @@ void RenderFrameImpl::OnActivateNearestFindResult(int request_id,
 
   SendFindReply(request_id, -1 /* number_of_matches */, ordinal, selection_rect,
                 true /* final_update */);
+}
+
+void RenderFrameImpl::OnGetNearestFindResult(int nfr_request_id,
+                                             float x,
+                                             float y) {
+  float distance = frame_->distanceToNearestFindMatch(WebFloatPoint(x, y));
+  Send(new FrameHostMsg_GetNearestFindResult_Reply(
+      routing_id_, nfr_request_id, distance));
 }
 
 void RenderFrameImpl::OnFindMatchRects(int current_version) {
@@ -6091,9 +6024,6 @@ blink::ServiceRegistry* RenderFrameImpl::serviceRegistry() {
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
-  if (!is_main_frame_)
-    return nullptr;
-
   if (frame_->document().isPluginDocument())
     return frame_->document().to<WebPluginDocument>().plugin();
 
@@ -6110,8 +6040,15 @@ void RenderFrameImpl::SendFindReply(int request_id,
                                     int ordinal,
                                     const WebRect& selection_rect,
                                     bool final_status_update) {
-  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, match_count,
-                                   selection_rect, ordinal,
+  if (final_status_update && !ordinal)
+    frame_->executeCommand(WebString::fromUTF8("Unselect"));
+  DCHECK(ordinal >= -1);
+
+  Send(new FrameHostMsg_Find_Reply(routing_id_,
+                                   request_id,
+                                   match_count,
+                                   selection_rect,
+                                   ordinal,
                                    final_status_update));
 }
 

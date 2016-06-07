@@ -622,6 +622,14 @@ ScrollableArea* WebLocalFrameImpl::layoutViewportScrollableArea() const
     return nullptr;
 }
 
+bool WebLocalFrameImpl::isFocused() const
+{
+    if (!viewImpl() || !viewImpl()->page())
+        return false;
+
+    return this == WebFrame::fromFrame(viewImpl()->page()->focusController().focusedFrame());
+}
+
 WebSize WebLocalFrameImpl::scrollOffset() const
 {
     if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
@@ -1542,11 +1550,8 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
 
 void WebLocalFrameImpl::didChangeContentsSize(const IntSize& size)
 {
-    // This is only possible on the main frame.
-    if (m_textFinder && m_textFinder->totalMatchCount() > 0) {
-        DCHECK(!parent());
+    if (m_textFinder && m_textFinder->totalMatchCount() > 0)
         m_textFinder->increaseMarkerVersion();
-    }
 }
 
 void WebLocalFrameImpl::createFrameView()
@@ -1614,12 +1619,7 @@ WebDataSourceImpl* WebLocalFrameImpl::provisionalDataSourceImpl() const
 
 void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
 {
-    WebLocalFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
-
-    // Main frame should already have a textFinder at this point of time.
-    DCHECK(mainFrameImpl->textFinder());
-
-    if (this != mainFrameImpl->textFinder()->activeMatchFrame())
+    if (!m_textFinder || !m_textFinder->activeMatchFrame())
         return;
 
     if (Range* activeMatch = m_textFinder->activeMatch()) {
@@ -1962,15 +1962,33 @@ void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
 
 bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
 {
-    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect, activeNow);
+    // Search for an active match only if this frame is focused or if this is a
+    // find next request.
+    if (isFocused() || options.findNext)
+        return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect, activeNow);
+
+    return false;
 }
 
-void WebLocalFrameImpl::stopFinding(bool clearSelection)
+void WebLocalFrameImpl::stopFinding(StopFindAction action)
 {
+    bool clearSelection = action == StopFindActionClearSelection;
+    if (clearSelection)
+        executeCommand(WebString::fromUTF8("Unselect"));
+
     if (m_textFinder) {
         if (!clearSelection)
             setFindEndstateFocusAndSelection();
         m_textFinder->stopFindingAndClearSelection();
+    }
+
+    if (action == StopFindActionActivateSelection && isFocused()) {
+        WebDocument doc = document();
+        if (!doc.isNull()) {
+            WebElement element = doc.focusedElement();
+            if (!element.isNull())
+                element.simulateClick();
+        }
     }
 }
 
@@ -1987,8 +2005,6 @@ void WebLocalFrameImpl::cancelPendingScopingEffort()
 
 void WebLocalFrameImpl::increaseMatchCount(int count, int identifier)
 {
-    // This function should only be called on the mainframe.
-    DCHECK(!parent());
     ensureTextFinder().increaseMatchCount(identifier, count);
 }
 
@@ -2005,8 +2021,6 @@ void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOri
 
 int WebLocalFrameImpl::findMatchMarkersVersion() const
 {
-    DCHECK(!parent());
-
     if (m_textFinder)
         return m_textFinder->findMatchMarkersVersion();
     return 0;
@@ -2014,14 +2028,18 @@ int WebLocalFrameImpl::findMatchMarkersVersion() const
 
 int WebLocalFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
 {
-    DCHECK(!parent());
     return ensureTextFinder().selectNearestFindMatch(point, selectionRect);
+}
+
+float WebLocalFrameImpl::distanceToNearestFindMatch(const WebFloatPoint& point)
+{
+    float nearestDistance;
+    ensureTextFinder().nearestFindMatch(point, &nearestDistance);
+    return nearestDistance;
 }
 
 WebFloatRect WebLocalFrameImpl::activeFindMatchRect()
 {
-    DCHECK(!parent());
-
     if (m_textFinder)
         return m_textFinder->activeFindMatchRect();
     return WebFloatRect();
@@ -2029,7 +2047,6 @@ WebFloatRect WebLocalFrameImpl::activeFindMatchRect()
 
 void WebLocalFrameImpl::findMatchRects(WebVector<WebFloatRect>& outputRects)
 {
-    DCHECK(!parent());
     ensureTextFinder().findMatchRects(outputRects);
 }
 
@@ -2096,6 +2113,11 @@ WebSandboxFlags WebLocalFrameImpl::effectiveSandboxFlags() const
 void WebLocalFrameImpl::forceSandboxFlags(WebSandboxFlags flags)
 {
     frame()->loader().forceSandboxFlags(static_cast<SandboxFlags>(flags));
+}
+
+void WebLocalFrameImpl::clearActiveFindMatch()
+{
+    ensureTextFinder().clearActiveFindMatch();
 }
 
 } // namespace blink

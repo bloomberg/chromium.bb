@@ -3564,13 +3564,14 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html");
     ASSERT_TRUE(webViewHelper.webView()->mainFrame()->isWebLocalFrame());
+    webViewHelper.webView()->setFocus(true);
     WebLocalFrame* frame = webViewHelper.webView()->mainFrame()->toWebLocalFrame();
     const int findIdentifier = 12345;
     WebFindOptions options;
 
     // Find in a <div> element.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar1"), options, false, 0));
-    frame->stopFinding(false);
+    frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     WebRange range = frame->selectionRange();
     EXPECT_EQ(5, range.startOffset());
     EXPECT_EQ(9, range.endOffset());
@@ -3578,8 +3579,8 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
 
     // Find in an <input> value.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar2"), options, false, 0));
-    // Confirm stopFinding(false) sets the selection on the found text.
-    frame->stopFinding(false);
+    // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the selection on the found text.
+    frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
     ASSERT_FALSE(range.isNull());
     EXPECT_EQ(5, range.startOffset());
@@ -3588,8 +3589,8 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
 
     // Find in a <textarea> content.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar3"), options, false, 0));
-    // Confirm stopFinding(false) sets the selection on the found text.
-    frame->stopFinding(false);
+    // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the selection on the found text.
+    frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
     ASSERT_FALSE(range.isNull());
     EXPECT_EQ(5, range.startOffset());
@@ -3598,8 +3599,8 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
 
     // Find in a contentEditable element.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar4"), options, false, 0));
-    // Confirm stopFinding(false) sets the selection on the found text.
-    frame->stopFinding(false);
+    // Confirm stopFinding(WebLocalFrame::StopFindActionKeepSelection) sets the selection on the found text.
+    frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
     ASSERT_FALSE(range.isNull());
     EXPECT_EQ(0, range.startOffset());
@@ -3611,7 +3612,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     EXPECT_FALSE(frame->find(findIdentifier, WebString::fromUTF8("bar5"), options, false, 0));
     // If there are any matches, stopFinding will set the selection on the found text.
     // However, we do not expect any matches, so check that the selection is null.
-    frame->stopFinding(false);
+    frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     range = frame->selectionRange();
     ASSERT_TRUE(range.isNull());
 }
@@ -3744,21 +3745,23 @@ private:
 
 TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
 {
-    registerMockedHttpURLLoad("find_in_page.html");
     registerMockedHttpURLLoad("find_in_page_frame.html");
 
     FindUpdateWebFrameClient client;
     FrameTestHelpers::WebViewHelper webViewHelper(this);
-    webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
+    webViewHelper.initializeAndLoad(m_baseURL + "find_in_page_frame.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
     webViewHelper.webView()->setMaximumLegibleScale(1.f);
     webViewHelper.webView()->updateAllLifecyclePhases();
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
-    // Note that the 'result 19' in the <select> element is not expected to produce a match.
+    // Note that the 'result 19' in the <select> element is not expected to
+    // produce a match. Also, results 00 and 01 are in a different frame that is
+    // not included in this test.
     const char kFindString[] = "result";
     const int kFindIdentifier = 12345;
-    const int kNumResults = 19;
+    const int kNumResults = 17;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -3775,7 +3778,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
 
     WebVector<WebFloatRect> webMatchRects;
     mainFrame->findMatchRects(webMatchRects);
-    ASSERT_EQ(webMatchRects.size(), static_cast<size_t>(kNumResults));
+    ASSERT_EQ(static_cast<size_t>(kNumResults), webMatchRects.size());
     int rectsVersion = mainFrame->findMatchMarkersVersion();
 
     for (int resultIndex = 0; resultIndex < kNumResults; ++resultIndex) {
@@ -3785,10 +3788,10 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
         EXPECT_EQ(mainFrame->selectNearestFindMatch(resultRect.center(), 0), resultIndex + 1);
 
         // Check that the find result ordering matches with our expectations.
-        Range* result = mainFrame->textFinder()->activeMatchFrame()->textFinder()->activeMatch();
+        Range* result = mainFrame->textFinder()->activeMatch();
         ASSERT_TRUE(result);
         result->setEnd(result->endContainer(), result->endOffset() + 3);
-        EXPECT_EQ(result->text(), String::format("%s %02d", kFindString, resultIndex));
+        EXPECT_EQ(result->text(), String::format("%s %02d", kFindString, resultIndex + 2));
 
         // Verify that the expected match rect also matches the currently active match.
         // Compare the enclosing rects to prevent precision issues caused by CSS transforms.
@@ -3798,63 +3801,6 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
         // The rects version should not have changed.
         EXPECT_EQ(mainFrame->findMatchMarkersVersion(), rectsVersion);
     }
-
-    // All results after the first two ones should be below between them in find-in-page coordinates.
-    // This is because results 2 to 9 are inside an iframe located between results 0 and 1. This applies to the fixed div too.
-    EXPECT_TRUE(webMatchRects[0].y < webMatchRects[1].y);
-    for (int resultIndex = 2; resultIndex < kNumResults; ++resultIndex) {
-        EXPECT_TRUE(webMatchRects[0].y < webMatchRects[resultIndex].y);
-        EXPECT_TRUE(webMatchRects[1].y > webMatchRects[resultIndex].y);
-    }
-
-    // Result 3 should be below both 2 and 4. This is caused by the CSS transform in the containing div.
-    // If the transform doesn't work then 3 will be between 2 and 4.
-    EXPECT_TRUE(webMatchRects[3].y > webMatchRects[2].y);
-    EXPECT_TRUE(webMatchRects[3].y > webMatchRects[4].y);
-
-    // Results 6, 7, 8 and 9 should be one below the other in that same order.
-    // If overflow:scroll is not properly handled then result 8 would be below result 9 or
-    // result 7 above result 6 depending on the scroll.
-    EXPECT_TRUE(webMatchRects[6].y < webMatchRects[7].y);
-    EXPECT_TRUE(webMatchRects[7].y < webMatchRects[8].y);
-    EXPECT_TRUE(webMatchRects[8].y < webMatchRects[9].y);
-
-    // Results 11, 12, 13 and 14 should be between results 10 and 15, as they are inside the table.
-    EXPECT_TRUE(webMatchRects[11].y > webMatchRects[10].y);
-    EXPECT_TRUE(webMatchRects[12].y > webMatchRects[10].y);
-    EXPECT_TRUE(webMatchRects[13].y > webMatchRects[10].y);
-    EXPECT_TRUE(webMatchRects[14].y > webMatchRects[10].y);
-    EXPECT_TRUE(webMatchRects[11].y < webMatchRects[15].y);
-    EXPECT_TRUE(webMatchRects[12].y < webMatchRects[15].y);
-    EXPECT_TRUE(webMatchRects[13].y < webMatchRects[15].y);
-    EXPECT_TRUE(webMatchRects[14].y < webMatchRects[15].y);
-
-    // Result 11 should be above 12, 13 and 14 as it's in the table header.
-    EXPECT_TRUE(webMatchRects[11].y < webMatchRects[12].y);
-    EXPECT_TRUE(webMatchRects[11].y < webMatchRects[13].y);
-    EXPECT_TRUE(webMatchRects[11].y < webMatchRects[14].y);
-
-    // Result 11 should also be right to 12, 13 and 14 because of the colspan.
-    EXPECT_TRUE(webMatchRects[11].x > webMatchRects[12].x);
-    EXPECT_TRUE(webMatchRects[11].x > webMatchRects[13].x);
-    EXPECT_TRUE(webMatchRects[11].x > webMatchRects[14].x);
-
-    // Result 12 should be left to results 11, 13 and 14 in the table layout.
-    EXPECT_TRUE(webMatchRects[12].x < webMatchRects[11].x);
-    EXPECT_TRUE(webMatchRects[12].x < webMatchRects[13].x);
-    EXPECT_TRUE(webMatchRects[12].x < webMatchRects[14].x);
-
-    // Results 13, 12 and 14 should be one above the other in that order because of the rowspan
-    // and vertical-align: middle by default.
-    EXPECT_TRUE(webMatchRects[13].y < webMatchRects[12].y);
-    EXPECT_TRUE(webMatchRects[12].y < webMatchRects[14].y);
-
-    // Result 16 should be below result 15.
-    EXPECT_TRUE(webMatchRects[15].y > webMatchRects[14].y);
-
-    // Result 18 should be normalized with respect to the position:relative div, and not it's
-    // immediate containing div. Consequently, result 18 should be above result 17.
-    EXPECT_TRUE(webMatchRects[17].y > webMatchRects[18].y);
 
     // Resizing should update the rects version.
     webViewHelper.resize(WebSize(800, 600));
@@ -3870,6 +3816,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "find_match_count.html", true, &client);
     webViewHelper.webView()->resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char* kFindString = "a";
@@ -3887,7 +3834,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
 
     runPendingTasks();
     EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
-    mainFrame->stopFinding(true);
+    mainFrame->stopFinding(WebLocalFrame::StopFindActionClearSelection);
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
@@ -3910,35 +3857,6 @@ TEST_F(WebFrameTest, FindInPageActiveIndex)
     EXPECT_EQ(kActiveIndex, client.activeIndex());
 }
 
-TEST_P(ParameterizedWebFrameTest, FindInPageSkipsHiddenFrames)
-{
-    registerMockedHttpURLLoad("find_in_hidden_frame.html");
-
-    FindUpdateWebFrameClient client;
-    FrameTestHelpers::WebViewHelper webViewHelper(this);
-    webViewHelper.initializeAndLoad(m_baseURL + "find_in_hidden_frame.html", true, &client);
-    webViewHelper.resize(WebSize(640, 480));
-    runPendingTasks();
-
-    const char kFindString[] = "hello";
-    const int kFindIdentifier = 12345;
-    const int kNumResults = 1;
-
-    WebFindOptions options;
-    WebString searchText = WebString::fromUTF8(kFindString);
-    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
-
-    mainFrame->resetMatchCount();
-
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
-
-    runPendingTasks();
-    EXPECT_TRUE(client.findResultsAreReady());
-    EXPECT_EQ(kNumResults, client.count());
-}
-
 TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
 {
     registerMockedHttpURLLoad("find_in_page.html");
@@ -3948,6 +3866,7 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -3985,6 +3904,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -3994,8 +3914,10 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
+        webViewHelper.webView()->setFocusedFrame(frame);
         EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
+    }
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -4021,6 +3943,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_page.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -4030,8 +3953,10 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
+        webViewHelper.webView()->setFocusedFrame(frame);
         EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
+    }
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -4056,6 +3981,7 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find_in_generated_frame.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "result";
@@ -4085,6 +4011,7 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     const char kFindString[] = "foo";
@@ -4138,6 +4065,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html", true, &client);
     webViewHelper.resize(WebSize(640, 480));
+    webViewHelper.webView()->setFocus(true);
     runPendingTasks();
 
     WebLocalFrame* frame = webViewHelper.webView()->mainFrame()->toWebLocalFrame();
@@ -4169,7 +4097,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM)
 
     // Find in the inserted text node.
     EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
-    frame->stopFinding(false);
+    frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
     WebRange range = frame->selectionRange();
     EXPECT_EQ(5, range.startOffset());
     EXPECT_EQ(8, range.endOffset());

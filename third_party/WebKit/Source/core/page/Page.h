@@ -167,8 +167,6 @@ public:
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
     bool tabKeyCyclesThroughElements() const { return m_tabKeyCyclesThroughElements; }
 
-    void unmarkAllTextMatches();
-
     // DefersLoading is used to delay loads during modal dialogs.
     // Modal dialogs are supposed to freeze all background processes
     // in the page, including prevent additional loads from staring/continuing.

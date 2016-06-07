@@ -263,19 +263,6 @@ PluginData* Page::pluginData() const
     return m_pluginData.get();
 }
 
-void Page::unmarkAllTextMatches()
-{
-    if (!mainFrame())
-        return;
-
-    Frame* frame = mainFrame();
-    do {
-        if (frame->isLocalFrame())
-            toLocalFrame(frame)->document()->markers().removeMarkers(DocumentMarker::TextMatch);
-        frame = frame->tree().traverseNextWithWrap(false);
-    } while (frame);
-}
-
 void Page::setValidationMessageClient(ValidationMessageClient* client)
 {
     m_validationMessageClient = client;

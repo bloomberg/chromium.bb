@@ -1080,6 +1080,9 @@ class CONTENT_EXPORT WebContentsImpl
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);
 
+  // Returns the outermost WebContents in this WebContents's tree.
+  WebContentsImpl* GetOutermostWebContents();
+
   // Returns the FindRequestManager, or creates one if it doesn't already exist.
   FindRequestManager* GetOrCreateFindRequestManager();
 
@@ -1133,7 +1136,7 @@ class CONTENT_EXPORT WebContentsImpl
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
 
-  // Manages/coordinates find-in-page requests. Created lazily.
+  // Manages/coordinates multi-process find-in-page requests. Created lazily.
   std::unique_ptr<FindRequestManager> find_request_manager_;
 
   // Data for loading state ----------------------------------------------------
