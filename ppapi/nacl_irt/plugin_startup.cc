@@ -63,7 +63,9 @@ void StartUpPlugin() {
   DCHECK(!g_shutdown_event);
   DCHECK(!g_io_thread);
 
-  g_shutdown_event = new base::WaitableEvent(true, false);
+  g_shutdown_event =
+      new base::WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_io_thread = new base::Thread("Chrome_NaClIOThread");
   g_io_thread->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
@@ -75,7 +77,8 @@ void StartUpPlugin() {
     // TODO(hidehiko,dmichael): This works, but is probably not well designed
     // usage. Once a better approach is made, replace this by that way.
     // (crbug.com/364241).
-    base::WaitableEvent event(true, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     g_io_thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(StartUpManifestServiceOnIOThread, &event));
     event.Wait();

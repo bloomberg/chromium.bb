@@ -34,9 +34,8 @@ class ManifestMessageFilter : public IPC::SyncMessageFilter {
   ManifestMessageFilter(base::WaitableEvent* shutdown_event)
       : SyncMessageFilter(shutdown_event,
                           false /* is_channel_send_thread_safe */),
-        connected_event_(
-            true /* manual_reset */, false /* initially_signaled */) {
-  }
+        connected_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                         base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   bool Send(IPC::Message* message) override {
     // Wait until set up is actually done.
