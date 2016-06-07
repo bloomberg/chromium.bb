@@ -61,6 +61,7 @@ class NetErrorHelper
   void OnStop() override;
   void WasShown() override;
   void WasHidden() override;
+  void OnDestruct() override;
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

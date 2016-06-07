@@ -108,8 +108,10 @@ class RenderFrameTestObserver : public RenderFrameObserver {
 
   ~RenderFrameTestObserver() override {}
 
+  // RenderFrameObserver implementation.
   void WasShown() override { visible_ = true; }
   void WasHidden() override { visible_ = false; }
+  void OnDestruct() override { delete this; }
 
   bool visible() { return visible_; }
 

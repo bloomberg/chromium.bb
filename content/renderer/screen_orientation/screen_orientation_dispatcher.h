@@ -34,6 +34,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   // blink::WebScreenOrientationClient implementation.
   void lockOrientation(blink::WebScreenOrientationLockType orientation,

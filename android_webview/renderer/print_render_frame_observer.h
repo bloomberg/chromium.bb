@@ -19,6 +19,7 @@ class PrintRenderFrameObserver : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   // IPC handlers
   void OnPrintNodeUnderContextMenu();

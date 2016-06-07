@@ -24,6 +24,7 @@ class AwMessagePortClient : public content::RenderFrameObserver {
 
   // RenderFrameObserver
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   void OnWebToAppMessage(int message_port_id,
                          const base::string16& message,

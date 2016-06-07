@@ -24,6 +24,7 @@ class CastMediaLoadDeferrer : public content::RenderFrameObserver {
  private:
   // content::RenderFrameObserver implementation:
   void WasShown() override;
+  void OnDestruct() override;
 
   base::Closure continue_loading_cb_;
 

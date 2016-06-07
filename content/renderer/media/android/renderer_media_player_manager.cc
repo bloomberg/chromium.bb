@@ -281,6 +281,10 @@ media::RendererMediaPlayerInterface* RendererMediaPlayerManager::GetMediaPlayer(
   return NULL;
 }
 
+void RendererMediaPlayerManager::OnDestruct() {
+  delete this;
+}
+
 #if defined(VIDEO_HOLE)
 void RendererMediaPlayerManager::RequestExternalSurface(
     int player_id,

@@ -39,8 +39,9 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   ~PushMessagingDispatcher() override;
 
  private:
-  // RenderFrame::Observer implementation.
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   // WebPushClient implementation.
   void subscribe(

@@ -29,10 +29,6 @@ RenderFrameObserver::~RenderFrameObserver() {
   }
 }
 
-void RenderFrameObserver::OnDestruct() {
-  delete this;
-}
-
 bool RenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

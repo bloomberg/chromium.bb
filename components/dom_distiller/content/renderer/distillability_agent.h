@@ -17,6 +17,7 @@ class DistillabilityAgent : public content::RenderFrameObserver {
 
   // content::RenderFrameObserver:
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+  void OnDestruct() override;
 };
 
 }  // namespace dom_distiller

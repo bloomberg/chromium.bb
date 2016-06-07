@@ -24,10 +24,6 @@ RenderViewObserver::~RenderViewObserver() {
     render_view_->RemoveObserver(this);
 }
 
-void RenderViewObserver::OnDestruct() {
-  delete this;
-}
-
 bool RenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

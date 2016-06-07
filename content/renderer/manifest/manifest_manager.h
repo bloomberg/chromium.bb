@@ -54,6 +54,9 @@ class ManifestManager : public RenderFrameObserver {
     ResolveStateFailure
   };
 
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Called when receiving a ManifestManagerMsg_RequestManifest from the browser
   // process.
   void OnHasManifest(int request_id);

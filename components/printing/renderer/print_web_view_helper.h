@@ -166,6 +166,7 @@ class PrintWebViewHelper
   void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
+  void OnDestruct() override;
 
   // Message handlers ---------------------------------------------------------
 #if defined(ENABLE_BASIC_PRINTING)

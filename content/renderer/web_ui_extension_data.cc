@@ -39,4 +39,8 @@ void WebUIExtensionData::OnSetWebUIProperty(const std::string& name,
   variable_map_[name] = value;
 }
 
+void WebUIExtensionData::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

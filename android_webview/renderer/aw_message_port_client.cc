@@ -44,6 +44,10 @@ bool AwMessagePortClient::OnMessageReceived(
   return handled;
 }
 
+void AwMessagePortClient::OnDestruct() {
+  delete this;
+}
+
 void AwMessagePortClient::OnWebToAppMessage(
     int message_port_id,
     const base::string16& message,

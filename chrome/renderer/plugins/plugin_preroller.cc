@@ -88,3 +88,7 @@ void PluginPreroller::OnThrottlerDestroyed() {
   throttler_ = nullptr;
   delete this;
 }
+
+void PluginPreroller::OnDestruct() {
+  delete this;
+}

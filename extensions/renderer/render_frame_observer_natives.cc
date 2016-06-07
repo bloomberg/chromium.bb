@@ -41,6 +41,8 @@ class LoadWatcher : public content::RenderFrameObserver {
     delete this;
   }
 
+  void OnDestruct() override { delete this; }
+
  private:
   base::Callback<void(bool)> callback_;
 

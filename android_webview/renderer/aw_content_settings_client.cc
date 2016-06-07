@@ -46,4 +46,8 @@ bool AwContentSettingsClient::allowRunningInsecureContent(
   return enabled_per_settings ? true : AllowMixedContent(url);
 }
 
+void AwContentSettingsClient::OnDestruct() {
+  delete this;
+}
+
 }  // namespace android_webview

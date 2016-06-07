@@ -24,6 +24,10 @@ MidiDispatcher::MidiDispatcher(RenderFrame* render_frame)
 
 MidiDispatcher::~MidiDispatcher() {}
 
+void MidiDispatcher::OnDestruct() {
+  delete this;
+}
+
 void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
                                        const WebMIDIOptions& options) {
   if (!permission_service_.get()) {

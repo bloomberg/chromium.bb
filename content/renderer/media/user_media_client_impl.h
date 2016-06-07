@@ -196,6 +196,9 @@ class CONTENT_EXPORT UserMediaClientImpl
   struct MediaDevicesRequestInfo;
   typedef ScopedVector<MediaDevicesRequestInfo> MediaDevicesRequests;
 
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Creates a WebKit representation of stream sources based on
   // |devices| from the MediaStreamDispatcher.
   void InitializeSourceObject(

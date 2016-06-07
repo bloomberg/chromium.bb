@@ -24,6 +24,9 @@ class NaClHelper : public content::RenderFrameObserver {
   void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   DISALLOW_COPY_AND_ASSIGN(NaClHelper);
 };
 

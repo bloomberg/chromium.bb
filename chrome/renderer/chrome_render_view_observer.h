@@ -44,6 +44,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                 bool is_new_navigation) override;
   void Navigate(const GURL& url) override;
+  void OnDestruct() override;
 
 #if !defined(OS_ANDROID)
   void OnWebUIJavaScript(const base::string16& javascript);

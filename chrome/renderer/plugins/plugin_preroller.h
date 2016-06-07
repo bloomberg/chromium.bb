@@ -44,6 +44,9 @@ class PluginPreroller : public content::PluginInstanceThrottler::Observer,
   void OnThrottleStateChange() override;
   void OnThrottlerDestroyed() override;
 
+  // content::RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   blink::WebLocalFrame* frame_;
   blink::WebPluginParams params_;
   content::WebPluginInfo info_;

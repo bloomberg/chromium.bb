@@ -169,3 +169,7 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
     webui_javascript_.clear();
   }
 }
+
+void ChromeRenderViewObserver::OnDestruct() {
+  delete this;
+}

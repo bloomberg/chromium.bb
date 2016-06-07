@@ -41,6 +41,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+  void OnDestruct() override;
 
   // IPC handlers
   void OnSetIsPrerendering(bool is_prerendering);

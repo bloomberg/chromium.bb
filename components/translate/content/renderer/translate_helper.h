@@ -163,6 +163,7 @@ class TranslateHelper : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   // Informs us that the page's text has been extracted.
   void PageCapturedImpl(int page_seq_no, const base::string16& contents);

@@ -67,4 +67,8 @@ void DistillerJsRenderFrameObserver::SetIsDistillerPage() {
   is_distiller_page_ = true;
 }
 
+void DistillerJsRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
 }  // namespace dom_distiller

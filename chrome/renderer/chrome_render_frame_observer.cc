@@ -420,3 +420,7 @@ void ChromeRenderFrameObserver::DidMeaningfulLayout(
       break;
   }
 }
+
+void ChromeRenderFrameObserver::OnDestruct() {
+  delete this;
+}

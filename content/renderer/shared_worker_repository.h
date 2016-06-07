@@ -37,6 +37,9 @@ class SharedWorkerRepository : public RenderFrameObserver,
   void documentDetached(DocumentID document_id) override;
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   std::set<DocumentID> documents_with_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerRepository);

@@ -174,4 +174,8 @@ void RendererWebMediaPlayerDelegate::CleanupIdleDelegates() {
     idle_cleanup_timer_.Stop();
 }
 
+void RendererWebMediaPlayerDelegate::OnDestruct() {
+  delete this;
+}
+
 }  // namespace media

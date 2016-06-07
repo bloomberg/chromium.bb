@@ -248,6 +248,10 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
          !url.SchemeIs(url::kDataScheme));
 }
 
+void ContentSettingsObserver::OnDestruct() {
+  delete this;
+}
+
 bool ContentSettingsObserver::allowDatabase(const WebString& name,
                                             const WebString& display_name,
                                             unsigned long estimated_size) {

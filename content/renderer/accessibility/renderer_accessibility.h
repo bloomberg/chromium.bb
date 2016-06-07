@@ -100,6 +100,9 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   RenderFrameImpl* render_frame_;
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Handlers for messages from the browser to the renderer.
   void OnDoDefaultAction(int acc_obj_id);
   void OnEventsAck();

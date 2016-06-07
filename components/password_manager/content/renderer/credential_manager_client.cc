@@ -216,4 +216,8 @@ void CredentialManagerClient::ConnectToMojoCMIfNeeded() {
       mojo::GetProxy(&mojo_cm_service_));
 }
 
+void CredentialManagerClient::OnDestruct() {
+  delete this;
+}
+
 }  // namespace password_manager

@@ -98,4 +98,8 @@ void MojoBindingsController::DidClearWindowObject() {
   DestroyContextState(render_frame()->GetWebFrame()->mainWorldScriptContext());
 }
 
+void MojoBindingsController::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

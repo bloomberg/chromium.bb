@@ -25,6 +25,7 @@ class PageLoadHistograms : public content::RenderViewObserver {
   // RenderViewObserver implementation.
   void FrameWillClose(blink::WebFrame* frame) override;
   void ClosePage() override;
+  void OnDestruct() override;
 
   // Dump all page load histograms appropriate for the given frame.
   //

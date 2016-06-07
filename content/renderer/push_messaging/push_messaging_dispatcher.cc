@@ -39,6 +39,10 @@ bool PushMessagingDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void PushMessagingDispatcher::OnDestruct() {
+  delete this;
+}
+
 void PushMessagingDispatcher::subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,

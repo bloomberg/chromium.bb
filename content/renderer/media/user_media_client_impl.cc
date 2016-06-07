@@ -1186,4 +1186,8 @@ bool UserMediaClientImpl::UserMediaRequestInfo::HasPendingSources() const {
   return !sources_waiting_for_callback_.empty();
 }
 
+void UserMediaClientImpl::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

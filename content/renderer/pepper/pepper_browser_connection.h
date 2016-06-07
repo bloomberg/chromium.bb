@@ -60,6 +60,9 @@ class PepperBrowserConnection
   void DidDeleteInProcessInstance(PP_Instance instance);
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Message handlers.
   void OnMsgCreateResourceHostsFromHostReply(
       int32_t sequence_number,

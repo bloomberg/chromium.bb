@@ -55,6 +55,9 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
                    RequestCallbacks* callbacks) override;
 
  private:
+  // RenderViewObserver implementation.
+  void OnDestruct() override;
+
   void ConnectToMojoCMIfNeeded();
 
   mojom::CredentialManagerPtr mojo_cm_service_;

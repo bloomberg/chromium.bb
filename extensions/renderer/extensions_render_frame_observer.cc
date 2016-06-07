@@ -98,4 +98,8 @@ void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
       routing_id(), trimmed_message, source, stack_trace, severity_level));
 }
 
+void ExtensionsRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
 }  // namespace extensions

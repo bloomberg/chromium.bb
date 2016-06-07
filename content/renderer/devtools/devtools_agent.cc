@@ -107,6 +107,10 @@ void DevToolsAgent::WidgetWillClose() {
   ContinueProgram();
 }
 
+void DevToolsAgent::OnDestruct() {
+  delete this;
+}
+
 void DevToolsAgent::sendProtocolMessage(int session_id,
                                         int call_id,
                                         const blink::WebString& message,

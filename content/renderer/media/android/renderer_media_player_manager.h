@@ -116,6 +116,9 @@ class RendererMediaPlayerManager :
 #endif  // defined(VIDEO_HOLE)
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Message handlers.
   void OnMediaMetadataChanged(int player_id,
                               base::TimeDelta duration,

@@ -58,4 +58,8 @@ void OverlayJsRenderFrameObserver::DidFinishLoad() {
       ->RemoveService<mojom::OverlayPageNotifierService>();
 }
 
+void OverlayJsRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
 }  // namespace contextual_search

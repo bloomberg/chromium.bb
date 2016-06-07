@@ -282,4 +282,8 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
                                                   args, user_gesture);
 }
 
+void ExtensionFrameHelper::OnDestruct() {
+  delete this;
+}
+
 }  // namespace extensions

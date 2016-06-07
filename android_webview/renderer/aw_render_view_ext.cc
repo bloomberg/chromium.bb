@@ -29,6 +29,10 @@ void AwRenderViewExt::DidUpdateLayout() {
   PostCheckContentsSize();
 }
 
+void AwRenderViewExt::OnDestruct() {
+  delete this;
+}
+
 void AwRenderViewExt::PostCheckContentsSize() {
   if (check_contents_size_timer_.IsRunning())
     return;

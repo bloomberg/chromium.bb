@@ -84,6 +84,7 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   // Called by the RenderFrame when it receives a StartPhishingDetection IPC
   // from the browser.  This signals that it is ok to begin classification

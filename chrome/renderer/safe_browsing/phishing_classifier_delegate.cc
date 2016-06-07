@@ -289,4 +289,8 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
                  base::Unretained(this)));
 }
 
+void PhishingClassifierDelegate::OnDestruct() {
+  delete this;
+}
+
 }  // namespace safe_browsing

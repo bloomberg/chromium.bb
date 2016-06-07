@@ -68,6 +68,10 @@ bool PluginPowerSaverHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void PluginPowerSaverHelper::OnDestruct() {
+  delete this;
+}
+
 void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
     const std::set<url::Origin>& origin_whitelist) {
   origin_whitelist_ = origin_whitelist;

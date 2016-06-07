@@ -302,4 +302,8 @@ blink::WebFrameWidget* AwRenderFrameExt::GetWebFrameWidget() {
   return render_frame()->GetRenderView()->GetWebFrameWidget();
 }
 
+void AwRenderFrameExt::OnDestruct() {
+  delete this;
+}
+
 }  // namespace android_webview

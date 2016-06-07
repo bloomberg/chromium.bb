@@ -48,6 +48,10 @@ bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void TextInputClientObserver::OnDestruct() {
+  delete this;
+}
+
 blink::WebView* TextInputClientObserver::webview() {
   return render_view()->GetWebView();
 }

@@ -33,6 +33,10 @@ bool RendererMediaSessionManager::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void RendererMediaSessionManager::OnDestruct() {
+  delete this;
+}
+
 int RendererMediaSessionManager::RegisterMediaSession(
     WebMediaSessionAndroid* session) {
   sessions_[next_session_id_] = session;

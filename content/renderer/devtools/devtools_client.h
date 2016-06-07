@@ -38,6 +38,7 @@ class CONTENT_EXPORT DevToolsClient
  private:
   // RenderFrameObserver overrides.
   void DidClearWindowObject() override;
+  void OnDestruct() override;
 
   // WebDevToolsFrontendClient implementation.
   void sendMessageToEmbedder(const blink::WebString&) override;

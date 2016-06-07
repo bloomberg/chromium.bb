@@ -38,4 +38,8 @@ void PrintRenderFrameObserver::OnPrintNodeUnderContextMenu() {
     helper->PrintNode(render_frame()->GetWebFrame()->contextMenuNode());
 }
 
+void PrintRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
 }  // namespace android_webview

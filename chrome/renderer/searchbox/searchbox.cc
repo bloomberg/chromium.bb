@@ -537,3 +537,7 @@ void SearchBox::Reset() {
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();
 }
+
+void SearchBox::OnDestruct() {
+  delete this;
+}

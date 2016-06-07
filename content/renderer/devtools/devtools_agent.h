@@ -56,6 +56,7 @@ class CONTENT_EXPORT DevToolsAgent
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void WidgetWillClose() override;
+  void OnDestruct() override;
 
   // WebDevToolsAgentClient implementation.
   void sendProtocolMessage(int session_id,

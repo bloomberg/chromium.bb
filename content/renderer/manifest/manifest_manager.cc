@@ -206,4 +206,8 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
   }
 }
 
+void ManifestManager::OnDestruct() {
+  delete this;
+}
+
 } // namespace content

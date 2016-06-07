@@ -25,3 +25,7 @@ void PepperHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
   host->GetPpapiHost()->AddInstanceMessageFilter(
       base::WrapUnique(new PepperSharedMemoryMessageFilter(host)));
 }
+
+void PepperHelper::OnDestruct() {
+  delete this;
+}

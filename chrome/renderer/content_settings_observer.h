@@ -96,6 +96,7 @@ class ContentSettingsObserver
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
+  void OnDestruct() override;
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);

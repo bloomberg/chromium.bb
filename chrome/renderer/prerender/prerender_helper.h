@@ -26,8 +26,9 @@ class PrerenderHelper
   static bool IsPrerendering(const content::RenderFrame* render_frame);
 
  private:
-  // RenderViewObserver implementation
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   void OnSetIsPrerendering(bool is_prerendering);
 

@@ -73,4 +73,8 @@ void PrerenderHelper::OnSetIsPrerendering(bool is_prerendering) {
   UpdateVisibilityState(frame);
 }
 
+void PrerenderHelper::OnDestruct() {
+  delete this;
+}
+
 }  // namespace prerender

@@ -53,6 +53,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void WasHidden() override;
   void WasShown() override;
   bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnDestruct() override;
 
   // Zeros out |idle_cleanup_interval_|, and sets |idle_timeout_| to
   // |idle_timeout|. A zero cleanup interval will cause the idle timer to run

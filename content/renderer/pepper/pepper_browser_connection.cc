@@ -96,4 +96,8 @@ int32_t PepperBrowserConnection::GetNextSequence() {
   return ret;
 }
 
+void PepperBrowserConnection::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

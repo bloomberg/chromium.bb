@@ -42,6 +42,9 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   void CreateDistillerPageNotifierService(
       mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request);
 
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // The isolated world that the distiller object should be written to.
   int distiller_isolated_world_id_;
 

@@ -26,4 +26,8 @@ void FrameLoadWaiter::DidFinishLoad() {
                                                 run_loop_.QuitClosure());
 }
 
+void FrameLoadWaiter::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

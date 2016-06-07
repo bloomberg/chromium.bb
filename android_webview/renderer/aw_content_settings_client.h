@@ -20,6 +20,9 @@ class AwContentSettingsClient : public content::RenderFrameObserver,
  private:
   ~AwContentSettingsClient() override;
 
+  // content::RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // blink::WebContentSettingsClient implementation.
   bool allowDisplayingInsecureContent(
       bool enabled_per_settings,

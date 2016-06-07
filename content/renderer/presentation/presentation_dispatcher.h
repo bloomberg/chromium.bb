@@ -94,6 +94,7 @@ class CONTENT_EXPORT PresentationDispatcher
   void DidCommitProvisionalLoad(
       bool is_new_navigation,
       bool is_same_page_navigation) override;
+  void OnDestruct() override;
 
   // blink::mojom::PresentationServiceClient
   void OnScreenAvailabilityNotSupported(const mojo::String& url) override;

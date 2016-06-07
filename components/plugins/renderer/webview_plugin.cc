@@ -336,10 +336,7 @@ void WebViewPlugin::didReceiveResponse(unsigned identifier,
   WebFrameClient::didReceiveResponse(identifier, response);
 }
 
-void WebViewPlugin::OnDestruct() {
-  // By default RenderViewObservers are destroyed along with the RenderView.
-  // WebViewPlugin has a custom destruction mechanism, so we disable this.
-}
+void WebViewPlugin::OnDestruct() {}
 
 void WebViewPlugin::OnZoomLevelChanged() {
   if (container_) {

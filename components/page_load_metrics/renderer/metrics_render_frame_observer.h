@@ -33,6 +33,7 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
       blink::WebLoadingBehaviorFlag behavior) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
+  void OnDestruct() override;
 
  private:
   // Will be null when we're not actively sending metrics.

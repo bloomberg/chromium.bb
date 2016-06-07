@@ -110,4 +110,8 @@ void RendererDateTimePicker::OnCancel() {
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
 }
 
+void RendererDateTimePicker::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

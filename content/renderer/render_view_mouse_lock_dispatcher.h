@@ -25,8 +25,9 @@ class RenderViewMouseLockDispatcher : public MouseLockDispatcher,
   void SendLockMouseRequest(bool unlocked_by_target) override;
   void SendUnlockMouseRequest() override;
 
-  // RenderView::Observer implementation.
+  // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   void OnLockMouseACK(bool succeeded);
 

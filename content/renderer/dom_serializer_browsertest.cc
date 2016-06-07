@@ -75,6 +75,9 @@ class LoadObserver : public RenderViewObserver {
   }
 
  private:
+  // RenderViewObserver implementation.
+  void OnDestruct() override { delete this; }
+
   base::Closure quit_closure_;
 };
 

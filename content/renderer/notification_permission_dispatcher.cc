@@ -55,4 +55,8 @@ void NotificationPermissionDispatcher::OnPermissionRequestComplete(
   callback->permissionRequestComplete(blink_status);
 }
 
+void NotificationPermissionDispatcher::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

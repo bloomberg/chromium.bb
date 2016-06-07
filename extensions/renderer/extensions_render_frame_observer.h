@@ -28,6 +28,7 @@ class ExtensionsRenderFrameObserver
                                    const base::string16& stack_trace,
                                    uint32_t line_number,
                                    int32_t severity_level) override;
+  void OnDestruct() override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsRenderFrameObserver);
 };

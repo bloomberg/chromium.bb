@@ -107,4 +107,8 @@ void ThreatDOMDetails::ExtractResources(
   resources->push_back(details_node);
 }
 
+void ThreatDOMDetails::OnDestruct() {
+  delete this;
+}
+
 }  // namespace safe_browsing

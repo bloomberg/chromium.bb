@@ -37,9 +37,10 @@ class RenderFrameImpl;
 class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
                                            public IPC::Sender {
  public:
-  // By default, observers will be deleted when the RenderFrame goes away.  If
-  // they want to outlive it, they can override this function.
-  virtual void OnDestruct();
+  // A subclass can use this to delete itself. If it does not, the subclass must
+  // always null-check each call to render_frame() becase the RenderFrame can
+  // go away at any time.
+  virtual void OnDestruct() = 0;
 
   // Called when a Pepper plugin is created.
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}

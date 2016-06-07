@@ -49,6 +49,10 @@ bool RenderViewMouseLockDispatcher::OnMessageReceived(
   return handled;
 }
 
+void RenderViewMouseLockDispatcher::OnDestruct() {
+  delete this;
+}
+
 void RenderViewMouseLockDispatcher::OnLockMouseACK(bool succeeded) {
   // Notify the base class.
   MouseLockDispatcher::OnLockMouseACK(succeeded);

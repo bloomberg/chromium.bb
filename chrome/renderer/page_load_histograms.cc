@@ -967,3 +967,7 @@ void PageLoadHistograms::LogPageLoadTime(const DocumentState* document_state,
   VLOG(1) << "PLT: " << (finish - start).InMilliseconds() << "ms "
           << url.spec();
 }
+
+void PageLoadHistograms::OnDestruct() {
+  delete this;
+}

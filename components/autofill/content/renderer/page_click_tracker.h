@@ -52,6 +52,7 @@ class PageClickTracker : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation.
   void FocusedNodeChanged(const blink::WebNode& node) override;
+  void OnDestruct() override;
 
   // RenderViewObserver methods forwarded from Legacy. Should be
   // merged into RenderFrameObserver.

@@ -20,7 +20,9 @@ class FrameLoadWaiter : public RenderFrameObserver {
   void Wait();
 
  private:
+  // RenderFrameObserver implementation.
   void DidFinishLoad() override;
+  void OnDestruct() override;
 
   base::RunLoop run_loop_;
 

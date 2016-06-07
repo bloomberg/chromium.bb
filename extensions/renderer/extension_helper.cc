@@ -41,6 +41,10 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void ExtensionHelper::OnDestruct() {
+  delete this;
+}
+
 void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
   blink::WebVector<blink::WebDraggableRegion> webregions =
       frame->document().draggableRegions();

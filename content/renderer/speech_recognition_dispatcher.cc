@@ -66,6 +66,10 @@ bool SpeechRecognitionDispatcher::OnMessageReceived(
   return handled;
 }
 
+void SpeechRecognitionDispatcher::OnDestruct() {
+  delete this;
+}
+
 void SpeechRecognitionDispatcher::start(
     const WebSpeechRecognitionHandle& handle,
     const WebSpeechRecognitionParams& params,

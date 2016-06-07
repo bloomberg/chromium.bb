@@ -28,6 +28,7 @@ class WebUIExtensionData
  private:
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
 

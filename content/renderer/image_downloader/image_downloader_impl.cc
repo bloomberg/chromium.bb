@@ -224,4 +224,8 @@ void ImageDownloaderImpl::ReplyDownloadResult(
                result_original_image_sizes);
 }
 
+void ImageDownloaderImpl::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

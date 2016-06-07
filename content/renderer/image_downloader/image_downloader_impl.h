@@ -45,6 +45,9 @@ class ImageDownloaderImpl : public content::mojom::ImageDownloader,
       mojo::InterfaceRequest<content::mojom::ImageDownloader> request);
   ~ImageDownloaderImpl() override;
 
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // ImageDownloader methods:
   void DownloadImage(const mojo::String& url,
                      bool is_favicon,

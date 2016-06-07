@@ -28,6 +28,9 @@ class MidiDispatcher : public RenderFrameObserver,
   ~MidiDispatcher() override;
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // blink::WebMIDIClient implementation.
   void requestPermission(const blink::WebMIDIPermissionRequest& request,
                          const blink::WebMIDIOptions& options) override;

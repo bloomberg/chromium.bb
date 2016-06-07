@@ -34,4 +34,8 @@ void PrerendererClient::willAddPrerender(
                                                  render_view()->GetSize()));
 }
 
+void PrerendererClient::OnDestruct() {
+  delete this;
+}
+
 }  // namespace prerender

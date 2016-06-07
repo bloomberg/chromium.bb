@@ -50,6 +50,9 @@ class CommitObserver : public RenderViewObserver {
   int GetCommitCount() { return commit_count_; }
 
  private:
+  // RenderViewObserver implementation.
+  void OnDestruct() override { delete this; }
+
   std::set<base::Closure*> quit_closures_;
   int commit_count_;
 };

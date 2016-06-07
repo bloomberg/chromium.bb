@@ -250,4 +250,8 @@ MediaStreamDispatcher* PepperMediaDeviceManager::GetMediaStreamDispatcher()
   return dispatcher;
 }
 
+void PepperMediaDeviceManager::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

@@ -32,6 +32,10 @@ bool AutomationApiHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void AutomationApiHelper::OnDestruct() {
+  delete this;
+}
+
 void AutomationApiHelper::OnQuerySelector(int request_id,
                                           int acc_obj_id,
                                           const base::string16& selector) {

@@ -184,4 +184,8 @@ void DistillabilityAgent::DidMeaningfulLayout(
 
 DistillabilityAgent::~DistillabilityAgent() {}
 
+void DistillabilityAgent::OnDestruct() {
+  delete this;
+}
+
 }  // namespace dom_distiller

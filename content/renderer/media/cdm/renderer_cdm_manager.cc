@@ -50,6 +50,10 @@ bool RendererCdmManager::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void RendererCdmManager::OnDestruct() {
+  delete this;
+}
+
 void RendererCdmManager::InitializeCdm(int cdm_id,
                                        uint32_t promise_id,
                                        ProxyMediaKeys* media_keys,

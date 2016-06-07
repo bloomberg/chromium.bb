@@ -608,4 +608,8 @@ void RendererAccessibility::OnShowContextMenu(int acc_obj_id) {
   obj.showContextMenu();
 }
 
+void RendererAccessibility::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

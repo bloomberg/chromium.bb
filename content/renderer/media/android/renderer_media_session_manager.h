@@ -44,6 +44,9 @@ class CONTENT_EXPORT RendererMediaSessionManager : public RenderFrameObserver {
  private:
   friend class WebMediaSessionTest;
 
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   std::map<int, WebMediaSessionAndroid*> sessions_;
   int next_session_id_;
 

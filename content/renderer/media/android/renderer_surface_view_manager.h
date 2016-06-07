@@ -33,6 +33,9 @@ class CONTENT_EXPORT RendererSurfaceViewManager : public media::SurfaceManager,
   void NaturalSizeChanged(const gfx::Size& size) override;
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   void OnFullscreenSurfaceCreated(int surface_id);
 
   // Set when a surface request is in progress.

@@ -19,4 +19,8 @@ void NaClHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
     host->SetToExternalPluginHost();
 }
 
+void NaClHelper::OnDestruct() {
+  delete this;
+}
+
 }  // namespace nacl

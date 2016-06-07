@@ -30,6 +30,9 @@ class StatsCollectionObserver : public RenderViewObserver {
   const base::Time& load_stop_time() { return stop_time_; }
 
  private:
+  // RenderViewObserver implementation.
+  void OnDestruct() override;
+
   base::Time start_time_;
   base::Time stop_time_;
 

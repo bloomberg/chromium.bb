@@ -149,4 +149,8 @@ bool MetricsRenderFrameObserver::HasNoRenderFrame() const {
   return no_frame;
 }
 
+void MetricsRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
 }  // namespace page_load_metrics

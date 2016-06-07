@@ -1020,4 +1020,8 @@ void BlinkTestRunner::ReportLeakDetectionResult(
   Send(new ShellViewHostMsg_LeakDetectionDone(routing_id(), report));
 }
 
+void BlinkTestRunner::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

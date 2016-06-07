@@ -44,6 +44,10 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
   return handled;
 }
 
+void LayoutTestRenderFrameObserver::OnDestruct() {
+  delete this;
+}
+
 void LayoutTestRenderFrameObserver::OnLayoutDumpRequest() {
   std::string dump =
       LayoutTestRenderThreadObserver::GetInstance()

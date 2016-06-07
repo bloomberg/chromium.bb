@@ -59,4 +59,8 @@ void SharedWorkerRepository::documentDetached(DocumentID document) {
   }
 }
 
+void SharedWorkerRepository::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

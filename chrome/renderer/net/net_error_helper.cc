@@ -163,6 +163,10 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void NetErrorHelper::OnDestruct() {
+  delete this;
+}
+
 void NetErrorHelper::NetworkStateChanged(bool enabled) {
   core_->NetworkStateChanged(enabled);
 }

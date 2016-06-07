@@ -179,6 +179,9 @@ class BlinkTestRunner : public RenderViewObserver,
   void OnReplyBluetoothManualChooserEvents(
       const std::vector<std::string>& events);
 
+  // RenderViewObserver implementation.
+  void OnDestruct() override;
+
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();

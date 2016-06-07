@@ -942,6 +942,10 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void PrintWebViewHelper::OnDestruct() {
+  delete this;
+}
+
 bool PrintWebViewHelper::GetPrintFrame(blink::WebLocalFrame** frame) {
   DCHECK(frame);
   blink::WebView* webView = render_view()->GetWebView();

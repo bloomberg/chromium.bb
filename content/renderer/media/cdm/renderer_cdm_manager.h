@@ -74,6 +74,9 @@ class RendererCdmManager : public RenderFrameObserver {
   void UnregisterMediaKeys(int cdm_id);
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Gets the pointer to ProxyMediaKeys given the |cdm_id|.
   ProxyMediaKeys* GetMediaKeys(int cdm_id);
 

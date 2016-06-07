@@ -24,4 +24,8 @@ void CastMediaLoadDeferrer::WasShown() {
   delete this;
 }
 
+void CastMediaLoadDeferrer::OnDestruct() {
+  delete this;
+}
+
 }  // namespace chromecast

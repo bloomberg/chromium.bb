@@ -21,6 +21,7 @@ class AutomationApiHelper : public content::RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   void OnQuerySelector(int acc_obj_id,
                        int request_id,

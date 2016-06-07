@@ -33,6 +33,9 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
                          blink::WebNotificationPermissionCallback* callback);
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   void OnPermissionRequestComplete(
       std::unique_ptr<blink::WebNotificationPermissionCallback> callback,
       blink::mojom::PermissionStatus status);

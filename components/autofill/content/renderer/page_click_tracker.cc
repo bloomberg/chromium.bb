@@ -103,6 +103,10 @@ void PageClickTracker::DoFocusChangeComplete() {
   focused_node_was_last_clicked_ = false;
 }
 
+void PageClickTracker::OnDestruct() {
+  delete this;
+}
+
 // PageClickTracker::Legacy ----------------------------------------------------
 
 PageClickTracker::Legacy::Legacy(PageClickTracker* tracker)

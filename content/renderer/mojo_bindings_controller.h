@@ -43,6 +43,7 @@ class MojoBindingsController
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidClearWindowObject() override;
+  void OnDestruct() override;
 
   const bool for_layout_tests_;
 

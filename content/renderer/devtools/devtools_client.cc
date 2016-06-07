@@ -39,6 +39,10 @@ void DevToolsClient::DidClearWindowObject() {
     render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(compatibility_script_));
 }
 
+void DevToolsClient::OnDestruct() {
+  delete this;
+}
+
 void DevToolsClient::sendMessageToEmbedder(const WebString& message) {
   Send(new DevToolsHostMsg_DispatchOnEmbedder(routing_id(),
                                               message.utf8()));

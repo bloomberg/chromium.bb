@@ -31,9 +31,10 @@ class RenderViewImpl;
 class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                                           public IPC::Sender {
  public:
-  // By default, observers will be deleted when the RenderView goes away.  If
-  // they want to outlive it, they can override this function.
-  virtual void OnDestruct();
+  // A subclass can use this to delete itself. If it does not, the subclass must
+  // always null-check each call to render_view() becase the RenderView can
+  // go away at any time.
+  virtual void OnDestruct() = 0;
 
   // These match the WebKit API notifications
   virtual void DidStartLoading() {}

@@ -26,9 +26,13 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver {
   explicit LayoutTestRenderFrameObserver(RenderFrame* render_frame);
   ~LayoutTestRenderFrameObserver() override {}
 
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   void OnLayoutDumpRequest();
   void OnSetTestConfiguration(const ShellTestConfiguration& test_config);
   void OnReplicateTestConfiguration(const ShellTestConfiguration& test_config);

@@ -47,4 +47,8 @@ void RendererSurfaceViewManager::OnFullscreenSurfaceCreated(int surface_id) {
   pending_surface_created_cb_.Reset();
 }
 
+void RendererSurfaceViewManager::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

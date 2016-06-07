@@ -71,6 +71,9 @@ class SpellCheckProvider
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
+  // RenderViewObserver implementation.
+  void OnDestruct() override;
+
   // blink::WebSpellCheckClient implementation.
   void spellCheck(
       const blink::WebString& text,

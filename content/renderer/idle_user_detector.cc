@@ -37,4 +37,8 @@ void IdleUserDetector::OnHandleInputEvent(
   }
 }
 
+void IdleUserDetector::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

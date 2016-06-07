@@ -34,6 +34,7 @@ class RendererDateTimePicker : public RenderViewObserver {
 
   // RenderViewObserver
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   blink::WebDateTimeChooserParams chooser_params_;
   blink::WebDateTimeChooserCompletion* chooser_completion_;  // Not owned by us

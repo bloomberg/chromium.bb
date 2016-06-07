@@ -33,6 +33,9 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   void SetIsContextualSearchOverlay();
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   // Add the mojo service to a RenderFrame's service registry.
   void RegisterMojoService();
   void CreateOverlayPageNotifierService(

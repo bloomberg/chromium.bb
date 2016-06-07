@@ -59,6 +59,9 @@ class GinJavaBridgeDispatcher
   void OnGinJavaBridgeObjectDeleted(GinJavaBridgeObject* object);
 
  private:
+  // RenderFrameObserver implementation.
+  void OnDestruct() override;
+
   void OnAddNamedObject(const std::string& name,
                         ObjectID object_id);
   void OnRemoveNamedObject(const std::string& name);

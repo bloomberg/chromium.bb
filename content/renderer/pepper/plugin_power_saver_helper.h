@@ -57,6 +57,7 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() override;
 
   void OnUpdatePluginContentOriginWhitelist(
       const std::set<url::Origin>& origin_whitelist);

@@ -638,4 +638,8 @@ void TranslateHelper::RecordLanguageDetectionTiming(
       content::kHistogramSynchronizerReservedSequenceNumber);
 }
 
+void TranslateHelper::OnDestruct() {
+  delete this;
+}
+
 }  // namespace translate

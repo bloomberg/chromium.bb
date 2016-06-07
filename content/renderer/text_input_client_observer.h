@@ -31,6 +31,9 @@ class TextInputClientObserver : public RenderViewObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
+  // RenderViewObserver implementation.
+  void OnDestruct() override;
+
   // Returns the WebView of the RenderView.
   blink::WebView* webview();
 

@@ -133,4 +133,8 @@ void GinJavaBridgeDispatcher::OnGinJavaBridgeObjectDeleted(
       new GinJavaBridgeHostMsg_ObjectWrapperDeleted(routing_id(), object_id));
 }
 
+void GinJavaBridgeDispatcher::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

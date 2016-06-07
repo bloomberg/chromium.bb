@@ -308,6 +308,10 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
   std::swap(message_request_queue_, empty);
 }
 
+void PresentationDispatcher::OnDestruct() {
+  delete this;
+}
+
 void PresentationDispatcher::OnScreenAvailabilityUpdated(
     const mojo::String& url, bool available) {
   const std::string& availability_url = url.get();

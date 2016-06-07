@@ -31,6 +31,10 @@ bool ScreenOrientationDispatcher::OnMessageReceived(
   return handled;
 }
 
+void ScreenOrientationDispatcher::OnDestruct() {
+  delete this;
+}
+
 void ScreenOrientationDispatcher::OnLockSuccess(int request_id) {
   blink::WebLockOrientationCallback* callback =
       pending_callbacks_.Lookup(request_id);

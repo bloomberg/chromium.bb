@@ -30,4 +30,8 @@ void StatsCollectionObserver::DidStopLoading() {
   impl->RemoveObserver(this);
 }
 
+void StatsCollectionObserver::OnDestruct() {
+  delete this;
+}
+
 }  // namespace content

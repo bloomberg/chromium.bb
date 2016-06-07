@@ -17,12 +17,7 @@ AppBannerClient::AppBannerClient(content::RenderFrame* render_frame)
 AppBannerClient::~AppBannerClient() {
 }
 
-void AppBannerClient::OnDestruct() {
-  // The RenderFrameImpl destructor calls RenderFrameObserver::OnDestruct, which
-  // deletes this object. However, RenderFrameImpl also holds a scoped pointer
-  // to AppBannerClient. Override OnDestruct to be a no-op to stop a double call
-  // to the destructor and a renderer crash.
-}
+void AppBannerClient::OnDestruct() {}
 
 bool AppBannerClient::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;

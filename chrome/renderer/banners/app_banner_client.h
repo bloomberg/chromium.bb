@@ -25,9 +25,8 @@ class AppBannerClient : public content::RenderFrameObserver,
   ~AppBannerClient() override;
 
  private:
-  // content::RenderFrame::Observer implementation.
+  // content::RenderFrameObserver implementation.
   void OnDestruct() override;
-
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebAppBannerClient implementation.

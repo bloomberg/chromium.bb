@@ -349,3 +349,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
 
   return false;
 }
+
+void SpellCheckProvider::OnDestruct() {
+  delete this;
+}
