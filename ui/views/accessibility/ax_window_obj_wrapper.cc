@@ -43,7 +43,7 @@ void AXWindowObjWrapper::GetChildren(
 
   // Also consider any associated widgets as children.
   Widget* widget = Widget::GetWidgetForNativeView(window_);
-  if (widget)
+  if (widget && widget->IsVisible())
     out_children->push_back(AXAuraObjCache::GetInstance()->GetOrCreate(widget));
 }
 
