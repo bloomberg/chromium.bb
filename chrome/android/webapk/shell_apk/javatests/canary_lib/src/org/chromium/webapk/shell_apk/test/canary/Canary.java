@@ -4,9 +4,5 @@
 
 package org.chromium.webapk.shell_apk.test.canary;
 
-/**
- * Class to put into DexOptimizer.apk's assets in order to test creating
- * ClassLoader from .dex in remote APK.
- */
 public class Canary {
 }

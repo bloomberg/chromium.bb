@@ -21,7 +21,6 @@ android_apk("dex_optimizer_apk") {
     "//base:base_java",
     "//chrome/android/webapk/libs/client",
     "//chrome/android/webapk/shell_apk/javatests/canary_lib:canary_dex_asset",
-    "//chrome/android/webapk/shell_apk/javatests/canary_lib:canary_dex_asset2",
   ]
   srcjar_deps = [ ":dex_optimizer_service_aidl" ]
 }
