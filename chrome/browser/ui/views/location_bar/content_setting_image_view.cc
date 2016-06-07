@@ -16,7 +16,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -45,8 +44,7 @@ ContentSettingImageView::ContentSettingImageView(
       pause_animation_state_(0.0),
       bubble_view_(nullptr),
       suppress_mouse_released_action_(false) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     static const int kBackgroundImages[] =
         IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
@@ -94,7 +92,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
   if (string_id && !label()->visible()) {
-    ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
+    AnimateInkDrop(views::InkDropState::HIDDEN);
     SetLabel(l10n_util::GetStringUTF16(string_id));
     label()->SetVisible(true);
     slide_animator_.Show();
@@ -117,7 +115,7 @@ bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bubble is showing then don't reshow it when the mouse is released.
   suppress_mouse_released_action_ = bubble_view_ != nullptr;
   if (!suppress_mouse_released_action_ && !label()->visible())
-    ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING);
 
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
@@ -134,7 +132,7 @@ void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
   }
   const bool activated = HitTestPoint(event.location());
   if (!label()->visible() && !activated)
-    ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
+    AnimateInkDrop(views::InkDropState::HIDDEN);
   if (activated)
     OnActivate();
 }
@@ -228,7 +226,7 @@ bool ContentSettingImageView::OnActivate() {
     // the animation simply pauses and no other visible state change occurs, so
     // show the arrow in this case.
     if (ui::MaterialDesignController::IsModeMaterial() && !pause_animation_) {
-      ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
+      AnimateInkDrop(views::InkDropState::ACTIVATED);
       bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     }
     bubble_widget->Show();
@@ -276,7 +274,7 @@ void ContentSettingImageView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                         bool visible) {
   // |widget| is a bubble that has just got shown / hidden.
   if (!visible && !label()->visible())
-    ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
+    AnimateInkDrop(views::InkDropState::DEACTIVATED);
 }
 
 void ContentSettingImageView::UpdateImage() {

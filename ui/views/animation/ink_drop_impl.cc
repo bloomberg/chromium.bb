@@ -73,10 +73,6 @@ InkDropState InkDropImpl::GetTargetInkDropState() const {
   return ink_drop_ripple_->target_ink_drop_state();
 }
 
-bool InkDropImpl::IsVisible() const {
-  return ink_drop_ripple_ && ink_drop_ripple_->IsVisible();
-}
-
 void InkDropImpl::AnimateToState(InkDropState ink_drop_state) {
   DestroyHiddenTargetedAnimations();
   if (!ink_drop_ripple_)
@@ -225,7 +221,7 @@ void InkDropImpl::SetHighlight(bool should_highlight,
 
   if (should_highlight) {
     CreateInkDropHighlight();
-    if (highlight_ && !IsVisible())
+    if (highlight_ && !(ink_drop_ripple_ && ink_drop_ripple_->IsVisible()))
       highlight_->FadeIn(animation_duration);
   } else {
     highlight_->FadeOut(animation_duration, explode);

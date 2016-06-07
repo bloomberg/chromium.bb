@@ -41,7 +41,6 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
   // InkDrop:
   InkDropState GetTargetInkDropState() const override;
-  bool IsVisible() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
   void SnapToActivated() override;
   void SetHovered(bool is_hovered) override;

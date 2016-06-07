@@ -35,7 +35,6 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
-class BarControlButton;
 class DownloadShelfView;
 class DownloadShelfContextMenuView;
 
@@ -132,6 +131,7 @@ class DownloadItemViewMd : public views::InkDropHostView,
 
  private:
   enum State { NORMAL = 0, HOT, PUSHED };
+  class DropDownButton;
 
   enum Mode {
     NORMAL_MODE = 0,  // Showing download item.
@@ -279,12 +279,6 @@ class DownloadItemViewMd : public views::InkDropHostView,
   // Animation for download complete.
   std::unique_ptr<gfx::SlideAnimation> complete_animation_;
 
-  // A pointer to the InkDropDelegate owned by the base class InkDropHostView.
-  // This is kept as a ButtonInkDropDelegate pointer to avoid unnecessary casts.
-  // TODO(bruthig): Remove the need to cast and remove the
-  // |button_ink_drop_delegate_| variable.
-  views::ButtonInkDropDelegate* button_ink_drop_delegate_;
-
   // Progress animation
   base::RepeatingTimer progress_timer_;
 
@@ -293,7 +287,7 @@ class DownloadItemViewMd : public views::InkDropHostView,
   views::LabelButton* discard_button_;
 
   // The drop down button.
-  BarControlButton* dropdown_button_;
+  DropDownButton* dropdown_button_;
 
   // Dangerous mode label.
   views::Label* dangerous_download_label_;

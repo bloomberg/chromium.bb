@@ -7,7 +7,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
 
@@ -20,8 +19,7 @@ const int kButtonExtraTouchSize = 4;
 
 BarControlButton::BarControlButton(views::ButtonListener* listener)
     : views::ImageButton(listener), id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);

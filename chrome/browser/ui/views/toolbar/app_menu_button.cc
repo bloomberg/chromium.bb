@@ -26,7 +26,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/metrics.h"
@@ -44,8 +43,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       margin_trailing_(0),
       weak_factory_(this) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   if (!ui::MaterialDesignController::IsModeMaterial())
     icon_painter_.reset(new AppMenuIconPainter(this));
 }

@@ -173,8 +173,7 @@ MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
       focus_ring_(new MdFocusRing()),
       cta_(NO_CALL_TO_ACTION) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();

@@ -26,7 +26,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -62,8 +61,7 @@ ToolbarActionView::ToolbarActionView(
       wants_to_run_(false),
       menu_(nullptr),
       weak_factory_(this) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
@@ -81,9 +79,6 @@ ToolbarActionView::ToolbarActionView(
 }
 
 ToolbarActionView::~ToolbarActionView() {
-  // Avoid access to a destroyed InkDropDelegate when the |pressed_lock_| is
-  // destroyed.
-  set_ink_drop_delegate(nullptr);
   view_controller_->SetDelegate(nullptr);
 }
 
@@ -195,7 +190,7 @@ bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
     // TODO(bruthig): The ACTION_PENDING triggering logic should be in
     // MenuButton::OnPressed() however there is a bug with the pressed state
     // logic in MenuButton. See http://crbug.com/567252.
-    ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING);
   }
   return MenuButton::OnMousePressed(event);
 }

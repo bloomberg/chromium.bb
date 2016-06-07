@@ -31,10 +31,6 @@ class VIEWS_EXPORT InkDrop {
   // Gets the target state of the ink drop.
   virtual InkDropState GetTargetInkDropState() const = 0;
 
-  // Returns true when the ripple is visible, including when animating to
-  // HIDDEN.
-  virtual bool IsVisible() const = 0;
-
   // Animates from the current InkDropState to |ink_drop_state|.
   virtual void AnimateToState(InkDropState ink_drop_state) = 0;
 

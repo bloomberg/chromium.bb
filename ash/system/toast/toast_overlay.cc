@@ -19,7 +19,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -122,8 +121,7 @@ class ToastOverlayButton : public views::LabelButton {
 ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
                                        const base::string16& text)
     : views::LabelButton(listener, text) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(SK_ColorWHITE);
 

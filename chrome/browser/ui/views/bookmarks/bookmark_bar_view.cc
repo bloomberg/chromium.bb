@@ -95,7 +95,6 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/button_drag_utils.h"
@@ -206,8 +205,7 @@ class BookmarkButtonBase : public views::LabelButton {
                      const base::string16& title)
       : LabelButton(listener, title) {
     SetElideBehavior(kElideBehavior);
-    set_ink_drop_delegate(
-        base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+    SetHasInkDrop(true);
     set_has_ink_drop_action_on_click(true);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -333,8 +331,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
                          views::MenuButtonListener* menu_button_listener,
                          bool show_menu_marker)
       : MenuButton(title, menu_button_listener, show_menu_marker) {
-    set_ink_drop_delegate(
-        base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+    SetHasInkDrop(true);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
@@ -395,7 +392,7 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
       // TODO(bruthig): The ACTION_PENDING triggering logic should be in
       // MenuButton::OnPressed() however there is a bug with the pressed state
       // logic in MenuButton. See http://crbug.com/567252.
-      ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
+      AnimateInkDrop(views::InkDropState::ACTION_PENDING);
     }
     return MenuButton::OnMousePressed(event);
   }

@@ -12,7 +12,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
@@ -29,9 +28,7 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   else
     image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
 }
 
 BubbleIconView::~BubbleIconView() {}
@@ -77,7 +74,7 @@ bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bubble is showing then don't reshow it when the mouse is released.
   suppress_mouse_released_action_ = IsBubbleShowing();
   if (!suppress_mouse_released_action_ && event.IsOnlyLeftMouseButton())
-    ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING);
 
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
@@ -97,8 +94,8 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
 
   const bool activated = HitTestPoint(event.location());
-  ink_drop_delegate()->OnAction(activated ? views::InkDropState::ACTIVATED
-                                          : views::InkDropState::HIDDEN);
+  AnimateInkDrop(activated ? views::InkDropState::ACTIVATED
+                           : views::InkDropState::HIDDEN);
   if (activated)
     ExecuteCommand(EXECUTE_SOURCE_MOUSE);
   OnPressed(activated);
@@ -108,7 +105,7 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
     return false;
 
-  ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
+  AnimateInkDrop(views::InkDropState::ACTIVATED);
   // As with CustomButton, return activates on key down and space activates on
   // key up.
   if (event.key_code() == ui::VKEY_RETURN)
@@ -163,7 +160,7 @@ bool BubbleIconView::ShouldShowInkDropForFocus() const {
 
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
+    AnimateInkDrop(views::InkDropState::ACTIVATED);
     ExecuteCommand(EXECUTE_SOURCE_GESTURE);
     event->SetHandled();
   }
@@ -177,7 +174,7 @@ void BubbleIconView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                bool visible) {
   // |widget| is a bubble that has just got shown / hidden.
   if (!visible)
-    ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
+    AnimateInkDrop(views::InkDropState::DEACTIVATED);
 }
 
 void BubbleIconView::ExecuteCommand(ExecuteSource source) {

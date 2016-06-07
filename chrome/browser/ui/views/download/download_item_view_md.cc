@@ -58,7 +58,6 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
@@ -151,6 +150,22 @@ class SeparatorBorder : public views::Border {
 
 }  // namespace
 
+// Allows the DownloadItemViewMd to control the InkDrop on the drop down button.
+class DownloadItemViewMd::DropDownButton : public BarControlButton {
+ public:
+  explicit DropDownButton(views::ButtonListener* listener)
+      : BarControlButton(listener) {}
+  ~DropDownButton() override {}
+
+  // Promoted visibility to public.
+  void AnimateInkDrop(views::InkDropState state) {
+    BarControlButton::AnimateInkDrop(state);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DropDownButton);
+};
+
 DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
                                        DownloadShelfView* parent)
     : shelf_(parent),
@@ -160,17 +175,16 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
       dragging_(false),
       starting_drag_(false),
       model_(download_item),
-      button_ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       save_button_(nullptr),
       discard_button_(nullptr),
-      dropdown_button_(new BarControlButton(this)),
+      dropdown_button_(new DropDownButton(this)),
       dangerous_download_label_(nullptr),
       dangerous_download_label_sized_(false),
       disabled_while_opening_(false),
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       weak_ptr_factory_(this) {
-  set_ink_drop_delegate(base::WrapUnique(button_ink_drop_delegate_));
+  SetHasInkDrop(true);
   DCHECK(download());
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
   download()->AddObserver(this);
@@ -393,7 +407,7 @@ bool DownloadItemViewMd::OnMouseDragged(const ui::MouseEvent& event) {
   if (!starting_drag_) {
     starting_drag_ = true;
     drag_start_point_ = event.location();
-    button_ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
+    AnimateInkDrop(views::InkDropState::HIDDEN);
   }
   if (dragging_) {
     if (download()->GetState() == DownloadItem::COMPLETE) {
@@ -433,8 +447,6 @@ bool DownloadItemViewMd::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    button_ink_drop_delegate_->set_last_ink_drop_location(
-        GetLocalBounds().CenterPoint());
     // OpenDownload may delete this, so don't add any code after this line.
     OpenDownload();
     return true;
@@ -478,7 +490,7 @@ void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDropRipple> DownloadItemViewMd::CreateInkDropRipple()
     const {
   return base::WrapUnique(new views::FloodFillInkDropRipple(
-      GetLocalBounds(), button_ink_drop_delegate_->last_ink_drop_location(),
+      GetLocalBounds(), GetLocalBounds().CenterPoint(),
       color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 
@@ -741,7 +753,7 @@ void DownloadItemViewMd::OpenDownload() {
                            base::Time::Now() - creation_time_);
 
   UpdateAccessibleName();
-  button_ink_drop_delegate_->OnAction(views::InkDropState::ACTION_TRIGGERED);
+  AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED);
 
   // Calling download()->OpenDownload may delete this, so this must be
   // the last thing we do.
@@ -841,8 +853,7 @@ void DownloadItemViewMd::HandlePressEvent(const ui::LocatedEvent& event,
   if (!active_event)
     return;
 
-  button_ink_drop_delegate_->set_last_ink_drop_location(event.location());
-  button_ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
+  AnimateInkDrop(views::InkDropState::ACTION_PENDING);
 }
 
 void DownloadItemViewMd::HandleClickEvent(const ui::LocatedEvent& event,
@@ -870,9 +881,9 @@ void DownloadItemViewMd::SetDropdownState(State new_state) {
                           : gfx::VectorIconId::FIND_PREV,
       base::Bind(&DownloadItemViewMd::GetTextColor, base::Unretained(this)));
   if (new_state != dropdown_state_) {
-    dropdown_button_->ink_drop_delegate()->OnAction(
-        new_state == PUSHED ? views::InkDropState::ACTIVATED
-                            : views::InkDropState::DEACTIVATED);
+    dropdown_button_->AnimateInkDrop(new_state == PUSHED
+                                         ? views::InkDropState::ACTIVATED
+                                         : views::InkDropState::DEACTIVATED);
   }
   dropdown_button_->OnThemeChanged();
   dropdown_state_ = new_state;

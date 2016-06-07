@@ -9,11 +9,15 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/animation/ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/view.h"
 
 namespace views {
+
+namespace test {
+class InkDropHostViewTestApi;
+}  // namespace test
 
 class InkDropRipple;
 class InkDropHighlight;
@@ -29,17 +33,16 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
 
-  InkDropDelegate* ink_drop_delegate() { return ink_drop_delegate_.get(); }
-
  protected:
   InkDropHostView();
   ~InkDropHostView() override;
 
   static const int kInkDropSmallCornerRadius;
 
-  // View
+  // View:
   void OnFocus() override;
   void OnBlur() override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
@@ -49,13 +52,32 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Should return true if the ink drop is also used to depict focus.
   virtual bool ShouldShowInkDropForFocus() const;
 
-  void set_ink_drop_delegate(std::unique_ptr<InkDropDelegate> delegate) {
-    ink_drop_delegate_ = std::move(delegate);
-  }
+  InkDrop* ink_drop() { return ink_drop_.get(); }
+
+  // Toggle to enable/disable an InkDrop on this View.  Descendants can override
+  // CreateInkDropHighlight() and CreateInkDropRipple() to change the look/feel
+  // of the InkDrop.
+  void SetHasInkDrop(bool has_an_ink_drop);
+
+  // Animates |ink_drop_| to the desired |ink_drop_state|.
+  //
+  // TODO(bruthig): Enhance to accept a ui::Event parameter so InkDrops can be
+  // centered (see https://crbug.com/597273) and disabled for touch events on
+  // Windows (see https://crbug.com/595315).
+  void AnimateInkDrop(InkDropState ink_drop_state);
 
  private:
-  std::unique_ptr<InkDropDelegate> ink_drop_delegate_;
+  class InkDropGestureHandler;
+  friend class test::InkDropHostViewTestApi;
+
+  std::unique_ptr<InkDrop> ink_drop_;
+
+  // Intentionally declared after |ink_drop_| so that it doesn't access a
+  // destroyed |ink_drop_| during destruction.
+  std::unique_ptr<InkDropGestureHandler> gesture_handler_;
+
   gfx::Size ink_drop_size_;
+
   bool destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);

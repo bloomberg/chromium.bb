@@ -22,7 +22,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -38,8 +37,7 @@ ToolbarButton::ToolbarButton(Profile* profile,
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       show_menu_factory_(this) {
-  set_ink_drop_delegate(
-      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
+  SetHasInkDrop(true);
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
   if (ui::MaterialDesignController::IsModeMaterial())
@@ -222,7 +220,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   menu_showing_ = true;
 
-  ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
+  AnimateInkDrop(views::InkDropState::ACTIVATED);
 
   // Exit if the model is null.
   if (!model_.get())
@@ -242,7 +240,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 }
 
 void ToolbarButton::OnMenuClosed() {
-  ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
+  AnimateInkDrop(views::InkDropState::DEACTIVATED);
 
   menu_showing_ = false;
 

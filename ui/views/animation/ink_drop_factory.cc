@@ -11,34 +11,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/views_export.h"
 
 namespace views {
-
-namespace {
-
-// A stub implementation of an InkDrop that can be used when material design is
-// not enabled.
-class InkDropStub : public InkDrop {
- public:
-  InkDropStub() {}
-  ~InkDropStub() override {}
-
-  // InkDrop:
-  InkDropState GetTargetInkDropState() const override {
-    return InkDropState::HIDDEN;
-  }
-  bool IsVisible() const override { return false; }
-  void AnimateToState(InkDropState state) override {}
-  void SnapToActivated() override {}
-  void SetHovered(bool is_hovered) override {}
-  void SetFocused(bool is_hovered) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InkDropStub);
-};
-
-}  // namespace
 
 InkDropFactory::InkDropFactory() {}
 

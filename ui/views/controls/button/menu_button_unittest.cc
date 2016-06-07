@@ -11,7 +11,8 @@
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/animation/test/test_ink_drop_delegate.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/test/views_test_base.h"
@@ -25,9 +26,9 @@
 using base::ASCIIToUTF16;
 
 namespace views {
-class InkDropDelegate;
 
-namespace test {
+using test::InkDropHostViewTestApi;
+using test::TestInkDrop;
 
 // A MenuButton subclass that provides access to some MenuButton internals.
 class TestMenuButton : public MenuButton {
@@ -39,10 +40,8 @@ class TestMenuButton : public MenuButton {
 
   ~TestMenuButton() override {}
 
-  // Accessors to protected MenuButton methods.
-  void set_ink_drop_delegate(
-      std::unique_ptr<InkDropDelegate> ink_drop_delegate) {
-    InkDropHostView::set_ink_drop_delegate(std::move(ink_drop_delegate));
+  void SetInkDrop(std::unique_ptr<InkDrop> ink_drop) {
+    InkDropHostViewTestApi(this).SetInkDrop(std::move(ink_drop));
   }
 
  private:
@@ -51,7 +50,7 @@ class TestMenuButton : public MenuButton {
 
 class MenuButtonTest : public ViewsTestBase {
  public:
-  MenuButtonTest() : widget_(nullptr), button_(nullptr) {}
+  MenuButtonTest() : widget_(nullptr), button_(nullptr), ink_drop_(nullptr) {}
   ~MenuButtonTest() override {}
 
   void TearDown() override {
@@ -67,6 +66,8 @@ class MenuButtonTest : public ViewsTestBase {
   ui::test::EventGenerator* generator() { return generator_.get(); }
 
  protected:
+  TestInkDrop* ink_drop() { return ink_drop_; }
+
   // Creates a MenuButton with no button listener.
   void CreateMenuButtonWithNoListener() { CreateMenuButton(nullptr); }
 
@@ -76,6 +77,12 @@ class MenuButtonTest : public ViewsTestBase {
   void CreateMenuButtonWithMenuButtonListener(
       MenuButtonListener* menu_button_listener) {
     CreateMenuButton(menu_button_listener);
+  }
+
+  void AttachInkDrop() {
+    ink_drop_ = new test::TestInkDrop();
+    test::InkDropHostViewTestApi(button_).SetInkDrop(
+        base::WrapUnique(ink_drop_));
   }
 
  private:
@@ -107,6 +114,9 @@ class MenuButtonTest : public ViewsTestBase {
   Widget* widget_;
   TestMenuButton* button_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
+
+  // Weak ptr, |button_| owns the instance.
+  TestInkDrop* ink_drop_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButtonTest);
 };
@@ -433,24 +443,22 @@ TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
 
 TEST_F(MenuButtonTest, InkDropStateForMenuButtonActivationsWithoutListener) {
   CreateMenuButtonWithNoListener();
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
+  AttachInkDrop();
+  ink_drop()->AnimateToState(InkDropState::ACTION_PENDING);
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop()->GetTargetInkDropState());
 }
 
 TEST_F(MenuButtonTest,
        InkDropStateForMenuButtonActivationsWithListenerThatDoesntAcquireALock) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
+  AttachInkDrop();
   button()->Activate(nullptr);
 
   EXPECT_EQ(InkDropState::ACTION_TRIGGERED,
-            ink_drop_delegate->GetTargetInkDropState());
+            ink_drop()->GetTargetInkDropState());
 }
 
 TEST_F(
@@ -458,13 +466,11 @@ TEST_F(
     InkDropStateForMenuButtonActivationsWithListenerThatDontReleaseAllLocks) {
   PressStateMenuButtonListener menu_button_listener(false);
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  AttachInkDrop();
   menu_button_listener.set_menu_button(button());
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::ACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop()->GetTargetInkDropState());
 }
 
 TEST_F(MenuButtonTest,
@@ -472,59 +478,49 @@ TEST_F(MenuButtonTest,
   PressStateMenuButtonListener menu_button_listener(true);
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
   menu_button_listener.set_menu_button(button());
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
+  AttachInkDrop();
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::DEACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop()->GetTargetInkDropState());
 }
 
 TEST_F(MenuButtonTest, InkDropStateForMenuButtonsWithPressedLocks) {
   CreateMenuButtonWithNoListener();
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
+  AttachInkDrop();
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock1(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop()->GetTargetInkDropState());
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock2(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop()->GetTargetInkDropState());
 
   pressed_lock1.reset();
-  EXPECT_EQ(InkDropState::ACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop()->GetTargetInkDropState());
 
   pressed_lock2.reset();
-  EXPECT_EQ(InkDropState::DEACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop()->GetTargetInkDropState());
 }
 
 // Verifies only one ink drop animation is triggered when multiple PressedLocks
 // are attached to a MenuButton.
 TEST_F(MenuButtonTest, OneInkDropAnimationForReentrantPressedLocks) {
   CreateMenuButtonWithNoListener();
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
+  AttachInkDrop();
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock1(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
-  ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop()->GetTargetInkDropState());
+  ink_drop()->AnimateToState(InkDropState::ACTION_PENDING);
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock2(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop()->GetTargetInkDropState());
 }
 
 // Verifies the InkDropState is left as ACTIVATED if a PressedLock is active
@@ -533,14 +529,12 @@ TEST_F(MenuButtonTest,
        InkDropStateForMenuButtonWithPressedLockBeforeActivation) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  button()->set_ink_drop_delegate(base::WrapUnique(ink_drop_delegate));
+  AttachInkDrop();
   MenuButton::PressedLock lock(button());
 
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::ACTIVATED,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop()->GetTargetInkDropState());
 }
 
 #if defined(USE_AURA)
@@ -618,4 +612,3 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 }  // namespace views
-}  // namespace test

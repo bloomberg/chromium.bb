@@ -13,9 +13,9 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_host.h"
-#include "ui/views/animation/test/test_ink_drop_delegate.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -35,7 +35,8 @@
 
 namespace views {
 
-using test::TestInkDropDelegate;
+using test::InkDropHostViewTestApi;
+using test::TestInkDrop;
 
 namespace {
 
@@ -88,57 +89,6 @@ class TestCustomButton : public CustomButton, public ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);
 };
 
-// An InkDropDelegate that keeps track of ink drop visibility.
-class TestInkDropDelegateThatTracksVisibilty : public TestInkDropDelegate {
- public:
-  TestInkDropDelegateThatTracksVisibilty(bool* ink_shown, bool* ink_hidden)
-      : ink_shown_(ink_shown), ink_hidden_(ink_hidden) {}
-  ~TestInkDropDelegateThatTracksVisibilty() override {}
-
-  // InkDropDelegate:
-  void OnAction(InkDropState state) override {
-    TestInkDropDelegate::OnAction(state);
-    switch (GetTargetInkDropState()) {
-      case InkDropState::ACTION_PENDING:
-      case InkDropState::ALTERNATE_ACTION_PENDING:
-      case InkDropState::ACTIVATED:
-        *ink_shown_ = true;
-        break;
-      case InkDropState::HIDDEN:
-        *ink_hidden_ = true;
-        break;
-      case InkDropState::ACTION_TRIGGERED:
-      case InkDropState::ALTERNATE_ACTION_TRIGGERED:
-      case InkDropState::DEACTIVATED:
-        break;
-    }
-  }
-
-  void SnapToActivated() override { *ink_shown_ = true; }
-
-  void SetHovered(bool is_hovered) override {}
-  InkDrop* GetInkDrop() override { return nullptr; }
-
- private:
-  bool* ink_shown_;
-  bool* ink_hidden_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInkDropDelegateThatTracksVisibilty);
-};
-
-// A test Button class that owns a TestInkDropDelegate.
-class TestButtonWithInkDrop : public TestCustomButton {
- public:
-  TestButtonWithInkDrop(std::unique_ptr<InkDropDelegate> ink_drop_delegate)
-      : TestCustomButton() {
-    set_ink_drop_delegate(std::move(ink_drop_delegate));
-  }
-  ~TestButtonWithInkDrop() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestButtonWithInkDrop);
-};
-
 }  // namespace
 
 class CustomButtonTest : public ViewsTestBase {
@@ -167,10 +117,10 @@ class CustomButtonTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void CreateButtonWithInkDrop(
-      std::unique_ptr<InkDropDelegate> ink_drop_delegate) {
+  void CreateButtonWithInkDrop(std::unique_ptr<InkDrop> ink_drop) {
     delete button_;
-    button_ = new TestButtonWithInkDrop(std::move(ink_drop_delegate));
+    button_ = new TestCustomButton();
+    InkDropHostViewTestApi(button_).SetInkDrop(std::move(ink_drop));
     widget_->SetContentsView(button_);
   }
 
@@ -396,42 +346,36 @@ TEST_F(CustomButtonTest, AsCustomButton) {
 // may enter a different ink drop state.
 TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
   gfx::Point old_cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
-  bool ink_shown = false;
-  bool ink_hidden = false;
-  CreateButtonWithInkDrop(base::WrapUnique(
-      new TestInkDropDelegateThatTracksVisibilty(&ink_shown, &ink_hidden)));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
   generator.set_current_location(gfx::Point(50, 50));
   generator.PressLeftButton();
-  EXPECT_TRUE(ink_shown);
-  EXPECT_FALSE(ink_hidden);
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   generator.ReleaseLeftButton();
-  EXPECT_FALSE(ink_hidden);
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 }
 
 // Tests that pressing a button shows and releasing capture hides ink drop.
 // Releasing capture should also reset PRESSED button state to NORMAL.
 TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   gfx::Point old_cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
-  bool ink_shown = false;
-  bool ink_hidden = false;
-  CreateButtonWithInkDrop(base::WrapUnique(
-      new TestInkDropDelegateThatTracksVisibilty(&ink_shown, &ink_hidden)));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
   generator.set_current_location(gfx::Point(50, 50));
   generator.PressLeftButton();
-  EXPECT_TRUE(ink_shown);
-  EXPECT_FALSE(ink_hidden);
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   EXPECT_EQ(Button::ButtonState::STATE_PRESSED, button()->state());
   SetDraggedView(button());
   widget()->SetCapture(button());
   widget()->ReleaseCapture();
   SetDraggedView(nullptr);
-  EXPECT_TRUE(ink_hidden);
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
   EXPECT_EQ(ui::MaterialDesignController::IsModeMaterial()
                 ? Button::ButtonState::STATE_NORMAL
                 : Button::ButtonState::STATE_PRESSED,
@@ -439,54 +383,52 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
 }
 
 TEST_F(CustomButtonTest, HideInkDropWhenShowingContextMenu) {
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
   TestContextMenuController context_menu_controller;
   button()->set_context_menu_controller(&context_menu_controller);
   button()->set_hide_ink_drop_when_showing_context_menu(true);
 
-  ink_drop_delegate->SetHovered(true);
-  ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
+  ink_drop->SetHovered(true);
+  ink_drop->AnimateToState(InkDropState::ACTION_PENDING);
 
   button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
-  EXPECT_FALSE(ink_drop_delegate->is_hovered());
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_FALSE(ink_drop->is_hovered());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 }
 
 TEST_F(CustomButtonTest, DontHideInkDropWhenShowingContextMenu) {
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
   TestContextMenuController context_menu_controller;
   button()->set_context_menu_controller(&context_menu_controller);
   button()->set_hide_ink_drop_when_showing_context_menu(false);
 
-  ink_drop_delegate->SetHovered(true);
-  ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
+  ink_drop->SetHovered(true);
+  ink_drop->AnimateToState(InkDropState::ACTION_PENDING);
 
   button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
-  EXPECT_TRUE(ink_drop_delegate->is_hovered());
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_TRUE(ink_drop->is_hovered());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 }
 
 TEST_F(CustomButtonTest, HideInkDropOnBlur) {
   gfx::Point center(10, 10);
 
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
   button()->OnFocus();
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   button()->OnBlur();
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseReleased(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -495,52 +437,49 @@ TEST_F(CustomButtonTest, HideInkDropOnBlur) {
 }
 
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
   button()->set_context_menu_controller(nullptr);
 
-  ink_drop_delegate->SetHovered(true);
-  ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
+  ink_drop->SetHovered(true);
+  ink_drop->AnimateToState(InkDropState::ACTION_PENDING);
 
   button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
-  EXPECT_TRUE(ink_drop_delegate->is_hovered());
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_TRUE(ink_drop->is_hovered());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 }
 
 TEST_F(CustomButtonTest, InkDropShowHideOnMouseDragged) {
   gfx::Point center(10, 10);
   gfx::Point oob(-1, -1);
 
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseDragged(
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseDragged(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseDragged(
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseReleased(
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
@@ -553,33 +492,32 @@ TEST_F(CustomButtonTest, InkDropStaysHiddenWhileDragging) {
   gfx::Point center(10, 10);
   gfx::Point oob(-1, -1);
 
-  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::ACTION_PENDING,
-            ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
   SetDraggedView(button());
   widget()->SetCapture(button());
   widget()->ReleaseCapture();
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseDragged(
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, oob, oob, ui::EventTimeForNow(),
                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   button()->OnMouseDragged(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
 
   SetDraggedView(nullptr);
 }
