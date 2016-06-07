@@ -80,15 +80,6 @@ class SymmetricKeyDeriveKeyFromPasswordTest
 
 TEST_P(SymmetricKeyDeriveKeyFromPasswordTest, DeriveKeyFromPassword) {
   PBKDF2TestVector test_data(GetParam());
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // The OS X crypto libraries have minimum salt and iteration requirements
-  // so some of the tests below will cause them to barf. Skip these.
-  if (strlen(test_data.salt) < 8 || test_data.rounds < 1000) {
-    VLOG(1) << "Skipped test vector for " << test_data.expected;
-    return;
-  }
-#endif  // OS_MACOSX
-
   std::unique_ptr<crypto::SymmetricKey> key(
       crypto::SymmetricKey::DeriveKeyFromPassword(
           test_data.algorithm, test_data.password, test_data.salt,

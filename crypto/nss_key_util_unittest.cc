@@ -46,7 +46,6 @@ TEST_F(NSSKeyUtilTest, GenerateRSAKeyPairNSS) {
             PK11_GetPrivateModulusLen(private_key.get()));
 }
 
-#if defined(USE_NSS_CERTS)
 TEST_F(NSSKeyUtilTest, FindNSSKeyFromPublicKeyInfo) {
   // Create an NSS keypair, which will put the keys in the user's NSSDB.
   ScopedSECKEYPublicKey public_key;
@@ -83,6 +82,5 @@ TEST_F(NSSKeyUtilTest, FailedFindNSSKeyFromPublicKeyInfo) {
 
   EXPECT_FALSE(FindNSSKeyFromPublicKeyInfo(public_key_der));
 }
-#endif  // defined(USE_NSS_CERTS)
 
 }  // namespace crypto
