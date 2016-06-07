@@ -802,10 +802,7 @@ void LayoutTableSection::layout()
 {
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
-    // TODO(dgrogan): Change this to RELEASE_ASSERT(!needsCellRecalc()) once
-    // containment and tables play nicely. https://crbug.com/616643
-    if (needsCellRecalc())
-        return;
+    RELEASE_ASSERT(!needsCellRecalc());
     ASSERT(!table()->needsSectionRecalc());
 
     // addChild may over-grow m_grid but we don't want to throw away the memory too early as addChild

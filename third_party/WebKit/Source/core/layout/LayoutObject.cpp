@@ -713,6 +713,10 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (object->isSVGRoot())
         return true;
 
+    // Table parts can't be relayout roots since the table is responsible for layouting all the parts.
+    if (object->isTablePart())
+        return false;
+
     if (object->style()->containsLayout() && object->style()->containsSize())
         return true;
 
@@ -720,10 +724,6 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
         return false;
 
     if (object->style()->width().isIntrinsicOrAuto() || object->style()->height().isIntrinsicOrAuto() || object->style()->height().hasPercent())
-        return false;
-
-    // Table parts can't be relayout roots since the table is responsible for layouting all the parts.
-    if (object->isTablePart())
         return false;
 
     // Scrollbar parts can be removed during layout. Avoid the complexity of having to deal with that.
