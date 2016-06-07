@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 config("hunspell_config") {
   defines = [
     "HUNSPELL_STATIC",
@@ -108,4 +110,17 @@ source_set("hunspell") {
       "-Wno-null-conversion",
     ]
   }
+}
+
+fuzzer_test("hunspell_fuzzer") {
+  sources = [
+    "fuzz/hunspell_fuzzer.cc",
+    "fuzz/hunspell_fuzzer_dictionary.h",
+  ]
+  deps = [
+    ":hunspell",
+  ]
+
+  # This is a dictionary for the fuzzer, not a spellcheck dictionary.
+  dict = "fuzz/hunspell.dict"
 }
