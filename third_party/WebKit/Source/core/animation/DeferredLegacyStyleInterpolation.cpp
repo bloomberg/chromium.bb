@@ -4,8 +4,6 @@
 
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 
-#include "core/animation/ElementAnimations.h"
-#include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -14,33 +12,8 @@
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverState.h"
 
 namespace blink {
-
-void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
-{
-    if (m_outdated || !state.element()->elementAnimations() || !state.element()->elementAnimations()->isAnimationStyleChange()) {
-        RefPtr<AnimatableValue> startAnimatableValue;
-        RefPtr<AnimatableValue> endAnimatableValue;
-
-        // Snapshot underlying values for neutral keyframes first because non-neutral keyframes will mutate the StyleResolverState.
-        if (!m_endCSSValue) {
-            endAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get());
-            startAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get());
-        } else {
-            startAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get());
-            endAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get());
-        }
-
-        m_innerInterpolation = LegacyStyleInterpolation::create(startAnimatableValue, endAnimatableValue, m_id);
-        m_outdated = false;
-    }
-
-    m_innerInterpolation->interpolate(m_cachedIteration, m_cachedFraction);
-    m_innerInterpolation->apply(state);
-}
 
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSValue& value)
 {

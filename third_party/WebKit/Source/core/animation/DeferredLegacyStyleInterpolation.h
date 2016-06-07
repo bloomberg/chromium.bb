@@ -6,9 +6,7 @@
 #define DeferredLegacyStyleInterpolation_h
 
 #include "core/CoreExport.h"
-#include "core/animation/LegacyStyleInterpolation.h"
-#include "core/animation/StyleInterpolation.h"
-#include "core/css/CSSValue.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -21,18 +19,14 @@ class CSSPrimitiveValue;
 class CSSQuadValue;
 class CSSShadowValue;
 class CSSSVGDocumentValue;
+class CSSValue;
 class CSSValueList;
 class CSSValuePair;
 
-class CORE_EXPORT DeferredLegacyStyleInterpolation : public StyleInterpolation {
+// TODO(alancutter): Remove this once compositor keyframes are no longer snapshot during EffectInput::convert().
+class CORE_EXPORT DeferredLegacyStyleInterpolation {
 public:
-    static PassRefPtr<DeferredLegacyStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id)
-    {
-        return adoptRef(new DeferredLegacyStyleInterpolation(start, end, id));
-    }
-
-    void apply(StyleResolverState&) const override;
-
+    STATIC_ONLY(DeferredLegacyStyleInterpolation);
     static bool interpolationRequiresStyleResolve(const CSSValue&);
     static bool interpolationRequiresStyleResolve(const CSSPrimitiveValue&);
     static bool interpolationRequiresStyleResolve(const CSSImageValue&);
@@ -45,20 +39,6 @@ public:
     static bool interpolationRequiresStyleResolve(const CSSBasicShapePolygonValue&);
     static bool interpolationRequiresStyleResolve(const CSSBasicShapeInsetValue&);
     static bool interpolationRequiresStyleResolve(const CSSQuadValue&);
-
-private:
-    DeferredLegacyStyleInterpolation(CSSValue* start, CSSValue* end, CSSPropertyID id)
-        : StyleInterpolation(InterpolableNumber::create(0), InterpolableNumber::create(1), id)
-        , m_startCSSValue(start)
-        , m_endCSSValue(end)
-        , m_outdated(true)
-    {
-    }
-
-    Persistent<CSSValue> m_startCSSValue;
-    Persistent<CSSValue> m_endCSSValue;
-    mutable RefPtr<LegacyStyleInterpolation> m_innerInterpolation;
-    mutable bool m_outdated;
 };
 
 } // namespace blink
