@@ -3119,5 +3119,12 @@ TEST_F(TraceEventTestFixture, SyntheticDelayConfigurationToString) {
   EXPECT_EQ(filter, config.ToCategoryFilterString());
 }
 
+TEST_F(TraceEventTestFixture, ClockSyncEventsAreAlwaysAddedToTrace) {
+  BeginSpecificTrace("-*");
+  TRACE_EVENT_CLOCK_SYNC_RECEIVER(1);
+  EndTraceAndFlush();
+  EXPECT_TRUE(FindNamePhase("clock_sync", "c"));
+}
+
 }  // namespace trace_event
 }  // namespace base
