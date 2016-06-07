@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_GPU_CONTENT_GPU_CLIENT_H_
 #define CONTENT_PUBLIC_GPU_CONTENT_GPU_CLIENT_H_
 
+#include "base/metrics/field_trial.h"
 #include "content/public/common/content_client.h"
 
 namespace gpu {
@@ -19,6 +20,11 @@ class ServiceRegistry;
 class CONTENT_EXPORT ContentGpuClient {
  public:
   virtual ~ContentGpuClient() {}
+
+  // Initializes the client. This sets up the field trial synchronization
+  // mechanism, which will notify |observer| when a field trial is activated,
+  // which should be used to inform the browser process of this state.
+  virtual void Initialize(base::FieldTrialList::Observer* observer) {}
 
   // Allows client to register Mojo services in |registry| on the GPU process.
   // The registered services will be exposed to the browser process through

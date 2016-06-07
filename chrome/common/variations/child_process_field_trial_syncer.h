@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "ipc/ipc_sender.h"
 
 namespace base {
 class CommandLine;
@@ -22,13 +21,14 @@ namespace chrome_variations {
 // processes. Specifically, when a field trial is activated in the browser, it
 // also activates it in the child process and when a field trial is activated
 // in the child process, it notifies the browser process to activate it.
-class ChildProcessFieldTrialSyncer : public base::FieldTrialList::Observer {
+class ChildProcessFieldTrialSyncer {
  public:
   // ChildProcessFieldTrialSyncer constructor taking an externally owned
-  // |ipc_sender| param for sending ChromeViewHostMsg_FieldTrialActivated IPCs
-  // to the browser process. The |ipc_sender| must outlive this object.
-  explicit ChildProcessFieldTrialSyncer(IPC::Sender* ipc_sender);
-  ~ChildProcessFieldTrialSyncer() override;
+  // |observer| param that's responsible for sending IPCs to the browser process
+  // when a trial is activated. The |observer| must outlive this object.
+  explicit ChildProcessFieldTrialSyncer(
+      base::FieldTrialList::Observer* observer);
+  ~ChildProcessFieldTrialSyncer();
 
   // Initializes field trial state change observation and notifies the browser
   // of any field trials that might have already been activated.
@@ -40,11 +40,7 @@ class ChildProcessFieldTrialSyncer : public base::FieldTrialList::Observer {
                             const std::string& group_name);
 
  private:
-  // base::FieldTrialList::Observer:
-  void OnFieldTrialGroupFinalized(const std::string& trial_name,
-                                  const std::string& group_name) override;
-
-  IPC::Sender* const ipc_sender_;
+  base::FieldTrialList::Observer* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessFieldTrialSyncer);
 };

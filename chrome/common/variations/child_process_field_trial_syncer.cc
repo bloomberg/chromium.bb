@@ -9,13 +9,13 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "chrome/common/render_messages.h"
 #include "components/variations/variations_util.h"
 
 namespace chrome_variations {
 
 ChildProcessFieldTrialSyncer::ChildProcessFieldTrialSyncer(
-    IPC::Sender* ipc_sender) : ipc_sender_(ipc_sender) {}
+    base::FieldTrialList::Observer* observer)
+    : observer_(observer) {}
 
 ChildProcessFieldTrialSyncer::~ChildProcessFieldTrialSyncer() {}
 
@@ -25,7 +25,7 @@ void ChildProcessFieldTrialSyncer::InitFieldTrialObserving(
   variations::SetVariationListCrashKeys();
 
   // Listen for field trial activations to report them to the browser.
-  base::FieldTrialList::AddObserver(this);
+  base::FieldTrialList::AddObserver(observer_);
 
   // Some field trials may have been activated before this point. Notify the
   // browser of these activations now. To detect these, take the set difference
@@ -43,7 +43,7 @@ void ChildProcessFieldTrialSyncer::InitFieldTrialObserving(
   base::FieldTrialList::GetActiveFieldTrialGroups(&current_active_trials);
   for (const auto& trial : current_active_trials) {
     if (!ContainsKey(initially_active_trials_set, trial.trial_name))
-      OnFieldTrialGroupFinalized(trial.trial_name, trial.group_name);
+      observer_->OnFieldTrialGroupFinalized(trial.trial_name, trial.group_name);
   }
 }
 
@@ -56,12 +56,6 @@ void ChildProcessFieldTrialSyncer::OnSetFieldTrialGroup(
   // marked as activated.
   trial->group();
   variations::SetVariationListCrashKeys();
-}
-
-void ChildProcessFieldTrialSyncer::OnFieldTrialGroupFinalized(
-    const std::string& trial_name,
-    const std::string& group_name) {
-  ipc_sender_->Send(new ChromeViewHostMsg_FieldTrialActivated(trial_name));
 }
 
 }  // namespace chrome_variations

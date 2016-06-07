@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <list>
 #include <utility>
 
 #include "base/base64.h"
@@ -16,7 +18,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
@@ -189,7 +192,7 @@ class GpuSandboxedProcessLauncherDelegate
 #if defined(OS_WIN)
   bool ShouldSandbox() override {
     bool sandbox = !cmd_line_->HasSwitch(switches::kDisableGpuSandbox);
-    if(! sandbox) {
+    if (!sandbox) {
       DVLOG(1) << "GPU sandbox is disabled";
     }
     return sandbox;
@@ -632,7 +635,7 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
                         OnAcceleratedSurfaceCreatedChildWindow)
 #endif
-
+    IPC_MESSAGE_HANDLER(GpuHostMsg_FieldTrialActivated, OnFieldTrialActivated);
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
 
@@ -915,6 +918,13 @@ void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryUmaStatsReceived");
   uma_memory_stats_received_ = true;
   uma_memory_stats_ = stats;
+}
+
+void GpuProcessHost::OnFieldTrialActivated(const std::string& trial_name) {
+  // Activate the trial in the browser process to match its state in the
+  // GPU process. This is done by calling FindFullName which finalizes the group
+  // and activates the trial.
+  base::FieldTrialList::FindFullName(trial_name);
 }
 
 void GpuProcessHost::OnProcessLaunched() {

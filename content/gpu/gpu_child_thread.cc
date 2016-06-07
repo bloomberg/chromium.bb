@@ -239,8 +239,15 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   service_registry()->AddService(base::Bind(
       &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
 
-  if (GetContentClient()->gpu())  // NULL in tests.
+  if (GetContentClient()->gpu()) {  // NULL in tests.
+    GetContentClient()->gpu()->Initialize(this);
     GetContentClient()->gpu()->RegisterMojoServices(service_registry());
+  }
+}
+
+void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                                const std::string& group_name) {
+  Send(new GpuHostMsg_FieldTrialActivated(trial_name));
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {

@@ -236,7 +236,7 @@ void CreateResourceUsageReporter(
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : field_trial_syncer_(content::RenderThread::Get()), weak_factory_(this) {
+    : field_trial_syncer_(this), weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -282,6 +282,13 @@ bool ChromeRenderThreadObserver::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
+    const std::string& trial_name,
+    const std::string& group_name) {
+  content::RenderThread::Get()->Send(
+      new ChromeViewHostMsg_FieldTrialActivated(trial_name));
 }
 
 void ChromeRenderThreadObserver::OnSetIsIncognitoProcess(

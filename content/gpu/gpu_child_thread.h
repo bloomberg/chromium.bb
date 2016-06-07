@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
@@ -52,7 +53,8 @@ struct EstablishChannelParams;
 // IPC messages to gpu::GpuChannelManager, which is responsible for issuing
 // rendering commands to the GPU.
 class GpuChildThread : public ChildThreadImpl,
-                       public gpu::GpuChannelManagerDelegate {
+                       public gpu::GpuChannelManagerDelegate,
+                       public base::FieldTrialList::Observer {
  public:
   typedef std::queue<IPC::Message*> DeferredMessages;
 
@@ -80,12 +82,12 @@ class GpuChildThread : public ChildThreadImpl,
   gpu::GpuPreferences gpu_preferences() { return gpu_preferences_; }
 
  private:
-  // ChildThread overrides.
+  // ChildThreadImpl:.
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // gpu::GpuChannelManagerDelegate implementation.
+  // gpu::GpuChannelManagerDelegate:
   void SetActiveURL(const GURL& url) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
@@ -102,6 +104,10 @@ class GpuChildThread : public ChildThreadImpl,
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;
+
+  // base::FieldTrialList::Observer:
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                  const std::string& group_name) override;
 
   // Message handlers.
   void OnInitialize(const gpu::GpuPreferences& gpu_preferences);
