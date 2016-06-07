@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
@@ -96,7 +97,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   shelf_widget_->OnShelfAlignmentChanged();
   delegate_->OnShelfAlignmentChanged(this);
   Shell::GetInstance()->OnShelfAlignmentChanged(
-      shelf_widget_->GetNativeWindow()->GetRootWindow());
+      WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
   // ShelfLayoutManager will resize the shelf.
 }
 
@@ -111,7 +112,7 @@ void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
   auto_hide_behavior_ = auto_hide_behavior;
   delegate_->OnShelfAutoHideBehaviorChanged(this);
   Shell::GetInstance()->OnShelfAutoHideBehaviorChanged(
-      shelf_widget_->GetNativeWindow()->GetRootWindow());
+      WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
 }
 
 ShelfAutoHideState Shelf::GetAutoHideState() const {

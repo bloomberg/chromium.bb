@@ -124,8 +124,9 @@ void WmRootWindowControllerAura::OnDisplayWorkAreaInsetsChanged() {
 
 void WmRootWindowControllerAura::OnFullscreenStateChanged(
     bool is_fullscreen,
-    aura::Window* root_window) {
-  if (root_window != root_window_controller_->GetRootWindow())
+    WmWindow* root_window) {
+  if (WmWindowAura::GetAuraWindow(root_window) !=
+      root_window_controller_->GetRootWindow())
     return;
 
   FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
@@ -133,8 +134,9 @@ void WmRootWindowControllerAura::OnFullscreenStateChanged(
 }
 
 void WmRootWindowControllerAura::OnShelfAlignmentChanged(
-    aura::Window* root_window) {
-  if (root_window != root_window_controller_->GetRootWindow())
+    WmWindow* root_window) {
+  if (WmWindowAura::GetAuraWindow(root_window) !=
+      root_window_controller_->GetRootWindow())
     return;
 
   FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,

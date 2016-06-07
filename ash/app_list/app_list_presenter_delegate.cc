@@ -313,8 +313,7 @@ void AppListPresenterDelegate::OnKeyboardBoundsChanging(
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterDelegate, ShellObserver implementation:
-void AppListPresenterDelegate::OnShelfAlignmentChanged(
-    aura::Window* root_window) {
+void AppListPresenterDelegate::OnShelfAlignmentChanged(WmWindow* root_window) {
   if (view_)
     view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
 }

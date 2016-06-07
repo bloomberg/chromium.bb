@@ -551,13 +551,12 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateShelfVisibilityAfterLoginUIChange();
 }
 
-void ShelfLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
+void ShelfLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
   if (Shell::GetInstance()->in_mus())
     LayoutShelf();
 }
 
-void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
-    aura::Window* root_window) {
+void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
   UpdateVisibilityState();
 }
 

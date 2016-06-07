@@ -72,7 +72,7 @@ class ASH_EXPORT AppListPresenterDelegate
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // ShellObserver overrides:
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 

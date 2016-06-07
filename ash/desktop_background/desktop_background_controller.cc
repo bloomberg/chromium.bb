@@ -5,6 +5,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 
 #include "ash/ash_switches.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
@@ -142,7 +143,7 @@ void DesktopBackgroundController::OnDisplayConfigurationChanged() {
   }
 }
 
-void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
+void DesktopBackgroundController::OnRootWindowAdded(WmWindow* root_window) {
   // The background hasn't been set yet.
   if (desktop_background_mode_ == BACKGROUND_NONE)
     return;
@@ -156,7 +157,7 @@ void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
       UpdateWallpaper(true /* clear cache */);
   }
 
-  InstallDesktopController(root_window);
+  InstallDesktopController(WmWindowAura::GetAuraWindow(root_window));
 }
 
 // static

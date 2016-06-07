@@ -163,6 +163,7 @@ class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
 class WmShellAura;
+class WmWindow;
 
 namespace shell {
 class WindowWatcher;
@@ -320,13 +321,13 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void OnMaximizeModeEnded();
 
   // Called when a root window is created.
-  void OnRootWindowAdded(aura::Window* root_window);
+  void OnRootWindowAdded(WmWindow* root_window);
 
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 
   // Called when the shelf is created for |root_window|.
-  void OnShelfCreatedForRootWindow(aura::Window* root_window);
+  void OnShelfCreatedForRootWindow(WmWindow* root_window);
 
   // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
   // exists.
@@ -477,16 +478,15 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Called when the alignment for a shelf changes.
   // TODO(jamescook): Move to Shelf.
-  void OnShelfAlignmentChanged(aura::Window* root_window);
+  void OnShelfAlignmentChanged(WmWindow* root_window);
 
   // Called when the auto-hide behavior for a shelf changes.
   // TODO(jamescook): Move to Shelf.
-  void OnShelfAutoHideBehaviorChanged(aura::Window* root_window);
+  void OnShelfAutoHideBehaviorChanged(WmWindow* root_window);
 
   // Notifies |observers_| when entering or exiting fullscreen mode in
   // |root_window|.
-  void NotifyFullscreenStateChange(bool is_fullscreen,
-                                   aura::Window* root_window);
+  void NotifyFullscreenStateChange(bool is_fullscreen, WmWindow* root_window);
 
   // Creates a modal background (a partially-opaque fullscreen window)
   // on all displays for |window|.

@@ -84,7 +84,7 @@ aura::Window* ScreenDimmer::FindContainer(int container_id) {
              : primary->GetChildById(container_id);
 }
 
-void ScreenDimmer::OnRootWindowAdded(aura::Window* root_window) {
+void ScreenDimmer::OnRootWindowAdded(WmWindow* root_window) {
   Update(is_dimming_);
 }
 

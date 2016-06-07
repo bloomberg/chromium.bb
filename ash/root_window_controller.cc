@@ -250,8 +250,8 @@ class WorkspaceLayoutManagerDelegateImpl
   }
   void OnFullscreenStateChanged(bool is_fullscreen) override {
     if (shelf_) {
-      ash::Shell::GetInstance()->NotifyFullscreenStateChange(is_fullscreen,
-                                                             root_window_);
+      ash::Shell::GetInstance()->NotifyFullscreenStateChange(
+          is_fullscreen, WmWindowAura::Get(root_window_));
     }
   }
 
@@ -415,7 +415,8 @@ void RootWindowController::CreateShelf() {
   }
 
   // Notify shell observers that the shelf has been created.
-  Shell::GetInstance()->OnShelfCreatedForRootWindow(GetRootWindow());
+  Shell::GetInstance()->OnShelfCreatedForRootWindow(
+      WmWindowAura::Get(GetRootWindow()));
 
   shelf_widget_->PostCreateShelf();
 }
@@ -711,7 +712,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
       CreateShelf();
 
     // Notify shell observers about new root window.
-    shell->OnRootWindowAdded(root_window);
+    shell->OnRootWindowAdded(WmWindowAura::Get(root_window));
   }
 
 #if defined(OS_CHROMEOS)

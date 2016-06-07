@@ -5,6 +5,7 @@
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 
 #include "ash/aura/wm_shelf_aura.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -30,17 +31,17 @@ AttachedPanelWindowTargeter::~AttachedPanelWindowTargeter() {
 }
 
 void AttachedPanelWindowTargeter::OnShelfCreatedForRootWindow(
-    aura::Window* root_window) {
-  UpdateTouchExtend(root_window);
+    WmWindow* root_window) {
+  UpdateTouchExtend(WmWindowAura::GetAuraWindow(root_window));
 }
 
 void AttachedPanelWindowTargeter::OnShelfAlignmentChanged(
-    aura::Window* root_window) {
+    WmWindow* root_window) {
   // Don't update the touch insets if the shelf has not yet been created.
   if (!panel_layout_manager_->shelf())
     return;
 
-  UpdateTouchExtend(root_window);
+  UpdateTouchExtend(WmWindowAura::GetAuraWindow(root_window));
 }
 
 void AttachedPanelWindowTargeter::UpdateTouchExtend(aura::Window* root_window) {

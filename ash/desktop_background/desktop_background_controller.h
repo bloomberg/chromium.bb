@@ -97,7 +97,7 @@ class ASH_EXPORT DesktopBackgroundController
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:
-  void OnRootWindowAdded(aura::Window* root_window) override;
+  void OnRootWindowAdded(WmWindow* root_window) override;
 
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who

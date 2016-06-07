@@ -50,8 +50,8 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
   // ShellObserver:
   void OnDisplayWorkAreaInsetsChanged() override;
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+                                WmWindow* root_window) override;
+  void OnShelfAlignmentChanged(WmWindow* root_window) override;
 
  private:
   RootWindowController* root_window_controller_;

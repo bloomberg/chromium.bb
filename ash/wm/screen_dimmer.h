@@ -53,7 +53,7 @@ class ASH_EXPORT ScreenDimmer : ShellObserver {
   explicit ScreenDimmer(int container_id);
 
   // ShellObserver:
-  void OnRootWindowAdded(aura::Window* root_window) override;
+  void OnRootWindowAdded(WmWindow* root_window) override;
 
   // Update the dimming state. This will also create a new DimWindow
   // if necessary. (Used when a new display is connected)

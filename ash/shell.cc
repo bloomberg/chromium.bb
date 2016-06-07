@@ -438,7 +438,7 @@ void Shell::OnMaximizeModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnMaximizeModeEnded());
 }
 
-void Shell::OnRootWindowAdded(aura::Window* root_window) {
+void Shell::OnRootWindowAdded(WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnRootWindowAdded(root_window));
 }
 
@@ -449,7 +449,7 @@ void Shell::CreateShelf() {
     (*iter)->CreateShelf();
 }
 
-void Shell::OnShelfCreatedForRootWindow(aura::Window* root_window) {
+void Shell::OnShelfCreatedForRootWindow(WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver,
                     observers_,
                     OnShelfCreatedForRootWindow(root_window));
@@ -527,18 +527,18 @@ void Shell::UpdateShelfVisibility() {
       (*iter)->UpdateShelfVisibility();
 }
 
-void Shell::OnShelfAlignmentChanged(aura::Window* root_window) {
+void Shell::OnShelfAlignmentChanged(WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnShelfAlignmentChanged(root_window));
 }
 
-void Shell::OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {
+void Shell::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnShelfAutoHideBehaviorChanged(root_window));
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
-                                        aura::Window* root_window) {
+                                        WmWindow* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnFullscreenStateChanged(
       is_fullscreen, root_window));
 }

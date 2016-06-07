@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
@@ -116,10 +117,8 @@ ShelfWindowWatcher::ShelfWindowWatcher(
       observed_activation_clients_(this) {
   // We can't assume all RootWindows have the same ActivationClient.
   // Add a RootWindow and its ActivationClient to the observed list.
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator it = root_windows.begin();
-       it != root_windows.end(); ++it)
-    OnRootWindowAdded(*it);
+  for (aura::Window* root : Shell::GetAllRootWindows())
+    OnRootWindowAdded(WmWindowAura::Get(root));
 
   display::Screen::GetScreen()->AddObserver(this);
 }
@@ -148,7 +147,8 @@ void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
   SetShelfIDForWindow(kInvalidShelfID, window);
 }
 
-void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
+void ShelfWindowWatcher::OnRootWindowAdded(WmWindow* root_window_wm) {
+  aura::Window* root_window = WmWindowAura::GetAuraWindow(root_window_wm);
   // |observed_activation_clients_| can have the same ActivationClient multiple
   // times - which would be handled by the |observed_activation_clients_|.
   observed_activation_clients_.Add(
@@ -278,7 +278,7 @@ void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
   // When the primary root window's display get removed, the existing root
   // window is taken over by the new display and the observer is already set.
   if (!observed_root_windows_.IsObserving(root_window))
-    OnRootWindowAdded(root_window);
+    OnRootWindowAdded(WmWindowAura::Get(root_window));
 }
 
 void ShelfWindowWatcher::OnDisplayRemoved(const display::Display& old_display) {

@@ -29,6 +29,7 @@ namespace ash {
 
 class ShelfModel;
 class ShelfItemDelegateManager;
+class WmWindow;
 
 // ShelfWindowWatcher creates and handles a ShelfItem for windows that have
 // a ShelfItemDetails property in the default container.
@@ -81,8 +82,9 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   // Removes a ShelfItem for |window|.
   void RemoveShelfItem(aura::Window* window);
 
-  // Adds observer to default container and ActivationClient of |root_window|.
-  void OnRootWindowAdded(aura::Window* root_window);
+  // Adds observer to default container and ActivationClient of
+  // |root_window_wm|.
+  void OnRootWindowAdded(WmWindow* root_window_wm);
 
   // Removes observer from ActivationClient of |root_window|.
   void OnRootWindowRemoved(aura::Window* root_window);
