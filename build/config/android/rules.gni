@@ -402,6 +402,8 @@ template("jinja_template") {
     ]
 
     args = [
+      "--loader-base-dir",
+      rebase_path("//", root_build_dir),
       "--inputs",
       rebase_path(invoker.input, root_build_dir),
       "--output",
