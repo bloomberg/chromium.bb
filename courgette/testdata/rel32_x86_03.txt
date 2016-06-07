@@ -1,5 +1,7 @@
 # Test target validity: only accept target RVA in [1000, 3000).
 
+# Processor type
+x86
 # .text start RVA and end RVA
 1000
 3000

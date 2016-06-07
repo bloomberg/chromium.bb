@@ -1,5 +1,7 @@
 # Test false detection cases.
 
+# Processor type
+x86
 # .text start RVA and end RVA
 1000
 3000

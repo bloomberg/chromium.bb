@@ -1,5 +1,7 @@
-# Test all rel32 jump instructions.
+# Test all rel32 jump instructions and supported rip accesses.
 
+# Processor type
+x64
 # .text start RVA and end RVA
 1000
 3000
@@ -31,8 +33,30 @@ Program:
   0040105B: 0F 8D 00 00 00 00  jge         00401061
   00401061: 0F 8E 00 00 00 00  jle         00401067
   00401067: 0F 8F 00 00 00 00  jg          0040106D
-  0040106D: 5D                 pop         ebp
-  0040106E: C3                 ret
+  0040106D: FF 15 00 00 00 00  call        [rip+00000000]
+  00401073: FF 25 00 00 00 00  jmp         [rip+00000000]
+  00401079: 8B 05 00 00 00 00  mov         eax,[rip+00000000]
+  0040107F: 8B 3D 00 00 00 00  mov         edi,[rip+00000000]
+  00401085: 8D 05 00 00 00 00  lea         eax,[rip+00000000]
+  0040108B: 8D 3D 00 00 00 00  lea         edi,[rip+00000000]
+  00401091: 48 8B 05 00 00 00  mov         rax,[rip+00000000]
+            00
+  00401098: 48 8B 3D 00 00 00  mov         rdi,[rip+00000000]
+            00
+  0040109F: 48 8D 05 00 00 00  lea         rax,[rip+00000000]
+            00
+  004010A6: 48 8D 3D 00 00 00  lea         rdi,[rip+00000000]
+            00
+  004010AD: 4C 8B 05 00 00 00  mov         r8,[rip+00000000]
+            00
+  004010B4: 4C 8B 3D 00 00 00  mov         r15,[rip+00000000]
+            00
+  004010BB: 4C 8D 05 00 00 00  lea         r8,[rip+00000000]
+            00
+  004010C2: 4C 8D 3D 00 00 00  lea         r15,[rip+00000000]
+            00
+  004010C9: 5D                 pop         ebp
+  004010CA: C3                 ret
 
 Abs32:
 
@@ -53,3 +77,17 @@ Expected:
 105D
 1063
 1069
+106F
+1075
+# 107B Not yet detected.
+# 1081 Not yet detected.
+# 1087 Not yet detected.
+# 108D Not yet detected.
+1094
+109B
+10A2
+10A9
+10B0
+10B7
+10BE
+10C5

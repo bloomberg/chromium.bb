@@ -2,45 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
-#include "courgette/rel32_finder_win32_x86.h"
+#include "courgette/rel32_finder_x86.h"
 
 namespace courgette {
 
-Rel32FinderWin32X86::Rel32FinderWin32X86(RVA relocs_start_rva,
-                                         RVA relocs_end_rva)
-    : relocs_start_rva_(relocs_start_rva), relocs_end_rva_(relocs_end_rva) {
-}
+Rel32FinderX86::Rel32FinderX86(RVA relocs_start_rva, RVA relocs_end_rva)
+    : Rel32Finder(relocs_start_rva, relocs_end_rva) {}
 
-Rel32FinderWin32X86::~Rel32FinderWin32X86() {
-}
-
-void Rel32FinderWin32X86::SwapRel32Locations(std::vector<RVA>* dest) {
-  dest->swap(rel32_locations_);
-}
-
-#if COURGETTE_HISTOGRAM_TARGETS
-void Rel32FinderWin32X86::SwapRel32TargetRVAs(std::map<RVA, int>* dest) {
-  dest->swap(rel32_target_rvas_);
-}
-#endif
-
-Rel32FinderWin32X86_Basic::Rel32FinderWin32X86_Basic(RVA relocs_start_rva,
-                                                     RVA relocs_end_rva)
-    : Rel32FinderWin32X86(relocs_start_rva, relocs_end_rva) {
-}
-
-Rel32FinderWin32X86_Basic::~Rel32FinderWin32X86_Basic() {
-}
-
-void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
-                                     const uint8_t* end_pointer,
-                                     RVA start_rva,
-                                     RVA end_rva,
-                                     const std::vector<RVA>& abs32_locations) {
+// Scan for opcodes matching the following instructions :
+//  rel32 JMP/CALL
+//  Jcc (excluding JPO/JPE)
+// Falsely detected rel32 that collide with known abs32 or that point outside
+// valid regions are discarded.
+void Rel32FinderX86::Find(const uint8_t* start_pointer,
+                          const uint8_t* end_pointer,
+                          RVA start_rva,
+                          RVA end_rva,
+                          const std::vector<RVA>& abs32_locations) {
   // Quick way to convert from Pointer to RVA within a single Section is to
-  // subtract 'pointer_to_rva'.
+  // subtract |adjust_pointer_to_rva|.
   const uint8_t* const adjust_pointer_to_rva = start_pointer - start_rva;
 
   std::vector<RVA>::const_iterator abs32_pos = abs32_locations.begin();
@@ -53,11 +33,9 @@ void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
     // Skip the base reloation table if we encounter it.
     // Note: We're not bothering to handle the edge case where a Rel32 pointer
     // collides with |relocs_start_rva_| by being {1, 2, 3}-bytes before it.
-    if (current_rva == relocs_start_rva_) {
-      if (relocs_start_rva_ < relocs_end_rva_) {
-        p += relocs_end_rva_ - relocs_start_rva_;
-        continue;
-      }
+    if (current_rva >= relocs_start_rva_ && current_rva < relocs_end_rva_) {
+      p += relocs_end_rva_ - current_rva;
+      continue;
     }
 
     // Heuristic discovery of rel32 locations in instruction stream: are the
@@ -66,13 +44,13 @@ void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
     const uint8_t* rel32 = nullptr;
 
     if (p + 5 <= end_pointer) {
-      if (*p == 0xE8 || *p == 0xE9) {  // jmp rel32 and call rel32
+      if (p[0] == 0xE8 || p[0] == 0xE9) {  // jmp rel32 and call rel32
         rel32 = p + 1;
       }
     }
     if (p + 6 <= end_pointer) {
-      if (*p == 0x0F  &&  (*(p+1) & 0xF0) == 0x80) {  // Jcc long form
-        if (p[1] != 0x8A && p[1] != 0x8B)  // JPE/JPO unlikely
+      if (p[0] == 0x0F && (p[1] & 0xF0) == 0x80) {  // Jcc long form
+        if (p[1] != 0x8A && p[1] != 0x8B)           // JPE/JPO unlikely
           rel32 = p + 2;
       }
     }

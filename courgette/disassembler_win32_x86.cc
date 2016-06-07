@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
-#include "courgette/rel32_finder_win32_x86.h"
+#include "courgette/rel32_finder_x86.h"
 
 #if COURGETTE_HISTOGRAM_TARGETS
 #include <iostream>
@@ -50,7 +50,7 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
   RVA start_rva = FileOffsetToRVA(start_file_offset);
   RVA end_rva = start_rva + section->virtual_size;
 
-  Rel32FinderWin32X86_Basic finder(
+  Rel32FinderX86 finder(
       base_relocation_table().address_,
       base_relocation_table().address_ + base_relocation_table().size_);
   finder.Find(start_pointer, end_pointer, start_rva, end_rva, abs32_locations_);

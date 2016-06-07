@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COURGETTE_REL32_FINDER_WIN32_X86_H_
-#define COURGETTE_REL32_FINDER_WIN32_X86_H_
+#ifndef COURGETTE_REL32_FINDER_H_
+#define COURGETTE_REL32_FINDER_H_
 
 #include <stdint.h>
 
@@ -15,10 +15,10 @@
 namespace courgette {
 
 // A helper class to scan through a section of code to extract RVAs.
-class Rel32FinderWin32X86 {
+class Rel32Finder {
  public:
-  Rel32FinderWin32X86(RVA relocs_start_rva, RVA relocs_end_rva);
-  virtual ~Rel32FinderWin32X86();
+  Rel32Finder(RVA relocs_start_rva, RVA relocs_end_rva);
+  virtual ~Rel32Finder() = default;
 
   // Swaps data in |rel32_locations_| with |dest|.
   void SwapRel32Locations(std::vector<RVA>* dest);
@@ -51,21 +51,6 @@ class Rel32FinderWin32X86 {
 #endif
 };
 
-// The basic implementation performs naive scan for rel32 JMP and Jcc opcodes
-// (excluding JPO/JPE) disregarding instruction alignment.
-class Rel32FinderWin32X86_Basic : public Rel32FinderWin32X86 {
- public:
-  Rel32FinderWin32X86_Basic(RVA relocs_start_rva, RVA relocs_end_rva);
-  virtual ~Rel32FinderWin32X86_Basic();
-
-  // Rel32FinderWin32X86 implementation.
-  void Find(const uint8_t* start_pointer,
-            const uint8_t* end_pointer,
-            RVA start_rva,
-            RVA end_rva,
-            const std::vector<RVA>& abs32_locations) override;
-};
-
 }  // namespace courgette
 
-#endif  // COURGETTE_REL32_FINDER_WIN32_X86_H_
+#endif  // COURGETTE_REL32_FINDER_H_

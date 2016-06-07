@@ -1,5 +1,7 @@
 # Test rel32 jump instructions with abs32 and .reloc obstructions.
 
+# Processor type
+x86
 # .text start RVA and end RVA
 1000
 3000
@@ -40,7 +42,7 @@ Program:
 Abs32:
 1004
 1008
-105A  # Straddles across two instruction.
+105A  # Straddles across two instructions.
 105F  # Same, but covers the op code (and not the target) of the second.
 
 Expected:
