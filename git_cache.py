@@ -38,7 +38,7 @@ except NameError:
 class LockError(Exception):
   pass
 
-class ClobberNeeded(Exception):
+class RefsHeadsFailedToFetch(Exception):
   pass
 
 class Lockfile(object):
@@ -246,11 +246,7 @@ class Mirror(object):
       cwd = self.mirror_path
 
     # Don't run git-gc in a daemon.  Bad things can happen if it gets killed.
-    try:
-      self.RunGit(['config', 'gc.autodetach', '0'], cwd=cwd)
-    except subprocess.CalledProcessError:
-      # Hard error, need to clobber.
-      raise ClobberNeeded()
+    self.RunGit(['config', 'gc.autodetach', '0'], cwd=cwd)
 
     # Don't combine pack files into one big pack file.  It's really slow for
     # repositories, and there's no way to track progress and make sure it's
@@ -411,7 +407,7 @@ class Mirror(object):
         self.RunGit(fetch_cmd + [spec], cwd=rundir, retry=True)
       except subprocess.CalledProcessError:
         if spec == '+refs/heads/*:refs/heads/*':
-          raise ClobberNeeded()  # Corrupted cache.
+          raise RefsHeadsFailedToFetch
         logging.warn('Fetch of %s failed' % spec)
 
   def populate(self, depth=None, shallow=False, bootstrap=False,
@@ -430,7 +426,7 @@ class Mirror(object):
       tempdir = self._ensure_bootstrapped(depth, bootstrap)
       rundir = tempdir or self.mirror_path
       self._fetch(rundir, verbose, depth)
-    except ClobberNeeded:
+    except RefsHeadsFailedToFetch:
       # This is a major failure, we need to clean and force a bootstrap.
       gclient_utils.rmtree(rundir)
       self.print(GIT_CACHE_CORRUPT_MESSAGE)
