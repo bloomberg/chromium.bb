@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//skia/public/interfaces/skbitmap.typemap" ]
+typemaps = [
+  "//skia/public/interfaces/image_filter.typemap",
+  "//skia/public/interfaces/skbitmap.typemap",
+]

@@ -7,5 +7,17 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "bitmap.mojom",
+    "image_filter.mojom",
+  ]
+}
+
+mojom("test_interfaces") {
+  testonly = true
+  sources = [
+    "test/traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":interfaces",
   ]
 }

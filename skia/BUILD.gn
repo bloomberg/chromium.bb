@@ -22,6 +22,7 @@ skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
 
 declare_args() {
   skia_whitelist_serialized_typefaces = false
+
   # TODO(crbug.com/607933): Once GYP is no longer supported, port iOS to use
   # optimised skia.
   skia_build_no_opts = is_ios
@@ -721,14 +722,21 @@ test("skia_unittests") {
   deps = [
     ":skia",
     "//base",
-    "//base/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//testing/gtest",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
   if (!is_ios) {
-    deps += [ "//cc:test_support" ]  # TODO: Fix this test to not depend on cc.
+    sources += [ "public/interfaces/test/struct_traits_unittest.cc" ]
+    deps += [
+      # TODO: Fix this test to not depend on cc.
+      "//cc:test_support",
+      "//mojo/edk/system",
+      "//mojo/public/cpp/bindings",
+      "//skia/public/interfaces:test_interfaces",
+    ]
   }
 }
 
