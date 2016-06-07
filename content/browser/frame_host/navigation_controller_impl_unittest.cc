@@ -3771,59 +3771,65 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   // TODO(japhet): We should only trust the renderer if the about:blank
   // was the first document in the given frame, but we don't have enough
   // information to identify that case currently.
+  // TODO(creis): Update this to verify that the origin of the about:blank page
+  // matches if the URL doesn't look same-origin.
   const GURL blank_url(url::kAboutBlankURL);
+  const url::Origin blank_origin;
   main_test_rfh()->NavigateAndCommitRendererInitiated(0, true, blank_url);
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url, true,
-      main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url, url::Origin(url), true,
+                                               main_test_rfh()));
 
   // Navigate to URL with no refs.
   main_test_rfh()->NavigateAndCommitRendererInitiated(0, false, url);
 
   // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url, false, main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url, url::Origin(url), false,
+                                                main_test_rfh()));
   const GURL other_url("http://www.google.com/add.html");
-  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url, false,
-      main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(
+      other_url, url::Origin(other_url), false, main_test_rfh()));
   const GURL url_with_ref("http://www.google.com/home.html#my_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref, true,
-      main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(
+      url_with_ref, url::Origin(url_with_ref), true, main_test_rfh()));
 
   // Navigate to URL with refs.
   main_test_rfh()->NavigateAndCommitRendererInitiated(1, true, url_with_ref);
 
   // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url_with_ref, false,
-      main_test_rfh()));
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url, false,
-      main_test_rfh()));
-  EXPECT_FALSE(controller.IsURLInPageNavigation(other_url, false,
-      main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(
+      url_with_ref, url::Origin(url_with_ref), false, main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(url, url::Origin(url), false,
+                                                main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(
+      other_url, url::Origin(other_url), false, main_test_rfh()));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref, true,
-      main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref,
+                                               url::Origin(other_url_with_ref),
+                                               true, main_test_rfh()));
 
   // Going to the same url again will be considered in-page
   // if the renderer says it is even if the navigation type isn't IN_PAGE.
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url_with_ref, true,
-      main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(
+      url_with_ref, url::Origin(url_with_ref), true, main_test_rfh()));
 
   // Going back to the non ref url will be considered in-page if the navigation
   // type is IN_PAGE.
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url, true,
-      main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(url, url::Origin(url), true,
+                                               main_test_rfh()));
 
   // If the renderer says this is a same-origin in-page navigation, believe it.
   // This is the pushState/replaceState case.
-  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url, true,
-      main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(
+      other_url, url::Origin(other_url), true, main_test_rfh()));
 
   // Don't believe the renderer if it claims a cross-origin navigation is
   // in-page.
   const GURL different_origin_url("http://www.example.com");
   MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
   EXPECT_EQ(0, rph->bad_msg_count());
-  EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
-                                                main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLInPageNavigation(
+      different_origin_url, url::Origin(different_origin_url), true,
+      main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
 }
 
@@ -3848,7 +3854,8 @@ TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
   EXPECT_TRUE(file_origin.IsSameOriginWith(
       main_test_rfh()->frame_tree_node()->current_origin()));
   EXPECT_EQ(0, rph->bad_msg_count());
-  EXPECT_TRUE(controller.IsURLInPageNavigation(different_origin_url, true,
+  EXPECT_TRUE(controller.IsURLInPageNavigation(
+      different_origin_url, url::Origin(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
 
@@ -3874,15 +3881,16 @@ TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
   // so that a file URL would still be in-page.  See https://crbug.com/553418.
   EXPECT_TRUE(file_origin.IsSameOriginWith(
       main_test_rfh()->frame_tree_node()->current_origin()));
-  EXPECT_TRUE(
-      controller.IsURLInPageNavigation(file_url, true, main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLInPageNavigation(file_url, url::Origin(file_url),
+                                               true, main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
 
   // Don't honor allow_universal_access_from_file_urls if actual URL is
   // not file scheme.
   const GURL url("http://www.google.com/home.html");
   main_test_rfh()->NavigateAndCommitRendererInitiated(2, true, url);
-  EXPECT_FALSE(controller.IsURLInPageNavigation(different_origin_url, true,
+  EXPECT_FALSE(controller.IsURLInPageNavigation(
+      different_origin_url, url::Origin(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
 }

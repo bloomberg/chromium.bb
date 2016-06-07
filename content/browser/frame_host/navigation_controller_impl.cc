@@ -826,8 +826,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   details->type = ClassifyNavigation(rfh, params);
 
   // is_in_page must be computed before the entry gets committed.
-  details->is_in_page = IsURLInPageNavigation(
-      params.url, params.was_within_same_page, rfh);
+  details->is_in_page = IsURLInPageNavigation(params.url, params.origin,
+                                              params.was_within_same_page, rfh);
 
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
@@ -1372,8 +1372,13 @@ int NavigationControllerImpl::GetIndexOfEntry(
 // in-page. Therefore, trust the renderer if the URLs are on the same origin,
 // and assume the renderer is malicious if a cross-origin navigation claims to
 // be in-page.
+//
+// TODO(creis): Clean up and simplify the about:blank and origin checks below,
+// which are likely redundant with each other.  Be careful about data URLs vs
+// about:blank, both of which are unique origins and thus not considered equal.
 bool NavigationControllerImpl::IsURLInPageNavigation(
     const GURL& url,
+    const url::Origin& origin,
     bool renderer_says_in_page,
     RenderFrameHost* rfh) const {
   RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
@@ -1406,6 +1411,7 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
                         // for now.
                         last_committed_url == GURL(url::kAboutBlankURL) ||
                         last_committed_url.GetOrigin() == url.GetOrigin() ||
+                        committed_origin == origin ||
                         !prefs.web_security_enabled ||
                         (prefs.allow_universal_access_from_file_urls &&
                          committed_origin.scheme() == url::kFileScheme);

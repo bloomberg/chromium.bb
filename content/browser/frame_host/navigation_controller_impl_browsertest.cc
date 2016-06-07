@@ -4165,6 +4165,144 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
+// Test for in-page navigation kills when going back to about:blank after a
+// document.write.  See https://crbug.com/446959.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackAfterIframeDocumentWrite) {
+  GURL links_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+  NavigateToURL(shell(), links_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+
+  // Add an iframe with no 'src'.
+  GURL blank_url(url::kAboutBlankURL);
+  std::string script =
+      "var iframe = document.createElement('iframe');"
+      "iframe.id = 'frame';"
+      "document.body.appendChild(iframe);";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* frame = root->child_at(0);
+  ASSERT_NE(nullptr, frame);
+  EXPECT_EQ(blank_url, frame->current_url());
+
+  // Do a document.write in the subframe to create a link to click.
+  std::string document_write_script =
+      "var iframe = document.getElementById('frame');"
+      "iframe.contentWindow.document.write("
+      "    \"<a id='fraglink' href='#frag'>fragment link</a>\");"
+      "iframe.contentWindow.document.close();";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), document_write_script));
+
+  // Click the link to do an in-page navigation.  Due to the document.write, the
+  // new URL matches the parent frame's URL.
+  GURL frame_url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html#frag"));
+  std::string link_script = "document.getElementById('fraglink').click()";
+  EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), link_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(2, RendererHistoryLength(shell()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(frame_url_2, frame->current_url());
+
+  // Go back.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    controller.GoBack();
+    observer.Wait();
+  }
+
+  // Verify the process is still alive by running script.  We can't just call
+  // IsRenderFrameLive after the navigation since it might not have disconnected
+  // yet.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "true;"));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+
+  EXPECT_EQ(blank_url, frame->current_url());
+}
+
+// Test for in-page navigation kills when going back to about:blank in an iframe
+// of a data URL, after a document.write.  This differs from
+// BackAfterIframeDocumentWrite because both about:blank and the data URL are
+// considered unique origins.  See https://crbug.com/446959.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackAfterIframeDocumentWriteInDataURL) {
+  GURL data_url("data:text/html,Top level page");
+  NavigateToURL(shell(), data_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+
+  // Add an iframe with no 'src'.
+  GURL blank_url(url::kAboutBlankURL);
+  std::string script =
+      "var iframe = document.createElement('iframe');"
+      "iframe.id = 'frame';"
+      "document.body.appendChild(iframe);";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(1, RendererHistoryLength(shell()));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* frame = root->child_at(0);
+  ASSERT_NE(nullptr, frame);
+  EXPECT_EQ(blank_url, frame->current_url());
+
+  // Do a document.write in the subframe to create a link to click.
+  std::string document_write_script =
+      "var iframe = document.getElementById('frame');"
+      "iframe.contentWindow.document.write("
+      "    \"<a id='fraglink' href='#frag'>fragment link</a>\");"
+      "iframe.contentWindow.document.close();";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), document_write_script));
+
+  // Click the link to do an in-page navigation.  Due to the document.write, the
+  // new URL matches the parent frame's URL.
+  GURL frame_url_2("data:text/html,Top level page#frag");
+  std::string link_script = "document.getElementById('fraglink').click()";
+  EXPECT_TRUE(ExecuteScript(frame->current_frame_host(), link_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(2, RendererHistoryLength(shell()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(frame_url_2, frame->current_url());
+
+  // Go back.
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    controller.GoBack();
+    observer.Wait();
+  }
+
+  // Verify the process is still alive by running script.  We can't just call
+  // IsRenderFrameLive after the navigation since it might not have disconnected
+  // yet.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), "true;"));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+
+  EXPECT_EQ(blank_url, frame->current_url());
+}
+
 // Ensure that we do not corrupt a NavigationEntry's PageState if a subframe
 // forward navigation commits after we've already started another forward
 // navigation in the main frame.  See https://crbug.com/597322.

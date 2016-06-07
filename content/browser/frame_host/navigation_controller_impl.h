@@ -155,10 +155,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // so that we know to load URLs that were pending as "lazy" loads.
   void SetActive(bool is_active);
 
-  // Returns true if the given URL would be an in-page navigation (i.e. only the
-  // reference fragment is different) from the last committed URL in the
-  // specified frame. If there is no last committed entry, then nothing will be
-  // in-page.
+  // Returns true if the given URL would be an in-page navigation (e.g., if the
+  // reference fragment is different, or after a pushState) from the last
+  // committed URL in the specified frame. If there is no last committed entry,
+  // then nothing will be in-page.
   //
   // Special note: if the URLs are the same, it does NOT automatically count as
   // an in-page navigation. Neither does an input URL that has no ref, even if
@@ -170,11 +170,12 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The situation is made murkier by history.replaceState(), which could
   // provide the same URL as part of an in-page navigation, not a reload. So
   // we need to let the (untrustworthy) renderer resolve the ambiguity, but
-  // only when the URLs are on the same origin.
-  bool IsURLInPageNavigation(
-      const GURL& url,
-      bool renderer_says_in_page,
-      RenderFrameHost* rfh) const;
+  // only when the URLs are on the same origin. We rely on |origin|, which
+  // matters in cases like about:blank that otherwise look cross-origin.
+  bool IsURLInPageNavigation(const GURL& url,
+                             const url::Origin& origin,
+                             bool renderer_says_in_page,
+                             RenderFrameHost* rfh) const;
 
   // Sets the SessionStorageNamespace for the given |partition_id|. This is
   // used during initialization of a new NavigationController to allow

@@ -476,7 +476,8 @@ void NavigatorImpl::DidNavigate(
                         has_embedded_credentials);
 
   bool is_navigation_within_page = controller_->IsURLInPageNavigation(
-      params.url, params.was_within_same_page, render_frame_host);
+      params.url, params.origin, params.was_within_same_page,
+      render_frame_host);
 
   // If a frame claims it navigated within page, it must be the current frame,
   // not a pending one.
