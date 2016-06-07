@@ -43,6 +43,7 @@ struct TEST_RUNNER_EXPORT TestPreferences {
     bool disable_reading_from_canvas;
     bool strict_mixed_content_checking;
     bool strict_powerful_feature_restrictions;
+    bool spatial_navigation_enabled;
 
     TestPreferences();
     void Reset();

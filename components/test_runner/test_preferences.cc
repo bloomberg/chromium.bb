@@ -49,6 +49,7 @@ void TestPreferences::Reset() {
   disable_reading_from_canvas = false;
   strict_mixed_content_checking = false;
   strict_powerful_feature_restrictions = false;
+  spatial_navigation_enabled = false;
 }
 
 }  // namespace test_runner
