@@ -9,6 +9,10 @@ namespace switches {
 
 const char kEngineCertPath[] = "engine-cert-path";
 
+// Specifies the engine's IP address. Must be used in conjunction with
+// --engine-port and --engine-transport.
+// This is the same command line flag as ENGINE_IP in
+// blimp/client/app/android/java/src/org/chromium/blimp/BlimpClientSwitches.java
 const char kEngineIP[] = "engine-ip";
 
 const char kEnginePort[] = "engine-port";

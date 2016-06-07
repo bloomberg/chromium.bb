@@ -424,6 +424,7 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/auth/TokenSource.java",
       "app/android/java/src/org/chromium/blimp/auth/TokenSourceImpl.java",
       "app/android/java/src/org/chromium/blimp/BlimpApplication.java",
+      "app/android/java/src/org/chromium/blimp/BlimpClientSwitches.java",
       "app/android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "app/android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
