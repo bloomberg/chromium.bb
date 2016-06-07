@@ -157,4 +157,43 @@ public class DisableIfTest {
             Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", originalHardware);
         }
     }
+
+    @DisableIf.Build(supported_abis_includes = "foo")
+    private static class DisableIfSuperclassTestCase extends TestCase {
+        public DisableIfSuperclassTestCase(String name) {
+            super(name);
+        }
+    }
+
+    @DisableIf.Build(hardware_is = "hammerhead")
+    private static class DisableIfTestCase extends DisableIfSuperclassTestCase {
+        public DisableIfTestCase(String name) {
+            super(name);
+        }
+        public void sampleTestMethod() {}
+    }
+
+    @Test
+    public void testDisableClass() {
+        TestCase sampleTestMethod = new DisableIfTestCase("sampleTestMethod");
+        String originalHardware = Build.HARDWARE;
+        try {
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", "hammerhead");
+            Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(sampleTestMethod));
+        } finally {
+            Robolectric.Reflection.setFinalStaticField(Build.class, "HARDWARE", originalHardware);
+        }
+    }
+
+    @Test
+    public void testDisableSuperClass() {
+        TestCase sampleTestMethod = new DisableIfTestCase("sampleTestMethod");
+        String originalAbi = Build.CPU_ABI;
+        try {
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", "foo");
+            Assert.assertTrue(new DisableIfSkipCheck().shouldSkip(sampleTestMethod));
+        } finally {
+            Robolectric.Reflection.setFinalStaticField(Build.class, "CPU_ABI", originalAbi);
+        }
+    }
 }

@@ -10,7 +10,6 @@ import junit.framework.TestCase;
 
 import org.chromium.base.Log;
 
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -28,16 +27,12 @@ public class DisableIfSkipCheck extends SkipCheck {
         Method method = getTestMethod(testCase);
         if (method == null) return true;
 
-        if (((AnnotatedElement) method).isAnnotationPresent(DisableIf.Build.class)) {
-            DisableIf.Build v = method.getAnnotation(DisableIf.Build.class);
-
+        for (DisableIf.Build v : getAnnotations(method, DisableIf.Build.class)) {
             if (abi(v) && hardware(v) && sdk(v)) {
                 if (!v.message().isEmpty()) {
                     Log.i(TAG, "%s is disabled: %s", testCase.toString(), v.message());
                 }
                 return true;
-            } else {
-                return false;
             }
         }
 
