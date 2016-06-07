@@ -129,7 +129,6 @@ FilterEffectBuilder::~FilterEffectBuilder()
 DEFINE_TRACE(FilterEffectBuilder)
 {
     visitor->trace(m_lastEffect);
-    visitor->trace(m_referenceFilters);
 }
 
 bool FilterEffectBuilder::build(Element* element, const FilterOperations& operations, float zoom, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
@@ -143,10 +142,8 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
             Filter* referenceFilter = ReferenceFilterBuilder::build(zoom, element, previousEffect, toReferenceFilterOperation(*filterOperation), referenceBoxSize, fillPaint, strokePaint);
-            if (referenceFilter) {
+            if (referenceFilter)
                 effect = referenceFilter->lastEffect();
-                m_referenceFilters.append(referenceFilter);
-            }
             break;
         }
         case FilterOperation::GRAYSCALE: {
@@ -251,8 +248,6 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             previousEffect = effect;
         }
     }
-
-    m_referenceFilters.append(parentFilter);
 
     // We need to keep the old effects alive until this point, so that SVG reference filters
     // can share cached resources across frames.

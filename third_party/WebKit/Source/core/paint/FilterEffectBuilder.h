@@ -29,13 +29,11 @@
 #include "core/CoreExport.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
 
 class SkPaint;
 
 namespace blink {
 
-class Filter;
 class FilterOperations;
 class Element;
 
@@ -60,7 +58,6 @@ private:
     FilterEffectBuilder();
 
     Member<FilterEffect> m_lastEffect;
-    HeapVector<Member<Filter>> m_referenceFilters;
 };
 
 } // namespace blink
