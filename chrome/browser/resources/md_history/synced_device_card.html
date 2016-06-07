@@ -93,9 +93,9 @@
                 [[tab.title]]
               </a>
             </div>
-            <template is="dom-if" if="[[tab.needsWindowSeparator]]">
-              <div id="window-separator"></div>
-            </template>
+            <div id="window-separator"
+                hidden$="[[!isWindowSeparatorIndex_(index, separatorIndexes)]]">
+            </div>
           </template>
           <div class="item-container">
             <p on-tap="openAllTabs_" id="open-tabs">$i18n{openAll}</p>

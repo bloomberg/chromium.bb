@@ -67,7 +67,8 @@
         </template>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="history-synced-device-manager"
-              session-list="[[queryState_.sessionList]]">
+              session-list="[[queryState_.sessionList]]"
+              searched-term=[[queryState_.info.term]]>
           </history-synced-device-manager>
         </template>
       </iron-pages>

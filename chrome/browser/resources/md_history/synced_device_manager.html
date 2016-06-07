@@ -18,7 +18,8 @@
     <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
       <history-synced-device-card device="[[syncedDevice.device]]"
           last-update-time="[[syncedDevice.lastUpdateTime]]"
-          tabs="[[syncedDevice.tabs]]">
+          tabs="[[syncedDevice.tabs]]"
+          separator-indexes="[[syncedDevice.separatorIndexes]]">
       </history-synced-device-card>
     </template>
   </template>

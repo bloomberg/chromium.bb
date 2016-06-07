@@ -5,6 +5,7 @@
 /**
  * @typedef {{device: string,
  *           lastUpdateTime: string,
+ *           separatorIndexes: !Array<number>,
  *           timestamp: number,
  *           tabs: !Array<!ForeignSessionTab>,
  *           tag: string}}
@@ -20,7 +21,12 @@ Polymer({
      */
     sessionList: {
       type: Array,
-      observer: 'setSyncedHistory',
+      observer: 'updateSyncedDevices'
+    },
+
+    searchedTerm: {
+      type: String,
+      observer: 'searchTermChanged'
     },
 
     /**
@@ -39,20 +45,39 @@ Polymer({
    */
   createInternalDevice_: function(session) {
     var tabs = [];
-    for (var j = 0; j < session.windows.length; j++) {
-      var newTabs = session.windows[j].tabs;
+    var separatorIndexes = [];
+    for (var i = 0; i < session.windows.length; i++) {
+      var newTabs = session.windows[i].tabs;
       if (newTabs.length == 0)
         continue;
 
-      tabs = tabs.concat(newTabs);
-      tabs[tabs.length - 1].needsWindowSeparator = true;
+
+      if (!this.searchedTerm) {
+        // Add all the tabs if there is no search term.
+        tabs = tabs.concat(newTabs);
+        separatorIndexes.push(tabs.length - 1);
+      } else {
+        var searchText = this.searchedTerm.toLowerCase();
+        var windowAdded = false;
+        for (var j = 0; j < newTabs.length; j++) {
+          var tab = newTabs[j];
+          if (tab.title.toLowerCase().indexOf(searchText) != -1) {
+            tabs.push(tab);
+            windowAdded = true;
+          }
+        }
+        if (windowAdded)
+          separatorIndexes.push(tabs.length - 1);
+      }
+
     }
     return {
       device: session.name,
       lastUpdateTime: '– ' + session.modifiedTime,
+      separatorIndexes: separatorIndexes,
       timestamp: session.timestamp,
       tabs: tabs,
-      tag: session.tag
+      tag: session.tag,
     };
   },
 
@@ -62,9 +87,9 @@ Polymer({
    * avoid doing extra work in this case. The logic could be more intelligent
    * about updating individual tabs rather than replacing whole sessions, but
    * this approach seems to have acceptable performance.
-   * @param {!Array<!ForeignSession>} sessionList
+   * @param {?Array<!ForeignSession>} sessionList
    */
-  setSyncedHistory: function(sessionList) {
+  updateSyncedDevices: function(sessionList) {
     if (!sessionList)
       return;
 
@@ -83,5 +108,10 @@ Polymer({
     for (var i = updateCount; i < sessionList.length; i++) {
       this.push('syncedDevices_', this.createInternalDevice_(sessionList[i]));
     }
+  },
+
+  searchTermChanged: function(searchedTerm) {
+    this.syncedDevices_ = [];
+    this.updateSyncedDevices(this.sessionList);
   }
 });

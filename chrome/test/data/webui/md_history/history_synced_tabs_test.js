@@ -31,6 +31,16 @@ cr.define('md_history.history_synced_tabs_test', function() {
       var app;
       var element;
 
+      var numWindowSeparators = function(card) {
+        return Polymer.dom(card.root).
+            querySelectorAll(':not([hidden])#window-separator').length;
+      };
+
+      var getCards = function() {
+        return Polymer.dom(element.root).
+            querySelectorAll('history-synced-device-card');
+      }
+
       suiteSetup(function() {
         app = $('history-app');
         // Not rendered until selected.
@@ -65,7 +75,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
               [createWindow(['http://www.google.com', 'http://example.com'])]
           ),
           createSession(
-              'Nexus 5',
+              'Nexus 6',
               [
                 createWindow(['http://test.com']),
                 createWindow(['http://www.gmail.com', 'http://badssl.com'])
@@ -75,19 +85,12 @@ cr.define('md_history.history_synced_tabs_test', function() {
         setForeignSessions(sessionList, true);
 
         return flush().then(function() {
-          var cards = Polymer.dom(element.root)
-                          .querySelectorAll('history-synced-device-card');
+          var cards = getCards();
           assertEquals(2, cards.length);
 
           // Ensure separators between windows are added appropriately.
-          assertEquals(
-              1, Polymer.dom(cards[0].root)
-                     .querySelectorAll('#window-separator')
-                     .length);
-          assertEquals(
-              2, Polymer.dom(cards[1].root)
-                     .querySelectorAll('#window-separator')
-                     .length);
+          assertEquals(1, numWindowSeparators(cards[0]));
+          assertEquals(2, numWindowSeparators(cards[1]));
         });
       });
 
@@ -114,15 +117,11 @@ cr.define('md_history.history_synced_tabs_test', function() {
           return flush();
         }).then(function() {
           // There should only be two cards.
-          var cards = Polymer.dom(element.root)
-              .querySelectorAll('history-synced-device-card');
+          var cards = getCards();
           assertEquals(2, cards.length);
 
           // There are now 2 windows in the first device.
-          assertEquals(
-              2, Polymer.dom(cards[0].root)
-                     .querySelectorAll('#window-separator')
-                     .length);
+          assertEquals(2, numWindowSeparators(cards[0]));
 
           // Check that the actual link changes.
           assertEquals(
@@ -133,8 +132,50 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
       });
 
+      test('two cards, multiple windows, search', function() {
+        var sessionList = [
+          createSession(
+              'Nexus 5',
+              [createWindow(['http://www.google.com', 'http://example.com'])]
+          ),
+          createSession(
+              'Nexus 6',
+              [
+                createWindow(['http://www.gmail.com', 'http://badssl.com']),
+                createWindow(['http://test.com']),
+                createWindow(['http://www.gmail.com', 'http://bagssl.com'])
+              ]
+          ),
+        ];
+        setForeignSessions(sessionList, true);
+
+        return flush().then(function() {
+          var cards = getCards();
+          assertEquals(2, cards.length);
+
+          // Ensure separators between windows are added appropriately.
+          assertEquals(1, numWindowSeparators(cards[0]));
+          assertEquals(3, numWindowSeparators(cards[1]));
+          element.searchedTerm = 'g';
+
+          return flush();
+        }).then(function() {
+          var cards = getCards();
+
+          assertEquals(1, numWindowSeparators(cards[0]));
+          assertEquals(1, cards[0].tabs.length);
+          assertEquals('http://www.google.com', cards[0].tabs[0].title);
+          assertEquals(2, numWindowSeparators(cards[1]));
+          assertEquals(3, cards[1].tabs.length);
+          assertEquals('http://www.gmail.com', cards[1].tabs[0].title);
+          assertEquals('http://www.gmail.com', cards[1].tabs[1].title);
+          assertEquals('http://bagssl.com', cards[1].tabs[2].title);
+        });
+      });
+
       teardown(function() {
         element.syncedDevices = [];
+        element.searchedTerm = '';
       });
     });
   }

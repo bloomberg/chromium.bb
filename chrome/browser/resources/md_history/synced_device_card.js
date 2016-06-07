@@ -7,16 +7,10 @@ Polymer({
 
   properties: {
     // Name of the synced device.
-    device: {
-      type: String,
-      value: ''
-    },
+    device: {type: String, value: ''},
 
     // When the device information was last updated.
-    lastUpdateTime: {
-      type: String,
-      value: ''
-    },
+    lastUpdateTime: {type: String, value: ''},
 
     /**
      * The list of tabs open for this device.
@@ -28,11 +22,16 @@ Polymer({
       observer: 'updateIcons_'
     },
 
+    /**
+     * The indexes where a window separator should be shown. The use of a
+     * separate array here is necessary for window separators to appear
+     * correctly in search. See http://crrev.com/2022003002 for more details.
+     * @type {!Array<number>}
+     */
+    separatorIndexes: Array,
+
     // Whether the card is open.
-    cardOpen_: {
-      type: Boolean,
-      value: true
-    },
+    cardOpen_: {type: Boolean, value: true},
   },
 
   /**
@@ -68,5 +67,10 @@ Polymer({
             cr.icon.getFaviconImageSet(this.tabs[i].url);
       }
     });
+  },
+
+  /** @private */
+  isWindowSeparatorIndex_: function(index, separatorIndexes) {
+    return this.separatorIndexes.indexOf(index) != -1;
   }
 });

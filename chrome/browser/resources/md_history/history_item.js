@@ -69,6 +69,8 @@ cr.define('md_history', function() {
      * occurrences of the search term in bold.
      * @private
      */
+    // TODO(calamity): Pull this bolding behavior into a separate element for
+    // synced device search.
     setSearchedTextToBold_: function() {
       var i = 0;
       var titleElem = this.$.title;
