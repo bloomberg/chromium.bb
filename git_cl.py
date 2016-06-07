@@ -2991,6 +2991,10 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
       fetch = lambda cl: (cl, cl.GetStatus())
       yield fetch(changes[0])
 
+      if not changes:
+        # Exit early if there was only one branch to fetch.
+        return
+
       changes_to_fetch = changes[1:]
       pool = ThreadPool(
           min(max_processes, len(changes_to_fetch))
@@ -3114,6 +3118,69 @@ def upload_branch_deps(cl, args):
     upload_status = 'failed' if failures.get(dependent_branch) else 'succeeded'
     print '  %s : %s' % (dependent_branch, upload_status)
   print
+
+  return 0
+
+
+def CMDarchive(parser, args):
+  """Archives and deletes branches associated with closed changelists."""
+  parser.add_option(
+      '-j', '--maxjobs', action='store', type=int,
+      help='The maximum number of jobs to use when retrieving review status')
+  parser.add_option(
+      '-f', '--force', action='store_true',
+      help='Bypasses the confirmation prompt.')
+
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported args: %s' % ' '.join(args))
+  auth_config = auth.extract_auth_config_from_options(options)
+
+  branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
+  if not branches:
+    return 0
+
+  print 'Finding all branches associated with closed issues...'
+  changes = [Changelist(branchref=b, auth_config=auth_config)
+              for b in branches.splitlines()]
+  alignment = max(5, max(len(c.GetBranch()) for c in changes))
+  statuses = get_cl_statuses(changes,
+                             fine_grained=True,
+                             max_processes=options.maxjobs)
+  proposal = [(cl.GetBranch(),
+               'git-cl-archived-%s-%s' % (cl.GetIssue(), cl.GetBranch()))
+              for cl, status in statuses
+              if status == 'closed']
+  proposal.sort()
+
+  if not proposal:
+    print 'No branches with closed codereview issues found.'
+    return 0
+
+  current_branch = GetCurrentBranch()
+
+  print '\nBranches with closed issues that will be archived:\n'
+  print '%*s | %s' % (alignment, 'Branch name', 'Archival tag name')
+  for next_item in proposal:
+    print '%*s   %s' % (alignment, next_item[0], next_item[1])
+
+  if any(branch == current_branch for branch, _ in proposal):
+    print('You are currently on a branch \'%s\' which is associated with a '
+          'closed codereview issue, so archive cannot proceed. Please '
+          'checkout another branch and run this command again.' %
+          current_branch)
+    return 1
+
+  if not options.force:
+    if ask_for_data('\nProceed with deletion (Y/N)? ').lower() != 'y':
+      print 'Aborted.'
+      return 1
+
+  for branch, tagname in proposal:
+    RunGit(['tag', tagname, branch])
+    RunGit(['branch', '-D', branch])
+  print '\nJob\'s done!'
 
   return 0
 
