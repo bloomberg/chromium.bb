@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/MatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixTransformComponent.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/MathExtras.h"
@@ -10,7 +10,7 @@
 
 namespace blink {
 
-CSSFunctionValue* MatrixTransformComponent::toCSSValue() const
+CSSFunctionValue* CSSMatrixTransformComponent::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(m_is2D ? CSSValueMatrix : CSSValueMatrix3d);
 
@@ -30,46 +30,46 @@ CSSFunctionValue* MatrixTransformComponent::toCSSValue() const
     return result;
 }
 
-MatrixTransformComponent* MatrixTransformComponent::perspective(double length)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::perspective(double length)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     if (length != 0)
         matrix->setM34(-1 / length);
-    return new MatrixTransformComponent(std::move(matrix), PerspectiveType);
+    return new CSSMatrixTransformComponent(std::move(matrix), PerspectiveType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::rotate(double angle)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::rotate(double angle)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->rotate(angle);
-    return new MatrixTransformComponent(std::move(matrix), RotationType);
+    return new CSSMatrixTransformComponent(std::move(matrix), RotationType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::rotate3d(double angle, double x, double y, double z)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::rotate3d(double angle, double x, double y, double z)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->rotate3d(x, y, z, angle);
-    return new MatrixTransformComponent(std::move(matrix), Rotation3DType);
+    return new CSSMatrixTransformComponent(std::move(matrix), Rotation3DType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::scale(double x, double y)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::scale(double x, double y)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM11(x);
     matrix->setM22(y);
-    return new MatrixTransformComponent(std::move(matrix), ScaleType);
+    return new CSSMatrixTransformComponent(std::move(matrix), ScaleType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::scale3d(double x, double y, double z)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::scale3d(double x, double y, double z)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM11(x);
     matrix->setM22(y);
     matrix->setM33(z);
-    return new MatrixTransformComponent(std::move(matrix), Scale3DType);
+    return new CSSMatrixTransformComponent(std::move(matrix), Scale3DType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::skew(double ax, double ay)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::skew(double ax, double ay)
 {
     double tanAx = std::tan(deg2rad(ax));
     double tanAy = std::tan(deg2rad(ay));
@@ -77,24 +77,24 @@ MatrixTransformComponent* MatrixTransformComponent::skew(double ax, double ay)
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM12(tanAy);
     matrix->setM21(tanAx);
-    return new MatrixTransformComponent(std::move(matrix), SkewType);
+    return new CSSMatrixTransformComponent(std::move(matrix), SkewType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::translate(double x, double y)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::translate(double x, double y)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM41(x);
     matrix->setM42(y);
-    return new MatrixTransformComponent(std::move(matrix), TranslationType);
+    return new CSSMatrixTransformComponent(std::move(matrix), TranslationType);
 }
 
-MatrixTransformComponent* MatrixTransformComponent::translate3d(double x, double y, double z)
+CSSMatrixTransformComponent* CSSMatrixTransformComponent::translate3d(double x, double y, double z)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM41(x);
     matrix->setM42(y);
     matrix->setM43(z);
-    return new MatrixTransformComponent(std::move(matrix), Translation3DType);
+    return new CSSMatrixTransformComponent(std::move(matrix), Translation3DType);
 }
 
 } // namespace blink

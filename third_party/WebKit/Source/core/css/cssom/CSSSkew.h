@@ -5,7 +5,7 @@
 #ifndef CSSSkew_h
 #define CSSSkew_h
 
-#include "core/css/cssom/MatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
@@ -24,9 +24,9 @@ public:
 
     TransformComponentType type() const override { return SkewType; }
 
-    MatrixTransformComponent* asMatrix() const override
+    CSSMatrixTransformComponent* asMatrix() const override
     {
-        return MatrixTransformComponent::skew(m_ax, m_ay);
+        return CSSMatrixTransformComponent::skew(m_ax, m_ay);
     }
 
     CSSFunctionValue* toCSSValue() const override;

@@ -5,7 +5,7 @@
 #ifndef CSSRotation_h
 #define CSSRotation_h
 
-#include "core/css/cssom/MatrixTransformComponent.h"
+#include "core/css/cssom/CSSMatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
@@ -31,10 +31,10 @@ public:
 
     TransformComponentType type() const override { return m_is2D ? RotationType : Rotation3DType; }
 
-    MatrixTransformComponent* asMatrix() const override
+    CSSMatrixTransformComponent* asMatrix() const override
     {
-        return m_is2D ? MatrixTransformComponent::rotate(m_angle)
-            : MatrixTransformComponent::rotate3d(m_angle, m_x, m_y, m_z);
+        return m_is2D ? CSSMatrixTransformComponent::rotate(m_angle)
+            : CSSMatrixTransformComponent::rotate3d(m_angle, m_x, m_y, m_z);
     }
 
     CSSFunctionValue* toCSSValue() const override;

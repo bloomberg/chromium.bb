@@ -29,7 +29,7 @@ public:
     TransformComponentType type() const override { return is2D() ? TranslationType : Translation3DType; }
 
     // TODO: Implement asMatrix for CSSTranslation.
-    MatrixTransformComponent* asMatrix() const override { return nullptr; }
+    CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
 
     CSSFunctionValue* toCSSValue() const override;
 

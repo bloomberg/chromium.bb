@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MatrixTransformComponent_h
-#define MatrixTransformComponent_h
+#ifndef CSSMatrixTransformComponent_h
+#define CSSMatrixTransformComponent_h
 
 #include "core/css/cssom/TransformComponent.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
 
-class CORE_EXPORT MatrixTransformComponent final : public TransformComponent {
-    WTF_MAKE_NONCOPYABLE(MatrixTransformComponent);
+class CORE_EXPORT CSSMatrixTransformComponent final : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(CSSMatrixTransformComponent);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MatrixTransformComponent* create(double a, double b, double c, double d, double e, double f)
+    static CSSMatrixTransformComponent* create(double a, double b, double c, double d, double e, double f)
     {
-        return new MatrixTransformComponent(a, b, c, d, e, f);
+        return new CSSMatrixTransformComponent(a, b, c, d, e, f);
     }
 
-    static MatrixTransformComponent* create(double m11, double m12, double m13, double m14,
+    static CSSMatrixTransformComponent* create(double m11, double m12, double m13, double m14,
         double m21, double m22, double m23, double m24,
         double m31, double m32, double m33, double m34,
         double m41, double m42, double m43, double m44)
     {
-        return new MatrixTransformComponent(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
+        return new CSSMatrixTransformComponent(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
     }
 
     // 2D matrix attributes
@@ -56,31 +56,31 @@ public:
     TransformComponentType type() const override { return m_is2D ? MatrixType : Matrix3DType; }
 
     // Bindings require a non const return value.
-    MatrixTransformComponent* asMatrix() const override { return const_cast<MatrixTransformComponent*>(this); }
+    CSSMatrixTransformComponent* asMatrix() const override { return const_cast<CSSMatrixTransformComponent*>(this); }
 
     CSSFunctionValue* toCSSValue() const override;
 
-    static MatrixTransformComponent* perspective(double length);
+    static CSSMatrixTransformComponent* perspective(double length);
 
-    static MatrixTransformComponent* rotate(double angle);
-    static MatrixTransformComponent* rotate3d(double angle, double x, double y, double z);
+    static CSSMatrixTransformComponent* rotate(double angle);
+    static CSSMatrixTransformComponent* rotate3d(double angle, double x, double y, double z);
 
-    static MatrixTransformComponent* scale(double x, double y);
-    static MatrixTransformComponent* scale3d(double x, double y, double z);
+    static CSSMatrixTransformComponent* scale(double x, double y);
+    static CSSMatrixTransformComponent* scale3d(double x, double y, double z);
 
-    static MatrixTransformComponent* skew(double x, double y);
+    static CSSMatrixTransformComponent* skew(double x, double y);
 
-    static MatrixTransformComponent* translate(double x, double y);
-    static MatrixTransformComponent* translate3d(double x, double y, double z);
+    static CSSMatrixTransformComponent* translate(double x, double y);
+    static CSSMatrixTransformComponent* translate3d(double x, double y, double z);
 
 private:
-    MatrixTransformComponent(double a, double b, double c, double d, double e, double f)
+    CSSMatrixTransformComponent(double a, double b, double c, double d, double e, double f)
         : TransformComponent()
         , m_matrix(TransformationMatrix::create(a, b, c, d, e, f))
         , m_is2D(true)
     { }
 
-    MatrixTransformComponent(double m11, double m12, double m13, double m14,
+    CSSMatrixTransformComponent(double m11, double m12, double m13, double m14,
         double m21, double m22, double m23, double m24,
         double m31, double m32, double m33, double m34,
         double m41, double m42, double m43, double m44)
@@ -89,7 +89,7 @@ private:
         , m_is2D(false)
     { }
 
-    MatrixTransformComponent(PassOwnPtr<const TransformationMatrix> matrix, TransformComponentType fromType)
+    CSSMatrixTransformComponent(PassOwnPtr<const TransformationMatrix> matrix, TransformComponentType fromType)
         : TransformComponent()
         , m_matrix(std::move(matrix))
         , m_is2D(is2DComponentType(fromType))

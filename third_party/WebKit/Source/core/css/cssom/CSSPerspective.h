@@ -25,7 +25,7 @@ public:
     TransformComponentType type() const override { return PerspectiveType; }
 
     // TODO: Implement asMatrix for CSSPerspective.
-    MatrixTransformComponent* asMatrix() const override { return nullptr; }
+    CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
 
     CSSFunctionValue* toCSSValue() const override;
 

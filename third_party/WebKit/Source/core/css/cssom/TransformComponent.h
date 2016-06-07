@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class MatrixTransformComponent;
+class CSSMatrixTransformComponent;
 
 class CORE_EXPORT TransformComponent : public GarbageCollectedFinalized<TransformComponent>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(TransformComponent);
@@ -43,7 +43,7 @@ public:
     }
 
     virtual CSSFunctionValue* toCSSValue() const = 0;
-    virtual MatrixTransformComponent* asMatrix() const = 0;
+    virtual CSSMatrixTransformComponent* asMatrix() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
