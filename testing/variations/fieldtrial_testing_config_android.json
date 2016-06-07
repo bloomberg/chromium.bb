@@ -219,6 +219,22 @@
             "group_name": "NetworkTimeQueriesEnabled"
         }
     ],
+    "NonValidatingReloadOnRefreshContent": [
+        {
+            "enable_features": [
+                "NonValidatingReloadOnRefreshContent"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
+    "NonValidatingReloadOnRefreshContentV2": [
+        {
+            "enable_features": [
+                "NonValidatingReloadOnRefreshContentV2"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "OfferUploadCreditCards": [
         {
             "group_name": "Enabled"
