@@ -20,6 +20,7 @@
           '--git_hash', '<(GIT_HASH)',
           '--isolated_outdir', '${ISOLATED_OUTDIR}',
           '--configuration', '<(CONFIGURATION)',
+          '--builder', '<(BUILDER)',
         ],
       },
     }],

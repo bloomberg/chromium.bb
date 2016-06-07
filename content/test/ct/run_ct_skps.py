@@ -33,6 +33,8 @@ def main():
   parser.add_argument('-i', '--isolated_outdir', required=True,
                       help='Swarming will automatically upload to '
                            'isolateserver all artifacts in this dir.')
+  parser.add_argument('-b', '--builder', required=True,
+                      help='The name of the builder.')
   args = parser.parse_args()
 
   tool_path = os.path.join(SKIA_SRC_DIR, 'out', args.configuration, args.tool)
@@ -51,18 +53,30 @@ def main():
     ])
   elif args.tool == 'nanobench':
     # Add Nanobench specific arguments.
+    config = '8888'
+    cpu_or_gpu = 'CPU'
+    cpu_or_gpu_value = 'AVX2'
+    if 'GPU' in args.builder:
+      config = 'gpu'
+      cpu_or_gpu = 'GPU'
+      cpu_or_gpu_value = 'GT610'
+
     out_results_file = os.path.join(
-        args.isolated_outdir, 'nanobench_%s_slave%d.json' % (args.git_hash,
-                                                             args.slave_num))
+        args.isolated_outdir, 'nanobench_%s_%s_slave%d.json' % (
+            args.git_hash, config, args.slave_num))
     cmd.extend([
       '--skps', skps_dir,
       '--match', 'skp',
       '--resourcePath', resource_path,
-      '--config', '8888', 'gpu',
+      '--config', config,
       '--outResultsFile', out_results_file,
       '--properties', 'gitHash', args.git_hash,
-      '--key', 'arch', 'x86_64', 'compiler', 'GCC', 'cpu_or_gpu', 'CPU',
-               'cpu_or_gpu_value', 'AVX2', 'model', 'SWARM', 'os', 'Ubuntu',
+      '--key', 'arch', 'x86_64',
+               'compiler', 'GCC',
+               'cpu_or_gpu', cpu_or_gpu,
+               'cpu_or_gpu_value', cpu_or_gpu_value,
+               'model', 'SWARM',
+               'os', 'Ubuntu',
       '--verbose',
     ])
   elif args.tool == 'get_images_from_skps':
