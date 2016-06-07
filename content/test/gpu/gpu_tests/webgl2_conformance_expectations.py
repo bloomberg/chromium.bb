@@ -78,45 +78,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/multisample.html',
         ['amd'], bug=617290)
 
-    # Failing because the tests are using invalid combinations of source and
-    # destination formats, see https://github.com/KhronosGroup/WebGL/issues/1628
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_byte.html',
-        bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
-        bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
-        bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_byte.html',
-        bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
-        bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_byte.html',
-        bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
-        bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
-        bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_byte.html',
-        bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
-        bug=483282)
-
     # Windows only.
 
     self.Fail('deqp/functional/gles3/vertexarrays.html',

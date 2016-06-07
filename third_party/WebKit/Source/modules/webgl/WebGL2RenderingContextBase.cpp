@@ -461,6 +461,21 @@ bool WebGL2RenderingContextBase::checkAndTranslateAttachments(const char* functi
     return true;
 }
 
+bool WebGL2RenderingContextBase::canUseTexImageCanvasByGPU(GLint internalformat, GLenum type)
+{
+    switch (internalformat) {
+    case GL_RGB565:
+    case GL_RGBA4:
+    case GL_RGB5_A1:
+        // FIXME: ES3 limitation that CopyTexImage with sized internalformat,
+        // component sizes have to match the source color format.
+        return false;
+    default:
+        break;
+    }
+    return WebGLRenderingContextBase::canUseTexImageCanvasByGPU(internalformat, type);
+}
+
 void WebGL2RenderingContextBase::invalidateFramebuffer(GLenum target, const Vector<GLenum>& attachments)
 {
     if (isContextLost())

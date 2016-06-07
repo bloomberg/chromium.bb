@@ -792,7 +792,7 @@ protected:
     // Copy from the canvas element directly to the texture via the GPU, without a read-back to system memory.
     void texImageCanvasByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level,
         GLint internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
-    bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type);
+    virtual bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type);
 
     virtual WebGLImageConversion::PixelStoreParams getPackPixelStoreParams();
     virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(TexImageDimension);

@@ -271,6 +271,8 @@ protected:
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target) override;
     bool validateBufferDataUsage(const char* functionName, GLenum usage) override;
 
+    bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type) override;
+
     void removeBoundBuffer(WebGLBuffer*) override;
 
     void resetUnpackParameters() override;
