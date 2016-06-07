@@ -50,9 +50,10 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   content::MojoShellConnection* mojo_shell_connection =
       content::MojoShellConnection::Get();
   if (mojo_shell_connection && mojo_shell_connection->UsingExternalShell()) {
-    views::WindowManagerConnection::Create(
+    window_manager_connection_ = views::WindowManagerConnection::Create(
         mojo_shell_connection->GetConnector(),
         mojo_shell_connection->GetIdentity());
   }
-#endif
+#endif  // defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+  ChromeBrowserMainExtraParts::PreProfileInit();
 }

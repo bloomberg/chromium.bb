@@ -18,6 +18,7 @@
 namespace views {
 class AuraInit;
 class Widget;
+class WindowManagerConnection;
 }
 
 namespace mash {
@@ -52,6 +53,7 @@ class TaskViewer : public shell::ShellClient,
 
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskViewer);
 };

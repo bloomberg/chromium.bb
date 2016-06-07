@@ -46,11 +46,13 @@ class PlatformTestHelperMus : public PlatformTestHelper {
                         const shell::Identity& identity) {
     // It is necessary to recreate the WindowManagerConnection for each test,
     // since a new MessageLoop is created for each test.
-    WindowManagerConnection::Create(connector, identity);
+    connection_ = WindowManagerConnection::Create(connector, identity);
   }
-  ~PlatformTestHelperMus() override { WindowManagerConnection::Reset(); }
+  ~PlatformTestHelperMus() override {}
 
  private:
+  std::unique_ptr<WindowManagerConnection> connection_;
+
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
 };
 
@@ -85,8 +87,6 @@ class ShellConnection {
   }
 
   ~ShellConnection() {
-    if (views::WindowManagerConnection::Exists())
-      views::WindowManagerConnection::Reset();
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(

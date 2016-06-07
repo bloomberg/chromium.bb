@@ -27,7 +27,7 @@ void BrowserMainParts::PreMainMessageLoopRun() {
   content::MojoShellConnection* mojo_shell_connection =
       content::MojoShellConnection::Get();
   if (mojo_shell_connection) {
-    views::WindowManagerConnection::Create(
+    window_manager_connection_ = views::WindowManagerConnection::Create(
         mojo_shell_connection->GetConnector(),
         mojo_shell_connection->GetIdentity());
   }

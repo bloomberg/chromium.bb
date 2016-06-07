@@ -15,6 +15,7 @@
 namespace views {
 class AuraInit;
 class Widget;
+class WindowManagerConnection;
 }
 
 class WindowTypeLauncher
@@ -46,6 +47,7 @@ class WindowTypeLauncher
   std::vector<views::Widget*> windows_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

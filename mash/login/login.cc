@@ -40,9 +40,7 @@ class UI : public views::WidgetDelegateView,
                    const shell::Identity& identity,
                    Login* login) {
     UI* ui = new UI(login, connector);
-    ui->StartWindowManager();
-
-    views::WindowManagerConnection::Create(connector, identity);
+    ui->StartWindowManager(identity);
 
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
@@ -79,7 +77,7 @@ class UI : public views::WidgetDelegateView,
   }
   ~UI() override {
     // Prevent the window manager from restarting during graceful shutdown.
-    window_manager_connection_->SetConnectionLostClosure(base::Closure());
+    mash_wm_connection_->SetConnectionLostClosure(base::Closure());
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
@@ -114,10 +112,12 @@ class UI : public views::WidgetDelegateView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  void StartWindowManager() {
-    window_manager_connection_ = connector_->Connect("mojo:ash");
-    window_manager_connection_->SetConnectionLostClosure(
-        base::Bind(&UI::StartWindowManager, base::Unretained(this)));
+  void StartWindowManager(const shell::Identity& identity) {
+    mash_wm_connection_ = connector_->Connect("mojo:ash");
+    mash_wm_connection_->SetConnectionLostClosure(
+        base::Bind(&UI::StartWindowManager, base::Unretained(this), identity));
+    window_manager_connection_ =
+        views::WindowManagerConnection::Create(connector_, identity);
   }
 
   Login* login_;
@@ -126,7 +126,8 @@ class UI : public views::WidgetDelegateView,
   const std::string user_id_2_;
   views::LabelButton* login_button_1_;
   views::LabelButton* login_button_2_;
-  std::unique_ptr<shell::Connection> window_manager_connection_;
+  std::unique_ptr<shell::Connection> mash_wm_connection_;
+  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(UI);
 };
@@ -182,7 +183,6 @@ class Login : public shell::ShellClient,
   std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;
   mus::mojom::UserAccessManagerPtr user_access_manager_;
-  std::unique_ptr<shell::Connection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };

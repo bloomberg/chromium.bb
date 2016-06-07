@@ -217,7 +217,8 @@ class AshInit {
     InitializeResourceBundle(connector);
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
     MaterialDesignController::Initialize();
-    views::WindowManagerConnection::Create(connector, identity);
+    window_manager_connection_ =
+        views::WindowManagerConnection::Create(connector, identity);
 
     display::Screen* screen = display::Screen::GetScreen();
     DCHECK(screen);
@@ -300,6 +301,7 @@ class AshInit {
   std::unique_ptr<views::AuraInit> aura_init_;
   ShellDelegateMus* ash_delegate_ = nullptr;
   std::unique_ptr<NativeWidgetFactory> native_widget_factory_;
+  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(AshInit);
 };

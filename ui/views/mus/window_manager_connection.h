@@ -41,13 +41,13 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(mus::WindowTreeClientDelegate),
       public ScreenMusDelegate {
  public:
-  static void Create(shell::Connector* connector,
-                     const shell::Identity& identity);
+  static std::unique_ptr<WindowManagerConnection> Create(
+      shell::Connector* connector,
+      const shell::Identity& identity);
   static WindowManagerConnection* Get();
   static bool Exists();
 
-  // Destroys the singleton instance.
-  static void Reset();
+  ~WindowManagerConnection() override;
 
   shell::Connector* connector() { return connector_; }
 
@@ -67,7 +67,6 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
 
   WindowManagerConnection(shell::Connector* connector,
                           const shell::Identity& identity);
-  ~WindowManagerConnection() override;
 
   // Returns true if there is one or more pointer watchers for this client.
   bool HasPointerWatcher();

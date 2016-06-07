@@ -16,6 +16,7 @@
 
 namespace views {
 class AuraInit;
+class WindowManagerConnection;
 }
 
 namespace mash {
@@ -38,6 +39,7 @@ class Screenlock : public shell::ShellClient,
 
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
   mojo::BindingSet<session::mojom::ScreenlockStateListener> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Screenlock);

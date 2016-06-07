@@ -12,6 +12,7 @@
 
 namespace views {
 class ViewsDelegate;
+class WindowManagerConnection;
 }
 
 #if defined(USE_AURA)
@@ -35,6 +36,9 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
 #if defined(USE_AURA)
   std::unique_ptr<wm::WMState> wm_state_;
+#endif
+#if defined(USE_AURA) && defined(MOJO_SHELL_CLIENT)
+  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);

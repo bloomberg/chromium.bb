@@ -174,7 +174,8 @@ void QuickLaunchApplication::Initialize(shell::Connector* connector,
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(connector, identity);
+  window_manager_connection_ =
+      views::WindowManagerConnection::Create(connector, identity);
 
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }

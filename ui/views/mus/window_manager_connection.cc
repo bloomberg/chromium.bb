@@ -35,10 +35,14 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 }  // namespace
 
 // static
-void WindowManagerConnection::Create(shell::Connector* connector,
-                                     const shell::Identity& identity) {
+std::unique_ptr<WindowManagerConnection> WindowManagerConnection::Create(
+    shell::Connector* connector,
+    const shell::Identity& identity) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(connector, identity));
+  WindowManagerConnection* connection =
+      new WindowManagerConnection(connector, identity);
+  DCHECK(lazy_tls_ptr.Pointer()->Get());
+  return base::WrapUnique(connection);
 }
 
 // static
@@ -51,12 +55,6 @@ WindowManagerConnection* WindowManagerConnection::Get() {
 // static
 bool WindowManagerConnection::Exists() {
   return !!lazy_tls_ptr.Pointer()->Get();
-}
-
-// static
-void WindowManagerConnection::Reset() {
-  delete Get();
-  lazy_tls_ptr.Pointer()->Set(nullptr);
 }
 
 mus::Window* WindowManagerConnection::NewWindow(
@@ -108,6 +106,7 @@ WindowManagerConnection::WindowManagerConnection(
     : connector_(connector),
       identity_(identity),
       created_device_data_manager_(false) {
+  lazy_tls_ptr.Pointer()->Set(this);
   client_.reset(new mus::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
 
@@ -134,6 +133,7 @@ WindowManagerConnection::~WindowManagerConnection() {
   client_.reset();
   if (created_device_data_manager_)
     ui::DeviceDataManager::DeleteInstance();
+  lazy_tls_ptr.Pointer()->Set(nullptr);
 
   if (ViewsDelegate::GetInstance()) {
     ViewsDelegate::GetInstance()->set_native_widget_factory(

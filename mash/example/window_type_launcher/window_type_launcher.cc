@@ -493,7 +493,8 @@ void WindowTypeLauncher::Initialize(shell::Connector* connector,
   connector_ = connector;
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 
-  views::WindowManagerConnection::Create(connector, identity);
+  window_manager_connection_ =
+      views::WindowManagerConnection::Create(connector, identity);
 }
 
 bool WindowTypeLauncher::AcceptConnection(shell::Connection* connection) {
