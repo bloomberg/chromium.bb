@@ -42,14 +42,14 @@
 #if HAVE_LIBXML
 #include <libxml/parser.h>
 
-#define PROGRAM_NAME "wayland-scanner"
-
 /* Embedded wayland.dtd file, see dtddata.S */
 extern char DTD_DATA_begin;
 extern int DTD_DATA_len;
 #endif
 
 #include "wayland-util.h"
+
+#define PROGRAM_NAME "wayland-scanner"
 
 enum side {
 	CLIENT,
