@@ -278,8 +278,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
     ui::LatencyInfo latency_info;
     tracker()->OnInputEvent(event, &latency_info);
     EXPECT_EQ(1u, latency_info.input_coordinates_size());
-    EXPECT_EQ(100, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(200, latency_info.input_coordinates()[0].y());
+    EXPECT_EQ(100, latency_info.input_coordinates()[0].x);
+    EXPECT_EQ(200, latency_info.input_coordinates()[0].y);
   }
 
   {
@@ -289,8 +289,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
     ui::LatencyInfo latency_info;
     tracker()->OnInputEvent(event, &latency_info);
     EXPECT_EQ(1u, latency_info.input_coordinates_size());
-    EXPECT_EQ(300, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(400, latency_info.input_coordinates()[0].y());
+    EXPECT_EQ(300, latency_info.input_coordinates()[0].x);
+    EXPECT_EQ(400, latency_info.input_coordinates()[0].y);
   }
 
   {
@@ -301,8 +301,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
     ui::LatencyInfo latency_info;
     tracker()->OnInputEvent(event, &latency_info);
     EXPECT_EQ(1u, latency_info.input_coordinates_size());
-    EXPECT_EQ(500, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(600, latency_info.input_coordinates()[0].y());
+    EXPECT_EQ(500, latency_info.input_coordinates()[0].x);
+    EXPECT_EQ(600, latency_info.input_coordinates()[0].y);
   }
 
   {
@@ -313,10 +313,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
     ui::LatencyInfo latency_info;
     tracker()->OnInputEvent(event, &latency_info);
     EXPECT_EQ(2u, latency_info.input_coordinates_size());
-    EXPECT_EQ(700, latency_info.input_coordinates()[0].x());
-    EXPECT_EQ(800, latency_info.input_coordinates()[0].y());
-    EXPECT_EQ(900, latency_info.input_coordinates()[1].x());
-    EXPECT_EQ(1000, latency_info.input_coordinates()[1].y());
+    EXPECT_EQ(700, latency_info.input_coordinates()[0].x);
+    EXPECT_EQ(800, latency_info.input_coordinates()[0].y);
+    EXPECT_EQ(900, latency_info.input_coordinates()[1].x);
+    EXPECT_EQ(1000, latency_info.input_coordinates()[1].y);
   }
 
   {

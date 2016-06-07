@@ -25,8 +25,9 @@ void UpdateLatencyCoordinatesImpl(const blink::WebTouchEvent& touch,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
   for (uint32_t i = 0; i < touch.touchesLength; ++i) {
-    gfx::PointF coordinate(touch.touches[i].position.x * device_scale_factor,
-                           touch.touches[i].position.y * device_scale_factor);
+    LatencyInfo::InputCoordinate coordinate(
+        touch.touches[i].position.x * device_scale_factor,
+        touch.touches[i].position.y * device_scale_factor);
     if (!latency->AddInputCoordinate(coordinate))
       break;
   }
@@ -35,22 +36,25 @@ void UpdateLatencyCoordinatesImpl(const blink::WebTouchEvent& touch,
 void UpdateLatencyCoordinatesImpl(const WebGestureEvent& gesture,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
-  latency->AddInputCoordinate(gfx::PointF(gesture.x * device_scale_factor,
-                                          gesture.y * device_scale_factor));
+  latency->AddInputCoordinate(
+      LatencyInfo::InputCoordinate(gesture.x * device_scale_factor,
+                                   gesture.y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinatesImpl(const WebMouseEvent& mouse,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
-  latency->AddInputCoordinate(gfx::PointF(mouse.x * device_scale_factor,
-                                          mouse.y * device_scale_factor));
+  latency->AddInputCoordinate(
+      LatencyInfo::InputCoordinate(mouse.x * device_scale_factor,
+                                   mouse.y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinatesImpl(const WebMouseWheelEvent& wheel,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
-  latency->AddInputCoordinate(gfx::PointF(wheel.x * device_scale_factor,
-                                          wheel.y * device_scale_factor));
+  latency->AddInputCoordinate(
+      LatencyInfo::InputCoordinate(wheel.x * device_scale_factor,
+                                   wheel.y * device_scale_factor));
 }
 
 void UpdateLatencyCoordinates(const WebInputEvent& event,

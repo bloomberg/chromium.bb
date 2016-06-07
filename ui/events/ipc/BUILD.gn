@@ -18,6 +18,5 @@ component("ipc") {
     "//base",
     "//ipc",
     "//ui/events:events_base",
-    "//ui/gfx/ipc/geometry",
   ]
 }

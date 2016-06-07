@@ -137,6 +137,12 @@ static base::LazyInstance<LatencyInfoEnabledInitializer>::Leaky
 
 namespace ui {
 
+LatencyInfo::InputCoordinate::InputCoordinate() : x(0), y(0) {
+}
+
+LatencyInfo::InputCoordinate::InputCoordinate(float x, float y) : x(x), y(y) {
+}
+
 LatencyInfo::LatencyInfo()
     : input_coordinates_size_(0),
       trace_id_(-1),
@@ -337,8 +343,8 @@ LatencyInfo::CoordinatesAsTraceableData() {
   for (size_t i = 0; i < input_coordinates_size_; i++) {
     std::unique_ptr<base::DictionaryValue> coordinate_pair(
         new base::DictionaryValue());
-    coordinate_pair->SetDouble("x", input_coordinates_[i].x());
-    coordinate_pair->SetDouble("y", input_coordinates_[i].y());
+    coordinate_pair->SetDouble("x", input_coordinates_[i].x);
+    coordinate_pair->SetDouble("y", input_coordinates_[i].y);
     coordinates->Append(coordinate_pair.release());
   }
   return LatencyInfoTracedValue::FromValue(std::move(coordinates));
@@ -369,7 +375,7 @@ void LatencyInfo::RemoveLatency(LatencyComponentType type) {
   }
 }
 
-bool LatencyInfo::AddInputCoordinate(const gfx::PointF& input_coordinate) {
+bool LatencyInfo::AddInputCoordinate(const InputCoordinate& input_coordinate) {
   if (input_coordinates_size_ >= kMaxInputCoordinates)
     return false;
   input_coordinates_[input_coordinates_size_++] = input_coordinate;

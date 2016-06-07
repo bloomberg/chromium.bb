@@ -7,21 +7,37 @@
 
 #include "ui/events/latency_info.h"
 #include "ui/events/mojo/latency_info.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
+
+template <>
+struct StructTraits<ui::mojom::InputCoordinate,
+                    ui::LatencyInfo::InputCoordinate> {
+  static float x(const ui::LatencyInfo::InputCoordinate& input) {
+    return input.x;
+  }
+  static float y(const ui::LatencyInfo::InputCoordinate& input) {
+    return input.y;
+  }
+  static bool Read(ui::mojom::InputCoordinateDataView data,
+                   ui::LatencyInfo::InputCoordinate* out) {
+    out->x = data.x();
+    out->y = data.y();
+    return true;
+  }
+};
 
 // A buffer used to read bytes directly from LatencyInfoDataView into
 // ui::LatencyInfo's input_coordinates_.
 struct InputCoordinateArray {
   size_t size;
-  gfx::PointF* data;
+  ui::LatencyInfo::InputCoordinate* data;
 };
 
 // TODO(fsamuel): We should add a common ArrayTraits<CArray<T>> utility struct.
 template <>
 struct ArrayTraits<InputCoordinateArray> {
-  using Element = gfx::PointF;
+  using Element = ui::LatencyInfo::InputCoordinate;
   static size_t GetSize(const InputCoordinateArray& b);
   static Element* GetData(InputCoordinateArray& b);
   static const Element* GetData(const InputCoordinateArray& b);

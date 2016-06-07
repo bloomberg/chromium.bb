@@ -8,6 +8,9 @@ import "ui/events/mojo/latency_info.mojom";
 
 interface TraitsTestService {
   [Sync]
+  EchoInputCoordinate(InputCoordinate i) => (InputCoordinate pass);
+
+  [Sync]
   EchoLatencyComponent(LatencyComponent l) => (LatencyComponent pass);
 
   [Sync]

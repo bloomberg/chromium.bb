@@ -297,7 +297,6 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/ipc/ipc.gyp:ipc',
-        '../gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
         'events_base',
       ],
       'defines': [

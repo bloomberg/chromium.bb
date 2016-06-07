@@ -24,6 +24,7 @@ component("mojo") {
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 
@@ -34,7 +35,6 @@ mojom("interfaces") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
-    "//ui/gfx/geometry/mojo",
   ]
 }
 
