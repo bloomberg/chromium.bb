@@ -6,6 +6,7 @@
 #define MEDIA_CAPTURE_VIDEO_SCOPED_RESULT_CALLBACK_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/callback.h"
 
 namespace media {
@@ -14,8 +15,6 @@ namespace media {
 // to |on_error_callback_| on destruction. Inspired by ScopedWebCallbacks<>.
 template <typename CallbackType>
 class ScopedResultCallback {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedResultCallback);
-
  public:
   using OnErrorCallback = base::Callback<void(const CallbackType&)>;
   ScopedResultCallback(const CallbackType& callback,
@@ -51,6 +50,8 @@ class ScopedResultCallback {
  private:
   CallbackType callback_;
   OnErrorCallback on_error_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedResultCallback);
 };
 
 }  // namespace media

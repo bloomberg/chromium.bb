@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -48,8 +49,6 @@ namespace mojo {
 // bound, it may be bound or destroyed on any thread.
 template <typename Interface>
 class StrongBinding {
-  MOVE_ONLY_TYPE_FOR_CPP_03(StrongBinding);
-
  public:
   explicit StrongBinding(Interface* impl) : binding_(impl) {}
 
@@ -113,6 +112,8 @@ class StrongBinding {
  private:
   Closure connection_error_handler_;
   Binding<Interface> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(StrongBinding);
 };
 
 }  // namespace mojo

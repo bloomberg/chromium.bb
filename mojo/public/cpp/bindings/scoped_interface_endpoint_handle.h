@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/move.h"
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
 
 namespace mojo {
@@ -19,8 +18,6 @@ class MultiplexRouter;
 // ScopedInterfaceEndpointHandle refers to one end of an interface, either the
 // implementation side or the client side.
 class ScopedInterfaceEndpointHandle {
-  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(ScopedInterfaceEndpointHandle);
-
  public:
   // Creates an invalid endpoint handle.
   ScopedInterfaceEndpointHandle();
@@ -63,6 +60,8 @@ class ScopedInterfaceEndpointHandle {
   internal::InterfaceId id_;
   bool is_local_;
   scoped_refptr<internal::MultiplexRouter> router_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedInterfaceEndpointHandle);
 };
 
 }  // namespace mojo

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/move.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
@@ -29,8 +29,6 @@ namespace mojo {
 //     using the insert() method.
 template <typename K, typename V>
 class Map {
-  MOVE_ONLY_TYPE_FOR_CPP_03(Map);
-
  public:
   using Key = K;
   using Value = V;
@@ -262,6 +260,8 @@ class Map {
 
   std::map<Key, Value> map_;
   bool is_null_;
+
+  DISALLOW_COPY_AND_ASSIGN(Map);
 };
 
 // Copies the contents of an std::map to a new Map, optionally changing the

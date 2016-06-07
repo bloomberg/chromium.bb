@@ -1851,8 +1851,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
   results.extend(_CheckForInvalidIfDefinedMacros(input_api, output_api))
   results.extend(_CheckFlakyTestUsage(input_api, output_api))
-  # TODO(danakj): Remove this when base/move.h is removed.
-  results.extend(_CheckForUsingPass(input_api, output_api))
   results.extend(_CheckAddedDepsHaveTargetApprovals(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckChangeHasNoTabs(
@@ -2017,20 +2015,6 @@ def _CheckForInvalidIfDefinedMacros(input_api, output_api):
       'Found ifdef check on always-defined macro[s]. Please fix your code\n'
       'or check the list of ALWAYS_DEFINED_MACROS in src/PRESUBMIT.py.',
       bad_macros)]
-
-
-def _CheckForUsingPass(input_api, output_api):
-  """Check all affected files for using side effects of Pass."""
-  errors = []
-  for f in input_api.AffectedFiles():
-    if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm')):
-      for lnum, line in f.ChangedContents():
-        # Warn on any use of foo.Pass().
-        if input_api.re.search(r'[a-zA-Z0-9_]+\.Pass\(\)', line):
-          errors.append(output_api.PresubmitError(
-              ('%s:%d uses Pass(); please use std::move() instead. ' +
-               'See crbug.com/557422.') % (f.LocalPath(), lnum)))
-  return errors
 
 
 def _CheckForIPCRules(input_api, output_api):

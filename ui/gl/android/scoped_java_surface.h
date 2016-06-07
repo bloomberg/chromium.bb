@@ -8,7 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/move.h"
+#include "base/macros.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
@@ -19,8 +19,6 @@ class SurfaceTexture;
 // When going out of scope, Surface.release() is called on the Java object to
 // make sure server-side references (esp. wrt graphics memory) are released.
 class GL_EXPORT ScopedJavaSurface {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedJavaSurface);
-
  public:
   ScopedJavaSurface();
 
@@ -61,6 +59,8 @@ class GL_EXPORT ScopedJavaSurface {
   bool is_protected_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedJavaSurface);
 };
 
 }  // namespace gl

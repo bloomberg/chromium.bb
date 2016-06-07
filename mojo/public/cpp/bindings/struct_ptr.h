@@ -8,7 +8,7 @@
 #include <new>
 
 #include "base/logging.h"
-#include "base/move.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -28,8 +28,6 @@ class StructHelper {
 // Smart pointer wrapping a mojom structure with move-only semantics.
 template <typename Struct>
 class StructPtr {
-  MOVE_ONLY_TYPE_FOR_CPP_03(StructPtr);
-
  public:
 
   StructPtr() : ptr_(nullptr) {}
@@ -86,6 +84,7 @@ class StructPtr {
   }
 
  private:
+  // TODO(dcheng): Use an explicit conversion operator.
   typedef Struct* StructPtr::*Testable;
 
  public:
@@ -112,13 +111,13 @@ class StructPtr {
   }
 
   Struct* ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(StructPtr);
 };
 
 // Designed to be used when Struct is small and copyable.
 template <typename Struct>
 class InlinedStructPtr {
-  MOVE_ONLY_TYPE_FOR_CPP_03(InlinedStructPtr);
-
  public:
 
   InlinedStructPtr() : is_null_(true) {}
@@ -175,6 +174,7 @@ class InlinedStructPtr {
   }
 
  private:
+  // TODO(dcheng): Use an explicit conversion operator.
   typedef Struct InlinedStructPtr::*Testable;
 
  public:
@@ -199,6 +199,8 @@ class InlinedStructPtr {
 
   mutable Struct value_;
   bool is_null_;
+
+  DISALLOW_COPY_AND_ASSIGN(InlinedStructPtr);
 };
 
 }  // namespace mojo

@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/move.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
 
 // A ScopedWebCallbacks is a move-only scoper which helps manage the lifetime of
@@ -67,8 +67,6 @@
 // our desired default behavior before deleting the WebCallbacks.
 template <typename CallbacksType>
 class ScopedWebCallbacks {
-  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedWebCallbacks);
-
  public:
   using DestructionCallback =
       base::Callback<void(std::unique_ptr<CallbacksType> callbacks)>;
@@ -98,6 +96,8 @@ class ScopedWebCallbacks {
  private:
   std::unique_ptr<CallbacksType> callbacks_;
   DestructionCallback destruction_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedWebCallbacks);
 };
 
 template <typename CallbacksType>
