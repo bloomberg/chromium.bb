@@ -230,8 +230,10 @@ class TestImporter(object):
 
                 if filename.startswith('.') or filename.endswith('.pl'):
                     continue  # For some reason the w3c repo contains random perl scripts we don't care about.
-                if filename == 'OWNERS':
+                if filename == 'OWNERS' or filename == 'reftest.list':
                     continue  # These files fail our presubmits.
+                # see  http://crbug.com/584660 and
+                # http://crbug.com/582838.
 
 
                 fullpath = self.filesystem.join(root, filename)
