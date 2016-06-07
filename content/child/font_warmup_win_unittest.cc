@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <windows.h>
 
 #include <memory>
 #include <vector>
