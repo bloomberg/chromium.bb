@@ -241,7 +241,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
             // moved back into the .exe. http://crbug.com/546288.
             ChromeCrashReporterClient chrome_crash_client;
             bool is_per_user_install = chrome_crash_client.GetIsPerUserInstall(
-                base::FilePath(exe_path));
+                exe_path.value());
             if (chrome_crash_client.GetShouldDumpLargerDumps(
                     is_per_user_install)) {
               minidump_type = kasko::api::LARGER_DUMP_TYPE;
