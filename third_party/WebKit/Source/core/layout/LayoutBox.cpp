@@ -161,7 +161,7 @@ void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
 
     if (isFloating()) {
         LayoutBlockFlow* parentBlockFlow = nullptr;
-        for (LayoutObject* curr = parent(); curr && !curr->isLayoutView(); curr = curr->parent()) {
+        for (LayoutObject* curr = parent(); curr; curr = curr->parent()) {
             if (curr->isLayoutBlockFlow()) {
                 LayoutBlockFlow* currBlockFlow = toLayoutBlockFlow(curr);
                 if (!parentBlockFlow || currBlockFlow->containsFloat(this))
