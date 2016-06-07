@@ -43,8 +43,6 @@ const char kRTFFormat[] = "rtf";
 const char kBitmapFormat[] = "bitmap";
 const char kWebKitSmartPasteFormat[] = "webkit_smart";
 const char kBookmarkFormat[] = "bookmark";
-const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
-const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
 
 class ClipboardMap {
  public:

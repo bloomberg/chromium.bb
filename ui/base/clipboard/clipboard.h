@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -60,9 +61,13 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const char kMimeTypeText[];
   static const char kMimeTypeURIList[];
   static const char kMimeTypeDownloadURL[];
+  static const char kMimeTypeMozillaURL[];
   static const char kMimeTypeHTML[];
   static const char kMimeTypeRTF[];
   static const char kMimeTypePNG[];
+  static const char kMimeTypeWebCustomData[];
+  static const char kMimeTypeWebkitSmartPaste[];
+  static const char kMimeTypePepperCustomData[];
 
   // Platform neutral holder for native data representation of a clipboard type.
   struct UI_BASE_EXPORT FormatType {
@@ -136,6 +141,13 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Sets the list of threads that are allowed to access the clipboard.
   static void SetAllowedThreads(
       const std::vector<base::PlatformThreadId>& allowed_threads);
+
+  // Sets the clipboard for the current thread. Previously, there was only
+  // one clipboard implementation on a platform; now that mus exists, during
+  // mus app startup, we need to specifically initialize mus instead of the
+  // current platform clipboard. We take ownership of |platform_clipboard|.
+  static void SetClipboardForCurrentThread(
+      std::unique_ptr<Clipboard> platform_clipboard);
 
   // Returns the clipboard object for the current thread.
   //
@@ -308,8 +320,13 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
  private:
   // For access to WriteObjects().
+  friend class ForwardingTestingClipboard;
   friend class ScopedClipboardWriter;
   friend class TestClipboard;
+  // For SetClipboardForCurrentThread's argument.
+  friend struct std::default_delete<Clipboard>;
+
+  static base::PlatformThreadId GetAndValidateThreadID();
 
   // A list of allowed threads. By default, this is empty and no thread checking
   // is done (in the unit test case), but a user (like content) can set which
@@ -318,7 +335,8 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static base::LazyInstance<AllowedThreadsVector> allowed_threads_;
 
   // Mapping from threads to clipboard objects.
-  typedef std::map<base::PlatformThreadId, Clipboard*> ClipboardMap;
+  typedef std::map<base::PlatformThreadId, std::unique_ptr<Clipboard>>
+      ClipboardMap;
   static base::LazyInstance<ClipboardMap> clipboard_map_;
 
   // Mutex that controls access to |g_clipboard_map|.

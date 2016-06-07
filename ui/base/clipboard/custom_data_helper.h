@@ -35,8 +35,6 @@ namespace ui {
 
 #if defined(OS_MACOSX) && !defined(USE_AURA)
 UI_BASE_EXPORT extern NSString* const kWebCustomDataPboardType;
-#elif !defined(OS_WIN) && defined(USE_AURA)
-UI_BASE_EXPORT extern const char kMimeTypeWebCustomData[];
 #endif
 
 UI_BASE_EXPORT void ReadCustomDataTypes(const void* data,

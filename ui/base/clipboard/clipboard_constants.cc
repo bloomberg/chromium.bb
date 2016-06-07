@@ -8,9 +8,15 @@ namespace ui {
 
 const char Clipboard::kMimeTypeText[] = "text/plain";
 const char Clipboard::kMimeTypeURIList[] = "text/uri-list";
+const char Clipboard::kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char Clipboard::kMimeTypeDownloadURL[] = "downloadurl";
 const char Clipboard::kMimeTypeHTML[] = "text/html";
 const char Clipboard::kMimeTypeRTF[] = "text/rtf";
 const char Clipboard::kMimeTypePNG[] = "image/png";
+// TODO(dcheng): This name is temporary. See crbug.com/106449.
+const char Clipboard::kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
+const char Clipboard::kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
+const char Clipboard::kMimeTypePepperCustomData[] =
+    "chromium/x-pepper-custom-data";
 
 }  // namespace ui

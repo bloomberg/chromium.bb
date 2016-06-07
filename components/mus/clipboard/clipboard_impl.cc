@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -84,20 +85,15 @@ void ClipboardImpl::GetAvailableMimeTypes(
                clipboard_state_[clipboard_num]->GetMimeTypes());
 }
 
-void ClipboardImpl::ReadMimeType(
-    uint64_t sequence,
+void ClipboardImpl::ReadClipboardData(
     Clipboard::Type clipboard_type,
     const String& mime_type,
-    const ReadMimeTypeCallback& callback) {
+    const ReadClipboardDataCallback& callback) {
   int clipboard_num = static_cast<int>(clipboard_type);
   Array<uint8_t> mime_data(nullptr);
-  bool valid_sequence_number =
-      clipboard_state_[clipboard_num]->sequence_number() == sequence;
-
-  if (valid_sequence_number)
-    clipboard_state_[clipboard_num]->GetData(mime_type, &mime_data);
-
-  callback.Run(valid_sequence_number, std::move(mime_data));
+  uint64_t sequence = clipboard_state_[clipboard_num]->sequence_number();
+  clipboard_state_[clipboard_num]->GetData(mime_type, &mime_data);
+  callback.Run(sequence, std::move(mime_data));
 }
 
 void ClipboardImpl::WriteClipboardData(

@@ -31,18 +31,16 @@ const char kRendererTaint[] = "chromium/x-renderer-taint";
 
 const char kNetscapeURL[] = "_NETSCAPE_URL";
 
-const char* kAtomsToCache[] = {
-  kString,
-  kText,
-  kUtf8String,
-  kDndSelection,
-  Clipboard::kMimeTypeURIList,
-  kMimeTypeMozillaURL,
-  kNetscapeURL,
-  Clipboard::kMimeTypeText,
-  kRendererTaint,
-  NULL
-};
+const char* kAtomsToCache[] = {kString,
+                               kText,
+                               kUtf8String,
+                               kDndSelection,
+                               Clipboard::kMimeTypeURIList,
+                               Clipboard::kMimeTypeMozillaURL,
+                               kNetscapeURL,
+                               Clipboard::kMimeTypeText,
+                               kRendererTaint,
+                               nullptr};
 
 }  // namespace
 
@@ -156,7 +154,8 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
     scoped_refptr<base::RefCountedMemory> mem(
         base::RefCountedBytes::TakeVector(&data));
 
-    format_map_.Insert(atom_cache_.GetAtom(kMimeTypeMozillaURL), mem);
+    format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL),
+                       mem);
 
     // Set a string fallback as well.
     SetString(spec);
@@ -255,7 +254,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
     // but that doesn't match the assumptions of the rest of the system which
     // expect single types.
 
-    if (data.GetType() == atom_cache_.GetAtom(kMimeTypeMozillaURL)) {
+    if (data.GetType() == atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL)) {
       // Mozilla URLs are (UTF16: URL, newline, title).
       base::string16 unparsed;
       data.AssignTo(&unparsed);
@@ -362,7 +361,7 @@ bool OSExchangeDataProviderAuraX11::HasURL(
   // Windows does and stuffs all the data into one mime type.
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
-    if (data.GetType() == atom_cache_.GetAtom(kMimeTypeMozillaURL)) {
+    if (data.GetType() == atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL)) {
       // File managers shouldn't be using this type, so this is a URL.
       return true;
     } else if (data.GetType() == atom_cache_.GetAtom(
@@ -423,7 +422,7 @@ void OSExchangeDataProviderAuraX11::SetFileContents(
     const std::string& file_contents) {
   DCHECK(!filename.empty());
   DCHECK(format_map_.end() ==
-         format_map_.find(atom_cache_.GetAtom(kMimeTypeMozillaURL)));
+         format_map_.find(atom_cache_.GetAtom(Clipboard::kMimeTypeMozillaURL)));
 
   file_contents_name_ = filename;
 

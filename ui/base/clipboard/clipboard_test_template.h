@@ -56,13 +56,15 @@ class ClipboardTest : public PlatformTest {
  public:
 #if defined(USE_AURA)
   ClipboardTest()
-      : event_source_(PlatformEventSource::CreateDefault()),
+      : event_source_(ClipboardTraits::GetEventSource()),
         clipboard_(ClipboardTraits::Create()) {}
 #else
   ClipboardTest() : clipboard_(ClipboardTraits::Create()) {}
 #endif
 
   ~ClipboardTest() override { ClipboardTraits::Destroy(clipboard_); }
+
+  bool IsMusTest() { return ClipboardTraits::IsMusTest(); }
 
  protected:
   Clipboard& clipboard() { return *clipboard_; }
@@ -86,6 +88,7 @@ class ClipboardTest : public PlatformTest {
 // Hack for tests that need to call static methods of ClipboardTest.
 struct NullClipboardTraits {
   static Clipboard* Create() { return nullptr; }
+  static bool IsMusTest() { return false; }
   static void Destroy(Clipboard*) {}
 };
 
@@ -366,9 +369,11 @@ TYPED_TEST(ClipboardTest, URLTest) {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
-  ascii_text.clear();
-  this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_SELECTION, &ascii_text);
-  EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
+  if (!this->IsMusTest()) {
+    ascii_text.clear();
+    this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_SELECTION, &ascii_text);
+    EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
+  }
 #endif
 }
 
@@ -444,7 +449,7 @@ TYPED_TEST(ClipboardTest, DataTest) {
   this->clipboard().ReadData(kFormat, &output);
   ASSERT_FALSE(output.empty());
 
-  base::Pickle read_pickle(output.data(), output.size());
+  base::Pickle read_pickle(output.data(), static_cast<int>(output.size()));
   base::PickleIterator iter(read_pickle);
   std::string unpickled_string;
   ASSERT_TRUE(iter.ReadString(&unpickled_string));
@@ -479,7 +484,7 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   this->clipboard().ReadData(kFormat2, &output2);
   ASSERT_FALSE(output2.empty());
 
-  base::Pickle read_pickle2(output2.data(), output2.size());
+  base::Pickle read_pickle2(output2.data(), static_cast<int>(output2.size()));
   base::PickleIterator iter2(read_pickle2);
   std::string unpickled_string2;
   ASSERT_TRUE(iter2.ReadString(&unpickled_string2));
@@ -500,7 +505,7 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   this->clipboard().ReadData(kFormat1, &output1);
   ASSERT_FALSE(output1.empty());
 
-  base::Pickle read_pickle1(output1.data(), output1.size());
+  base::Pickle read_pickle1(output1.data(), static_cast<int>(output1.size()));
   base::PickleIterator iter1(read_pickle1);
   std::string unpickled_string1;
   ASSERT_TRUE(iter1.ReadString(&unpickled_string1));

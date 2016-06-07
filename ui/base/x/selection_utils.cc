@@ -20,7 +20,6 @@
 
 namespace ui {
 
-const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kString[] = "STRING";
 const char kText[] = "TEXT";
 const char kTextPlain[] = "text/plain";
@@ -50,7 +49,7 @@ std::vector< ::Atom> GetTextAtomsFrom(const X11AtomCache* atom_cache) {
 std::vector< ::Atom> GetURLAtomsFrom(const X11AtomCache* atom_cache) {
   std::vector< ::Atom> atoms;
   atoms.push_back(atom_cache->GetAtom(Clipboard::kMimeTypeURIList));
-  atoms.push_back(atom_cache->GetAtom(kMimeTypeMozillaURL));
+  atoms.push_back(atom_cache->GetAtom(Clipboard::kMimeTypeMozillaURL));
   return atoms;
 }
 

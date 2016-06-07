@@ -56,6 +56,14 @@ Array<uint8_t> TypeConverter<Array<uint8_t>, std::string>::Convert(
   return result;
 }
 
+Array<uint8_t> TypeConverter<Array<uint8_t>, base::StringPiece>::Convert(
+    const base::StringPiece& input) {
+  Array<uint8_t> result(input.size());
+  if (!input.empty())
+    memcpy(&result.front(), input.data(), input.size());
+  return result;
+}
+
 base::string16 TypeConverter<base::string16, Array<uint8_t>>::Convert(
     const Array<uint8_t>& input) {
   if (input.is_null() || input.empty())
