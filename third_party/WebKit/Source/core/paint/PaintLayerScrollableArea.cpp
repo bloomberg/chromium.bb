@@ -761,6 +761,7 @@ void PaintLayerScrollableArea::clampScrollPositionsAfterLayout()
 
     setNeedsScrollPositionClamp(false);
     resetScrollOriginChanged();
+    m_scrollbarManager.destroyDetachedScrollbars();
 }
 
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const
@@ -1577,7 +1578,8 @@ void PaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrollbar(bool 
         }
     } else {
         m_hBarIsAttached = 0;
-        destroyScrollbar(HorizontalScrollbar);
+        if (!DelayScrollPositionClampScope::clampingIsDelayed())
+            destroyScrollbar(HorizontalScrollbar);
     }
 }
 
@@ -1595,7 +1597,8 @@ void PaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(bool ha
         }
     } else {
         m_vBarIsAttached = 0;
-        destroyScrollbar(VerticalScrollbar);
+        if (!DelayScrollPositionClampScope::clampingIsDelayed())
+            destroyScrollbar(VerticalScrollbar);
     }
 }
 

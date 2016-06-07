@@ -779,8 +779,10 @@ bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child, const 
 
 bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(const LayoutBox& child) const
 {
-    return !mainAxisLengthIsDefinite(child, flexBasisForChild(child)) && (
-        hasOrthogonalFlow(child) || crossAxisOverflowForChild(child) == OverflowAuto);
+    return (!mainAxisLengthIsDefinite(child, flexBasisForChild(child))
+        && (hasOrthogonalFlow(child)
+            || (crossAxisOverflowForChild(child) == OverflowAuto
+                && !PaintLayerScrollableArea::FreezeScrollbarsScope::scrollbarsAreFrozen())));
 }
 
 void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child)
