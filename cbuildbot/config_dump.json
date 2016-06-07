@@ -9459,6 +9459,7 @@
         "boards": [
             "gru"
         ],
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -10763,6 +10764,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": [],
         "vm_tests_override": null
     },

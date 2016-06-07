@@ -660,9 +660,6 @@ _waterfall_config_map = {
         'cave-release',
         'chell-cheets-release',
         'asuka-release',
-        # gru
-        'gru-release',
-        'kevin-release',
         # reef
         'reef-release',
         'amenia-release',
@@ -2990,9 +2987,7 @@ def GetConfig():
 
   # gru-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'gru', None,
-      unimportant_boards=(
-          'gru',
+      'gru', (
           'kevin',
       ),
   )
