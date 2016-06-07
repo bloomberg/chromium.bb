@@ -1004,6 +1004,43 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, Canva
     if (!drawingCanvas())
         return;
 
+    RefPtr<Image> image;
+    FloatSize defaultObjectSize(width(), height());
+    SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
+    if (!imageSource->isVideoElement()) {
+        AccelerationHint hint = imageBuffer()->isAccelerated() ? PreferAcceleration : PreferNoAcceleration;
+        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint, SnapshotReasonDrawImage, defaultObjectSize);
+        if (sourceImageStatus == UndecodableSourceImageStatus)
+            exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
+        if (!image || !image->width() || !image->height())
+            return;
+    } else {
+        if (!static_cast<HTMLVideoElement*>(imageSource)->hasAvailableVideoFrame())
+            return;
+    }
+
+    if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dw) || !std::isfinite(dh)
+        || !std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(sw) || !std::isfinite(sh)
+        || !dw || !dh || !sw || !sh)
+        return;
+
+    FloatRect srcRect = normalizeRect(FloatRect(sx, sy, sw, sh));
+    FloatRect dstRect = normalizeRect(FloatRect(dx, dy, dw, dh));
+    FloatSize imageSize = imageSource->elementSize(defaultObjectSize);
+
+    clipRectsToImageRect(FloatRect(FloatPoint(), imageSize), &srcRect, &dstRect);
+
+    imageSource->adjustDrawRects(&srcRect, &dstRect);
+
+    if (srcRect.isEmpty())
+        return;
+
+    DisableDeferralReason reason = DisableDeferralReasonUnknown;
+    if (shouldDisableDeferral(imageSource, &reason) || image->isTextureBacked())
+        disableDeferral(reason);
+
+    validateStateStack();
+
     // TODO(xidachen): After collecting some data, come back and prune off
     // the ones that is not needed.
     Optional<ScopedUsHistogramTimer> timer;
@@ -1059,43 +1096,6 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, Canva
             timer.emplace(scopedUsCounterOthersCPU);
         }
     }
-
-    RefPtr<Image> image;
-    FloatSize defaultObjectSize(width(), height());
-    SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
-    if (!imageSource->isVideoElement()) {
-        AccelerationHint hint = imageBuffer()->isAccelerated() ? PreferAcceleration : PreferNoAcceleration;
-        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint, SnapshotReasonDrawImage, defaultObjectSize);
-        if (sourceImageStatus == UndecodableSourceImageStatus)
-            exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
-        if (!image || !image->width() || !image->height())
-            return;
-    } else {
-        if (!static_cast<HTMLVideoElement*>(imageSource)->hasAvailableVideoFrame())
-            return;
-    }
-
-    if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dw) || !std::isfinite(dh)
-        || !std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(sw) || !std::isfinite(sh)
-        || !dw || !dh || !sw || !sh)
-        return;
-
-    FloatRect srcRect = normalizeRect(FloatRect(sx, sy, sw, sh));
-    FloatRect dstRect = normalizeRect(FloatRect(dx, dy, dw, dh));
-    FloatSize imageSize = imageSource->elementSize(defaultObjectSize);
-
-    clipRectsToImageRect(FloatRect(FloatPoint(), imageSize), &srcRect, &dstRect);
-
-    imageSource->adjustDrawRects(&srcRect, &dstRect);
-
-    if (srcRect.isEmpty())
-        return;
-
-    DisableDeferralReason reason = DisableDeferralReasonUnknown;
-    if (shouldDisableDeferral(imageSource, &reason) || image->isTextureBacked())
-        disableDeferral(reason);
-
-    validateStateStack();
 
     draw(
         [this, &imageSource, &image, &srcRect, dstRect](SkCanvas* c, const SkPaint* paint) // draw lambda
@@ -1262,18 +1262,6 @@ ImageData* BaseRenderingContext2D::createImageData(double sw, double sh, Excepti
 
 ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw, double sh, ExceptionState& exceptionState) const
 {
-    Optional<ScopedUsHistogramTimer> timer;
-    if (imageBuffer() && imageBuffer()->isAccelerated()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGPU, new CustomCountHistogram("Blink.Canvas.GetImageData.GPU", 0, 10000000, 50));
-        timer.emplace(scopedUsCounterGPU);
-    } else if (imageBuffer() && imageBuffer()->isRecording()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterDisplayList, new CustomCountHistogram("Blink.Canvas.GetImageData.DisplayList", 0, 10000000, 50));
-        timer.emplace(scopedUsCounterDisplayList);
-    } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCPU, new CustomCountHistogram("Blink.Canvas.GetImageData.CPU", 0, 10000000, 50));
-        timer.emplace(scopedUsCounterCPU);
-    }
-
     if (!originClean())
         exceptionState.throwSecurityError("The canvas has been tainted by cross-origin data.");
     else if (!sw || !sh)
@@ -1298,6 +1286,18 @@ ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw,
         logicalRect.setHeight(1);
     if (!logicalRect.isExpressibleAsIntRect())
         return nullptr;
+
+    Optional<ScopedUsHistogramTimer> timer;
+    if (imageBuffer() && imageBuffer()->isAccelerated()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGPU, new CustomCountHistogram("Blink.Canvas.GetImageData.GPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterGPU);
+    } else if (imageBuffer() && imageBuffer()->isRecording()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterDisplayList, new CustomCountHistogram("Blink.Canvas.GetImageData.DisplayList", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterDisplayList);
+    } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCPU, new CustomCountHistogram("Blink.Canvas.GetImageData.CPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterCPU);
+    }
 
     IntRect imageDataRect = enclosingIntRect(logicalRect);
     ImageBuffer* buffer = imageBuffer();
@@ -1327,18 +1327,6 @@ void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy,
 
 void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight, ExceptionState& exceptionState)
 {
-    Optional<ScopedUsHistogramTimer> timer;
-    if (imageBuffer() && imageBuffer()->isAccelerated()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGPU, new CustomCountHistogram("Blink.Canvas.PutImageData.GPU", 0, 10000000, 50));
-        timer.emplace(scopedUsCounterGPU);
-    } else if (imageBuffer() && imageBuffer()->isRecording()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterDisplayList, new CustomCountHistogram("Blink.Canvas.PutImageData.DisplayList", 0, 10000000, 50));
-        timer.emplace(scopedUsCounterDisplayList);
-    } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCPU, new CustomCountHistogram("Blink.Canvas.PutImageData.CPU", 0, 10000000, 50));
-        timer.emplace(scopedUsCounterCPU);
-    }
-
     if (data->data()->bufferBase()->isNeutered()) {
         exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
         return;
@@ -1365,6 +1353,19 @@ void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy,
     destRect.intersect(IntRect(IntPoint(), buffer->size()));
     if (destRect.isEmpty())
         return;
+
+    Optional<ScopedUsHistogramTimer> timer;
+    if (imageBuffer() && imageBuffer()->isAccelerated()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGPU, new CustomCountHistogram("Blink.Canvas.PutImageData.GPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterGPU);
+    } else if (imageBuffer() && imageBuffer()->isRecording()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterDisplayList, new CustomCountHistogram("Blink.Canvas.PutImageData.DisplayList", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterDisplayList);
+    } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCPU, new CustomCountHistogram("Blink.Canvas.PutImageData.CPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterCPU);
+    }
+
     IntRect sourceRect(destRect);
     sourceRect.move(-destOffset);
 
