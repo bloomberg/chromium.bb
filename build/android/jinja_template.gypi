@@ -47,7 +47,7 @@
         'jinja_inputs_base_dir%': '',
         'jinja_includes%': [],
         'jinja_variables%': [],
-        'jinja_args': [],
+        'jinja_args': ['--loader-base-dir=<(DEPTH)'],
       },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
