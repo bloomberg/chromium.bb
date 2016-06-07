@@ -15,8 +15,8 @@ Here's what works:
 *   Editing code works well (especially if you're used to it and get used to the
     shortcuts).
 *   Navigating around the code works well. There are multiple ways to do this (a
-    full list of keyboard shortcuts is available for [Windows/Linux](http://docs
-    .sublimetext.info/en/latest/reference/keyboard_shortcuts_win.html) and
+    full list of keyboard shortcuts is available for [Windows/Linux](http://
+    docs.sublimetext.info/en/latest/reference/keyboard_shortcuts_win.html) and
     [Mac](http://docs.sublimetext.info/en/latest/reference/keyboard_shortcuts_osx.html)).
 *   Building works fairly well and it does a decent job of parsing errors so
     that you can click and jump to the problem spot.
@@ -569,8 +569,8 @@ Some other useful packages that improve sublime can be installed from `Ctrl+Shif
 *   Code navigation tools
     *   [AutoFileName](https://packagecontrol.io/packages/AutoFileName) - Auto-
         completes filenames in #includes
-    *   [Open-Include](https://packagecontrol.io/packagenavigations/Open-
-        Include) - Opens the file path under the cursor with `Alt + D`
+    *   [Open-Include](https://packagecontrol.io/packagenavigations/Open-Include)
+        - Opens the file path under the cursor with `Alt + D`
 *   Text tools
     *   [Case Conversion](https://packagecontrol.io/packages/Case%20Conversion) -
         automatically changes the case of selected text, e.g. `kConstantName` to

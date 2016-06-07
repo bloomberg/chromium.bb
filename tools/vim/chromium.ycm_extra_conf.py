@@ -162,9 +162,10 @@ def GetNinjaBuildOutputsForSourceFile(out_dir, filename):
   rel_filename = os.path.relpath(os.path.realpath(filename), out_dir)
 
   p = subprocess.Popen(['ninja', '-C', out_dir, '-t', 'query', rel_filename],
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                       universal_newlines=True)
   stdout, _ = p.communicate()
-  if p.returncode:
+  if p.returncode != 0:
     return []
 
   # The output looks like:
@@ -196,9 +197,9 @@ def GetClangCommandLineForNinjaOutput(out_dir, build_target):
   """
   p = subprocess.Popen(['ninja', '-v', '-C', out_dir,
                         '-t', 'commands', build_target],
-                       stdout=subprocess.PIPE)
+                       stdout=subprocess.PIPE, universal_newlines=True)
   stdout, stderr = p.communicate()
-  if p.returncode:
+  if p.returncode != 0:
     return None
 
   # Ninja will return multiple build steps for all dependencies up to
@@ -331,7 +332,7 @@ def GetClangOptionsFromNinjaForFilename(chrome_root, filename):
         out_dir, GetDefaultSourceFile(chrome_root, filename))
 
   if not clang_line:
-    return (additional_flags, [])
+    return additional_flags
 
   return GetClangOptionsFromCommandLine(clang_line, out_dir, additional_flags)
 
