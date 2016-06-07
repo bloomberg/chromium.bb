@@ -1453,6 +1453,60 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   host_impl_ = nullptr;
 }
 
+TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  host_impl_->active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl_->active_tree(), 1));
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+  root->SetBounds(gfx::Size(50, 50));
+
+  root->AddChild(LayerImpl::Create(host_impl_->active_tree(), 2));
+  LayerImpl* child = root->children()[0];
+  child->SetBounds(gfx::Size(10, 10));
+  child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
+  child->SetDrawsContent(true);
+
+  // Add a translate animation.
+  TransformOperations start;
+  start.AppendTranslate(6.f, 7.f, 0.f);
+  TransformOperations end;
+  end.AppendTranslate(8.f, 9.f, 0.f);
+  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 4.0, start,
+                                        end);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  host_impl_->WillBeginImplFrame(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now));
+  EXPECT_TRUE(did_request_next_frame_);
+  did_request_next_frame_ = false;
+
+  host_impl_->ActivateAnimations();
+  // On activating an animation, we should request another frame so that we'll
+  // continue ticking the animation.
+  EXPECT_TRUE(did_request_next_frame_);
+  did_request_next_frame_ = false;
+
+  // The next frame after activating, we'll tick the animation again.
+  host_impl_->Animate();
+  // An animation exists on the active layer. Doing Animate() requests another
+  // frame after the current one.
+  EXPECT_TRUE(did_request_next_frame_);
+  did_request_next_frame_ = false;
+
+  // Destroy layer, unregister animation target (element).
+  child->SetParent(nullptr);
+  root->RemoveChildForTesting(child);
+  child = nullptr;
+
+  // Doing Animate() doesn't request another frame after the current one.
+  host_impl_->Animate();
+  EXPECT_FALSE(did_request_next_frame_);
+
+  host_impl_->Animate();
+  EXPECT_FALSE(did_request_next_frame_);
+}
+
 class MissingTilesLayer : public LayerImpl {
  public:
   MissingTilesLayer(LayerTreeImpl* layer_tree_impl, int id)

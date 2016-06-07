@@ -125,6 +125,9 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   bool has_element_in_pending_list() const {
     return has_element_in_pending_list_;
   }
+  bool has_element_in_any_list() const {
+    return has_element_in_active_list_ || has_element_in_pending_list_;
+  }
 
   void set_has_element_in_active_list(bool has_element_in_active_list) {
     has_element_in_active_list_ = has_element_in_active_list;

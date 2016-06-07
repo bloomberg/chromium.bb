@@ -89,6 +89,9 @@ void ElementAnimations::ElementRegistered(ElementId element_id,
                                           ElementListType list_type) {
   DCHECK_EQ(element_id_, element_id);
 
+  if (!has_element_in_any_list())
+    UpdateActivation(FORCE_ACTIVATION);
+
   if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(true);
   else
@@ -102,6 +105,9 @@ void ElementAnimations::ElementUnregistered(ElementId element_id,
     set_has_element_in_active_list(false);
   else
     set_has_element_in_pending_list(false);
+
+  if (!has_element_in_any_list())
+    animation_host_->DidDeactivateElementAnimations(this);
 }
 
 void ElementAnimations::AddPlayer(AnimationPlayer* player) {

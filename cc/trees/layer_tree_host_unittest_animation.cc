@@ -1250,7 +1250,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
+        EXPECT_FALSE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
         layer_tree_host()->root_layer()->AddChild(layer_);
@@ -1278,7 +1278,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
       case 1:
         EXPECT_FALSE(
             player_impl->element_animations()->has_element_in_active_list());
-        EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
+        EXPECT_FALSE(host_impl->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
         EXPECT_TRUE(
