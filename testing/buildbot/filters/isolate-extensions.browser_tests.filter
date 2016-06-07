@@ -2,6 +2,3 @@
 
 # crbug.com/589177: ProcessManagerBrowserTest.FrameClassification is flaky with --site-per-process
 -ProcessManagerBrowserTest.FrameClassification
-
-# crbug.com/576867: ExtensionResourceRequestPolicyTest.IframeNavigateToInaccessible fails in --isolate-extensions mode.
--ExtensionResourceRequestPolicyTest.IframeNavigateToInaccessible

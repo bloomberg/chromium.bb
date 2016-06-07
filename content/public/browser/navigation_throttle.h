@@ -32,6 +32,12 @@ class CONTENT_EXPORT NavigationThrottle {
     // Cancels the navigation and makes the requester of the navigation acts
     // like the request was never made.
     CANCEL_AND_IGNORE,
+
+    // Blocks a navigation due to rules asserted before the request is made.
+    // This can only be returned from WillStartRequest. This will result in an
+    // error page for net::ERR_BLOCKED_BY_CLIENT being loaded in the frame that
+    // is navigated.
+    BLOCK_REQUEST,
   };
 
   NavigationThrottle(NavigationHandle* navigation_handle);

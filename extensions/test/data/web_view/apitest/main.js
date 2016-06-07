@@ -947,7 +947,7 @@ function testLoadAbortChromeExtensionURLWrongPartition() {
   var localResource = chrome.runtime.getURL('guest.html');
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_ADDRESS_UNREACHABLE', e.reason);
+    embedder.test.assertEq('ERR_BLOCKED_BY_CLIENT', e.reason);
     embedder.test.succeed();
   });
   webview.addEventListener('loadstop', function(e) {

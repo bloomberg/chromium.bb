@@ -586,6 +586,8 @@
       'browser/extension_icon_placeholder.h',
       'browser/extension_message_filter.cc',
       'browser/extension_message_filter.h',
+      'browser/extension_navigation_throttle.cc',
+      'browser/extension_navigation_throttle.h',
       'browser/extension_pref_store.cc',
       'browser/extension_pref_store.h',
       'browser/extension_pref_value_map.cc',

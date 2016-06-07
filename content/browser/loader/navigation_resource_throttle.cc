@@ -268,6 +268,8 @@ void NavigationResourceThrottle::OnUIChecksPerformed(
     controller()->CancelAndIgnore();
   } else if (result == NavigationThrottle::CANCEL) {
     controller()->Cancel();
+  } else if (result == NavigationThrottle::BLOCK_REQUEST) {
+    controller()->CancelWithError(net::ERR_BLOCKED_BY_CLIENT);
   } else {
     controller()->Resume();
   }

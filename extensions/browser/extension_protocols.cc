@@ -419,11 +419,10 @@ ExtensionProtocolHandler::MaybeCreateJob(
   const Extension* extension =
       extension_info_map_->extensions().GetByID(extension_id);
 
-  // TODO(mpcomplete): better error code.
   if (!AllowExtensionResourceLoad(
           request, is_incognito_, extension, extension_info_map_)) {
-    return new net::URLRequestErrorJob(
-        request, network_delegate, net::ERR_ADDRESS_UNREACHABLE);
+    return new net::URLRequestErrorJob(request, network_delegate,
+                                       net::ERR_BLOCKED_BY_CLIENT);
   }
 
   // If this is a disabled extension only allow the icon to load.

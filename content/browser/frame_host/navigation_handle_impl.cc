@@ -442,6 +442,7 @@ NavigationHandleImpl::CheckWillStartRequest() {
 
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
+      case NavigationThrottle::BLOCK_REQUEST:
         state_ = CANCELING;
         return result;
 
@@ -449,9 +450,6 @@ NavigationHandleImpl::CheckWillStartRequest() {
         state_ = DEFERRING_START;
         next_index_ = i + 1;
         return result;
-
-      default:
-        NOTREACHED();
     }
   }
   next_index_ = 0;
@@ -481,7 +479,7 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
         next_index_ = i + 1;
         return result;
 
-      default:
+      case NavigationThrottle::BLOCK_REQUEST:
         NOTREACHED();
     }
   }
@@ -516,6 +514,9 @@ NavigationHandleImpl::CheckWillProcessResponse() {
         state_ = DEFERRING_RESPONSE;
         next_index_ = i + 1;
         return result;
+
+      case NavigationThrottle::BLOCK_REQUEST:
+        NOTREACHED();
     }
   }
   next_index_ = 0;

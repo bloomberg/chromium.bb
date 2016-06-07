@@ -211,7 +211,7 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
     // First test a main frame request.
     {
       // It doesn't matter that the resource doesn't exist. If the resource
-      // is blocked, we should see ADDRESS_UNREACHABLE. Otherwise, the request
+      // is blocked, we should see BLOCKED_BY_CLIENT. Otherwise, the request
       // should just fail because the file doesn't exist.
       std::unique_ptr<net::URLRequest> request(
           resource_context_.GetRequestContext()->CreateRequest(
@@ -224,8 +224,8 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
         EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error()) <<
             cases[i].name;
       } else {
-        EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE, request->status().error()) <<
-            cases[i].name;
+        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request->status().error())
+            << cases[i].name;
       }
     }
 
@@ -242,8 +242,8 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
         EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error()) <<
             cases[i].name;
       } else {
-        EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE, request->status().error()) <<
-            cases[i].name;
+        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, request->status().error())
+            << cases[i].name;
       }
     }
   }

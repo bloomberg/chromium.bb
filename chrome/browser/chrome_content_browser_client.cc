@@ -268,6 +268,7 @@
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "extensions/browser/extension_navigation_throttle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -2877,6 +2878,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
     }
   }
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+  if (!handle->IsInMainFrame())
+    throttles.push_back(new extensions::ExtensionNavigationThrottle(handle));
 #endif
 
   return throttles;
