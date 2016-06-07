@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/host_config.h"

@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/win/windows_version.h"
 #include "remoting/host/win/security_descriptor.h"
 
 namespace remoting {
@@ -16,10 +15,7 @@ namespace remoting {
 bool InitializeComSecurity(const std::string& security_descriptor,
                            const std::string& mandatory_label,
                            bool activate_as_activator) {
-  std::string sddl = security_descriptor;
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    sddl += mandatory_label;
-  }
+  std::string sddl = security_descriptor + mandatory_label;
 
   // Convert the SDDL description into a security descriptor in absolute format.
   ScopedSd relative_sd = ConvertSddlToSd(sddl);

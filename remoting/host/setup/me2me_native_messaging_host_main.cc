@@ -34,7 +34,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/win/elevation_helpers.h"
 #endif  // defined(OS_WIN)

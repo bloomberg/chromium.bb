@@ -15,7 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_hglobal.h"
-#include "base/win/windows_version.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/event.pb.h"

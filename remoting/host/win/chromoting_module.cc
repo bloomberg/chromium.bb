@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/host_exit_codes.h"
@@ -184,9 +183,8 @@ HRESULT ChromotingModule::RevokeClassObjects() {
 int RdpDesktopSessionMain() {
   // Lower the integrity level to medium, which is the lowest level at which
   // the RDP ActiveX control can run.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    if (!LowerProcessIntegrityLevel(SECURITY_MANDATORY_MEDIUM_RID))
-      return kInitializationFailed;
+  if (!LowerProcessIntegrityLevel(SECURITY_MANDATORY_MEDIUM_RID)) {
+    return kInitializationFailed;
   }
 
   ATL::_ATL_OBJMAP_ENTRY rdp_client_entry[] = {

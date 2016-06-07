@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -162,10 +161,6 @@ WtsSessionProcessDelegate::Core::Core(
 
 bool WtsSessionProcessDelegate::Core::Initialize(uint32_t session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  // Windows XP does not support elevation.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    launch_elevated_ = false;
 
   if (launch_elevated_) {
     // GetNamedPipeClientProcessId() is available starting from Vista.

@@ -19,14 +19,11 @@
 namespace remoting {
 
 // Initializes COM security of the process applying the passed security
-// descriptor. The mandatory label is applied if mandatory integrity control is
-// supported by the OS (i.e. on Vista and above). The function configures
-// the following settings:
-//  - the server authenticates that all data received is from the expected
-//    client.
-//  - the server can impersonate clients to check their identity but cannot act
-//    on their behalf.
-//  - the caller's identity is verified on every call (Dynamic cloaking).
+// descriptor.  The function configures the following settings:
+//  - Server authenticates that all data received is from the expected client.
+//  - Server can impersonate clients to check their identity but cannot act on
+//    their behalf.
+//  - Caller's identity is verified on every call (Dynamic cloaking).
 //  - Unless |activate_as_activator| is true, activations where the server would
 //    run under this process's identity are prohibited.
 bool InitializeComSecurity(const std::string& security_descriptor,

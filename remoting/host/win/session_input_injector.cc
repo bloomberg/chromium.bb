@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/win/windows_version.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/proto/event.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/win/desktop.h"
@@ -89,7 +88,7 @@ class SessionInputInjectorWin::Core
 
   webrtc::ScopedThreadDesktop desktop_;
 
-  // Used to inject Secure Attention Sequence on Vista+.
+  // Used to inject Secure Attention Sequence.
   base::Closure inject_sas_;
 
   // Used to lock the current session on non-home SKUs of Windows.
@@ -156,15 +155,7 @@ void SessionInputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
       if (dom_code == ui::DomCode::DEL &&
           CheckCtrlAndAltArePressed(pressed_keys_)) {
         VLOG(3) << "Sending Secure Attention Sequence to the session";
-
-        if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-          if (!sas_injector_)
-            sas_injector_ = SasInjector::Create();
-          if (!sas_injector_->InjectSas())
-            LOG(ERROR) << "Failed to inject Secure Attention Sequence.";
-        } else {
-          execute_action_task_runner_->PostTask(FROM_HERE, inject_sas_);
-        }
+        execute_action_task_runner_->PostTask(FROM_HERE, inject_sas_);
       } else if (dom_code == ui::DomCode::US_L &&
                  IsWinKeyPressed(pressed_keys_)) {
         execute_action_task_runner_->PostTask(FROM_HERE, lock_workstation_);
