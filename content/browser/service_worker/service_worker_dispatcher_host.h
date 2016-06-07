@@ -116,7 +116,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                  int provider_id);
   void OnProviderCreated(int provider_id,
                          int route_id,
-                         ServiceWorkerProviderType provider_type);
+                         ServiceWorkerProviderType provider_type,
+                         bool is_parent_frame_secure);
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id, int64_t version_id);
   void OnWorkerReadyForInspection(int embedded_worker_id);

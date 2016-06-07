@@ -107,8 +107,9 @@ class ServiceWorkerHandleTest : public testing::Test {
 
     provider_host_.reset(new ServiceWorkerProviderHost(
         helper_->mock_render_process_id(), kRenderFrameId, 1,
-        SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
-        dispatcher_host_.get()));
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+        ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+        helper_->context()->AsWeakPtr(), dispatcher_host_.get()));
 
     helper_->SimulateAddProcessToPattern(pattern,
                                          helper_->mock_render_process_id());

@@ -532,25 +532,33 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   // Host1 (provider_id=1): process_id=1, origin1.
   ServiceWorkerProviderHost* host1(new ServiceWorkerProviderHost(
       kRenderProcessId1, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+      context()->AsWeakPtr(), nullptr));
   host1->SetDocumentUrl(kOrigin1);
 
   // Host2 (provider_id=2): process_id=2, origin2.
   ServiceWorkerProviderHost* host2(new ServiceWorkerProviderHost(
       kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+      context()->AsWeakPtr(), nullptr));
   host2->SetDocumentUrl(kOrigin2);
 
   // Host3 (provider_id=3): process_id=2, origin1.
   ServiceWorkerProviderHost* host3(new ServiceWorkerProviderHost(
       kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+      context()->AsWeakPtr(), nullptr));
   host3->SetDocumentUrl(kOrigin1);
 
   // Host4 (provider_id=4): process_id=2, origin2, for ServiceWorker.
   ServiceWorkerProviderHost* host4(new ServiceWorkerProviderHost(
       kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, context()->AsWeakPtr(), nullptr));
+      SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+      context()->AsWeakPtr(), nullptr));
   host4->SetDocumentUrl(kOrigin2);
 
   context()->AddProviderHost(base::WrapUnique(host1));

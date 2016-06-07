@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Page Title</title>
+<script>
+if (navigator.serviceWorker.controller)
+  window.parent.postMessage('FAIL', '*');
+else
+  window.parent.postMessage('PASS', '*');
+</script>
