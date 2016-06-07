@@ -46,14 +46,6 @@ class MEDIA_EXPORT MediaCodecBridge {
  public:
   virtual ~MediaCodecBridge();
 
-  // Resets both input and output, all indices previously returned in calls to
-  // DequeueInputBuffer() and DequeueOutputBuffer() become invalid.
-  // Please note that this clears all the inputs in the media codec. In other
-  // words, there will be no outputs until new input is provided.
-  // Returns MEDIA_CODEC_ERROR if an unexpected error happens, or MEDIA_CODEC_OK
-  // otherwise.
-  virtual MediaCodecStatus Reset() = 0;
-
   // Calls start() against the media codec instance. Returns whether media
   // codec was successfully started.
   virtual bool Start() = 0;
@@ -64,6 +56,14 @@ class MEDIA_EXPORT MediaCodecBridge {
   // work on some devices. For reliability, Stop() -> delete and recreate new
   // instance -> StartAudio/Video() is recommended.
   virtual void Stop() = 0;
+
+  // Calls flush() on the MediaCodec. All indices previously returned in calls
+  // to DequeueInputBuffer() and DequeueOutputBuffer() become invalid. Please
+  // note that this clears all the inputs in the media codec. In other words,
+  // there will be no outputs until new input is provided. Returns
+  // MEDIA_CODEC_ERROR if an unexpected error happens, or MEDIA_CODEC_OK
+  // otherwise.
+  virtual MediaCodecStatus Flush() = 0;
 
   // Used for getting the output size. This is valid after DequeueInputBuffer()
   // returns a format change by returning INFO_OUTPUT_FORMAT_CHANGED.

@@ -388,9 +388,9 @@ void MediaDecoderJob::DecodeInternal(
     input_eos_encountered_ = false;
     output_eos_encountered_ = false;
     input_buf_index_ = -1;
-    MediaCodecStatus reset_status = media_codec_bridge_->Reset();
-    if (MEDIA_CODEC_OK != reset_status) {
-      callback.Run(reset_status, false, kNoTimestamp(), kNoTimestamp());
+    MediaCodecStatus flush_status = media_codec_bridge_->Flush();
+    if (flush_status != MEDIA_CODEC_OK) {
+      callback.Run(flush_status, false, kNoTimestamp(), kNoTimestamp());
       return;
     }
   }

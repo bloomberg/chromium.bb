@@ -97,12 +97,6 @@ SdkMediaCodecBridge::~SdkMediaCodecBridge() {
     Java_MediaCodecBridge_release(env, j_media_codec_.obj());
 }
 
-MediaCodecStatus SdkMediaCodecBridge::Reset() {
-  JNIEnv* env = AttachCurrentThread();
-  return static_cast<MediaCodecStatus>(
-      Java_MediaCodecBridge_flush(env, j_media_codec_.obj()));
-}
-
 bool SdkMediaCodecBridge::Start() {
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecBridge_start(env, j_media_codec_.obj());
@@ -111,6 +105,12 @@ bool SdkMediaCodecBridge::Start() {
 void SdkMediaCodecBridge::Stop() {
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_stop(env, j_media_codec_.obj());
+}
+
+MediaCodecStatus SdkMediaCodecBridge::Flush() {
+  JNIEnv* env = AttachCurrentThread();
+  return static_cast<MediaCodecStatus>(
+      Java_MediaCodecBridge_flush(env, j_media_codec_.obj()));
 }
 
 MediaCodecStatus SdkMediaCodecBridge::GetOutputSize(gfx::Size* size) {

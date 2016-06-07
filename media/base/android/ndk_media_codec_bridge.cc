@@ -54,17 +54,17 @@ NdkMediaCodecBridge::NdkMediaCodecBridge(const std::string& mime,
     media_codec_.reset(AMediaCodec_createEncoderByType(mime.c_str()));
 }
 
-MediaCodecStatus NdkMediaCodecBridge::Reset() {
-  media_status_t status = AMediaCodec_flush(media_codec_.get());
-  return TranslateMediaCodecStatus(status);
-}
-
 bool NdkMediaCodecBridge::Start() {
   return AMEDIA_OK == AMediaCodec_start(media_codec_.get());
 }
 
 void NdkMediaCodecBridge::Stop() {
   AMediaCodec_stop(media_codec_.get());
+}
+
+MediaCodecStatus NdkMediaCodecBridge::Flush() {
+  media_status_t status = AMediaCodec_flush(media_codec_.get());
+  return TranslateMediaCodecStatus(status);
 }
 
 MediaCodecStatus NdkMediaCodecBridge::GetOutputSize(gfx::Size* size) {

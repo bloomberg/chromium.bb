@@ -29,9 +29,9 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
   ~SdkMediaCodecBridge() override;
 
   // MediaCodecBridge implementations.
-  MediaCodecStatus Reset() override;
   bool Start() override;
   void Stop() override;
+  MediaCodecStatus Flush() override;
   MediaCodecStatus GetOutputSize(gfx::Size* size) override;
   MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus GetOutputChannelCount(int* channel_count) override;

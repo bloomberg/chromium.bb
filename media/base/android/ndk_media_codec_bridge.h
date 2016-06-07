@@ -24,9 +24,9 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
   ~NdkMediaCodecBridge() override;
 
   // MediaCodecBridge implementation.
-  MediaCodecStatus Reset() override;
   bool Start() override;
   void Stop() override;
+  MediaCodecStatus Flush() override;
   MediaCodecStatus GetOutputSize(gfx::Size* size) override;
   MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus GetOutputChannelCount(int* channel_count) override;

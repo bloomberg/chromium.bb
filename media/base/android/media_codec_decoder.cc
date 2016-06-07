@@ -118,11 +118,10 @@ void MediaCodecDecoder::Flush() {
 #endif
 
   if (media_codec_bridge_) {
-    // MediaCodecBridge::Reset() performs MediaCodecBridge.flush()
-    MediaCodecStatus flush_status = media_codec_bridge_->Reset();
+    MediaCodecStatus flush_status = media_codec_bridge_->Flush();
     if (flush_status != MEDIA_CODEC_OK) {
       DVLOG(0) << class_name() << "::" << __FUNCTION__
-               << "MediaCodecBridge::Reset() failed";
+               << "MediaCodecBridge::Flush() failed";
       media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
     }
   }

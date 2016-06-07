@@ -286,13 +286,13 @@ TEST(SdkMediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
                              buffer->data() + buffer->data_size());
   chunk.insert(chunk.end(), buffer->data(),
                buffer->data() + buffer->data_size());
-  media_codec->Reset();
+  media_codec->Flush();
   DecodeMediaFrame(media_codec.get(), &chunk[0], chunk.size(),
                    base::TimeDelta::FromMicroseconds(10000000),
                    base::TimeDelta::FromMicroseconds(9900000));
 
   // Simulate a seek to 5 seconds.
-  media_codec->Reset();
+  media_codec->Flush();
   DecodeMediaFrame(media_codec.get(), &chunk[0], chunk.size(),
                    base::TimeDelta::FromMicroseconds(5000000),
                    base::TimeDelta::FromMicroseconds(4900000));

@@ -212,8 +212,7 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
   bool success = false;
   if (state_ != STATE_ERROR && state_ != STATE_DRAINED &&
       base::android::BuildInfo::GetInstance()->sdk_int() >= 18) {
-    // media_codec_->Reset() calls MediaCodec.flush().
-    success = (media_codec_->Reset() == MEDIA_CODEC_OK);
+    success = (media_codec_->Flush() == MEDIA_CODEC_OK);
   }
 
   if (!success) {
