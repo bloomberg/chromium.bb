@@ -49,7 +49,7 @@ struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::QuadPtr, cc::DrawQuad> {
 
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const mus::mojom::PassPtr& input,
-    const mus::mojom::CompositorFrameMetadataPtr& metadata,
+    const cc::CompositorFrameMetadata& metadata,
     CustomSurfaceConverter* custom_converter);
 
 template <>
@@ -65,21 +65,6 @@ struct MOJO_SURFACES_EXPORT
 };
 
 // Types from compositor_frame.mojom
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<mus::mojom::CompositorFrameMetadataPtr,
-                  cc::CompositorFrameMetadata> {
-  static mus::mojom::CompositorFrameMetadataPtr Convert(
-      const cc::CompositorFrameMetadata& input);
-};
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::CompositorFrameMetadata,
-                  mus::mojom::CompositorFrameMetadataPtr> {
-  static cc::CompositorFrameMetadata Convert(
-      const mus::mojom::CompositorFrameMetadataPtr& input);
-};
-
 MOJO_SURFACES_EXPORT std::unique_ptr<cc::CompositorFrame>
 ConvertToCompositorFrame(const mus::mojom::CompositorFramePtr& input,
                          CustomSurfaceConverter* custom_converter);

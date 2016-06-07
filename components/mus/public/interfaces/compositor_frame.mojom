@@ -4,6 +4,7 @@
 
 module mus.mojom;
 
+import "cc/ipc/compositor_frame_metadata.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/transferable_resource.mojom";
 import "components/mus/public/interfaces/quads.mojom";
@@ -11,14 +12,9 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 
-// See cc/output/compositor_frame_metadata.h.
-struct CompositorFrameMetadata {
-  float device_scale_factor;
-};
-
 // See src/cc/output/compositor_frame.h.
 struct CompositorFrame {
-  CompositorFrameMetadata metadata;
+  cc.mojom.CompositorFrameMetadata metadata;
   array<cc.mojom.TransferableResource> resources;
   array<Pass> passes;
 };

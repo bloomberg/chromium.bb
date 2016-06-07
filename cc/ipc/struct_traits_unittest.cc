@@ -29,6 +29,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(b);
   }
 
+  void EchoCompositorFrameMetadata(
+      const CompositorFrameMetadata& c,
+      const EchoCompositorFrameMetadataCallback& callback) override {
+    callback.Run(c);
+  }
+
   void EchoRenderPassId(const RenderPassId& r,
                         const EchoRenderPassIdCallback& callback) override {
     callback.Run(r);
@@ -88,6 +94,88 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(type, output.type);
   EXPECT_EQ(on_critical_path, output.on_critical_path);
+}
+
+TEST_F(StructTraitsTest, CompositorFrameMetadata) {
+  const float device_scale_factor = 2.6f;
+  const gfx::Vector2dF root_scroll_offset(1234.5f, 6789.1f);
+  const float page_scale_factor = 1337.5f;
+  const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
+  const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
+  const float min_page_scale_factor = 3.5f;
+  const float max_page_scale_factor = 4.6f;
+  const bool root_overflow_x_hidden = true;
+  const bool root_overflow_y_hidden = true;
+  const gfx::Vector2dF location_bar_offset(1234.5f, 5432.1f);
+  const gfx::Vector2dF location_bar_content_translation(1234.5f, 5432.1f);
+  const uint32_t root_background_color = 1337;
+  Selection<gfx::SelectionBound> selection;
+  selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
+                          gfx::PointF(5432.1f, 1987.6f));
+  selection.start.set_visible(true);
+  selection.start.set_type(gfx::SelectionBound::CENTER);
+  selection.end.SetEdge(gfx::PointF(1337.5f, 52124.f),
+                        gfx::PointF(1234.3f, 8765.6f));
+  selection.end.set_visible(false);
+  selection.end.set_type(gfx::SelectionBound::RIGHT);
+  selection.is_editable = true;
+  selection.is_empty_text_form_control = true;
+  ui::LatencyInfo latency_info;
+  latency_info.AddLatencyNumber(
+      ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337, 7331);
+  std::vector<ui::LatencyInfo> latency_infos = {latency_info};
+  std::vector<uint32_t> satisfies_sequences = {1234, 1337};
+  std::vector<SurfaceId> referenced_surfaces;
+  SurfaceId id(1234, 5678, 9101112);
+  referenced_surfaces.push_back(id);
+
+  CompositorFrameMetadata input;
+  input.device_scale_factor = device_scale_factor;
+  input.root_scroll_offset = root_scroll_offset;
+  input.page_scale_factor = page_scale_factor;
+  input.scrollable_viewport_size = scrollable_viewport_size;
+  input.root_layer_size = root_layer_size;
+  input.min_page_scale_factor = min_page_scale_factor;
+  input.max_page_scale_factor = max_page_scale_factor;
+  input.root_overflow_x_hidden = root_overflow_x_hidden;
+  input.root_overflow_y_hidden = root_overflow_y_hidden;
+  input.location_bar_offset = location_bar_offset;
+  input.location_bar_content_translation = location_bar_content_translation;
+  input.root_background_color = root_background_color;
+  input.selection = selection;
+  input.latency_info = latency_infos;
+  input.satisfies_sequences = satisfies_sequences;
+  input.referenced_surfaces = referenced_surfaces;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  CompositorFrameMetadata output;
+  proxy->EchoCompositorFrameMetadata(input, &output);
+  EXPECT_EQ(device_scale_factor, output.device_scale_factor);
+  EXPECT_EQ(root_scroll_offset, output.root_scroll_offset);
+  EXPECT_EQ(page_scale_factor, output.page_scale_factor);
+  EXPECT_EQ(scrollable_viewport_size, output.scrollable_viewport_size);
+  EXPECT_EQ(root_layer_size, output.root_layer_size);
+  EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
+  EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
+  EXPECT_EQ(root_overflow_x_hidden, output.root_overflow_x_hidden);
+  EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
+  EXPECT_EQ(location_bar_offset, output.location_bar_offset);
+  EXPECT_EQ(location_bar_content_translation,
+            output.location_bar_content_translation);
+  EXPECT_EQ(root_background_color, output.root_background_color);
+  EXPECT_EQ(selection, output.selection);
+  EXPECT_EQ(latency_infos.size(), output.latency_info.size());
+  ui::LatencyInfo::LatencyComponent component;
+  EXPECT_TRUE(output.latency_info[0].FindLatency(
+      ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337,
+      &component));
+  EXPECT_EQ(7331, component.sequence_number);
+  EXPECT_EQ(satisfies_sequences.size(), output.satisfies_sequences.size());
+  for (uint32_t i = 0; i < satisfies_sequences.size(); ++i)
+    EXPECT_EQ(satisfies_sequences[i], output.satisfies_sequences[i]);
+  EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
+  for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
+    EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);
 }
 
 TEST_F(StructTraitsTest, RenderPassId) {

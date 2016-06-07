@@ -9,6 +9,7 @@
 #include "components/mus/public/interfaces/quads.mojom.h"
 
 namespace cc {
+class CompositorFrameMetadata;
 class RenderPass;
 class SharedQuadState;
 }  // namespace cc
@@ -21,7 +22,7 @@ class CustomSurfaceConverter {
  public:
   virtual bool ConvertSurfaceDrawQuad(
       const mus::mojom::QuadPtr& input,
-      const mus::mojom::CompositorFrameMetadataPtr& metadata,
+      const cc::CompositorFrameMetadata& metadata,
       cc::SharedQuadState* sqs,
       cc::RenderPass* render_pass) = 0;
 

@@ -5,6 +5,7 @@
 module cc.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
+import "cc/ipc/compositor_frame_metadata.mojom";
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/selection.mojom";
@@ -19,8 +20,11 @@ interface TraitsTestService {
   EchoBeginFrameArgs(BeginFrameArgs b) => (BeginFrameArgs pass);
 
   [Sync]
-  EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
+  EchoCompositorFrameMetadata(CompositorFrameMetadata c) =>
+      (CompositorFrameMetadata pass);
 
+  [Sync]
+  EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
 
   [Sync]
   EchoReturnedResource(ReturnedResource r) => (ReturnedResource pass);

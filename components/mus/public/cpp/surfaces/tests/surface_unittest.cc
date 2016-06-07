@@ -25,8 +25,6 @@ using mus::mojom::Color;
 using mus::mojom::ColorPtr;
 using mus::mojom::CompositorFrame;
 using mus::mojom::CompositorFramePtr;
-using mus::mojom::CompositorFrameMetadata;
-using mus::mojom::CompositorFrameMetadataPtr;
 using mus::mojom::DebugBorderQuadState;
 using mus::mojom::DebugBorderQuadStatePtr;
 using mus::mojom::Pass;

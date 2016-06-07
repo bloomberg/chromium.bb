@@ -103,7 +103,7 @@ ServerWindowSurface::ConvertCompositorFrame(
 
 bool ServerWindowSurface::ConvertSurfaceDrawQuad(
     const mojom::QuadPtr& input,
-    const mojom::CompositorFrameMetadataPtr& metadata,
+    const cc::CompositorFrameMetadata& metadata,
     cc::SharedQuadState* sqs,
     cc::RenderPass* render_pass) {
   // Surface ids originate from the client, meaning they are ClientWindowIds

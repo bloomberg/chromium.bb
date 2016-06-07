@@ -30,8 +30,6 @@ using mus::mojom::Color;
 using mus::mojom::ColorPtr;
 using mus::mojom::CompositorFrame;
 using mus::mojom::CompositorFramePtr;
-using mus::mojom::CompositorFrameMetadata;
-using mus::mojom::CompositorFrameMetadataPtr;
 using mus::mojom::DebugBorderQuadState;
 using mus::mojom::DebugBorderQuadStatePtr;
 using mus::mojom::Pass;
@@ -79,7 +77,7 @@ static_assert(cc::YUVVideoDrawQuad::REC_601 ==
 namespace {
 
 bool ConvertDrawQuad(const QuadPtr& input,
-                     const CompositorFrameMetadataPtr& metadata,
+                     const cc::CompositorFrameMetadata& metadata,
                      cc::SharedQuadState* sqs,
                      cc::RenderPass* render_pass,
                      CustomSurfaceConverter* custom_converter) {
@@ -363,7 +361,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
 // static
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const PassPtr& input,
-    const CompositorFrameMetadataPtr& metadata,
+    const cc::CompositorFrameMetadata& metadata,
     CustomSurfaceConverter* custom_converter) {
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
@@ -392,27 +390,9 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
 std::unique_ptr<cc::RenderPass>
 TypeConverter<std::unique_ptr<cc::RenderPass>, PassPtr>::Convert(
     const PassPtr& input) {
-  mus::mojom::CompositorFrameMetadataPtr metadata;
+  cc::CompositorFrameMetadata metadata;
   return ConvertToRenderPass(input, metadata,
                              nullptr /* CustomSurfaceConverter */);
-}
-
-// static
-CompositorFrameMetadataPtr
-TypeConverter<CompositorFrameMetadataPtr, cc::CompositorFrameMetadata>::Convert(
-    const cc::CompositorFrameMetadata& input) {
-  CompositorFrameMetadataPtr metadata = CompositorFrameMetadata::New();
-  metadata->device_scale_factor = input.device_scale_factor;
-  return metadata;
-}
-
-// static
-cc::CompositorFrameMetadata
-TypeConverter<cc::CompositorFrameMetadata, CompositorFrameMetadataPtr>::Convert(
-    const CompositorFrameMetadataPtr& input) {
-  cc::CompositorFrameMetadata metadata;
-  metadata.device_scale_factor = input->device_scale_factor;
-  return metadata;
 }
 
 // static
@@ -424,7 +404,7 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
   cc::DelegatedFrameData* frame_data = input.delegated_frame_data.get();
   frame->resources =
       mojo::Array<cc::TransferableResource>(frame_data->resource_list);
-  frame->metadata = CompositorFrameMetadata::From(input.metadata);
+  frame->metadata = input.metadata;
   const cc::RenderPassList& pass_list = frame_data->render_pass_list;
   frame->passes = Array<PassPtr>::New(pass_list.size());
   for (size_t i = 0; i < pass_list.size(); ++i) {
@@ -450,8 +430,7 @@ std::unique_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
     frame_data->render_pass_list.push_back(std::move(pass));
   }
   std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  cc::CompositorFrameMetadata metadata =
-      input->metadata.To<cc::CompositorFrameMetadata>();
+  cc::CompositorFrameMetadata metadata = input->metadata;
   frame->delegated_frame_data = std::move(frame_data);
   return frame;
 }

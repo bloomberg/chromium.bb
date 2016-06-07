@@ -75,10 +75,7 @@ void BitmapUploader::Upload() {
   mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
 
   // TODO(rjkroege): Support device scale factor in PDF viewer
-  mus::mojom::CompositorFrameMetadataPtr meta =
-      mus::mojom::CompositorFrameMetadata::New();
-  meta->device_scale_factor = 1.0f;
-  frame->metadata = std::move(meta);
+  frame->metadata.device_scale_factor = 1.0f;
 
   frame->resources.resize(0u);
 
