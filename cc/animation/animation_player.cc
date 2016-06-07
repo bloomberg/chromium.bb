@@ -22,8 +22,7 @@ AnimationPlayer::AnimationPlayer(int id)
       animation_timeline_(),
       element_animations_(),
       animation_delegate_(),
-      id_(id),
-      element_id_(0) {
+      id_(id) {
   DCHECK(id_);
 }
 
@@ -58,7 +57,7 @@ void AnimationPlayer::SetAnimationTimeline(AnimationTimeline* timeline) {
 }
 
 void AnimationPlayer::AttachElement(ElementId element_id) {
-  DCHECK_EQ(element_id_, 0);
+  DCHECK(!element_id_);
   DCHECK(element_id);
 
   element_id_ = element_id;
@@ -74,7 +73,7 @@ void AnimationPlayer::DetachElement() {
   if (animation_host_)
     UnregisterPlayer();
 
-  element_id_ = 0;
+  element_id_ = ElementId();
 }
 
 void AnimationPlayer::RegisterPlayer() {

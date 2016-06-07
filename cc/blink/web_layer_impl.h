@@ -126,8 +126,8 @@ class WebLayerImpl : public blink::WebLayer {
   void setLayerClient(cc::LayerClient* client) override;
   const cc::Layer* ccLayer() const override;
   cc::Layer* ccLayer() override;
-  void setElementId(uint64_t id) override;
-  uint64_t elementId() const override;
+  void setElementId(const cc::ElementId&) override;
+  cc::ElementId elementId() const override;
   void setCompositorMutableProperties(uint32_t properties) override;
   uint32_t compositorMutableProperties() const override;
   void setHasWillChangeTransformHint(bool has_will_change) override;

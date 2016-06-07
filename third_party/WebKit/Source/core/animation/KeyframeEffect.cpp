@@ -354,14 +354,6 @@ void KeyframeEffect::pauseAnimationForTestingOnCompositor(double pauseTime)
         CompositorAnimations::pauseAnimationForTestingOnCompositor(*m_target, *animation(), compositorAnimationId, pauseTime);
 }
 
-bool KeyframeEffect::canAttachCompositedLayers() const
-{
-    if (!m_target || !animation())
-        return false;
-
-    return CompositorAnimations::canAttachCompositedLayers(*m_target, *animation());
-}
-
 void KeyframeEffect::attachCompositedLayers()
 {
     ASSERT(m_target);

@@ -180,9 +180,9 @@ gfx::ScrollOffset TestHostClient::GetScrollOffsetForAnimation(
 
 void TestHostClient::RegisterElement(ElementId element_id,
                                      ElementListType list_type) {
-  LayerIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
-                                           ? layers_in_active_tree_
-                                           : layers_in_pending_tree_;
+  ElementIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
+                                             ? layers_in_active_tree_
+                                             : layers_in_pending_tree_;
   DCHECK(layers_in_tree.find(element_id) == layers_in_tree.end());
   layers_in_tree[element_id] = TestLayer::Create();
 
@@ -195,9 +195,9 @@ void TestHostClient::UnregisterElement(ElementId element_id,
   DCHECK(host_);
   host_->UnregisterElement(element_id, list_type);
 
-  LayerIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
-                                           ? layers_in_active_tree_
-                                           : layers_in_pending_tree_;
+  ElementIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
+                                             ? layers_in_active_tree_
+                                             : layers_in_pending_tree_;
   auto kv = layers_in_tree.find(element_id);
   DCHECK(kv != layers_in_tree.end());
   layers_in_tree.erase(kv);
@@ -303,7 +303,7 @@ void TestHostClient::ExpectTransformPropertyMutated(ElementId element_id,
 
 TestLayer* TestHostClient::FindTestLayer(ElementId element_id,
                                          ElementListType list_type) const {
-  const LayerIdToTestLayer& layers_in_tree =
+  const ElementIdToTestLayer& layers_in_tree =
       list_type == ElementListType::ACTIVE ? layers_in_active_tree_
                                            : layers_in_pending_tree_;
   auto kv = layers_in_tree.find(element_id);
@@ -362,7 +362,7 @@ AnimationTimelinesTest::AnimationTimelinesTest()
   host_ = client_.host();
   host_impl_ = client_impl_.host();
 
-  element_id_ = NextTestLayerId();
+  element_id_ = ElementId(NextTestLayerId(), 0);
 }
 
 AnimationTimelinesTest::~AnimationTimelinesTest() {
@@ -451,7 +451,7 @@ void AnimationTimelinesTest::AnimateLayersTransferEvents(
   host_->SetAnimationEvents(std::move(events));
 }
 
-AnimationPlayer* AnimationTimelinesTest::GetPlayerForLayerId(
+AnimationPlayer* AnimationTimelinesTest::GetPlayerForElementId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);

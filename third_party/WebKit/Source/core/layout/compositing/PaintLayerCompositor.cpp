@@ -405,13 +405,9 @@ void PaintLayerCompositor::updateIfNeeded()
     if (updateType != CompositingUpdateNone) {
         if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
             if (Element* scrollingElement = m_layoutView.document().scrollingElement()) {
-                uint64_t elementId = 0;
                 uint32_t mutableProperties = CompositorMutableProperty::kNone;
-                if (scrollingElement->hasCompositorProxy()) {
-                    elementId = DOMNodeIds::idForNode(scrollingElement);
+                if (scrollingElement->hasCompositorProxy())
                     mutableProperties = (CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop) & scrollingElement->compositorMutableProperties();
-                }
-                m_scrollLayer->setElementId(elementId);
                 m_scrollLayer->setCompositorMutableProperties(mutableProperties);
             }
         }
@@ -1052,6 +1048,8 @@ void PaintLayerCompositor::ensureRootLayer()
         m_scrollLayer = GraphicsLayer::create(this);
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(m_scrollLayer.get(), true);
+
+        m_scrollLayer->setElementId(createCompositorElementId(DOMNodeIds::idForNode(&m_layoutView.document()), CompositorSubElementId::Scroll));
 
         // Hook them up
         m_overflowControlsHostLayer->addChild(m_containerLayer.get());

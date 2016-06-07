@@ -376,6 +376,10 @@ class LayerTreeHostImplTest : public testing::Test,
         host_impl_->InnerViewportScrollLayer()->parent()->parent();
     inner_clip_layer->SetBounds(viewport_size);
     host_impl_->InnerViewportScrollLayer()->SetBounds(viewport_size);
+
+    // Needs to happen before building property trees as the latter propagates
+    // these element ids to property tree nodes.
+    host_impl_->active_tree()->SetElementIdsForTesting();
     host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     host_impl_->SetViewportSize(viewport_size);
@@ -1314,7 +1318,11 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+
+  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 10.0,
+                                          3, 0);
 
   EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
@@ -1365,13 +1373,15 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
 
+  host_impl_->active_tree()->SetElementIdsForTesting();
+
   // Add a translate from 6,7 to 8,9.
   TransformOperations start;
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 4.0, start,
-                                        end);
+  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 4.0,
+                                          start, end);
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1428,7 +1438,11 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
+
+  host_impl_->active_tree()->SetElementIdsForTesting();
+
+  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 10.0,
+                                          3, 0);
 
   // Set up the property trees so that UpdateDrawProperties will work in
   // CommitComplete below.
@@ -1467,13 +1481,15 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
 
+  host_impl_->active_tree()->SetElementIdsForTesting();
+
   // Add a translate animation.
   TransformOperations start;
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 4.0, start,
-                                        end);
+  AddAnimatedTransformToElementWithPlayer(child->element_id(), timeline(), 4.0,
+                                          start, end);
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1542,6 +1558,8 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
 
+  host_impl_->active_tree()->SetElementIdsForTesting();
+
   EXPECT_TRUE(child->was_ever_ready_since_last_transform_animation());
 
   // Add a translate from 6,7 to 8,9.
@@ -1549,8 +1567,8 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  int animation_id = AddAnimatedTransformToLayerWithPlayer(
-      child->id(), timeline(), 4.0, start, end);
+  int animation_id = AddAnimatedTransformToElementWithPlayer(
+      child->element_id(), timeline(), 4.0, start, end);
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1581,8 +1599,8 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
 
   // Remove the animation.
   child->set_has_missing_tiles(true);
-  RemoveAnimationFromLayerWithExistingPlayer(child->id(), timeline(),
-                                             animation_id);
+  RemoveAnimationFromElementWithExistingPlayer(child->element_id(), timeline(),
+                                               animation_id);
   child->draw_properties().screen_space_transform_is_animating = false;
 
   // Child layer doesn't have an animation, but was never ready since the last
@@ -3594,8 +3612,11 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
       : DidDrawCheckLayer(tree_impl, id),
         tile_missing_(tile_missing),
         had_incomplete_tile_(had_incomplete_tile) {
-    if (animating)
-      AddAnimatedTransformToLayerWithPlayer(this->id(), timeline, 10.0, 3, 0);
+    if (animating) {
+      this->SetElementId(LayerIdToElementIdForTesting(id));
+      AddAnimatedTransformToElementWithPlayer(this->element_id(), timeline,
+                                              10.0, 3, 0);
+    }
   }
 
   bool tile_missing_;
@@ -9761,7 +9782,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
-      scrolling_layer->id(), TargetProperty::SCROLL_OFFSET));
+      scrolling_layer->element_id(), TargetProperty::SCROLL_OFFSET));
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
@@ -9794,7 +9815,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.
   EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
-      scrolling_layer->id()));
+      scrolling_layer->element_id()));
 
   EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0, y + 50),
                       scrolling_layer->CurrentScrollOffset());
@@ -9832,7 +9853,7 @@ TEST_F(LayerTreeHostImplTimelinesTest,
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
-      scrolling_layer->id(), TargetProperty::SCROLL_OFFSET));
+      scrolling_layer->element_id(), TargetProperty::SCROLL_OFFSET));
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();
@@ -9853,7 +9874,7 @@ TEST_F(LayerTreeHostImplTimelinesTest,
   // Aborting with the needs completion param should have marked the smooth
   // scroll animation as finished.
   EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
-      scrolling_layer->id()));
+      scrolling_layer->element_id()));
   EXPECT_TRUE(y > 1 && y < 49);
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
   host_impl_->DidFinishImplFrame();
@@ -9942,6 +9963,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ImplPinchZoomScrollAnimated) {
   host_impl_->active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, min_page_scale, max_page_scale);
   host_impl_->active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Scroll by a small amount, there should be no bubbling to the outer
   // viewport.

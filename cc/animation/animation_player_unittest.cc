@@ -39,7 +39,7 @@ TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
   EXPECT_FALSE(player_impl_->element_id());
 
   player_->AttachElement(element_id_);
-  EXPECT_EQ(player_, GetPlayerForLayerId(element_id_));
+  EXPECT_EQ(player_, GetPlayerForElementId(element_id_));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
 
@@ -50,7 +50,7 @@ TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
   EXPECT_EQ(player_impl_->element_id(), element_id_);
 
   player_->DetachElement();
-  EXPECT_FALSE(GetPlayerForLayerId(element_id_));
+  EXPECT_FALSE(GetPlayerForElementId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
 
@@ -74,20 +74,20 @@ TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
 
   player_->AttachElement(element_id_);
   EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(GetPlayerForLayerId(element_id_));
+  EXPECT_FALSE(GetPlayerForElementId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
 
   timeline_->AttachPlayer(player_);
   EXPECT_EQ(timeline_, player_->animation_timeline());
-  EXPECT_EQ(player_, GetPlayerForLayerId(element_id_));
+  EXPECT_EQ(player_, GetPlayerForElementId(element_id_));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
 
   // Removing player from timeline detaches layer.
   timeline_->DetachPlayer(player_);
   EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(GetPlayerForLayerId(element_id_));
+  EXPECT_FALSE(GetPlayerForElementId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
 }
@@ -340,7 +340,7 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
 
   GetImplTimelineAndPlayerByID();
 
-  EXPECT_EQ(player_, GetPlayerForLayerId(element_id_));
+  EXPECT_EQ(player_, GetPlayerForElementId(element_id_));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
 
@@ -348,19 +348,19 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
   EXPECT_TRUE(player_impl_->element_animations());
   EXPECT_EQ(player_impl_->element_id(), element_id_);
 
-  const int new_layer_id = NextTestLayerId();
+  const ElementId new_element_id(NextTestLayerId(), 0);
   player_->DetachElement();
-  player_->AttachElement(new_layer_id);
+  player_->AttachElement(new_element_id);
 
-  EXPECT_EQ(player_, GetPlayerForLayerId(new_layer_id));
+  EXPECT_EQ(player_, GetPlayerForElementId(new_element_id));
   EXPECT_TRUE(player_->element_animations());
-  EXPECT_EQ(player_->element_id(), new_layer_id);
+  EXPECT_EQ(player_->element_id(), new_element_id);
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_EQ(player_impl_, GetImplPlayerForLayerId(new_layer_id));
+  EXPECT_EQ(player_impl_, GetImplPlayerForLayerId(new_element_id));
   EXPECT_TRUE(player_impl_->element_animations());
-  EXPECT_EQ(player_impl_->element_id(), new_layer_id);
+  EXPECT_EQ(player_impl_->element_id(), new_element_id);
 }
 
 }  // namespace

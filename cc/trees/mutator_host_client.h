@@ -5,6 +5,8 @@
 #ifndef CC_TREES_MUTATOR_HOST_CLIENT_H_
 #define CC_TREES_MUTATOR_HOST_CLIENT_H_
 
+#include "cc/animation/element_id.h"
+
 namespace gfx {
 class Transform;
 class ScrollOffset;
@@ -13,8 +15,6 @@ class ScrollOffset;
 namespace cc {
 
 class FilterOperations;
-
-using ElementId = int;
 
 enum class ElementListType { ACTIVE, PENDING };
 

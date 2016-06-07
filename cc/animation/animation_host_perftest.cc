@@ -62,13 +62,14 @@ class AnimationHostPerfTest : public testing::Test {
     for (int i = 0; i < num_players; ++i) {
       scoped_refptr<Layer> layer = Layer::Create();
       root_layer_->AddChild(layer);
+      layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
 
       scoped_refptr<AnimationPlayer> player =
           AnimationPlayer::Create(last_player_id);
       last_player_id = AnimationIdProvider::NextPlayerId();
 
       timeline->AttachPlayer(player);
-      player->AttachElement(layer->id());
+      player->AttachElement(layer->element_id());
       EXPECT_TRUE(player->element_animations());
     }
 

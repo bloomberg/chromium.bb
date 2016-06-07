@@ -51,7 +51,7 @@ class CC_EXPORT ScrollOffsetAnimations {
   ScrollOffsetAnimationUpdate GetUpdateForElementId(ElementId) const;
 
   using ElementToUpdateMap =
-      std::unordered_map<ElementId, ScrollOffsetAnimationUpdate>;
+      std::unordered_map<ElementId, ScrollOffsetAnimationUpdate, ElementIdHash>;
   ElementToUpdateMap element_to_update_map_;
 
   AnimationHost* animation_host_;
