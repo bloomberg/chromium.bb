@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -76,8 +78,8 @@ void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
     if (origin_whitelist.count(it->content_origin)) {
       // Because the unthrottle callback may register another peripheral plugin
       // and invalidate our iterator, we cannot run it synchronously.
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             it->unthrottle_callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    it->unthrottle_callback);
       it = peripheral_plugins_.erase(it);
     } else {
       ++it;

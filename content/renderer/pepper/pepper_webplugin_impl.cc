@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -155,7 +157,7 @@ void PepperWebPluginImpl::destroy() {
     instance_ = nullptr;
   }
 
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 v8::Local<v8::Object> PepperWebPluginImpl::v8ScriptableObject(

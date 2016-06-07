@@ -61,12 +61,9 @@ int PepperMediaDeviceManager::EnumerateDevices(
       PepperMediaDeviceManager::FromPepperDeviceType(type),
       url::Origin(document_url.GetOrigin()));
 #else
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperMediaDeviceManager::OnDevicesEnumerated,
-                 AsWeakPtr(),
-                 request_id,
-                 StreamDeviceInfoArray()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PepperMediaDeviceManager::OnDevicesEnumerated,
+                            AsWeakPtr(), request_id, StreamDeviceInfoArray()));
 #endif
 
   return request_id;
@@ -109,11 +106,9 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
       PepperMediaDeviceManager::FromPepperDeviceType(type),
       url::Origin(document_url.GetOrigin()));
 #else
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperMediaDeviceManager::OnDeviceOpenFailed,
-                 AsWeakPtr(),
-                 request_id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PepperMediaDeviceManager::OnDeviceOpenFailed,
+                            AsWeakPtr(), request_id));
 #endif
 
   return request_id;

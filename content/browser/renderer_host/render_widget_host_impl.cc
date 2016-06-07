@@ -2090,11 +2090,10 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
     // is drawn to the screen, and when the snapshot will actually pick up
     // that content. Insert a manual delay of 1/6th of a second (to simulate
     // 10 frames at 60 fps) before actually taking the snapshot.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
-                   weak_factory_.GetWeakPtr(),
-                   sequence_number),
+                   weak_factory_.GetWeakPtr(), sequence_number),
         base::TimeDelta::FromSecondsD(1. / 6));
 #else
     WindowSnapshotReachedScreen(sequence_number);

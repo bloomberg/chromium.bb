@@ -5,7 +5,10 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/media/session/media_session.h"
 #include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/public/test/content_browser_test.h"
@@ -57,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionDelegateAndroidBrowserTest,
   // to the listeners. If the bug is still present, it will crash.
   {
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
     run_loop.Run();
   }

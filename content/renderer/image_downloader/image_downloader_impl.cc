@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/image_decoder.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -209,7 +211,7 @@ void ImageDownloaderImpl::DidFetchImage(
       std::find(image_fetchers_.begin(), image_fetchers_.end(), fetcher);
   if (iter != image_fetchers_.end()) {
     image_fetchers_.weak_erase(iter);
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, fetcher);
   }
 }
 

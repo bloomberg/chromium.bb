@@ -6,8 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
@@ -185,7 +188,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
             &RendererWebMediaPlayerDelegate::PlayerGone,
             base::Unretained(delegate_manager_.get()), delegate_id_2)));
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
     run_loop.Run();
   }
@@ -204,7 +208,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
     EXPECT_CALL(observer_1, OnSuspendRequested(false))
         .Times(testing::AtLeast(1));
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
     run_loop.Run();
   }
@@ -223,7 +228,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
             &RendererWebMediaPlayerDelegate::PlayerGone,
             base::Unretained(delegate_manager_.get()), delegate_id_1)));
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
     run_loop.Run();
   }
@@ -254,7 +260,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesIgnoresSuspendRequest) {
   // Wait for the suspend request, but don't call PlayerGone().
   EXPECT_CALL(observer_1, OnSuspendRequested(false));
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
   tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
   run_loop.Run();
 

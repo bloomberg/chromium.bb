@@ -8,9 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/browser/browser_thread.h"
@@ -139,7 +142,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
       return false;
     }
   } else {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BackgroundTracingManagerImpl::ValidateStartupScenario,
                    base::Unretained(this)));

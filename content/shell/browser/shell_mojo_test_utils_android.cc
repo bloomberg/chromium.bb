@@ -6,9 +6,12 @@
 
 #include <utility>
 
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/android/service_registry_android.h"
 #include "content/public/common/service_registry.h"
 #include "jni/ShellMojoTestUtils_jni.h"
@@ -70,7 +73,7 @@ static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
 static void RunLoop(JNIEnv* env,
                     const JavaParamRef<jclass>& jcaller,
                     jlong timeout_ms) {
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(timeout_ms));
   base::RunLoop run_loop;

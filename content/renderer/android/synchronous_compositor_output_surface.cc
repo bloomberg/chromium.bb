@@ -7,9 +7,12 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
@@ -189,7 +192,7 @@ void SynchronousCompositorOutputSurface::Invalidate() {
     fallback_tick_.Reset(
         base::Bind(&SynchronousCompositorOutputSurface::FallbackTickFired,
                    base::Unretained(this)));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, fallback_tick_.callback(),
         base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
     fallback_tick_pending_ = true;

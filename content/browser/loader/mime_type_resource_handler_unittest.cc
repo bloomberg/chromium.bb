@@ -9,8 +9,11 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -188,8 +191,8 @@ class TestFakePluginService : public FakePluginService {
   void GetPlugins(const GetPluginsCallback& callback) override {
     is_plugin_stale_ = false;
     std::vector<WebPluginInfo> plugins;
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, plugins));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, plugins));
   }
 
  private:

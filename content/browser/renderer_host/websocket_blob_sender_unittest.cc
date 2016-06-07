@@ -18,7 +18,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/blob_handle.h"
@@ -71,7 +73,7 @@ class FakeChannel : public WebSocketBlobSender::Channel {
     EXPECT_LE(data.size(), current_send_quota_);
     message_.insert(message_.end(), data.begin(), data.end());
     current_send_quota_ -= data.size();
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&FakeChannel::RefreshQuota, weak_factory_.GetWeakPtr()));
     return net::WebSocketEventInterface::CHANNEL_ALIVE;

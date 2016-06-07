@@ -14,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -368,7 +369,8 @@ TEST_F(FileSystemDirURLRequestJobTest, Cancel) {
   CreateDirectory("foo");
   TestRequestNoRun(CreateFileSystemURL("foo/"));
   // Run StartAsync() and only StartAsync().
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  request_.release());
   base::RunLoop().RunUntilIdle();
   // If we get here, success! we didn't crash!
 }

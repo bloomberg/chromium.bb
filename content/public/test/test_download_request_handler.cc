@@ -9,14 +9,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
@@ -490,7 +493,7 @@ void TestDownloadRequestHandler::PartialResponseJob::
          parameters_->injected_errors.front().offset <= requested_range_begin_)
     parameters_->injected_errors.pop();
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&PartialResponseJob::NotifyHeadersComplete,
                             weak_factory_.GetWeakPtr()));
 }

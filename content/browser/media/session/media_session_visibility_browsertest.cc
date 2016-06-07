@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/media/session/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -92,7 +95,7 @@ class MediaSessionVisibilityBrowserTest
   // MediaRouterIntegrationTests. Move it into a general place.
   void Wait(base::TimeDelta timeout) {
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), timeout);
     run_loop.Run();
   }
