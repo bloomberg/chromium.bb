@@ -6,6 +6,7 @@
 
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -19,10 +20,6 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace ash {
-class ShelfModel;
-}
-
 namespace {
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
@@ -35,8 +32,7 @@ ExtensionLauncherContextMenu::ExtensionLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     ash::Shelf* shelf)
-    : LauncherContextMenu(controller, item, shelf),
-      shelf_model_(shelf->shelf_model()) {
+    : LauncherContextMenu(controller, item, shelf) {
   Init();
 }
 
@@ -85,7 +81,8 @@ void ExtensionLauncherContextMenu::Init() {
       AddItemWithStringId(MENU_NEW_INCOGNITO_WINDOW,
                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-    if (!BrowserShortcutLauncherItemController(controller(), shelf_model_)
+    if (!BrowserShortcutLauncherItemController(
+             controller(), ash::Shell::GetInstance()->shelf_model())
              .IsListOfActiveBrowserEmpty()) {
       AddItem(MENU_CLOSE,
               l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
