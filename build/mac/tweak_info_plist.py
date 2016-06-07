@@ -86,49 +86,49 @@ def _ApplyVersionOverrides(version, keys, overrides, separator='.'):
   return separator.join(version_values)
 
 
-def _AddVersionKeys(plist, version=None, overrides=None):
+def _GetVersion(version_format, values, overrides=None):
+  """Generates a version number according to |version_format| using the values
+  from |values| or |overrides| if given."""
+  result = version_format
+  for key in values:
+    if overrides and key in overrides:
+      value = overrides[key]
+    else:
+      value = values[key]
+    result = result.replace('@%s@' % key, value)
+  return result
+
+
+def _AddVersionKeys(
+    plist, version_format_for_key, version=None, overrides=None):
   """Adds the product version number into the plist. Returns True on success and
   False on error. The error will be printed to stderr."""
-  if version:
-    match = re.match('\d+\.\d+\.(\d+\.\d+)$', version)
-    if not match:
-      print >>sys.stderr, 'Invalid version string specified: "%s"' % version
-      return False
-
-    full_version = match.group(0)
-    bundle_version = match.group(1)
-
-  else:
+  if not version:
     # Pull in the Chrome version number.
     VERSION_TOOL = os.path.join(TOP, 'build/util/version.py')
     VERSION_FILE = os.path.join(TOP, 'chrome/VERSION')
+    (stdout, retval) = _GetOutput([
+        VERSION_TOOL, '-f', VERSION_FILE,
+        '-t', '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'])
 
-    (stdout, retval1) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
-                                    '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'])
-    full_version = _ApplyVersionOverrides(
-        stdout.rstrip(), ('MAJOR', 'MINOR', 'BUILD', 'PATCH'), overrides)
-
-    (stdout, retval2) = _GetOutput([VERSION_TOOL, '-f', VERSION_FILE, '-t',
-                                    '@BUILD@.@PATCH@'])
-    bundle_version = _ApplyVersionOverrides(
-        stdout.rstrip(), ('BUILD', 'PATCH'), overrides)
-
-    # If either of the two version commands finished with non-zero returncode,
-    # report the error up.
-    if retval1 or retval2:
+    # If the command finished with a non-zero return code, then report the
+    # error up.
+    if retval != 0:
       return False
 
-  # Add public version info so "Get Info" works.
-  plist['CFBundleShortVersionString'] = full_version
+    version = stdout.strip()
 
-  # Honor the 429496.72.95 limit.  The maximum comes from splitting 2^32 - 1
-  # into  6, 2, 2 digits.  The limitation was present in Tiger, but it could
-  # have been fixed in later OS release, but hasn't been tested (it's easy
-  # enough to find out with "lsregister -dump).
-  # http://lists.apple.com/archives/carbon-dev/2006/Jun/msg00139.html
-  # BUILD will always be an increasing value, so BUILD_PATH gives us something
-  # unique that meetings what LS wants.
-  plist['CFBundleVersion'] = bundle_version
+  # Parse the given version number, that should be in MAJOR.MINOR.BUILD.PATCH
+  # format (where each value is a number). Note that str.isdigit() returns
+  # True if the string is composed only of digits (and thus match \d+ regexp).
+  groups = version.split('.')
+  if len(groups) != 4 or not all(element.isdigit() for element in groups):
+    print >>sys.stderr, 'Invalid version string specified: "%s"' % version
+    return False
+  values = dict(zip(('MAJOR', 'MINOR', 'BUILD', 'PATCH'), groups))
+
+  for key in ('CFBundleVersion', 'CFBundleShortVersionString'):
+    plist[key] = _GetVersion(version_format_for_key[key], values, overrides)
 
   # Return with no error.
   return True
@@ -289,8 +289,30 @@ def Main(argv):
         print >>sys.stderr, 'Unsupported key for --version-overrides:', key
         return 1
 
+  if options.platform == 'mac':
+    version_format_for_key = {
+      # Add public version info so "Get Info" works.
+      'CFBundleShortVersionString': '@MAJOR@.@MINOR@.@BUILD@.@PATCH@',
+
+      # Honor the 429496.72.95 limit.  The maximum comes from splitting 2^32 - 1
+      # into  6, 2, 2 digits.  The limitation was present in Tiger, but it could
+      # have been fixed in later OS release, but hasn't been tested (it's easy
+      # enough to find out with "lsregister -dump).
+      # http://lists.apple.com/archives/carbon-dev/2006/Jun/msg00139.html
+      # BUILD will always be an increasing value, so BUILD_PATH gives us
+      # something unique that meetings what LS wants.
+      'CFBundleVersion': '@BUILD@.@PATCH@',
+    }
+  else:
+    version_format_for_key = {
+      'CFBundleShortVersionString': '@MAJOR@.@BUILD@.@PATCH@',
+      'CFBundleVersion': '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
+    }
+
   # Insert the product version.
-  if not _AddVersionKeys(plist, version=options.version, overrides=overrides):
+  if not _AddVersionKeys(
+      plist, version_format_for_key, version=options.version,
+      overrides=overrides):
     return 2
 
   # Add Breakpad if configured to do so.
