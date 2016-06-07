@@ -20,9 +20,11 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/user_manager/user_manager.h"
 #include "ipc/unix_domain_socket_util.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -209,10 +211,16 @@ void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
     Stop();
     return;
   }
+
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  DCHECK(user_manager->GetPrimaryUser());
+  const cryptohome::Identification cryptohome_id(
+      user_manager->GetPrimaryUser()->GetAccountId());
+
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StartArcInstance(
-      kArcBridgeSocketPath,
+      cryptohome_id,
       base::Bind(&ArcBridgeBootstrapImpl::OnInstanceStarted,
                  weak_factory_.GetWeakPtr(), base::Passed(&socket_fd)));
 }

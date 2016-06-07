@@ -213,10 +213,10 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // The result of the operation is reported through |callback|.
   virtual void CheckArcAvailability(const ArcCallback& callback) = 0;
 
-  // Asynchronously starts the ARC instance using |socket_path| as the IPC
-  // socket for communication with the instance.  Upon completion, invokes
-  // |callback| with the result.
-  virtual void StartArcInstance(const std::string& socket_path,
+  // Asynchronously starts the ARC instance for the user whose cryptohome is
+  // located by |cryptohome_id|.  Upon completion, invokes |callback| with
+  // the result.
+  virtual void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                                 const ArcCallback& callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes

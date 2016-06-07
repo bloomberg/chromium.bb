@@ -345,13 +345,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void StartArcInstance(const std::string& socket_path,
+  void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                         const ArcCallback& callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerStartArcInstance);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(socket_path);
+    writer.AppendString(cryptohome_id.id());
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnArcMethod,
@@ -905,7 +905,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     callback.Run(false);
   }
 
-  void StartArcInstance(const std::string& socket_path,
+  void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                         const ArcCallback& callback) override {
     callback.Run(false);
   }

@@ -69,6 +69,7 @@ static_library("arc") {
     "//components/onc",
     "//components/prefs",
     "//components/signin/core/account_id",
+    "//components/user_manager",
     "//device/bluetooth",
     "//google_apis",
     "//ipc:ipc",
