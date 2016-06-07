@@ -253,6 +253,7 @@ EXPERIMENT_LIST="
     clpf
     dering
     ref_mv
+    ext_interp
 "
 CONFIG_LIST="
     dependency_tracking
