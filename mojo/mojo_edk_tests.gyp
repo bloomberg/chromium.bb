@@ -41,6 +41,9 @@
         'mojo_public.gyp:mojo_public_test_interfaces_struct_traits',
         'mojo_public.gyp:mojo_public_test_utils',
       ],
+      'variables': {
+        'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
+      },
       'sources': [
         'public/cpp/bindings/tests/array_common_test.h',
         'public/cpp/bindings/tests/array_unittest.cc',
@@ -92,6 +95,9 @@
         'public/cpp/bindings/tests/variant_test_util.h',
       ],
       'conditions': [
+        # TODO(yzshen): Blink-flavor bindings tests should be moved into
+        # mojo_public_bindings_for_blink_tests (which should eventually be moved
+        # into blink).
         ['OS=="ios"', {
           'dependencies!': [
             'mojo_public.gyp:mojo_public_test_interfaces_blink',
@@ -120,6 +126,9 @@
         'mojo_public.gyp:mojo_public_test_wtf_types',
         'mojo_public.gyp:mojo_public_test_wtf_types_blink',
       ],
+      'variables': {
+         'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
+      },
       'sources': [
         'public/cpp/bindings/tests/array_common_test.h',
         'public/cpp/bindings/tests/container_test_util.cc',

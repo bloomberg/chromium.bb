@@ -238,6 +238,7 @@
       ],
     },
     {
+      # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
       # GN version: //mojo/public/cpp/bindings:wtf_support
       'target_name': 'mojo_cpp_bindings_wtf_support',
       'type': 'static_library',
@@ -261,11 +262,6 @@
         'mojo_cpp_bindings',
         '../third_party/WebKit/Source/config.gyp:config',
       ],
-      'direct_dependent_settings': {
-        'variables': {
-          'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
-        },
-      },
     },
     {
       # GN version: //mojo/message_pump
