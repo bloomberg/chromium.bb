@@ -25,7 +25,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -373,8 +372,6 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
                               const base::FilePath& user_data_dir,
                               const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
-  TRACK_SCOPED_REGION(
-      "Startup", "ChromeBrowserMainParts::CreatePrimaryProfile");
 
   base::Time start = base::Time::Now();
   if (profiles::IsMultipleProfilesEnabled() &&
@@ -1164,8 +1161,6 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
   }
 #endif
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");
-  TRACK_SCOPED_REGION(
-      "Startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");
 
   result_code_ = PreMainMessageLoopRunImpl();
 
@@ -1337,8 +1332,6 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
-  TRACK_SCOPED_REGION(
-      "Startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();

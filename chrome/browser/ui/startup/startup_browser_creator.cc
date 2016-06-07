@@ -26,7 +26,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -323,7 +322,6 @@ bool StartupBrowserCreator::Start(const base::CommandLine& cmd_line,
                                   Profile* last_used_profile,
                                   const Profiles& last_opened_profiles) {
   TRACE_EVENT0("startup", "StartupBrowserCreator::Start");
-  TRACK_SCOPED_REGION("Startup", "StartupBrowserCreator::Start");
   SCOPED_UMA_HISTOGRAM_TIMER("Startup.StartupBrowserCreator_Start");
   return ProcessCmdLineImpl(cmd_line, cur_dir, true, last_used_profile,
                             last_opened_profiles);
