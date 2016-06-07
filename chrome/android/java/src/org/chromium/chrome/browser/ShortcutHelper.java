@@ -137,11 +137,13 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(Context context, String id, String url, final String userTitle,
+    private static void addShortcut(String id, String url, final String userTitle,
             String name, String shortName, Bitmap icon, int displayMode, int orientation,
             int source, long themeColor, long backgroundColor, boolean isIconGenerated,
             final long callbackPointer) {
         assert !ThreadUtils.runningOnUiThread();
+
+        Context context = ContextUtils.getApplicationContext();
         final Intent shortcutIntent;
         boolean isWebappCapable = (displayMode == WebDisplayMode.Standalone
                                 || displayMode == WebDisplayMode.Fullscreen);
@@ -192,16 +194,14 @@ public class ShortcutHelper {
 
     /**
      * Creates a storage location and stores the data for a web app using {@link WebappDataStorage}.
-     * @param context     Context to open the WebappDataStorage with.
      * @param id          ID of the webapp which is storing data.
      * @param splashImage Image which should be displayed on the splash screen of
      *                    the webapp. This can be null of there is no image to show.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void storeWebappSplashImage(final Context context, final String id,
-            final Bitmap splashImage) {
-        WebappRegistry.getWebappDataStorage(context, id,
+    private static void storeWebappSplashImage(final String id, final Bitmap splashImage) {
+        WebappRegistry.getWebappDataStorage(ContextUtils.getApplicationContext(), id,
                 new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
@@ -210,8 +210,7 @@ public class ShortcutHelper {
                         storage.updateSplashScreenImage(splashImage);
                     }
 
-                }
-        );
+                });
     }
 
     /**
@@ -310,13 +309,13 @@ public class ShortcutHelper {
 
     /**
      * Returns whether the given icon matches the size requirements to be used on the home screen.
-     * @param context Context used to create the intent.
      * @param width Icon width, in pixels.
      * @param height Icon height, in pixels.
      * @return whether the given icon matches the size requirements to be used on the home screen.
      */
     @CalledByNative
-    public static boolean isIconLargeEnoughForLauncher(Context context, int width, int height) {
+    public static boolean isIconLargeEnoughForLauncher(int width, int height) {
+        Context context = ContextUtils.getApplicationContext();
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         final int minimalSize = am.getLauncherLargeIconSize() / 2;
         return width >= minimalSize && height >= minimalSize;
@@ -331,12 +330,13 @@ public class ShortcutHelper {
      * @return Bitmap Either the touch-icon or the newly created favicon.
      */
     @CalledByNative
-    public static Bitmap createHomeScreenIconFromWebIcon(Context context, Bitmap webIcon) {
+    public static Bitmap createHomeScreenIconFromWebIcon(Bitmap webIcon) {
         // getLauncherLargeIconSize() is just a guess at the launcher icon size, and is often
         // wrong -- the launcher can show icons at any size it pleases. Instead of resizing the
         // icon to the supposed launcher size and then having the launcher resize the icon again,
         // just leave the icon at its original size and let the launcher do a single rescaling.
         // Unless the icon is much too big; then scale it down here too.
+        Context context = ContextUtils.getApplicationContext();
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         int maxInnerSize = Math.round(am.getLauncherLargeIconSize() * MAX_INNER_SIZE_RATIO);
         int innerSize = Math.min(maxInnerSize, Math.max(webIcon.getWidth(), webIcon.getHeight()));
@@ -374,7 +374,6 @@ public class ShortcutHelper {
      * Generates a generic icon to be used in the launcher. This is just a rounded rectangle with
      * a letter in the middle taken from the website's domain name.
      *
-     * @param context Context used to create the intent.
      * @param url URL of the shortcut.
      * @param red Red component of the dominant icon color.
      * @param green Green component of the dominant icon color.
@@ -382,8 +381,8 @@ public class ShortcutHelper {
      * @return Bitmap Either the touch-icon or the newly created favicon.
      */
     @CalledByNative
-    public static Bitmap generateHomeScreenIcon(Context context, String url, int red, int green,
-            int blue) {
+    public static Bitmap generateHomeScreenIcon(String url, int red, int green, int blue) {
+        Context context = ContextUtils.getApplicationContext();
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         final int outerSize = am.getLauncherLargeIconSize();
         final int iconDensity = am.getLauncherLargeIconDensity();
@@ -535,7 +534,8 @@ public class ShortcutHelper {
      * icon and the ideal and minimum sizes of the splash screen image in that order.
      */
     @CalledByNative
-    private static int[] getHomeScreenIconAndSplashImageSizes(Context context) {
+    private static int[] getHomeScreenIconAndSplashImageSizes() {
+        Context context = ContextUtils.getApplicationContext();
         // This ordering must be kept up to date with the C++ ShortcutHelper.
         return new int[] {
             getIdealHomescreenIconSizeInDp(context),
