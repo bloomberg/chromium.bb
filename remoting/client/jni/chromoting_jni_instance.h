@@ -136,12 +136,6 @@ class ChromotingJniInstance
  private:
   void ConnectToHostOnNetworkThread();
 
-  // Notifies the user interface that the user needs to enter a PIN. The
-  // current authentication attempt is put on hold until |callback| is invoked.
-  // May be called on any thread.
-  void FetchSecret(bool pairable,
-                   const protocol::SecretFetchedCallback& callback);
-
   // Sets the device name. Can be called on any thread.
   void SetDeviceName(const std::string& device_name);
 

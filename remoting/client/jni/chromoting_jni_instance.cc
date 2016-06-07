@@ -83,7 +83,7 @@ ChromotingJniInstance::ChromotingJniInstance(
   client_auth_config_.pairing_client_id = pairing_id;
   client_auth_config_.pairing_secret = pairing_secret;
   client_auth_config_.fetch_secret_callback =
-      base::Bind(&ChromotingJniInstance::FetchSecret, GetWeakPtr());
+      base::Bind(&JniPairingSecretFetcher::FetchSecret, secret_fetcher);
   client_auth_config_.fetch_third_party_token_callback = base::Bind(
       &ChromotingJniInstance::FetchThirdPartyToken, GetWeakPtr(), host_pubkey);
 
@@ -177,16 +177,14 @@ void ChromotingJniInstance::ProvideSecret(const std::string& pin,
                                           const std::string& device_name) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
 
-  if (!secret_fetcher_) {
-    return;
-  }
-
   create_pairing_ = create_pairing;
 
   if (create_pairing)
     SetDeviceName(device_name);
 
-  secret_fetcher_->ProvideSecret(pin);
+  jni_runtime_->network_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&JniPairingSecretFetcher::ProvideSecret,
+                            secret_fetcher_, pin));
 }
 
 void ChromotingJniInstance::SendMouseEvent(
@@ -432,18 +430,6 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 #endif  // defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   client_->Start(signaling_.get(), client_auth_config_, transport_context,
                  host_jid_, capabilities_);
-}
-
-void ChromotingJniInstance::FetchSecret(
-    bool pairable,
-    const protocol::SecretFetchedCallback& callback) {
-  if (!jni_runtime_->ui_task_runner()->BelongsToCurrentThread()) {
-    jni_runtime_->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&JniPairingSecretFetcher::FetchSecret,
-                              secret_fetcher_, pairable, callback));
-  } else if (secret_fetcher_) {
-    secret_fetcher_->FetchSecret(pairable, callback);
-  }
 }
 
 void ChromotingJniInstance::SetDeviceName(const std::string& device_name) {

@@ -14,8 +14,9 @@ namespace remoting {
 class ChromotingJniRuntime;
 class JniClient;
 
-// This class fetches the pairing secret on the UI thread. It must be deleted
-// on UI.
+// This class fetches the pairing secret on the UI thread. This should be
+// created on the UI thread but there after used and deleted on the network
+// thread.
 class JniPairingSecretFetcher {
  public:
   JniPairingSecretFetcher(ChromotingJniRuntime* runtime,
@@ -23,21 +24,24 @@ class JniPairingSecretFetcher {
                    const std::string& host_id);
   virtual ~JniPairingSecretFetcher();
 
-  // Called on UI thread. Notifies the user interface that the user needs to
-  // enter a PIN. The current authentication attempt is put on hold until
-  // |callback| is invoked. |callback| will be run on the network thread.
+  // Notifies the user interface that the user needs to enter a PIN. The current
+  // authentication attempt is put on hold until |callback| is invoked.
   void FetchSecret(bool pairable,
                    const protocol::SecretFetchedCallback& callback);
 
   // Provides the user's PIN and resumes the host authentication attempt. Call
-  // on the UI thread once the user has finished entering this PIN into the UI,
-  // but only after the UI has been asked to provide a PIN (via FetchSecret()).
+  // once the user has finished entering this PIN into the UI, but only after
+  // the UI has been asked to provide a PIN (via FetchSecret()).
   void ProvideSecret(const std::string& pin);
 
-  // Get weak pointer to be used on the UI thread.
+  // Get weak pointer to be used on the network thread.
   base::WeakPtr<JniPairingSecretFetcher> GetWeakPtr();
 
  private:
+  static void FetchSecretOnUiThread(base::WeakPtr<JniClient> client,
+                                    const std::string& host_id,
+                                    bool pairable);
+
   ChromotingJniRuntime* jni_runtime_;
   base::WeakPtr<JniClient> jni_client_;
 
