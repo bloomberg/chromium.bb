@@ -28,7 +28,6 @@ class ScriptWrappable;
     V(customElementTagName) \
     V(customElementType) \
     V(customElementsRegistryMap) \
-    V(detail) \
     V(document) \
     V(error) \
     V(event) \

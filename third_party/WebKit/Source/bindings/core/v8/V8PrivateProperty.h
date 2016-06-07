@@ -22,6 +22,7 @@ class ScriptWrappable;
 
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X) \
+    X(CustomEvent, Detail) \
     X(MessageEvent, CachedData) \
     X(PrivateScriptRunner, IsInitialized) \
     X(IntersectionObserver, Callback) \
@@ -96,14 +97,15 @@ public:
 
     private:
         friend class V8PrivateProperty;
-        // V8ServiceWorkerMessageEventInternal is exceptionally allowed to call
-        // to getFromMainWorld.
+        // The following classes are exceptionally allowed to call to
+        // getFromMainWorld.
+        friend class V8CustomEvent;
         friend class V8ServiceWorkerMessageEventInternal;
 
         explicit Symbol(v8::Local<v8::Private> privateSymbol)
             : m_privateSymbol(privateSymbol) { }
 
-        // Only V8ServiceWorkerMessageEventInternal is allowed to use this API.
+        // Only friend classes are allowed to use this API.
         v8::Local<v8::Value> getFromMainWorld(ScriptState*, ScriptWrappable*);
 
         v8::Local<v8::Private> m_privateSymbol;

@@ -38,25 +38,21 @@
 #include "bindings/core/v8/V8CustomEventInit.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Event.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ContextFeatures.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
-static v8::Local<v8::Value> cacheState(ScriptState* scriptState, v8::Local<v8::Object> customEvent, v8::Local<v8::Value> detail)
-{
-    V8HiddenValue::setHiddenValue(scriptState, customEvent, V8HiddenValue::detail(scriptState->isolate()), detail);
-    return detail;
-}
-
 static void storeDetail(ScriptState* scriptState, CustomEvent* impl, v8::Local<v8::Object> wrapper, v8::Local<v8::Value> detail)
 {
-    cacheState(scriptState, wrapper, detail);
+    auto privateDetail = V8PrivateProperty::getCustomEventDetail(scriptState->isolate());
+    privateDetail.set(scriptState->context(), wrapper, detail);
+
     // When a custom event is created in an isolated world, serialize
     // |detail| and store it in |impl| so that we can clone |detail|
     // when the getter of |detail| is called in the main world later.
-    if (DOMWrapperWorld::current(scriptState->isolate()).isIsolatedWorld())
+    if (scriptState->world().isIsolatedWorld())
         impl->setSerializedDetail(SerializedScriptValue::serializeAndSwallowExceptions(scriptState->isolate(), detail));
 }
 
@@ -90,7 +86,7 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8CustomEvent::wrapperTypeInfo, wrapper);
 
     // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
-    // |detail| as a hidden value to avoid cycle references.
+    // |detail| as a private property to avoid cycle references.
     if (eventInitDict.hasDetail()) {
         v8::Local<v8::Value> v8Detail = eventInitDict.detail().v8Value();
         storeDetail(ScriptState::current(info.GetIsolate()), impl, wrapper, v8Detail);
@@ -111,19 +107,18 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
     CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
 
-    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
-
-    if (!result.IsEmpty()) {
-        v8SetReturnValue(info, result);
+    auto privateDetail = V8PrivateProperty::getCustomEventDetail(info.GetIsolate());
+    v8::Local<v8::Value> detail = privateDetail.get(scriptState->context(), info.Holder());
+    if (!detail.IsEmpty()) {
+        v8SetReturnValue(info, detail);
         return;
     }
 
     // Be careful not to return a V8 value which is created in different world.
-    v8::Local<v8::Value> detail;
     if (SerializedScriptValue* serializedValue = event->serializedDetail()) {
         detail = serializedValue->deserialize();
-    } else if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
-        v8::Local<v8::Value> mainWorldDetail = V8HiddenValue::getHiddenValueFromMainWorldWrapper(scriptState, event, V8HiddenValue::detail(info.GetIsolate()));
+    } else if (scriptState->world().isIsolatedWorld()) {
+        v8::Local<v8::Value> mainWorldDetail = privateDetail.getFromMainWorld(scriptState, event);
         if (!mainWorldDetail.IsEmpty()) {
             event->setSerializedDetail(SerializedScriptValue::serializeAndSwallowExceptions(info.GetIsolate(), mainWorldDetail));
             detail = event->serializedDetail()->deserialize();
@@ -133,7 +128,8 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
     // |detail| should be null when it is an empty handle because its default value is null.
     if (detail.IsEmpty())
         detail = v8::Null(info.GetIsolate());
-    v8SetReturnValue(info, cacheState(scriptState, info.Holder(), detail));
+    privateDetail.set(scriptState->context(), info.Holder(), detail);
+    v8SetReturnValue(info, detail);
 }
 
 } // namespace blink
