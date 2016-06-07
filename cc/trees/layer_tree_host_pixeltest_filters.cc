@@ -178,12 +178,8 @@ class LayerTreeHostFiltersScaledPixelTest
                         PixelTestType test_type) {
     int half_content = content_size / 2;
 
-    scoped_refptr<SolidColorLayer> root = CreateSolidColorLayer(
-        gfx::Rect(0, 0, content_size, content_size), SK_ColorWHITE);
-
     scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
         gfx::Rect(0, 0, content_size, content_size), SK_ColorGREEN);
-    root->AddChild(background);
 
     // Add a blue layer that completely covers the green layer.
     scoped_refptr<SolidColorLayer> foreground = CreateSolidColorLayer(
@@ -285,12 +281,8 @@ TEST_F(LayerTreeHostCroppedFilterPixelTest, Software) {
 class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
  protected:
   void RunPixelTestType(PixelTestType test_type) {
-    scoped_refptr<SolidColorLayer> root =
-        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLACK);
-
     scoped_refptr<SolidColorLayer> background =
         CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
-    root->AddChild(background);
 
     scoped_refptr<SolidColorLayer> foreground =
         CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
