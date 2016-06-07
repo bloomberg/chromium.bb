@@ -19,7 +19,7 @@ function log(msg)
 }
 
     var consoleWindow = window.open("", "consoleWindow");
-    if (consoleWindow) {
+    if (consoleWindow && consoleWindow.log) {
         consoleWindow.log(document.getElementById("referrer").innerText);
         consoleWindow.log("window.opener: " + (window.opener ? window.opener.location : ""));
     }

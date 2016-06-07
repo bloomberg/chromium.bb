@@ -1605,7 +1605,6 @@ void TestRunner::Reset() {
 
   dump_as_audio_ = false;
   dump_create_view_ = false;
-  can_open_windows_ = false;
   dump_window_status_changes_ = false;
   dump_spell_check_callbacks_ = false;
   dump_back_forward_list_ = false;
@@ -1782,7 +1781,7 @@ bool TestRunner::shouldDumpCreateView() const {
 }
 
 bool TestRunner::canOpenWindows() const {
-  return can_open_windows_;
+  return layout_test_runtime_flags_.can_open_windows();
 }
 
 bool TestRunner::shouldDumpResourceLoadCallbacks() const {
@@ -2435,7 +2434,8 @@ void TestRunner::DumpCreateView() {
 }
 
 void TestRunner::SetCanOpenWindows() {
-  can_open_windows_ = true;
+  layout_test_runtime_flags_.set_can_open_windows(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpResourceLoadCallbacks() {

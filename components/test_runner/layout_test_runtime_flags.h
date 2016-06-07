@@ -165,6 +165,11 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // one renderer and an OOPIF in another renderer).
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(have_top_loading_frame)
 
+  // If true, new windows can be opened via javascript or by plugins. By
+  // default, set to false and can be toggled to true using
+  // setCanOpenWindows().
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(can_open_windows)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

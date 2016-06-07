@@ -574,11 +574,6 @@ class TestRunner : public WebTestRunner {
   // is invoked.
   bool dump_create_view_;
 
-  // If true, new windows can be opened via javascript or by plugins. By
-  // default, set to false and can be toggled to true using
-  // setCanOpenWindows().
-  bool can_open_windows_;
-
   // If true, the test_shell will dump all changes to window.status.
   bool dump_window_status_changes_;
 
