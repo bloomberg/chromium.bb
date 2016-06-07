@@ -332,14 +332,21 @@ ThreadCondition::ThreadCondition()
             CloseHandle(m_condition.m_blockQueue);
         if (m_condition.m_unblockLock)
             CloseHandle(m_condition.m_unblockLock);
+
+        m_condition.m_blockLock = nullptr;
+        m_condition.m_blockQueue = nullptr;
+        m_condition.m_unblockLock = nullptr;
     }
 }
 
 ThreadCondition::~ThreadCondition()
 {
-    CloseHandle(m_condition.m_blockLock);
-    CloseHandle(m_condition.m_blockQueue);
-    CloseHandle(m_condition.m_unblockLock);
+    if (m_condition.m_blockLock)
+        CloseHandle(m_condition.m_blockLock);
+    if (m_condition.m_blockQueue)
+        CloseHandle(m_condition.m_blockQueue);
+    if (m_condition.m_unblockLock)
+        CloseHandle(m_condition.m_unblockLock);
 }
 
 void ThreadCondition::wait(MutexBase& mutex)
