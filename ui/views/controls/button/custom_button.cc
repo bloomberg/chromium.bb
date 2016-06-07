@@ -164,15 +164,16 @@ bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
 
 bool CustomButton::OnMouseDragged(const ui::MouseEvent& event) {
   if (state_ != STATE_DISABLED) {
+    bool should_enter_pushed = ShouldEnterPushedState(event);
     if (HitTestPoint(event.location())) {
-      SetState(ShouldEnterPushedState(event) ? STATE_PRESSED : STATE_HOVERED);
-      if (!InDrag() && ink_drop_delegate() &&
+      SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);
+      if (!InDrag() && should_enter_pushed && ink_drop_delegate() &&
           ink_drop_delegate()->GetTargetInkDropState() ==
               views::InkDropState::HIDDEN)
         ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
     } else {
       SetState(STATE_NORMAL);
-      if (!InDrag() && ink_drop_delegate() &&
+      if (!InDrag() && should_enter_pushed && ink_drop_delegate() &&
           ink_drop_delegate()->GetTargetInkDropState() ==
               views::InkDropState::ACTION_PENDING)
         ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
