@@ -28,11 +28,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # ========================
     # Conformance expectations
     # ========================
+
+    # Passing tests, waiting to be turned on when sharding is implemented.
+    self.Skip('deqp/functional/gles3/shadermatrix/*', bug=1)
+
     # All platforms.
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/draw.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbocolorbuffer.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fbodepthbuffer.html', bug=483282)
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
@@ -46,8 +49,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/occlusionquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadercommonfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderderivate.html', bug=483282)
-    self.Skip('deqp/functional/gles3/shaderloop.html', bug=483282)
-    self.Skip('deqp/functional/gles3/shadermatrix.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderoperator.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadertexturefunction/*.html', bug=483282)
@@ -57,7 +58,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
-    self.Flaky('deqp/functional/gles3/shaderindexing.html', bug=483282)
 
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
@@ -125,6 +125,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
         ['win'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/shaderloop_for.html',
+        ['win'], bug=617817)
+    self.Fail('deqp/functional/gles3/shaderloop_while.html',
+        ['win'], bug=617817)
+    self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
+        ['win'], bug=617817)
 
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win'], bug=587601)
 
@@ -340,6 +347,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/cube_combinations_*',
         ['mac'], bug=606074)
+    self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
+        ['mac'], bug=617820)
 
     self.Skip('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
@@ -479,6 +488,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
+        ['linux'], bug=483282)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
@@ -536,7 +547,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/samplerobject.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderprecision.html',
+    self.Fail('deqp/functional/gles3/shaderprecision*.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturefiltering/3d*',
         ['linux', 'amd'], bug=606114)
