@@ -21,11 +21,21 @@
 extern "C" {
 #endif
 
+#if CONFIG_EXT_INTERP
+#define EIGHTTAP 0
+#define EIGHTTAP_SMOOTH 1
+#define EIGHTTAP_SHARP 2
+#define EIGHTTAP_SMOOTH2 3
+#define MULTITAP_SHARP2 4
+#define SWITCHABLE_FILTERS 5 /* Number of switchable filters */
+#else
 #define EIGHTTAP 0
 #define EIGHTTAP_SMOOTH 1
 #define EIGHTTAP_SHARP 2
 #define SWITCHABLE_FILTERS 3 /* Number of switchable filters */
-#define BILINEAR 3
+#endif                       // CONFIG_EXT_INTERP
+#define BILINEAR SWITCHABLE_FILTERS
+
 // The codec can operate in four possible inter prediction filter mode:
 // 8-tap, 8-tap-smooth, 8-tap-sharp, and switching between the three.
 #define SWITCHABLE_FILTER_CONTEXTS (SWITCHABLE_FILTERS + 1)
