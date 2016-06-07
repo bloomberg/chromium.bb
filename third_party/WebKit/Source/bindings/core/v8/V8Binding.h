@@ -965,7 +965,7 @@ typedef void (*InstallTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&, v8
 // Freeze a V8 object. The type of the first parameter and the return value is
 // intentionally v8::Value so that this function can wrap toV8().
 // If the argument isn't an object, this will crash.
-v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value>, v8::Isolate*);
 
 } // namespace blink
 
