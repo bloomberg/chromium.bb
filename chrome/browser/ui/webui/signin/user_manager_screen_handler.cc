@@ -49,6 +49,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -469,9 +470,11 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
-  if (profiles::AreAllProfilesLocked()) {
+  if (switches::IsMaterialDesignUserManager() &&
+      profiles::AreAllProfilesLocked()) {
     web_ui()->CallJavascriptFunctionUnsafe(
-        "cr.webUIListenerCallback", base::StringValue("show-error-dialog"),
+        "cr.webUIListenerCallback",
+        base::StringValue("show-error-dialog"),
         base::StringValue(l10n_util::GetStringUTF8(
             IDS_USER_MANAGER_REMOVE_PROFILE_PROFILES_LOCKED_ERROR)));
     return;
