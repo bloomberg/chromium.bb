@@ -15903,7 +15903,6 @@ var keyboardOverlayData = {
     'o<>CTRL<>SHIFT': 'keyboardOverlayBookmarkManager',
     'p<>ALT<>CTRL': 'keyboardOverlayToggleProjectionTouchHud',
     'p<>CTRL': 'keyboardOverlayPrint',
-    'p<>CTRL<>SHIFT': 'keyboardOverlayOpenGoogleCloudPrint',
     'power': 'keyboardOverlayLockScreenOrPowerOff',
     'q<>CTRL<>SHIFT': 'keyboardOverlaySignOut',
     'r<>CTRL': 'keyboardOverlayReloadCurrentPage',

@@ -4738,9 +4738,6 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (Open the file manager).">
     File manager
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN_GOOGLE_CLOUD_PRINT" desc="The text in the keyboard overlay to explain the shortcut (Opens the 'Google Cloud Print' dialog).">
-    Google Cloud Print
-  </message>
   <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut (Page down).">
     Page down
   </message>
