@@ -68,9 +68,7 @@ group("gn_all") {
   ]
 
   if (!is_ios) {
-    deps += [
-      "//v8:gn_all",
-    ]
+    deps += [ "//v8:gn_all" ]
   }
 }
 
@@ -893,8 +891,8 @@ group("chromium_builder_perf") {
 
     if (is_win) {
       deps += [
-        # "//gpu:angle_perftests", TODO(GYP): crbug.com/537008
         "//chrome/installer/mini_installer:mini_installer",
+        "//third_party/angle/src/tests:angle_perftests",
       ]
     } else {
       deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
