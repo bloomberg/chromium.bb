@@ -4,6 +4,8 @@
 
 #include "ui/events/ipc/latency_info_param_traits_macros.h"
 
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
+
 // Generate param traits size methods.
 #include "ipc/param_traits_size_macros.h"
 namespace IPC {
@@ -68,7 +70,7 @@ bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &p->latency_components_))
     return false;
 
-  ui::LatencyInfo::InputCoordinate input_coordinates;
+  gfx::PointF input_coordinates;
   uint32_t input_coordinates_size;
   if (!ReadParam(m, iter, &input_coordinates_size))
     return false;

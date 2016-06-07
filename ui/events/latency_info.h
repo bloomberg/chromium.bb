@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/events_base_export.h"
+#include "ui/gfx/geometry/point_f.h"
 
 #if !defined(OS_IOS)
 #include "ipc/ipc_param_traits.h"  // nogncheck
@@ -125,14 +126,6 @@ class EVENTS_BASE_EXPORT LatencyInfo {
     uint32_t event_count;
   };
 
-  struct EVENTS_BASE_EXPORT InputCoordinate {
-    InputCoordinate();
-    InputCoordinate(float x, float y);
-
-    float x;
-    float y;
-  };
-
   // Empirically determined constant based on a typical scroll sequence.
   enum { kTypicalMaxComponentsPerLatencyInfo = 10 };
 
@@ -200,12 +193,10 @@ class EVENTS_BASE_EXPORT LatencyInfo {
 
   // Returns true if there is still room for keeping the |input_coordinate|,
   // false otherwise.
-  bool AddInputCoordinate(const InputCoordinate& input_coordinate);
+  bool AddInputCoordinate(const gfx::PointF& input_coordinate);
 
   uint32_t input_coordinates_size() const { return input_coordinates_size_; }
-  const InputCoordinate* input_coordinates() const {
-    return input_coordinates_;
-  }
+  const gfx::PointF* input_coordinates() const { return input_coordinates_; }
 
   const LatencyMap& latency_components() const { return latency_components_; }
 
@@ -236,7 +227,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
 
   // These coordinates represent window coordinates of the original input event.
   uint32_t input_coordinates_size_;
-  InputCoordinate input_coordinates_[kMaxInputCoordinates];
+  gfx::PointF input_coordinates_[kMaxInputCoordinates];
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64_t trace_id_;

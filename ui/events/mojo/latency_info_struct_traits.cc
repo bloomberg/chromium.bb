@@ -185,28 +185,27 @@ size_t ArrayTraits<InputCoordinateArray>::GetSize(
 }
 
 // static
-ui::LatencyInfo::InputCoordinate* ArrayTraits<InputCoordinateArray>::GetData(
+gfx::PointF* ArrayTraits<InputCoordinateArray>::GetData(
     InputCoordinateArray& b) {
   return b.data;
 }
 
 // static
-const ui::LatencyInfo::InputCoordinate*
-ArrayTraits<InputCoordinateArray>::GetData(const InputCoordinateArray& b) {
+const gfx::PointF* ArrayTraits<InputCoordinateArray>::GetData(
+    const InputCoordinateArray& b) {
   return b.data;
 }
 
 // static
-ui::LatencyInfo::InputCoordinate& ArrayTraits<InputCoordinateArray>::GetAt(
-    InputCoordinateArray& b,
-    size_t i) {
+gfx::PointF& ArrayTraits<InputCoordinateArray>::GetAt(InputCoordinateArray& b,
+                                                      size_t i) {
   return b.data[i];
 }
 
 // static
-const ui::LatencyInfo::InputCoordinate&
-ArrayTraits<InputCoordinateArray>::GetAt(const InputCoordinateArray& b,
-                                         size_t i) {
+const gfx::PointF& ArrayTraits<InputCoordinateArray>::GetAt(
+    const InputCoordinateArray& b,
+    size_t i) {
   return b.data[i];
 }
 
@@ -322,7 +321,7 @@ StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::input_coordinates(
     const ui::LatencyInfo& info) {
   InputCoordinateArray input_coordinates_array = {
       ui::LatencyInfo::kMaxInputCoordinates,
-      const_cast<ui::LatencyInfo::InputCoordinate*>(info.input_coordinates_)};
+      const_cast<gfx::PointF*>(info.input_coordinates_)};
   return input_coordinates_array;
 }
 

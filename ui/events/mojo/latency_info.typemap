@@ -12,10 +12,10 @@ public_deps = [
   "//mojo/common",
   "//mojo/public/cpp/bindings",
   "//ui/events:events_base",
+  "//ui/gfx/geometry/mojo",
 ]
 type_mappings = [
   "ui.mojom.LatencyComponent=ui::LatencyInfo::LatencyComponent",
   "ui.mojom.LatencyComponentId=std::pair<ui::LatencyComponentType, int64_t>",
   "ui.mojom.LatencyInfo=ui::LatencyInfo",
-  "ui.mojom.InputCoordinate=ui::LatencyInfo::InputCoordinate",
 ]

@@ -22,6 +22,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx_test_support',
+        '../gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
         'devices/events_devices.gyp:events_devices',
         'events.gyp:dom_keycode_converter',
         'events.gyp:events',

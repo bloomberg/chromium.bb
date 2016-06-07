@@ -408,6 +408,7 @@ test("events_unittests") {
       "//ui/events/gestures/blink",
       "//ui/events/ipc",
       "//ui/events/mojo:test_interfaces",
+      "//ui/gfx/ipc/geometry",
     ]
   }
 

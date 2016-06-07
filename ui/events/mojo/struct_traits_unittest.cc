@@ -22,12 +22,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
-  void EchoInputCoordinate(
-      const LatencyInfo::InputCoordinate& i,
-      const EchoInputCoordinateCallback& callback) override {
-    callback.Run(i);
-  }
-
   void EchoLatencyComponent(
       const LatencyInfo::LatencyComponent& l,
       const EchoLatencyComponentCallback& callback) override {
@@ -51,17 +45,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 }  // namespace
-
-TEST_F(StructTraitsTest, InputCoordinate) {
-  const float x = 1337.5f;
-  const float y = 7331.6f;
-  LatencyInfo::InputCoordinate input(x, y);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  LatencyInfo::InputCoordinate output;
-  proxy->EchoInputCoordinate(input, &output);
-  EXPECT_EQ(x, output.x);
-  EXPECT_EQ(y, output.y);
-}
 
 TEST_F(StructTraitsTest, LatencyComponent) {
   const int64_t sequence_number = 13371337;
@@ -99,13 +82,10 @@ TEST_F(StructTraitsTest, LatencyInfo) {
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234, 100);
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
                            1234, 0);
-  EXPECT_TRUE(
-      latency.AddInputCoordinate(LatencyInfo::InputCoordinate(100, 200)));
-  EXPECT_TRUE(
-      latency.AddInputCoordinate(LatencyInfo::InputCoordinate(101, 201)));
+  EXPECT_TRUE(latency.AddInputCoordinate(gfx::PointF(100, 200)));
+  EXPECT_TRUE(latency.AddInputCoordinate(gfx::PointF(101, 201)));
   // Up to 2 InputCoordinate is allowed.
-  EXPECT_FALSE(
-      latency.AddInputCoordinate(LatencyInfo::InputCoordinate(102, 202)));
+  EXPECT_FALSE(latency.AddInputCoordinate(gfx::PointF(102, 202)));
 
   EXPECT_EQ(100, latency.trace_id());
   EXPECT_TRUE(latency.terminated());
@@ -119,10 +99,10 @@ TEST_F(StructTraitsTest, LatencyInfo) {
   EXPECT_EQ(latency.terminated(), output.terminated());
   EXPECT_EQ(latency.input_coordinates_size(), output.input_coordinates_size());
   for (size_t i = 0; i < latency.input_coordinates_size(); i++) {
-    EXPECT_EQ(latency.input_coordinates()[i].x,
-              output.input_coordinates()[i].x);
-    EXPECT_EQ(latency.input_coordinates()[i].y,
-              output.input_coordinates()[i].y);
+    EXPECT_EQ(latency.input_coordinates()[i].x(),
+              output.input_coordinates()[i].x());
+    EXPECT_EQ(latency.input_coordinates()[i].y(),
+              output.input_coordinates()[i].y());
   }
 
   EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234,
