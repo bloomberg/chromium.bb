@@ -6,11 +6,11 @@
 
 #include "core/css/CSSValue.h"
 #include "core/css/cssom/CSSSimpleLength.h"
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 
 namespace blink {
 
-StyleValue* StyleValueFactory::create(CSSPropertyID propertyID, const CSSValue& value)
+CSSStyleValue* StyleValueFactory::create(CSSPropertyID propertyID, const CSSValue& value)
 {
     if (value.isPrimitiveValue()) {
         const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);

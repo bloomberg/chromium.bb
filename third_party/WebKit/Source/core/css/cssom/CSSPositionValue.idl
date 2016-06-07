@@ -5,7 +5,7 @@
 [
     Constructor(CSSLengthValue x, CSSLengthValue y),
     RuntimeEnabled=CSSTypedOM
-] interface CSSPositionValue : StyleValue {
+] interface CSSPositionValue : CSSStyleValue {
     readonly attribute CSSLengthValue x;
     readonly attribute CSSLengthValue y;
 };

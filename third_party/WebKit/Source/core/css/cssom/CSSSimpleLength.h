@@ -62,7 +62,7 @@ private:
         value.type() == CSSLengthValue::StyleValueType::SimpleLengthType)
 
 DEFINE_SIMPLE_LENGTH_TYPE_CASTS(CSSLengthValue);
-DEFINE_SIMPLE_LENGTH_TYPE_CASTS(StyleValue);
+DEFINE_SIMPLE_LENGTH_TYPE_CASTS(CSSStyleValue);
 
 } // namespace blink
 

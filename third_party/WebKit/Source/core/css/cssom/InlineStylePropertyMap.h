@@ -19,8 +19,8 @@ public:
     StyleValueVector getAll(CSSPropertyID) override;
     Vector<String> getProperties() override;
 
-    void set(CSSPropertyID, StyleValueOrStyleValueSequenceOrString&, ExceptionState&) override;
-    void append(CSSPropertyID, StyleValueOrStyleValueSequenceOrString&, ExceptionState&) override;
+    void set(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState&) override;
+    void append(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState&) override;
     void remove(CSSPropertyID, ExceptionState&) override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()

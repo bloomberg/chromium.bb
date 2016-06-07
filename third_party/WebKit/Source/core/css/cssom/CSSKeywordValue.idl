@@ -6,6 +6,6 @@
     Constructor(DOMString keyword),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
-] interface CSSKeywordValue : StyleValue {
+] interface CSSKeywordValue : CSSStyleValue {
     readonly attribute DOMString keywordValue;
 };

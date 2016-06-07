@@ -396,7 +396,7 @@ interface CSS
     static method supports
     attribute @@toStringTag
     method constructor
-interface CSSAngleValue : StyleValue
+interface CSSAngleValue : CSSStyleValue
     attribute @@toStringTag
     getter degrees
     getter gradians
@@ -452,11 +452,11 @@ interface CSSKeyframesRule : CSSRule
     method deleteRule
     method findRule
     setter name
-interface CSSKeywordValue : StyleValue
+interface CSSKeywordValue : CSSStyleValue
     attribute @@toStringTag
     getter keywordValue
     method constructor
-interface CSSLengthValue : StyleValue
+interface CSSLengthValue : CSSStyleValue
     static method from
     attribute @@toStringTag
     method add
@@ -498,7 +498,7 @@ interface CSSNamespaceRule : CSSRule
     getter namespaceURI
     getter prefix
     method constructor
-interface CSSNumberValue : StyleValue
+interface CSSNumberValue : CSSStyleValue
     attribute @@toStringTag
     getter value
     method constructor
@@ -512,7 +512,7 @@ interface CSSPerspective : TransformComponent
     attribute @@toStringTag
     getter length
     method constructor
-interface CSSPositionValue : StyleValue
+interface CSSPositionValue : CSSStyleValue
     attribute @@toStringTag
     getter x
     getter y
@@ -600,6 +600,11 @@ interface CSSStyleSheet : StyleSheet
     method deleteRule
     method insertRule
     method removeRule
+interface CSSStyleValue
+    static method parse
+    attribute @@toStringTag
+    getter cssString
+    method constructor
 interface CSSSupportsRule : CSSRule
     attribute @@toStringTag
     getter conditionText
@@ -5959,11 +5964,6 @@ interface StyleSheetList
     method @@iterator
     method constructor
     method item
-interface StyleValue
-    static method parse
-    attribute @@toStringTag
-    getter cssString
-    method constructor
 interface SubtleCrypto
     attribute @@toStringTag
     method constructor
@@ -6137,7 +6137,7 @@ interface TransformComponent
     method asMatrix
     method constructor
     method is2DComponent
-interface TransformValue : StyleValue
+interface TransformValue : CSSStyleValue
     attribute @@toStringTag
     method @@iterator
     method constructor

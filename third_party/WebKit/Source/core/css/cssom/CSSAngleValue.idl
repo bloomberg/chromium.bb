@@ -6,7 +6,7 @@ enum CSSAngleUnit {
     Constructor(double value, CSSAngleUnit unit),
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
-] interface CSSAngleValue : StyleValue {
+] interface CSSAngleValue : CSSStyleValue {
     readonly attribute double degrees;
     readonly attribute double radians;
     readonly attribute double gradians;

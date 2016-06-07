@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleValue_h
-#define StyleValue_h
+#ifndef CSSStyleValue_h
+#define CSSStyleValue_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
@@ -15,8 +15,8 @@ class ExceptionState;
 class ScriptState;
 class ScriptValue;
 
-class CORE_EXPORT StyleValue : public GarbageCollectedFinalized<StyleValue>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(StyleValue);
+class CORE_EXPORT CSSStyleValue : public GarbageCollectedFinalized<CSSStyleValue>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(CSSStyleValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum StyleValueType {
@@ -29,7 +29,7 @@ public:
         TransformValueType,
     };
 
-    virtual ~StyleValue() { }
+    virtual ~CSSStyleValue() { }
 
     virtual StyleValueType type() const = 0;
 
@@ -44,7 +44,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
-    StyleValue() {}
+    CSSStyleValue() {}
 };
 
 } // namespace blink

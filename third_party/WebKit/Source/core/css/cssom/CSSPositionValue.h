@@ -7,13 +7,13 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 
 namespace blink {
 
 class CSSLengthValue;
 
-class CORE_EXPORT CSSPositionValue final : public StyleValue {
+class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
     WTF_MAKE_NONCOPYABLE(CSSPositionValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -34,7 +34,7 @@ public:
     {
         visitor->trace(m_x);
         visitor->trace(m_y);
-        StyleValue::trace(visitor);
+        CSSStyleValue::trace(visitor);
     }
 
 protected:

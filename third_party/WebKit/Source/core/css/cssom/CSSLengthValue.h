@@ -6,14 +6,14 @@
 #define CSSLengthValue_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 
 namespace blink {
 
 class CalcDictionary;
 class ExceptionState;
 
-class CORE_EXPORT CSSLengthValue : public StyleValue {
+class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
     WTF_MAKE_NONCOPYABLE(CSSLengthValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -48,11 +48,11 @@ protected:
     static const int kNumSupportedUnits = 15;
 };
 
-DEFINE_TYPE_CASTS(CSSLengthValue, StyleValue, value,
-    (value->type() == StyleValue::SimpleLengthType
-        || value->type() == StyleValue::CalcLengthType),
-    (value.type() == StyleValue::SimpleLengthType
-        || value.type() == StyleValue::CalcLengthType));
+DEFINE_TYPE_CASTS(CSSLengthValue, CSSStyleValue, value,
+    (value->type() == CSSStyleValue::SimpleLengthType
+        || value->type() == CSSStyleValue::CalcLengthType),
+    (value.type() == CSSStyleValue::SimpleLengthType
+        || value.type() == CSSStyleValue::CalcLengthType));
 
 } // namespace blink
 

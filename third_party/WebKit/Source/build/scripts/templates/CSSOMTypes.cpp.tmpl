@@ -11,14 +11,14 @@
 
 namespace blink {
 
-bool CSSOMTypes::propertyCanTake(CSSPropertyID id, const StyleValue& styleValue)
+bool CSSOMTypes::propertyCanTake(CSSPropertyID id, const CSSStyleValue& styleValue)
 {
     // Shortcut special case.
-    if (styleValue.type() == StyleValue::SimpleLengthType || styleValue.type() == StyleValue::CalcLengthType) {
+    if (styleValue.type() == CSSStyleValue::SimpleLengthType || styleValue.type() == CSSStyleValue::CalcLengthType) {
         if (toCSSLengthValue(styleValue).containsPercent() && !CSSPropertyMetadata::propertySupportsPercentage(id)) {
             return false;
         }
-    } else if (styleValue.type() == StyleValue::KeywordType) {
+    } else if (styleValue.type() == CSSStyleValue::KeywordType) {
         // Keywords are also handled differently.
         return CSSOMKeywords::validKeywordForProperty(id, toCSSKeywordValue(styleValue));
     }
@@ -28,7 +28,7 @@ bool CSSOMTypes::propertyCanTake(CSSPropertyID id, const StyleValue& styleValue)
     case {{property_id}}:
     return (
         {% for type in property.typedom_types %}
-        {{ "|| " if not loop.first }}styleValue.type() == StyleValue::{{type}}Type
+        {{ "|| " if not loop.first }}styleValue.type() == CSSStyleValue::{{type}}Type
         {% endfor %}
         );
     {% endfor %}

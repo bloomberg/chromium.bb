@@ -5,12 +5,12 @@
 [
     RuntimeEnabled=CSSTypedOM,
 ] interface StylePropertyMap {
-    [RaisesException] void append(DOMString property, (StyleValue or sequence<StyleValue> or DOMString) value);
+    [RaisesException] void append(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
-    [RaisesException] StyleValue? get(DOMString property);
-    [RaisesException] sequence<StyleValue> getAll(DOMString property);
+    [RaisesException] CSSStyleValue? get(DOMString property);
+    [RaisesException] sequence<CSSStyleValue> getAll(DOMString property);
     [RaisesException] boolean has(DOMString property);
-    [RaisesException] void set(DOMString property, (StyleValue or sequence<StyleValue> or DOMString) value);
-    iterable<DOMString, (StyleValue or sequence<StyleValue>)>;
+    [RaisesException] void set(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
+    iterable<DOMString, (CSSStyleValue or sequence<CSSStyleValue>)>;
     sequence<DOMString> getProperties();
 };

@@ -4,7 +4,7 @@
 <script>
 
 test(function() {
-  var result = StyleValue.parse('width', '10px');
+  var result = CSSStyleValue.parse('width', '10px');
 
   assert_not_equals(result, null);
   assert_true(result instanceof CSSSimpleLength);
@@ -13,26 +13,26 @@ test(function() {
 }, 'Parsing 10px results in a CSSSimpleLength');
 
 test(function() {
-  assert_equals(StyleValue.parse('width', 'hello'), null);
-  assert_equals(StyleValue.parse('width', ''), null);
-  assert_equals(StyleValue.parse('width', null), null);
+  assert_equals(CSSStyleValue.parse('width', 'hello'), null);
+  assert_equals(CSSStyleValue.parse('width', ''), null);
+  assert_equals(CSSStyleValue.parse('width', null), null);
 }, 'Parsing returns null on failure');
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    StyleValue.parse('', '10px');
+    CSSStyleValue.parse('', '10px');
   });
 }, 'Passing in empty string to parse for the property name throws');
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    StyleValue.parse('hello', '5px');
+    CSSStyleValue.parse('hello', '5px');
   });
 }, 'Passing in an invalid property name throws');
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    StyleValue.parse('border', '10px');
+    CSSStyleValue.parse('border', '10px');
   });
 }, 'Attempting to parse a value for a shorthand property throws');
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -13,7 +13,7 @@
 
 namespace blink {
 
-ScriptValue StyleValue::parse(ScriptState* scriptState, const String& propertyName, const String& value, ExceptionState& exceptionState)
+ScriptValue CSSStyleValue::parse(ScriptState* scriptState, const String& propertyName, const String& value, ExceptionState& exceptionState)
 {
     if (propertyName.isEmpty()) {
         exceptionState.throwTypeError("Property name cannot be empty");
@@ -34,7 +34,7 @@ ScriptValue StyleValue::parse(ScriptState* scriptState, const String& propertyNa
     if (!cssValue)
         return ScriptValue::createNull(scriptState);
 
-    StyleValue* styleValue = StyleValueFactory::create(propertyID, *cssValue);
+    CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, *cssValue);
     if (!styleValue)
         return ScriptValue::createNull(scriptState);
 

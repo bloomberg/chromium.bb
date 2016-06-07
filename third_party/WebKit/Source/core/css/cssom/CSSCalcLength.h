@@ -101,7 +101,7 @@ private:
         value->type() == CSSLengthValue::StyleValueType::CalcLengthType, \
         value.type() == CSSLengthValue::StyleValueType::CalcLengthType)
 
-DEFINE_CALC_LENGTH_TYPE_CASTS(StyleValue);
+DEFINE_CALC_LENGTH_TYPE_CASTS(CSSStyleValue);
 
 } // namespace blink
 

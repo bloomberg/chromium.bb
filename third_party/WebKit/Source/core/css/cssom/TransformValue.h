@@ -8,14 +8,14 @@
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
 
 class TransformComponent;
 
-class CORE_EXPORT TransformValue final : public StyleValue, public ValueIterable<TransformComponent*> {
+class CORE_EXPORT TransformValue final : public CSSStyleValue, public ValueIterable<TransformComponent*> {
     WTF_MAKE_NONCOPYABLE(TransformValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -42,12 +42,12 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_transformComponents);
-        StyleValue::trace(visitor);
+        CSSStyleValue::trace(visitor);
     }
 
 private:
     TransformValue() {}
-    TransformValue(const HeapVector<Member<TransformComponent>>& transformComponents) : StyleValue(),
+    TransformValue(const HeapVector<Member<TransformComponent>>& transformComponents) : CSSStyleValue(),
         m_transformComponents(transformComponents) {}
 
     HeapVector<Member<TransformComponent>> m_transformComponents;

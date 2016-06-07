@@ -7,14 +7,14 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/cssom/CSSSimpleLength.h"
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 
 namespace blink {
 
 namespace {
 
-class StylePropertyMapIterationSource final : public PairIterable<String, StyleValueOrStyleValueSequence>::IterationSource {
+class StylePropertyMapIterationSource final : public PairIterable<String, CSSStyleValueOrCSSStyleValueSequence>::IterationSource {
 public:
     explicit StylePropertyMapIterationSource(HeapVector<StylePropertyMap::StylePropertyMapEntry> values)
         : m_index(0)
@@ -22,7 +22,7 @@ public:
     {
     }
 
-    bool next(ScriptState*, String& key, StyleValueOrStyleValueSequence& value, ExceptionState&) override
+    bool next(ScriptState*, String& key, CSSStyleValueOrCSSStyleValueSequence& value, ExceptionState&) override
     {
         if (m_index >= m_values.size())
             return false;
@@ -36,7 +36,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_values);
-        PairIterable<String, StyleValueOrStyleValueSequence>::IterationSource::trace(visitor);
+        PairIterable<String, CSSStyleValueOrCSSStyleValueSequence>::IterationSource::trace(visitor);
     }
 
 private:
@@ -46,7 +46,7 @@ private:
 
 } // namespace
 
-StyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState& exceptionState)
+CSSStyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID == CSSPropertyInvalid) {
@@ -84,7 +84,7 @@ bool StylePropertyMap::has(const String& propertyName, ExceptionState& exception
     return false;
 }
 
-void StylePropertyMap::set(const String& propertyName, StyleValueOrStyleValueSequenceOrString& item, ExceptionState& exceptionState)
+void StylePropertyMap::set(const String& propertyName, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid) {
@@ -95,7 +95,7 @@ void StylePropertyMap::set(const String& propertyName, StyleValueOrStyleValueSeq
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
 }
 
-void StylePropertyMap::append(const String& propertyName, StyleValueOrStyleValueSequenceOrString& item, ExceptionState& exceptionState)
+void StylePropertyMap::append(const String& propertyName, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid) {
@@ -122,14 +122,14 @@ StylePropertyMap::StyleValueVector StylePropertyMap::cssValueToStyleValueVector(
     StyleValueVector styleValueVector;
 
     if (!cssValue.isValueList()) {
-        StyleValue* styleValue = StyleValueFactory::create(propertyID, cssValue);
+        CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, cssValue);
         if (styleValue)
             styleValueVector.append(styleValue);
         return styleValueVector;
     }
 
     for (CSSValue* value : *toCSSValueList(&cssValue)) {
-        StyleValue* styleValue = StyleValueFactory::create(propertyID, *value);
+        CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, *value);
         if (!styleValue)
             return StyleValueVector();
         styleValueVector.append(styleValue);

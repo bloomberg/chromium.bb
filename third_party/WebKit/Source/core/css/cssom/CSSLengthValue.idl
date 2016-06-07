@@ -8,7 +8,7 @@ enum LengthType {
 
 [
     RuntimeEnabled=CSSTypedOM
-] interface CSSLengthValue : StyleValue {
+] interface CSSLengthValue : CSSStyleValue {
     [RaisesException, NewObject] CSSLengthValue add(CSSLengthValue other);
     [RaisesException, NewObject] CSSLengthValue subtract(CSSLengthValue other);
     [RaisesException, NewObject] CSSLengthValue multiply(double value);

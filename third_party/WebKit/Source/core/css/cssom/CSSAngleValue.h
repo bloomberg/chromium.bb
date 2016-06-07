@@ -6,11 +6,11 @@
 #define CSSAngleValue_h
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 
 namespace blink {
 
-class CORE_EXPORT CSSAngleValue final : public StyleValue {
+class CORE_EXPORT CSSAngleValue final : public CSSStyleValue {
     WTF_MAKE_NONCOPYABLE(CSSAngleValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
