@@ -173,4 +173,6 @@ interface NetInstance {
   [MinVersion=2] DefaultNetworkChanged@2(
       NetworkConfiguration? logical_default,
       NetworkConfiguration? physical_default);
+
+  [MinVersion=3] WifiEnabledStateChanged@3(bool is_enabled);
 };

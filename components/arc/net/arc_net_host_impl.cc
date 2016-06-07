@@ -612,6 +612,17 @@ void ArcNetHostImpl::DefaultNetworkChanged(
       base::Bind(&DefaultNetworkFailureCallback));
 }
 
+void ArcNetHostImpl::DeviceListChanged() {
+  if (arc_bridge_service()->net_version() < 3) {
+    VLOG(1) << "ArcBridgeService does not support DeviceListChanged.";
+    return;
+  }
+
+  bool is_enabled = GetStateHandler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi());
+  arc_bridge_service()->net_instance()->WifiEnabledStateChanged(is_enabled);
+}
+
 void ArcNetHostImpl::OnShuttingDown() {
   GetStateHandler()->RemoveObserver(this, FROM_HERE);
 }

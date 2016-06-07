@@ -74,6 +74,7 @@ class ArcNetHostImpl : public ArcService,
   void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;
   void OnShuttingDown() override;
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void DeviceListChanged() override;
   void GetDefaultNetwork(const GetDefaultNetworkCallback& callback) override;
 
   // Overridden from ArcBridgeService::Observer:
