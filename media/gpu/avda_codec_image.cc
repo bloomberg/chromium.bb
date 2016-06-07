@@ -8,10 +8,9 @@
 
 #include <memory>
 
-#include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/gpu/avda_shared_state.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_context.h"
@@ -69,10 +68,11 @@ bool AVDACodecImage::CopyTexImage(unsigned target) {
 
   GLint bound_service_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
-  // We insist that the currently bound texture is the right one.  We could
-  // make a new glimage from a 2D image.
-  if (bound_service_id != shared_state_->surface_texture_service_id())
+  // We insist that the currently bound texture is the right one.
+  if (bound_service_id !=
+      static_cast<GLint>(shared_state_->surface_texture_service_id())) {
     return false;
+  }
 
   // Make sure that we have the right image in the front buffer.  Note that the
   // bound_service_id is guaranteed to be equal to the surface texture's client
@@ -170,7 +170,6 @@ void AVDACodecImage::UpdateSurfaceInternal(
   if (update_mode != UpdateMode::RENDER_TO_FRONT_BUFFER)
     return;
 
-  DCHECK(shared_state_->surface_texture_is_attached());
   UpdateSurfaceTexture(attached_bindings_mode);
 }
 

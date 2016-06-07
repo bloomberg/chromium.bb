@@ -34,23 +34,8 @@ gl::ScopedJavaSurface AndroidCopyingBackingStrategy::Initialize(
     return gl::ScopedJavaSurface();
   }
 
-  // Create a texture and attach the SurfaceTexture to it.
-  glGenTextures(1, &surface_texture_id_);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, surface_texture_id_);
-
-  // Note that the target will be correctly sized, so nearest filtering is all
-  // that's needed.
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  state_provider_->GetGlDecoder()->RestoreTextureUnitBindings(0);
-  state_provider_->GetGlDecoder()->RestoreActiveTexture();
-
-  surface_texture_ = gl::SurfaceTexture::Create(surface_texture_id_);
-
+  surface_texture_ =
+      state_provider_->CreateAttachedSurfaceTexture(&surface_texture_id_);
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 

@@ -41,46 +41,24 @@ gl::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
     int surface_view_id) {
   shared_state_ = new AVDASharedState();
 
-  // Create a texture for the SurfaceTexture to use.
-  GLuint service_id;
-  glGenTextures(1, &service_id);
-  DCHECK(service_id);
-  shared_state_->set_surface_texture_service_id(service_id);
+  bool using_virtual_context = false;
+  if (gl::GLContext* context = gl::GLContext::GetCurrent()) {
+    if (gl::GLShareGroup* share_group = context->share_group())
+      using_virtual_context = !!share_group->GetSharedContext();
+  }
+  UMA_HISTOGRAM_BOOLEAN("Media.AVDA.VirtualContext", using_virtual_context);
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, service_id);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  state_provider_->GetGlDecoder()->RestoreTextureUnitBindings(0);
-  state_provider_->GetGlDecoder()->RestoreActiveTexture();
-  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-
-  gl::ScopedJavaSurface surface;
+  // Acquire the SurfaceView surface if given a valid id.
   if (surface_view_id != media::VideoDecodeAccelerator::Config::kNoSurfaceID) {
-    surface = gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
+    return gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
         surface_view_id);
-  } else {
-    bool using_virtual_context = false;
-    if (gl::GLContext* context = gl::GLContext::GetCurrent()) {
-      if (gl::GLShareGroup* share_group = context->share_group())
-        using_virtual_context = !!share_group->GetSharedContext();
-    }
-    UMA_HISTOGRAM_BOOLEAN("Media.AVDA.VirtualContext", using_virtual_context);
-    // Detach doesn't work so well on all platforms.  Just attach the
-    // SurfaceTexture here, and probably context switch later.
-    // Detaching might save us a context switch, since AVDACodecImage will
-    // attach when needed.  However, given that it also fails a lot, we just
-    // don't do it at all.  If virtual contexts are in use, then it doesn't
-    // even save us a context switch.
-    surface_texture_ = gl::SurfaceTexture::Create(service_id);
-    shared_state_->DidAttachSurfaceTexture();
-    surface = gl::ScopedJavaSurface(surface_texture_.get());
   }
 
-  return surface;
+  // Create a SurfaceTexture.
+  GLuint service_id = 0;
+  surface_texture_ = state_provider_->CreateAttachedSurfaceTexture(&service_id);
+  shared_state_->SetSurfaceTexture(surface_texture_, service_id);
+  return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
 void AndroidDeferredRenderingBackingStrategy::Cleanup(
@@ -90,23 +68,7 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
   if (!shared_state_)
     return;
 
-  // Make sure that no PictureBuffer textures refer to the SurfaceTexture or to
-  // the service_id that we created for it.
-  for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
-    ReleaseCodecBufferForPicture(entry.second);
-    SetImageForPicture(entry.second, nullptr);
-  }
-
-  // If we're rendering to a SurfaceTexture we can make a copy of the current
-  // front buffer so that the PictureBuffer textures are still valid.
-  if (surface_texture_ && have_context && ShouldCopyPictures())
-    CopySurfaceTextureToPictures(buffers);
-
-  // Now that no AVDACodecImages refer to the SurfaceTexture's texture, delete
-  // the texture name.
-  GLuint service_id = shared_state_->surface_texture_service_id();
-  if (service_id > 0 && have_context)
-    glDeleteTextures(1, &service_id);
+  CodecChanged(nullptr);
 }
 
 scoped_refptr<gl::SurfaceTexture>
@@ -149,10 +111,11 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
   // previously set.
   GLuint stream_texture_service_id = 0;
   if (image) {
-    // Override the texture's service_id, so that it will use the one that is
-    // attached to the SurfaceTexture.
-    stream_texture_service_id = shared_state_->surface_texture_service_id();
-    DCHECK_NE(stream_texture_service_id, 0u);
+    if (shared_state_->surface_texture_service_id() != 0) {
+      // Override the Texture's service id, so that it will use the one that is
+      // attached to the SurfaceTexture.
+      stream_texture_service_id = shared_state_->surface_texture_service_id();
+    }
 
     // Also set the parameters for the level if we're not clearing the image.
     const gfx::Size size = state_provider_->GetSize();
@@ -164,16 +127,17 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
         ->set_texture(texture_ref->texture());
   }
 
-  // For SurfaceTexture we set the image to UNBOUND so that the implementation
-  // will call CopyTexImage, which is where AVDACodecImage updates the
-  // SurfaceTexture to the right frame.
-  // For SurfaceView we set the image to be BOUND because ScheduleOverlayPlane
-  // expects it. If something tries to sample from this texture it won't work,
+  // If we're clearing the image, or setting a SurfaceTexture backed image, we
+  // set the state to UNBOUND. For SurfaceTexture images, this ensures that the
+  // implementation will call CopyTexImage, which is where AVDACodecImage
+  // updates the SurfaceTexture to the right frame.
+  auto image_state = gpu::gles2::Texture::UNBOUND;
+  // For SurfaceView we set the state to BOUND because ScheduleOverlayPlane
+  // requires it. If something tries to sample from this texture it won't work,
   // but there's no way to sample from a SurfaceView anyway, so it doesn't
-  // matter. The only way to use this texture is to schedule it as an overlay.
-  const gpu::gles2::Texture::ImageState image_state =
-      surface_texture_ ? gpu::gles2::Texture::UNBOUND
-                       : gpu::gles2::Texture::BOUND;
+  // matter.
+  if (image && !surface_texture_)
+    image_state = gpu::gles2::Texture::BOUND;
   texture_manager->SetLevelStreamTextureImage(texture_ref, GetTextureTarget(),
                                               0, image.get(), image_state,
                                               stream_texture_service_id);
@@ -333,119 +297,6 @@ void AndroidDeferredRenderingBackingStrategy::UpdatePictureBufferSize(
   // This strategy uses EGL images which manage the texture size for us.  We
   // simply update the PictureBuffer meta-data and leave the texture as-is.
   picture_buffer->set_size(new_size);
-}
-
-void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
-    const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
-  DVLOG(3) << __FUNCTION__;
-
-  // Don't try to copy if the SurfaceTexture was never attached because that
-  // means it was never updated.
-  if (!shared_state_->surface_texture_is_attached())
-    return;
-
-  gpu::gles2::GLES2Decoder* gl_decoder = state_provider_->GetGlDecoder().get();
-  if (!gl_decoder)
-    return;
-
-  const gfx::Size size = state_provider_->GetSize();
-
-  // Create a 2D texture to hold a copy of the SurfaceTexture's front buffer.
-  GLuint tmp_texture_id;
-  glGenTextures(1, &tmp_texture_id);
-  {
-    gl::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, tmp_texture_id);
-    // The target texture's size will exactly match the source.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  }
-
-  float transform_matrix[16];
-  surface_texture_->GetTransformMatrix(transform_matrix);
-
-  gpu::CopyTextureCHROMIUMResourceManager copier;
-  copier.Initialize(
-      gl_decoder,
-      gl_decoder->GetContextGroup()->feature_info()->feature_flags());
-  copier.DoCopyTextureWithTransform(gl_decoder, GL_TEXTURE_EXTERNAL_OES,
-                                    shared_state_->surface_texture_service_id(),
-                                    GL_TEXTURE_2D, tmp_texture_id, size.width(),
-                                    size.height(), true, false, false,
-                                    transform_matrix);
-
-  // Create an EGLImage from the 2D texture we just copied into. By associating
-  // the EGLImage with the PictureBuffer textures they will remain valid even
-  // after we delete the 2D texture and EGLImage.
-  const EGLImageKHR egl_image = eglCreateImageKHR(
-      gl::GLSurfaceEGL::GetHardwareDisplay(), eglGetCurrentContext(),
-      EGL_GL_TEXTURE_2D_KHR, reinterpret_cast<EGLClientBuffer>(tmp_texture_id),
-      nullptr /* attrs */);
-
-  glDeleteTextures(1, &tmp_texture_id);
-  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-
-  if (egl_image == EGL_NO_IMAGE_KHR) {
-    DLOG(ERROR) << "Failed creating EGLImage: " << ui::GetLastEGLErrorString();
-    return;
-  }
-
-  for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
-    gpu::gles2::TextureRef* texture_ref =
-        state_provider_->GetTextureForPicture(entry.second);
-    if (!texture_ref)
-      continue;
-    gl::ScopedTextureBinder texture_binder(
-        GL_TEXTURE_EXTERNAL_OES, texture_ref->texture()->service_id());
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, egl_image);
-    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  }
-
-  EGLBoolean result =
-      eglDestroyImageKHR(gl::GLSurfaceEGL::GetHardwareDisplay(), egl_image);
-  if (result == EGL_FALSE) {
-    DLOG(ERROR) << "Error destroying EGLImage: " << ui::GetLastEGLErrorString();
-  }
-}
-
-bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
-  // See if there's a workaround.
-  if (gpu::gles2::GLES2Decoder* gl_decoder =
-          state_provider_->GetGlDecoder().get()) {
-    if (gpu::gles2::ContextGroup* group = gl_decoder->GetContextGroup()) {
-      if (gpu::gles2::FeatureInfo* feature_info = group->feature_info()) {
-        if (feature_info->workarounds().avda_dont_copy_pictures)
-          return false;
-      }
-    }
-  }
-
-  // Samsung Galaxy Tab A, J3, and J1 Mini all like to crash on Lollipop in
-  // glEGLImageTargetTexture2DOES .  These include SM-J105, SM-J111, SM-J120,
-  // SM-T280, SM-T285, and SM-J320 with various suffixes.  All run lollipop and
-  // and have a Mali-400 gpu.
-  // For these devices, we must check based on the brand / model
-  // number, since the strings used by FeatureInfo aren't populated.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <= 22) {  // L MR1
-    const std::string brand(
-        base::ToLowerASCII(base::android::BuildInfo::GetInstance()->brand()));
-    if (brand == "samsung") {
-      const std::string model(
-          base::ToLowerASCII(base::android::BuildInfo::GetInstance()->model()));
-      if (model.find("sm-j105") != std::string::npos ||
-          model.find("sm-j111") != std::string::npos ||
-          model.find("sm-j120") != std::string::npos ||
-          model.find("sm-t280") != std::string::npos ||
-          model.find("sm-t285") != std::string::npos ||
-          model.find("sm-j320") != std::string::npos)
-        return false;
-    }
-  }
-
-  return true;
 }
 
 }  // namespace media

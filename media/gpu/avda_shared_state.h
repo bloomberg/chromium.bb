@@ -8,7 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/media_codec_bridge.h"
-#include "media/base/android/sdk_media_codec_bridge.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
@@ -20,7 +20,6 @@ class SurfaceTexture;
 namespace media {
 
 class AVDACodecImage;
-class MediaCodecBridge;
 
 // Shared state to allow communication between the AVDA and the
 // GLImages that configure GL for drawing the frames.
@@ -28,14 +27,8 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
  public:
   AVDASharedState();
 
-  GLint surface_texture_service_id() const {
+  GLuint surface_texture_service_id() const {
     return surface_texture_service_id_;
-  }
-
-  // Set the SurfaceTexture's client texture name, which the SurfaceTexture
-  // might not know about yet (see surface_texture_is_attached()).
-  void set_surface_texture_service_id(GLint id) {
-    surface_texture_service_id_ = id;
   }
 
   // Signal the "frame available" event.  This may be called from any thread.
@@ -43,15 +36,14 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   void WaitForFrameAvailable();
 
-  // Context that the surface texture is bound to, or nullptr if it is not in
-  // the attached state.
+  void SetSurfaceTexture(scoped_refptr<gl::SurfaceTexture> surface_texture,
+                         GLuint attached_service_id);
+
+  // Context and surface that |surface_texture_| is bound to, if
+  // |surface_texture_| is not null.
   gl::GLContext* context() const { return context_.get(); }
 
   gl::GLSurface* surface() const { return surface_.get(); }
-
-  bool surface_texture_is_attached() const {
-    return surface_texture_is_attached_;
-  }
 
   // Iterates over all known codec images and updates the MediaCodec attached to
   // each one.
@@ -62,16 +54,6 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // Calling SetImageForPicture() with a nullptr will erase the entry.
   void SetImageForPicture(int picture_buffer_id, AVDACodecImage* image);
   AVDACodecImage* GetImageForPicture(int picture_buffer_id) const;
-
-  // TODO(liberato): move the surface texture here and make these calls
-  // attach / detach it also.  There are several changes going on in avda
-  // concurrently, so I don't want to change that until the dust settles.
-  // AVDACodecImage would no longer hold the surface texture.
-
-  // Call this when the SurfaceTexture is attached to a GL context.  This will
-  // update surface_texture_is_attached(), and set the context() and surface()
-  // to match.
-  void DidAttachSurfaceTexture();
 
   // Helper method for coordinating the interactions between
   // MediaCodec::ReleaseOutputBuffer() and WaitForFrameAvailable() when
@@ -99,19 +81,16 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
  private:
   friend class base::RefCounted<AVDASharedState>;
 
-  // Platform gl texture Id for |surface_texture_|.  This will be zero if
-  // and only if |texture_owner_| is null.
-  // TODO(liberato): This should be GLuint, but we don't seem to have the type.
-  GLint surface_texture_service_id_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
+
+  // Platform gl texture id for |surface_texture_|.
+  GLuint surface_texture_service_id_;
 
   // For signalling OnFrameAvailable().
   base::WaitableEvent frame_available_event_;
 
-  // True if and only if the surface texture is currently attached.
-  bool surface_texture_is_attached_;
-
-  // Context and surface that the surface texture is attached to, if it is
-  // currently attached.
+  // Context and surface that |surface_texture_| is bound to, if
+  // |surface_texture_| is not null.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
 

@@ -1379,6 +1379,34 @@ gpu::gles2::TextureRef* AndroidVideoDecodeAccelerator::GetTextureForPicture(
   return texture_ref;
 }
 
+scoped_refptr<gl::SurfaceTexture>
+AndroidVideoDecodeAccelerator::CreateAttachedSurfaceTexture(
+    GLuint* service_id) {
+  GLuint texture_id;
+  glGenTextures(1, &texture_id);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  auto gl_decoder = GetGlDecoder();
+  gl_decoder->RestoreTextureUnitBindings(0);
+  gl_decoder->RestoreActiveTexture();
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  *service_id = texture_id;
+  // Previously, to reduce context switching, we used to create an unattached
+  // SurfaceTexture and attach it lazily in the compositor's context. But that
+  // was flaky because SurfaceTexture#detachFromGLContext() is buggy on a lot of
+  // devices. Now we attach it to the current context, which means we might have
+  // to context switch later to call updateTexImage(). Fortunately, if virtual
+  // contexts are in use, we won't have to context switch.
+  return gl::SurfaceTexture::Create(texture_id);
+}
+
 void AndroidVideoDecodeAccelerator::OnDestroyingSurface(int surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::OnDestroyingSurface");

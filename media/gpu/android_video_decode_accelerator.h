@@ -144,6 +144,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const override;
   gpu::gles2::TextureRef* GetTextureForPicture(
       const media::PictureBuffer& picture_buffer) override;
+  scoped_refptr<gl::SurfaceTexture> CreateAttachedSurfaceTexture(
+      GLuint* service_id) override;
   void PostError(const ::tracked_objects::Location& from_here,
                  media::VideoDecodeAccelerator::Error error) override;
 
