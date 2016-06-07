@@ -1542,6 +1542,11 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
     if (!validateDrawArrays("drawArraysInstanced"))
         return;
 
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawArraysInstanced", "no buffer is bound to enabled attribute");
+        return;
+    }
+
     ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawArraysInstancedANGLE(mode, first, count, instanceCount);
@@ -1552,6 +1557,11 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei coun
 {
     if (!validateDrawElements("drawElementsInstanced", type, offset))
         return;
+
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawElementsInstanced", "no buffer is bound to enabled attribute");
+        return;
+    }
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {
         synthesizeGLError(GL_INVALID_OPERATION, "drawElementsInstanced", "transform feedback is active and not paused");
@@ -1568,6 +1578,11 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GL
 {
     if (!validateDrawElements("drawRangeElements", type, offset))
         return;
+
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawRangeElements", "no buffer is bound to enabled attribute");
+        return;
+    }
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {
         synthesizeGLError(GL_INVALID_OPERATION, "drawRangeElements", "transform feedback is active and not paused");

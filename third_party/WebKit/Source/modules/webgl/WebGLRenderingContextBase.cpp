@@ -2184,6 +2184,7 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
         return;
     }
 
+    m_boundVertexArrayObject->setAttribEnabled(index, false);
     contextGL()->DisableVertexAttribArray(index);
 }
 
@@ -2216,6 +2217,11 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei cou
     if (!validateDrawArrays("drawArrays"))
         return;
 
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawArrays", "no buffer is bound to enabled attribute");
+        return;
+    }
+
     ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawArrays(mode, first, count);
@@ -2226,6 +2232,11 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
 {
     if (!validateDrawElements("drawElements", type, offset))
         return;
+
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawElements", "no buffer is bound to enabled attribute");
+        return;
+    }
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {
         synthesizeGLError(GL_INVALID_OPERATION, "drawElements", "transform feedback is active and not paused");
@@ -2243,6 +2254,11 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
     if (!validateDrawArrays("drawArraysInstancedANGLE"))
         return;
 
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawArraysInstancedANGLE", "no buffer is bound to enabled attribute");
+        return;
+    }
+
     ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
     contextGL()->DrawArraysInstancedANGLE(mode, first, count, primcount);
@@ -2253,6 +2269,11 @@ void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei 
 {
     if (!validateDrawElements("drawElementsInstancedANGLE", type, offset))
         return;
+
+    if (!m_boundVertexArrayObject->isAllEnabledAttribBufferBound()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawElementsInstancedANGLE", "no buffer is bound to enabled attribute");
+        return;
+    }
 
     ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask, m_drawingBuffer.get());
     clearIfComposited();
@@ -2285,6 +2306,7 @@ void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
         return;
     }
 
+    m_boundVertexArrayObject->setAttribEnabled(index, true);
     contextGL()->EnableVertexAttribArray(index);
 }
 

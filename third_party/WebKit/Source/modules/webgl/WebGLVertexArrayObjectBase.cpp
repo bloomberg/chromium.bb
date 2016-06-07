@@ -16,8 +16,13 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(WebGLRenderingContextBase
     , m_hasEverBeenBound(false)
     , m_destructionInProgress(false)
     , m_boundElementArrayBuffer(nullptr)
+    , m_isAllEnabledAttribBufferBound(true)
 {
     m_arrayBufferList.resize(ctx->maxVertexAttribs());
+    m_attribEnabled.resize(ctx->maxVertexAttribs());
+    for (size_t i = 0; i < m_attribEnabled.size(); ++i) {
+        m_attribEnabled[i] = false;
+    }
 
     switch (m_type) {
     case VaoTypeDefault:
@@ -80,7 +85,7 @@ void WebGLVertexArrayObjectBase::setElementArrayBuffer(WebGLBuffer* buffer)
 
 WebGLBuffer* WebGLVertexArrayObjectBase::getArrayBufferForAttrib(size_t index)
 {
-    ASSERT(index < context()->maxVertexAttribs());
+    DCHECK(index < context()->maxVertexAttribs());
     return m_arrayBufferList[index].get();
 }
 
@@ -92,6 +97,31 @@ void WebGLVertexArrayObjectBase::setArrayBufferForAttrib(GLuint index, WebGLBuff
         m_arrayBufferList[index]->onDetached(context()->contextGL());
 
     m_arrayBufferList[index] = buffer;
+    updateAttribBufferBoundStatus();
+}
+
+void WebGLVertexArrayObjectBase::setAttribEnabled(GLuint index, bool enabled)
+{
+    DCHECK(index < context()->maxVertexAttribs());
+    m_attribEnabled[index] = enabled;
+    updateAttribBufferBoundStatus();
+}
+
+bool WebGLVertexArrayObjectBase::getAttribEnabled(GLuint index) const
+{
+    DCHECK(index < context()->maxVertexAttribs());
+    return m_attribEnabled[index];
+}
+
+void WebGLVertexArrayObjectBase::updateAttribBufferBoundStatus()
+{
+    m_isAllEnabledAttribBufferBound = true;
+    for (size_t i = 0; i < m_attribEnabled.size(); ++i) {
+        if (m_attribEnabled[i] && !m_arrayBufferList[i]) {
+            m_isAllEnabledAttribBufferBound = false;
+            return;
+        }
+    }
 }
 
 void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
@@ -107,6 +137,7 @@ void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
             m_arrayBufferList[i] = nullptr;
         }
     }
+    updateAttribBufferBoundStatus();
 }
 
 ScopedPersistent<v8::Array>* WebGLVertexArrayObjectBase::getPersistentCache()

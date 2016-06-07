@@ -33,6 +33,9 @@ public:
 
     WebGLBuffer* getArrayBufferForAttrib(size_t);
     void setArrayBufferForAttrib(GLuint, WebGLBuffer*);
+    void setAttribEnabled(GLuint, bool);
+    bool getAttribEnabled(GLuint) const;
+    bool isAllEnabledAttribBufferBound() const { return m_isAllEnabledAttribBufferBound; }
     void unbindBuffer(WebGLBuffer*);
 
     ScopedPersistent<v8::Array>* getPersistentCache();
@@ -47,6 +50,8 @@ private:
     bool hasObject() const override { return m_object != 0; }
     void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
+    void updateAttribBufferBoundStatus();
+
     GLuint m_object;
 
     VaoType m_type;
@@ -54,6 +59,8 @@ private:
     bool m_destructionInProgress;
     Member<WebGLBuffer> m_boundElementArrayBuffer;
     HeapVector<Member<WebGLBuffer>> m_arrayBufferList;
+    Vector<bool> m_attribEnabled;
+    bool m_isAllEnabledAttribBufferBound;
 
     // For preserving the wrappers of WebGLBuffer objects latched in
     // via vertexAttribPointer calls.
