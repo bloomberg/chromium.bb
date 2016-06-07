@@ -170,6 +170,17 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // setCanOpenWindows().
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(can_open_windows)
 
+  // If true, output a descriptive line each time WebViewClient::createView
+  // is invoked.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_create_view)
+
+  // If true, the test_shell will dump all changes to window.status.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_window_status_changes)
+
+  // If true, the test_shell will output descriptive test for spellcheck
+  // execution.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_spell_check_callbacks)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

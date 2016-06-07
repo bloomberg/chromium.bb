@@ -1604,9 +1604,6 @@ void TestRunner::Reset() {
   }
 
   dump_as_audio_ = false;
-  dump_create_view_ = false;
-  dump_window_status_changes_ = false;
-  dump_spell_check_callbacks_ = false;
   dump_back_forward_list_ = false;
   test_repaint_ = false;
   sweep_horizontally_ = false;
@@ -1777,7 +1774,7 @@ bool TestRunner::shouldDumpIconChanges() const {
 }
 
 bool TestRunner::shouldDumpCreateView() const {
-  return dump_create_view_;
+  return layout_test_runtime_flags_.dump_create_view();
 }
 
 bool TestRunner::canOpenWindows() const {
@@ -1804,11 +1801,11 @@ void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
 }
 
 bool TestRunner::shouldDumpStatusCallbacks() const {
-  return dump_window_status_changes_;
+  return layout_test_runtime_flags_.dump_window_status_changes();
 }
 
 bool TestRunner::shouldDumpSpellCheckCallbacks() const {
-  return dump_spell_check_callbacks_;
+  return layout_test_runtime_flags_.dump_spell_check_callbacks();
 }
 
 bool TestRunner::ShouldDumpBackForwardList() const {
@@ -2430,7 +2427,8 @@ void TestRunner::DumpTitleChanges() {
 }
 
 void TestRunner::DumpCreateView() {
-  dump_create_view_ = true;
+  layout_test_runtime_flags_.set_dump_create_view(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetCanOpenWindows() {
@@ -2490,11 +2488,13 @@ void TestRunner::DumpPermissionClientCallbacks() {
 }
 
 void TestRunner::DumpWindowStatusChanges() {
-  dump_window_status_changes_ = true;
+  layout_test_runtime_flags_.set_dump_window_status_changes(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpSpellCheckCallbacks() {
-  dump_spell_check_callbacks_ = true;
+  layout_test_runtime_flags_.set_dump_spell_check_callbacks(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpBackForwardList() {

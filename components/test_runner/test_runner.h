@@ -570,17 +570,6 @@ class TestRunner : public WebTestRunner {
   // If true, the test_shell will output a base64 encoded WAVE file.
   bool dump_as_audio_;
 
-  // If true, output a descriptive line each time WebViewClient::createView
-  // is invoked.
-  bool dump_create_view_;
-
-  // If true, the test_shell will dump all changes to window.status.
-  bool dump_window_status_changes_;
-
-  // If true, the test_shell will output descriptive test for spellcheck
-  // execution.
-  bool dump_spell_check_callbacks_;
-
   // If true, the test_shell will produce a dump of the back forward list as
   // well.
   bool dump_back_forward_list_;
