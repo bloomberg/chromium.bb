@@ -103,6 +103,9 @@ void SiteSettingsHandler::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
+  if (!site_settings::HasRegisteredGroupName(content_type))
+    return;
+
   if (primary_pattern.ToString().empty()) {
     CallJavascriptFunction(
         "cr.webUIListenerCallback",

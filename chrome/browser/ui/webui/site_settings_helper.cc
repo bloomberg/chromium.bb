@@ -51,6 +51,14 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
 };
 
+bool HasRegisteredGroupName(ContentSettingsType type) {
+  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
+    if (type == kContentSettingsTypeGroupNames[i].type)
+      return true;
+  }
+  return false;
+}
+
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
     if (name == kContentSettingsTypeGroupNames[i].name)
@@ -67,7 +75,7 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
       return kContentSettingsTypeGroupNames[i].name;
   }
 
-  NOTREACHED();
+  NOTREACHED() << type << " is not a recognized content settings type.";
   return std::string();
 }
 

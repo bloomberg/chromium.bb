@@ -39,6 +39,9 @@ extern const char kSource[];
 extern const char kEmbeddingOrigin[];
 extern const char kPreferencesSource[];
 
+// Returns whether a group name has been registered for the given type.
+bool HasRegisteredGroupName(ContentSettingsType type);
+
 // Gets a content settings type from the group name identifier.
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name);
 
