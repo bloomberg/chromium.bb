@@ -35,7 +35,7 @@ class PageCyclerV2Typical25(_PageCyclerV2):
   Designed to represent typical, not highly optimized or highly popular web
   sites. Runs against pages recorded in June, 2014.
   """
-  options = {'pageset_repeat': 3}
+  options = {'pageset_repeat': 2}
 
   @classmethod
   def Name(cls):
