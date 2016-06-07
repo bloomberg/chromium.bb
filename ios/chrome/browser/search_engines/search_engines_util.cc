@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -75,7 +77,7 @@ class LoadedObserver : public TemplateURLServiceObserver {
     service_->RemoveObserver(this);
     UpdateSearchEngine(service_);
     // Only delete this class when this callback is finished.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 
  private:
