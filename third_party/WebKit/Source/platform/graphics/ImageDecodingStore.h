@@ -217,11 +217,6 @@ private:
     // This mutex also protects calls to underlying skBitmap's
     // lockPixels()/unlockPixels() as they are not threadsafe.
     Mutex m_mutex;
-
-#if COMPILER(MSVC)
-    friend struct ::WTF::OwnedPtrDeleter<CacheEntry>;
-    friend struct ::WTF::OwnedPtrDeleter<DecoderCacheEntry>;
-#endif
 };
 
 } // namespace blink

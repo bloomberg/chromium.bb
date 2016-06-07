@@ -70,9 +70,6 @@ private:
     Vector<OwnPtr<Buffer>> m_buffers;
     unsigned m_endIndex;
     size_t m_maxObjectSize;
-
-    // Makes Buffer accessible when clearing m_buffers. Fixes MSVC build.
-    friend struct WTF::OwnedPtrDeleter<Buffer>;
 };
 
 // For most cases, no alignment stricter than pointer alignment is required. If

@@ -58,9 +58,6 @@ private:
     scoped_refptr<cc::Layer> m_rootLayer;
     OwnPtr<WebLayer> m_webLayer;
     Vector<OwnPtr<ContentLayerClientImpl>> m_contentLayerClients;
-
-    // For ~PaintArtifactCompositor on MSVC.
-    friend struct WTF::OwnedPtrDeleter<ContentLayerClientImpl>;
 };
 
 } // namespace blink
