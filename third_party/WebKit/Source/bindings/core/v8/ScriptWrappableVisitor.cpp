@@ -90,7 +90,7 @@ bool ScriptWrappableVisitor::markWrapperHeader(const void* garbageCollected) con
 bool ScriptWrappableVisitor::markWrapperHeader(const ScriptWrappable* scriptWrappable) const
 {
     if (!markWrapperHeader(scriptWrappable->wrapperTypeInfo()->
-        getHeader(const_cast<ScriptWrappable*>(scriptWrappable)))) {
+        getHeapObjectHeader(const_cast<ScriptWrappable*>(scriptWrappable)))) {
         return false;
     }
 

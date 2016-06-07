@@ -53,7 +53,7 @@ static const int v8PrototypeTypeIndex = 0;
 static const int v8PrototypeInternalFieldcount = 1;
 
 typedef v8::Local<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&);
-typedef HeapObjectHeader* (*GetHeaderFunction)(ScriptWrappable*);
+typedef HeapObjectHeader* (*GetHeapObjectHeaderFunction)(ScriptWrappable*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
 typedef ActiveScriptWrappable* (*ToActiveScriptWrappableFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
@@ -134,10 +134,10 @@ struct WrapperTypeInfo {
         heapStats.increaseCollectedWrapperCount(1);
     }
 
-    HeapObjectHeader* getHeader(ScriptWrappable* scriptWrappable) const
+    HeapObjectHeader* getHeapObjectHeader(ScriptWrappable* scriptWrappable) const
     {
-        DCHECK(getHeaderFunction);
-        return getHeaderFunction(scriptWrappable);
+        DCHECK(getHeapObjectHeaderFunction);
+        return getHeapObjectHeaderFunction(scriptWrappable);
     }
 
     void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) const
@@ -184,7 +184,7 @@ struct WrapperTypeInfo {
     const gin::GinEmbedder ginEmbedder;
 
     DomTemplateFunction domTemplateFunction;
-    const GetHeaderFunction getHeaderFunction;
+    const GetHeapObjectHeaderFunction getHeapObjectHeaderFunction;
     const TraceFunction traceFunction;
     const ToActiveScriptWrappableFunction toActiveScriptWrappableFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
