@@ -344,8 +344,9 @@ void TileManager::FinishTasksAndCleanUp() {
   // uninitialized resources.
   tile_task_manager_->Shutdown();
 
-  // Now that all tasks have been finished, we can clear any
-  // |orphan_tasks_|.
+  raster_buffer_provider_->Shutdown();
+
+  // Now that all tasks have been finished, we can clear any |orphan_tasks_|.
   orphan_tasks_.clear();
 
   tile_task_manager_->CheckForCompletedTasks();
@@ -363,6 +364,7 @@ void TileManager::FinishTasksAndCleanUp() {
 void TileManager::SetResources(ResourcePool* resource_pool,
                                ImageDecodeController* image_decode_controller,
                                TileTaskManager* tile_task_manager,
+                               RasterBufferProvider* raster_buffer_provider,
                                size_t scheduled_raster_task_limit,
                                bool use_gpu_rasterization) {
   DCHECK(!tile_task_manager_);
@@ -373,6 +375,7 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   resource_pool_ = resource_pool;
   image_decode_controller_ = image_decode_controller;
   tile_task_manager_ = tile_task_manager;
+  raster_buffer_provider_ = raster_buffer_provider;
 }
 
 void TileManager::Release(Tile* tile) {
@@ -835,6 +838,9 @@ void TileManager::ScheduleTasks(
   resource_pool_->ReduceResourceUsage();
   image_decode_controller_->ReduceCacheUsage();
 
+  // Synchronize worker with compositor.
+  raster_buffer_provider_->OrderingBarrier();
+
   // Schedule running of |raster_queue_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_queue_|.
@@ -912,7 +918,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   bool supports_concurrent_execution = !use_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer =
-      tile_task_manager_->GetRasterBufferProvider()->AcquireBufferForRaster(
+      raster_buffer_provider_->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id());
   return make_scoped_refptr(new RasterTaskImpl(
       this, tile, resource, prioritized_tile.raster_source(), playback_settings,
@@ -927,8 +933,7 @@ void TileManager::OnRasterTaskCompleted(
     bool was_canceled) {
   DCHECK(tile);
   DCHECK(tiles_.find(tile->id()) != tiles_.end());
-  tile_task_manager_->GetRasterBufferProvider()->ReleaseBufferForRaster(
-      std::move(raster_buffer));
+  raster_buffer_provider_->ReleaseBufferForRaster(std::move(raster_buffer));
 
   TileDrawInfo& draw_info = tile->draw_info();
   DCHECK(tile->raster_task_.get());
@@ -982,6 +987,11 @@ ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
 void TileManager::SetTileTaskManagerForTesting(
     TileTaskManager* tile_task_manager) {
   tile_task_manager_ = tile_task_manager;
+}
+
+void TileManager::SetRasterBufferProviderForTesting(
+    RasterBufferProvider* raster_buffer_provider) {
+  raster_buffer_provider_ = raster_buffer_provider;
 }
 
 bool TileManager::AreRequiredTilesReadyToDraw(
@@ -1146,13 +1156,12 @@ bool TileManager::MarkTilesOutOfMemory(
 }
 
 ResourceFormat TileManager::DetermineResourceFormat(const Tile* tile) const {
-  return tile_task_manager_->GetRasterBufferProvider()->GetResourceFormat(
-      !tile->is_opaque());
+  return raster_buffer_provider_->GetResourceFormat(!tile->is_opaque());
 }
 
 bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
-  return tile_task_manager_->GetRasterBufferProvider()
-      ->GetResourceRequiresSwizzle(!tile->is_opaque());
+  return raster_buffer_provider_->GetResourceRequiresSwizzle(
+      !tile->is_opaque());
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

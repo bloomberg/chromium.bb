@@ -3722,7 +3722,7 @@ TEST_P(ResourceProviderTest, GpuMemoryBufferReadLockFail) {
   {
     ResourceProvider::ScopedReadLockGpuMemoryBuffer lock(
         resource_provider_.get(), id);
-    EXPECT_FALSE(lock.GetGpuMemoryBuffer());
+    EXPECT_FALSE(lock.gpu_memory_buffer());
   }
 }
 
@@ -3747,7 +3747,7 @@ TEST_P(ResourceProviderTest, GpuMemoryBufferReadLockSucceed) {
   {
     ResourceProvider::ScopedReadLockGpuMemoryBuffer lock(
         resource_provider_.get(), id);
-    EXPECT_EQ(gpu_memory_buffer, lock.GetGpuMemoryBuffer());
+    EXPECT_EQ(gpu_memory_buffer, lock.gpu_memory_buffer());
   }
 }
 
@@ -3804,14 +3804,14 @@ TEST_P(ResourceProviderTest, ChildGpuMemoryBufferReadLock) {
   {
     ResourceProvider::ScopedReadLockGpuMemoryBuffer lock(
         resource_provider_.get(), list[0].id);
-    EXPECT_FALSE(lock.GetGpuMemoryBuffer());
+    EXPECT_FALSE(lock.gpu_memory_buffer());
   }
 
   // The gmb resource should have a GpuMemoryBuffer when locked
   {
     ResourceProvider::ScopedReadLockGpuMemoryBuffer lock(
         resource_provider_.get(), list[1].id);
-    gfx::GpuMemoryBuffer* parent_gmb = lock.GetGpuMemoryBuffer();
+    gfx::GpuMemoryBuffer* parent_gmb = lock.gpu_memory_buffer();
     EXPECT_TRUE(parent_gmb);
     EXPECT_NE(child_gmb, parent_gmb);
 
