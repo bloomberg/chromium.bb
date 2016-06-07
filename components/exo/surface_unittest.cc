@@ -8,7 +8,9 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/wm/core/window_util.h"
 
 namespace exo {
 namespace {
@@ -122,6 +124,26 @@ TEST_P(SurfaceTest, SetBufferScale) {
   EXPECT_EQ(
       gfx::ScaleToFlooredSize(buffer_size, 1.0f / kBufferScale).ToString(),
       surface->bounds().size().ToString());
+}
+
+TEST_P(SurfaceTest, RecreateLayer) {
+  gfx::Size buffer_size(512, 512);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  EXPECT_EQ(buffer_size, surface->bounds().size());
+  EXPECT_EQ(buffer_size, surface->layer()->bounds().size());
+  std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
+      ::wm::RecreateLayers(surface.get(), nullptr);
+  EXPECT_EQ(buffer_size, surface->bounds().size());
+  EXPECT_EQ(buffer_size, surface->layer()->bounds().size());
+  EXPECT_EQ(buffer_size, old_layer_owner->root()->bounds().size());
+  EXPECT_TRUE(surface->layer()->has_external_content());
+  EXPECT_TRUE(old_layer_owner->root()->has_external_content());
 }
 
 TEST_P(SurfaceTest, SetViewport) {

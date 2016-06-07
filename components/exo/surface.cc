@@ -887,8 +887,17 @@ void Surface::SetTextureLayerContents(ui::Layer* layer) {
 }
 
 void Surface::SetSurfaceLayerContents(ui::Layer* layer) {
-  // TODO(jbauman): Implement this.
-  NOTIMPLEMENTED();
+  if (surface_id_.is_null())
+    return;
+
+  gfx::Size layer_size = layer->bounds().size();
+  float contents_surface_to_layer_scale = 1.0f;
+
+  layer->SetShowSurface(
+      surface_id_,
+      base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
+      base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
+      layer_size, contents_surface_to_layer_scale, layer_size);
 }
 
 bool Surface::use_surface_layer_ = false;
