@@ -238,32 +238,6 @@
       ],
     },
     {
-      # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
-      # GN version: //mojo/public/cpp/bindings:wtf_support
-      'target_name': 'mojo_cpp_bindings_wtf_support',
-      'type': 'static_library',
-      'include_dirs': [
-        '..'
-      ],
-      'sources': [
-        'public/cpp/bindings/array_traits_wtf.h',
-        'public/cpp/bindings/array_traits_wtf_vector.h',
-        'public/cpp/bindings/lib/string_traits_wtf.cc',
-        'public/cpp/bindings/lib/wtf_serialization.h',
-        'public/cpp/bindings/string_traits_wtf.h',
-        'public/cpp/bindings/wtf_array.h',
-      ],
-      'dependencies': [
-        'mojo_cpp_bindings',
-        '../third_party/WebKit/Source/config.gyp:config',
-        '../third_party/WebKit/Source/wtf/wtf.gyp:wtf',
-      ],
-      'export_dependent_settings': [
-        'mojo_cpp_bindings',
-        '../third_party/WebKit/Source/config.gyp:config',
-      ],
-    },
-    {
       # GN version: //mojo/message_pump
       'target_name': 'mojo_message_pump_lib',
       'type': '<(component)',
@@ -407,19 +381,6 @@
       'includes': [ 'mojom_bindings_generator.gypi' ],
     },
     {
-      'target_name': 'mojo_public_test_interfaces_mojom_blink',
-      'type': 'none',
-      'variables': {
-        'for_blink': 'true',
-        'mojom_typemaps': [
-          'public/cpp/bindings/tests/rect_blink.typemap',
-          'public/cpp/bindings/tests/test_native_types_blink.typemap',
-        ],
-        'mojom_files': '<(mojo_public_test_interfaces_mojom_files)',
-      },
-      'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
-    },
-    {
       # GN version: //mojo/public/interfaces/bindings/tests:test_interfaces
       'target_name': 'mojo_public_test_interfaces',
       'type': 'static_library',
@@ -431,22 +392,6 @@
       ],
       'dependencies': [
         'mojo_public_test_interfaces_mojom',
-        'mojo_cpp_bindings',
-      ],
-    },
-    {
-      # GN version: //mojo/public/interfaces/bindings/tests:test_interfaces_blink
-      'target_name': 'mojo_public_test_interfaces_blink',
-      'type': 'static_library',
-      'export_dependent_settings': [
-        'mojo_public_test_interfaces_mojom_blink',
-        'mojo_cpp_bindings',
-      ],
-      'sources': [
-        'public/cpp/bindings/tests/pickled_struct_blink.cc',
-      ],
-      'dependencies': [
-        'mojo_public_test_interfaces_mojom_blink',
         'mojo_cpp_bindings',
       ],
     },
@@ -479,17 +424,6 @@
     {
       'target_name': 'mojo_public_test_wtf_types',
       'type': 'static_library',
-      'sources': [
-        'public/interfaces/bindings/tests/test_wtf_types.mojom',
-      ],
-      'includes': [ 'mojom_bindings_generator.gypi' ],
-    },
-    {
-      'target_name': 'mojo_public_test_wtf_types_blink',
-      'type': 'static_library',
-      'variables': {
-        'for_blink': 'true',
-      },
       'sources': [
         'public/interfaces/bindings/tests/test_wtf_types.mojom',
       ],
@@ -530,6 +464,76 @@
              '<(DEPTH)/base/base.gyp:base_java',
            ],
            'includes': [ '../build/java.gypi' ],
+        },
+      ],
+    }],
+    ['OS != "ios"', {
+      'targets': [
+        {
+          # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
+          # GN version: //mojo/public/cpp/bindings:wtf_support
+          'target_name': 'mojo_cpp_bindings_wtf_support',
+          'type': 'static_library',
+          'include_dirs': [
+            '..'
+          ],
+          'sources': [
+            'public/cpp/bindings/array_traits_wtf.h',
+            'public/cpp/bindings/array_traits_wtf_vector.h',
+            'public/cpp/bindings/lib/string_traits_wtf.cc',
+            'public/cpp/bindings/lib/wtf_serialization.h',
+            'public/cpp/bindings/string_traits_wtf.h',
+            'public/cpp/bindings/wtf_array.h',
+          ],
+          'dependencies': [
+            'mojo_cpp_bindings',
+            '../third_party/WebKit/Source/config.gyp:config',
+            '../third_party/WebKit/Source/wtf/wtf.gyp:wtf',
+          ],
+          'export_dependent_settings': [
+            'mojo_cpp_bindings',
+            '../third_party/WebKit/Source/config.gyp:config',
+          ],
+        },
+        {
+          'target_name': 'mojo_public_test_interfaces_mojom_blink',
+          'type': 'none',
+          'variables': {
+            'for_blink': 'true',
+            'mojom_typemaps': [
+              'public/cpp/bindings/tests/rect_blink.typemap',
+              'public/cpp/bindings/tests/test_native_types_blink.typemap',
+            ],
+            'mojom_files': '<(mojo_public_test_interfaces_mojom_files)',
+          },
+          'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
+        },
+        {
+          # GN version: //mojo/public/interfaces/bindings/tests:test_interfaces_blink
+          'target_name': 'mojo_public_test_interfaces_blink',
+          'type': 'static_library',
+          'export_dependent_settings': [
+            'mojo_public_test_interfaces_mojom_blink',
+            'mojo_cpp_bindings',
+          ],
+          'sources': [
+            'public/cpp/bindings/tests/pickled_struct_blink.cc',
+          ],
+          'dependencies': [
+            'mojo_public_test_interfaces_mojom_blink',
+            'mojo_cpp_bindings',
+          ],
+        },
+        {
+          'target_name': 'mojo_public_test_wtf_types_blink',
+          'type': 'static_library',
+          'variables': {
+            'for_blink': 'true',
+          },
+          'sources': [
+            'public/interfaces/bindings/tests/test_wtf_types.mojom',
+          ],
+          'includes': [ 'mojom_bindings_generator.gypi' ],
         },
       ],
     }],

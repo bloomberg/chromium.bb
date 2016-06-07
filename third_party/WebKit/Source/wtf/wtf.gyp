@@ -31,119 +31,130 @@
     '../build/features.gypi',
     'wtf.gypi',
   ],
-  'targets': [
-    {
-      # This target sets up defines and includes that are required by WTF and
-      # its dependents.
-      'target_name': 'wtf_config',
-      'type': 'none',
-      'direct_dependent_settings': {
-        'defines': [
-          # Import features_defines from features.gypi
-          '<@(feature_defines)',
-        ],
-        'conditions': [
-          ['OS=="win"', {
+  'targets': [],
+  'conditions': [
+    # Normally target should exists unconditionally and only their content
+    # should be conditional. Those targets are intentionally only conditionally
+    # visible to make sure target using blink are not part of the iOS build (as
+    # iOS must not depends on blink). If you get an error about this target not
+    # existing, then you must make the target depending on blink condition on
+    # OS not being iOS.
+    ['OS!="ios"', {
+      'targets': [
+        {
+          # This target sets up defines and includes that are required by WTF and
+          # its dependents.
+          'target_name': 'wtf_config',
+          'type': 'none',
+          'direct_dependent_settings': {
             'defines': [
-              '__STD_C',
-              '_CRT_SECURE_NO_DEPRECATE',
-              '_SCL_SECURE_NO_DEPRECATE',
+              # Import features_defines from features.gypi
+              '<@(feature_defines)',
             ],
-          }],
-        ],
-      },
-    },
-    {
-      'target_name': 'wtf',
-      'type': '<(component)',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-          'wtf_config',
-          '../config.gyp:config',
-          '<(DEPTH)/base/base.gyp:base',
-          '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-          '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-      ],
-      'sources': [
-        '<@(wtf_files)',
-      ],
-      'defines': [
-        'WTF_IMPLEMENTATION=1',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-        # Some warnings occur in WTF headers, so they must also be disabled
-        # in targets that use WTF.
-        'msvs_disabled_warnings': [
-          # Don't complain about calling specific versions of templatized
-          # functions (e.g. in RefPtrHashMap.h).
-          4344,
-          # Don't complain about using "this" in an initializer list
-          # (e.g. in StringImpl.h).
-          4355,
+            'conditions': [
+              ['OS=="win"', {
+                'defines': [
+                  '__STD_C',
+                  '_CRT_SECURE_NO_DEPRECATE',
+                  '_SCL_SECURE_NO_DEPRECATE',
+                ],
+              }],
+            ],
+          },
+        },
+        {
+          'target_name': 'wtf',
+          'type': '<(component)',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+              'wtf_config',
+              '../config.gyp:config',
+              '<(DEPTH)/base/base.gyp:base',
+              '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+              '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+          ],
+          'sources': [
+            '<@(wtf_files)',
+          ],
+          'defines': [
+            'WTF_IMPLEMENTATION=1',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '..',
+            ],
+            # Some warnings occur in WTF headers, so they must also be disabled
+            # in targets that use WTF.
+            'msvs_disabled_warnings': [
+              # Don't complain about calling specific versions of templatized
+              # functions (e.g. in RefPtrHashMap.h).
+              4344,
+              # Don't complain about using "this" in an initializer list
+              # (e.g. in StringImpl.h).
+              4355,
+              # Disable c4267 warnings until we fix size_t to int truncations.
+              4267,
+            ],
+          },
+          'export_dependent_settings': [
+            'wtf_config',
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+            '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+          ],
           # Disable c4267 warnings until we fix size_t to int truncations.
-          4267,
-        ],
-      },
-      'export_dependent_settings': [
-        'wtf_config',
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-      ],
-      # Disable c4267 warnings until we fix size_t to int truncations.
-      'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706, 4068, 4267],
-      'conditions': [
-        ['OS=="android"', {
-          'link_settings': { 'libraries': [ '-llog' ] },
-        }],
-        ['OS=="linux"', {
-          'link_settings': { 'libraries': [ '-ldl' ] },
-        }],
-        ['OS=="win"', {
-          'sources/': [
-            ['exclude', 'ThreadingPthreads\\.cpp$'],
-          ],
-          'include_dirs!': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink',
-          ],
+          'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706, 4068, 4267],
           'conditions': [
-            ['component=="shared_library"', {
-              # Chromium windows multi-dll build enables C++ exception and this
-              # causes wtf to generate 4291 warning due to operator new/delete
-              # implementations. Disable the warning for chromium windows
-              # multi-dll build.
-              'msvs_disabled_warnings': [4291],
-              'direct_dependent_settings': {
-                'msvs_disabled_warnings': [4291],
-              },
+            ['OS=="android"', {
+              'link_settings': { 'libraries': [ '-llog' ] },
+            }],
+            ['OS=="linux"', {
+              'link_settings': { 'libraries': [ '-ldl' ] },
+            }],
+            ['OS=="win"', {
+              'sources/': [
+                ['exclude', 'ThreadingPthreads\\.cpp$'],
+              ],
+              'include_dirs!': [
+                '<(SHARED_INTERMEDIATE_DIR)/blink',
+              ],
+              'conditions': [
+                ['component=="shared_library"', {
+                  # Chromium windows multi-dll build enables C++ exception and this
+                  # causes wtf to generate 4291 warning due to operator new/delete
+                  # implementations. Disable the warning for chromium windows
+                  # multi-dll build.
+                  'msvs_disabled_warnings': [4291],
+                  'direct_dependent_settings': {
+                    'msvs_disabled_warnings': [4291],
+                  },
+                }],
+              ],
+            }, { # OS!="win"
+              'sources/': [
+                ['exclude', 'Win\\.cpp$'],
+              ],
+            }],
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+                  '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+                ]
+              }
+            }, { # OS!="mac"
+              'sources/': [
+                ['exclude', 'CF\\.cpp$'],
+                ['exclude', 'Mac\\.mm$'],
+                # mac is the only OS that uses WebKit's copy of TCMalloc.
+                ['exclude', 'TC.*\\.(cpp|h)$'],
+              ],
             }],
           ],
-        }, { # OS!="win"
-          'sources/': [
-            ['exclude', 'Win\\.cpp$'],
-          ],
-        }],
-        ['OS=="mac"', {
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
-              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-            ]
-          }
-        }, { # OS!="mac"
-          'sources/': [
-            ['exclude', 'CF\\.cpp$'],
-            ['exclude', 'Mac\\.mm$'],
-            # mac is the only OS that uses WebKit's copy of TCMalloc.
-            ['exclude', 'TC.*\\.(cpp|h)$'],
-          ],
-        }],
+        },
       ],
-    },
-  ]
+    }],
+  ],
 }

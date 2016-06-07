@@ -28,112 +28,123 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 {
-  'variables': {
-    # If set to 1, doesn't compile debug symbols into webcore reducing the
-    # size of the binary and increasing the speed of gdb.  gcc only.
-    'remove_webcore_debug_symbols%': 0,
-    # If set to 1 (default) and using clang, the Blink GC plugin will check the
-    # usage of the garbage-collection infrastructure during compilation.
-    'blink_gc_plugin%': 1,
-    # Additional flags for the Blink GC plugin.
-    'blink_gc_plugin_flags%': '',
-    # If set to 1, the Blink will use the base allocator instead of
-    # PartitionAlloc. so that the top of stack-unwinding becomes the caller
-    # which requests memory allocation in blink.
-    'blink_disable_partition_allocator%': 0,
-  },
-  'targets': [
-  {
-    # GN version: //third_party/WebKit/Source:config
-    #   (In GN this is a config rather than a target.)
-    'target_name': 'config',
-    'type': 'none',
-    'direct_dependent_settings': {
-      'include_dirs': [
-        '.',
-        '..',
-        '<(SHARED_INTERMEDIATE_DIR)/third_party/WebKit',
-      ],
-      'msvs_disabled_warnings': [
-        4305, 4324, 4714, 4800, 4996,
-      ],
+  'targets': [],
+  'conditions': [
+    # Normally target should exists unconditionally and only their content
+    # should be conditional. Those targets are intentionally only conditionally
+    # visible to make sure target using blink are not part of the iOS build (as
+    # iOS must not depends on blink). If you get an error about this target not
+    # existing, then you must make the target depending on blink condition on
+    # OS not being iOS.
+    ['OS!="ios"', {
       'variables': {
-        'chromium_code': 1,
-        'clang_warning_flags': [ '-Wglobal-constructors' ],
+        # If set to 1, doesn't compile debug symbols into webcore reducing the
+        # size of the binary and increasing the speed of gdb.  gcc only.
+        'remove_webcore_debug_symbols%': 0,
+        # If set to 1 (default) and using clang, the Blink GC plugin will check the
+        # usage of the garbage-collection infrastructure during compilation.
+        'blink_gc_plugin%': 1,
+        # Additional flags for the Blink GC plugin.
+        'blink_gc_plugin_flags%': '',
+        # If set to 1, the Blink will use the base allocator instead of
+        # PartitionAlloc. so that the top of stack-unwinding becomes the caller
+        # which requests memory allocation in blink.
+        'blink_disable_partition_allocator%': 0,
       },
-      'conditions': [
-        ['OS=="win" and component=="shared_library"', {
-          'defines': [
-            'USING_V8_SHARED',
+      'targets': [
+      {
+        # GN version: //third_party/WebKit/Source:config
+        #   (In GN this is a config rather than a target.)
+        'target_name': 'config',
+        'type': 'none',
+        'direct_dependent_settings': {
+          'include_dirs': [
+            '.',
+            '..',
+            '<(SHARED_INTERMEDIATE_DIR)/third_party/WebKit',
           ],
-        }],
-        ['OS=="win"', {
-          'sources/': [
-            ['exclude', 'Posix\\.cpp$'],
+          'msvs_disabled_warnings': [
+            4305, 4324, 4714, 4800, 4996,
           ],
-        },{ # OS!="win"
-          'sources/': [
-            ['exclude', 'Win\\.cpp$'],
-          ],
-        }],
-        ['OS!="mac"', {
-          'sources/': [
-            ['exclude', 'Mac\\.mm$'],
-          ],
-        }],
-        ['OS!="android"', {
-          'sources/': [
-            ['exclude', 'Android\\.cpp$'],
-          ],
-        }],
-        ['OS!="win" and remove_webcore_debug_symbols==1', {
-          # Remove -g from all targets defined here.
-          'cflags!': ['-g'],
-        }],
-        # Only enable the blink_gc_plugin when using clang and chrome plugins.
-        ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
-          'cflags': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py <(blink_gc_plugin_flags))'],
-          'xcode_settings': {
-            'OTHER_CFLAGS': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py <(blink_gc_plugin_flags))'],
+          'variables': {
+            'chromium_code': 1,
+            'clang_warning_flags': [ '-Wglobal-constructors' ],
           },
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'AdditionalOptions': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py <(blink_gc_plugin_flags))'],
-            },
+          'conditions': [
+            ['OS=="win" and component=="shared_library"', {
+              'defines': [
+                'USING_V8_SHARED',
+              ],
+            }],
+            ['OS=="win"', {
+              'sources/': [
+                ['exclude', 'Posix\\.cpp$'],
+              ],
+            },{ # OS!="win"
+              'sources/': [
+                ['exclude', 'Win\\.cpp$'],
+              ],
+            }],
+            ['OS!="mac"', {
+              'sources/': [
+                ['exclude', 'Mac\\.mm$'],
+              ],
+            }],
+            ['OS!="android"', {
+              'sources/': [
+                ['exclude', 'Android\\.cpp$'],
+              ],
+            }],
+            ['OS!="win" and remove_webcore_debug_symbols==1', {
+              # Remove -g from all targets defined here.
+              'cflags!': ['-g'],
+            }],
+            # Only enable the blink_gc_plugin when using clang and chrome plugins.
+            ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
+              'cflags': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py target_os=<(OS) <(blink_gc_plugin_flags))'],
+              'xcode_settings': {
+                'OTHER_CFLAGS': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py target_os=<(OS) <(blink_gc_plugin_flags))'],
+              },
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'AdditionalOptions': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py target_os=<(OS) <(blink_gc_plugin_flags))'],
+                },
+              },
+            }],
+            ['blink_disable_partition_allocator==1', {
+              'defines': [
+                'MEMORY_TOOL_REPLACES_ALLOCATOR',
+              ],
+            }],
+            ['use_system_icu==1', {
+              'defines': [
+                'USING_SYSTEM_ICU',
+              ],
+            }],
+          ],
+        },
+      },
+      {
+        'target_name': 'unittest_config',
+        'type': 'none',
+        'dependencies': [
+          'config',
+          '<(DEPTH)/testing/gmock.gyp:gmock',
+          '<(DEPTH)/testing/gtest.gyp:gtest',
+        ],
+        'export_dependent_settings': [
+          'config',
+          '<(DEPTH)/testing/gmock.gyp:gmock',
+          '<(DEPTH)/testing/gtest.gyp:gtest',
+        ],
+        'direct_dependent_settings': {
+          'variables': {
+            'chromium_code': 1,
+            'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
           },
-        }],
-        ['blink_disable_partition_allocator==1', {
-          'defines': [
-            'MEMORY_TOOL_REPLACES_ALLOCATOR',
-          ],
-        }],
-        ['use_system_icu==1', {
-          'defines': [
-            'USING_SYSTEM_ICU',
-          ],
-        }],
+        },
+      }
       ],
-    },
-  },
-  {
-    'target_name': 'unittest_config',
-    'type': 'none',
-    'dependencies': [
-      'config',
-      '<(DEPTH)/testing/gmock.gyp:gmock',
-      '<(DEPTH)/testing/gtest.gyp:gtest',
-    ],
-    'export_dependent_settings': [
-      'config',
-      '<(DEPTH)/testing/gmock.gyp:gmock',
-      '<(DEPTH)/testing/gtest.gyp:gtest',
-    ],
-    'direct_dependent_settings': {
-      'variables': {
-        'chromium_code': 1,
-        'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
-      },
-    },
-  }
+    }],
   ],
 }
