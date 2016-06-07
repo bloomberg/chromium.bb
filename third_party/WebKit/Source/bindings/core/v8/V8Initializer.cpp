@@ -114,6 +114,9 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
     ASSERT(isMainThread());
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
+    if (isolate->GetEnteredContext().IsEmpty())
+        return;
+
     // If called during context initialization, there will be no entered context.
     ScriptState* scriptState = ScriptState::current(isolate);
     if (!scriptState->contextIsValid())
