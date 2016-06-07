@@ -199,6 +199,7 @@ const char * const basic_test_names[] = {
 	"surface_bad_opacity",
 	"surface_properties_changed_notification",
 	"surface_bad_properties_changed_notification",
+	"surface_on_many_layer",
 };
 
 const char * const surface_property_commit_changes_test_names[] = {

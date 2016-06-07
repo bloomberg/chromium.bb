@@ -588,6 +588,51 @@ RUNNER_TEST(surface_bad_opacity)
 	lyt->commit_changes();
 }
 
+RUNNER_TEST(surface_on_many_layer)
+{
+	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_surface *ivisurf;
+	struct ivi_layout_layer *ivilayers[IVI_TEST_LAYER_COUNT] = {};
+	struct ivi_layout_layer **array;
+	int32_t length = 0;
+	uint32_t i;
+
+	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
+	runner_assert(ivisurf != NULL);
+
+	for (i = 0; i < IVI_TEST_LAYER_COUNT; i++) {
+		ivilayers[i] = lyt->layer_create_with_dimension(
+				IVI_TEST_LAYER_ID(i), 200, 300);
+		runner_assert(lyt->layer_add_surface(
+				ivilayers[i], ivisurf) == IVI_SUCCEEDED);
+	}
+
+	lyt->commit_changes();
+
+	runner_assert(lyt->get_layers_under_surface(
+		      ivisurf, &length, &array) == IVI_SUCCEEDED);
+	runner_assert(IVI_TEST_LAYER_COUNT == length);
+	for (i = 0; i < IVI_TEST_LAYER_COUNT; i++)
+		runner_assert(array[i] == ivilayers[i]);
+
+	if (length > 0)
+		free(array);
+
+	for (i = 0; i < IVI_TEST_LAYER_COUNT; i++)
+		lyt->layer_remove_surface(ivilayers[i], ivisurf);
+
+	array = NULL;
+
+	lyt->commit_changes();
+
+	runner_assert(lyt->get_layers_under_surface(
+		      ivisurf, &length, &array) == IVI_SUCCEEDED);
+	runner_assert(length == 0 && array == NULL);
+
+	for (i = 0; i < IVI_TEST_LAYER_COUNT; i++)
+		lyt->layer_destroy(ivilayers[i]);
+}
+
 RUNNER_TEST(ivi_layout_commit_changes)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
