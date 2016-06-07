@@ -322,7 +322,6 @@ static void SetNotificationSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& origin,
-    const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
   // Note: Web Notification permission behaves differently from all other

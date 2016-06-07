@@ -22,6 +22,6 @@ public class NotificationInfo extends PermissionInfo {
     protected void setNativePreferenceValue(
             String origin, String embedder, ContentSetting value, boolean isIncognito) {
         WebsitePreferenceBridge.nativeSetNotificationSettingForOrigin(
-                origin, embedder, value.toInt(), isIncognito);
+                origin, value.toInt(), isIncognito);
     }
 }
