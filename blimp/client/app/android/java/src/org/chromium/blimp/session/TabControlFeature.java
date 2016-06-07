@@ -14,8 +14,6 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("blimp::client")
 public class TabControlFeature implements View.OnLayoutChangeListener {
-    private final float mDpToPx;
-
     private View mContentAreaView;
     private long mNativeTabControlFeatureAndroidPtr;
 
@@ -33,12 +31,7 @@ public class TabControlFeature implements View.OnLayoutChangeListener {
     public TabControlFeature(BlimpClientSession blimpClientSession, View contentAreaView) {
         mContentAreaView = contentAreaView;
         mContentAreaView.addOnLayoutChangeListener(this);
-        mDpToPx = mContentAreaView.getContext().getResources().getDisplayMetrics().density;
         mNativeTabControlFeatureAndroidPtr = nativeInit(blimpClientSession);
-
-        // Push down the current size of the content area view.
-        nativeOnContentAreaSizeChanged(mNativeTabControlFeatureAndroidPtr,
-                mContentAreaView.getWidth(), mContentAreaView.getHeight(), mDpToPx);
     }
 
     /**
@@ -63,7 +56,8 @@ public class TabControlFeature implements View.OnLayoutChangeListener {
             int oldLeft, int oldTop, int oldRight, int oldBottom) {
         if (mNativeTabControlFeatureAndroidPtr == 0) return;
         nativeOnContentAreaSizeChanged(mNativeTabControlFeatureAndroidPtr, right - left,
-                bottom - top, mDpToPx);
+                bottom - top,
+                mContentAreaView.getContext().getResources().getDisplayMetrics().density);
     }
 
     private native long nativeInit(BlimpClientSession blimpClientSession);
