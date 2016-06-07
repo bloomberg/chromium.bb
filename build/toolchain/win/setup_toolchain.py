@@ -90,7 +90,7 @@ def _LoadToolchainEnv(cpu, sdk_dir):
   assert cpu in ('x86', 'x64')
   if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', 1))) and sdk_dir:
     # Load environment from json file.
-    env = os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.%s.json' % cpu))
+    env = os.path.normpath(os.path.join(sdk_dir, 'bin/SetEnv.%s.json' % cpu))
     env = json.load(open(env))['env']
     for k in env:
       entries = [os.path.join(*([os.path.join(sdk_dir, 'bin')] + e))
