@@ -709,6 +709,8 @@
     },
 
     'tryserver.chromium.linux': {
+      'blimp_linux_dbg':
+        '//build/args/bots/chromium.linux/blimp_linux_dbg.gn',
       'Chromium Linux Codesearch Builder': 'codesearch_gn',
       'ChromiumOS Codesearch Builder': 'codesearch_gn',
       'cast_shell_linux': 'cast_gn_release_trybot',

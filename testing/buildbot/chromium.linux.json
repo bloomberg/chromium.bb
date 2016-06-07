@@ -794,6 +794,13 @@
       }
     ]
   },
+  "Blimp Linux (dbg)": {
+    "gtest_tests": [
+      {
+        "test": "blimp_browsertests"
+      }
+    ]
+  },
   "Cast Linux": {
     "gtest_tests": [
       {
