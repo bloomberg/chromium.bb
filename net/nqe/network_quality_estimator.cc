@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -24,8 +23,8 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
+#include "net/nqe/socket_watcher_factory.h"
 #include "net/nqe/throughput_analyzer.h"
-#include "net/socket/socket_performance_watcher.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -161,81 +160,6 @@ bool RequestSchemeIsHTTPOrHTTPS(const net::URLRequest& request) {
 
 namespace net {
 
-// SocketWatcher implements SocketPerformanceWatcher, and notifies
-// NetworkQualityEstimator of various socket performance events. SocketWatcher
-// is not thread-safe.
-class NetworkQualityEstimator::SocketWatcher : public SocketPerformanceWatcher {
- public:
-  SocketWatcher(
-      SocketPerformanceWatcherFactory::Protocol protocol,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::WeakPtr<NetworkQualityEstimator>& network_quality_estimator)
-      : protocol_(protocol),
-        task_runner_(std::move(task_runner)),
-        network_quality_estimator_(network_quality_estimator) {}
-
-  ~SocketWatcher() override {}
-
-  // SocketPerformanceWatcher implementation:
-  bool ShouldNotifyUpdatedRTT() const override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    return true;
-  }
-
-  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&NetworkQualityEstimator::OnUpdatedRTTAvailable,
-                              network_quality_estimator_, protocol_, rtt));
-  }
-
-  void OnConnectionChanged() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-  }
-
- private:
-  // Transport layer protocol used by the socket that |this| is watching.
-  const SocketPerformanceWatcherFactory::Protocol protocol_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::WeakPtr<NetworkQualityEstimator> network_quality_estimator_;
-
-  base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(SocketWatcher);
-};
-
-// SocketWatcherFactory implements SocketPerformanceWatcherFactory, and is
-// owned by NetworkQualityEstimator. SocketWatcherFactory is thread safe.
-class NetworkQualityEstimator::SocketWatcherFactory
-    : public SocketPerformanceWatcherFactory {
- public:
-  SocketWatcherFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::WeakPtr<NetworkQualityEstimator>& network_quality_estimator)
-      : task_runner_(std::move(task_runner)),
-        network_quality_estimator_(network_quality_estimator) {}
-
-  ~SocketWatcherFactory() override {}
-
-  // SocketPerformanceWatcherFactory implementation:
-  std::unique_ptr<SocketPerformanceWatcher> CreateSocketPerformanceWatcher(
-      const Protocol protocol) override {
-    return std::unique_ptr<SocketPerformanceWatcher>(
-        new SocketWatcher(protocol, task_runner_, network_quality_estimator_));
-  }
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::WeakPtr<NetworkQualityEstimator> network_quality_estimator_;
-
-  DISALLOW_COPY_AND_ASSIGN(SocketWatcherFactory);
-};
-
 NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
     const std::map<std::string, std::string>& variation_params)
@@ -294,8 +218,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                  base::Unretained(this)),
       use_localhost_requests_, use_smaller_responses_for_tests));
 
-  watcher_factory_.reset(new SocketWatcherFactory(
-      base::ThreadTaskRunnerHandle::Get(), weak_ptr_factory_.GetWeakPtr()));
+  watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&NetworkQualityEstimator::OnUpdatedRTTAvailable,
+                 base::Unretained(this))));
 }
 
 void NetworkQualityEstimator::ObtainOperatingParams(
