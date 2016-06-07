@@ -251,6 +251,7 @@ var MainPageBehaviorImpl = {
       // Whether finished or canceled, clean up the animation.
       section.classList.remove('expanding');
       card.style.height = '';
+      card.style.width = '';
     });
 
     return promise;
@@ -271,6 +272,7 @@ var MainPageBehaviorImpl = {
     var startingTop = this.parentElement.getBoundingClientRect().top;
 
     var cardHeightStart = card.clientHeight;
+    var cardWidthStart = card.clientWidth;
 
     section.classList.add('collapsing');
     section.classList.remove('expanding', 'expanded');
@@ -309,7 +311,13 @@ var MainPageBehaviorImpl = {
     var options = /** @type {!KeyframeEffectOptions} */({
       duration: EXPAND_DURATION
     });
-    return this.animateElement('section', card, keyframes, options);
+
+    card.style.width = cardWidthStart + 'px';
+    var promise = this.animateElement('section', card, keyframes, options);
+    promise.then(function() {
+      card.style.width = '';
+    });
+    return promise;
   },
 };
 
