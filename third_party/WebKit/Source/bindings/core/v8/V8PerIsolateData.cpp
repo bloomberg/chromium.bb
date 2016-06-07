@@ -164,6 +164,33 @@ void V8PerIsolateData::useCounterCallback(v8::Isolate* isolate, v8::Isolate::Use
     case v8::Isolate::kForInInitializer:
         blinkFeature = UseCounter::V8ForInInitializer;
         break;
+    case v8::Isolate::kArrayProtectorDirtied:
+        blinkFeature = UseCounter::V8ArrayProtectorDirtied;
+        break;
+    case v8::Isolate::kArraySpeciesModified:
+        blinkFeature = UseCounter::V8ArraySpeciesModified;
+        break;
+    case v8::Isolate::kArrayPrototypeConstructorModified:
+        blinkFeature = UseCounter::V8ArrayPrototypeConstructorModified;
+        break;
+    case v8::Isolate::kArrayInstanceProtoModified:
+        blinkFeature = UseCounter::V8ArrayInstanceProtoModified;
+        break;
+    case v8::Isolate::kArrayInstanceConstructorModified:
+        blinkFeature = UseCounter::V8ArrayInstanceConstructorModified;
+        break;
+    case v8::Isolate::kLegacyFunctionDeclaration:
+        blinkFeature = UseCounter::V8LegacyFunctionDeclaration;
+        break;
+    case v8::Isolate::kRegExpPrototypeSourceGetter:
+        blinkFeature = UseCounter::V8RegExpPrototypeSourceGetter;
+        break;
+    case v8::Isolate::kRegExpPrototypeOldFlagGetter:
+        blinkFeature = UseCounter::V8RegExpPrototypeOldFlagGetter;
+        break;
+    case v8::Isolate::kDecimalWithLeadingZeroInStrictMode:
+        blinkFeature = UseCounter::V8DecimalWithLeadingZeroInStrictMode;
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.

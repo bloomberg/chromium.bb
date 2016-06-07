@@ -1197,6 +1197,15 @@ public:
         DocumentCreateEventSensorErrorEvent = 1387,
         DocumentCreateEventSensorReadingEvent = 1388,
         MediaStreamConstraintsOldAndNew = 1389,
+        V8ArrayProtectorDirtied = 1390,
+        V8ArraySpeciesModified = 1391,
+        V8ArrayPrototypeConstructorModified = 1392,
+        V8ArrayInstanceProtoModified = 1393,
+        V8ArrayInstanceConstructorModified = 1394,
+        V8LegacyFunctionDeclaration = 1395,
+        V8RegExpPrototypeSourceGetter = 1396,
+        V8RegExpPrototypeOldFlagGetter = 1397,
+        V8DecimalWithLeadingZeroInStrictMode = 1398,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

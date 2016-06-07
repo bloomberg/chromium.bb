@@ -74323,6 +74323,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1387" label="DocumentCreateEventSensorErrorEvent"/>
   <int value="1388" label="DocumentCreateEventSensorReadingEvent"/>
   <int value="1389" label="MediaStreamConstraintsOldAndNew"/>
+  <int value="1390" label="V8ArrayProtectorDirtied"/>
+  <int value="1391" label="V8ArraySpeciesModified"/>
+  <int value="1392" label="V8ArrayPrototypeConstructorModified"/>
+  <int value="1393" label="V8ArrayInstanceProtoModified"/>
+  <int value="1394" label="V8ArrayInstanceConstructorModified"/>
+  <int value="1395" label="V8LegacyFunctionDeclaration"/>
+  <int value="1396" label="V8RegExpPrototypeSourceGetter"/>
+  <int value="1397" label="V8RegExpPrototypeOldFlagGetter"/>
+  <int value="1398" label="V8DecimalWithLeadingZeroInStrictMode"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
