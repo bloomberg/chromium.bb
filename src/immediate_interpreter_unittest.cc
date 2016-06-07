@@ -1143,6 +1143,7 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
 
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ImmediateInterpreter ii(NULL, NULL);
+  ii.pinch_enable_.val_ = 0;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1284,6 +1285,7 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
 
 TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
   ImmediateInterpreter ii(NULL, NULL);
+  ii.pinch_enable_.val_ = 0;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
