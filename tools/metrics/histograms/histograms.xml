@@ -70344,6 +70344,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="330" label="Set certificate availability for ARC-apps"/>
   <int value="331" label="Define domains allowed to access Google Apps"/>
   <int value="332" label="Enable PAC https:// URL stripping"/>
+  <int value="333" label="Enables cast"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

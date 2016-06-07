@@ -688,6 +688,10 @@ extern const char kResolveDeviceTimezoneByGeolocation[];
 extern const char kSystemTimezoneAutomaticDetectionPolicy[];
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(ENABLE_MEDIA_ROUTER)
+extern const char kEnableMediaRouter[];
+#endif  // defined(ENABLE_MEDIA_ROUTER)
+
 #if !defined(OS_ANDROID)
 extern const char kAttemptedToEnableAutoupdate[];
 

@@ -392,7 +392,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSSLVersionFallbackMin,
     ssl_config::prefs::kSSLVersionFallbackMin,
     base::Value::TYPE_STRING },
-
+#if defined(ENABLE_MEDIA_ROUTER)
+  { key::kEnableMediaRouter,
+    prefs::kEnableMediaRouter,
+    base::Value::TYPE_BOOLEAN },
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 #if !defined(OS_MACOSX)
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,

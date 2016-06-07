@@ -57,6 +57,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -3716,6 +3717,34 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   // Policy should allow ending tasks again.
   EXPECT_TRUE(task_management::TaskManagerInterface::IsEndProcessEnabled());
 }
+
+#if defined(ENABLE_MEDIA_ROUTER)
+// Sets the proper policy before the browser is started.
+template<bool enable>
+class MediaRouterPolicyTest : public PolicyTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kEnableMediaRouter, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::FundamentalValue(enable)),
+                 nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+using MediaRouterEnabledPolicyTest = MediaRouterPolicyTest<true>;
+using MediaRouterDisabledPolicyTest = MediaRouterPolicyTest<false>;
+
+IN_PROC_BROWSER_TEST_F(MediaRouterEnabledPolicyTest, MediaRouterEnabled) {
+  EXPECT_TRUE(media_router::MediaRouterEnabled(browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterDisabledPolicyTest, MediaRouterDisabled) {
+  EXPECT_FALSE(media_router::MediaRouterEnabled(browser()->profile()));
+}
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if !defined(OS_CHROMEOS)
 // Similar to PolicyTest but sets the proper policy before the browser is

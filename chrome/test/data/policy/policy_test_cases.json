@@ -1920,6 +1920,14 @@
     ]
   },
 
+  "EnableMediaRouter": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "EnableMediaRouter": true },
+    "pref_mappings": [
+      { "pref": "media_router.enable_media_router" }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {
