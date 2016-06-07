@@ -262,7 +262,8 @@ ChildThread* ChildThread::Get() {
 ChildThreadImpl::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
-      use_mojo_channel(false) {
+      use_mojo_channel(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMojoChannelToken)) {
 }
 
 ChildThreadImpl::Options::Options(const Options& other) = default;

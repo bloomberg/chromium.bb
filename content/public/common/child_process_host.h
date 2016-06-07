@@ -81,6 +81,10 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // empty string otherwise
   virtual std::string CreateChannel() = 0;
 
+  // Creates the IPC channel on top of Mojo. Returns the Mojo channel token if
+  // succeeded, or an empty string on failure.
+  virtual std::string CreateChannelMojo(const std::string& child_token) = 0;
+
   // Returns true iff the IPC channel is currently being opened;
   virtual bool IsChannelOpening() = 0;
 

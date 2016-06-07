@@ -31,6 +31,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
+#include "ipc/mojo/ipc_channel_mojo.h"
+#include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -130,9 +132,31 @@ void ChildProcessHostImpl::ForceShutdown() {
   Send(new ChildProcessMsg_Shutdown());
 }
 
+std::string ChildProcessHostImpl::CreateChannelMojo(
+    const std::string& child_token) {
+  DCHECK(channel_id_.empty());
+  channel_id_ = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle host_handle =
+      mojo::edk::CreateParentMessagePipe(channel_id_, child_token);
+  channel_ = IPC::ChannelMojo::Create(std::move(host_handle),
+                                      IPC::Channel::MODE_SERVER, this);
+  if (!channel_ || !InitChannel())
+    return std::string();
+
+  return channel_id_;
+}
+
 std::string ChildProcessHostImpl::CreateChannel() {
+  DCHECK(channel_id_.empty());
   channel_id_ = IPC::Channel::GenerateVerifiedChannelID(std::string());
   channel_ = IPC::Channel::CreateServer(channel_id_, this);
+  if (!channel_ || !InitChannel())
+    return std::string();
+
+  return channel_id_;
+}
+
+bool ChildProcessHostImpl::InitChannel() {
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
       channel_.get(), base::MessageLoopForIO::current()->task_runner());
@@ -142,7 +166,7 @@ std::string ChildProcessHostImpl::CreateChannel() {
     IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
         channel_.get());
 #endif
-    return std::string();
+    return false;
   }
 
   for (size_t i = 0; i < filters_.size(); ++i)
@@ -156,7 +180,7 @@ std::string ChildProcessHostImpl::CreateChannel() {
 
   opening_channel_ = true;
 
-  return channel_id_;
+  return true;
 }
 
 bool ChildProcessHostImpl::IsChannelOpening() {

@@ -256,8 +256,9 @@ bool UtilityProcessHostImpl::StartProcess() {
                                                  child_token_));
   process_->SetName(name_);
 
-  std::string channel_id = process_->GetHost()->CreateChannel();
-  if (channel_id.empty()) {
+  std::string mojo_channel_token =
+      process_->GetHost()->CreateChannelMojo(child_token_);
+  if (mojo_channel_token.empty()) {
     NotifyAndDelete(LAUNCH_RESULT_FAILURE);
     return false;
   }
@@ -268,9 +269,9 @@ bool UtilityProcessHostImpl::StartProcess() {
     // support single process mode this way.
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
-            channel_id, BrowserThread::UnsafeGetMessageLoopForThread(
+            std::string(), BrowserThread::UnsafeGetMessageLoopForThread(
                             BrowserThread::IO)->task_runner(),
-            std::string(), mojo_application_host_->GetToken())));
+            mojo_channel_token, mojo_application_host_->GetToken())));
     in_process_thread_->Start();
   } else {
     const base::CommandLine& browser_command_line =
@@ -307,7 +308,8 @@ bool UtilityProcessHostImpl::StartProcess() {
 
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kUtilityProcess);
-    cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
+    cmd_line->AppendSwitchASCII(switches::kMojoChannelToken,
+                                mojo_channel_token);
     std::string locale = GetContentClient()->browser()->GetApplicationLocale();
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
