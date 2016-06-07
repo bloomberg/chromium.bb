@@ -502,9 +502,9 @@ void UserManagerScreenHandler::HandleAreAllProfilesLocked(
   bool success = args->GetString(0, &webui_callback_id);
   DCHECK(success);
 
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIResponse", base::StringValue(webui_callback_id),
-      base::FundamentalValue(true),
+  AllowJavascript();
+  ResolveJavascriptCallback(
+      base::StringValue(webui_callback_id),
       base::FundamentalValue(profiles::AreAllProfilesLocked()));
 }
 

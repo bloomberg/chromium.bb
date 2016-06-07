@@ -12,20 +12,4 @@ SettingsPageUIHandler::SettingsPageUIHandler() {}
 
 SettingsPageUIHandler::~SettingsPageUIHandler() {}
 
-void SettingsPageUIHandler::ResolveJavascriptCallback(
-    const base::Value& callback_id,
-    const base::Value& response) {
-  // cr.webUIResponse is a global JS function exposed from cr.js.
-  CallJavascriptFunction("cr.webUIResponse", callback_id,
-                         base::FundamentalValue(true), response);
-}
-
-void SettingsPageUIHandler::RejectJavascriptCallback(
-    const base::Value& callback_id,
-    const base::Value& response) {
-  // cr.webUIResponse is a global JS function exposed from cr.js.
-  CallJavascriptFunction("cr.webUIResponse", callback_id,
-                         base::FundamentalValue(false), response);
-}
-
 }  // namespace settings

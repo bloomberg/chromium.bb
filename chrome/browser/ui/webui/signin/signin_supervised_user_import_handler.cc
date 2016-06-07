@@ -81,6 +81,7 @@ void SigninSupervisedUserImportHandler::AssignWebUICallbackId(
   CHECK_LE(1U, args->GetSize());
   CHECK(webui_callback_id_.empty());
   CHECK(args->GetString(0, &webui_callback_id_));
+  AllowJavascript();
 }
 
 void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
@@ -190,9 +191,9 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
 
 void SigninSupervisedUserImportHandler::RejectCallback(
     const base::string16& error) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIResponse", base::StringValue(webui_callback_id_),
-      base::FundamentalValue(false), base::StringValue(error));
+  RejectJavascriptCallback(
+      base::StringValue(webui_callback_id_),
+      base::StringValue(error));
   webui_callback_id_.clear();
 }
 
@@ -266,9 +267,9 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
   }
 
   // Resolve callback with response.
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIResponse", base::StringValue(webui_callback_id_),
-      base::FundamentalValue(true), supervised_users);
+  ResolveJavascriptCallback(
+      base::StringValue(webui_callback_id_),
+      supervised_users);
   webui_callback_id_.clear();
 }
 

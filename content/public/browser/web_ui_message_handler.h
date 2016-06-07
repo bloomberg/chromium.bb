@@ -77,6 +77,18 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // to deregister or disabled observers that push JavaScript calls to the page.
   virtual void OnJavascriptDisallowed() {}
 
+  // Helper method for responding to Javascript requests initiated with
+  // cr.sendWithPromise() (defined in cr.js) for the case where the returned
+  // promise should be resolved (request succeeded).
+  void ResolveJavascriptCallback(const base::Value& callback_id,
+                                 const base::Value& response);
+
+  // Helper method for responding to Javascript requests initiated with
+  // cr.sendWithPromise() (defined in cr.js), for the case where the returned
+  // promise should be rejected (request failed).
+  void RejectJavascriptCallback(const base::Value& callback_id,
+                                const base::Value& response);
+
   // Call a Javascript function by sending its name and arguments down to
   // the renderer.  This is asynchronous; there's no way to get the result
   // of the call, and should be thought of more like sending a message to
