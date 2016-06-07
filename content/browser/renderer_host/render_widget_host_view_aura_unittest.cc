@@ -176,10 +176,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     if (rwh_)
       rwh_->SendScreenRects();
   }
-  bool IsFullscreenForCurrentTab(
-      RenderWidgetHostImpl* render_widget_host) const override {
-    return is_fullscreen_;
-  }
+  bool IsFullscreenForCurrentTab() const override { return is_fullscreen_; }
 
  private:
   std::unique_ptr<NativeWebKeyboardEvent> last_event_;

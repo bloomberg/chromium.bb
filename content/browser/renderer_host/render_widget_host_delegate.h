@@ -154,8 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
       RenderWidgetHostImpl* render_widget_host) const;
 
   // Returns whether the associated tab is in fullscreen mode.
-  virtual bool IsFullscreenForCurrentTab(
-      RenderWidgetHostImpl* render_widget_host) const;
+  virtual bool IsFullscreenForCurrentTab() const;
 
   // Returns the display mode for the view.
   virtual blink::WebDisplayMode GetDisplayMode(

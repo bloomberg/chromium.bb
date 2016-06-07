@@ -1537,11 +1537,11 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
 
   // Toggle fullscreen mode on (as if initiated via IPC from renderer).
-  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   orig_rfh->OnMessageReceived(
       FrameHostMsg_ToggleFullscreen(orig_rfh->GetRoutingID(), true));
-  EXPECT_TRUE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   // Navigate to a new site.
@@ -1555,7 +1555,7 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
                               ui::PAGE_TRANSITION_TYPED);
 
   // Confirm fullscreen has exited.
-  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   contents()->SetDelegate(nullptr);
@@ -1590,14 +1590,14 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
 
   // Sanity-check: Confirm we're not starting out in fullscreen mode.
-  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   for (int i = 0; i < 2; ++i) {
     // Toggle fullscreen mode on (as if initiated via IPC from renderer).
     orig_rfh->OnMessageReceived(
         FrameHostMsg_ToggleFullscreen(orig_rfh->GetRoutingID(), true));
-    EXPECT_TRUE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+    EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
     EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
     // Navigate backward (or forward).
@@ -1614,8 +1614,7 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
     orig_rfh->SimulateNavigationStop();
 
     // Confirm fullscreen has exited.
-    EXPECT_FALSE(
-        contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+    EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
     EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   }
 
@@ -1654,18 +1653,18 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
                               url, ui::PAGE_TRANSITION_TYPED);
 
   // Toggle fullscreen mode on (as if initiated via IPC from renderer).
-  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   contents()->GetMainFrame()->OnMessageReceived(FrameHostMsg_ToggleFullscreen(
       contents()->GetMainFrame()->GetRoutingID(), true));
-  EXPECT_TRUE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   // Crash the renderer.
   main_test_rfh()->GetProcess()->SimulateCrash();
 
   // Confirm fullscreen has exited.
-  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab(test_rvh()->GetWidget()));
+  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
   contents()->SetDelegate(nullptr);

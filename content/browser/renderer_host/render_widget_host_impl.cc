@@ -569,7 +569,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   if (delegate_) {
     resize_params->resizer_rect = delegate_->GetRootWindowResizerRect(this);
     resize_params->is_fullscreen_granted =
-        delegate_->IsFullscreenForCurrentTab(this);
+        delegate_->IsFullscreenForCurrentTab();
     resize_params->display_mode = delegate_->GetDisplayMode(this);
   } else {
     resize_params->is_fullscreen_granted = false;

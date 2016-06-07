@@ -1826,11 +1826,9 @@ void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
   if (delegate_)
     delegate_->EnterFullscreenModeForTab(this, origin);
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidToggleFullscreenModeForTab(
-                        IsFullscreenForCurrentTab(
-                            GetRenderViewHost()->GetWidget()),
-                        false));
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_,
+      DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(), false));
 }
 
 void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
@@ -1867,15 +1865,11 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidToggleFullscreenModeForTab(
-                        IsFullscreenForCurrentTab(
-                            GetRenderViewHost()->GetWidget()),
-                        will_cause_resize));
+                    DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(),
+                                                  will_cause_resize));
 }
 
-// TODO(alexmos): Remove the unused |render_widget_host| parameter.
-bool WebContentsImpl::IsFullscreenForCurrentTab(
-    RenderWidgetHostImpl* render_widget_host) const {
+bool WebContentsImpl::IsFullscreenForCurrentTab() const {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
 
@@ -3290,9 +3284,9 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
     // No page change?  Then, the renderer and browser can remain in fullscreen.
     return;
   }
-  if (IsFullscreenForCurrentTab(GetRenderViewHost()->GetWidget()))
+  if (IsFullscreenForCurrentTab())
     ExitFullscreen(false);
-  DCHECK(!IsFullscreenForCurrentTab(GetRenderViewHost()->GetWidget()));
+  DCHECK(!IsFullscreenForCurrentTab());
 }
 
 void WebContentsImpl::DidNavigateMainFramePostCommit(
@@ -4199,7 +4193,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
 
   // Ensure fullscreen mode is exited in the |delegate_| since a crashed
   // renderer may not have made a clean exit.
-  if (IsFullscreenForCurrentTab(GetRenderViewHost()->GetWidget()))
+  if (IsFullscreenForCurrentTab())
     ExitFullscreenMode(false);
 
   // Cancel any visible dialogs so they are not left dangling over the sad tab.

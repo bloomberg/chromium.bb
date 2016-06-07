@@ -53,8 +53,7 @@ gfx::Rect RenderWidgetHostDelegate::GetRootWindowResizerRect(
   return gfx::Rect();
 };
 
-bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab(
-    RenderWidgetHostImpl* render_widget_host) const {
+bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() const {
   return false;
 }
 

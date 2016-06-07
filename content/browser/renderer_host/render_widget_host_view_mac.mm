@@ -426,8 +426,7 @@ SkColor RenderWidgetHostViewMac::DelegatedFrameHostGetGutterColor(
   // may not match the page's, so use black as the gutter color to avoid
   // flashes of brighter colors during the transition.
   if (render_widget_host_->delegate() &&
-      render_widget_host_->delegate()->IsFullscreenForCurrentTab(
-          render_widget_host_)) {
+      render_widget_host_->delegate()->IsFullscreenForCurrentTab()) {
     return SK_ColorBLACK;
   }
   return color;
