@@ -126,6 +126,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -440,6 +441,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MONO_AUDIO_DESCRIPTION},
     { "androidAppsTitle", IDS_OPTIONS_ARC_TITLE },
     { "androidAppsEnabled", IDS_OPTIONS_ARC_ENABLE },
+    { "androidAppsSettingsLabel", IDS_OPTIONS_ARC_MANAGE_APPS },
     { "autoclickDelayExtremelyShort",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_EXTREMELY_SHORT },
     { "autoclickDelayLong",
@@ -812,6 +814,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       "performFactoryResetRestart",
       base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showAndroidAppsSettings",
+      base::Bind(&BrowserOptionsHandler::ShowAndroidAppsSettings,
+                 base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
       "becomeDefaultBrowser",
@@ -1101,9 +1107,13 @@ void BrowserOptionsHandler::InitializePage() {
 
   if (arc::ArcAuthService::IsAllowedForProfile(profile) &&
       !arc::ArcAuthService::IsOptInVerificationDisabled()) {
+    base::FundamentalValue is_arc_enabled(
+        arc::ArcAuthService::Get()->IsArcEnabled());
     web_ui()->CallJavascriptFunctionUnsafe(
-        "BrowserOptions.showAndroidAppsSection");
+        "BrowserOptions.showAndroidAppsSection",
+        is_arc_enabled);
   }
+
   OnSystemTimezoneAutomaticDetectionPolicyChanged();
 #endif
 }
@@ -1892,6 +1902,18 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(
   // Perform sign out. Current chrome process will then terminate, new one will
   // be launched (as if it was a restart).
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+}
+
+void BrowserOptionsHandler::ShowAndroidAppsSettings(
+    const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  // Settings in secondary profile cannot access ARC.
+  if (!arc::ArcAuthService::IsAllowedForProfile(profile)) {
+    LOG(ERROR) << "Settings can't be invoked for non-primary profile";
+    return;
+  }
+
+  arc::LaunchAndroidSettingsApp(profile);
 }
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {

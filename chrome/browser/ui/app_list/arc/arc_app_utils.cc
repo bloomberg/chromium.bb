@@ -28,7 +28,9 @@ class LaunchAppWithoutSize {
   LaunchAppWithoutSize(content::BrowserContext* context,
                        const std::string& app_id,
                        bool landscape_mode) :
-      context_(context), app_id_(app_id), landscape_mode_(landscape_mode) {}
+      context_(context),
+      app_id_(app_id),
+      landscape_mode_(landscape_mode) {}
 
   // This will launch the request and after the return the creator does not
   // need to delete the object anymore.
@@ -51,6 +53,7 @@ class LaunchAppWithoutSize {
         base::Bind(&LaunchAppWithoutSize::Callback, base::Unretained(this)));
     if (!result)
       delete this;
+
     return result;
   }
 
@@ -113,6 +116,11 @@ class LaunchAppWithoutSize {
 }  // namespace
 
 const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
+const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
+
+bool ShouldShowInLauncher(const std::string& app_id) {
+  return (app_id != kSettingsAppId);
+}
 
 bool LaunchAppWithRect(content::BrowserContext* context,
                        const std::string& app_id,
@@ -157,6 +165,12 @@ bool LaunchAppWithRect(content::BrowserContext* context,
   return true;
 }
 
+bool LaunchAndroidSettingsApp(content::BrowserContext* context) {
+  return arc::LaunchApp(context,
+                        kSettingsAppId,
+                        true);  // landscape_layout
+}
+
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
   return LaunchApp(context, app_id, true);
 }
@@ -167,10 +181,9 @@ bool LaunchApp(content::BrowserContext* context,
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (app_info && !app_info->ready) {
-    if (!ash::Shell::HasInstance()) {
-      VLOG(2) << "Cannot start app deferred:" << app_id << " no shelf.";
+    if (!ash::Shell::HasInstance())
       return false;
-    }
+
     ChromeLauncherController* chrome_controller =
         ChromeLauncherController::instance();
     DCHECK(chrome_controller);
@@ -178,10 +191,10 @@ bool LaunchApp(content::BrowserContext* context,
     return true;
   }
 
-  return (new LaunchAppWithoutSize(context, app_id, landscape_layout))->
-      LaunchAndRelease();
+  return (new LaunchAppWithoutSize(context,
+                                   app_id,
+                                   landscape_layout))->LaunchAndRelease();
 }
-
 
 bool CanHandleResolution(content::BrowserContext* context,
     const std::string& app_id,

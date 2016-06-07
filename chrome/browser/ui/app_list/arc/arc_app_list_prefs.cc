@@ -290,7 +290,8 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 
   std::unique_ptr<AppInfo> app_info(
       new AppInfo(name, package_name, activity, last_launch_time, sticky,
-                  ready_apps_.count(mapped_app_id) > 0));
+                  ready_apps_.count(mapped_app_id) > 0,
+                  arc::ShouldShowInLauncher(app_id)));
   return app_info;
 }
 
@@ -312,6 +313,10 @@ void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id,
     NOTREACHED();
     return;
   }
+
+  // Usage time on hidden should not be tracked.
+  if (!arc::ShouldShowInLauncher(app_id))
+    return;
 
   ScopedArcAppListPrefUpdate update(prefs_, app_id);
   base::DictionaryValue* app_dict = update.Get();
@@ -421,7 +426,8 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app) {
                      app.activity,
                      base::Time(),
                      app.sticky,
-                     true);
+                     true,
+                     arc::ShouldShowInLauncher(app_id));
     FOR_EACH_OBSERVER(Observer,
                       observer_list_,
                       OnAppRegistered(app_id, app_info));
@@ -580,10 +586,12 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
                                   const std::string& activity,
                                   const base::Time& last_launch_time,
                                   bool sticky,
-                                  bool ready)
+                                  bool ready,
+                                  bool showInLauncher)
     : name(name),
       package_name(package_name),
       activity(activity),
       last_launch_time(last_launch_time),
       sticky(sticky),
-      ready(ready) {}
+      ready(ready),
+      showInLauncher(showInLauncher) {}

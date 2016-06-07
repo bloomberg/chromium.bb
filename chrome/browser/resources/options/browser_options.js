@@ -827,6 +827,21 @@ cr.define('options', function() {
         if (button)
           chrome.send('disableExtension', [button.dataset.extensionId]);
       });
+
+      // Setup ARC section.
+      if (cr.isChromeOS) {
+        $('android-apps-settings-label').innerHTML =
+            loadTimeData.getString('androidAppsSettingsLabel');
+        $('android-apps-enabled').addEventListener('change', function(e) {
+          var settings = $('android-apps-settings');
+          if (!settings)
+            return;
+          settings.hidden = !$('android-apps-enabled').checked;
+        });
+        $('android-apps-settings-link').addEventListener('click', function(e) {
+            chrome.send('showAndroidAppsSettings');
+        });
+      }
     },
 
     /** @override */
@@ -2411,10 +2426,17 @@ cr.define('options', function() {
      * Shows Android Apps settings when they are available.
      * (Chrome OS only).
      */
-    BrowserOptions.showAndroidAppsSection = function() {
+    BrowserOptions.showAndroidAppsSection = function(isArcEnabled) {
       var section = $('android-apps-section');
-      if (section)
-        section.hidden = false;
+      if (!section)
+        return;
+
+      section.hidden = false;
+      var settings = $('android-apps-settings');
+      if (!settings)
+        return;
+
+      settings.hidden = !isArcEnabled;
     };
   }
 

@@ -323,6 +323,9 @@ class BrowserOptionsHandler
   // Called when the user confirmed factory reset. Chrome will
   // initiate asynchronous file operation and then log out.
   void PerformFactoryResetRestart(const base::ListValue* args);
+
+  // Called to show Android apps settings.
+  void ShowAndroidAppsSettings(const base::ListValue* args);
 #endif
 
   // Setup the visibility for the metrics reporting setting.

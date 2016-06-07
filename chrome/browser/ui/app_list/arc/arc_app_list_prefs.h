@@ -54,7 +54,8 @@ class ArcAppListPrefs : public KeyedService,
             const std::string& activity,
             const base::Time& last_launch_time,
             bool sticky,
-            bool ready);
+            bool ready,
+            bool showInLauncher);
 
     std::string name;
     std::string package_name;
@@ -62,6 +63,7 @@ class ArcAppListPrefs : public KeyedService,
     base::Time last_launch_time;
     bool sticky;
     bool ready;
+    bool showInLauncher;
   };
 
   class Observer {

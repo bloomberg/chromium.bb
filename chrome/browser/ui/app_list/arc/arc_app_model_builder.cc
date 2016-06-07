@@ -26,7 +26,8 @@ void ArcAppModelBuilder::BuildModel() {
     if (!app_info)
       continue;
 
-    InsertApp(CreateApp(app_id, *app_info));
+    if (app_info->showInLauncher)
+      InsertApp(CreateApp(app_id, *app_info));
   }
 
   prefs_->AddObserver(this);
@@ -46,7 +47,8 @@ std::unique_ptr<ArcAppItem> ArcAppModelBuilder::CreateApp(
 void ArcAppModelBuilder::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  InsertApp(CreateApp(app_id, app_info));
+  if (app_info.showInLauncher)
+    InsertApp(CreateApp(app_id, app_info));
 }
 
 void ArcAppModelBuilder::OnAppRemoved(const std::string& app_id) {
