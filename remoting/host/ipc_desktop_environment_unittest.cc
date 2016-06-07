@@ -42,7 +42,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -60,6 +60,17 @@ using protocol::test::EqualsTouchEvent;
 using protocol::test::EqualsTouchEventTypeAndId;
 
 namespace {
+
+class MockScreenCapturerCallback : public webrtc::ScreenCapturer::Callback {
+ public:
+  MockScreenCapturerCallback() {}
+  virtual ~MockScreenCapturerCallback() {}
+
+  MOCK_METHOD1(OnCaptureCompleted, void(webrtc::DesktopFrame*));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockScreenCapturerCallback);
+};
 
 // Receives messages sent from the network process to the daemon.
 class FakeDaemonSender : public IPC::Sender {
@@ -226,7 +237,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // The last |terminal_id| passed to ConnectTermina();
   int terminal_id_;
 
-  webrtc::MockScreenCapturerCallback desktop_capturer_callback_;
+  MockScreenCapturerCallback desktop_capturer_callback_;
 
   MockClientSessionControl client_session_control_;
   base::WeakPtrFactory<ClientSessionControl> client_session_control_factory_;
