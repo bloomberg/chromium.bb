@@ -175,6 +175,12 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 }
 
 int QuicHttpStream::DoStreamRequest() {
+  if (session_.get() == nullptr) {
+    // TODO(rtenneti) Bug: b/28676259 - a temporary fix until we find out why
+    // |session_| could be a nullptr.
+    return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
+                                    : ERR_QUIC_HANDSHAKE_FAILED;
+  }
   int rv = stream_request_.StartRequest(
       session_, &stream_,
       base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
