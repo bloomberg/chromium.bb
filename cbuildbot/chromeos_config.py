@@ -2692,6 +2692,7 @@ def GetConfig():
   def _AdjustLeaderFollowerReleaseConfigs(
       leader_boards,
       follower_boards=None,
+      unimportant_boards=None,
       **kwargs):
     """Adjust existing release configs into a leader/follower group.
 
@@ -2707,6 +2708,9 @@ def GetConfig():
                      single leader board.
       follower_boards: List of board names for normal followers (reduced GCE
                        friendly testing).
+      unimportant_boards: List of boards that are not to be marked important.
+                          These boards are assumed to be followers, unless they
+                          are also in the leaders list.
       kwargs: Any special build config settings needed for all builds in this
               group can be passed in as additional named arguments.
     """
@@ -2718,19 +2722,23 @@ def GetConfig():
     if isinstance(leader_boards, basestring):
       leader_boards = (leader_boards,)
 
-    # Compute all release configuration names.
-    leaders = [release_name(b) for b in leader_boards or []]
-    followers = [release_name(b) for b in follower_boards or []]
+    assert leader_boards
 
-    # Leaders are built on baremetal builders and run all tests needed by the
-    # related boards.
+    # Compute all release configuration names.
+    leaders = [release_name(b) for b in leader_boards]
+    followers = [release_name(b) for b in follower_boards or []]
+    unimportant = set(release_name(b) for b in unimportant_boards or [])
+
+    # Add unimportant to followers, if they are not covered already.
+    followers.extend(unimportant - set(leaders) - set(followers))
+
     leader_config = config_lib.BuildConfig(
-        important=True,
+        buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
     )
 
     # Followers are built on GCE instances, and turn off testing that breaks
     # on GCE. The missing tests run on the leader board.
-    follower_config = leader_config.derive(
+    follower_config = config_lib.BuildConfig(
         buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
         chrome_sdk_build_chrome=False,
         vm_tests=[],
@@ -2740,6 +2748,7 @@ def GetConfig():
     for config_name in leaders:
       site_config[config_name] = site_config[config_name].derive(
           leader_config,
+          important=config_name not in unimportant,
           **kwargs
       )
 
@@ -2747,6 +2756,7 @@ def GetConfig():
     for config_name in followers:
       site_config[config_name] = site_config[config_name].derive(
           follower_config,
+          important=config_name not in unimportant,
           **kwargs
       )
 
@@ -2848,14 +2858,9 @@ def GetConfig():
           'lulu',
           'samus-cheets',
       ),
-  )
-
-  # auron-based boards that are not important.
-  _AdjustLeaderFollowerReleaseConfigs(
-       [], (
+      unimportant_boards=(
           'lulu-cheets',
       ),
-      important=False,
   )
 
   # veyron-based boards
@@ -2868,18 +2873,13 @@ def GetConfig():
           'veyron_minnie',
           'veyron_rialto',
       ),
-  )
-
-  # veyron-based boards, not important
-  _AdjustLeaderFollowerReleaseConfigs(
-      [], (
+      unimportant_boards=(
           'veyron_mickey',
           'veyron_tiger',
           'veyron_shark',
           'veyron_minnie-cheets',
           'veyron_fievel',
       ),
-      important=False,
   )
 
   # jecht-based boards
@@ -2906,16 +2906,11 @@ def GetConfig():
           'umaro',
           'banon',
       ),
-  )
-
-  # strago-based boards, not important.
-  _AdjustLeaderFollowerReleaseConfigs(
-      [], (
+      unimportant_boards=(
           'celes-cheets',
           'kefka',
           'relm',
       ),
-      important=False,
   )
 
   # oak-based boards
@@ -2929,23 +2924,25 @@ def GetConfig():
 
   # glados-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'glados', (
+      'glados', None,
+      unimportant_boards=(
+          'glados',
           'chell',
           'glados-cheets',
           'cave',
           'chell-cheets',
           'asuka',
       ),
-      important=False,
   )
 
   # storm-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'storm', (
+      'storm', None,
+      unimportant_boards=(
+          'storm',
           'arkham',
           'whirlwind',
       ),
-      important=False,
   )
 
   # kunimitsu-based boards
@@ -2958,24 +2955,28 @@ def GetConfig():
 
   # gru-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'gru', (
+      'gru', None,
+      unimportant_boards=(
+          'gru',
           'kevin',
       ),
-      important=False,
   )
 
   # gale-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'gale',
-      important=False,
+      'gale', None,
+      unimportant_boards=(
+        'gale',
+      ),
   )
 
   # reef-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'reef', (
+      'reef', None,
+      unimportant_boards=(
+          'reef',
           'amenia',
       ),
-      important=False,
   )
 
   # Factory and Firmware releases much inherit from these classes.
