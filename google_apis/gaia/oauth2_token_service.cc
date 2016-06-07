@@ -9,13 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -343,7 +345,7 @@ void OAuth2TokenService::Fetcher::InformWaitingRequestsAndDelete() {
   // be added when it calls back the waiting requests.
   oauth2_token_service_->OnFetchComplete(this);
   InformWaitingRequests();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void OAuth2TokenService::Fetcher::AddWaitingRequest(
@@ -504,12 +506,10 @@ OAuth2TokenService::StartRequestForClientWithContext(
                           account_id, consumer->id(), scopes, error,
                           base::Time()));
 
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &RequestImpl::InformConsumer,
-        request->AsWeakPtr(),
-        error,
-        std::string(),
-        base::Time()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(), error,
+                   std::string(), base::Time()));
     return std::move(request);
   }
 
@@ -590,12 +590,11 @@ void OAuth2TokenService::StartCacheLookupRequest(
                         request_parameters.scopes,
                         GoogleServiceAuthError::AuthErrorNone(),
                         cache_entry->expiration_date));
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &RequestImpl::InformConsumer,
-      request->AsWeakPtr(),
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE),
-      cache_entry->access_token,
-      cache_entry->expiration_date));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(),
+                 GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+                 cache_entry->access_token, cache_entry->expiration_date));
 }
 
 std::vector<std::string> OAuth2TokenService::GetAccounts() const {

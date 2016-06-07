@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -128,13 +130,10 @@ void MockOAuth2TokenService::FetchOAuth2Token(
     const std::string& client_id,
     const std::string& client_secret,
     const ScopeSet& scopes) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
-                 request->AsWeakPtr(),
-                 response_error_,
-                 response_access_token_,
-                 response_expiration_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
+                            request->AsWeakPtr(), response_error_,
+                            response_access_token_, response_expiration_));
 }
 
 void MockOAuth2TokenService::InvalidateAccessTokenImpl(
