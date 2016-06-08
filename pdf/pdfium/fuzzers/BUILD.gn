@@ -22,7 +22,7 @@ fuzzer_test("pdfium_fuzzer") {
     "//v8:v8_libplatform",
   ]
   additional_configs = [
-    "//third_party/pdfium:pdfium_config",
+    "//third_party/pdfium:pdfium_core_config",
     "//v8:external_startup_data",
   ]
   dict = "dicts/pdf.dict"
