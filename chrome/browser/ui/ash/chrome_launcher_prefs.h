@@ -5,16 +5,24 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/common/shelf/shelf_types.h"
+#include "base/macros.h"
+#include "components/syncable_prefs/pref_service_syncable_observer.h"
 
 class LauncherControllerHelper;
 class PrefService;
+class Profile;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace syncable_prefs {
+class PrefServiceSyncable;
 }
 
 namespace user_prefs {
@@ -64,6 +72,31 @@ void SetShelfAlignmentPref(PrefService* prefs,
 std::vector<std::string> GetPinnedAppsFromPrefs(
     const PrefService* prefs,
     const LauncherControllerHelper* helper);
+
+// Used to propagate remote preferences to local during the first run.
+class ChromeLauncherPrefsObserver
+    : public syncable_prefs::PrefServiceSyncableObserver {
+ public:
+  // Creates and returns an instance of ChromeLauncherPrefsObserver if the
+  // profile prefs do not contain all the necessary local settings for the
+  // shelf. If the local settings are present, returns null.
+  static std::unique_ptr<ChromeLauncherPrefsObserver> CreateIfNecessary(
+      Profile* profile);
+
+  ~ChromeLauncherPrefsObserver() override;
+
+ private:
+  explicit ChromeLauncherPrefsObserver(
+      syncable_prefs::PrefServiceSyncable* prefs);
+
+  // syncable_prefs::PrefServiceSyncableObserver:
+  void OnIsSyncingChanged() override;
+
+  // Profile prefs. Not owned.
+  syncable_prefs::PrefServiceSyncable* prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherPrefsObserver);
+};
 
 }  // namespace ash
 

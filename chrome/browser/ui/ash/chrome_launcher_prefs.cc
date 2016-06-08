@@ -14,6 +14,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -21,6 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -189,6 +191,20 @@ std::vector<std::string> GetActivitiesForPackage(
     }
   }
   return activities;
+}
+
+// If prefs have synced and no user-set value exists at |local_path|, the value
+// from |synced_path| is copied to |local_path|.
+void MaybePropagatePrefToLocal(
+    syncable_prefs::PrefServiceSyncable* pref_service,
+    const char* local_path,
+    const char* synced_path) {
+  if (!pref_service->FindPreference(local_path)->HasUserSetting() &&
+      pref_service->IsSyncing()) {
+    // First time the user is using this machine, propagate from remote to
+    // local.
+    pref_service->SetString(local_path, pref_service->GetString(synced_path));
+  }
 }
 
 }  // namespace
@@ -383,6 +399,38 @@ std::vector<std::string> GetPinnedAppsFromPrefs(
     apps.insert(apps.begin(), kPinnedAppsPlaceholder);
 
   return apps;
+}
+
+// static
+std::unique_ptr<ChromeLauncherPrefsObserver>
+ChromeLauncherPrefsObserver::CreateIfNecessary(Profile* profile) {
+  syncable_prefs::PrefServiceSyncable* prefs =
+      PrefServiceSyncableFromProfile(profile);
+  if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
+      !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)
+           ->HasUserSetting()) {
+    return base::WrapUnique(new ChromeLauncherPrefsObserver(prefs));
+  }
+  return nullptr;
+}
+
+ChromeLauncherPrefsObserver::~ChromeLauncherPrefsObserver() {
+  prefs_->RemoveObserver(this);
+}
+
+ChromeLauncherPrefsObserver::ChromeLauncherPrefsObserver(
+    syncable_prefs::PrefServiceSyncable* prefs)
+    : prefs_(prefs) {
+  // This causes OnIsSyncingChanged to be called when the value of
+  // PrefService::IsSyncing() changes.
+  prefs_->AddObserver(this);
+}
+
+void ChromeLauncherPrefsObserver::OnIsSyncingChanged() {
+  MaybePropagatePrefToLocal(prefs_, prefs::kShelfAlignmentLocal,
+                            prefs::kShelfAlignment);
+  MaybePropagatePrefToLocal(prefs_, prefs::kShelfAutoHideBehaviorLocal,
+                            prefs::kShelfAutoHideBehavior);
 }
 
 }  // namespace ash

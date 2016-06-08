@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window_observer.h"
 
@@ -46,6 +45,7 @@ class AppWindowLauncherController;
 class TabContents;
 
 namespace ash {
+class ChromeLauncherPrefsObserver;
 class ShelfItemDelegateManager;
 class ShelfModel;
 }
@@ -85,7 +85,6 @@ class ChromeLauncherController
       public ash::ShelfModelObserver,
       public ash::WindowTreeHostManager::Observer,
       public AppIconLoaderDelegate,
-      public syncable_prefs::PrefServiceSyncableObserver,
       public AppSyncUIStateObserver,
       public LauncherAppUpdater::Delegate,
       public ash::ShelfItemDelegateManagerObserver {
@@ -279,9 +278,6 @@ class ChromeLauncherController
                     const std::string& app_id) override;
   void OnAppUninstalled(content::BrowserContext* browser_context,
                         const std::string& app_id) override;
-
-  // syncable_prefs::PrefServiceSyncableObserver:
-  void OnIsSyncingChanged() override;
 
   // AppSyncUIStateObserver:
   void OnAppSyncUIStatusChanged() override;
@@ -537,6 +533,8 @@ class ChromeLauncherController
   // A special observer class to detect user switches.
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
+
+  std::unique_ptr<ash::ChromeLauncherPrefsObserver> prefs_observer_;
 
   std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
 

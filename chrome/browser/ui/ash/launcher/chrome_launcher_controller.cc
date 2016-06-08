@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
@@ -78,7 +77,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -119,20 +117,6 @@ int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
   DCHECK(display.is_valid());
   return display.id();
-}
-
-// If prefs have synced and no user-set value exists at |local_path|, the value
-// from |synced_path| is copied to |local_path|.
-void MaybePropagatePrefToLocal(
-    syncable_prefs::PrefServiceSyncable* pref_service,
-    const char* local_path,
-    const char* synced_path) {
-  if (!pref_service->FindPreference(local_path)->HasUserSetting() &&
-      pref_service->IsSyncing()) {
-    // First time the user is using this machine, propagate from remote to
-    // local.
-    pref_service->SetString(local_path, pref_service->GetString(synced_path));
-  }
 }
 
 /*
@@ -392,15 +376,8 @@ void ChromeLauncherController::Init() {
   if (ash::Shell::HasInstance())
     SetVirtualKeyboardBehaviorFromPrefs();
 
-  syncable_prefs::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile_);
-  if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
-      !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)
-           ->HasUserSetting()) {
-    // This causes OnIsSyncingChanged to be called when the value of
-    // PrefService::IsSyncing() changes.
-    prefs->AddObserver(this);
-  }
+  prefs_observer_ =
+      ash::ChromeLauncherPrefsObserver::CreateIfNecessary(profile_);
 }
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(
@@ -1102,17 +1079,6 @@ void ChromeLauncherController::OnAppUninstalled(
 
 void ChromeLauncherController::OnDisplayConfigurationChanged() {
   SetShelfBehaviorsFromPrefs();
-}
-
-void ChromeLauncherController::OnIsSyncingChanged() {
-  syncable_prefs::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile_);
-  MaybePropagatePrefToLocal(prefs,
-                            prefs::kShelfAlignmentLocal,
-                            prefs::kShelfAlignment);
-  MaybePropagatePrefToLocal(prefs,
-                            prefs::kShelfAutoHideBehaviorLocal,
-                            prefs::kShelfAutoHideBehavior);
 }
 
 void ChromeLauncherController::OnAppSyncUIStatusChanged() {
@@ -1902,7 +1868,7 @@ void ChromeLauncherController::ReleaseProfile() {
 
   app_updaters_.clear();
 
-  PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
+  prefs_observer_.reset();
 
   pref_change_registrar_.RemoveAll();
 }
