@@ -6,10 +6,8 @@
 #include <stdint.h>
 
 #include "base/bit_cast.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "net/http/http_response_headers.h"
@@ -21,7 +19,6 @@
 #include "sync/internal_api/public/http_bridge.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/zlib/zlib.h"
 
 namespace syncer {
 
@@ -270,9 +267,6 @@ TEST_F(MAYBE_SyncHttpBridgeTest, CompressedRequestHeaderCheck) {
 
   int os_error = 0;
   int response_code = 0;
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial("SyncHttpContentCompression",
-                                         "Enabled");
   bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
   EXPECT_TRUE(success);
   EXPECT_EQ(200, response_code);
@@ -312,10 +306,6 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   std::string response(http_bridge->GetResponseContent(),
                        http_bridge->GetResponseContentLength());
   EXPECT_EQ(std::string::npos, response.find("Cookie:"));
-  EXPECT_NE(std::string::npos,
-            response.find(base::StringPrintf(
-                "%s: %s", net::HttpRequestHeaders::kAcceptEncoding,
-                "deflate")));
   EXPECT_NE(std::string::npos,
             response.find(base::StringPrintf("%s: %s",
                           net::HttpRequestHeaders::kUserAgent, kUserAgent)));

@@ -12,12 +12,10 @@
 #include "base/bit_cast.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
@@ -45,12 +43,6 @@ const int kMaxHttpRequestTimeSeconds = 60 * 5;  // 5 minutes.
 // Helper method for logging timeouts via UMA.
 void LogTimeout(bool timed_out) {
   UMA_HISTOGRAM_BOOLEAN("Sync.URLFetchTimedOut", timed_out);
-}
-
-bool IsSyncHttpContentCompressionEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("SyncHttpContentCompression");
-  return StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 void RecordSyncRequestContentLengthHistograms(int64_t compressed_content_length,
@@ -252,13 +244,6 @@ void HttpBridge::MakeAsynchronousPost() {
     bind_to_tracker_callback_.Run(fetch_state_.url_poster);
   fetch_state_.url_poster->SetRequestContext(request_context_getter_.get());
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
-
-  if (!IsSyncHttpContentCompressionEnabled()) {
-    // We set "accept-encoding" here to avoid URLRequestHttpJob adding "gzip"
-    // into "accept-encoding" later.
-    fetch_state_.url_poster->AddExtraRequestHeader(base::StringPrintf(
-        "%s: %s", net::HttpRequestHeaders::kAcceptEncoding, "deflate"));
-  }
 
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   RecordSyncRequestContentLengthHistograms(request_content_.size(),
