@@ -160,7 +160,7 @@ class CC_EXPORT LayerImpl {
   void SetReplicaLayer(std::unique_ptr<LayerImpl> replica_layer);
   LayerImpl* replica_layer() { return replica_layer_; }
   const LayerImpl* replica_layer() const { return replica_layer_; }
-  std::unique_ptr<LayerImpl> TakeReplicaLayer();
+  std::unique_ptr<LayerImpl> TakeReplicaLayerForTesting();
 
   bool has_mask() const { return !!mask_layer_; }
   bool has_replica() const { return !!replica_layer_; }
@@ -535,9 +535,6 @@ class CC_EXPORT LayerImpl {
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
-  // Warning: This does not preserve tree structure invariants.
-  void ClearChildList();
-
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
   virtual const char* LayerTypeAsString() const;
