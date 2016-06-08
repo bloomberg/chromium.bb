@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_DEVICE_PERMISSIONS_DIALOG_VIEW_H_
 
 #include "extensions/browser/api/device_permissions_prompt.h"
+#include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -16,7 +17,8 @@ class DevicePermissionsTableModel;
 
 // Displays a device permissions selector prompt as a modal dialog constrained
 // to the window/tab displaying the given web contents.
-class DevicePermissionsDialogView : public views::DialogDelegateView {
+class DevicePermissionsDialogView : public views::DialogDelegateView,
+                                    public views::TableViewObserver {
  public:
   DevicePermissionsDialogView(
       scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt);
@@ -24,11 +26,15 @@ class DevicePermissionsDialogView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   bool Accept() override;
   gfx::Size GetPreferredSize() const override;
+
+  // views::TableViewObserver:
+  void OnSelectionChanged() override;
 
  private:
   scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt_;

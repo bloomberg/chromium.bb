@@ -23,6 +23,7 @@
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/window/dialog_client_view.h"
 
 using device::UsbDevice;
 using extensions::DevicePermissionsPrompt;
@@ -115,6 +116,7 @@ DevicePermissionsDialogView::DevicePermissionsDialogView(
                                      table_columns,
                                      views::TEXT_ONLY,
                                      !prompt_->multiple());
+  table_view_->SetObserver(this);
 
   views::View* table_parent = table_view_->CreateParentIfNecessary();
   AddChildView(table_parent);
@@ -147,6 +149,12 @@ base::string16 DevicePermissionsDialogView::GetDialogButtonLabel(
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
+bool DevicePermissionsDialogView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  return button != ui::DIALOG_BUTTON_OK ||
+         !table_view_->selection_model().empty();
+}
+
 ui::ModalType DevicePermissionsDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
@@ -157,6 +165,10 @@ base::string16 DevicePermissionsDialogView::GetWindowTitle() const {
 
 gfx::Size DevicePermissionsDialogView::GetPreferredSize() const {
   return gfx::Size(500, 250);
+}
+
+void DevicePermissionsDialogView::OnSelectionChanged() {
+  GetDialogClientView()->UpdateDialogButtons();
 }
 
 void ChromeDevicePermissionsPrompt::ShowDialogViews() {
