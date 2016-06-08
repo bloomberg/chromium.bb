@@ -179,6 +179,13 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
   FindPossibleGenerationForm();
 }
 
+void PasswordGenerationAgent::DidFinishLoad() {
+  // Since forms on some sites are available only at this event (but not at
+  // DidFinishDocumentLoad), again call FindPossibleGenerationForm to detect
+  // these forms (crbug.com/617893).
+  FindPossibleGenerationForm();
+}
+
 void PasswordGenerationAgent::OnDestruct() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

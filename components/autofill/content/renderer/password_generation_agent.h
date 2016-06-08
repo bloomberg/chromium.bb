@@ -78,6 +78,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
 
   // RenderFrameObserver:
   void DidFinishDocumentLoad() override;
+  void DidFinishLoad() override;
   void OnDestruct() override;
 
   // Message handlers.
