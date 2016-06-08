@@ -193,11 +193,12 @@ GLuint GetServiceId(const OBJECT_TYPE* object) {
   return object ? object->service_id() : 0;
 }
 
-bool CheckUniqueIds(GLsizei n, const GLuint* client_ids) {
+bool CheckUniqueAndNonNullIds(GLsizei n, const GLuint* client_ids) {
   if (n <= 0)
     return true;
   std::unordered_set<uint32_t> unique_ids(client_ids, client_ids + n);
-  return unique_ids.size() == static_cast<size_t>(n);
+  return (unique_ids.size() == static_cast<size_t>(n)) &&
+         (unique_ids.find(0) == unique_ids.end());
 }
 
 struct Vec4f {

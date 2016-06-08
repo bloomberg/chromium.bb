@@ -704,7 +704,7 @@ TEST_P(GLES2DecoderTest1, GenBuffersImmediateValidArgs) {
   EXPECT_TRUE(GetBuffer(kNewClientId) != NULL);
 }
 
-TEST_P(GLES2DecoderTest1, GenBuffersImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest1, GenBuffersImmediateDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, GenBuffersARB(_, _)).Times(0);
   cmds::GenBuffersImmediate* cmd = GetImmediateAs<cmds::GenBuffersImmediate>();
   GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
@@ -713,6 +713,10 @@ TEST_P(GLES2DecoderTest1, GenBuffersImmediateDuplicateIds) {
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(GetBuffer(kNewClientId) == NULL);
   EXPECT_TRUE(GetBuffer(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetBuffer(kNewClientId) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenBuffersImmediateInvalidArgs) {
@@ -764,7 +768,7 @@ TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateValidArgs) {
   EXPECT_TRUE(GetFramebuffer(kNewClientId) != NULL);
 }
 
-TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, GenFramebuffersEXT(_, _)).Times(0);
   cmds::GenFramebuffersImmediate* cmd =
       GetImmediateAs<cmds::GenFramebuffersImmediate>();
@@ -774,6 +778,10 @@ TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateDuplicateIds) {
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(GetFramebuffer(kNewClientId) == NULL);
   EXPECT_TRUE(GetFramebuffer(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetFramebuffer(kNewClientId) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenFramebuffersImmediateInvalidArgs) {
@@ -799,7 +807,7 @@ TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateValidArgs) {
   EXPECT_TRUE(GetRenderbuffer(kNewClientId) != NULL);
 }
 
-TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, GenRenderbuffersEXT(_, _)).Times(0);
   cmds::GenRenderbuffersImmediate* cmd =
       GetImmediateAs<cmds::GenRenderbuffersImmediate>();
@@ -809,6 +817,10 @@ TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateDuplicateIds) {
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(GetRenderbuffer(kNewClientId) == NULL);
   EXPECT_TRUE(GetRenderbuffer(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetRenderbuffer(kNewClientId) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenRenderbuffersImmediateInvalidArgs) {
@@ -835,7 +847,7 @@ TEST_P(GLES2DecoderTest1, GenSamplersImmediateValidArgs) {
   EXPECT_TRUE(GetSampler(kNewClientId) != NULL);
 }
 
-TEST_P(GLES2DecoderTest1, GenSamplersImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest1, GenSamplersImmediateDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, GenSamplers(_, _)).Times(0);
   cmds::GenSamplersImmediate* cmd =
       GetImmediateAs<cmds::GenSamplersImmediate>();
@@ -846,6 +858,10 @@ TEST_P(GLES2DecoderTest1, GenSamplersImmediateDuplicateIds) {
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(GetSampler(kNewClientId) == NULL);
   EXPECT_TRUE(GetSampler(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetSampler(kNewClientId) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenSamplersImmediateInvalidArgs) {
@@ -873,7 +889,7 @@ TEST_P(GLES2DecoderTest1, GenTexturesImmediateValidArgs) {
   EXPECT_TRUE(GetTexture(kNewClientId) != NULL);
 }
 
-TEST_P(GLES2DecoderTest1, GenTexturesImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest1, GenTexturesImmediateDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, GenTextures(_, _)).Times(0);
   cmds::GenTexturesImmediate* cmd =
       GetImmediateAs<cmds::GenTexturesImmediate>();
@@ -883,6 +899,10 @@ TEST_P(GLES2DecoderTest1, GenTexturesImmediateDuplicateIds) {
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(GetTexture(kNewClientId) == NULL);
   EXPECT_TRUE(GetTexture(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetTexture(kNewClientId) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenTexturesImmediateInvalidArgs) {
@@ -909,7 +929,7 @@ TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateValidArgs) {
   EXPECT_TRUE(GetTransformFeedback(kNewClientId) != NULL);
 }
 
-TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, GenTransformFeedbacks(_, _)).Times(0);
   cmds::GenTransformFeedbacksImmediate* cmd =
       GetImmediateAs<cmds::GenTransformFeedbacksImmediate>();
@@ -920,6 +940,10 @@ TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateDuplicateIds) {
   EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(GetTransformFeedback(kNewClientId) == NULL);
   EXPECT_TRUE(GetTransformFeedback(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(GetTransformFeedback(kNewClientId) == NULL);
 }
 
 TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateInvalidArgs) {

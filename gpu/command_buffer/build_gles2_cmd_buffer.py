@@ -6186,7 +6186,7 @@ class GENnHandler(TypeHandler):
   def WriteImmediateHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     param_name = func.GetLastOriginalArg().name
-    f.write("  if (!CheckUniqueIds(n, %s) || !%sHelper(n, %s)) {\n"
+    f.write("  if (!CheckUniqueAndNonNullIds(n, %s) || !%sHelper(n, %s)) {\n"
             "    return error::kInvalidArguments;\n"
             "  }\n" %
             (param_name, func.original_name, param_name))
@@ -6292,7 +6292,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
         'resource_name': func.GetInfo('resource_type'),
       }, *extras)
     duplicate_id_test = """
-TEST_P(%(test_name)s, %(name)sDuplicateIds) {
+TEST_P(%(test_name)s, %(name)sDuplicateOrNullIds) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
   cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
   GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
@@ -6306,6 +6306,11 @@ TEST_P(%(test_name)s, %(name)sDuplicateIds) {
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == NULL);
   EXPECT_TRUE(Get%(resource_name)s(kNewClientId + 1) == NULL);
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments,
+            ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == NULL);
 }
     """
     self.WriteValidUnitTest(func, f, duplicate_id_test, {

@@ -487,7 +487,7 @@ TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateValidArgs) {
   EXPECT_TRUE(query_manager->IsValidQuery(kNewClientId));
 }
 
-TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateDuplicateIds) {
+TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateDuplicateOrNullIds) {
   cmds::GenQueriesEXTImmediate* cmd =
       GetImmediateAs<cmds::GenQueriesEXTImmediate>();
   GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
@@ -497,6 +497,11 @@ TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateDuplicateIds) {
   ASSERT_TRUE(query_manager != NULL);
   EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId));
   EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId + 1));
+  GLuint null_id[2] = {kNewClientId, 0};
+  cmd->Init(2, null_id);
+  EXPECT_EQ(error::kInvalidArguments,
+            ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId));
 }
 
 TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateInvalidArgs) {
