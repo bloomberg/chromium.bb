@@ -481,6 +481,13 @@ TEST_F(NativeDesktopMediaListTest, UpdateTitle) {
 TEST_F(NativeDesktopMediaListTest, UpdateThumbnail) {
   AddWindowsAndVerify(true, kDefaultWindowCount, kDefaultAuraCount, false);
 
+  // Aura windows' thumbnails may unpredictably change over time.
+  for (size_t i = kDefaultWindowCount - kDefaultAuraCount;
+       i < kDefaultWindowCount; ++i) {
+    EXPECT_CALL(observer_, OnSourceThumbnailChanged(model_.get(), i + 1))
+        .Times(testing::AnyNumber());
+  }
+
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(model_.get(), 1))
       .WillOnce(QuitMessageLoop(message_loop()));
 

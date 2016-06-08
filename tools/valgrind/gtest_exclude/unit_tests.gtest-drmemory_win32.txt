@@ -84,6 +84,3 @@ SigninErrorNotifierTest.NoErrorAuthStatusProviders
 
 # https://crbug.com/577410
 PluginInfoMessageFilterTest.FindEnabledPlugin
-
-# https://crbug.com/612590
-NativeDesktopMediaListTest.UpdateThumbnail
