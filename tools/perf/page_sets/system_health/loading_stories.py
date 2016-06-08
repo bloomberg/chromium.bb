@@ -122,12 +122,6 @@ _SINGLE_PAGE_SPECS = {
         _PageSpec(
             name='ebay',
             url='https://www.ebay.com/sch/i.html?_nkw=headphones'),
-        # Using "https://" forces mobile version on desktop. The mobile page
-        # (https://www.flipkart.com/search?q=nexus+5x) almost always freezes
-        # due to crbug.com/611390.
-        _PageSpec(
-            name='flipkart',
-            url={'desktop': 'http://www.flipkart.com/search?q=nexus+5x'}),
     ],
 
     # Social networks.
