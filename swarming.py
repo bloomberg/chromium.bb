@@ -612,7 +612,7 @@ def convert_to_old_format(result):
       int(result['try_number']) if result.get('try_number') else None)
   if 'bot_dimensions' in result:
     result['bot_dimensions'] = {
-      i['key']: i['value'] for i in result['bot_dimensions']
+      i['key']: i.get('value', []) for i in result['bot_dimensions']
     }
   else:
     result['bot_dimensions'] = None
