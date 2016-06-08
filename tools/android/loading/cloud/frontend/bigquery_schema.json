@@ -57,6 +57,10 @@
         "type": "FLOAT"
     },
     {
+        "name": "contentful_predicted_no_state_prefetch_ms",
+        "type": "FLOAT"
+    },
+    {
         "name": "contentful_preloaded_requests",
         "type": "INTEGER"
     },
@@ -113,6 +117,10 @@
         "type": "FLOAT"
     },
     {
+        "name": "first_text_predicted_no_state_prefetch_ms",
+        "type": "FLOAT"
+    },
+    {
         "name": "first_text_preloaded_requests",
         "type": "INTEGER"
     },
@@ -161,6 +169,10 @@
         "type": "FLOAT"
     },
     {
+        "name": "plt_predicted_no_state_prefetch_ms",
+        "type": "FLOAT"
+    },
+    {
         "name": "plt_preloaded_requests",
         "type": "INTEGER"
     },
@@ -198,6 +210,10 @@
     },
     {
         "name": "significant_parsing_frac",
+        "type": "FLOAT"
+    },
+    {
+        "name": "significant_predicted_no_state_prefetch_ms",
         "type": "FLOAT"
     },
     {

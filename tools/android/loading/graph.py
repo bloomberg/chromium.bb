@@ -191,6 +191,8 @@ class DirectedGraph(object):
     Returns:
       Cost of the longest path.
     """
+    if not self._nodes:
+     return 0
     costs = {n: 0 for n in self._nodes}
     for node in self.TopologicalSort(roots):
       cost = 0
@@ -201,7 +203,6 @@ class DirectedGraph(object):
     if costs_out is not None:
       del costs_out[:]
       costs_out.extend(costs)
-    assert max_cost > 0
     if path_list is not None:
       del path_list[:]
       node = (i for i in self._nodes if costs[i] == max_cost).next()

@@ -120,6 +120,13 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertEqual(1, loading_report['first_text_preloaded_requests_cost'])
     self.assertEqual(1, loading_report['contentful_preloaded_requests_cost'])
     self.assertEqual(1, loading_report['significant_preloaded_requests_cost'])
+    self.assertEqual(400, loading_report['plt_predicted_no_state_prefetch_ms'])
+    self.assertEqual(14,
+        loading_report['first_text_predicted_no_state_prefetch_ms'])
+    self.assertEqual(104,
+        loading_report['contentful_predicted_no_state_prefetch_ms'])
+    self.assertEqual(74,
+        loading_report['significant_predicted_no_state_prefetch_ms'])
     self.assertIsNone(loading_report['contentful_inversion'])
     self.assertIsNone(loading_report['significant_inversion'])
     self.assertIsNone(loading_report['ad_requests'])
