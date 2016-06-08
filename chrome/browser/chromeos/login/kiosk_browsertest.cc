@@ -988,7 +988,15 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_LaunchAppNetworkDownConfigureNotAllowed \
+  DISABLED_LaunchAppNetworkDownConfigureNotAllowed
+#else
+#define MAYBE_LaunchAppNetworkDownConfigureNotAllowed \
+  LaunchAppNetworkDownConfigureNotAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(KioskTest,
+                       MAYBE_LaunchAppNetworkDownConfigureNotAllowed) {
   // Mock network could not be configured.
   ScopedCanConfigureNetwork can_configure_network(false, true);
 
