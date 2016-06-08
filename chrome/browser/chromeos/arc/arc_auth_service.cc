@@ -366,6 +366,7 @@ void ArcAuthService::Shutdown() {
   }
   pref_change_registrar_.RemoveAll();
   profile_ = nullptr;
+  token_service_ = nullptr;
   SetState(State::NOT_INITIALIZED);
 }
 
@@ -474,7 +475,6 @@ void ArcAuthService::ShutdownBridge() {
   auth_callback_.reset();
   ubertoken_fethcher_.reset();
   merger_fetcher_.reset();
-  token_service_ = nullptr;
   account_id_ = "";
   arc_bridge_service()->Shutdown();
   if (state_ != State::NOT_INITIALIZED)
