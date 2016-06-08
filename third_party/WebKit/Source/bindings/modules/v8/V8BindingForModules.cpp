@@ -46,6 +46,7 @@
 #include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
 #include "bindings/modules/v8/V8SharedWorkerGlobalScopePartial.h"
 #include "bindings/modules/v8/V8WindowPartial.h"
+#include "bindings/modules/v8/V8WorkerNavigatorPartial.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExecutionContext.h"
@@ -545,17 +546,23 @@ void installOriginTrialsForModules(ScriptState* scriptState)
     v8::Isolate* isolate = scriptState->isolate();
 
     if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage", nullptr))) {
+        v8::Local<v8::String> navigatorName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("navigator"), v8::NewStringType::kNormal).ToLocalChecked();
         if (executionContext->isDocument()) {
-            v8::Local<v8::String> navigatorName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("navigator"), v8::NewStringType::kNormal).ToLocalChecked();
             v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8WindowPartial::installDurableStorage(scriptState, global);
             V8NavigatorPartial::installDurableStorage(scriptState, navigator);
         } else if (executionContext->isSharedWorkerGlobalScope()) {
+            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8SharedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
+            V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
         } else if (executionContext->isDedicatedWorkerGlobalScope()) {
+            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8DedicatedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
+            V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
         } else if (executionContext->isServiceWorkerGlobalScope()) {
+            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8ServiceWorkerGlobalScope::installDurableStorage(scriptState, global);
+            V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
         }
         originTrialContext->setFeatureBindingsInstalled("DurableStorage");
     }
