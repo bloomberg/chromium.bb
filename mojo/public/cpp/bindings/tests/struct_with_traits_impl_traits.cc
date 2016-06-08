@@ -44,7 +44,7 @@ int32_t StructTraits<test::NestedStructWithTraits,
 // static
 bool StructTraits<test::NestedStructWithTraits,
                   test::NestedStructWithTraitsImpl>::
-    Read(test::NestedStructWithTraitsDataView data,
+    Read(test::NestedStructWithTraits::DataView data,
          test::NestedStructWithTraitsImpl* output) {
   output->value = data.value();
   return true;
@@ -52,7 +52,7 @@ bool StructTraits<test::NestedStructWithTraits,
 
 // static
 bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
-    test::StructWithTraitsDataView data,
+    test::StructWithTraits::DataView data,
     test::StructWithTraitsImpl* out) {
   out->set_bool(data.f_bool());
   out->set_uint32(data.f_uint32());
@@ -84,7 +84,7 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
 // static
 bool StructTraits<test::PassByValueStructWithTraits,
                   test::PassByValueStructWithTraitsImpl>::
-    Read(test::PassByValueStructWithTraitsDataView data,
+    Read(test::PassByValueStructWithTraits::DataView data,
          test::PassByValueStructWithTraitsImpl* out) {
   out->get_mutable_handle() = data.TakeFHandle();
   return true;

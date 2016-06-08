@@ -27,14 +27,14 @@ struct StructTraits<test::NestedStructWithTraits,
   static int32_t value(const test::NestedStructWithTraitsImpl& input,
                        void* context);
 
-  static bool Read(test::NestedStructWithTraitsDataView data,
+  static bool Read(test::NestedStructWithTraits::DataView data,
                    test::NestedStructWithTraitsImpl* output);
 };
 
 template <>
 struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   // Deserialization to test::StructTraitsImpl.
-  static bool Read(test::StructWithTraitsDataView data,
+  static bool Read(test::StructWithTraits::DataView data,
                    test::StructWithTraitsImpl* out);
 
   // Fields in test::StructWithTraits.
@@ -84,7 +84,7 @@ template <>
 struct StructTraits<test::PassByValueStructWithTraits,
                     test::PassByValueStructWithTraitsImpl> {
   // Deserialization to test::PassByValueStructTraitsImpl.
-  static bool Read(test::PassByValueStructWithTraitsDataView data,
+  static bool Read(test::PassByValueStructWithTraits::DataView data,
                    test::PassByValueStructWithTraitsImpl* out);
 
   // Fields in test::PassByValueStructWithTraits.
