@@ -156,8 +156,8 @@ public:
 
     bool shouldOpenModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, Document::PageDismissalType) const override;
 
-    bool requestPointerLock() override;
-    void requestPointerUnlock() override;
+    bool requestPointerLock(LocalFrame*) override;
+    void requestPointerUnlock(LocalFrame*) override;
 
     // AutofillClient pass throughs:
     void didAssociateFormControls(const HeapVector<Member<Element>>&, LocalFrame*) override;

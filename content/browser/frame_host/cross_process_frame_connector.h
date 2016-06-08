@@ -110,6 +110,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // Focuses the root RenderWidgetHostView.
   void FocusRootView();
 
+  // Locks the mouse. Returns true if mouse is locked.
+  bool LockMouse();
+
   // Returns the parent RenderWidgetHostView or nullptr it it doesn't have one.
   virtual RenderWidgetHostViewBase* GetParentRenderWidgetHostView();
 

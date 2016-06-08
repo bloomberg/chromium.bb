@@ -139,6 +139,29 @@ namespace {
 
 typedef std::map<std::string, ui::TextInputMode> TextInputModeMap;
 
+class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
+ public:
+  explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
+      : webwidget_(webwidget) {}
+
+  void OnLockMouseACK(bool succeeded) override {
+    if (succeeded)
+      webwidget_->didAcquirePointerLock();
+    else
+      webwidget_->didNotAcquirePointerLock();
+  }
+
+  void OnMouseLockLost() override { webwidget_->didLosePointerLock(); }
+
+  bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
+    // The WebWidget handles mouse lock in Blink's handleInputEvent().
+    return false;
+  }
+
+ private:
+  blink::WebWidget* webwidget_;
+};
+
 class TextInputModeMapSingleton {
  public:
   static TextInputModeMapSingleton* GetInstance() {
@@ -373,6 +396,8 @@ bool RenderWidget::DoInit(int32_t opener_id,
     opener_id_ = opener_id;
 
   webwidget_ = web_widget;
+  webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
+  mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   bool result = true;
   if (create_widget_message)
@@ -449,6 +474,10 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
+  if (mouse_lock_dispatcher_ &&
+      mouse_lock_dispatcher_->OnMessageReceived(message))
+    return true;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnHandleInputEvent)
@@ -2094,6 +2123,19 @@ float RenderWidget::GetOriginalDeviceScaleFactor() const {
       screen_metrics_emulator_ ?
       screen_metrics_emulator_->original_screen_info().deviceScaleFactor :
       device_scale_factor_;
+}
+
+bool RenderWidget::requestPointerLock() {
+  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
+}
+
+void RenderWidget::requestPointerUnlock() {
+  mouse_lock_dispatcher_->UnlockMouse(webwidget_mouse_lock_target_.get());
+}
+
+bool RenderWidget::isPointerLocked() {
+  return mouse_lock_dispatcher_->IsMouseLockedTo(
+      webwidget_mouse_lock_target_.get());
 }
 
 }  // namespace content

@@ -39,7 +39,6 @@
 #include "content/public/common/top_controls_state.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
-#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_owner_delegate.h"
@@ -121,7 +120,6 @@ namespace content {
 
 class HistoryController;
 class HistoryEntry;
-class MouseLockDispatcher;
 class PageState;
 class RenderViewImplTest;
 class RenderViewObserver;
@@ -192,10 +190,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
-  }
-
-  MouseLockDispatcher* mouse_lock_dispatcher() {
-    return mouse_lock_dispatcher_;
   }
 
   HistoryController* history_controller() {
@@ -293,9 +287,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Most methods are handled by RenderWidget.
   void didFocus() override;
   void show(blink::WebNavigationPolicy policy) override;
-  bool requestPointerLock() override;
-  void requestPointerUnlock() override;
-  bool isPointerLocked() override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
   void onMouseDown(const blink::WebNode& mouse_down_node) override;
@@ -900,9 +891,6 @@ class CONTENT_EXPORT RenderViewImpl
   // initialized.
   SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
 
-  // Mouse Lock dispatcher attached to this view.
-  MouseLockDispatcher* mouse_lock_dispatcher_;
-
   std::unique_ptr<HistoryController> history_controller_;
 
 #if defined(OS_ANDROID)
@@ -945,9 +933,6 @@ class CONTENT_EXPORT RenderViewImpl
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   base::ObserverList<RenderViewObserver> observers_;
-
-  // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
-  std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

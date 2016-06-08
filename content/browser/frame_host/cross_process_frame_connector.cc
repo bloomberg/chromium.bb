@@ -194,6 +194,13 @@ void CrossProcessFrameConnector::FocusRootView() {
     root_view->Focus();
 }
 
+bool CrossProcessFrameConnector::LockMouse() {
+  RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
+  if (root_view)
+    return root_view->LockMouse();
+  return false;
+}
+
 void CrossProcessFrameConnector::OnForwardInputEvent(
     const blink::WebInputEvent* event) {
   if (!view_)

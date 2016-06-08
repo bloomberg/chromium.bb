@@ -114,6 +114,9 @@ public:
     bool isAcceleratedCompositingActive() const override;
     void willCloseLayerTreeView() override;
     void didChangeWindowResizerRect() override;
+    void didAcquirePointerLock() override;
+    void didNotAcquirePointerLock() override;
+    void didLosePointerLock() override;
 
     // WebFrameWidget implementation.
     void setVisibilityState(WebPageVisibilityState, bool) override;

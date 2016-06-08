@@ -1395,6 +1395,10 @@ class CONTENT_EXPORT WebContentsImpl
   // by the TextInputManager in the outer WebContents.
   std::unique_ptr<TextInputManager> text_input_manager_;
 
+  // Stores the RenderWidgetHost that currently holds a mouse lock or nullptr if
+  // there's no RenderWidgetHost holding a lock.
+  RenderWidgetHostImpl* mouse_lock_widget_;
+
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
 

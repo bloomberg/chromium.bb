@@ -959,14 +959,16 @@ void ChromeClientImpl::setTouchAction(TouchAction touchAction)
         client->setTouchAction(static_cast<WebTouchAction>(touchAction));
 }
 
-bool ChromeClientImpl::requestPointerLock()
+bool ChromeClientImpl::requestPointerLock(LocalFrame* frame)
 {
-    return m_webView->requestPointerLock();
+    LocalFrame* localRoot = frame->localFrameRoot();
+    return WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->client()->requestPointerLock();
 }
 
-void ChromeClientImpl::requestPointerUnlock()
+void ChromeClientImpl::requestPointerUnlock(LocalFrame* frame)
 {
-    return m_webView->requestPointerUnlock();
+    LocalFrame* localRoot = frame->localFrameRoot();
+    return WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->client()->requestPointerUnlock();
 }
 
 void ChromeClientImpl::annotatedRegionsChanged()

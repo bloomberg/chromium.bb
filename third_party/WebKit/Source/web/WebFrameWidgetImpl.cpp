@@ -47,6 +47,7 @@
 #include "core/page/ContextMenuController.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/page/PointerLockController.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "public/platform/WebFrameScheduler.h"
@@ -643,6 +644,21 @@ void WebFrameWidgetImpl::didChangeWindowResizerRect()
 {
     if (m_localRoot->frameView())
         m_localRoot->frameView()->windowResizerRectChanged();
+}
+
+void WebFrameWidgetImpl::didAcquirePointerLock()
+{
+    page()->pointerLockController().didAcquirePointerLock();
+}
+
+void WebFrameWidgetImpl::didNotAcquirePointerLock()
+{
+    page()->pointerLockController().didNotAcquirePointerLock();
+}
+
+void WebFrameWidgetImpl::didLosePointerLock()
+{
+    page()->pointerLockController().didLosePointerLock();
 }
 
 void WebFrameWidgetImpl::handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent& event)

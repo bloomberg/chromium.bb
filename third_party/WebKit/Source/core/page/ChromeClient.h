@@ -239,8 +239,8 @@ public:
 
     virtual bool isSVGImageChromeClient() const { return false; }
 
-    virtual bool requestPointerLock() { return false; }
-    virtual void requestPointerUnlock() { }
+    virtual bool requestPointerLock(LocalFrame*) { return false; }
+    virtual void requestPointerUnlock(LocalFrame*) {}
 
     virtual IntSize minimumWindowSize() const { return IntSize(100, 100); }
 

@@ -5295,8 +5295,8 @@ void Document::exitPointerLock()
     if (Element* target = page()->pointerLockController().element()) {
         if (target->document() != this)
             return;
+        page()->pointerLockController().requestPointerUnlock();
     }
-    page()->pointerLockController().requestPointerUnlock();
 }
 
 Element* Document::pointerLockElement() const

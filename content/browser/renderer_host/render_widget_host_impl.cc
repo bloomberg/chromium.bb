@@ -746,10 +746,12 @@ void RenderWidgetHostImpl::SetActive(bool active) {
 }
 
 void RenderWidgetHostImpl::LostMouseLock() {
-  Send(new ViewMsg_MouseLockLost(routing_id_));
-
   if (delegate_)
     delegate_->LostMouseLock(this);
+}
+
+void RenderWidgetHostImpl::SendMouseLockLost() {
+  Send(new ViewMsg_MouseLockLost(routing_id_));
 }
 
 void RenderWidgetHostImpl::ViewDestroyed() {
@@ -1775,10 +1777,6 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
                                        bool privileged) {
   if (pending_mouse_lock_request_) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
-    return;
-  }
-  if (IsMouseLocked()) {
-    Send(new ViewMsg_LockMouse_ACK(routing_id_, true));
     return;
   }
 

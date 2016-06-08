@@ -94,7 +94,6 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
@@ -405,29 +404,6 @@ struct RenderViewImpl::PendingFileChooser {
 
 namespace {
 
-class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
- public:
-  explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
-      : webwidget_(webwidget) {}
-
-  void OnLockMouseACK(bool succeeded) override {
-    if (succeeded)
-      webwidget_->didAcquirePointerLock();
-    else
-      webwidget_->didNotAcquirePointerLock();
-  }
-
-  void OnMouseLockLost() override { webwidget_->didLosePointerLock(); }
-
-  bool HandleMouseLockedInputEvent(const blink::WebMouseEvent& event) override {
-    // The WebWidget handles mouse lock in WebKit's handleInputEvent().
-    return false;
-  }
-
- private:
-  blink::WebWidget* webwidget_;
-};
-
 WebDragData DropDataToWebDragData(const DropData& drop_data) {
   std::vector<WebDragData::Item> item_list;
 
@@ -661,7 +637,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       main_render_frame_(nullptr),
       frame_widget_(nullptr),
       speech_recognition_dispatcher_(NULL),
-      mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
 #endif
@@ -686,8 +661,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   DCHECK_GE(next_page_id_, 0);
 
   webview_ = WebView::create(this);
-  webwidget_ = webview_->widget();
-  webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
+  RenderWidget::DoInit(MSG_ROUTING_NONE, webview_->widget(), nullptr);
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -773,17 +747,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   content_detectors_.push_back(base::WrapUnique(new EmailDetector()));
 #endif
 
-  RenderThread::Get()->AddRoute(GetRoutingID(), this);
-  // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive ViewMsg_Close in the RenderWidget (which RenderView
-  // inherits from).
-  AddRef();
-  if (RenderThreadImpl::current()) {
-    RenderThreadImpl::current()->WidgetCreated();
-    if (is_hidden_)
-      RenderThreadImpl::current()->WidgetHidden();
-  }
-
   // If this is a popup, we must wait for the CreatingNew_ACK message before
   // completing initialization.  Otherwise, we can finish it now.
   if (opener_id_ == MSG_ROUTING_NONE)
@@ -814,10 +777,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 #if defined(OS_MACOSX)
   new TextInputClientObserver(this);
 #endif  // defined(OS_MACOSX)
-
-  // The next group of objects all implement RenderViewObserver, so are deleted
-  // along with the RenderView automatically.
-  mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
 
   // We don't use HistoryController in OOPIF-enabled modes.
   if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
@@ -1995,19 +1954,6 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
                                 NavigationPolicyToDisposition(policy),
                                 initial_rect_, opened_by_user_gesture_));
   SetPendingWindowRect(initial_rect_);
-}
-
-bool RenderViewImpl::requestPointerLock() {
-  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
-}
-
-void RenderViewImpl::requestPointerUnlock() {
-  mouse_lock_dispatcher_->UnlockMouse(webwidget_mouse_lock_target_.get());
-}
-
-bool RenderViewImpl::isPointerLocked() {
-  return mouse_lock_dispatcher_->IsMouseLockedTo(
-      webwidget_mouse_lock_target_.get());
 }
 
 void RenderViewImpl::onMouseDown(const WebNode& mouse_down_node) {

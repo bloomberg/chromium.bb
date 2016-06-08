@@ -417,6 +417,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       bluetooth_connected_device_count_(0),
       virtual_keyboard_requested_(false),
       page_scale_factor_is_one_(true),
+      mouse_lock_widget_(nullptr),
       loading_weak_factory_(this),
       weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
@@ -1706,6 +1707,9 @@ void WebContentsImpl::RenderWidgetDeleted(
     if (fullscreen_widget_had_focus_at_shutdown_)
       view_->RestoreFocus();
   }
+
+  if (mouse_lock_widget_ == render_widget_host)
+    mouse_lock_widget_ = nullptr;
 }
 
 void WebContentsImpl::RenderWidgetGotFocus(
@@ -1896,20 +1900,32 @@ void WebContentsImpl::RequestToLockMouse(
     RenderWidgetHostImpl* render_widget_host,
     bool user_gesture,
     bool last_unlocked_by_target) {
-  if (render_widget_host != GetRenderViewHost()->GetWidget()) {
+  if (mouse_lock_widget_) {
     render_widget_host->GotResponseToLockMouseRequest(false);
     return;
   }
 
-  if (delegate_)
+  bool widget_in_frame_tree = false;
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    if (node->current_frame_host()->GetRenderWidgetHost() ==
+        render_widget_host) {
+      widget_in_frame_tree = true;
+      break;
+    }
+  }
+
+  if (widget_in_frame_tree && delegate_) {
+    mouse_lock_widget_ = render_widget_host;
     delegate_->RequestToLockMouse(this, user_gesture, last_unlocked_by_target);
-  else
-    GotResponseToLockMouseRequest(false);
+  } else {
+    render_widget_host->GotResponseToLockMouseRequest(false);
+  }
 }
 
 void WebContentsImpl::LostMouseLock(RenderWidgetHostImpl* render_widget_host) {
-  if (!RenderViewHostImpl::From(render_widget_host))
-    return;
+  CHECK(mouse_lock_widget_);
+  mouse_lock_widget_->SendMouseLockLost();
+  mouse_lock_widget_ = nullptr;
 
   if (delegate_)
     delegate_->LostMouseLock();
@@ -2974,10 +2990,9 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
   if (GetBrowserPluginGuest())
     return GetBrowserPluginGuest()->LockMouse(allowed);
 
-  return GetRenderViewHost()
-             ? GetRenderViewHost()->GetWidget()->GotResponseToLockMouseRequest(
-                   allowed)
-             : false;
+  if (mouse_lock_widget_)
+    return mouse_lock_widget_->GotResponseToLockMouseRequest(allowed);
+  return false;
 }
 
 bool WebContentsImpl::HasOpener() const {

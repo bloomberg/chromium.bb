@@ -478,12 +478,6 @@ public:
     bool hasHorizontalScrollbar();
     bool hasVerticalScrollbar();
 
-    // Pointer Lock calls allow a page to capture all mouse events and
-    // disable the system cursor.
-    bool requestPointerLock();
-    void requestPointerUnlock();
-    bool isPointerLocked();
-
     // Exposed for tests.
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
     LinkHighlightImpl* getLinkHighlight(int i) { return m_linkHighlights[i].get(); }

@@ -27,6 +27,8 @@
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/message_delivery_policy.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/render_widget_mouse_lock_dispatcher.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
@@ -261,6 +263,9 @@ class CONTENT_EXPORT RenderWidget
   void showImeIfNeeded() override;
   void convertViewportToWindow(blink::WebRect* rect) override;
   void convertWindowToViewport(blink::WebFloatRect* rect) override;
+  bool requestPointerLock() override;
+  void requestPointerUnlock() override;
+  bool isPointerLocked() override;
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -364,6 +369,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates whether this widget has focus.
   bool has_focus() const { return has_focus_; }
+
+  MouseLockDispatcher* mouse_lock_dispatcher() {
+    return mouse_lock_dispatcher_.get();
+  }
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -758,6 +767,12 @@ class CONTENT_EXPORT RenderWidget
 
   std::unique_ptr<scheduler::RenderWidgetSchedulingState>
       render_widget_scheduling_state_;
+
+  // Mouse Lock dispatcher attached to this view.
+  std::unique_ptr<RenderWidgetMouseLockDispatcher> mouse_lock_dispatcher_;
+
+  // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
+  std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
  private:
   // When emulated, this returns original device scale factor.

@@ -253,6 +253,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Called to notify the RenderWidget that it has lost the mouse lock.
   void LostMouseLock();
 
+  // Notifies the RenderWidget that it lost the mouse lock.
+  void SendMouseLockLost();
+
   // Noifies the RenderWidget of the current mouse cursor visibility state.
   void SendCursorVisibilityState(bool is_visible);
 

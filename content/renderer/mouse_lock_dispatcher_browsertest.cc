@@ -30,7 +30,7 @@ class MouseLockDispatcherTest : public RenderViewTest {
  public:
   void SetUp() override {
     RenderViewTest::SetUp();
-    route_id_ = view()->GetRoutingID();
+    route_id_ = view()->GetWidget()->routing_id();
     target_ = new MockLockTarget();
     alternate_target_ = new MockLockTarget();
   }
@@ -43,6 +43,7 @@ class MouseLockDispatcherTest : public RenderViewTest {
 
  protected:
   RenderViewImpl* view() { return static_cast<RenderViewImpl*>(view_); }
+  RenderWidget* widget() { return view()->GetWidget(); }
   MouseLockDispatcher* dispatcher() { return view()->mouse_lock_dispatcher(); }
   int route_id_;
   MockLockTarget* target_;
@@ -54,22 +55,22 @@ class MouseLockDispatcherTest : public RenderViewTest {
 // Test simple use of RenderViewImpl interface to WebKit for pointer lock.
 TEST_F(MouseLockDispatcherTest, BasicWebWidget) {
   // Start unlocked.
-  EXPECT_FALSE(view()->isPointerLocked());
+  EXPECT_FALSE(widget()->isPointerLocked());
 
   // Lock.
-  EXPECT_TRUE(view()->requestPointerLock());
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
-  EXPECT_TRUE(view()->isPointerLocked());
+  EXPECT_TRUE(widget()->requestPointerLock());
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
+  EXPECT_TRUE(widget()->isPointerLocked());
 
   // Unlock.
-  view()->requestPointerUnlock();
-  view()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
-  EXPECT_FALSE(view()->isPointerLocked());
+  widget()->requestPointerUnlock();
+  widget()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
+  EXPECT_FALSE(widget()->isPointerLocked());
 
   // Attempt a lock, and have it fail.
-  EXPECT_TRUE(view()->requestPointerLock());
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));
-  EXPECT_FALSE(view()->isPointerLocked());
+  EXPECT_TRUE(widget()->requestPointerLock());
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));
+  EXPECT_FALSE(widget()->isPointerLocked());
 }
 
 // Test simple use of MouseLockDispatcher with a mock LockTarget.
@@ -86,7 +87,7 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(target_));
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
@@ -94,12 +95,12 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
 
   // Unlock.
   dispatcher()->UnlockMouse(target_);
-  view()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
+  widget()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 
   // Attempt a lock, and have it fail.
   EXPECT_TRUE(dispatcher()->LockMouse(target_));
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 
@@ -112,7 +113,7 @@ TEST_F(MouseLockDispatcherTest, DeleteAndUnlock) {
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(target_));
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Unlock, with a deleted target.
@@ -121,7 +122,7 @@ TEST_F(MouseLockDispatcherTest, DeleteAndUnlock) {
   delete target_;
   target_ = NULL;
   dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
-  view()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
+  widget()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 
@@ -140,7 +141,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockSuccess) {
   target_ = NULL;
 
   // Lock response.
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
 }
 
 // Test deleting a target that is pending a lock request failure response.
@@ -158,7 +159,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockFail) {
   target_ = NULL;
 
   // Lock response.
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));
 }
 
 // Test not receiving mouse events when a target is not locked.
@@ -175,7 +176,7 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(target_));
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
@@ -183,7 +184,7 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
 
   // Unlock.
   dispatcher()->UnlockMouse(target_);
-  view()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
+  widget()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 
   // (Don't) receive mouse event.
@@ -208,7 +209,7 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
   EXPECT_FALSE(dispatcher()->LockMouse(alternate_target_));
 
   // Lock completion for target.
-  view()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
+  widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Fail attempt to lock alternate.
@@ -226,7 +227,7 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
   // Though the call to UnlockMouse should not unlock any target, we will
   // cause an unlock (as if e.g. user escaped mouse lock) and verify the
   // correct target is unlocked.
-  view()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
+  widget()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 

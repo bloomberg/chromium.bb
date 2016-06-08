@@ -140,6 +140,7 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebFrameWidget.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
 #include "public/web/WebMeaningfulLayout.h"
@@ -2168,7 +2169,13 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
     TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
     UIEventWithKeyState::clearNewTabModifierSetFromIsolatedWorld();
 
-    if (isPointerLocked() && WebInputEvent::isMouseEventType(inputEvent.type)) {
+    bool isPointerLocked = false;
+    if (WebFrameWidget* widget = mainFrameImpl()->frameWidget()) {
+        if (WebWidgetClient* client = widget->client())
+            isPointerLocked = client->isPointerLocked();
+    }
+
+    if (isPointerLocked && WebInputEvent::isMouseEventType(inputEvent.type)) {
         pointerLockMouseEvent(inputEvent);
         return WebInputEventResult::HandledSystem;
     }
@@ -4461,22 +4468,6 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
     if (m_layerTreeView)
         m_layerTreeView->setVisible(visible);
     m_scheduler->setPageVisible(visible);
-}
-
-bool WebViewImpl::requestPointerLock()
-{
-    return m_client && m_client->requestPointerLock();
-}
-
-void WebViewImpl::requestPointerUnlock()
-{
-    if (m_client)
-        m_client->requestPointerUnlock();
-}
-
-bool WebViewImpl::isPointerLocked()
-{
-    return m_client && m_client->isPointerLocked();
 }
 
 void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)

@@ -476,10 +476,25 @@ void RenderWidgetHostViewChildFrame::ProcessAckedTouchEvent(
 }
 
 bool RenderWidgetHostViewChildFrame::LockMouse() {
+  if (frame_connector_)
+    return frame_connector_->LockMouse();
   return false;
 }
 
 void RenderWidgetHostViewChildFrame::UnlockMouse() {
+}
+
+bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
+  if (!frame_connector_)
+    return false;
+
+  RenderWidgetHostViewBase* root_view =
+      frame_connector_->GetRootRenderWidgetHostView();
+
+  if (root_view)
+    return root_view->IsMouseLocked();
+
+  return false;
 }
 
 uint32_t RenderWidgetHostViewChildFrame::GetSurfaceIdNamespace() {

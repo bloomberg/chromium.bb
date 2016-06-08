@@ -286,11 +286,8 @@ public:
     void didUpdateTextOfFocusedElementByNonUserInput() override {}
     void hasTouchEventHandlers(bool) override {}
     void initializeLayerTreeView() override {}
-    bool isPointerLocked() override { return false; }
     WebLayerTreeView* layerTreeView() override { return 0; }
     void onMouseDown(const WebNode& mouseDownNode) override {}
-    bool requestPointerLock() override { return false; }
-    void requestPointerUnlock() override {}
     void resetInputMethod() override {}
     WebRect rootWindowRect() override { return WebRect(); }
     void scheduleAnimation() override {}
