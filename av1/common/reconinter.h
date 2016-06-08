@@ -12,10 +12,11 @@
 #ifndef AV1_COMMON_RECONINTER_H_
 #define AV1_COMMON_RECONINTER_H_
 
-#include "av1/common/filter.h"
-#include "av1/common/onyxc_int.h"
 #include "aom/aom_integer.h"
 #include "aom_dsp/aom_filter.h"
+#include "av1/common/convolve.h"
+#include "av1/common/filter.h"
+#include "av1/common/onyxc_int.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,13 +30,18 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    int xs, int ys) {
   InterpFilterParams interp_filter_params =
       get_interp_filter_params(*interp_filter);
-  const int16_t *filter_x =
-      get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
-  const int16_t *filter_y =
-      get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
+  if (interp_filter_params.taps == SUBPEL_TAPS) {
+    const int16_t *filter_x =
+        get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
+    const int16_t *filter_y =
+        get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
 
-  sf->predict[subpel_x != 0][subpel_y != 0][ref](
-      src, src_stride, dst, dst_stride, filter_x, xs, filter_y, ys, w, h);
+    sf->predict[subpel_x != 0][subpel_y != 0][ref](
+        src, src_stride, dst, dst_stride, filter_x, xs, filter_y, ys, w, h);
+  } else {
+    av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                 subpel_x, xs, subpel_y, ys, ref);
+  }
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -48,13 +54,18 @@ static INLINE void high_inter_predictor(const uint8_t *src, int src_stride,
                                         int xs, int ys, int bd) {
   InterpFilterParams interp_filter_params =
       get_interp_filter_params(*interp_filter);
-  const int16_t *filter_x =
-      get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
-  const int16_t *filter_y =
-      get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
+  if (interp_filter_params.taps == SUBPEL_TAPS) {
+    const int16_t *filter_x =
+        get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
+    const int16_t *filter_y =
+        get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
 
-  sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
-      src, src_stride, dst, dst_stride, filter_x, xs, filter_y, ys, w, h, bd);
+    sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
+        src, src_stride, dst, dst_stride, filter_x, xs, filter_y, ys, w, h, bd);
+  } else {
+    av1_highbd_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                        subpel_x, xs, subpel_y, ys, ref, bd);
+  }
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 

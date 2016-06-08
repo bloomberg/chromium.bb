@@ -97,6 +97,7 @@ LIBAOM_TEST_SRCS-yes                   += encoder_parms_get_to_decoder.cc
 endif
 
 LIBAOM_TEST_SRCS-yes                   += convolve_test.cc
+LIBAOM_TEST_SRCS-yes                   += av1_convolve_test.cc
 LIBAOM_TEST_SRCS-yes                   += lpf_8_test.cc
 LIBAOM_TEST_SRCS-yes                   += intrapred_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += dct16x16_test.cc
