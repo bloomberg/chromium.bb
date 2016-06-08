@@ -331,3 +331,9 @@ CONTENT OF TEST
         converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
         converter.feed(test_html)
         self.assertEqual(converter.output(), ([], """<FONT></FONT>"""))
+
+    def test_for_comments(self):
+        test_html = """<!--abc--><!-- foo -->"""
+        converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
+        converter.feed(test_html)
+        self.assertEqual(converter.output(), ([], """<!--abc--><!-- foo -->"""))
