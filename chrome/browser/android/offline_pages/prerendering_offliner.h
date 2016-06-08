@@ -73,10 +73,10 @@ class PrerenderingOffliner : public Offliner {
   OfflinePageModel* offline_page_model_;
   // Lazily created.
   std::unique_ptr<PrerenderingLoader> loader_;
-  // Tracks pending request, if any. Not owned.
+  // Tracks pending request, if any. Owned copy.
   // May be used to ensure a callback applies to the pending request (e.g., in
   // case we receive a save page callback for an old, canceled request).
-  SavePageRequest const* pending_request_;
+  std::unique_ptr<SavePageRequest> pending_request_;
   base::WeakPtrFactory<PrerenderingOffliner> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingOffliner);

@@ -74,8 +74,11 @@ bool PrerenderAdapter::IsActive() const {
 
 void PrerenderAdapter::DestroyActive() {
   DCHECK(IsActive());
-  active_handle_->OnCancel();
-  active_handle_.reset(nullptr);
+  // Clear active handle and call OnCancel from local variable to avoid
+  // immediate Observer OnPrerenderStop() call from thinking still active.
+  prerender::PrerenderHandle* handle_to_destroy = active_handle_.release();
+  handle_to_destroy->OnCancel();
+  delete handle_to_destroy;
 }
 
 void PrerenderAdapter::OnPrerenderStart(prerender::PrerenderHandle* handle) {
@@ -86,7 +89,7 @@ void PrerenderAdapter::OnPrerenderStart(prerender::PrerenderHandle* handle) {
 void PrerenderAdapter::OnPrerenderStopLoading(
     prerender::PrerenderHandle* handle) {
   DCHECK(active_handle_.get() == handle);
-  observer_->OnPrerenderDomContentLoaded();
+  observer_->OnPrerenderStopLoading();
 }
 
 void PrerenderAdapter::OnPrerenderDomContentLoaded(
@@ -96,8 +99,10 @@ void PrerenderAdapter::OnPrerenderDomContentLoaded(
 }
 
 void PrerenderAdapter::OnPrerenderStop(prerender::PrerenderHandle* handle) {
-  DCHECK(active_handle_.get() == handle);
-  observer_->OnPrerenderStop();
+  if (IsActive()) {
+    DCHECK(active_handle_.get() == handle);
+    observer_->OnPrerenderStop();
+  }
 }
 
 }  // namespace offline_pages

@@ -58,7 +58,7 @@ void PrerenderingOffliner::OnLoadPageDone(
                         completion_callback));
   } else {
     // Clear pending request and then run the completion callback.
-    pending_request_ = nullptr;
+    pending_request_.reset(nullptr);
     completion_callback.Run(request, load_status);
   }
 }
@@ -80,7 +80,7 @@ void PrerenderingOffliner::OnSavePageDone(
   }
 
   // Clear pending request here and inform loader we are done with WebContents.
-  pending_request_ = nullptr;
+  pending_request_.reset(nullptr);
   GetOrCreateLoader()->StopLoading();
 
   // Determine status and run the completion callback.
@@ -112,8 +112,8 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
     return false;
   }
 
-  // Track pending request for callback handling.
-  pending_request_ = &request;
+  // Track copy of pending request for callback handling.
+  pending_request_.reset(new SavePageRequest(request));
 
   // Kick off load page attempt.
   bool accepted = GetOrCreateLoader()->LoadPage(
@@ -121,14 +121,14 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
       base::Bind(&PrerenderingOffliner::OnLoadPageDone,
                  weak_ptr_factory_.GetWeakPtr(), request, callback));
   if (!accepted)
-    pending_request_ = nullptr;
+    pending_request_.reset(nullptr);
 
   return accepted;
 }
 
 void PrerenderingOffliner::Cancel() {
   if (pending_request_) {
-    pending_request_ = nullptr;
+    pending_request_.reset(nullptr);
     GetOrCreateLoader()->StopLoading();
     // TODO(dougarnett): Consider ability to cancel SavePage request.
   }
