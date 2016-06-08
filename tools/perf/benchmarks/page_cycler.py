@@ -158,8 +158,13 @@ class PageCyclerTypical25(_PageCycler):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
-    return (possible_browser.browser_type == 'reference' and
-            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+    if (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
+      return True
+    # http://crbug.com/616781
+    if possible_browser.platform.GetDeviceTypeName() == 'AOSP on BullHead':
+      return True
+    return False
 
   @classmethod
   def Name(cls):

@@ -43,10 +43,15 @@ class PageCyclerV2Typical25(_PageCyclerV2):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):  # crbug.com/615178
-    return ((possible_browser.browser_type == 'reference' and
-             possible_browser.platform.GetOSName() == 'android') or
-            cls.IsSvelte(possible_browser) or  # crbug.com/616781
-            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+    if (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetOSName() == 'android'):
+      return True
+    # crbug.com/616781
+    if (cls.IsSvelte(possible_browser) or
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X' or
+        possible_browser.platform.GetDeviceTypeName() == 'AOSP on BullHead'):
+      return True
+    return False
 
   def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True,
