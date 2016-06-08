@@ -668,7 +668,8 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
 
   result.clickCount = 0;
 
-  switch ([event type]) {
+  NSEventType type = [event type];
+  switch (type) {
     case NSMouseExited:
       result.type = blink::WebInputEvent::MouseLeave;
       result.button = blink::WebMouseEvent::ButtonNone;
@@ -729,6 +730,25 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
 
   result.timeStampSeconds = [event timestamp];
 
+  // For NSMouseExited and NSMouseEntered, they do not have a subtype. Styluses
+  // and mouses share the same cursor, so we will set their pointerType as
+  // Unknown for now.
+  if (type == NSMouseExited || type == NSMouseEntered) {
+    result.pointerType = blink::WebPointerProperties::PointerType::Unknown;
+    return result;
+  }
+
+  // For other mouse events and touchpad events, the pointer type is mouse.
+  // For all other tablet events, the pointer type will be just pen.
+  NSEventSubtype subtype = [event subtype];
+  if (subtype == NSTabletPointEventSubtype ||
+      subtype == NSTabletProximityEventSubtype) {
+    result.pointerType = blink::WebPointerProperties::PointerType::Pen;
+  } else {
+    result.pointerType = blink::WebPointerProperties::PointerType::Mouse;
+  }
+  result.id = [event deviceID];
+  result.force = [event pressure];
   return result;
 }
 
