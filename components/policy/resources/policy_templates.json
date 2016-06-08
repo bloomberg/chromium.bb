@@ -7512,6 +7512,8 @@
       },
       'example_value': [
         {
+          "toplevel_name": "My managed bookmarks"
+        }, {
           "name": "Google",
           "url": "google.com"
         }, {
@@ -7550,7 +7552,7 @@
 
       These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.
 
-      The folder name for the bookmarks is customizable by adding a {"toplevel_name": "some name"} list item.''',
+      Starting with release 51, the folder name for the bookmarks is customizable by adding a {"toplevel_name": "some name"} list item.''',
     },
     {
       'name': 'DataCompressionProxyEnabled',
