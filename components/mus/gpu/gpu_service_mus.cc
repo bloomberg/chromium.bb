@@ -177,9 +177,8 @@ void GpuServiceMus::Initialize() {
   CHECK(io_thread_.StartWithOptions(thread_options));
 
   IPC::ChannelHandle channel_handle;
-  bool manual_reset = true;
-  bool initially_signaled = false;
-  base::WaitableEvent event(manual_reset, initially_signaled);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&GpuServiceMus::InitializeOnGpuThread,
                             base::Unretained(this), &channel_handle, &event));

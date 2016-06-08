@@ -347,9 +347,8 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
   }
 
   void Wait(const base::Thread& thread) {
-    bool manual_reset = false;
-    bool initially_signaled = false;
-    base::WaitableEvent event(manual_reset, initially_signaled);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread.message_loop()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
@@ -587,11 +586,15 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
               Release(test_data_.mailbox_name1_, SyncTokenFromUInt(200), true))
       .Times(1);
 
-  bool manual_reset = false;
-  bool initially_signaled = false;
-  base::WaitableEvent begin_capture(manual_reset, initially_signaled);
-  base::WaitableEvent wait_for_capture(manual_reset, initially_signaled);
-  base::WaitableEvent stop_capture(manual_reset, initially_signaled);
+  base::WaitableEvent begin_capture(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait_for_capture(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent stop_capture(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   // Post a task to start capturing tasks on the main thread. This will block
   // the main thread until we signal the |stop_capture| event.
