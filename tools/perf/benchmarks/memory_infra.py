@@ -162,6 +162,12 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
 
 
 class _MemoryV8Benchmark(_MemoryInfra):
+
+  # Report only V8-specific and overall renderer memory values. Note that
+  # detailed values reported by the OS (such as native heap) are excluded.
+  _V8_AND_OVERALL_MEMORY_RE = re.compile(
+      r'renderer:(reported_by_chrome:v8|reported_by_os:system:[^:]+$)')
+
   def CreateTimelineBasedMeasurementOptions(self):
     v8_categories = [
         'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
@@ -175,8 +181,12 @@ class _MemoryV8Benchmark(_MemoryInfra):
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, _):
     if 'memory:chrome' in value.name:
+      # TODO(petrcermak): Remove the first two cases once
+      # https://codereview.chromium.org/2018503002/ lands in Catapult and rolls
+      # into Chromium.
       return ('renderer:subsystem:v8' in value.name or
-              'renderer:vmstats:overall' in value.name)
+              'renderer:vmstats:overall' in value.name or
+              bool(cls._V8_AND_OVERALL_MEMORY_RE.search(value.name)))
     return 'v8' in value.name
 
 
