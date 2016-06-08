@@ -229,7 +229,7 @@ config("asan_flags") {
       ]
       # TODO(GYP): deal with mac_bundles.
     } else if (is_win) {
-      assert(target_cpu == "x86", "WinASan is 32-bit only currently")
+      assert(current_cpu == "x86", "WinASan is 32-bit only currently")
       if (is_component_build) {
         libs = [
           "clang_rt.asan_dynamic-i386.lib",
@@ -280,7 +280,7 @@ config("coverage_flags") {
       "-mllvm",
       "-sanitizer-coverage-prune-blocks=1",
     ]
-    if (target_cpu == "arm") {
+    if (current_cpu == "arm") {
       # http://crbug.com/517105
       cflags += [
         "-mllvm",
