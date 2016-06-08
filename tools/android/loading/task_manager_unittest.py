@@ -429,14 +429,10 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
   def testSimple(self):
     self.assertEqual(0, self.Execute([]))
     self.assertListEqual(['a', 'd', 'b', 'c', 'e'], self.task_execution_history)
-    self.assertTrue(
-        os.path.exists(self.OutputPath(task_manager._TASK_EXECUTION_LOG_NAME)))
 
   def testDryRun(self):
     self.assertEqual(0, self.Execute(['-d']))
     self.assertListEqual([], self.task_execution_history)
-    self.assertFalse(
-        os.path.exists(self.OutputPath(task_manager._TASK_EXECUTION_LOG_NAME)))
 
   def testRegex(self):
     self.assertEqual(0, self.Execute(['-e', 'b', '-e', 'd']))

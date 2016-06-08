@@ -61,6 +61,7 @@ Example:
 
 import argparse
 import collections
+import datetime
 import logging
 import os
 import re
@@ -73,7 +74,7 @@ import common_util
 _TASK_GRAPH_DOTFILE_NAME = 'tasks_graph.dot'
 _TASK_GRAPH_PNG_NAME = 'tasks_graph.png'
 _TASK_RESUME_ARGUMENTS_FILE = 'resume.txt'
-_TASK_EXECUTION_LOG_NAME = 'task_execution.log'
+_TASK_EXECUTION_LOG_NAME_FORMAT = 'task-execution-%Y-%m-%d-%H-%M-%S.log'
 
 FROMFILE_PREFIX_CHARS = '@'
 
@@ -475,9 +476,11 @@ def ExecuteWithCommandLine(args, default_final_tasks):
       for dependent in dependents_per_task[task]:
         MarkTaskNotToExecute(dependent)
 
+  log_filename = datetime.datetime.now().strftime(
+      _TASK_EXECUTION_LOG_NAME_FORMAT)
   formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
   handler = logging.FileHandler(
-      os.path.join(args.output, _TASK_EXECUTION_LOG_NAME), mode='a')
+      os.path.join(args.output, log_filename), mode='a')
   handler.setFormatter(formatter)
   logging.getLogger().addHandler(handler)
   logging.info(
