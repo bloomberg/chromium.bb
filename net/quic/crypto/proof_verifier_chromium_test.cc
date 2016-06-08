@@ -33,14 +33,11 @@ class FailsTestCertVerifier : public CertVerifier {
   ~FailsTestCertVerifier() override {}
 
   // CertVerifier implementation
-  int Verify(X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
+  int Verify(const RequestParams& params,
              CRLSet* crl_set,
              CertVerifyResult* verify_result,
              const CompletionCallback& callback,
-             std::unique_ptr<CertVerifier::Request>* out_req,
+             std::unique_ptr<Request>* out_req,
              const BoundNetLog& net_log) override {
     ADD_FAILURE() << "CertVerifier::Verify() should not be called";
     return ERR_FAILED;

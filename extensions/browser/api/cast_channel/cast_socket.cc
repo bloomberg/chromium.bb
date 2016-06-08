@@ -80,17 +80,14 @@ class FakeCertVerifier : public net::CertVerifier {
   FakeCertVerifier() {}
   ~FakeCertVerifier() override {}
 
-  int Verify(net::X509Certificate* cert,
-             const std::string&,
-             const std::string&,
-             int,
+  int Verify(const RequestParams& params,
              net::CRLSet*,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback&,
-             std::unique_ptr<net::CertVerifier::Request>*,
+             std::unique_ptr<Request>*,
              const net::BoundNetLog&) override {
     verify_result->Reset();
-    verify_result->verified_cert = cert;
+    verify_result->verified_cert = params.certificate();
     return net::OK;
   }
 };

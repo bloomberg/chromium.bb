@@ -87,10 +87,12 @@ void CertVerifierBlockAdapter::Verify(
     completion_handler(context->result, error);
   });
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error = cert_verifier_->Verify(params.cert.get(), params.hostname,
-                                     params.ocsp_response, params.flags,
-                                     params.crl_set.get(), &(context->result),
-                                     callback, &request, context->net_log);
+  int error = cert_verifier_->Verify(
+      net::CertVerifier::RequestParams(params.cert.get(), params.hostname,
+                                       params.flags, params.ocsp_response,
+                                       net::CertificateList()),
+      params.crl_set.get(), &(context->result), callback, &request,
+      context->net_log);
   if (error == net::ERR_IO_PENDING) {
     // Keep the |net::CertVerifier::Request| alive until verification completes.
     // Because |context| is kept alive by |callback| (through base::BindBlock),

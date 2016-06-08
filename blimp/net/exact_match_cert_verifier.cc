@@ -33,10 +33,7 @@ ExactMatchCertVerifier::ExactMatchCertVerifier(
 
 ExactMatchCertVerifier::~ExactMatchCertVerifier() {}
 
-int ExactMatchCertVerifier::Verify(net::X509Certificate* cert,
-                                   const std::string& hostname,
-                                   const std::string& ocsp_response,
-                                   int flags,
+int ExactMatchCertVerifier::Verify(const RequestParams& params,
                                    net::CRLSet* crl_set,
                                    net::CertVerifyResult* verify_result,
                                    const net::CompletionCallback& callback,
@@ -45,7 +42,7 @@ int ExactMatchCertVerifier::Verify(net::X509Certificate* cert,
   verify_result->Reset();
   verify_result->verified_cert = engine_cert_;
 
-  if (!cert->Equals(engine_cert_.get())) {
+  if (!params.certificate()->Equals(engine_cert_.get())) {
     verify_result->cert_status = net::CERT_STATUS_INVALID;
     return net::ERR_CERT_INVALID;
   }

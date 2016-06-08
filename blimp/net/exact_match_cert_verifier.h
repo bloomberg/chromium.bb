@@ -28,10 +28,7 @@ class BLIMP_NET_EXPORT ExactMatchCertVerifier : public net::CertVerifier {
   ~ExactMatchCertVerifier() override;
 
   // net::CertVerifier implementation.
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
+  int Verify(const RequestParams& params,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,

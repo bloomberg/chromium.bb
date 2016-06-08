@@ -58,10 +58,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
       CertTrustAnchorProvider* trust_anchor_provider);
 
   // CertVerifier implementation
-  int Verify(X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
+  int Verify(const RequestParams& params,
              CRLSet* crl_set,
              CertVerifyResult* verify_result,
              const CompletionCallback& callback,
@@ -122,14 +119,14 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   };
 
   using JobSet = std::set<CertVerifierJob*, JobComparator>;
-  using CertVerifierCache = ExpiringCache<CertVerifier::RequestParams,
+  using CertVerifierCache = ExpiringCache<RequestParams,
                                           CachedResult,
                                           CacheValidityPeriod,
                                           CacheExpirationFunctor>;
 
   // Saves |result| into the cache, keyed by |key|, which began validation at
   // |start_time|.
-  void SaveResultToCache(const CertVerifier::RequestParams& key,
+  void SaveResultToCache(const RequestParams& key,
                          const base::Time& start_time,
                          const CachedResult& result);
 
@@ -138,7 +135,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
 
   // Returns an inflight job for |key|. If there is no such job then returns
   // null.
-  CertVerifierJob* FindJob(const CertVerifier::RequestParams& key);
+  CertVerifierJob* FindJob(const RequestParams& key);
 
   // Removes |job| from the inflight set, and passes ownership back to the
   // caller. |job| must already be |inflight_|.

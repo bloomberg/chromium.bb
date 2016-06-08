@@ -47,10 +47,7 @@ class PolicyCertVerifier : public net::CertVerifier,
 
   // CertVerifier:
   // Note: |callback| can be null.
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
+  int Verify(const RequestParams& params,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,

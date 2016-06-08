@@ -50,16 +50,13 @@ class FailingCertVerifier : public net::CertVerifier {
   FailingCertVerifier() {}
   ~FailingCertVerifier() override {}
 
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
+  int Verify(const RequestParams& params,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
              std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
-    verify_result->verified_cert = cert;
+    verify_result->verified_cert = params.certificate();
     verify_result->cert_status = net::CERT_STATUS_INVALID;
     return net::ERR_CERT_INVALID;
   }

@@ -24,17 +24,14 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
  public:
   CertVerifier() {}
 
-  int Verify(net::X509Certificate* cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
+  int Verify(const RequestParams& params,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
              std::unique_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
     verify_result->Reset();
-    verify_result->verified_cert = cert;
+    verify_result->verified_cert = params.certificate();
 
     // Because no trust anchor checking is being performed, don't indicate that
     // it came from an OS-trusted root.
@@ -56,9 +53,10 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
     // container clean.
     verify_result->public_key_hashes.clear();
 
-    verify_result->cert_status = CheckFingerprint(cert, hostname)
-                                     ? 0
-                                     : net::CERT_STATUS_AUTHORITY_INVALID;
+    verify_result->cert_status =
+        CheckFingerprint(params.certificate(), params.hostname())
+            ? 0
+            : net::CERT_STATUS_AUTHORITY_INVALID;
     return net::IsCertStatusError(verify_result->cert_status)
                ? net::MapCertStatusToNetError(verify_result->cert_status)
                : net::OK;
@@ -70,7 +68,7 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
   }
 
  private:
-  bool CheckFingerprint(net::X509Certificate* cert,
+  bool CheckFingerprint(const scoped_refptr<net::X509Certificate>& cert,
                         const std::string& hostname) const {
     auto it = fingerprints_.find(hostname);
     if (it == fingerprints_.end())

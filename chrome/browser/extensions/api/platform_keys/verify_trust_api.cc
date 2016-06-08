@@ -196,7 +196,9 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
                  base::Passed(&verify_result), base::Owned(request_state)));
 
   const int return_value = verifier->Verify(
-      cert_chain.get(), details.hostname, ocsp_response, flags,
+      net::CertVerifier::RequestParams(std::move(cert_chain), details.hostname,
+                                       flags, ocsp_response,
+                                       net::CertificateList()),
       net::SSLConfigService::GetCRLSet().get(), verify_result_ptr,
       bound_callback, &request_state->request, *net_log);
 

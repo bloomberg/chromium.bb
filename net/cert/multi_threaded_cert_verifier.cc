@@ -258,7 +258,6 @@ class CertVerifierJob {
  public:
   CertVerifierJob(const CertVerifier::RequestParams& key,
                   NetLog* net_log,
-                  X509Certificate* cert,
                   MultiThreadedCertVerifier* cert_verifier)
       : key_(key),
         start_time_(base::TimeTicks::Now()),
@@ -267,9 +266,9 @@ class CertVerifierJob {
         cert_verifier_(cert_verifier),
         is_first_job_(false),
         weak_ptr_factory_(this) {
-    net_log_.BeginEvent(
-        NetLog::TYPE_CERT_VERIFIER_JOB,
-        base::Bind(&NetLogX509CertificateCallback, base::Unretained(cert)));
+    net_log_.BeginEvent(NetLog::TYPE_CERT_VERIFIER_JOB,
+                        base::Bind(&NetLogX509CertificateCallback,
+                                   base::Unretained(key.certificate().get())));
   }
 
   // Indicates whether this was the first job started by the CertVerifier. This
@@ -282,12 +281,7 @@ class CertVerifierJob {
   // verification has completed on the worker thread, it will call
   // OnJobCompleted() on the origin thread.
   bool Start(const scoped_refptr<CertVerifyProc>& verify_proc,
-             const scoped_refptr<X509Certificate>& cert,
-             const std::string& hostname,
-             const std::string& ocsp_response,
-             int flags,
-             const scoped_refptr<CRLSet>& crl_set,
-             const CertificateList& additional_trust_anchors) {
+             const scoped_refptr<CRLSet>& crl_set) {
     // Owned by the bound reply callback.
     std::unique_ptr<MultiThreadedCertVerifier::CachedResult> owned_result(
         new MultiThreadedCertVerifier::CachedResult());
@@ -298,9 +292,10 @@ class CertVerifierJob {
 
     return base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&DoVerifyOnWorkerThread, verify_proc, cert, hostname,
-                   ocsp_response, flags, crl_set, additional_trust_anchors,
-                   &result->error, &result->result),
+        base::Bind(&DoVerifyOnWorkerThread, verify_proc, key_.certificate(),
+                   key_.hostname(), key_.ocsp_response(), key_.flags(), crl_set,
+                   key_.additional_trust_anchors(), &result->error,
+                   &result->result),
         base::Bind(&CertVerifierJob::OnJobCompleted,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&owned_result)),
         true /* task is slow */);
@@ -423,10 +418,7 @@ void MultiThreadedCertVerifier::SetCertTrustAnchorProvider(
   trust_anchor_provider_ = trust_anchor_provider;
 }
 
-int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
-                                      const std::string& hostname,
-                                      const std::string& ocsp_response,
-                                      int flags,
+int MultiThreadedCertVerifier::Verify(const RequestParams& params,
                                       CRLSet* crl_set,
                                       CertVerifyResult* verify_result,
                                       const CompletionCallback& callback,
@@ -436,18 +428,22 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
 
   DCHECK(CalledOnValidThread());
 
-  if (callback.is_null() || !verify_result || hostname.empty())
+  if (callback.is_null() || !verify_result || params.hostname().empty())
     return ERR_INVALID_ARGUMENT;
 
   requests_++;
 
-  const CertificateList empty_cert_list;
-  const CertificateList& additional_trust_anchors =
-      trust_anchor_provider_ ?
-          trust_anchor_provider_->GetAdditionalTrustAnchors() : empty_cert_list;
+  CertificateList new_trust_anchors(params.additional_trust_anchors());
+  if (trust_anchor_provider_) {
+    const CertificateList& trust_anchors =
+        trust_anchor_provider_->GetAdditionalTrustAnchors();
+    new_trust_anchors.insert(new_trust_anchors.end(), trust_anchors.begin(),
+                             trust_anchors.end());
+  }
 
-  const CertVerifier::RequestParams key(cert, hostname, flags, ocsp_response,
-                                        additional_trust_anchors);
+  const RequestParams key(params.certificate(), params.hostname(),
+                          params.flags(), params.ocsp_response(),
+                          new_trust_anchors);
   const CertVerifierCache::value_type* cached_entry =
       cache_.Get(key, CacheValidityPeriod(base::Time::Now()));
   if (cached_entry) {
@@ -465,10 +461,9 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
   } else {
     // Need to make a new job.
     std::unique_ptr<CertVerifierJob> new_job(
-        new CertVerifierJob(key, net_log.net_log(), cert, this));
+        new CertVerifierJob(key, net_log.net_log(), this));
 
-    if (!new_job->Start(verify_proc_, cert, hostname, ocsp_response, flags,
-                        crl_set, additional_trust_anchors)) {
+    if (!new_job->Start(verify_proc_, crl_set)) {
       // TODO(wtc): log to the NetLog.
       LOG(ERROR) << "CertVerifierJob couldn't be started.";
       return ERR_INSUFFICIENT_RESOURCES;  // Just a guess.
@@ -497,10 +492,9 @@ bool MultiThreadedCertVerifier::JobComparator::operator()(
   return job1->key() < job2->key();
 }
 
-void MultiThreadedCertVerifier::SaveResultToCache(
-    const CertVerifier::RequestParams& key,
-    const base::Time& start_time,
-    const CachedResult& result) {
+void MultiThreadedCertVerifier::SaveResultToCache(const RequestParams& key,
+                                                  const base::Time& start_time,
+                                                  const CachedResult& result) {
   DCHECK(CalledOnValidThread());
 
   // When caching, this uses the time that validation started as the
@@ -554,8 +548,7 @@ struct MultiThreadedCertVerifier::JobToRequestParamsComparator {
   }
 };
 
-CertVerifierJob* MultiThreadedCertVerifier::FindJob(
-    const CertVerifier::RequestParams& key) {
+CertVerifierJob* MultiThreadedCertVerifier::FindJob(const RequestParams& key) {
   DCHECK(CalledOnValidThread());
 
   // The JobSet is kept in sorted order so items can be found using binary

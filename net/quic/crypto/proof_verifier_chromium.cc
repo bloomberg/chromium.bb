@@ -281,7 +281,8 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
   next_state_ = STATE_VERIFY_CERT_COMPLETE;
 
   return verifier_->Verify(
-      cert_.get(), hostname_, std::string(), cert_verify_flags_,
+      CertVerifier::RequestParams(cert_, hostname_, cert_verify_flags_,
+                                  std::string(), CertificateList()),
       SSLConfigService::GetCRLSet().get(), &verify_details_->cert_verify_result,
       base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
                  base::Unretained(this)),

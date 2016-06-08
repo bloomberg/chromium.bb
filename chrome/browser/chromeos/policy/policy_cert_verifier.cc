@@ -69,10 +69,7 @@ void PolicyCertVerifier::SetTrustAnchors(
 }
 
 int PolicyCertVerifier::Verify(
-    net::X509Certificate* cert,
-    const std::string& hostname,
-    const std::string& ocsp_response,
-    int flags,
+    const RequestParams& params,
     net::CRLSet* crl_set,
     net::CertVerifyResult* verify_result,
     const net::CompletionCallback& completion_callback,
@@ -85,9 +82,8 @@ int PolicyCertVerifier::Verify(
                  anchor_used_callback_,
                  completion_callback,
                  verify_result);
-  int error =
-      delegate_->Verify(cert, hostname, ocsp_response, flags, crl_set,
-                        verify_result, wrapped_callback, out_req, net_log);
+  int error = delegate_->Verify(params, crl_set, verify_result,
+                                wrapped_callback, out_req, net_log);
   MaybeSignalAnchorUse(error, anchor_used_callback_, *verify_result);
   return error;
 }
