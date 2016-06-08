@@ -78,9 +78,14 @@ ExtensionNavigationThrottle::WillStartRequest() {
   std::string resource_path = navigation_handle()->GetURL().path();
   ExtensionRegistry* registry = ExtensionRegistry::Get(
       navigation_handle()->GetWebContents()->GetBrowserContext());
+  if (!registry)
+    return content::NavigationThrottle::BLOCK_REQUEST;
+
   const extensions::Extension* extension =
       registry->enabled_extensions().GetByID(
           navigation_handle()->GetURL().host());
+  if (!extension)
+    return content::NavigationThrottle::BLOCK_REQUEST;
 
   if (WebAccessibleResourcesInfo::IsResourceWebAccessible(extension,
                                                           resource_path)) {
