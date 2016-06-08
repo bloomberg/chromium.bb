@@ -14,8 +14,6 @@ crbug.com/508730 imported/wpt/html/webappapis/scripting/processing-model-2/compi
 
 # Fail when run with --enable-wptserve: (crbug.com/508734)
 crbug.com/508734 imported/wpt/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
-crbug.com/508734 imported/wpt/html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html [ Failure ]
-crbug.com/508734 imported/wpt/html/editing/focus/document-level-focus-apis/document-level-apis.html [ Failure ]
 crbug.com/508734 imported/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
 crbug.com/508734 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/004.xhtml [ Failure ]
 
@@ -28,7 +26,6 @@ crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loa
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-text.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_script.html [ Failure ]
-crbug.com/508728 imported/wpt/html/semantics/selectors/pseudo-classes/focus.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-data-url.html [ Failure ]
