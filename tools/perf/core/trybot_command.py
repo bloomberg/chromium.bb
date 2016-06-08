@@ -39,6 +39,7 @@ EXCLUDED_BOTS = {
     'linux_fyi_perf_bisect',
     'mac_fyi_perf_bisect',
     'win_fyi_perf_bisect',
+    'winx64_fyi_perf_bisect',
     # CQ bots on tryserver.chromium.perf
     'android_s5_perf_cq',
     'winx64_10_perf_cq',
