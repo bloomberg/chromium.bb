@@ -34,6 +34,10 @@
 #include "../platform/WebCommon.h"
 #include "WebFrame.h"
 
+#if INSIDE_BLINK
+#include <memory>
+#endif
+
 namespace blink {
 
 class WebPlugin;
@@ -56,19 +60,18 @@ protected:
     virtual ~WebHelperPlugin() { }
 };
 
-} // namespace blink
-
-namespace WTF {
-
-template<typename T> struct OwnedPtrDeleter;
-template<> struct OwnedPtrDeleter<blink::WebHelperPlugin> {
-    static void deletePtr(blink::WebHelperPlugin* plugin)
+#if INSIDE_BLINK
+struct WebHelperPluginDeleter {
+    void operator()(WebHelperPlugin* plugin)
     {
         if (plugin)
             plugin->destroy();
     }
 };
 
-} // namespace WTF
+using WebHelperPluginUniquePtr = std::unique_ptr<WebHelperPlugin, WebHelperPluginDeleter>;
+#endif
+
+} // namespace blink
 
 #endif

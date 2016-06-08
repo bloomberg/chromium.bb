@@ -43,10 +43,10 @@ DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebHelperPlugin, plugin, true, true);
 
 WebHelperPlugin* WebHelperPlugin::create(const WebString& pluginType, WebLocalFrame* frame)
 {
-    OwnPtr<WebHelperPlugin> plugin = adoptPtr<WebHelperPlugin>(new WebHelperPluginImpl());
+    WebHelperPluginUniquePtr plugin(new WebHelperPluginImpl());
     if (!toWebHelperPluginImpl(plugin.get())->initialize(pluginType, toWebLocalFrameImpl(frame)))
         return 0;
-    return plugin.leakPtr();
+    return plugin.release();
 }
 
 WebHelperPluginImpl::WebHelperPluginImpl()
