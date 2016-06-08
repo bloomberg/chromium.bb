@@ -6,11 +6,11 @@
 
 #include <memory>
 
+#include "chrome/browser/budget_service/background_budget_service_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/push_messaging/background_budget_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
