@@ -314,14 +314,14 @@
     },
 
     'chromium.lkgr': {
-      'ASAN Debug': 'gn_asan_lsan_edge_fuzzer_debug_bot',
+      'ASAN Debug': 'gn_asan_lsan_edge_debug_bot',
       'ASAN Release (symbolized)':
         'gn_asan_lsan_edge_fuzzer_v8_heap_symbolized_release_bot',
       'ASAN Release Media':
         'gn_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot',
       'ASAN Release': 'gn_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'ASan Debug (32-bit x86 with V8-ARM)':
-        'gn_asan_edge_fuzzer_v8_heap_debug_bot_hybrid',
+        'gn_asan_edge_v8_heap_debug_bot_hybrid',
       'ASan Release (32-bit x86 with V8-ARM)':
         'gn_asan_edge_fuzzer_v8_heap_release_bot_hybrid',
       'ASan Release (32-bit x86 with V8-ARM, symbolized)':
@@ -1220,8 +1220,8 @@
       'release_bot', 'hybrid',
     ],
 
-    'gn_asan_edge_fuzzer_v8_heap_debug_bot_hybrid': [
-      'gn', 'asan', 'edge', 'fuzzer', 'v8_heap', 'debug_bot', 'hybrid',
+    'gn_asan_edge_v8_heap_debug_bot_hybrid': [
+      'gn', 'asan', 'edge', 'v8_heap', 'debug_bot', 'hybrid',
     ],
 
     'gn_asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
@@ -1258,8 +1258,8 @@
       'gyp', 'asan', 'fuzzer', 'v8_heap', 'release', 'static', 'x86',
     ],
 
-    'gn_asan_lsan_edge_fuzzer_debug_bot': [
-      'gn', 'asan', 'lsan', 'edge', 'fuzzer', 'debug_bot',
+    'gn_asan_lsan_edge_debug_bot': [
+      'gn', 'asan', 'lsan', 'edge', 'debug_bot',
     ],
 
     'gn_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
