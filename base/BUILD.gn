@@ -1645,7 +1645,7 @@ if (is_win) {
     ]
   }
 
-  if (target_cpu == "x64") {
+  if (current_cpu == "x64") {
     # Must be a shared library so that it can be unloaded during testing.
     shared_library("base_profiler_test_support_library") {
       sources = [
@@ -2072,7 +2072,7 @@ test("base_unittests") {
 
   if (is_win) {
     deps += [ "//base:scoped_handle_test_dll" ]
-    if (target_cpu == "x64") {
+    if (current_cpu == "x64") {
       sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
       deps += [ ":base_profiler_test_support_library" ]
     }
