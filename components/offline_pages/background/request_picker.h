@@ -10,7 +10,6 @@
 #include "components/offline_pages/background/request_queue.h"
 
 namespace offline_pages {
-
 class RequestPicker {
  public:
   RequestPicker(RequestQueue* requestQueue);

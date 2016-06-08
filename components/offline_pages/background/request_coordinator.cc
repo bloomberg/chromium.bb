@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
@@ -78,7 +79,7 @@ void RequestCoordinator::RequestQueueEmpty() {
 }
 
 bool RequestCoordinator::StartProcessing(
-    const ProcessingDoneCallback& callback) {
+    const base::Callback<void(bool)>& callback) {
   // TODO(petewil): Check existing conditions (should be passed down from
   // BackgroundTask)
 
@@ -96,6 +97,7 @@ void RequestCoordinator::StopProcessing() {
 }
 
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
+  // TODO(petewil): Ensure only one offliner at a time is used.
   // TODO(petewil): When we have multiple offliners, we need to pick one.
   Offliner* offliner = factory_->GetOffliner(policy_.get());
   if (!offliner) {

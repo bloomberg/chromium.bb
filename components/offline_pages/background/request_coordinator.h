@@ -29,7 +29,6 @@ class Scheduler;
 class RequestCoordinator : public KeyedService {
  public:
   // Callback to report when the processing of a triggered task is complete.
-  typedef base::Callback<void()> ProcessingDoneCallback;
   typedef base::Callback<void(const SavePageRequest& request)>
       RequestPickedCallback;
   typedef base::Callback<void()> RequestQueueEmptyCallback;
@@ -48,7 +47,7 @@ class RequestCoordinator : public KeyedService {
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
   // a callback. If processing was already active, returns false.
-  bool StartProcessing(const ProcessingDoneCallback& callback);
+  bool StartProcessing(const base::Callback<void(bool)>& callback);
 
   // Stops the current request processing if active. This is a way for
   // caller to abort processing; otherwise, processing will complete on

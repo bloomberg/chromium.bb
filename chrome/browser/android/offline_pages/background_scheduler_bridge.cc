@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/callback_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
@@ -21,9 +22,7 @@ namespace {
 // C++ callback that delegates to Java callback.
 void ProcessingDoneCallback(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj, jboolean result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ProcessingDoneCallback_onProcessingDone(
-      env, j_callback_obj.obj(), result);
+  base::android::RunCallbackAndroid(j_callback_obj, result);
 }
 
 }  // namespace

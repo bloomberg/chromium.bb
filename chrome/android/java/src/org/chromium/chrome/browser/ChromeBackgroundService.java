@@ -15,11 +15,13 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.offlinepages.BackgroundOfflinerTask;
+import org.chromium.chrome.browser.offlinepages.BackgroundSchedulerProcessorImpl;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.precache.PrecacheController;
 
@@ -125,13 +127,16 @@ public class ChromeBackgroundService extends GcmTaskService {
         PrecacheController.get(context).precache(tag);
     }
 
-    private void handleOfflinePageBackgroundLoad(Context context, Bundle bundle) {
-        if (!hasPrecacheInstance()) {
+    @VisibleForTesting
+    protected void handleOfflinePageBackgroundLoad(Context context, Bundle bundle) {
+        if (!LibraryLoader.isInitialized()) {
             launchBrowser(context);
         }
 
         // Call BackgroundTask, provide context.
-        BackgroundOfflinerTask.startBackgroundRequests(context, bundle);
+        BackgroundOfflinerTask task =
+                new BackgroundOfflinerTask(new BackgroundSchedulerProcessorImpl());
+        task.startBackgroundRequests(context, bundle);
         // TODO(petewil) if processBackgroundRequest returns false, return RESTART_RESCHEDULE
         // to the GcmNetworkManager
     }

@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.ChromeBackgroundService;
  * The background scheduler class is for setting GCM Network Manager tasks.
  */
 public class BackgroundScheduler {
-    /** Bundle key for the timestamp in milliseconds when the request started. */
-    public static final String DATE_TAG = "Date";
     private static final long ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7;
 
     /**
@@ -28,13 +26,11 @@ public class BackgroundScheduler {
         // Get the GCM Network Scheduler.
         GcmNetworkManager gcmNetworkManager = GcmNetworkManager.getInstance(context);
 
-        // TODO(petewil): Move the bundle packing and unpacking into a new SchedulerBridge
-        // class which can be mocked, and calls the static BackgroundSchdeulerBridge.
         // TODO(petewil): Add the triggering conditions into the argument bundle.
         // Triggering conditions will include network state and charging requirements, maybe
         // also battery percentage.
         Bundle taskExtras = new Bundle();
-        taskExtras.putLong(DATE_TAG, System.currentTimeMillis());
+        TaskExtrasPacker.packTimeInBundle(taskExtras);
 
         Task task = new OneoffTask.Builder()
                 .setService(ChromeBackgroundService.class)
@@ -44,7 +40,6 @@ public class BackgroundScheduler {
                 .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
                 .setRequiresCharging(false)
                 .setExtras(taskExtras)
-                .setPersisted(true)
                 .build();
 
         gcmNetworkManager.schedule(task);

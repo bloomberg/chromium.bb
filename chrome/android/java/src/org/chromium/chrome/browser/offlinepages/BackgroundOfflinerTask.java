@@ -7,11 +7,20 @@ package org.chromium.chrome.browser.offlinepages;
 import android.content.Context;
 import android.os.Bundle;
 
+import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.offlinepages.interfaces.BackgroundSchedulerProcessor;
+
 /**
  * Handles servicing of background offlining requests coming via the GcmNetworkManager.
  */
-public class BackgroundOfflinerTask implements BackgroundSchedulerBridge.ProcessingDoneCallback {
-    private static final String TAG = "BackgroundTask";
+public class BackgroundOfflinerTask {
+
+    public BackgroundOfflinerTask(BackgroundSchedulerProcessor bridge) {
+        mBridge = bridge;
+    }
+
+    private final BackgroundSchedulerProcessor mBridge;
 
     /**
      * Triggers processing of background offlining requests.  This is called when
@@ -22,14 +31,13 @@ public class BackgroundOfflinerTask implements BackgroundSchedulerBridge.Process
      *
      * @returns true for success
      */
-    public static boolean startBackgroundRequests(Context context, Bundle bundle) {
-        BackgroundOfflinerTask task = new BackgroundOfflinerTask();
-        task.processBackgroundRequests(bundle);
+    public boolean startBackgroundRequests(Context context, Bundle bundle) {
+        processBackgroundRequests(bundle);
 
         // Gather UMA data to measure how often the user's machine is amenable to background
         // loading when we wake to do a task.
-        long millisSinceBootTask = bundle.getLong(BackgroundScheduler.DATE_TAG);
-        OfflinePageUtils.recordWakeupUMA(context, millisSinceBootTask);
+        long taskScheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(bundle);
+        OfflinePageUtils.recordWakeupUMA(context, taskScheduledTimeMillis);
 
         return true;
     }
@@ -37,7 +45,10 @@ public class BackgroundOfflinerTask implements BackgroundSchedulerBridge.Process
     /**
      * Triggers processing of background offlining requests.
      */
-    private void processBackgroundRequests(Bundle bundle) {
+    // TODO(petewil): Change back to private when UMA works in the test, and test
+    // startBackgroundRequests instead of this method.
+    @VisibleForTesting
+    public void processBackgroundRequests(Bundle bundle) {
         // TODO(petewil): Nothing is holding the Wake Lock.  We need some solution to
         // keep hold of it.  Options discussed so far are having a fresh set of functions
         // to grab and release a countdown latch, or holding onto the wake lock ourselves,
@@ -46,17 +57,18 @@ public class BackgroundOfflinerTask implements BackgroundSchedulerBridge.Process
 
         // TODO(petewil): Decode the TriggerConditions from the bundle.
 
+        Callback<Boolean> callback = new Callback<Boolean>() {
+            /**
+             * Callback function which indicates completion of background work.
+             * @param result - true if work was actually done (used for UMA).
+             */
+            @Override
+            public void onResult(Boolean result) {
+                // TODO(petewil): Release the wake lock.
+            }
+        };
+
         // Pass the activation on to the bridge to the C++ RequestCoordinator.
-        // Callback will hold onto the reference keeping this instance alive.
-        BackgroundSchedulerBridge.startProcessing(this);
-    }
-
-    /**
-     * Callback function which indicates completion of background work.
-     * @param result - true if work was actually done (used for UMA).
-     */
-    @Override
-    public void onProcessingDone(boolean result) {
-
+        mBridge.startProcessing(callback);
     }
 }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -15,14 +16,6 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("offline_pages::android")
 public class BackgroundSchedulerBridge {
-    /**
-     * Callback used to determine when request processing is done.
-     */
-    public interface ProcessingDoneCallback {
-        @CalledByNative("ProcessingDoneCallback")
-        void onProcessingDone(boolean result);
-    }
-
     // Starts processing of one or more queued background requests.
     // Returns whether processing was started and that caller should
     // expect a callback (once processing has completed or terminated).
@@ -31,7 +24,7 @@ public class BackgroundSchedulerBridge {
     // not receive a callback.
     // TODO(dougarnett): consider adding policy check api to let caller
     //     separately determine if not allowed by policy.
-    public static boolean startProcessing(ProcessingDoneCallback callback) {
+    public static boolean startProcessing(Callback<Boolean> callback) {
         return nativeStartProcessing(callback);
     }
 
@@ -45,5 +38,6 @@ public class BackgroundSchedulerBridge {
         BackgroundScheduler.unschedule(ContextUtils.getApplicationContext());
     }
 
-    private static native boolean nativeStartProcessing(ProcessingDoneCallback callback);
+    private static native boolean nativeStartProcessing(
+            Callback<Boolean> callback);
 }

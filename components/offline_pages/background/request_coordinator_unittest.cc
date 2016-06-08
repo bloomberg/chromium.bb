@@ -91,7 +91,7 @@ class RequestCoordinatorTest
   }
 
   // Empty callback function
-  void EmptyCallbackFunction() {
+  void EmptyCallbackFunction(bool result) {
   }
 
   // Callback for getting requests.
@@ -145,7 +145,7 @@ void RequestCoordinatorTest::GetRequestsDone(
 }
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
-  RequestCoordinator::ProcessingDoneCallback callback =
+  base::Callback<void(bool)> callback =
       base::Bind(
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
