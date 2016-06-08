@@ -96,48 +96,48 @@ struct SourceTypeForExt {
 };
 
 const SourceTypeForExt kSourceTypeForExt[] = {
-    {".a", "archive.ar"},
-    {".app", "wrapper.application"},
-    {".appex", "wrapper.app-extension"},
-    {".bdic", "file"},
-    {".bundle", "wrapper.cfbundle"},
-    {".c", "sourcecode.c.c"},
-    {".cc", "sourcecode.cpp.cpp"},
-    {".cpp", "sourcecode.cpp.cpp"},
-    {".css", "text.css"},
-    {".cxx", "sourcecode.cpp.cpp"},
-    {".dart", "sourcecode"},
-    {".dylib", "compiled.mach-o.dylib"},
-    {".framework", "wrapper.framework"},
-    {".h", "sourcecode.c.h"},
-    {".hxx", "sourcecode.cpp.h"},
-    {".icns", "image.icns"},
-    {".java", "sourcecode.java"},
-    {".js", "sourcecode.javascript"},
-    {".kext", "wrapper.kext"},
-    {".m", "sourcecode.c.objc"},
-    {".mm", "sourcecode.cpp.objcpp"},
-    {".nib", "wrapper.nib"},
-    {".o", "compiled.mach-o.objfile"},
-    {".pdf", "image.pdf"},
-    {".pl", "text.script.perl"},
-    {".plist", "text.plist.xml"},
-    {".pm", "text.script.perl"},
-    {".png", "image.png"},
-    {".py", "text.script.python"},
-    {".r", "sourcecode.rez"},
-    {".rez", "sourcecode.rez"},
-    {".s", "sourcecode.asm"},
-    {".storyboard", "file.storyboard"},
-    {".strings", "text.plist.strings"},
-    {".swift", "sourcecode.swift"},
-    {".ttf", "file"},
-    {".xcassets", "folder.assetcatalog"},
-    {".xcconfig", "text.xcconfig"},
-    {".xcdatamodel", "wrapper.xcdatamodel"},
-    {".xcdatamodeld", "wrapper.xcdatamodeld"},
-    {".xib", "file.xib"},
-    {".y", "sourcecode.yacc"},
+    {"a", "archive.ar"},
+    {"app", "wrapper.application"},
+    {"appex", "wrapper.app-extension"},
+    {"bdic", "file"},
+    {"bundle", "wrapper.cfbundle"},
+    {"c", "sourcecode.c.c"},
+    {"cc", "sourcecode.cpp.cpp"},
+    {"cpp", "sourcecode.cpp.cpp"},
+    {"css", "text.css"},
+    {"cxx", "sourcecode.cpp.cpp"},
+    {"dart", "sourcecode"},
+    {"dylib", "compiled.mach-o.dylib"},
+    {"framework", "wrapper.framework"},
+    {"h", "sourcecode.c.h"},
+    {"hxx", "sourcecode.cpp.h"},
+    {"icns", "image.icns"},
+    {"java", "sourcecode.java"},
+    {"js", "sourcecode.javascript"},
+    {"kext", "wrapper.kext"},
+    {"m", "sourcecode.c.objc"},
+    {"mm", "sourcecode.cpp.objcpp"},
+    {"nib", "wrapper.nib"},
+    {"o", "compiled.mach-o.objfile"},
+    {"pdf", "image.pdf"},
+    {"pl", "text.script.perl"},
+    {"plist", "text.plist.xml"},
+    {"pm", "text.script.perl"},
+    {"png", "image.png"},
+    {"py", "text.script.python"},
+    {"r", "sourcecode.rez"},
+    {"rez", "sourcecode.rez"},
+    {"s", "sourcecode.asm"},
+    {"storyboard", "file.storyboard"},
+    {"strings", "text.plist.strings"},
+    {"swift", "sourcecode.swift"},
+    {"ttf", "file"},
+    {"xcassets", "folder.assetcatalog"},
+    {"xcconfig", "text.xcconfig"},
+    {"xcdatamodel", "wrapper.xcdatamodel"},
+    {"xcdatamodeld", "wrapper.xcdatamodeld"},
+    {"xib", "file.xib"},
+    {"y", "sourcecode.yacc"},
 };
 
 const char* GetSourceType(const base::StringPiece& ext) {
@@ -150,12 +150,12 @@ const char* GetSourceType(const base::StringPiece& ext) {
 }
 
 bool HasExplicitFileType(const base::StringPiece& ext) {
-  return ext == ".dart";
+  return ext == "dart";
 }
 
 bool IsSourceFileForIndexing(const base::StringPiece& ext) {
-  return ext == ".c" || ext == ".cc" || ext == ".cpp" || ext == ".cxx" ||
-         ext == ".m" || ext == ".mm";
+  return ext == "c" || ext == "cc" || ext == "cpp" || ext == "cxx" ||
+         ext == "m" || ext == "mm";
 }
 
 void PrintValue(std::ostream& out, IndentRules rules, unsigned value) {
