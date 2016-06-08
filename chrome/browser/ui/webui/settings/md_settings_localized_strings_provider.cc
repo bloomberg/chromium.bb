@@ -584,11 +584,13 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
       {"languagesPageTitle", IDS_SETTINGS_LANGUAGES_PAGE_TITLE},
       {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
       {"manageLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_MANAGE},
+#if defined(OS_CHROMEOS)
       {"inputMethodsListTitle",
        IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
       {"manageInputMethods", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE},
-      {"spellCheckListTitle", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE},
-      {"manageSpellCheck", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE},
+      {"manageInputMethodsPageTitle",
+       IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
+#endif
       {"manageLanguagesPageTitle",
        IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
       {"allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES},
@@ -603,11 +605,15 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
       {"cannotTranslateInThisLanguage",
        IDS_SETTINGS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE},
+#if !defined(OS_MACOSX)
+      {"spellCheckListTitle", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE},
+      {"manageSpellCheck", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE},
       {"editDictionaryPageTitle", IDS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_TITLE},
       {"addDictionaryWordLabel", IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD},
       {"addDictionaryWordButton",
        IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD_BUTTON},
       {"customDictionaryWords", IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
