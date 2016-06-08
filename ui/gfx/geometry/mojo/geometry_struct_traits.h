@@ -70,6 +70,9 @@ struct StructTraits<gfx::mojom::Rect, gfx::Rect> {
   static int width(const gfx::Rect& p) { return p.width(); }
   static int height(const gfx::Rect& p) { return p.height(); }
   static bool Read(gfx::mojom::RectDataView data, gfx::Rect* out) {
+    if (data.width() < 0 || data.height() < 0)
+      return false;
+
     out->SetRect(data.x(), data.y(), data.width(), data.height());
     return true;
   }
@@ -82,6 +85,9 @@ struct StructTraits<gfx::mojom::RectF, gfx::RectF> {
   static float width(const gfx::RectF& p) { return p.width(); }
   static float height(const gfx::RectF& p) { return p.height(); }
   static bool Read(gfx::mojom::RectFDataView data, gfx::RectF* out) {
+    if (data.width() < 0 || data.height() < 0)
+      return false;
+
     out->SetRect(data.x(), data.y(), data.width(), data.height());
     return true;
   }
@@ -92,6 +98,9 @@ struct StructTraits<gfx::mojom::Size, gfx::Size> {
   static int width(const gfx::Size& p) { return p.width(); }
   static int height(const gfx::Size& p) { return p.height(); }
   static bool Read(gfx::mojom::SizeDataView data, gfx::Size* out) {
+    if (data.width() < 0 || data.height() < 0)
+      return false;
+
     out->SetSize(data.width(), data.height());
     return true;
   }
@@ -102,6 +111,9 @@ struct StructTraits<gfx::mojom::SizeF, gfx::SizeF> {
   static float width(const gfx::SizeF& p) { return p.width(); }
   static float height(const gfx::SizeF& p) { return p.height(); }
   static bool Read(gfx::mojom::SizeFDataView data, gfx::SizeF* out) {
+    if (data.width() < 0 || data.height() < 0)
+      return false;
+
     out->SetSize(data.width(), data.height());
     return true;
   }
