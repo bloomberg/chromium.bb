@@ -356,7 +356,10 @@ config("compiler") {
     # TODO(crbug.com/576197) - gcc on x86 platforms + gold + icf=all
     # doesn't currently work. Once it does, use icf=all everywhere.
     # Additionally, on Android x86 --icf=safe seems to cause issues as well.
-    if (is_clang || (current_cpu != "x86" && current_cpu != "x64")) {
+    # Additionally, on cast Android x86, --icf=all causes issues.
+    if (is_android && current_cpu == "x86") {
+      ldflags += [ "-Wl,--icf=none" ]
+    } else if (is_clang || (current_cpu != "x86" && current_cpu != "x64")) {
       ldflags += [ "-Wl,--icf=all" ]
     } else if (!is_android) {
       ldflags += [ "-Wl,--icf=safe" ]
