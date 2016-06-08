@@ -1327,3 +1327,5 @@ crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calcul
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
 crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
+
+crbug.com/618399 fast/js/regress/to-int32-boolean.html [ Pass Timeout ]
