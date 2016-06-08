@@ -110,6 +110,11 @@ const CGFloat kPermissionPopUpXSpacing = 3;
 // |IDS_WEBSITE_SETTINGS_{FIRST,THIRD}_PARTY_SITE_DATA| next to each other.
 const CGFloat kTextLabelXPadding = 5;
 
+// NOTE: This assumes that there will never be more than one website settings
+// popup shown, and that the one that is shown is associated with the current
+// window. This matches the behaviour in views: see WebsiteSettingsPopupView.
+bool g_is_popup_showing = false;
+
 // Takes in the parent window, which should be a BrowserWindow, and gets the
 // proper anchor point for the bubble. The returned point is in screen
 // coordinates.
@@ -1096,9 +1101,14 @@ WebsiteSettingsUIBridge::WebsiteSettingsUIBridge(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
-      bubble_controller_(nil) {}
+      bubble_controller_(nil) {
+  DCHECK(!g_is_popup_showing);
+  g_is_popup_showing = true;
+}
 
 WebsiteSettingsUIBridge::~WebsiteSettingsUIBridge() {
+  DCHECK(g_is_popup_showing);
+  g_is_popup_showing = false;
 }
 
 void WebsiteSettingsUIBridge::set_bubble_controller(
@@ -1119,6 +1129,12 @@ void WebsiteSettingsUIBridge::Show(
     return;
   }
 
+  // Don't show the popup if it's already being shown. Since this method is
+  // called each time the location icon is clicked, each click toggles the popup
+  // in and out.
+  if (g_is_popup_showing)
+    return;
+
   BubbleType bubble_type = WEB_PAGE;
   if (virtual_url.SchemeIs(content::kChromeUIScheme))
     bubble_type = INTERNAL_PAGE;
@@ -1131,7 +1147,8 @@ void WebsiteSettingsUIBridge::Show(
   bool is_devtools_disabled =
       profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
 
-  // Create the bubble controller. It will dealloc itself when it closes.
+  // Create the bubble controller. It will dealloc itself when it closes,
+  // resetting |g_is_popup_showing|.
   WebsiteSettingsBubbleController* bubble_controller =
       [[WebsiteSettingsBubbleController alloc]
              initWithParentWindow:parent

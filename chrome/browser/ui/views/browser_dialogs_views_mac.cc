@@ -26,6 +26,16 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(
     content::WebContents* web_contents,
     const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
+  // Don't show the bubble again if it's already showing. A second click on the
+  // location icon in the omnibox will dismiss an open bubble. This behaviour is
+  // consistent with the non-Mac views implementation.
+  // Note that when the browser is toolkit-views, IsPopupShowing() is checked
+  // earlier because the popup is shown on mouse release (but dismissed on
+  // mouse pressed). A Cocoa browser does both on mouse pressed, so a check
+  // when showing is sufficient.
+  if (WebsiteSettingsPopupView::IsPopupShowing())
+    return;
+
   WebsiteSettingsPopupView::ShowPopup(
       nullptr, gfx::Rect(anchor_point, gfx::Size()), profile, web_contents,
       virtual_url, security_info);
