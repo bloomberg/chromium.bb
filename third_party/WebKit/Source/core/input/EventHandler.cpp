@@ -80,7 +80,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
@@ -192,6 +191,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_mouseDownTimestamp(0)
     , m_pointerEventManager(frame)
     , m_scrollManager(frame)
+    , m_keyboardEventManager(frame, &m_scrollManager)
     , m_longTapShouldInvokeContextMenu(false)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
@@ -218,6 +218,7 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_selectionController);
     visitor->trace(m_pointerEventManager);
     visitor->trace(m_scrollManager);
+    visitor->trace(m_keyboardEventManager);
 }
 
 DragState& EventHandler::dragState()
@@ -2505,148 +2506,17 @@ void EventHandler::notifyElementActivated()
 
 bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
 {
-    // FIXME: Ignoring the state of Shift key is what neither IE nor Firefox do.
-    // IE matches lower and upper case access keys regardless of Shift key state - but if both upper and
-    // lower case variants are present in a document, the correct element is matched based on Shift key state.
-    // Firefox only matches an access key if Shift is not pressed, and does that case-insensitively.
-    ASSERT(!(accessKeyModifiers() & PlatformEvent::ShiftKey));
-    if ((evt.getModifiers() & (PlatformEvent::KeyModifiers & ~PlatformEvent::ShiftKey)) != accessKeyModifiers())
-        return false;
-    String key = evt.unmodifiedText();
-    Element* elem = m_frame->document()->getElementByAccessKey(key.lower());
-    if (!elem)
-        return false;
-    elem->accessKeyAction(false);
-    return true;
+    return m_keyboardEventManager.handleAccessKey(evt);
 }
 
 WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
-    m_frame->chromeClient().clearToolTip();
-
-    if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
-        capsLockStateMayHaveChanged();
-
-#if OS(WIN)
-    if (m_scrollManager.panScrollInProgress()) {
-        // If a key is pressed while the panScroll is in progress then we want to stop
-        if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown)
-            m_scrollManager.stopAutoscroll();
-
-        // If we were in panscroll mode, we swallow the key event
-        return WebInputEventResult::HandledSuppressed;
-    }
-#endif
-
-    // Check for cases where we are too early for events -- possible unmatched key up
-    // from pressing return in the location bar.
-    Node* node = eventTargetNodeForDocument(m_frame->document());
-    if (!node)
-        return WebInputEventResult::NotHandled;
-
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
-
-    // In IE, access keys are special, they are handled after default keydown processing, but cannot be canceled - this is hard to match.
-    // On Mac OS X, we process them before dispatching keydown, as the default keydown handler implements Emacs key bindings, which may conflict
-    // with access keys. Then we dispatch keydown, but suppress its default handling.
-    // On Windows, WebKit explicitly calls handleAccessKey() instead of dispatching a keypress event for WM_SYSCHAR messages.
-    // Other platforms currently match either Mac or Windows behavior, depending on whether they send combined KeyDown events.
-    bool matchedAnAccessKey = false;
-    if (initialKeyEvent.type() == PlatformEvent::KeyDown)
-        matchedAnAccessKey = handleAccessKey(initialKeyEvent);
-
-    // FIXME: it would be fair to let an input method handle KeyUp events before DOM dispatch.
-    if (initialKeyEvent.type() == PlatformEvent::KeyUp || initialKeyEvent.type() == PlatformEvent::Char) {
-        KeyboardEvent* domEvent = KeyboardEvent::create(initialKeyEvent, m_frame->document()->domWindow());
-
-        return toWebInputEventResult(node->dispatchEvent(domEvent));
-    }
-
-    PlatformKeyboardEvent keyDownEvent = initialKeyEvent;
-    if (keyDownEvent.type() != PlatformEvent::RawKeyDown)
-        keyDownEvent.disambiguateKeyDownEvent(PlatformEvent::RawKeyDown);
-    KeyboardEvent* keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
-    if (matchedAnAccessKey)
-        keydown->setDefaultPrevented(true);
-    keydown->setTarget(node);
-
-    DispatchEventResult dispatchResult = node->dispatchEvent(keydown);
-    if (dispatchResult != DispatchEventResult::NotCanceled)
-        return toWebInputEventResult(dispatchResult);
-    // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
-    bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
-    if (changedFocusedFrame)
-        return WebInputEventResult::HandledSystem;
-
-    if (initialKeyEvent.type() == PlatformEvent::RawKeyDown)
-        return WebInputEventResult::NotHandled;
-
-    // Focus may have changed during keydown handling, so refetch node.
-    // But if we are dispatching a fake backward compatibility keypress, then we pretend that the keypress happened on the original node.
-    node = eventTargetNodeForDocument(m_frame->document());
-    if (!node)
-        return WebInputEventResult::NotHandled;
-
-    PlatformKeyboardEvent keyPressEvent = initialKeyEvent;
-    keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char);
-    if (keyPressEvent.text().isEmpty())
-        return WebInputEventResult::NotHandled;
-    KeyboardEvent* keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
-    keypress->setTarget(node);
-    return toWebInputEventResult(node->dispatchEvent(keypress));
-}
-
-static WebFocusType focusDirectionForKey(const AtomicString& keyIdentifier)
-{
-    DEFINE_STATIC_LOCAL(AtomicString, Down, ("Down"));
-    DEFINE_STATIC_LOCAL(AtomicString, Up, ("Up"));
-    DEFINE_STATIC_LOCAL(AtomicString, Left, ("Left"));
-    DEFINE_STATIC_LOCAL(AtomicString, Right, ("Right"));
-
-    WebFocusType retVal = WebFocusTypeNone;
-
-    if (keyIdentifier == Down)
-        retVal = WebFocusTypeDown;
-    else if (keyIdentifier == Up)
-        retVal = WebFocusTypeUp;
-    else if (keyIdentifier == Left)
-        retVal = WebFocusTypeLeft;
-    else if (keyIdentifier == Right)
-        retVal = WebFocusTypeRight;
-
-    return retVal;
+    return m_keyboardEventManager.keyEvent(initialKeyEvent);
 }
 
 void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
 {
-    if (event->type() == EventTypeNames::keydown) {
-        // Clear caret blinking suspended state to make sure that caret blinks
-        // when we type again after long pressing on an empty input field.
-        if (m_frame && m_frame->selection().isCaretBlinkingSuspended())
-            m_frame->selection().setCaretBlinkingSuspended(false);
-
-        m_frame->editor().handleKeyboardEvent(event);
-        if (event->defaultHandled())
-            return;
-        if (event->keyIdentifier() == "U+0009") {
-            defaultTabEventHandler(event);
-        } else if (event->keyIdentifier() == "U+0008") {
-            defaultBackspaceEventHandler(event);
-        } else if (event->keyIdentifier() == "U+001B") {
-            defaultEscapeEventHandler(event);
-        } else {
-            WebFocusType type = focusDirectionForKey(AtomicString(event->keyIdentifier()));
-            if (type != WebFocusTypeNone)
-                defaultArrowEventHandler(type, event);
-        }
-    }
-    if (event->type() == EventTypeNames::keypress) {
-        m_frame->editor().handleKeyboardEvent(event);
-        if (event->defaultHandled())
-            return;
-        if (event->charCode() == ' ')
-            defaultSpaceEventHandler(event);
-    }
+    m_keyboardEventManager.defaultKeyboardEventHandler(event, m_mousePressNode);
 }
 
 bool EventHandler::dragHysteresisExceeded(const IntPoint& dragLocationInRootFrame) const
@@ -2848,110 +2718,9 @@ void EventHandler::defaultTextInputEventHandler(TextEvent* event)
         event->setDefaultHandled();
 }
 
-void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
-{
-    ASSERT(event->type() == EventTypeNames::keypress);
-
-    if (event->ctrlKey() || event->metaKey() || event->altKey())
-        return;
-
-    ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
-
-    // FIXME: enable scroll customization in this case. See crbug.com/410974.
-    if (m_scrollManager.logicalScroll(direction, ScrollByPage, nullptr, m_mousePressNode)) {
-        event->setDefaultHandled();
-        return;
-    }
-}
-
-void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
-{
-    ASSERT(event->type() == EventTypeNames::keydown);
-
-    if (!RuntimeEnabledFeatures::backspaceDefaultHandlerEnabled())
-        return;
-
-    if (event->ctrlKey() || event->metaKey() || event->altKey())
-        return;
-
-    if (!m_frame->editor().behavior().shouldNavigateBackOnBackspace())
-        return;
-    UseCounter::count(m_frame->document(), UseCounter::BackspaceNavigatedBack);
-    if (m_frame->page()->chromeClient().hadFormInteraction())
-        UseCounter::count(m_frame->document(), UseCounter::BackspaceNavigatedBackAfterFormInteraction);
-    bool handledEvent = m_frame->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
-    if (handledEvent)
-        event->setDefaultHandled();
-}
-
-void EventHandler::defaultArrowEventHandler(WebFocusType focusType, KeyboardEvent* event)
-{
-    ASSERT(event->type() == EventTypeNames::keydown);
-
-    if (event->ctrlKey() || event->metaKey() || event->shiftKey())
-        return;
-
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-
-    if (!isSpatialNavigationEnabled(m_frame))
-        return;
-
-    // Arrows and other possible directional navigation keys can be used in design
-    // mode editing.
-    if (m_frame->document()->inDesignMode())
-        return;
-
-    if (page->focusController().advanceFocus(focusType))
-        event->setDefaultHandled();
-}
-
-void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
-{
-    ASSERT(event->type() == EventTypeNames::keydown);
-
-    // We should only advance focus on tabs if no special modifier keys are held down.
-    if (event->ctrlKey() || event->metaKey())
-        return;
-
-#if !OS(MACOSX)
-    // Option-Tab is a shortcut based on a system-wide preference on Mac but
-    // should be ignored on all other platforms.
-    if (event->altKey())
-        return;
-#endif
-
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-    if (!page->tabKeyCyclesThroughElements())
-        return;
-
-    WebFocusType focusType = event->shiftKey() ? WebFocusTypeBackward : WebFocusTypeForward;
-
-    // Tabs can be used in design mode editing.
-    if (m_frame->document()->inDesignMode())
-        return;
-
-    if (page->focusController().advanceFocus(focusType, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()))
-        event->setDefaultHandled();
-}
-
-void EventHandler::defaultEscapeEventHandler(KeyboardEvent* event)
-{
-    if (HTMLDialogElement* dialog = m_frame->document()->activeModalDialog())
-        dialog->dispatchEvent(Event::createCancelable(EventTypeNames::cancel));
-}
-
 void EventHandler::capsLockStateMayHaveChanged()
 {
-    if (Element* element = m_frame->document()->focusedElement()) {
-        if (LayoutObject* r = element->layoutObject()) {
-            if (r->isTextField())
-                toLayoutTextControlSingleLine(r)->capsLockStateMayHaveChanged();
-        }
-    }
+    m_keyboardEventManager.capsLockStateMayHaveChanged();
 }
 
 bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& mev)
@@ -3050,15 +2819,6 @@ void EventHandler::focusDocumentView()
     if (!page)
         return;
     page->focusController().focusDocumentView(m_frame);
-}
-
-PlatformEvent::Modifiers EventHandler::accessKeyModifiers()
-{
-#if OS(MACOSX)
-    return static_cast<PlatformEvent::Modifiers>(PlatformEvent::CtrlKey | PlatformEvent::AltKey);
-#else
-    return PlatformEvent::AltKey;
-#endif
 }
 
 FrameHost* EventHandler::frameHost() const

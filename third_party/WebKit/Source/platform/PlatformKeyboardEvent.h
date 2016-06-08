@@ -90,6 +90,10 @@ public:
     PLATFORM_EXPORT static bool currentCapsLockState();
     PLATFORM_EXPORT static Modifiers getCurrentModifierState();
 
+    // Returns accesskey activator used in page keyboard shortcuts in Chrome.
+    // See https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/accesskey.
+    PLATFORM_EXPORT static PlatformEvent::Modifiers accessKeyModifiers();
+
 protected:
     String m_text;
     String m_unmodifiedText;

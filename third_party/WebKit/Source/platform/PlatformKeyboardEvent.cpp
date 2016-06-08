@@ -71,6 +71,16 @@ void PlatformKeyboardEvent::disambiguateKeyDownEvent(EventType type)
 #endif
 }
 
+PlatformEvent::Modifiers PlatformKeyboardEvent::accessKeyModifiers()
+{
+    // TODO(crbug.com/618397): Add a settings to control this behavior.
+#if OS(MACOSX)
+    return static_cast<PlatformEvent::Modifiers>(PlatformEvent::CtrlKey | PlatformEvent::AltKey);
+#else
+    return PlatformEvent::AltKey;
+#endif
+}
+
 bool PlatformKeyboardEvent::currentCapsLockState()
 {
     switch (s_overrideCapsLockState) {

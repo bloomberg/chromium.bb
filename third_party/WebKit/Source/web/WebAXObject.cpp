@@ -39,7 +39,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
-#include "core/input/EventHandler.h"
 #include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"
@@ -751,7 +750,7 @@ WebString WebAXObject::keyboardShortcut() const
 
     DEFINE_STATIC_LOCAL(String, modifierString, ());
     if (modifierString.isNull()) {
-        unsigned modifiers = EventHandler::accessKeyModifiers();
+        unsigned modifiers = PlatformKeyboardEvent::accessKeyModifiers();
         // Follow the same order as Mozilla MSAA implementation:
         // Ctrl+Alt+Shift+Meta+key. MSDN states that keyboard shortcut strings
         // should not be localized and defines the separator as "+".

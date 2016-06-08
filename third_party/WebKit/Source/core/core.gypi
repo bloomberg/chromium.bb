@@ -2818,6 +2818,8 @@
             'input/EventHandler.h',
             'input/InputDeviceCapabilities.cpp',
             'input/InputDeviceCapabilities.h',
+            'input/KeyboardEventManager.cpp',
+            'input/KeyboardEventManager.h',
             'input/PointerEventManager.cpp',
             'input/PointerEventManager.h',
             'input/ScrollManager.cpp',
