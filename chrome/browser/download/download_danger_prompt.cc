@@ -8,8 +8,8 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
@@ -49,13 +49,14 @@ const char* GetDangerTypeString(
 
 }  // namespace
 
-void DownloadDangerPrompt::SendSafeBrowsingDownloadRecoveryReport(
+void DownloadDangerPrompt::SendSafeBrowsingDownloadReport(
+    ClientSafeBrowsingReportRequest::ReportType report_type,
     bool did_proceed,
     const content::DownloadItem& download) {
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   ClientSafeBrowsingReportRequest report;
-  report.set_type(ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_RECOVERY);
+  report.set_type(report_type);
   switch (download.GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
@@ -75,7 +76,11 @@ void DownloadDangerPrompt::SendSafeBrowsingDownloadRecoveryReport(
   }
   report.set_url(download.GetURL().spec());
   report.set_did_proceed(did_proceed);
-
+  std::string token =
+    safe_browsing::DownloadProtectionService::GetDownloadPingToken(
+        &download);
+  if (!token.empty())
+    report.set_token(token);
   std::string serialized_report;
   if (report.SerializeToString(&serialized_report))
     sb_service->SendSerializedDownloadReport(serialized_report);

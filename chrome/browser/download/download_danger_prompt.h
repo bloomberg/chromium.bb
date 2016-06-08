@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DANGER_PROMPT_H_
 
 #include "base/callback_forward.h"
+#include "chrome/common/safe_browsing/csd.pb.h"
 
 class GURL;
 
@@ -58,7 +59,8 @@ class DownloadDangerPrompt {
   // by user's extended reporting preference (i.e.
   // prefs::kSafeBrowsingExtendedReportingEnabled). We should not put any extra
   // information in this report.
-  static void SendSafeBrowsingDownloadRecoveryReport(
+  static void SendSafeBrowsingDownloadReport(
+      safe_browsing::ClientSafeBrowsingReportRequest::ReportType report_type,
       bool did_proceed,
       const content::DownloadItem& download);
 

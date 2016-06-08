@@ -22,6 +22,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -92,8 +93,9 @@ class DownloadProtectionService {
   // method must be called on the UI thread, and the callback will also be
   // invoked on the UI thread.  This method must be called once the download
   // is finished and written to disk.
-  virtual void CheckClientDownload(content::DownloadItem* item,
-                                   const CheckDownloadCallback& callback);
+  virtual void CheckClientDownload(
+      content::DownloadItem* item,
+      const CheckDownloadCallback& callback);
 
   // Checks whether any of the URLs in the redirect chain of the
   // download match the SafeBrowsing bad binary URL list.  The result is
@@ -148,6 +150,11 @@ class DownloadProtectionService {
     return whitelist_sample_rate_;
   }
 
+  static void SetDownloadPingToken(content::DownloadItem* item,
+                                   const std::string& token);
+
+  static std::string GetDownloadPingToken(const content::DownloadItem* item);
+
  protected:
   // Enum to keep track why a particular download verdict was chosen.
   // This is used to keep some stats around.
@@ -183,6 +190,7 @@ class DownloadProtectionService {
   class CheckClientDownloadRequest;
   class PPAPIDownloadRequest;
   friend class DownloadProtectionServiceTest;
+  friend class DownloadDangerPromptTest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadWhitelistedUrlWithoutSampling);
@@ -214,6 +222,23 @@ class DownloadProtectionService {
                            CheckClientDownloadOverridenByFlag);
 
   static const char kDownloadRequestUrl[];
+
+  static const void* const kDownloadPingTokenKey;
+
+  // Helper class for easy setting and getting token string.
+  class DownloadPingToken : public base::SupportsUserData::Data {
+   public:
+    explicit DownloadPingToken(const std::string& token)
+       : token_string_(token) {}
+
+    std::string token_string() {
+      return token_string_;
+    }
+   private:
+    std::string token_string_;
+
+    DISALLOW_COPY_AND_ASSIGN(DownloadPingToken);
+  };
 
   // Cancels all requests in |download_requests_|, and empties it, releasing
   // the references to the requests.

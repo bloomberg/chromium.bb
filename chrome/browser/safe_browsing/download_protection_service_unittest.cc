@@ -1854,6 +1854,17 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
                                             &mock_page_navigator);
 }
 
+TEST_F(DownloadProtectionServiceTest, GetAndSetDownloadPingToken) {
+  content::MockDownloadItem item;
+  EXPECT_TRUE(DownloadProtectionService::GetDownloadPingToken(&item).empty());
+  std::string token = "download_ping_token";
+  DownloadProtectionService::SetDownloadPingToken(&item, token);
+  EXPECT_EQ(token, DownloadProtectionService::GetDownloadPingToken(&item));
+
+  DownloadProtectionService::SetDownloadPingToken(&item, std::string());
+  EXPECT_TRUE(DownloadProtectionService::GetDownloadPingToken(&item).empty());
+}
+
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
   std::vector<base::FilePath::StringType> alternate_extensions{

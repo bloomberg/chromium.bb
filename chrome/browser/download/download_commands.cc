@@ -300,6 +300,11 @@ void DownloadCommands::ExecuteCommand(Command command) {
             safe_browsing::ClientDownloadResponse::UNCOMMON);
         report.set_url(download_item_->GetURL().spec());
         report.set_did_proceed(true);
+        std::string token =
+            safe_browsing::DownloadProtectionService::GetDownloadPingToken(
+                download_item_);
+        if (!token.empty())
+          report.set_token(token);
         std::string serialized_report;
         if (report.SerializeToString(&serialized_report)) {
           sb_service->SendSerializedDownloadReport(serialized_report);

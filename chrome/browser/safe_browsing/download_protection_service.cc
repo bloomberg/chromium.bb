@@ -82,6 +82,9 @@ namespace safe_browsing {
 const char DownloadProtectionService::kDownloadRequestUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/download";
 
+const void* const DownloadProtectionService::kDownloadPingTokenKey
+    = &kDownloadPingTokenKey;
+
 namespace {
 void RecordFileExtensionType(const base::FilePath& file) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -451,6 +454,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         -source->GetStatus().error());
     DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
     DownloadCheckResult result = UNKNOWN;
+    std::string token;
     if (source->GetStatus().is_success() &&
         net::HTTP_OK == source->GetResponseCode()) {
       ClientDownloadResponse response;
@@ -475,22 +479,29 @@ class DownloadProtectionService::CheckClientDownloadRequest
       } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
         reason = REASON_DOWNLOAD_DANGEROUS;
         result = DANGEROUS;
+        token = response.token();
       } else if (response.verdict() == ClientDownloadResponse::UNCOMMON) {
         reason = REASON_DOWNLOAD_UNCOMMON;
         result = UNCOMMON;
+        token = response.token();
       } else if (response.verdict() == ClientDownloadResponse::DANGEROUS_HOST) {
         reason = REASON_DOWNLOAD_DANGEROUS_HOST;
         result = DANGEROUS_HOST;
+        token = response.token();
       } else if (
           response.verdict() == ClientDownloadResponse::POTENTIALLY_UNWANTED) {
         reason = REASON_DOWNLOAD_POTENTIALLY_UNWANTED;
         result = POTENTIALLY_UNWANTED;
+        token = response.token();
       } else {
         LOG(DFATAL) << "Unknown download response verdict: "
                     << response.verdict();
         reason = REASON_INVALID_RESPONSE_VERDICT;
         result = UNKNOWN;
       }
+      if (!token.empty())
+        SetDownloadPingToken(item_, token);
+
       DownloadFeedbackService::MaybeStorePingsForDownload(
           result, item_, client_download_request_data_, data);
     }
@@ -1574,6 +1585,22 @@ void DownloadProtectionService::ShowDetailsForDownload(
                              NEW_FOREGROUND_TAB,
                              ui::PAGE_TRANSITION_LINK,
                              false));
+}
+
+void DownloadProtectionService::SetDownloadPingToken(
+    content::DownloadItem* item, const std::string& token) {
+  if (item)
+    item->SetUserData(kDownloadPingTokenKey, new DownloadPingToken(token));
+}
+
+std::string DownloadProtectionService::GetDownloadPingToken(
+    const content::DownloadItem* item) {
+  base::SupportsUserData::Data* token_data =
+      item->GetUserData(kDownloadPingTokenKey);
+  if (token_data)
+    return static_cast<DownloadPingToken*>(token_data)->token_string();
+  else
+    return std::string();
 }
 
 namespace {

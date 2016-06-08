@@ -694,7 +694,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 12
+// Next tag: 16
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -710,6 +710,7 @@ message ClientSafeBrowsingReportRequest {
     CLIENT_SIDE_MALWARE_URL = 5;
     DANGEROUS_DOWNLOAD_RECOVERY = 6;
     DANGEROUS_DOWNLOAD_WARNING = 7;
+    DANGEROUS_DOWNLOAD_BY_API = 10;
   }
 
   message HTTPHeader {
@@ -761,8 +762,8 @@ message ClientSafeBrowsingReportRequest {
 
   optional ReportType type = 10;
 
-  // Only set if ReportType is DANGEROUS_DOWNLOAD_RECOVERY or
-  // DANGEROUS_DOWNLOAD_WARNING.
+  // Only set if ReportType is DANGEROUS_DOWNLOAD_RECOVERY,
+  // DANGEROUS_DOWNLOAD_WARNING or DANGEROUS_DOWNLOAD_BY_API.
   optional ClientDownloadResponse.Verdict download_verdict = 11;
 
   // URL of the page in the address bar.
@@ -785,4 +786,9 @@ message ClientSafeBrowsingReportRequest {
 
   // Whether user visited this origin before.
   optional bool repeat_visit = 9;
+
+  // The same token in ClientDownloadResponse. This field is only set if its
+  // report type is DANGEROUS_DOWNLOAD_RECOVERY, DANGEROUS_DOWNLOAD_WARNING or
+  // DANGEROUS_DOWNLOAD_BY_API.
+  optional bytes token = 15;
 }

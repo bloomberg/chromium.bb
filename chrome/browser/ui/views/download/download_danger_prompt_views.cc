@@ -27,6 +27,7 @@
 #include "url/gurl.h"
 
 using extensions::ExperienceSamplingEvent;
+using safe_browsing::ClientSafeBrowsingReportRequest;
 
 namespace {
 
@@ -71,6 +72,9 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   void RunDone(Action action);
 
   content::DownloadItem* download_;
+  // If show_context_ is true, this is a download confirmation dialog by
+  // download API, otherwise it is download recovery dialog from a regular
+  // download.
   bool show_context_;
   OnDone done_;
 
@@ -330,14 +334,18 @@ void DownloadDangerPromptViews::RunDone(Action action) {
   OnDone done = done_;
   done_.Reset();
   if (download_ != NULL) {
-    // If this download is no longer dangerous, or is already canceled or
+    // If this download is no longer dangerous, is already canceled or
     // completed, don't send any report.
     if (download_->IsDangerous() && !download_->IsDone()) {
       const bool accept = action == DownloadDangerPrompt::ACCEPT;
       RecordDownloadDangerPrompt(accept, *download_);
       if (!download_->GetURL().is_empty() &&
           !download_->GetBrowserContext()->IsOffTheRecord()) {
-        SendSafeBrowsingDownloadRecoveryReport(accept, *download_);
+        ClientSafeBrowsingReportRequest::ReportType report_type
+            = show_context_ ?
+                ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_BY_API :
+                ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_RECOVERY;
+        SendSafeBrowsingDownloadReport(report_type, accept, *download_);
       }
     }
     download_->RemoveObserver(this);
