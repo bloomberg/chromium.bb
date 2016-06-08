@@ -1018,7 +1018,6 @@ cr.define('cr.ui.login', function() {
    * @param {string} assetId The device asset ID.
    */
   DisplayManager.setEnterpriseInfo = function(messageText, assetId) {
-    $('offline-gaia').enterpriseInfo = messageText;
     $('asset-id').textContent = ((assetId == "") ? "" :
         loadTimeData.getStringF('assetIdLabel', assetId));
   };

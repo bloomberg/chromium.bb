@@ -662,7 +662,7 @@ cr.define('cr.login', function() {
       if (this.samlHandler_.scrapedPasswordCount == 1) {
         // If we scraped exactly one password, we complete the authentication
         // right away.
-        this.password = this.samlHandler_.firstScrapedPassword;
+        this.password_ = this.samlHandler_.firstScrapedPassword;
         this.onAuthCompleted_();
         return;
       }

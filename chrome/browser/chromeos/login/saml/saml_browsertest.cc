@@ -493,6 +493,16 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
+  // Make sure that the password is scraped correctly.
+  ASSERT_TRUE(content::ExecuteScript(
+      GetLoginUI()->GetWebContents(),
+      "$('gaia-signin').gaiaAuthHost_.addEventListener('authCompleted',"
+      "    function(e) {"
+      "      var password = e.detail.password;"
+      "      window.domAutomationController.setAutomationId(0);"
+      "      window.domAutomationController.send(password);"
+      "    });"));
+
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
@@ -501,7 +511,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
+  content::DOMMessageQueue message_queue;
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  std::string message;
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"fake_password\"");
+
   session_start_waiter.Wait();
 }
 
