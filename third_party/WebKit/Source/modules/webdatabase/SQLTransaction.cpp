@@ -35,6 +35,7 @@
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseContext.h"
+#include "modules/webdatabase/DatabaseThread.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementCallback.h"
 #include "modules/webdatabase/SQLStatementErrorCallback.h"
@@ -64,6 +65,7 @@ SQLTransaction::SQLTransaction(Database* db, SQLTransactionCallback* callback,
     , m_executeSqlAllowed(false)
     , m_readOnly(readOnly)
 {
+    DCHECK(isMainThread());
     ASSERT(m_database);
     InspectorInstrumentation::asyncTaskScheduled(db->getExecutionContext(), "SQLTransaction", this, true);
 }
@@ -200,6 +202,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
 
 SQLTransactionState SQLTransaction::deliverStatementCallback()
 {
+    DCHECK(isMainThread());
     // Spec 4.3.2.6.6 and 4.3.2.6.3: If the statement callback went wrong, jump to the transaction error callback
     // Otherwise, continue to loop through the statement queue
     m_executeSqlAllowed = true;
@@ -221,6 +224,7 @@ SQLTransactionState SQLTransaction::deliverStatementCallback()
 
 SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 {
+    DCHECK(isMainThread());
     ASSERT(m_backend->currentStatement());
 
     bool shouldRetryCurrentStatement = m_database->transactionClient()->didExceedQuota(database());
@@ -231,6 +235,7 @@ SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 
 SQLTransactionState SQLTransaction::deliverSuccessCallback()
 {
+    DCHECK(isMainThread());
     InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
     InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(), this);
 
@@ -263,12 +268,14 @@ SQLTransactionState SQLTransaction::sendToBackendState()
 
 void SQLTransaction::performPendingCallback()
 {
+    DCHECK(isMainThread());
     computeNextStateAndCleanupIfNeeded();
     runStateMachine();
 }
 
 void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, SQLStatementCallback* callback, SQLStatementErrorCallback* callbackError, ExceptionState& exceptionState)
 {
+    DCHECK(isMainThread());
     if (!m_executeSqlAllowed) {
         exceptionState.throwDOMException(InvalidStateError, "SQL execution is disallowed.");
         return;

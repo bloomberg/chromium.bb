@@ -41,6 +41,7 @@ SQLResultSet::SQLResultSet()
     , m_insertIdSet(false)
     , m_isValid(false)
 {
+    DCHECK(isMainThread());
 }
 
 DEFINE_TRACE(SQLResultSet)

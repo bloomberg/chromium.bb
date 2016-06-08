@@ -401,9 +401,4 @@ bool SQLiteDatabase::turnOnIncrementalAutoVacuum()
     }
 }
 
-DEFINE_TRACE(SQLiteDatabase)
-{
-    visitor->trace(m_authorizer);
-}
-
 } // namespace blink

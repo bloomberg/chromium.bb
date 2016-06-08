@@ -74,7 +74,7 @@ public:
     void failedToOpenDatabase(Database*);
 
 private:
-    using DatabaseSet = HashSet<UntracedMember<Database>>;
+    using DatabaseSet = HashSet<CrossThreadPersistent<Database>>;
     using DatabaseNameMap = HashMap<String, DatabaseSet*>;
     using DatabaseOriginMap = HashMap<String, DatabaseNameMap*>;
     class CloseOneDatabaseImmediatelyTask;
@@ -85,9 +85,6 @@ private:
 
     Mutex m_openDatabaseMapGuard;
 
-    // This map contains untraced pointers to a garbage-collected class. We can't
-    // make this traceable because it is updated by multiple database threads.
-    // See http://crbug.com/417990
     mutable OwnPtr<DatabaseOriginMap> m_openDatabaseMap;
 };
 

@@ -356,6 +356,7 @@ SQLTransactionBackend::SQLTransactionBackend(Database* db, SQLTransaction* front
     , m_readOnly(readOnly)
     , m_hasVersionMismatch(false)
 {
+    DCHECK(isMainThread());
     ASSERT(m_database);
     m_frontend->setBackend(this);
     m_requestedState = SQLTransactionState::AcquireLock;
@@ -368,11 +369,8 @@ SQLTransactionBackend::~SQLTransactionBackend()
 
 DEFINE_TRACE(SQLTransactionBackend)
 {
-    visitor->trace(m_frontend);
-    visitor->trace(m_currentStatementBackend);
     visitor->trace(m_database);
     visitor->trace(m_wrapper);
-    visitor->trace(m_statementQueue);
 }
 
 void SQLTransactionBackend::doCleanup()
@@ -467,12 +465,14 @@ SQLTransactionBackend::StateFunction SQLTransactionBackend::stateFunctionFor(SQL
 
 void SQLTransactionBackend::enqueueStatementBackend(SQLStatementBackend* statementBackend)
 {
+    DCHECK(isMainThread());
     MutexLocker locker(m_statementMutex);
     m_statementQueue.append(statementBackend);
 }
 
 void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
 {
+    DCHECK(database()->getDatabaseContext()->databaseThread()->isDatabaseThread());
     // Only honor the requested state transition if we're not supposed to be
     // cleaning up and shutting down:
     if (m_database->opened()) {
@@ -520,6 +520,7 @@ void SQLTransactionBackend::performNextStep()
 void SQLTransactionBackend::executeSQL(SQLStatement* statement,
     const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions)
 {
+    DCHECK(isMainThread());
     enqueueStatementBackend(SQLStatementBackend::create(statement, sqlStatement, arguments, permissions));
 }
 
@@ -549,6 +550,7 @@ void SQLTransactionBackend::lockAcquired()
 
 SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
 {
+    DCHECK(database()->getDatabaseContext()->databaseThread()->isDatabaseThread());
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
     ASSERT(m_lockAcquired);
 
@@ -615,6 +617,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
 
 SQLTransactionState SQLTransactionBackend::runStatements()
 {
+    DCHECK(database()->getDatabaseContext()->databaseThread()->isDatabaseThread());
     ASSERT(m_lockAcquired);
     SQLTransactionState nextState;
 
@@ -649,6 +652,7 @@ SQLTransactionState SQLTransactionBackend::runStatements()
 
 void SQLTransactionBackend::getNextStatement()
 {
+    DCHECK(database()->getDatabaseContext()->databaseThread()->isDatabaseThread());
     m_currentStatementBackend = nullptr;
 
     MutexLocker locker(m_statementMutex);

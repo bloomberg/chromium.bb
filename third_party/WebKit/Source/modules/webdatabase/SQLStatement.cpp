@@ -54,6 +54,8 @@ SQLStatement::SQLStatement(Database* database, SQLStatementCallback* callback,
     : m_statementCallback(callback)
     , m_statementErrorCallback(errorCallback)
 {
+    DCHECK(isMainThread());
+
     if (hasCallback() || hasErrorCallback())
         InspectorInstrumentation::asyncTaskScheduled(database->getExecutionContext(), "SQLStatement", this);
 }

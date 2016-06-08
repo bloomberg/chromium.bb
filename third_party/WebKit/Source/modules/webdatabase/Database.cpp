@@ -215,6 +215,7 @@ Database::Database(DatabaseContext* databaseContext, const String& name, const S
     , m_transactionInProgress(false)
     , m_isTransactionQueueEnabled(true)
 {
+    DCHECK(isMainThread());
     m_contextThreadSecurityOrigin = m_databaseContext->getSecurityOrigin()->isolatedCopy();
 
     m_databaseAuthorizer = DatabaseAuthorizer::create(infoTableName);
@@ -254,7 +255,6 @@ DEFINE_TRACE(Database)
     visitor->trace(m_databaseContext);
     visitor->trace(m_sqliteDatabase);
     visitor->trace(m_databaseAuthorizer);
-    visitor->trace(m_transactionQueue);
 }
 
 bool Database::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
@@ -411,7 +411,7 @@ public:
     void setOpenSucceeded() { m_openSucceeded = true; }
 
 private:
-    Member<Database> m_database;
+    CrossThreadPersistent<Database> m_database;
     bool m_openSucceeded;
 };
 

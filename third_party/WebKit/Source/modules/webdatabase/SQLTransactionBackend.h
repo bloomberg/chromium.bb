@@ -105,8 +105,8 @@ private:
 
     void getNextStatement();
 
-    Member<SQLTransaction> m_frontend;
-    Member<SQLStatementBackend> m_currentStatementBackend;
+    CrossThreadPersistent<SQLTransaction> m_frontend;
+    CrossThreadPersistent<SQLStatementBackend> m_currentStatementBackend;
 
     Member<Database> m_database;
     Member<SQLTransactionWrapper> m_wrapper;
@@ -122,7 +122,7 @@ private:
     bool m_hasVersionMismatch;
 
     Mutex m_statementMutex;
-    HeapDeque<Member<SQLStatementBackend>> m_statementQueue;
+    Deque<CrossThreadPersistent<SQLStatementBackend>> m_statementQueue;
 
     OwnPtr<SQLiteTransaction> m_sqliteTransaction;
 };
