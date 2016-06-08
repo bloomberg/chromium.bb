@@ -6733,6 +6733,71 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting)
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
 }
 
+// Tests that leaving fullscreen by navigating to a new page resets the
+// fullscreen page scale constraints.
+TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation)
+{
+    registerMockedHttpURLLoad("viewport-tiny.html");
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    int viewportWidth = 100;
+    int viewportHeight = 200;
+
+    WebViewImpl* webViewImpl =
+        webViewHelper.initializeAndLoad(
+            m_baseURL + "viewport-tiny.html",
+            true,
+            nullptr,
+            nullptr,
+            nullptr,
+            configureAndroid);
+
+    webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->updateAllLifecyclePhases();
+
+    // viewport-tiny.html specifies a 320px layout width.
+    LayoutViewItem layoutViewItem =
+        webViewImpl->mainFrameImpl()->frameView()->layoutViewItem();
+    EXPECT_EQ(320, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(640, layoutViewItem.logicalHeight().floor());
+    EXPECT_FLOAT_EQ(0.3125, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(0.3125, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+
+    Document* document =
+        toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
+    Fullscreen::from(*document).requestFullscreen(
+        *document->documentElement(), Fullscreen::PrefixedRequest);
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Entering fullscreen causes layout size and page scale limits to be
+    // overridden.
+    EXPECT_EQ(100, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(200, layoutViewItem.logicalHeight().floor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
+
+    const char source[] = "<meta name=\"viewport\" content=\"width=200\">";
+
+    // Load a new page before exiting fullscreen.
+    KURL testURL = toKURL("about:blank");
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    FrameTestHelpers::loadHTMLString(frame, source, testURL);
+    webViewImpl->didExitFullScreen();
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Make sure the new page's layout size and scale factor limits aren't
+    // overridden.
+    layoutViewItem =
+        webViewImpl->mainFrameImpl()->frameView()->layoutViewItem();
+    EXPECT_EQ(200, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(400, layoutViewItem.logicalHeight().floor());
+    EXPECT_FLOAT_EQ(0.5, webViewImpl->minimumPageScaleFactor());
+    EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+}
+
 TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");

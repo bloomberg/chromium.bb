@@ -96,6 +96,9 @@ void FullscreenController::didExitFullScreen()
     if (!m_fullScreenFrame)
         return;
 
+    if (m_haveEnteredFullscreen)
+        updatePageScaleConstraints(true);
+
     if (Document* document = m_fullScreenFrame->document()) {
         if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document)) {
             Element* element = fullscreen->webkitCurrentFullScreenElement();
@@ -111,12 +114,10 @@ void FullscreenController::didExitFullScreen()
                     m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
 
                 if (m_haveEnteredFullscreen) {
-                    updatePageScaleConstraints(true);
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
                     if (m_webViewImpl->mainFrame()->isWebLocalFrame())
                         m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
                     m_webViewImpl->setVisualViewportOffset(m_exitFullscreenVisualViewportOffset);
-                    m_haveEnteredFullscreen = false;
                 }
 
                 fullscreen->didExitFullScreenForElement();
@@ -124,6 +125,7 @@ void FullscreenController::didExitFullScreen()
         }
     }
 
+    m_haveEnteredFullscreen = false;
     m_fullScreenFrame.clear();
 }
 
