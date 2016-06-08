@@ -57,6 +57,7 @@
 #include "chrome/installer/util/scoped_user_protocol_entry.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
+#include "components/base32/base32.h"
 
 using base::win::RegKey;
 
@@ -136,17 +137,15 @@ UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
   base::MD5Digest md5_digest;
   std::string user_sid_ascii(base::UTF16ToASCII(user_sid));
   base::MD5Sum(user_sid_ascii.c_str(), user_sid_ascii.length(), &md5_digest);
-  const base::string16 base32_md5(
-      ShellUtil::ByteArrayToBase32(md5_digest.a, arraysize(md5_digest.a)));
-  // The value returned by the base32 algorithm above must never change and
-  // must always be 26 characters long (i.e. if someone ever moves this to
-  // base and implements the full base32 algorithm (i.e. with appended '='
-  // signs in the output), they must provide a flag to allow this method to
-  // still request the output with no appended '=' signs).
+  std::string base32_md5 = base32::Base32Encode(
+      base::StringPiece(reinterpret_cast<char*>(md5_digest.a),
+                        arraysize(md5_digest.a)),
+      base32::Base32EncodePolicy::OMIT_PADDING);
+  // The value returned by the base32 algorithm above must never change.
   DCHECK_EQ(base32_md5.length(), 26U);
   suffix_.reserve(base32_md5.length() + 1);
   suffix_.assign(1, L'.');
-  suffix_.append(base32_md5);
+  suffix_.append(base::ASCIIToUTF16(base32_md5));
 }
 
 bool UserSpecificRegistrySuffix::GetSuffix(base::string16* suffix) {
@@ -2267,54 +2266,6 @@ bool ShellUtil::GetOldUserSpecificRegistrySuffix(base::string16* suffix) {
   suffix->assign(1, L'.');
   suffix->append(user_name, size - 1);
   return true;
-}
-
-base::string16 ShellUtil::ByteArrayToBase32(const uint8_t* bytes, size_t size) {
-  static const char kEncoding[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-
-  // Eliminate special cases first.
-  if (size == 0) {
-    return base::string16();
-  } else if (size == 1) {
-    base::string16 ret;
-    ret.push_back(kEncoding[(bytes[0] & 0xf8) >> 3]);
-    ret.push_back(kEncoding[(bytes[0] & 0x07) << 2]);
-    return ret;
-  } else if (size >= std::numeric_limits<size_t>::max() / 8) {
-    // If |size| is too big, the calculation of |encoded_length| below will
-    // overflow.
-    NOTREACHED();
-    return base::string16();
-  }
-
-  // Overestimate the number of bits in the string by 4 so that dividing by 5
-  // is the equivalent of rounding up the actual number of bits divided by 5.
-  const size_t encoded_length = (size * 8 + 4) / 5;
-
-  base::string16 ret;
-  ret.reserve(encoded_length);
-
-  // A bit stream which will be read from the left and appended to from the
-  // right as it's emptied.
-  uint16_t bit_stream = (bytes[0] << 8) + bytes[1];
-  size_t next_byte_index = 2;
-  int free_bits = 0;
-  while (free_bits < 16) {
-    // Extract the 5 leftmost bits in the stream
-    ret.push_back(kEncoding[(bit_stream & 0xf800) >> 11]);
-    bit_stream <<= 5;
-    free_bits += 5;
-
-    // If there is enough room in the bit stream, inject another byte (if there
-    // are any left...).
-    if (free_bits >= 8 && next_byte_index < size) {
-      free_bits -= 8;
-      bit_stream += bytes[next_byte_index++] << free_bits;
-    }
-  }
-
-  DCHECK_EQ(ret.length(), encoded_length);
-  return ret;
 }
 
 // static

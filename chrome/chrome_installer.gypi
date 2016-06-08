@@ -308,6 +308,7 @@
             '../chrome/common_constants.gyp:common_constants',
             '../chrome/common_constants.gyp:version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
+            '../components/components.gyp:base32',
             '../components/components.gyp:crash_component',
             '../rlz/rlz.gyp:rlz_lib',
             '../third_party/zlib/zlib.gyp:zlib',

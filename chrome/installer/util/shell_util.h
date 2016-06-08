@@ -611,13 +611,6 @@ class ShellUtil {
   // should call GetCurrentInstallationSuffix().
   static bool GetOldUserSpecificRegistrySuffix(base::string16* suffix);
 
-  // Returns the base32 encoding (using the [A-Z2-7] alphabet) of |bytes|.
-  // |size| is the length of |bytes|.
-  // Note: This method does not suffix the output with '=' signs as technically
-  // required by the base32 standard for inputs that aren't a multiple of 5
-  // bytes.
-  static base::string16 ByteArrayToBase32(const uint8_t* bytes, size_t size);
-
   // Associates a set of file extensions with a particular application in the
   // Windows registry, for the current user only. If an extension has no
   // existing default association, the given application becomes the default.

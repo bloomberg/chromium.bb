@@ -13,6 +13,7 @@
     'about_handler.gypi',
     'auto_login_parser.gypi',
     'autofill.gypi',
+    'base32.gypi',
     'bookmarks.gypi',
     'browser_sync.gypi',
     'browsing_data_ui.gypi',

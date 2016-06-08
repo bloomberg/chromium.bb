@@ -104,6 +104,7 @@ static_library("with_no_strings") {
       ":generate_strings",
       "//base/third_party/dynamic_annotations",
       "//chrome/install_static:install_static_util",
+      "//components/base32",
       "//components/metrics",
 
       # TODO(fdoray): Remove this once the PreRead field trial has expired.

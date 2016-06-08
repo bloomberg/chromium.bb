@@ -66,6 +66,9 @@
       'autofill/core/common/password_form_fill_data_unittest.cc',
       'autofill/core/common/save_password_progress_logger_unittest.cc',
     ],
+    'base32_unittest_sources': [
+      'base32/base32_unittest.cc',
+    ],
     'bookmarks_unittest_sources': [
       'bookmarks/browser/bookmark_codec_unittest.cc',
       'bookmarks/browser/bookmark_expanded_state_tracker_unittest.cc',
@@ -989,6 +992,7 @@
 
         '<@(auto_login_parser_unittest_sources)',
         '<@(autofill_unittest_sources)',
+        '<@(base32_unittest_sources)',
         '<@(bookmarks_unittest_sources)',
         '<@(browser_sync_unittest_sources)',
         '<@(browser_watcher_unittest_sources)',
@@ -1099,6 +1103,7 @@
         'components.gyp:autofill_core_browser',
         'components.gyp:autofill_core_common',
         'components.gyp:autofill_core_test_support',
+        'components.gyp:base32',
         'components.gyp:bookmarks_browser',
         'components.gyp:bookmarks_managed',
         'components.gyp:bookmarks_test_support',

@@ -1005,16 +1005,3 @@ TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
   ASSERT_STREQ(user_name, suffix.substr(1).c_str());
 }
 
-TEST(ShellUtilTest, ByteArrayToBase32) {
-  // Tests from http://tools.ietf.org/html/rfc4648#section-10.
-  const unsigned char test_array[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
-
-  const base::string16 expected[] = { L"", L"MY", L"MZXQ", L"MZXW6", L"MZXW6YQ",
-                                L"MZXW6YTB", L"MZXW6YTBOI"};
-
-  // Run the tests, with one more letter in the input every pass.
-  for (size_t i = 0; i < arraysize(expected); ++i) {
-    ASSERT_EQ(expected[i],
-              ShellUtil::ByteArrayToBase32(test_array, i));
-  }
-}

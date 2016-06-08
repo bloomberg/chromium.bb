@@ -63,6 +63,7 @@ if (is_win) {
       "//chrome/common:version_header",
       "//chrome/installer/util:with_rc_strings",
       "//chrome_elf:constants",
+      "//components/base32",
       "//components/crash/content/app:app",
       "//components/crash/content/app:lib",
       "//components/crash/core/common",
