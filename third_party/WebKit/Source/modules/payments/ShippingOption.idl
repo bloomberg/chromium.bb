@@ -10,4 +10,5 @@
     required DOMString id;
     required DOMString label;
     required CurrencyAmount amount;
+    boolean selected = false;
 };

@@ -78,6 +78,7 @@ struct ShippingOption {
   string id;
   string label;
   CurrencyAmount amount;
+  bool selected;
 };
 
 struct PaymentDetails {

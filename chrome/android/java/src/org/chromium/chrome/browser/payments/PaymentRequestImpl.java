@@ -194,10 +194,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        // If the merchant requests shipping and does not provide shipping options here, then the
-        // merchant needs the shipping address to calculate shipping price and availability.
+        // If the merchant requests shipping and does not provide a selected shipping option, then
+        // the merchant needs the shipping address to calculate the shipping price and availability.
         boolean requestShipping = options != null && options.requestShipping;
-        mMerchantNeedsShippingAddress = requestShipping && mUiShippingOptions.isEmpty();
+        mMerchantNeedsShippingAddress =
+                requestShipping && mUiShippingOptions.getSelectedItem() == null;
 
         mData = getValidatedData(mSupportedMethods, stringifiedData);
         if (mData == null) {
@@ -344,7 +345,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mRawLineItems = Arrays.asList(details.displayItems);
 
         mUiShippingOptions = getValidatedShippingOptions(details.shippingOptions, totalCurrency,
-                formatter, mRawShippingOptions, mUiShippingOptions);
+                formatter);
         if (mUiShippingOptions == null) {
             disconnectFromClientWithDebugMessage("Invalid shipping options");
             return false;
@@ -401,20 +402,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     /**
      * Validates a list of shipping options and returns their parsed representation or null if
-     * invalid. Preserves the selected shipping option by comparing the raw options to the previous
-     * raw options and returning the previous UI options if the raw versions are the same.
+     * invalid.
      *
      * @param options The raw shipping options to parse and validate.
      * @param totalCurrency The currency code for the total amount of payment.
      * @param formatter A formatter and validator for the currency amount value.
-     * @param previousRawOptions The raw previous shipping options that have been parsed and
-     *                           validated. Can be null.
-     * @param previousUiOptions The UI representation of the previous shipping options.
      * @return The UI representation of the shipping options or null if invalid.
      */
     private static SectionInformation getValidatedShippingOptions(ShippingOption[] options,
-            String totalCurrency, CurrencyStringFormatter formatter,
-            List<ShippingOption> previousRawOptions, SectionInformation previousUiOptions) {
+            String totalCurrency, CurrencyStringFormatter formatter) {
         // Shipping options are optional.
         if (options == null || options.length == 0) {
             return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);
@@ -435,33 +431,17 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        boolean isSameAsPreviousOptions = true;
-        if (previousRawOptions == null || previousRawOptions.size() != options.length) {
-            isSameAsPreviousOptions = false;
-        } else {
-            for (int i = 0; i < options.length; i++) {
-                ShippingOption newOption = options[i];
-                ShippingOption previousOption = previousRawOptions.get(i);
-                if (!newOption.id.equals(previousOption.id)
-                        || !newOption.label.equals(previousOption.label)
-                        || !newOption.amount.currencyCode.equals(previousOption.amount.currencyCode)
-                        || !newOption.amount.value.equals(previousOption.amount.value)) {
-                    isSameAsPreviousOptions = false;
-                    break;
-                }
-            }
-        }
-        if (isSameAsPreviousOptions) return previousUiOptions;
-
         List<PaymentOption> result = new ArrayList<>();
+        int selectedItemIndex = SectionInformation.NO_SELECTION;
         for (int i = 0; i < options.length; i++) {
             ShippingOption option = options[i];
             result.add(new PaymentOption(option.id, option.label,
                     formatter.format(option.amount.value), PaymentOption.NO_ICON));
+            if (option.selected) selectedItemIndex = i;
         }
 
-        return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS,
-                result.size() == 1 ? 0 : SectionInformation.NO_SELECTION, result);
+        return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, selectedItemIndex,
+                result);
     }
 
     private JSONObject getValidatedData(Set<String> supportedMethods, String stringifiedData) {

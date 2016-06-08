@@ -18,7 +18,8 @@ function buy() {  // eslint-disable-line no-unused-vars
           shippingOptions: [{
             id: 'freeShippingOption',
             label: 'Free global shipping',
-            amount: {currency: 'USD', value: '0'}
+            amount: {currency: 'USD', value: '0'},
+            selected: true
           }]
         },
         {requestShipping: true});

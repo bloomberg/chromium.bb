@@ -105,19 +105,6 @@ TEST_F(PaymentRequestTest, NullShippingOptionWhenMultipleOptionsAvailable)
     EXPECT_TRUE(request->shippingOption().isNull());
 }
 
-TEST_F(PaymentRequestTest, SelectSingleAvailableShippingOptionWhenShippingRequested)
-{
-    PaymentDetails details;
-    details.setTotal(buildPaymentItemForTest());
-    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard")));
-    PaymentOptions options;
-    options.setRequestShipping(true);
-
-    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
-
-    EXPECT_EQ("standard", request->shippingOption());
-}
-
 TEST_F(PaymentRequestTest, DontSelectSingleAvailableShippingOptionByDefault)
 {
     PaymentDetails details;
@@ -140,6 +127,69 @@ TEST_F(PaymentRequestTest, DontSelectSingleAvailableShippingOptionWhenShippingNo
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
 
     EXPECT_TRUE(request->shippingOption().isNull());
+}
+
+TEST_F(PaymentRequestTest, DontSelectSingleUnselectedShippingOptionWhenShippingRequested)
+{
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    details.setShippingOptions(HeapVector<ShippingOption>(1, buildShippingOptionForTest()));
+    PaymentOptions options;
+    options.setRequestShipping(true);
+
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+
+    EXPECT_TRUE(request->shippingOption().isNull());
+}
+
+TEST_F(PaymentRequestTest, SelectSingleSelectedShippingOptionWhenShippingRequested)
+{
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    HeapVector<ShippingOption> shippingOptions(1, buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard"));
+    shippingOptions[0].setSelected(true);
+    details.setShippingOptions(shippingOptions);
+    PaymentOptions options;
+    options.setRequestShipping(true);
+
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+
+    EXPECT_EQ("standard", request->shippingOption());
+}
+
+TEST_F(PaymentRequestTest, SelectOnlySelectedShippingOptionWhenShippingRequested)
+{
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    HeapVector<ShippingOption> shippingOptions(2);
+    shippingOptions[0] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard");
+    shippingOptions[0].setSelected(true);
+    shippingOptions[1] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "express");
+    details.setShippingOptions(shippingOptions);
+    PaymentOptions options;
+    options.setRequestShipping(true);
+
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+
+    EXPECT_EQ("standard", request->shippingOption());
+}
+
+TEST_F(PaymentRequestTest, SelectLastSelectedShippingOptionWhenShippingRequested)
+{
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    HeapVector<ShippingOption> shippingOptions(2);
+    shippingOptions[0] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "standard");
+    shippingOptions[0].setSelected(true);
+    shippingOptions[1] = buildShippingOptionForTest(PaymentTestDataId, PaymentTestOverwriteValue, "express");
+    shippingOptions[1].setSelected(true);
+    details.setShippingOptions(shippingOptions);
+    PaymentOptions options;
+    options.setRequestShipping(true);
+
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, options, getExceptionState());
+
+    EXPECT_EQ("express", request->shippingOption());
 }
 
 TEST_F(PaymentRequestTest, AbortWithoutShowShouldThrow)
@@ -460,7 +510,7 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithoutShipp
     EXPECT_TRUE(request->shippingOption().isNull());
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
     String detailWithShippingOptions = "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}},"
-        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}]}";
+        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}, \"selected\": true}]}";
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detailWithShippingOptions, getExceptionState())));
     EXPECT_FALSE(getExceptionState().hadException());
     EXPECT_EQ("standardShippingOption", request->shippingOption());
@@ -472,7 +522,7 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithoutShipp
     EXPECT_TRUE(request->shippingOption().isNull());
 }
 
-TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultipleShippingOptions)
+TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultipleUnselectedShippingOptions)
 {
     ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
@@ -490,7 +540,7 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultiple
     EXPECT_TRUE(request->shippingOption().isNull());
 }
 
-TEST_F(PaymentRequestTest, UseTheSingleShippingOptionFromPaymentDetailsUpdate)
+TEST_F(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate)
 {
     ScriptState::Scope scope(getScriptState());
     PaymentOptions options;
@@ -499,12 +549,13 @@ TEST_F(PaymentRequestTest, UseTheSingleShippingOptionFromPaymentDetailsUpdate)
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
     String detail = "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}},"
-        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}]}";
+        "\"shippingOptions\": [{\"id\": \"slow\", \"label\": \"Slow\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}},"
+        "{\"id\": \"fast\", \"label\": \"Fast\", \"amount\": {\"currency\": \"USD\", \"value\": \"50.00\"}, \"selected\": true}]}";
 
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detail, getExceptionState())));
     EXPECT_FALSE(getExceptionState().hadException());
 
-    EXPECT_EQ("standardShippingOption", request->shippingOption());
+    EXPECT_EQ("fast", request->shippingOption());
 }
 
 } // namespace

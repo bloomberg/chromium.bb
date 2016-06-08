@@ -4,26 +4,38 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
-function substitute(originalObject, substituteKeyValuePair) {
+function substitute(originalObject, substituteKeyValuePairs) {
     for (var key in originalObject) {
-        if (originalObject.hasOwnProperty(key) && substituteKeyValuePair.hasOwnProperty(key)) {
-            originalObject[key] = substituteKeyValuePair[key];
+        if (originalObject.hasOwnProperty(key) && substituteKeyValuePairs.hasOwnProperty(key)) {
+            originalObject[key] = substituteKeyValuePairs[key];
         }
     }
 }
 
-function buildItem(optionalSubstituteKeyValuePair) {
-    var item = {'id': 'item_id', 'label': 'Item Description', 'amount': {'currency': 'USD', 'value': '10.00'}};
+function buildItem(optionalSubstituteKeyValuePairs) {
+    var item = {
+        'id': 'item_id',
+        'label': 'Item Description',
+        'amount': {
+            'currency': 'USD',
+            'value': '10.00'
+        },
+        'selected': false
+    };
 
-    if (optionalSubstituteKeyValuePair) {
-        substitute(item, optionalSubstituteKeyValuePair);
-        substitute(item['amount'], optionalSubstituteKeyValuePair);
+    if (optionalSubstituteKeyValuePairs) {
+        for (var key in optionalSubstituteKeyValuePairs) {
+            assert_true(item.hasOwnProperty(key) || item['amount'].hasOwnProperty(key), 'Unrecognized substitution key "' + key + '"');
+        }
+
+        substitute(item, optionalSubstituteKeyValuePairs);
+        substitute(item['amount'], optionalSubstituteKeyValuePairs);
     }
 
     return item;
 }
 
-function buildDetails(optionalDetailName, optionalSubstituteKeyValuePair) {
+function buildDetails(optionalDetailName, optionalSubstituteKeyValuePairs) {
     var details = {};
     var detailNames = ['total', 'displayItems', 'shippingOptions'];
 
@@ -32,9 +44,9 @@ function buildDetails(optionalDetailName, optionalSubstituteKeyValuePair) {
     for (var i in detailNames) {
         if (optionalDetailName == detailNames[i]) {
             if (detailNames[i] == 'total') {
-                details[detailNames[i]] = buildItem(optionalSubstituteKeyValuePair);
+                details[detailNames[i]] = buildItem(optionalSubstituteKeyValuePairs);
             } else {
-                details[detailNames[i]] = [buildItem(optionalSubstituteKeyValuePair)];
+                details[detailNames[i]] = [buildItem(optionalSubstituteKeyValuePairs)];
             }
         } else {
             if (detailNames[i] == 'total') {
@@ -109,19 +121,37 @@ test(function() {
 }, 'Shipping option identifier should be null if shipping is explicitly not requested.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'id': 'standard'}), {'requestShipping': true});
-    assert_equals('standard', request.shippingOption);
-}, 'Shipping option identifier should default to the single provided option.');
-
-test(function() {
     var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()]}, {'requestShipping': true});
     assert_equals(null, request.shippingOption);
-}, 'Shipping option identifier should be null when no shipping options are provided.');
+}, 'Shipping option identifier should be null if no shipping options are provided.');
 
 test(function() {
-    var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]}, {'requestShipping': true});
+    var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'selected': false}), {'requestShipping': true});
     assert_equals(null, request.shippingOption);
-}, 'Shipping option identifier should be null at first when multiple shipping options are provided.');
+}, 'Shipping option identifier should be null if the single provided option is not selected.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'id': 'standard', 'selected': true}), {'requestShipping': true});
+    assert_equals('standard', request.shippingOption);
+}, 'Shipping option identifier should default to the single provided option if it is selected.');
+
+test(function() {
+    var shippingOptions = [buildItem({'id': 'standard'}), buildItem({'id': 'express'})];
+    var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
+    assert_equals(null, request.shippingOption);
+}, 'Shipping option identifier should be null if multiple unselected shipping options are provided.');
+
+test(function() {
+    var shippingOptions = [buildItem({'id': 'standard', 'selected': true}), buildItem({'id': 'express'})];
+    var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
+    assert_equals('standard', request.shippingOption);
+}, 'Shipping option identifier should default to the selected shipping option.');
+
+test(function() {
+    var shippingOptions = [buildItem({'id': 'standard', 'selected': true}), buildItem({'id': 'express', 'selected': true})];
+    var request = new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
+    assert_equals('express', request.shippingOption);
+}, 'Shipping option identifier should default to the last selected shipping option, if multiple are selected.');
 
 test(function() {
     new PaymentRequest(['foo'], {'total': buildItem(), 'displayItems': undefined});

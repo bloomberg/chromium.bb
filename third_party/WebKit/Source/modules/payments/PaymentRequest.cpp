@@ -70,6 +70,7 @@ struct TypeConverter<ShippingOptionPtr, blink::ShippingOption> {
         output->id = input.id();
         output->label = input.label();
         output->amount = CurrencyAmount::From(input.amount());
+        output->selected = input.hasSelected() && input.selected();
         return output;
     }
 };
@@ -197,6 +198,21 @@ void validatePaymentDetails(const PaymentDetails& details, ExceptionState& excep
     }
 }
 
+String getSelectedShippingOption(const PaymentDetails& details)
+{
+    String result;
+    if (!details.hasShippingOptions())
+        return result;
+
+    for (size_t i = 0; i < details.shippingOptions().size(); ++i) {
+        if (details.shippingOptions()[i].hasSelected() && details.shippingOptions()[i].selected()) {
+            result = details.shippingOptions()[i].id();
+        }
+    }
+
+    return result;
+}
+
 } // namespace
 
 PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, ExceptionState& exceptionState)
@@ -289,11 +305,8 @@ void PaymentRequest::onUpdatePaymentDetails(const ScriptValue& detailsScriptValu
         return;
     }
 
-    // Set the currently selected option if only one option was passed.
-    if (details.hasShippingOptions() && details.shippingOptions().size() == 1)
-        m_shippingOption = details.shippingOptions().begin()->id();
-    else
-        m_shippingOption = String();
+    if (m_options.requestShipping())
+        m_shippingOption = getSelectedShippingOption(details);
 
     m_paymentProvider->UpdateWith(mojom::blink::PaymentDetails::From(details));
 }
@@ -373,9 +386,8 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
         }
     }
 
-    // Set the currently selected option if only one option is passed and shipping is requested.
-    if (options.requestShipping() && details.hasShippingOptions() && details.shippingOptions().size() == 1)
-        m_shippingOption = details.shippingOptions().begin()->id();
+    if (m_options.requestShipping())
+        m_shippingOption = getSelectedShippingOption(details);
 }
 
 void PaymentRequest::contextDestroyed()
