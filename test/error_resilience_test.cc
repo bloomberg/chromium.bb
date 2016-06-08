@@ -55,66 +55,20 @@ class ErrorResilienceTestLarge
     nframes_++;
   }
 
-  //
-  // Frame flags and layer id for temporal layers.
-  // For two layers, test pattern is:
-  //   1     3
-  // 0    2     .....
-  // LAST is updated on base/layer 0, GOLDEN  updated on layer 1.
-  // Non-zero pattern_switch parameter means pattern will switch to
-  // not using LAST for frame_num >= pattern_switch.
-  int SetFrameFlags(int frame_num, int num_temp_layers, int pattern_switch) {
-    int frame_flags = 0;
-    if (num_temp_layers == 2) {
-      if (frame_num % 2 == 0) {
-        if (frame_num < pattern_switch || pattern_switch == 0) {
-          // Layer 0: predict from LAST and ARF, update LAST.
-          frame_flags =
-              AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
-        } else {
-          // Layer 0: predict from GF and ARF, update GF.
-          frame_flags = AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_UPD_LAST |
-                        AOM_EFLAG_NO_UPD_ARF;
-        }
-      } else {
-        if (frame_num < pattern_switch || pattern_switch == 0) {
-          // Layer 1: predict from L, GF, and ARF, update GF.
-          frame_flags = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
-        } else {
-          // Layer 1: predict from GF and ARF, update GF.
-          frame_flags = AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_UPD_LAST |
-                        AOM_EFLAG_NO_UPD_ARF;
-        }
-      }
-    }
-    return frame_flags;
-  }
-
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     frame_flags_ &=
         ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF);
     // For temporal layer case.
-    if (cfg_.ts_number_layers > 1) {
-      frame_flags_ =
-          SetFrameFlags(video->frame(), cfg_.ts_number_layers, pattern_switch_);
+    if (droppable_nframes_ > 0 &&
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
         if (droppable_frames_[i] == video->frame()) {
           std::cout << "Encoding droppable frame: " << droppable_frames_[i]
                     << "\n";
-        }
-      }
-    } else {
-      if (droppable_nframes_ > 0 &&
-          (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
-        for (unsigned int i = 0; i < droppable_nframes_; ++i) {
-          if (droppable_frames_[i] == video->frame()) {
-            std::cout << "Encoding droppable frame: " << droppable_frames_[i]
-                      << "\n";
-            frame_flags_ |= (AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                             AOM_EFLAG_NO_UPD_ARF);
-            return;
-          }
+          frame_flags_ |= (AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                           AOM_EFLAG_NO_UPD_ARF);
+          return;
         }
       }
     }
@@ -292,10 +246,7 @@ class ErrorResilienceTestLargeCodecControls
   void Reset() {
     last_pts_ = 0;
     tot_frame_number_ = 0;
-    // For testing up to 3 layers.
-    for (int i = 0; i < 3; ++i) {
-      bits_total_[i] = 0;
-    }
+    bits_total_ = 0;
     duration_ = 0.0;
   }
 
@@ -346,42 +297,6 @@ class ErrorResilienceTestLargeCodecControls
     return frame_flags;
   }
 
-  int SetLayerId(int frame_num, int num_temp_layers) {
-    int layer_id = 0;
-    if (num_temp_layers == 2) {
-      if (frame_num % 2 == 0) {
-        layer_id = 0;
-      } else {
-        layer_id = 1;
-      }
-    } else if (num_temp_layers == 3) {
-      if (frame_num % 4 == 0) {
-        layer_id = 0;
-      } else if ((frame_num - 2) % 4 == 0) {
-        layer_id = 1;
-      } else if ((frame_num - 1) % 2 == 0) {
-        layer_id = 2;
-      }
-    }
-    return layer_id;
-  }
-
-  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
-                                  libaom_test::Encoder *encoder) {
-    if (cfg_.ts_number_layers > 1) {
-      int layer_id = SetLayerId(video->frame(), cfg_.ts_number_layers);
-      int frame_flags = SetFrameFlags(video->frame(), cfg_.ts_number_layers);
-      if (video->frame() > 0) {
-        encoder->Control(AOME_SET_TEMPORAL_LAYER_ID, layer_id);
-        encoder->Control(AOME_SET_FRAME_FLAGS, frame_flags);
-      }
-      const aom_rational_t tb = video->timebase();
-      timebase_ = static_cast<double>(tb.num) / tb.den;
-      duration_ = 0;
-      return;
-    }
-  }
-
   virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     // Time since last timestamp = duration.
     aom_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
@@ -390,39 +305,22 @@ class ErrorResilienceTestLargeCodecControls
       // Needed for setting the proper layer_id below.
       tot_frame_number_ += static_cast<int>(duration - 1);
     }
-    int layer = SetLayerId(tot_frame_number_, cfg_.ts_number_layers);
     const size_t frame_size_in_bits = pkt->data.frame.sz * 8;
     // Update the total encoded bits. For temporal layers, update the cumulative
     // encoded bits per layer.
-    for (int i = layer; i < static_cast<int>(cfg_.ts_number_layers); ++i) {
-      bits_total_[i] += frame_size_in_bits;
-    }
+    bits_total_ += frame_size_in_bits;
     // Update the most recent pts.
     last_pts_ = pkt->data.frame.pts;
     ++tot_frame_number_;
   }
 
-  virtual void EndPassHook(void) {
-    duration_ = (last_pts_ + 1) * timebase_;
-    if (cfg_.ts_number_layers > 1) {
-      for (int layer = 0; layer < static_cast<int>(cfg_.ts_number_layers);
-           ++layer) {
-        if (bits_total_[layer]) {
-          // Effective file datarate:
-          effective_datarate_[layer] =
-              (bits_total_[layer] / 1000.0) / duration_;
-        }
-      }
-    }
-  }
-
-  double effective_datarate_[3];
+  virtual void EndPassHook(void) { duration_ = (last_pts_ + 1) * timebase_; }
 
  private:
   libaom_test::TestMode encoding_mode_;
   aom_codec_pts_t last_pts_;
   double timebase_;
-  int64_t bits_total_[3];
+  int64_t bits_total_;
   double duration_;
   int tot_frame_number_;
 };

@@ -282,10 +282,7 @@ class DatarateTestAV1Large
     num_drops_ = 0;
     // Denoiser is off by default.
     denoiser_on_ = 0;
-    // For testing up to 3 layers.
-    for (int i = 0; i < 3; ++i) {
-      bits_total_[i] = 0;
-    }
+    bits_total_ = 0;
     denoiser_offon_test_ = 0;
     denoiser_offon_period_ = -1;
   }
@@ -328,9 +325,6 @@ class DatarateTestAV1Large
       tot_frame_number_ += static_cast<int>(duration - 1);
     }
 
-    int layer = 0;
-
-    // Add to the buffer the bits we'd expect from a constant bitrate server.
     bits_in_buffer_model_ += static_cast<int64_t>(
         duration * timebase_ * cfg_.rc_target_bitrate * 1000);
 
@@ -340,11 +334,8 @@ class DatarateTestAV1Large
 
     const size_t frame_size_in_bits = pkt->data.frame.sz * 8;
 
-    // Update the total encoded bits. For temporal layers, update the cumulative
-    // encoded bits per layer.
-    for (int i = layer; i < static_cast<int>(cfg_.ts_number_layers); ++i) {
-      bits_total_[i] += frame_size_in_bits;
-    }
+    // Update the total encoded bits.
+    bits_total_ += frame_size_in_bits;
 
     // Update the most recent pts.
     last_pts_ = pkt->data.frame.pts;
@@ -353,13 +344,10 @@ class DatarateTestAV1Large
   }
 
   virtual void EndPassHook(void) {
-    for (int layer = 0; layer < static_cast<int>(cfg_.ts_number_layers);
-         ++layer) {
-      duration_ = (last_pts_ + 1) * timebase_;
-      if (bits_total_[layer]) {
-        // Effective file datarate:
-        effective_datarate_[layer] = (bits_total_[layer] / 1000.0) / duration_;
-      }
+    duration_ = (last_pts_ + 1) * timebase_;
+    if (bits_total_) {
+      // Effective file datarate:
+      effective_datarate_ = (bits_total_ / 1000.0) / duration_;
     }
   }
 
@@ -367,9 +355,9 @@ class DatarateTestAV1Large
   double timebase_;
   int frame_number_;      // Counter for number of non-dropped/encoded frames.
   int tot_frame_number_;  // Counter for total number of input frames.
-  int64_t bits_total_[3];
+  int64_t bits_total_;
   double duration_;
-  double effective_datarate_[3];
+  double effective_datarate_;
   int set_cpu_used_;
   int64_t bits_in_buffer_model_;
   aom_codec_pts_t first_drop_;
@@ -396,9 +384,9 @@ TEST_P(DatarateTestAV1Large, BasicRateTargeting) {
     cfg_.rc_target_bitrate = i;
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-    ASSERT_GE(effective_datarate_[0], cfg_.rc_target_bitrate * 0.85)
+    ASSERT_GE(effective_datarate_, cfg_.rc_target_bitrate * 0.85)
         << " The datarate for the file is lower than target by too much!";
-    ASSERT_LE(effective_datarate_[0], cfg_.rc_target_bitrate * 1.15)
+    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.15)
         << " The datarate for the file is greater than target by too much!";
   }
 }
@@ -423,10 +411,10 @@ TEST_P(DatarateTestAV1Large, BasicRateTargeting444) {
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_GE(static_cast<double>(cfg_.rc_target_bitrate),
-              effective_datarate_[0] * 0.85)
+              effective_datarate_ * 0.85)
         << " The datarate for the file exceeds the target by too much!";
     ASSERT_LE(static_cast<double>(cfg_.rc_target_bitrate),
-              effective_datarate_[0] * 1.15)
+              effective_datarate_ * 1.15)
         << " The datarate for the file missed the target!"
         << cfg_.rc_target_bitrate << " " << effective_datarate_;
   }
@@ -459,9 +447,9 @@ TEST_P(DatarateTestAV1Large, ChangingDropFrameThresh) {
     cfg_.rc_dropframe_thresh = i;
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-    ASSERT_GE(effective_datarate_[0], cfg_.rc_target_bitrate * 0.85)
+    ASSERT_GE(effective_datarate_, cfg_.rc_target_bitrate * 0.85)
         << " The datarate for the file is lower than target by too much!";
-    ASSERT_LE(effective_datarate_[0], cfg_.rc_target_bitrate * 1.15)
+    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.15)
         << " The datarate for the file is greater than target by too much!";
     ASSERT_LE(first_drop_, last_drop)
         << " The first dropped frame for drop_thresh " << i

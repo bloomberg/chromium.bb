@@ -447,32 +447,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_NOISE_SENSITIVITY,
 
-  /*!\brief Codec control function to turn on/off SVC in encoder.
-   * \note Return value is AOM_CODEC_INVALID_PARAM if the encoder does not
-   *       support SVC in its current encoding mode
-   *  0: off, 1: on
-   *
-   * Supported in codecs: AV1
-   */
-  AV1E_SET_SVC,
-
-  /*!\brief Codec control function to set parameters for SVC.
-   * \note Parameters contain min_q, max_q, scaling factor for each of the
-   *       SVC layers.
-   *
-   * Supported in codecs: AV1
-   */
-  AV1E_SET_SVC_PARAMETERS,
-
-  /*!\brief Codec control function to set svc layer for spatial and temporal.
-   * \note Valid ranges: 0..#aom_codec_enc_cfg::ss_number_layers for spatial
-   *                     layer and 0..#aom_codec_enc_cfg::ts_number_layers for
-   *                     temporal layer.
-   *
-   * Supported in codecs: AV1
-   */
-  AV1E_SET_SVC_LAYER_ID,
-
   /*!\brief Codec control function to set content type.
    * \note Valid parameter range:
    *              AOM_CONTENT_DEFAULT = Regular video content (Default)
@@ -481,14 +455,6 @@ enum aome_enc_control_id {
    * Supported in codecs: AV1
    */
   AV1E_SET_TUNE_CONTENT,
-
-  /*!\brief Codec control function to get svc layer ID.
-   * \note The layer ID returned is for the data packet from the registered
-   *       callback function.
-   *
-   * Supported in codecs: AV1
-   */
-  AV1E_GET_SVC_LAYER_ID,
 
   /*!\brief Codec control function to register callback to get per layer packet.
    * \note Parameter for this control function is a structure with a callback
@@ -555,14 +521,6 @@ enum aome_enc_control_id {
    * Supported in codecs: AV1
    */
   AV1E_SET_COLOR_RANGE,
-
-  /*!\brief Codec control function to set the frame flags and buffer indices
-   * for spatial layers. The frame flags and buffer indices are set using the
-   * struct #aom_svc_ref_frame_config defined below.
-   *
-   * Supported in codecs: AV1
-  */
-  AV1E_SET_SVC_REF_FRAME_CONFIG,
 
   /*!\brief Codec control function to set intended rendering image size.
    *
@@ -683,33 +641,6 @@ typedef enum {
  */
 typedef enum { AOM_TUNE_PSNR, AOM_TUNE_SSIM } aom_tune_metric;
 
-/*!\brief  av1 svc layer parameters
- *
- * This defines the spatial and temporal layer id numbers for svc encoding.
- * This is used with the #AV1E_SET_SVC_LAYER_ID control to set the spatial and
- * temporal layer id for the current frame.
- *
- */
-typedef struct aom_svc_layer_id {
-  int spatial_layer_id;  /**< Spatial layer id number. */
-  int temporal_layer_id; /**< Temporal layer id number. */
-} aom_svc_layer_id_t;
-
-/*!\brief  av1 svc frame flag parameters.
- *
- * This defines the frame flags and buffer indices for each spatial layer for
- * svc encoding.
- * This is used with the #AV1E_SET_SVC_REF_FRAME_CONFIG control to set frame
- * flags and buffer indices for each spatial layer for the current (super)frame.
- *
- */
-typedef struct aom_svc_ref_frame_config {
-  int frame_flags[AOM_TS_MAX_LAYERS]; /**< Frame flags. */
-  int lst_fb_idx[AOM_TS_MAX_LAYERS];  /**< Last buffer index. */
-  int gld_fb_idx[AOM_TS_MAX_LAYERS];  /**< Golden buffer index. */
-  int alt_fb_idx[AOM_TS_MAX_LAYERS];  /**< Altref buffer index. */
-} aom_svc_ref_frame_config_t;
-
 /*!\cond */
 /*!\brief AOM encoder control function parameter type
  *
@@ -735,8 +666,6 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SVC_PARAMETERS, void *)
 #define AOM_CTRL_AV1E_SET_SVC_PARAMETERS
 AOM_CTRL_USE_TYPE(AV1E_REGISTER_CX_CALLBACK, void *)
 #define AOM_CTRL_AV1E_REGISTER_CX_CALLBACK
-AOM_CTRL_USE_TYPE(AV1E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
-#define AOM_CTRL_AV1E_SET_SVC_LAYER_ID
 
 AOM_CTRL_USE_TYPE(AOME_SET_CPUUSED, int)
 #define AOM_CTRL_AOME_SET_CPUUSED
@@ -771,8 +700,6 @@ AOM_CTRL_USE_TYPE(AOME_GET_LAST_QUANTIZER, int *)
 #define AOM_CTRL_AOME_GET_LAST_QUANTIZER
 AOM_CTRL_USE_TYPE(AOME_GET_LAST_QUANTIZER_64, int *)
 #define AOM_CTRL_AOME_GET_LAST_QUANTIZER_64
-AOM_CTRL_USE_TYPE(AV1E_GET_SVC_LAYER_ID, aom_svc_layer_id_t *)
-#define AOM_CTRL_AV1E_GET_SVC_LAYER_ID
 
 AOM_CTRL_USE_TYPE(AOME_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
 #define AOM_CTRL_AOME_SET_MAX_INTRA_BITRATE_PCT
@@ -828,9 +755,6 @@ AOM_CTRL_USE_TYPE(AV1E_GET_ACTIVEMAP, aom_active_map_t *)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_COLOR_RANGE, int)
 #define AOM_CTRL_AV1E_SET_COLOR_RANGE
-
-AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
-#define AOM_CTRL_AV1E_SET_SVC_REF_FRAME_CONFIG
 
 AOM_CTRL_USE_TYPE(AV1E_SET_RENDER_SIZE, int *)
 #define AOM_CTRL_AV1E_SET_RENDER_SIZE

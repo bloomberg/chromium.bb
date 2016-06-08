@@ -44,7 +44,6 @@
 #include "av1/encoder/rd.h"
 #include "av1/encoder/resize.h"
 #include "av1/encoder/segmentation.h"
-#include "av1/encoder/skin_detection.h"
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/temporal_filter.h"
 
