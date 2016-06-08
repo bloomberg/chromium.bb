@@ -122,7 +122,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
 
     std::string json_command;
     base::JSONWriter::Write(command, &json_command);
-    agent_host_->DispatchProtocolMessage(json_command);
+    agent_host_->DispatchProtocolMessage(this, json_command);
     // Some messages are dispatched synchronously.
     // Only run loop if we are not finished yet.
     if (in_dispatch_ && wait) {
@@ -164,7 +164,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
 
   void TearDownOnMainThread() override {
     if (agent_host_) {
-      agent_host_->DetachClient();
+      agent_host_->DetachClient(this);
       agent_host_ = nullptr;
     }
   }

@@ -422,7 +422,7 @@ DevToolsUIBindings::~DevToolsUIBindings() {
     delete pair.first;
 
   if (agent_host_.get())
-    agent_host_->DetachClient();
+    agent_host_->DetachClient(this);
 
   for (IndexingJobsMap::const_iterator jobs_it(indexing_jobs_.begin());
        jobs_it != indexing_jobs_.end(); ++jobs_it) {
@@ -811,7 +811,7 @@ void DevToolsUIBindings::ReadyForTest() {
 void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(
     const std::string& message) {
   if (agent_host_.get())
-    agent_host_->DispatchProtocolMessage(message);
+    agent_host_->DispatchProtocolMessage(this, message);
 }
 
 void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
@@ -1032,7 +1032,9 @@ void DevToolsUIBindings::AttachTo(
   if (agent_host_.get())
     Detach();
   agent_host_ = agent_host;
-  agent_host_->AttachClient(this);
+  // DevToolsUIBindings terminates existing debugging connections and starts
+  // debugging.
+  agent_host_->ForceAttachClient(this);
 }
 
 void DevToolsUIBindings::Reattach() {
@@ -1042,7 +1044,7 @@ void DevToolsUIBindings::Reattach() {
 
 void DevToolsUIBindings::Detach() {
   if (agent_host_.get())
-    agent_host_->DetachClient();
+    agent_host_->DetachClient(this);
   agent_host_ = NULL;
 }
 
@@ -1077,7 +1079,7 @@ void DevToolsUIBindings::DocumentAvailableInMainFrame() {
   if (!reattaching_)
     return;
   reattaching_ = false;
-  agent_host_->DetachClient();
+  agent_host_->DetachClient(this);
   agent_host_->AttachClient(this);
 }
 

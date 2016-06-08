@@ -609,6 +609,8 @@
       'browser/devtools/devtools_protocol_handler.h',
       'browser/devtools/forwarding_agent_host.cc',
       'browser/devtools/forwarding_agent_host.h',
+      'browser/devtools/protocol/browser_handler.cc',
+      'browser/devtools/protocol/browser_handler.h',
       'browser/devtools/protocol/color_picker.cc',
       'browser/devtools/protocol/color_picker.h',
       'browser/devtools/protocol/devtools_protocol_client.cc',

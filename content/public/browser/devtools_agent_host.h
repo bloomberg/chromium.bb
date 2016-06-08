@@ -108,17 +108,25 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns all possible DevToolsAgentHosts.
   static List GetOrCreateAll();
 
-  // Client attaches to this agent host to start debugging it.
-  virtual void AttachClient(DevToolsAgentHostClient* client) = 0;
+  // Attaches |client| to this agent host to start debugging.
+  // Returns true iff attach succeeded.
+  virtual bool AttachClient(DevToolsAgentHostClient* client) = 0;
+
+  // Attaches |client| to this agent host to start debugging. Disconnects
+  // any existing clients.
+  virtual void ForceAttachClient(DevToolsAgentHostClient* client) = 0;
 
   // Already attached client detaches from this agent host to stop debugging it.
-  virtual void DetachClient() = 0;
+  // Returns true iff detach succeeded.
+  virtual bool DetachClient(DevToolsAgentHostClient* client) = 0;
 
   // Returns true if there is a client attached.
   virtual bool IsAttached() = 0;
 
-  // Sends a message to the agent. Returns true if the message is handled.
-  virtual bool DispatchProtocolMessage(const std::string& message) = 0;
+  // Sends |message| from |client| to the agent.
+  // Returns true if the message is dispatched and handled.
+  virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
+                                       const std::string& message) = 0;
 
   // Starts inspecting element at position (|x|, |y|) in the specified page.
   virtual void InspectElement(int x, int y) = 0;

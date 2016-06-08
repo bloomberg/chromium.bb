@@ -38,8 +38,12 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   bool Inspect(BrowserContext* browser_context);
 
   // DevToolsAgentHost implementation.
-  void AttachClient(DevToolsAgentHostClient* client) override;
-  void DetachClient() override;
+  bool AttachClient(DevToolsAgentHostClient* client) override;
+  void ForceAttachClient(DevToolsAgentHostClient* client) override;
+  bool DetachClient(DevToolsAgentHostClient* client) override;
+  bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
+                               const std::string& message) override;
+
   bool IsAttached() override;
   void InspectElement(int x, int y) override;
   std::string GetId() override;
@@ -57,6 +61,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   DevToolsAgentHostImpl();
   ~DevToolsAgentHostImpl() override;
 
+  virtual bool DispatchProtocolMessage(const std::string& message) = 0;
+
   void HostClosed();
   void SendMessageToClient(int session_id, const std::string& message);
   devtools::DevToolsIOContext* GetIOContext() { return &io_context_; }
@@ -67,6 +73,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
  private:
   friend class DevToolsAgentHost; // for static methods
+  bool InnerAttach(DevToolsAgentHostClient* client, bool force);
   void InnerDetach();
 
   const std::string id_;

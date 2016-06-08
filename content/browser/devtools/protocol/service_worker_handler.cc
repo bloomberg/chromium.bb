@@ -387,7 +387,7 @@ Response ServiceWorkerHandler::Disable() {
   ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
   ClearForceUpdate();
   for (const auto& pair : attached_hosts_)
-    pair.second->DetachClient();
+    pair.second->DetachClient(this);
   attached_hosts_.clear();
   DCHECK(context_watcher_);
   context_watcher_->Stop();
@@ -684,7 +684,7 @@ void ServiceWorkerHandler::ReportWorkerTerminated(
   auto it = attached_hosts_.find(host->GetId());
   if (it == attached_hosts_.end())
     return;
-  host->DetachClient();
+  host->DetachClient(this);
   client_->WorkerTerminated(WorkerTerminatedParams::Create()->
       set_worker_id(host->GetId()));
   attached_hosts_.erase(it);

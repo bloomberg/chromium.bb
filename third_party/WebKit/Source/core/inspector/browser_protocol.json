@@ -4213,5 +4213,72 @@
                 "handlers": ["browser"]
             }
         ]
+    },
+    {
+        "domain": "Browser",
+        "description": "The Browser domain allows listing, creating, activating and attaching to the targets.",
+        "hidden": true,
+        "types": [
+            {
+                "id": "TargetID",
+                "type": "string"
+            },
+            {
+                "id": "TargetInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "type", "type": "string" },
+                    { "name": "title", "type": "string" },
+                    { "name": "url", "type": "string" }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "getTargets",
+                "returns": [
+                    { "name": "targetInfo", "type": "array", "items": { "$ref": "TargetInfo" } }
+                ],
+                "description": "Returns target information for all potential targets.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "attach",
+                "description": "Attaches to the target with given id.",
+                "parameters": [
+                    {"name": "targetId", "$ref": "TargetID", "description": "Target id." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "detach",
+                "description": "Detaches from the target with given id.",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "sendMessage",
+                "description": "Sends protocol message to the target with given id.",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "dispatchMessage",
+                "description": "Dispatches protocol message from the target with given id.",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
     }]
 }

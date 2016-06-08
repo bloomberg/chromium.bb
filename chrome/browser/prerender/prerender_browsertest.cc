@@ -3226,7 +3226,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   const char* url = "/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
   NavigateToURLWithDisposition(url, CURRENT_TAB, false);
-  agent->DetachClient();
+  agent->DetachClient(&client);
 }
 
 // Validate that the sessionStorage namespace remains the same when swapping

@@ -102,7 +102,11 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Create(
   return new ForwardingAgentHost(delegate);
 }
 
-void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
+bool DevToolsAgentHostImpl::InnerAttach(DevToolsAgentHostClient* client,
+                                        bool force) {
+  if (client_ && !force)
+    return false;
+
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   ++session_id_;
   if (client_) {
@@ -111,15 +115,33 @@ void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
   }
   client_ = client;
   Attach();
+  return true;
 }
 
-void DevToolsAgentHostImpl::DetachClient() {
-  if (!client_)
-    return;
+bool DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
+  return InnerAttach(client, false);
+}
+
+void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
+  InnerAttach(client, true);
+}
+
+bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
+  if (!client_ || client_ != client)
+    return false;
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   client_ = NULL;
   InnerDetach();
+  return true;
+}
+
+bool DevToolsAgentHostImpl::DispatchProtocolMessage(
+    DevToolsAgentHostClient* client,
+    const std::string& message) {
+  if (!client_ || client_ != client)
+    return false;
+  return DispatchProtocolMessage(message);
 }
 
 void DevToolsAgentHostImpl::InnerDetach() {

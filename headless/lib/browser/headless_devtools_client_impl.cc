@@ -72,7 +72,7 @@ void HeadlessDevToolsClientImpl::AttachToHost(
 void HeadlessDevToolsClientImpl::DetachFromHost(
     content::DevToolsAgentHost* agent_host) {
   DCHECK_EQ(agent_host_, agent_host);
-  agent_host_->DetachClient();
+  agent_host_->DetachClient(this);
   agent_host_ = nullptr;
   pending_messages_.clear();
 }
@@ -272,7 +272,7 @@ void HeadlessDevToolsClientImpl::FinalizeAndSendMessage(
   std::string json_message;
   base::JSONWriter::Write(*message, &json_message);
   pending_messages_[id] = Callback(callback);
-  agent_host_->DispatchProtocolMessage(json_message);
+  agent_host_->DispatchProtocolMessage(this, json_message);
 }
 
 template <typename CallbackType>

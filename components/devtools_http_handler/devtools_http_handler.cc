@@ -277,7 +277,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   ~DevToolsAgentHostClientImpl() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (agent_host_.get())
-      agent_host_->DetachClient();
+      agent_host_->DetachClient(this);
   }
 
   void AgentHostClosed(DevToolsAgentHost* agent_host,
@@ -312,7 +312,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   void OnMessage(const std::string& message) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (agent_host_.get())
-      agent_host_->DispatchProtocolMessage(message);
+      agent_host_->DispatchProtocolMessage(this, message);
   }
 
  private:

@@ -34,7 +34,7 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
     if (agent_host_.get())
-      agent_host_->DetachClient();
+      agent_host_->DetachClient(this);
     agent_host_ = agent_host;
     if (agent_host_.get())
       agent_host_->AttachClient(this);

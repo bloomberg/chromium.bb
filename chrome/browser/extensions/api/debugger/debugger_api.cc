@@ -367,7 +367,7 @@ void ExtensionDevToolsClientHost::AgentHostClosed(
 }
 
 void ExtensionDevToolsClientHost::Close() {
-  agent_host_->DetachClient();
+  agent_host_->DetachClient(this);
   delete this;
 }
 
@@ -387,7 +387,7 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 
   std::string json_args;
   base::JSONWriter::Write(protocol_request, &json_args);
-  agent_host_->DispatchProtocolMessage(json_args);
+  agent_host_->DispatchProtocolMessage(this, json_args);
 }
 
 void ExtensionDevToolsClientHost::InfoBarDismissed() {

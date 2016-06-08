@@ -33,6 +33,7 @@ class PowerSaveBlockerImpl;
 #endif
 
 namespace devtools {
+namespace browser { class BrowserHandler; }
 namespace dom { class DOMHandler; }
 namespace emulation { class EmulationHandler; }
 namespace input { class InputHandler; }
@@ -149,6 +150,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // Stores per-host state between DisconnectWebContents and ConnectWebContents.
   std::unique_ptr<FrameHostHolder> disconnected_;
 
+  std::unique_ptr<devtools::browser::BrowserHandler> browser_handler_;
   std::unique_ptr<devtools::dom::DOMHandler> dom_handler_;
   std::unique_ptr<devtools::input::InputHandler> input_handler_;
   std::unique_ptr<devtools::inspector::InspectorHandler> inspector_handler_;

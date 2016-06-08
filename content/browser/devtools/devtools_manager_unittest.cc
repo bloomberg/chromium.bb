@@ -44,7 +44,7 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   void Close() {
     EXPECT_FALSE(closed_);
     close_counter++;
-    agent_host_->DetachClient();
+    agent_host_->DetachClient(this);
     closed_ = true;
   }
 
@@ -247,9 +247,9 @@ TEST_F(DevToolsManagerTest, TestExternalProxy) {
 
   TestDevToolsClientHost client_host;
   client_host.InspectAgentHost(agent_host.get());
-  agent_host->DispatchProtocolMessage("message1");
-  agent_host->DispatchProtocolMessage("message2");
-  agent_host->DispatchProtocolMessage("message2");
+  agent_host->DispatchProtocolMessage(&client_host, "message1");
+  agent_host->DispatchProtocolMessage(&client_host, "message2");
+  agent_host->DispatchProtocolMessage(&client_host, "message2");
 
   client_host.Close();
 }

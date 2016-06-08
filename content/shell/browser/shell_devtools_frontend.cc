@@ -143,7 +143,7 @@ void ShellDevToolsFrontend::Close() {
 void ShellDevToolsFrontend::DisconnectFromTarget() {
   if (!agent_host_)
     return;
-  agent_host_->DetachClient();
+  agent_host_->DetachClient(this);
   agent_host_ = NULL;
 }
 
@@ -177,7 +177,7 @@ void ShellDevToolsFrontend::DocumentAvailableInMainFrame() {
 
 void ShellDevToolsFrontend::WebContentsDestroyed() {
   if (agent_host_)
-    agent_host_->DetachClient();
+    agent_host_->DetachClient(this);
   delete this;
 }
 
@@ -204,7 +204,7 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     std::string protocol_message;
     if (!params->GetString(0, &protocol_message))
       return;
-    agent_host_->DispatchProtocolMessage(protocol_message);
+    agent_host_->DispatchProtocolMessage(this, protocol_message);
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));

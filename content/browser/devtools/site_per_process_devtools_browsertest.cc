@@ -110,9 +110,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 
   // Send message to parent and child frames and get result back.
   char message[] = "{\"id\": 0, \"method\": \"incorrect.method\"}";
-  child_host->DispatchProtocolMessage(message);
+  child_host->DispatchProtocolMessage(&child_client, message);
   child_client.WaitForReply();
-  parent_host->DispatchProtocolMessage(message);
+  parent_host->DispatchProtocolMessage(&parent_client, message);
   parent_client.WaitForReply();
 
   // Load back same-site page into iframe.
@@ -123,10 +123,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   EXPECT_EQ(DevToolsAgentHost::TYPE_WEB_CONTENTS, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
   EXPECT_TRUE(child_client.closed());
-  child_host->DetachClient();
+  child_host->DetachClient(&child_client);
   child_host = nullptr;
   EXPECT_FALSE(parent_client.closed());
-  parent_host->DetachClient();
+  parent_host->DetachClient(&parent_client);
   parent_host = nullptr;
 }
 
