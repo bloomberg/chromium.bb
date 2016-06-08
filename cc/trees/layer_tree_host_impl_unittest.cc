@@ -539,6 +539,7 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
 
   // Toggle the root layer to make sure it toggles can_draw
   host_impl_->active_tree()->SetRootLayer(nullptr);
+  host_impl_->active_tree()->DetachLayers();
   EXPECT_FALSE(host_impl_->CanDraw());
   EXPECT_TRUE(on_can_draw_state_changed_called_);
   on_can_draw_state_changed_called_ = false;
@@ -742,7 +743,7 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
             host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                     InputHandler::WHEEL)
                 .thread);
-  host_impl_->active_tree()->ClearLayers();
+  host_impl_->active_tree()->DetachLayers();
 
   scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
@@ -5346,7 +5347,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   // synchronization.
   SetNeedsRebuildPropertyTrees();
   DrawFrame();
-  host_impl_->active_tree()->ClearLayers();
+  host_impl_->active_tree()->DetachLayers();
   std::unique_ptr<LayerImpl> root_ptr2 =
       LayerImpl::Create(host_impl_->active_tree(), 4);
   std::unique_ptr<LayerImpl> root_clip2 =
@@ -7359,8 +7360,7 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   EXPECT_GT(context3d->NumTextures(), 0u);
 
   // Kill the layer tree.
-  host_impl_->active_tree()->SetRootLayer(
-      LayerImpl::Create(host_impl_->active_tree(), 100));
+  host_impl_->active_tree()->DetachLayers();
   // There should be no textures left in use after.
   EXPECT_EQ(0u, context3d->NumTextures());
 }
