@@ -1036,6 +1036,9 @@ crbug.com/595483 [ Android ] editing/caret/caret-color.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/invalid/009.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Crash ]
 
+crbug.com/618402 [ Win10 ] inspector/layers/layer-compositing-reasons.html [ NeedsRebaseline ]
+crbug.com/618402 [ Win10 ] media/video-layer-crash.html [ NeedsRebaseline ]
+
 crbug.com/591500 [ Win10 ] printing/webgl-repeated-printing.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/simultaneous-position-float-change.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
