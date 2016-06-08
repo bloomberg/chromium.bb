@@ -84,6 +84,8 @@ class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
             self.suffixes_option,
             optparse.make_option("--builder", help="Builder to pull new baselines from."),
             optparse.make_option("--test", help="Test to rebaseline."),
+            optparse.make_option("--build-number", default=None, type="int",
+                                 help="Optional build number; if not given, the latest build is used."),
         ])
 
     def _baseline_directory(self, builder_name):
@@ -177,8 +179,12 @@ class RebaselineTest(BaseInternalRebaselineCommand):
     name = "rebaseline-test-internal"
     help_text = "Rebaseline a single test from a buildbot. Only intended for use by other webkit-patch commands."
 
-    def _results_url(self, builder_name):
-        return self._tool.buildbot.builder_with_name(builder_name).latest_layout_test_results_url()
+    def _results_url(self, builder_name, build_number=None):
+        builder = self._tool.buildbot.builder_with_name(builder_name)
+        if build_number:
+            build = builder.build(build_number)
+            return build.results_url()
+        return builder.latest_layout_test_results_url()
 
     def _save_baseline(self, data, target_baseline):
         if not data:
@@ -214,7 +220,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         if options.results_directory:
             results_url = 'file://' + options.results_directory
         else:
-            results_url = self._results_url(options.builder)
+            results_url = self._results_url(options.builder, build_number=options.build_number)
 
         for suffix in self._baseline_suffix_list:
             self._rebaseline_test(options.builder, options.test, suffix, results_url)

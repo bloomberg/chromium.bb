@@ -97,7 +97,7 @@ class Builder(object):
         build_dictionary = self._buildbot._fetch_build_dictionary(self, build_number)
         if not build_dictionary:
             return None
-        revision_string = build_dictionary['sourceStamp']['revision']
+        revision_string = build_dictionary['sourceStamp'].get('revision')
         return Build(self,
                      build_number=int(build_dictionary['number']),
                      # 'revision' may be None if a trunk build was started by the force-build button on the web page.
