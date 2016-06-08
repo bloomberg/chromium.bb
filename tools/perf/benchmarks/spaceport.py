@@ -58,6 +58,7 @@ class _SpaceportMeasurement(legacy_page_test.LegacyPageTest):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     tab.WaitForJavaScriptExpression(
         '!document.getElementById("start-performance-tests").disabled', 60)
 

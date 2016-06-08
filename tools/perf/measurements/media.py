@@ -70,4 +70,5 @@ class Media(legacy_page_test.LegacyPageTest):
       self._power_metric.AddResults(tab, results)
 
   def DidRunPage(self, platform):
+    del platform  # unused
     self._power_metric.Close()

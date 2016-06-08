@@ -19,6 +19,7 @@ class _MSEMeasurement(legacy_page_test.LegacyPageTest):
     super(_MSEMeasurement, self).__init__()
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     media_metric = tab.EvaluateJavaScript('window.__testMetrics')
     trace = media_metric['id'] if 'id' in media_metric else None
     metrics = media_metric['metrics'] if 'metrics' in media_metric else []

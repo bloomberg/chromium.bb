@@ -135,6 +135,7 @@ class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
     super(_OilpanGCTimesBase, self).__init__(action_name)
 
   def WillNavigateToPage(self, page, tab):
+    del page  # unused
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
     config = tracing_config.TracingConfig()
@@ -144,6 +145,7 @@ class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
     tab.browser.platform.tracing_controller.StartTracing(config, timeout=1000)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = TimelineModel(timeline_data)
     threads = timeline_model.GetAllThreads()
@@ -163,6 +165,7 @@ class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):
     self._interaction = None
 
   def DidNavigateToPage(self, page, tab):
+    del page  # unused
     self._interaction = tab.action_runner.CreateInteraction(_RUN_SMOOTH_ACTIONS)
     self._interaction.Begin()
 

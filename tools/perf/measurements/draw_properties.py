@@ -19,6 +19,7 @@ class DrawProperties(legacy_page_test.LegacyPageTest):
     ])
 
   def WillNavigateToPage(self, page, tab):
+    del page  # unused
     config = tracing_config.TracingConfig()
     config.tracing_category_filter.AddDisabledByDefault(
         'disabled-by-default-cc.debug.cdp-perf')
@@ -36,6 +37,7 @@ class DrawProperties(legacy_page_test.LegacyPageTest):
     return duration_avg
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = model.TimelineModel(timeline_data)
 

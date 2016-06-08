@@ -36,9 +36,11 @@ class V8DetachedContextAgeInGC(legacy_page_test.LegacyPageTest):
     options.AppendExtraBrowserArgs(['--enable-stats-collection-bindings'])
 
   def DidNavigateToPage(self, page, tab):
+    del page  # unused
     self._data_start = histogram_util.GetHistogram(_TYPE, _NAME, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     # Trigger GC to get histogram data.
     # Seven GCs should be enough to collect any detached context.
     # If a detached context survives more GCs then there is a leak.

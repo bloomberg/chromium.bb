@@ -41,6 +41,7 @@ class TaskExecutionTime(legacy_page_test.LegacyPageTest):
     self._results = None
 
   def WillNavigateToPage(self, page, tab):
+    del page  # unused
     config = tracing_config.TracingConfig()
     for category in self._CATEGORIES:
       config.tracing_category_filter.AddIncludedCategory(category)
@@ -50,6 +51,7 @@ class TaskExecutionTime(legacy_page_test.LegacyPageTest):
         config, self._TIME_OUT_IN_SECONDS)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     trace_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = TimelineModel(trace_data)
 

@@ -29,9 +29,11 @@ class ThreadTimes(legacy_page_test.LegacyPageTest):
     self._timeline_controller.SetUp(page, tab)
 
   def DidNavigateToPage(self, page, tab):
+    del page  # unused
     self._timeline_controller.Start(tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     self._timeline_controller.Stop(tab, results)
     metric = timeline.ThreadTimesTimelineMetric()
     renderer_thread = \

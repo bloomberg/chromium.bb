@@ -81,6 +81,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       self._blink_perf_js = f.read()
 
   def WillNavigateToPage(self, page, tab):
+    del tab  # unused
     page.script_to_evaluate_on_commit = self._blink_perf_js
 
   def CustomizeBrowserOptions(self, options):

@@ -24,6 +24,7 @@ class Memory(legacy_page_test.LegacyPageTest):
     self._memory_metric = memory.MemoryMetric(browser)
 
   def WillNavigateToPage(self, page, tab):
+    del page  # unused
     tab.CollectGarbage()
 
   def DidNavigateToPage(self, page, tab):
@@ -43,6 +44,7 @@ class Memory(legacy_page_test.LegacyPageTest):
     self._power_metric.AddResults(tab, results)
 
   def DidRunPage(self, platform):
+    del platform  # unused
     # TODO(rnephew): Remove when crbug.com/553601 is solved.
     logging.info('DidRunPage for memory metric')
     self._power_metric.Close()

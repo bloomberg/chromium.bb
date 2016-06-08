@@ -29,6 +29,7 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     ])
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     try:
       tab.WaitForDocumentReadyStateToBeComplete()
     except exceptions.TimeoutException:

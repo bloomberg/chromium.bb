@@ -48,6 +48,7 @@ class TabSwitching(legacy_page_test.LegacyPageTest):
     self._power_metric = power.PowerMetric(platform, TabSwitching.SAMPLE_TIME)
 
   def TabForPage(self, page, browser):
+    del page  # unused
     if self.first_page_in_storyset:
       # The initial browser window contains a single tab, navigate that tab
       # rather than creating a new one.
@@ -108,4 +109,5 @@ class TabSwitching(legacy_page_test.LegacyPageTest):
     keychain_metric.KeychainMetric().AddResults(tab, results)
 
   def DidRunPage(self, platform):
+    del platform  # unused
     self._power_metric.Close()

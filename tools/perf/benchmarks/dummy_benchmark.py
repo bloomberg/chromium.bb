@@ -26,6 +26,7 @@ class _DummyTest(legacy_page_test.LegacyPageTest):
     self._std = std
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del tab  # unused
     results.AddValue(scalar.ScalarValue(
         page=page,
         name='gaussian-value', units='ms',

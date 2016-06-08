@@ -175,4 +175,5 @@ class PageCycler(legacy_page_test.LegacyPageTest):
     return self._has_loaded_page[url] >= self._cold_run_start_index
 
   def DidRunPage(self, platform):
+    del platform  # unused
     self._power_metric.Close()

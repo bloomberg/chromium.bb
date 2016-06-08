@@ -30,6 +30,7 @@ class Startup(legacy_page_test.LegacyPageTest):
     keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     keychain_metric.KeychainMetric().AddResults(tab, results)
     startup_metric.StartupMetric().AddResults(tab, results)
 

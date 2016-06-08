@@ -22,6 +22,7 @@ class _OortOnlineMeasurement(legacy_page_test.LegacyPageTest):
     super(_OortOnlineMeasurement, self).__init__()
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    del page  # unused
     tab.WaitForJavaScriptExpression('window.benchmarkFinished', 1000)
     scores = tab.EvaluateJavaScript('window.benchmarkScore')
     for score in scores:
