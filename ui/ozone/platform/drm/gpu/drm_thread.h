@@ -63,6 +63,7 @@ class DrmThread : public base::Thread {
                            gfx::BufferFormat format,
                            std::vector<base::ScopedFD>&& fds,
                            std::vector<int> strides,
+                           std::vector<int> offsets,
                            scoped_refptr<GbmBuffer>* buffer);
 
   void GetScanoutFormats(gfx::AcceleratedWidget widget,

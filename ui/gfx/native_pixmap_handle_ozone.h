@@ -21,9 +21,9 @@ struct GFX_EXPORT NativePixmapHandle {
   // File descriptors for the underlying memory objects (usually dmabufs).
   std::vector<base::FileDescriptor> fds;
 
-  // The strides in bytes to be used when accessing the buffers via a memory
-  // mapping.
-  std::vector<int> strides;
+  // The strides and offsets in bytes to be used when accessing the buffers via
+  // a memory mapping. One per plane per entry.
+  std::vector<std::pair<int, int>> strides_and_offsets;
 };
 
 }  // namespace gfx

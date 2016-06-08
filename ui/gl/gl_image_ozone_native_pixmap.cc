@@ -139,7 +139,7 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
       attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + plane * 3);
       attrs.push_back(pixmap->GetDmaBufFd(plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
-      attrs.push_back(0);
+      attrs.push_back(pixmap->GetDmaBufOffset(plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
       attrs.push_back(pixmap->GetDmaBufPitch(plane));
     }

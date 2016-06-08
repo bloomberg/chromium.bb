@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
@@ -113,14 +114,26 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::Size size,
     gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
-  std::vector<scoped_refptr<GbmBuffer>> buffers;
-  DCHECK_EQ(handle.fds.size(), handle.strides.size());
+  size_t planes = gfx::NumberOfPlanesForBufferFormat(format);
+  if (handle.strides_and_offsets.size() != planes ||
+      handle.fds.size() != planes) {  // This constraint could be relaxed.
+    return nullptr;
+  }
   std::vector<base::ScopedFD> scoped_fds;
   for (auto& fd : handle.fds) {
-    scoped_fds.emplace_back(base::ScopedFD(fd.fd));
+    scoped_fds.emplace_back(fd.fd);
   }
+
+  std::vector<int> strides;
+  std::vector<int> offsets;
+
+  for (const auto& stride_and_offset : handle.strides_and_offsets) {
+    strides.push_back(stride_and_offset.first);
+    offsets.push_back(stride_and_offset.second);
+  }
+
   scoped_refptr<GbmBuffer> buffer = drm_thread_->CreateBufferFromFds(
-      size, format, std::move(scoped_fds), handle.strides);
+      size, format, std::move(scoped_fds), strides, offsets);
   if (!buffer)
     return nullptr;
   return make_scoped_refptr(new GbmPixmap(this, buffer));

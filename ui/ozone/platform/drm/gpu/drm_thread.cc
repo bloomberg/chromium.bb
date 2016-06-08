@@ -114,12 +114,13 @@ void DrmThread::CreateBufferFromFds(const gfx::Size& size,
                                     gfx::BufferFormat format,
                                     std::vector<base::ScopedFD>&& fds,
                                     std::vector<int> strides,
+                                    std::vector<int> offsets,
                                     scoped_refptr<GbmBuffer>* buffer) {
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetPrimaryDrmDevice().get());
   DCHECK(gbm);
   *buffer = GbmBuffer::CreateBufferFromFds(gbm, format, size, std::move(fds),
-                                           strides);
+                                           strides, offsets);
 }
 
 void DrmThread::GetScanoutFormats(

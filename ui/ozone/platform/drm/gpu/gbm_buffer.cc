@@ -32,13 +32,15 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gfx::BufferUsage usage,
                      std::vector<base::ScopedFD>&& fds,
                      const gfx::Size& size,
-                     const std::vector<int>& strides)
+                     const std::vector<int>& strides,
+                     const std::vector<int>& offsets)
     : GbmBufferBase(gbm, bo, format, usage),
       format_(format),
       usage_(usage),
       fds_(std::move(fds)),
       size_(size),
-      strides_(strides) {}
+      strides_(strides),
+      offsets_(offsets) {}
 
 GbmBuffer::~GbmBuffer() {
   if (bo())
@@ -64,6 +66,11 @@ int GbmBuffer::GetFd(size_t plane) const {
 int GbmBuffer::GetStride(size_t plane) const {
   DCHECK_LT(plane, strides_.size());
   return strides_[plane];
+}
+
+int GbmBuffer::GetOffset(size_t plane) const {
+  DCHECK_LT(plane, offsets_.size());
+  return offsets_[plane];
 }
 
 // TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
@@ -111,8 +118,10 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   fds.emplace_back(std::move(fd));
   std::vector<int> strides;
   strides.push_back(gbm_bo_get_stride(bo));
-  scoped_refptr<GbmBuffer> buffer(
-      new GbmBuffer(gbm, bo, format, usage, std::move(fds), size, strides));
+  std::vector<int> offsets;
+  offsets.push_back(gbm_bo_get_plane_offset(bo, 0));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
+      gbm, bo, format, usage, std::move(fds), size, strides, offsets));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -125,15 +134,16 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     gfx::BufferFormat format,
     const gfx::Size& size,
     std::vector<base::ScopedFD>&& fds,
-    const std::vector<int>& strides) {
+    const std::vector<int>& strides,
+    const std::vector<int>& offsets) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());
   DCHECK_EQ(fds.size(), strides.size());
   // TODO(reveman): Use gbm_bo_import after making buffers survive
   // GPU process crashes. crbug.com/597932
-  return make_scoped_refptr(new GbmBuffer(gbm, nullptr, format,
-                                          gfx::BufferUsage::GPU_READ,
-                                          std::move(fds), size, strides));
+  return make_scoped_refptr(
+      new GbmBuffer(gbm, nullptr, format, gfx::BufferUsage::GPU_READ,
+                    std::move(fds), size, strides, offsets));
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
@@ -157,7 +167,8 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
     }
     handle.fds.emplace_back(
         base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
-    handle.strides.push_back(buffer_->GetStride(i));
+    handle.strides_and_offsets.emplace_back(buffer_->GetStride(i),
+                                            buffer_->GetOffset(i));
   }
   return handle;
 }
@@ -179,6 +190,10 @@ int GbmPixmap::GetDmaBufFd(size_t plane) const {
 
 int GbmPixmap::GetDmaBufPitch(size_t plane) const {
   return buffer_->GetStride(plane);
+}
+
+int GbmPixmap::GetDmaBufOffset(size_t plane) const {
+  return buffer_->GetOffset(plane);
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
