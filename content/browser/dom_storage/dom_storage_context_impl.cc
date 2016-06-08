@@ -14,6 +14,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -468,11 +469,28 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
 bool DOMStorageContextImpl::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  if (session_storage_database_)
+    session_storage_database_->OnMemoryDump(pmd);
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    DOMStorageNamespace::UsageStatistics total_stats =
+        GetTotalNamespaceStatistics(namespaces_);
+    auto mad = pmd->CreateAllocatorDump(
+        StringPrintf("dom_storage/%p/cache_size", this));
+    mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                   total_stats.total_cache_size);
+    mad->AddScalar("inactive_areas",
+                   base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                   total_stats.inactive_area_count);
+    mad->AddScalar("total_areas",
+                   base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                   total_stats.total_area_count);
+    return true;
+  }
   for (const auto& it : namespaces_) {
     it.second->OnMemoryDump(pmd);
   }
-  if (session_storage_database_)
-    session_storage_database_->OnMemoryDump(pmd);
   return true;
 }
 

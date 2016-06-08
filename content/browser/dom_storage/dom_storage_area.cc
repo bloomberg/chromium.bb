@@ -338,8 +338,7 @@ void DOMStorageArea::Shutdown() {
 
 void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(task_runner_->IsRunningOnPrimarySequence());
-  // Do not trace if usage is very low.
-  if (map_->bytes_used() < 1024)
+  if (!is_initial_import_done_)
     return;
 
   // Limit the url length to 50 and strip special characters.
@@ -349,16 +348,30 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
       url[index] = '_';
   }
   std::string name = StringPrintf("dom_storage/%s/%p", url.c_str(), this);
-  auto mad = pmd->CreateAllocatorDump(name + "/storage_map");
-  mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                 map_->bytes_used());
 
   const char* system_allocator_name =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->system_allocator_pool_name();
+  if (commit_batch_) {
+    auto commit_batch_mad = pmd->CreateAllocatorDump(name + "/commit_batch");
+    commit_batch_mad->AddScalar(
+        base::trace_event::MemoryAllocatorDump::kNameSize,
+        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+        commit_batch_->GetDataSize());
+    if (system_allocator_name)
+      pmd->AddSuballocation(commit_batch_mad->guid(), system_allocator_name);
+  }
+
+  // Do not add storage map usage if less than 1KB.
+  if (map_->bytes_used() < 1024)
+    return;
+
+  auto map_mad = pmd->CreateAllocatorDump(name + "/storage_map");
+  map_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                     map_->bytes_used());
   if (system_allocator_name)
-    pmd->AddSuballocation(mad->guid(), system_allocator_name);
+    pmd->AddSuballocation(map_mad->guid(), system_allocator_name);
   // TODO(ssid): Add memory usage of local backing storage crbug.com/605785.
 }
 
