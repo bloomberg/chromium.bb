@@ -103,10 +103,15 @@ std::string HatsNotificationController::id() const {
 }
 
 // message_center::NotificationDelegate override:
-void HatsNotificationController::ButtonClick(int button_index) {}
+void HatsNotificationController::ButtonClick(int button_index) {
+  UpdateLastInteractionTime();
+}
 
 // message_center::NotificationDelegate override:
-void HatsNotificationController::Close(bool by_user) {}
+void HatsNotificationController::Close(bool by_user) {
+  if (by_user)
+    UpdateLastInteractionTime();
+}
 
 // NetworkPortalDetector::Observer override:
 void HatsNotificationController::OnPortalDetectionCompleted(
@@ -145,6 +150,12 @@ Notification* HatsNotificationController::CreateNotification() {
                                  ash::system_notifier::kNotifierHats),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
       GURL() /* Send an empty invalid url */, kNotificationId, optional, this);
+}
+
+void HatsNotificationController::UpdateLastInteractionTime() {
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetInt64(prefs::kHatsLastInteractionTimestamp,
+                         base::Time::Now().ToInternalValue());
 }
 
 }  // namespace chromeos

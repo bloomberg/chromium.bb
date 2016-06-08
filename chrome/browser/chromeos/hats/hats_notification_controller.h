@@ -47,6 +47,7 @@ class HatsNotificationController : public NotificationDelegate,
 
   void ShowNotification();
   Notification* CreateNotification();
+  void UpdateLastInteractionTime();
 
   Profile* profile_;
 
