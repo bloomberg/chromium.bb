@@ -40,7 +40,6 @@
     'target_name': 'modules',
     'dependencies': [
       '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings_for_blink',
-      '<(DEPTH)/device/nfc/nfc.gyp:device_nfc_mojo_bindings_for_blink',
       '<(DEPTH)/device/usb/usb.gyp:device_usb_mojo_bindings_for_blink',
       '<(DEPTH)/device/vibration/vibration.gyp:device_vibration_mojo_bindings_for_blink',
       '<(DEPTH)/device/vr/vr.gyp:device_vr_mojo_bindings_for_blink',
