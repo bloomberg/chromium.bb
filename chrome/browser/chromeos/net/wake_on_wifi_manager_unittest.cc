@@ -32,8 +32,7 @@ class WakeOnWifiObserverTest : public ::testing::Test {
   ~WakeOnWifiObserverTest() override {}
 
  protected:
-  StrictMock<MockNetworkDeviceHandler::MockNetworkDeviceHandler>
-      mock_network_device_handler_;
+  StrictMock<MockNetworkDeviceHandler> mock_network_device_handler_;
   TestingProfile profile_;
 
  private:
