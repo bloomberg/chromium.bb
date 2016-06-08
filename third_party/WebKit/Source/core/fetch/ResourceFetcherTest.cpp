@@ -77,15 +77,19 @@ public:
 
     void setCachePolicy(CachePolicy policy) { m_policy = policy; }
     CachePolicy getCachePolicy() const override { return m_policy; }
+    void setLoadComplete(bool complete) { m_complete = complete; }
+    bool isLoadComplete() const override { return m_complete; }
 
 private:
     ResourceFetcherTestMockFetchContext()
         : m_policy(CachePolicyVerify)
         , m_runner(adoptPtr(new MockTaskRunner))
+        , m_complete(false)
     { }
 
     CachePolicy m_policy;
     OwnPtr<MockTaskRunner> m_runner;
+    bool m_complete;
 };
 
 class ResourceFetcherTest : public ::testing::Test {
@@ -269,6 +273,61 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading)
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
     EXPECT_TRUE(client->notifyFinishedCalled());
     resource1->removeClient(client);
+    memoryCache()->remove(resource1);
+}
+
+TEST_F(ResourceFetcherTest, RevalidateDeferedResourceFromTwoInitiators)
+{
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/font.woff");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    response.setHTTPHeaderField(HTTPNames::ETag, "1234567890");
+    Platform::current()->getURLLoaderMockFactory()->registerURL(url, WrappedResourceResponse(response), "");
+
+    ResourceFetcherTestMockFetchContext* context = ResourceFetcherTestMockFetchContext::create();
+    ResourceFetcher* fetcher = ResourceFetcher::create(context);
+
+    // Fetch to cache a resource.
+    ResourceRequest request1(url);
+    FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
+    Resource* resource1 = fetcher->requestResource(fetchRequest1, TestResourceFactory(Resource::Font));
+    ASSERT_TRUE(resource1);
+    resource1->load(fetcher);
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    EXPECT_TRUE(resource1->isLoaded());
+    EXPECT_FALSE(resource1->errorOccurred());
+
+    // Set the context as it is on reloads.
+    context->setLoadComplete(true);
+    context->setCachePolicy(CachePolicyRevalidate);
+
+    // Revalidate the resource.
+    ResourceRequest request2(url);
+    FetchRequest fetchRequest2 = FetchRequest(request2, FetchInitiatorInfo());
+    Resource* resource2 = fetcher->requestResource(fetchRequest2, TestResourceFactory(Resource::Font));
+    ASSERT_TRUE(resource2);
+    EXPECT_EQ(resource1, resource2);
+    EXPECT_TRUE(resource2->isCacheValidator());
+    EXPECT_TRUE(resource2->stillNeedsLoad());
+
+    // Fetch the same resource again before actual load operation starts.
+    ResourceRequest request3(url);
+    FetchRequest fetchRequest3 = FetchRequest(request3, FetchInitiatorInfo());
+    Resource* resource3 = fetcher->requestResource(fetchRequest3, TestResourceFactory(Resource::Font));
+    ASSERT_TRUE(resource3);
+    EXPECT_EQ(resource2, resource3);
+    EXPECT_TRUE(resource3->isCacheValidator());
+    EXPECT_TRUE(resource3->stillNeedsLoad());
+
+    // load() can be called from any initiator. Here, call it from the latter.
+    resource3->load(fetcher);
+    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+    EXPECT_TRUE(resource3->isLoaded());
+    EXPECT_FALSE(resource3->errorOccurred());
+    EXPECT_TRUE(resource2->isLoaded());
+    EXPECT_FALSE(resource2->errorOccurred());
+
     memoryCache()->remove(resource1);
 }
 

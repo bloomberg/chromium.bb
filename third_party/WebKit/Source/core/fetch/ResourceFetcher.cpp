@@ -511,6 +511,10 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
     requestLoadStarted(resource, request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
     m_documentResources.set(urlWithoutFragment, resource);
 
+    // Returns with an existing resource if the resource does not need to start
+    // loading immediately.
+    // If revalidation policy was determined as |Revalidate|, the resource was
+    // already initialized for the revalidation here, but won't start loading.
     if (!resourceNeedsLoad(resource, request, policy))
         return resource;
 
@@ -795,8 +799,15 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         || request.cacheControlContainsNoCache()) {
         // See if the resource has usable ETag or Last-modified headers.
         // If the page is controlled by the ServiceWorker, we choose the Reload policy because the revalidation headers should not be exposed to the ServiceWorker.(crbug.com/429570)
-        if (existingResource->canUseCacheValidator() && !context().isControlledByServiceWorker())
+        if (existingResource->canUseCacheValidator() && !context().isControlledByServiceWorker()) {
+            // If the resource is already a cache validator but not started yet,
+            // the |Use| policy should be applied to subsequent requests.
+            if (existingResource->isCacheValidator()) {
+                DCHECK(existingResource->stillNeedsLoad());
+                return Use;
+            }
             return Revalidate;
+        }
 
         // No, must reload.
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to missing cache validators.");
