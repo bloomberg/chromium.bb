@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
 #define ASH_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
 
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "base/macros.h"
 
 namespace ash {

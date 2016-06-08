@@ -6,8 +6,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/display/display_info.h"
-#include "ash/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_views_delegate.h"

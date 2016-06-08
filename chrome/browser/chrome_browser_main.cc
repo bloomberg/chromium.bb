@@ -182,7 +182,7 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-#include "ash/material_design/material_design_controller.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"

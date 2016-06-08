@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "ash/ash_layout_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter_util.h"
-#include "ash/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"

@@ -8,8 +8,8 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/material_design/material_design_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "base/time/time.h"
