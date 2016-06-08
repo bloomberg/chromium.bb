@@ -89,6 +89,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.webapps.WebApkBuilder;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
@@ -358,6 +359,13 @@ public class ChromeApplication extends ContentApplication {
      */
     public VariationsSession createVariationsSession() {
         return new VariationsSession();
+    }
+
+    /**
+     * Returns factory for building WebAPKs.
+     */
+    public WebApkBuilder createWebApkBuilder() {
+        return null;
     }
 
     /**

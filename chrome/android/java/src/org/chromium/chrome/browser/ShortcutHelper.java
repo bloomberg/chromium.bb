@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -35,12 +36,14 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.webapps.WebApkBuilder;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
+import org.chromium.net.GURLUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -148,6 +151,13 @@ public class ShortcutHelper {
         boolean isWebappCapable = (displayMode == WebDisplayMode.Standalone
                                 || displayMode == WebDisplayMode.Fullscreen);
         if (isWebappCapable) {
+            if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+                WebApkBuilder apkBuilder = ((ChromeApplication) context).createWebApkBuilder();
+                if (apkBuilder != null) {
+                    apkBuilder.buildWebApkAsync(url, GURLUtils.getOrigin(url), shortName, icon);
+                    return;
+                }
+            }
             shortcutIntent = createWebappShortcutIntent(id, sDelegate.getFullscreenAction(), url,
                     getScopeFromUrl(url), name, shortName, icon, WEBAPP_SHORTCUT_VERSION,
                     displayMode, orientation, themeColor, backgroundColor, isIconGenerated);
