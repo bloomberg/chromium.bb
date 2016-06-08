@@ -19,7 +19,9 @@ class MachBrokerTest : public testing::Test,
                        public base::PortProvider::Observer {
  public:
   MachBrokerTest()
-      : event_(true, false), received_process_(base::kNullProcessHandle) {
+      : event_(base::WaitableEvent::ResetPolicy::MANUAL,
+               base::WaitableEvent::InitialState::NOT_SIGNALED),
+        received_process_(base::kNullProcessHandle) {
     broker_.AddObserver(this);
   }
   ~MachBrokerTest() override {

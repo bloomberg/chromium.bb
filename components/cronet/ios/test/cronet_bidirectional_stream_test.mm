@@ -127,7 +127,8 @@ class TestBidirectionalStreamCallback {
 
   TestBidirectionalStreamCallback()
       : stream(nullptr),
-        stream_done_event(true, false),
+        stream_done_event(base::WaitableEvent::ResetPolicy::MANUAL,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED),
         expected_negotiated_protocol("quic/1+spdy/3"),
         cancel_from_step(NOTHING),
         read_buffer_size(32768),

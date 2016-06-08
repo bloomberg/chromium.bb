@@ -104,7 +104,9 @@ bool StartQuicTestServer() {
   if (!PathService::Get(base::DIR_EXE, &test_files_root))
     return false;
 
-  base::WaitableEvent server_started_event(true, false);
+  base::WaitableEvent server_started_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
       FROM_HERE, base::Bind(&StartQuicServerOnServerThread, test_files_root,
                             &server_started_event));
@@ -116,7 +118,9 @@ void ShutdownQuicTestServer() {
   if (!g_quic_server_thread)
     return;
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
-  base::WaitableEvent server_stopped_event(true, false);
+  base::WaitableEvent server_stopped_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
       FROM_HERE, base::Bind(&ShutdownOnServerThread, &server_stopped_event));
   server_stopped_event.Wait();

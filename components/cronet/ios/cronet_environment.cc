@@ -169,7 +169,9 @@ void CronetEnvironment::StartNetLogOnNetworkThread(
 }
 
 void CronetEnvironment::StopNetLog() {
-  base::WaitableEvent log_stopped_event(true, false);
+  base::WaitableEvent log_stopped_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   PostToNetworkThread(FROM_HERE,
                       base::Bind(&CronetEnvironment::StopNetLogOnNetworkThread,
                                  base::Unretained(this), &log_stopped_event));

@@ -234,7 +234,8 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
 
   base::File::Error GetFileInfo(const base::FilePath& path,
                                 base::File::Info* info) {
-    base::WaitableEvent wait(true, false);
+    base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     delegate_->GetFileInfo(
       path,
       base::Bind(&MTPDeviceDelegateImplMacTest::OnFileInfo,
@@ -251,7 +252,8 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   }
 
   base::File::Error ReadDir(const base::FilePath& path) {
-    base::WaitableEvent wait(true, false);
+    base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     delegate_->ReadDirectory(
         path,
         base::Bind(&MTPDeviceDelegateImplMacTest::OnReadDir,
@@ -269,7 +271,8 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   base::File::Error DownloadFile(
       const base::FilePath& path,
       const base::FilePath& local_path) {
-    base::WaitableEvent wait(true, false);
+    base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     delegate_->CreateSnapshotFile(
         path, local_path,
         base::Bind(&MTPDeviceDelegateImplMacTest::OnDownload,
@@ -336,7 +339,8 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
   info1.creation_time = time1;
   delegate_->ItemAdded("name1", info1);
 
-  base::WaitableEvent wait(true, false);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   delegate_->ReadDirectory(
       base::FilePath(kDevicePath),
