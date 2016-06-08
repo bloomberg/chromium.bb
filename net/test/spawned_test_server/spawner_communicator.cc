@@ -8,11 +8,14 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -202,11 +205,9 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
   }
 
   // Post a task to timeout this request if it takes too long.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&SpawnerCommunicator::OnTimeout,
-                 weak_factory_.GetWeakPtr(),
-                 current_request_id),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&SpawnerCommunicator::OnTimeout,
+                            weak_factory_.GetWeakPtr(), current_request_id),
       TestTimeouts::action_max_timeout());
 
   // Start the request.
