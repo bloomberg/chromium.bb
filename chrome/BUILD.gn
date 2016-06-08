@@ -61,13 +61,14 @@ if (!is_android && !is_mac) {
     public_deps = [
       ":chrome_initial",
     ]
+    data_deps = [
+      ":chrome_initial",
+    ]
     if (is_win) {
       public_deps += [ ":reorder_imports" ]
     }
     if (use_aura && (is_win || is_linux)) {
-      data_deps = [
-        "//chrome/app:mojo_manifests",
-      ]
+      data_deps += [ "//chrome/app:mojo_manifests" ]
     }
   }
 
@@ -424,6 +425,10 @@ if (is_win) {
 
   group("chrome") {
     deps = [
+      ":chrome_app",
+    ]
+
+    data_deps = [
       ":chrome_app",
     ]
 
