@@ -91,8 +91,11 @@ LIBAOM_TEST_SRCS-yes                   += idct8x8_test.cc
 LIBAOM_TEST_SRCS-yes                   += partial_idct_test.cc
 LIBAOM_TEST_SRCS-yes                   += superframe_test.cc
 LIBAOM_TEST_SRCS-yes                   += tile_independence_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_ANS)         += ans_test.cc
+ifeq ($(CONFIG_ANS),yes)
+LIBAOM_TEST_SRCS-yes                   += ans_test.cc
+else
 LIBAOM_TEST_SRCS-yes                   += boolcoder_test.cc
+endif
 LIBAOM_TEST_SRCS-yes                   += divu_small_test.cc
 LIBAOM_TEST_SRCS-yes                   += encoder_parms_get_to_decoder.cc
 endif

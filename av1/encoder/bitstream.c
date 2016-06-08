@@ -1332,7 +1332,12 @@ static int get_refresh_mask(AV1_COMP *cpi) {
 static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
                            unsigned int *max_tile_sz) {
   AV1_COMMON *const cm = &cpi->common;
+#if CONFIG_ANS
+  struct AnsCoder ans;
+  struct BufAnsCoder *buf_ans = &cpi->buf_ans;
+#else
   aom_writer residual_bc;
+#endif  // CONFIG_ANS
   int tile_row, tile_col;
   TOKENEXTRA *tok_end;
   size_t total_size = 0;
@@ -1345,33 +1350,40 @@ static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
 
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
     for (tile_col = 0; tile_col < tile_cols; tile_col++) {
-      int tile_idx = tile_row * tile_cols + tile_col;
+      const int tile_idx = tile_row * tile_cols + tile_col;
+      const int is_last_tile = tile_idx == tile_rows * tile_cols - 1;
+      unsigned int tile_size;
       TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
 
       tok_end = cpi->tile_tok[tile_row][tile_col] +
                 cpi->tok_count[tile_row][tile_col];
 
-      if (tile_col < tile_cols - 1 || tile_row < tile_rows - 1)
-        aom_start_encode(&residual_bc, data_ptr + total_size + 4);
-      else
-        aom_start_encode(&residual_bc, data_ptr + total_size);
+#if CONFIG_ANS
+      buf_ans_write_reset(buf_ans);
+      write_modes(cpi, &cpi->tile_data[tile_idx].tile_info, buf_ans, &tok,
+                  tok_end);
+      assert(tok == tok_end);
+      ans_write_init(&ans, data_ptr + total_size + 4 * !is_last_tile);
+      buf_ans_flush(buf_ans, &ans);
+      tile_size = ans_write_end(&ans) - CONFIG_MISC_FIXES;
+#else
+      aom_start_encode(&residual_bc, data_ptr + total_size + 4 * !is_last_tile);
 
       write_modes(cpi, &cpi->tile_data[tile_idx].tile_info, &residual_bc, &tok,
                   tok_end);
       assert(tok == tok_end);
       aom_stop_encode(&residual_bc);
-      if (tile_col < tile_cols - 1 || tile_row < tile_rows - 1) {
-        unsigned int tile_sz;
-
+      tile_size = residual_bc.pos - CONFIG_MISC_FIXES;
+#endif
+      assert(tile_size > 0);
+      if (!is_last_tile) {
         // size of this tile
-        assert(residual_bc.pos > 0);
-        tile_sz = residual_bc.pos - CONFIG_MISC_FIXES;
-        mem_put_le32(data_ptr + total_size, tile_sz);
-        max_tile = max_tile > tile_sz ? max_tile : tile_sz;
+        mem_put_le32(data_ptr + total_size, tile_size);
+        max_tile = max_tile > tile_size ? max_tile : tile_size;
         total_size += 4;
       }
 
-      total_size += residual_bc.pos;
+      total_size += tile_size;
     }
   }
   *max_tile_sz = max_tile;
@@ -1652,10 +1664,17 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   FRAME_COUNTS *counts = cpi->td.counts;
   aom_writer *header_bc;
   int i, j;
-  aom_writer real_header_bc;
 
+#if CONFIG_ANS
+  struct AnsCoder header_ans;
+  int header_size;
+  header_bc = &cpi->buf_ans;
+  buf_ans_write_reset(header_bc);
+#else
+  aom_writer real_header_bc;
   header_bc = &real_header_bc;
   aom_start_encode(header_bc, data);
+#endif
 
 #if !CONFIG_MISC_FIXES
   if (cpi->td.mb.e_mbd.lossless[0]) {
@@ -1772,10 +1791,17 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     update_ext_tx_probs(cm, header_bc);
   }
 
+#if CONFIG_ANS
+  ans_write_init(&header_ans, data);
+  buf_ans_flush(header_bc, &header_ans);
+  header_size = ans_write_end(&header_ans);
+  assert(header_size <= 0xffff);
+  return header_size;
+#else
   aom_stop_encode(header_bc);
   assert(header_bc->pos <= 0xffff);
-
   return header_bc->pos;
+#endif  // CONFIG_ANS
 }
 
 #if CONFIG_MISC_FIXES

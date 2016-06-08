@@ -56,6 +56,9 @@
 #endif
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
+#if CONFIG_ANS
+#include "aom_dsp/buf_ans.h"
+#endif  // CONFIG_ANS
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
@@ -422,6 +425,9 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
     aom_free(cpi->source_diff_var);
     cpi->source_diff_var = NULL;
   }
+#if CONFIG_ANS
+  aom_buf_ans_free(&cpi->buf_ans);
+#endif  // CONFIG_ANS
 }
 
 static void save_coding_context(AV1_COMP *cpi) {
@@ -741,6 +747,9 @@ void av1_alloc_compressor_data(AV1_COMP *cpi) {
     unsigned int tokens = get_token_alloc(cm->mb_rows, cm->mb_cols);
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
+#if CONFIG_ANS
+    aom_buf_ans_alloc(&cpi->buf_ans, &cm->error, tokens);
+#endif  // CONFIG_ANS
   }
 
   av1_setup_pc_tree(&cpi->common, &cpi->td);

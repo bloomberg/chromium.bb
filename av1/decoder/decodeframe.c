@@ -1329,7 +1329,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
   if (cm->frame_parallel_decode)
     av1_frameworker_broadcast(pbi->cur_buf, INT_MAX);
+#if CONFIG_ANS
+  return data_end;
+#else
   return aom_reader_find_end(&tile_data->bit_reader);
+#endif
 }
 
 static int tile_worker_hook(TileWorkerData *const tile_data,

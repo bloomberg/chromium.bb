@@ -35,6 +35,9 @@
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/tokenize.h"
 
+#if CONFIG_ANS
+#include "aom_dsp/buf_ans.h"
+#endif  // CONFIG_ANS
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
 #endif
@@ -531,6 +534,9 @@ typedef struct AV1_COMP {
   AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
   AV1LfSync lf_row_sync;
+#if CONFIG_ANS
+  struct BufAnsCoder buf_ans;
+#endif  // CONFIG_ANS
 } AV1_COMP;
 
 void av1_initialize_enc(void);
