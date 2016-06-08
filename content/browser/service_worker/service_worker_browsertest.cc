@@ -528,12 +528,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void AddControlleeOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            33 /* dummy render process id */,
-            MSG_ROUTING_NONE /* render_frame_id */, 1 /* dummy provider_id */,
-            SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            wrapper()->context()->AsWeakPtr(), NULL));
+        new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                      MSG_ROUTING_NONE /* render_frame_id */,
+                                      1 /* dummy provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      wrapper()->context()->AsWeakPtr(), NULL));
     host->SetDocumentUrl(
         embedded_test_server()->GetURL("/service_worker/host"));
     host->AssociateRegistration(registration_.get(),

@@ -21,11 +21,8 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/origin_util.h"
 
 namespace content {
 
@@ -57,8 +54,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
   return std::unique_ptr<ServiceWorkerProviderHost>(
       new ServiceWorkerProviderHost(
           ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE, provider_id,
-          SERVICE_WORKER_PROVIDER_FOR_WINDOW, FrameSecurityLevel::UNINITIALIZED,
-          context, nullptr));
+          SERVICE_WORKER_PROVIDER_FOR_WINDOW, context, nullptr));
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
@@ -66,7 +62,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int route_id,
     int provider_id,
     ServiceWorkerProviderType provider_type,
-    FrameSecurityLevel parent_frame_security_level,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
     : client_uuid_(base::GenerateGUID()),
@@ -75,7 +70,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       render_thread_id_(kDocumentMainThreadId),
       provider_id_(provider_id),
       provider_type_(provider_type),
-      parent_frame_security_level_(parent_frame_security_level),
       context_(context),
       dispatcher_host_(dispatcher_host),
       allow_association_(true) {
@@ -115,20 +109,6 @@ int ServiceWorkerProviderHost::frame_id() const {
   if (provider_type_ == SERVICE_WORKER_PROVIDER_FOR_WINDOW)
     return route_id_;
   return MSG_ROUTING_NONE;
-}
-
-bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
-  DCHECK(document_url_.is_valid());
-  if (!OriginCanAccessServiceWorkers(document_url_))
-    return false;
-
-  if (is_parent_frame_secure())
-    return true;
-
-  std::set<std::string> schemes;
-  GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
-      &schemes);
-  return schemes.find(document_url().scheme()) != schemes.end();
 }
 
 void ServiceWorkerProviderHost::OnVersionAttributesChanged(
@@ -185,7 +165,6 @@ void ServiceWorkerProviderHost::SetTopmostFrameUrl(const GURL& url) {
 void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     ServiceWorkerVersion* version,
     bool notify_controllerchange) {
-  CHECK(!version || IsContextSecureForServiceWorker());
   if (version == controlling_version_.get())
     return;
 

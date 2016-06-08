@@ -354,6 +354,15 @@ static bool acceptsEditingFocus(const Element& element)
     return element.document().frame() && element.rootEditableElement();
 }
 
+static bool isOriginPotentiallyTrustworthy(SecurityOrigin* origin, String* errorMessage)
+{
+    if (origin->isPotentiallyTrustworthy())
+        return true;
+    if (errorMessage)
+        *errorMessage = origin->isPotentiallyTrustworthyErrorMessage();
+    return false;
+}
+
 uint64_t Document::s_globalTreeVersion = 0;
 
 static bool s_threadedParsingEnabledForTesting = true;
@@ -3313,7 +3322,7 @@ void Document::cloneDataFromDocument(const Document& other)
     setMimeType(other.contentType());
 }
 
-bool Document::isSecureContextImpl(const SecureContextCheck privilegeContextCheck) const
+bool Document::isSecureContextImpl(String* errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
     // There may be exceptions for the secure context check defined for certain
     // schemes. The exceptions are applied only to the special scheme and to
@@ -3343,16 +3352,21 @@ bool Document::isSecureContextImpl(const SecureContextCheck privilegeContextChec
     //
     // In all cases, a frame must be potentially trustworthy in addition to
     // having an exception listed in order for the exception to be granted.
-    if (!getSecurityOrigin()->isPotentiallyTrustworthy())
+    if (!isOriginPotentiallyTrustworthy(getSecurityOrigin(), errorMessage))
         return false;
 
     if (SchemeRegistry::schemeShouldBypassSecureContextCheck(getSecurityOrigin()->protocol()))
         return true;
 
     if (privilegeContextCheck == StandardSecureContextCheck) {
-        Frame* parent = m_frame ? m_frame->tree().parent() : nullptr;
-        if (parent && !parent->canHaveSecureChild())
-            return false;
+        if (!m_frame)
+            return true;
+        Frame* parent = m_frame->tree().parent();
+        while (parent) {
+            if (!isOriginPotentiallyTrustworthy(parent->securityContext()->getSecurityOrigin(), errorMessage))
+                return false;
+            parent = parent->tree().parent();
+        }
     }
     return true;
 }
@@ -5830,15 +5844,12 @@ v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const
 
 bool Document::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
-    if (isSecureContextImpl(privilegeContextCheck))
-        return true;
-    errorMessage = SecurityOrigin::isPotentiallyTrustworthyErrorMessage();
-    return false;
+    return isSecureContextImpl(&errorMessage, privilegeContextCheck);
 }
 
 bool Document::isSecureContext(const SecureContextCheck privilegeContextCheck) const
 {
-    return isSecureContextImpl(privilegeContextCheck);
+    return isSecureContextImpl(nullptr, privilegeContextCheck);
 }
 
 WebTaskRunner* Document::loadingTaskRunner() const

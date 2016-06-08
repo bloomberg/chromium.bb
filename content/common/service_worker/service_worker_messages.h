@@ -203,21 +203,10 @@ IPC_MESSAGE_CONTROL5(
 // MSG_ROUTING_NONE. |provider_type| identifies whether this provider is for
 // Service Worker controllees (documents and Shared Workers) or for controllers
 // (Service Workers).
-//
-// |is_parent_frame_secure| is false if the provider is created for a
-// document whose parent frame is not secure from the point of view of the
-// document; that is, blink::WebFrame::canHaveSecureChild() returns false.
-// This doesn't mean the document is necessarily an insecure context,
-// because the document may have a URL whose scheme is granted an exception
-// that allows bypassing the ancestor secure context check. See the
-// comment in blink::Document::isSecureContextImpl for more details.
-// If the provider is not created for a document, or the document does not have
-// a parent frame, |is_parent_frame_secure| is true.
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_ProviderCreated,
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_ProviderCreated,
                      int /* provider_id */,
                      int /* route_id */,
-                     content::ServiceWorkerProviderType /* provider_type */,
-                     bool /* is_parent_frame_secure */)
+                     content::ServiceWorkerProviderType /* provider_type */)
 
 // Informs the browser of a ServiceWorkerProvider being destroyed.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,

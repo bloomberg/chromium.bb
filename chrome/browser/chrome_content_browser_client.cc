@@ -104,7 +104,6 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -2521,11 +2520,6 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
     extra_parts_[i]->GetAdditionalAllowedSchemesForFileSystem(
         additional_allowed_schemes);
   }
-}
-
-void ChromeContentBrowserClient::GetSchemesBypassingSecureContextCheckWhitelist(
-    std::set<std::string>* schemes) {
-  return ::GetSchemesBypassingSecureContextCheckWhitelist(schemes);
 }
 
 void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(

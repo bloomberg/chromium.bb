@@ -285,14 +285,6 @@ WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
     return fromFrame(toHTMLFrameOwnerElement(element)->contentFrame());
 }
 
-bool WebFrame::canHaveSecureChild() const
-{
-    Frame* frame = toImplBase()->frame();
-    if (!frame)
-        return false;
-    return frame->canHaveSecureChild();
-}
-
 bool WebFrame::isLoading() const
 {
     if (Frame* frame = toImplBase()->frame())

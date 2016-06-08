@@ -15,11 +15,7 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
-
-namespace blink {
-class WebDataSource;
-class WebLocalFrame;
-}  // namespace blink
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
@@ -50,18 +46,15 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForNavigation(
       int route_id,
       const RequestNavigationParams& request_params,
-      blink::WebLocalFrame* frame,
+      blink::WebSandboxFlags sandbox_flags,
       bool content_initiated);
 
   // PlzNavigate
   // The |browser_provider_id| is initialized by the browser for navigations.
   ServiceWorkerNetworkProvider(int route_id,
                                ServiceWorkerProviderType type,
-                               int browser_provider_id,
-                               bool is_parent_frame_secure);
-  ServiceWorkerNetworkProvider(int route_id,
-                               ServiceWorkerProviderType type,
-                               bool is_parent_frame_secure);
+                               int browser_provider_id);
+  ServiceWorkerNetworkProvider(int route_id, ServiceWorkerProviderType type);
   ServiceWorkerNetworkProvider();
   ~ServiceWorkerNetworkProvider() override;
 

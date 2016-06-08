@@ -13,35 +13,18 @@
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/test_content_browser_client.h"
-#include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-const char kServiceWorkerScheme[] = "i-can-use-service-worker";
-
-class ServiceWorkerTestContentClient : public TestContentClient {
- public:
-  void AddServiceWorkerSchemes(std::set<std::string>* schemes) override {
-    schemes->insert(kServiceWorkerScheme);
-  }
-};
-
 class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
-    SetContentClient(&test_content_client_);
-  }
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
   ~ServiceWorkerProviderHostTest() override {}
 
   void SetUp() override {
-    old_content_browser_client_ =
-        SetBrowserClientForTesting(&test_content_browser_client_);
-
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     context_ = helper_->context();
     script_url_ = GURL("http://www.example.com/service_worker.js");
@@ -52,18 +35,16 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
     // Prepare provider hosts (for the same process).
     std::unique_ptr<ServiceWorkerProviderHost> host1(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            1 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context_->AsWeakPtr(), NULL));
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE, 1 /* provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context_->AsWeakPtr(), NULL));
     host1->SetDocumentUrl(GURL("http://www.example.com/example1.html"));
     std::unique_ptr<ServiceWorkerProviderHost> host2(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            2 /* provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context_->AsWeakPtr(), NULL));
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE, 2 /* provider_id */,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context_->AsWeakPtr(), NULL));
     host2->SetDocumentUrl(GURL("http://www.example.com/example2.html"));
     provider_host1_ = host1->AsWeakPtr();
     provider_host2_ = host2->AsWeakPtr();
@@ -75,7 +56,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     registration1_ = 0;
     registration2_ = 0;
     helper_.reset();
-    SetBrowserClientForTesting(old_content_browser_client_);
   }
 
   bool PatternHasProcessToRun(const GURL& pattern) const {
@@ -90,9 +70,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
   GURL script_url_;
-  ServiceWorkerTestContentClient test_content_client_;
-  TestContentBrowserClient test_content_browser_client_;
-  ContentBrowserClient* old_content_browser_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
@@ -149,38 +126,6 @@ TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
   // Should return nullptr after removing all matching registrations.
   provider_host1_->RemoveMatchingRegistration(registration1_.get());
   ASSERT_EQ(provider_host1_->MatchRegistration(), nullptr);
-}
-
-TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
-  using FrameSecurityLevel = ServiceWorkerProviderHost::FrameSecurityLevel;
-
-  // Insecure document URL.
-  provider_host1_->SetDocumentUrl(GURL("http://host"));
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::SECURE;
-  EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
-
-  // Insecure parent frame.
-  provider_host1_->SetDocumentUrl(GURL("https://host"));
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::INSECURE;
-  EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
-
-  // Secure URL and parent frame.
-  provider_host1_->SetDocumentUrl(GURL("https://host"));
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::SECURE;
-  EXPECT_TRUE(provider_host1_->IsContextSecureForServiceWorker());
-
-  // Exceptional service worker scheme.
-  GURL url(std::string(kServiceWorkerScheme) + "://host");
-  EXPECT_TRUE(url.is_valid());
-  provider_host1_->SetDocumentUrl(url);
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::SECURE;
-  EXPECT_FALSE(IsOriginSecure(url));
-  EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
-  EXPECT_TRUE(provider_host1_->IsContextSecureForServiceWorker());
-
-  // Exceptional service worker scheme with insecure parent frame.
-  provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::INSECURE;
-  EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
 }
 
 }  // namespace content

@@ -105,8 +105,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     helper_.reset(helper);
 
     // A new unstored registration/version.
-    scope_ = GURL("https://host/scope/");
-    script_url_ = GURL("https://host/script.js");
+    scope_ = GURL("http://host/scope/");
+    script_url_ = GURL("http://host/script.js");
     registration_ = new ServiceWorkerRegistration(
         scope_, 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
@@ -119,11 +119,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
     // An empty host.
     std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(), MSG_ROUTING_NONE,
-            kMockProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context()->AsWeakPtr(), NULL));
+        new ServiceWorkerProviderHost(helper_->mock_render_process_id(),
+                                      MSG_ROUTING_NONE, kMockProviderId,
+                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                      context()->AsWeakPtr(), NULL));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 
@@ -181,7 +180,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
   ServiceWorkerURLRequestJob* sw_job = test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
@@ -210,7 +209,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
   ServiceWorkerURLRequestJob* sw_job = test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
@@ -240,7 +239,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
   ServiceWorkerURLRequestJob* job = test_resources.MaybeCreateJob();
 
   base::RunLoop().RunUntilIdle();
@@ -272,7 +271,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
   ServiceWorkerURLRequestJob* sw_job = test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
@@ -298,7 +297,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   base::RunLoop().RunUntilIdle();
 
   ServiceWorkerRequestTestResources main_test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
   ServiceWorkerURLRequestJob* main_job = main_test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(main_job->ShouldFallbackToNetwork());
@@ -313,7 +312,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   EXPECT_EQ(version_, provider_host_->controlling_version());
 
   ServiceWorkerRequestTestResources sub_test_resources(
-      this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_IMAGE);
+      this, GURL("http://host/scope/doc/subresource"), RESOURCE_TYPE_IMAGE);
   ServiceWorkerURLRequestJob* sub_job = sub_test_resources.MaybeCreateJob();
 
   // This job shouldn't be created because this worker doesn't have fetch

@@ -1276,7 +1276,6 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
       context()->AsWeakPtr(), NULL));
   registration_->active_version()->AddControllee(host.get());
 
@@ -1328,7 +1327,6 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
       context()->AsWeakPtr(), NULL));
   registration_->active_version()->AddControllee(host.get());
 
@@ -1488,7 +1486,6 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   std::unique_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
       context()->AsWeakPtr(), NULL));
   registration_->active_version()->AddControllee(host.get());
 

@@ -574,8 +574,7 @@ ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
   // we can observe its requests.
   std::unique_ptr<ServiceWorkerNetworkProvider> provider(
       new ServiceWorkerNetworkProvider(MSG_ROUTING_NONE,
-                                       SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-                                       true /* is_parent_frame_secure */));
+                                       SERVICE_WORKER_PROVIDER_FOR_CONTROLLER));
   provider_context_ = provider->context();
 
   // Tell the network provider about which version to load.

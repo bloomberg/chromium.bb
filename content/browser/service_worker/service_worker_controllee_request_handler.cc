@@ -5,7 +5,6 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
 #include <memory>
-#include <set>
 #include <string>
 
 #include "base/trace_event/trace_event.h"
@@ -211,17 +210,6 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
         job_.get(),
         "Status", status,
         "Info", "ServiceWorker is blocked");
-    return;
-  }
-
-  if (!provider_host_->IsContextSecureForServiceWorker()) {
-    // TODO(falken): Figure out a way to surface in the page's DevTools
-    // console that the service worker was blocked for security.
-    job_->FallbackToNetwork();
-    TRACE_EVENT_ASYNC_END1(
-        "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        job_.get(), "Info", "Insecure context");
     return;
   }
 

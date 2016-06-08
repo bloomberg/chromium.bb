@@ -280,11 +280,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
       int provider_id,
       const scoped_refptr<ServiceWorkerVersion>& version) {
     std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            process_id, MSG_ROUTING_NONE, provider_id,
-            SERVICE_WORKER_PROVIDER_FOR_WORKER,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context()->AsWeakPtr(), nullptr));
+        new ServiceWorkerProviderHost(process_id, MSG_ROUTING_NONE, provider_id,
+                                      SERVICE_WORKER_PROVIDER_FOR_WORKER,
+                                      context()->AsWeakPtr(), nullptr));
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
     provider_host->running_hosted_version_ = version;

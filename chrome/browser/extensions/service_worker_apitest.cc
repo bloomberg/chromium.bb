@@ -25,7 +25,6 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/browser_test_utils.h"
@@ -34,7 +33,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
@@ -636,24 +634,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
       kFlagNone);
   ASSERT_TRUE(extension);
   ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Service workers can only control secure contexts
-  // (https://w3c.github.io/webappsec-secure-contexts/). For documents, this
-  // typically means the document must have a secure origin AND all its ancestor
-  // frames must have documents with secure origins.  However, extension pages
-  // are considered secure, even if they have an ancestor document that is an
-  // insecure context (see GetSchemesBypassingSecureContextCheckWhitelist). So
-  // extension service workers must be able to control an extension page
-  // embedded in an insecure context. To test this, set up an insecure
-  // (non-localhost, non-https) URL for the web page. This page will create
-  // iframes that load extension pages that must be controllable by service
-  // worker.
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  GURL page_url =
-      embedded_test_server()->GetURL("a.com",
-                                     "/extensions/api_test/service_worker/"
-                                     "web_accessible_resources/webpage.html");
-  EXPECT_FALSE(content::IsOriginSecure(page_url));
+  GURL page_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/service_worker/web_accessible_resources/"
+      "webpage.html");
 
   content::WebContents* web_contents = AddTab(browser(), page_url);
   std::string result;

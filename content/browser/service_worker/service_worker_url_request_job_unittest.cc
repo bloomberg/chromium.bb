@@ -143,9 +143,13 @@ class ServiceWorkerURLRequestJobTest
     helper_.reset(helper);
 
     registration_ = new ServiceWorkerRegistration(
-        GURL("https://example.com/"), 1L, helper_->context()->AsWeakPtr());
+        GURL("http://example.com/"),
+        1L,
+        helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
+        registration_.get(),
+        GURL("http://example.com/service_worker.js"),
+        1L,
         helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
@@ -177,11 +181,10 @@ class ServiceWorkerURLRequestJobTest
     std::unique_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(
             helper_->mock_render_process_id(), MSG_ROUTING_NONE, kProviderID,
-            SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            helper_->context()->AsWeakPtr(), nullptr));
+            SERVICE_WORKER_PROVIDER_FOR_WINDOW, helper_->context()->AsWeakPtr(),
+            nullptr));
     provider_host_ = provider_host->AsWeakPtr();
-    provider_host->SetDocumentUrl(GURL("https://example.com/"));
+    provider_host->SetDocumentUrl(GURL("http://example.com/"));
     registration_->SetActiveVersion(version_);
     provider_host->AssociateRegistration(registration_.get(),
                                          false /* notify_controllerchange */);
@@ -195,7 +198,7 @@ class ServiceWorkerURLRequestJobTest
 
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
     url_request_job_factory_->SetProtocolHandler(
-        "https",
+        "http",
         base::WrapUnique(new MockHttpProtocolHandler(
             provider_host->AsWeakPtr(), browser_context_->GetResourceContext(),
             blob_storage_context->AsWeakPtr(), this)));
@@ -237,7 +240,7 @@ class ServiceWorkerURLRequestJobTest
                    const std::string& expected_response,
                    bool expect_valid_ssl) {
     request_ = url_request_context_.CreateRequest(
-        GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+        GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
         &url_request_delegate_);
 
     request_->set_method("GET");
@@ -374,7 +377,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
 TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
 
   request_->set_method("GET");
@@ -518,7 +521,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   SetUpWithHelper(new StreamResponder(stream_url));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -566,7 +569,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -626,7 +629,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -668,7 +671,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -716,7 +719,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -766,7 +769,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -813,7 +816,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
@@ -843,7 +846,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, MainScriptHTTPResponseInfoNotSet) {
   SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()), false);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
       &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();

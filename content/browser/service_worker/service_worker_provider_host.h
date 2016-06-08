@@ -61,8 +61,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static std::unique_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context);
 
-  enum class FrameSecurityLevel { UNINITIALIZED, INSECURE, SECURE };
-
   // When this provider host is for a Service Worker context, |route_id| is
   // MSG_ROUTING_NONE. When this provider host is for a Document,
   // |route_id| is the frame ID of the Document. When this provider host is for
@@ -74,7 +72,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                             int route_id,
                             int provider_id,
                             ServiceWorkerProviderType provider_type,
-                            FrameSecurityLevel parent_frame_security_level,
                             base::WeakPtr<ServiceWorkerContextCore> context,
                             ServiceWorkerDispatcherHost* dispatcher_host);
   virtual ~ServiceWorkerProviderHost();
@@ -84,26 +81,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int provider_id() const { return provider_id_; }
   int frame_id() const;
   int route_id() const { return route_id_; }
-
-  bool is_parent_frame_secure() const {
-    return parent_frame_security_level_ == FrameSecurityLevel::SECURE;
-  }
-  void set_parent_frame_secure(bool is_parent_frame_secure) {
-    CHECK_EQ(parent_frame_security_level_, FrameSecurityLevel::UNINITIALIZED);
-    parent_frame_security_level_ = is_parent_frame_secure
-                                       ? FrameSecurityLevel::SECURE
-                                       : FrameSecurityLevel::INSECURE;
-  }
-
-  // Returns whether this provider host is secure enough to have a service
-  // worker controller.
-  // Analogous to Blink's Document::isSecureContext. Because of how service
-  // worker intercepts main resource requests, this check must be done
-  // browser-side once the URL is known (see comments in
-  // ServiceWorkerNetworkProvider::CreateForNavigation). This function uses
-  // |document_url_| and |is_parent_frame_secure_| to determine context
-  // security, so they must be set properly before calling this function.
-  bool IsContextSecureForServiceWorker() const;
 
   bool IsHostToRunningServiceWorker() {
     return running_hosted_version_.get() != NULL;
@@ -282,7 +259,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            UpdateForceBypassCache);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            ServiceWorkerDataRequestAnnotation);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
 
   struct OneShotGetReadyCallback {
     GetRegistrationForReadyCallback callback;
@@ -331,7 +307,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int render_thread_id_;
   int provider_id_;
   ServiceWorkerProviderType provider_type_;
-  FrameSecurityLevel parent_frame_security_level_;
   GURL document_url_;
   GURL topmost_frame_url_;
 

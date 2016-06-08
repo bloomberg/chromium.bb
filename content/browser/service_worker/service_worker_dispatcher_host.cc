@@ -746,8 +746,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
 void ServiceWorkerDispatcherHost::OnProviderCreated(
     int provider_id,
     int route_id,
-    ServiceWorkerProviderType provider_type,
-    bool is_parent_frame_secure) {
+    ServiceWorkerProviderType provider_type) {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -769,10 +768,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // Retrieve the provider host previously created for navigation requests.
     ServiceWorkerNavigationHandleCore* navigation_handle_core =
         GetContext()->GetNavigationHandleCore(provider_id);
-    if (navigation_handle_core != nullptr) {
+    if (navigation_handle_core != nullptr)
       provider_host = navigation_handle_core->RetrievePreCreatedHost();
-      provider_host->set_parent_frame_secure(is_parent_frame_secure);
-    }
 
     // If no host is found, the navigation has been cancelled in the meantime.
     // Just return as the navigation will be stopped in the renderer as well.
@@ -787,14 +784,10 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
           this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
       return;
     }
-    ServiceWorkerProviderHost::FrameSecurityLevel parent_frame_security_level =
-        is_parent_frame_secure
-            ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
-            : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE;
     provider_host = std::unique_ptr<ServiceWorkerProviderHost>(
-        new ServiceWorkerProviderHost(
-            render_process_id_, route_id, provider_id, provider_type,
-            parent_frame_security_level, GetContext()->AsWeakPtr(), this));
+        new ServiceWorkerProviderHost(render_process_id_, route_id, provider_id,
+                                      provider_type, GetContext()->AsWeakPtr(),
+                                      this));
   }
   GetContext()->AddProviderHost(std::move(provider_host));
 }
