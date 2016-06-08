@@ -699,8 +699,10 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
 
             // Get a CSSValue for this property and layer.
             if (values[propertyIndex]->isBaseValueList()) {
-                // Might return 0 if there is not an item for this layer for this property.
-                value = toCSSValueList(values[propertyIndex])->itemWithBoundsCheck(layer);
+                const CSSValueList* propertyValues = toCSSValueList(values[propertyIndex]);
+                // There might not be an item for this layer for this property.
+                if (layer < propertyValues->length())
+                    value = propertyValues->item(layer);
             } else if (layer == 0 || (layer != numLayers - 1 && property == CSSPropertyBackgroundColor)) {
                 // Singletons except background color belong in the 0th layer.
                 // Background color belongs in the last layer.

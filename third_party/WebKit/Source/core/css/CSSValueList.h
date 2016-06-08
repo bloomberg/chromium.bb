@@ -54,8 +54,6 @@ public:
 
     size_t length() const { return m_values.size(); }
     const CSSValue* item(size_t index) const { return m_values[index].get(); }
-    // TODO(sashab): Remove this method.
-    const CSSValue* itemWithBoundsCheck(size_t index) const { return index < m_values.size() ? m_values[index].get() : nullptr; }
 
     void append(const CSSValue* value) { m_values.append(value); }
     bool removeAll(const CSSValue&);
