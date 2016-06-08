@@ -5,18 +5,17 @@
 #include "ash/shelf/shelf_alignment_menu.h"
 
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shell.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wm/wm_user_metrics_action.h"
+#include "ash/common/wm_shell.h"
 #include "grit/ash_strings.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 
-ShelfAlignmentMenu::ShelfAlignmentMenu(Shelf* shelf)
-    : ui::SimpleMenuModel(nullptr), shelf_(shelf) {
-  DCHECK(shelf_);
-  int align_group_id = 1;
+ShelfAlignmentMenu::ShelfAlignmentMenu(WmShelf* wm_shelf)
+    : ui::SimpleMenuModel(nullptr), wm_shelf_(wm_shelf) {
+  DCHECK(wm_shelf_);
+  const int align_group_id = 1;
   set_delegate(this);
   AddRadioItemWithStringId(MENU_ALIGN_LEFT,
                            IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_LEFT,
@@ -32,9 +31,16 @@ ShelfAlignmentMenu::ShelfAlignmentMenu(Shelf* shelf)
 ShelfAlignmentMenu::~ShelfAlignmentMenu() {}
 
 bool ShelfAlignmentMenu::IsCommandIdChecked(int command_id) const {
-  return shelf_->SelectValueForShelfAlignment(MENU_ALIGN_BOTTOM == command_id,
-                                              MENU_ALIGN_LEFT == command_id,
-                                              MENU_ALIGN_RIGHT == command_id);
+  switch (wm_shelf_->GetAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return command_id == MENU_ALIGN_BOTTOM;
+    case SHELF_ALIGNMENT_LEFT:
+      return command_id == MENU_ALIGN_LEFT;
+    case SHELF_ALIGNMENT_RIGHT:
+      return command_id == MENU_ALIGN_RIGHT;
+  }
+  return false;
 }
 
 bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {
@@ -48,19 +54,22 @@ bool ShelfAlignmentMenu::GetAcceleratorForCommandId(
 }
 
 void ShelfAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
-  Shell* shell = Shell::GetInstance();
+  WmShell* shell = WmShell::Get();
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
-      shell->metrics()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_LEFT);
-      shelf_->SetAlignment(SHELF_ALIGNMENT_LEFT);
+      shell->RecordUserMetricsAction(
+          wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_LEFT);
+      wm_shelf_->SetAlignment(SHELF_ALIGNMENT_LEFT);
       break;
     case MENU_ALIGN_BOTTOM:
-      shell->metrics()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_BOTTOM);
-      shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+      shell->RecordUserMetricsAction(
+          wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_BOTTOM);
+      wm_shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
       break;
     case MENU_ALIGN_RIGHT:
-      shell->metrics()->RecordUserMetricsAction(UMA_SHELF_ALIGNMENT_SET_RIGHT);
-      shelf_->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+      shell->RecordUserMetricsAction(
+          wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_RIGHT);
+      wm_shelf_->SetAlignment(SHELF_ALIGNMENT_RIGHT);
       break;
   }
 }

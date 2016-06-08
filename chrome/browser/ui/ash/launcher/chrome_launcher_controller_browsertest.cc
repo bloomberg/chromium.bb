@@ -372,8 +372,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     item.id = 1;  // dummy id
     item.type = shelf_item_type;
     ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
-    std::unique_ptr<LauncherContextMenu> menu(
-        LauncherContextMenu::Create(controller_, &item, shelf));
+    std::unique_ptr<LauncherContextMenu> menu(LauncherContextMenu::Create(
+        controller_, &item, ash::test::ShelfTestAPI(shelf).wm_shelf()));
     return menu;
   }
 

@@ -7,9 +7,10 @@
 #include <string>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
@@ -40,31 +41,31 @@ bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
 LauncherContextMenu* LauncherContextMenu::Create(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
-    ash::Shelf* shelf) {
+    ash::WmShelf* wm_shelf) {
   DCHECK(controller);
-  DCHECK(shelf);
+  DCHECK(wm_shelf);
   // Create DesktopShellLauncherContextMenu if no item is selected.
   if (!item || item->id == 0)
-    return new DesktopShellLauncherContextMenu(controller, item, shelf);
+    return new DesktopShellLauncherContextMenu(controller, item, wm_shelf);
 
   // Create ArcLauncherContextMenu if the item is an Arc app.
   const std::string& app_id = controller->GetAppIDForShelfID(item->id);
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(controller->profile());
   if (arc_prefs && arc_prefs->IsRegistered(app_id))
-    return new ArcLauncherContextMenu(controller, item, shelf);
+    return new ArcLauncherContextMenu(controller, item, wm_shelf);
 
   // Create ExtensionLauncherContextMenu for the item.
-  return new ExtensionLauncherContextMenu(controller, item, shelf);
+  return new ExtensionLauncherContextMenu(controller, item, wm_shelf);
 }
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::ShelfItem* item,
-                                         ash::Shelf* shelf)
+                                         ash::WmShelf* wm_shelf)
     : ui::SimpleMenuModel(nullptr),
       controller_(controller),
       item_(item ? *item : ash::ShelfItem()),
-      shelf_alignment_menu_(shelf),
-      shelf_(shelf) {
+      shelf_alignment_menu_(wm_shelf),
+      wm_shelf_(wm_shelf) {
   set_delegate(this);
 }
 
@@ -81,8 +82,10 @@ base::string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
-  if (command_id == MENU_AUTO_HIDE)
-    return shelf_->auto_hide_behavior() == ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  if (command_id == MENU_AUTO_HIDE) {
+    return wm_shelf_->GetAutoHideBehavior() ==
+           ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  }
   DCHECK(command_id < MENU_ITEM_COUNT);
   return false;
 }
@@ -133,10 +136,11 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller_->TogglePinned(item_.id);
       break;
     case MENU_AUTO_HIDE:
-      shelf_->SetAutoHideBehavior(shelf_->auto_hide_behavior() ==
-                                          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
-                                      ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
-                                      : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+      wm_shelf_->SetAutoHideBehavior(
+          wm_shelf_->GetAutoHideBehavior() ==
+                  ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
+              ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
+              : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
       break;
     case MENU_ALIGNMENT_MENU:
       break;

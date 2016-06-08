@@ -5,16 +5,17 @@
 #include "ash/sysui/context_menu_mus.h"
 
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
 
 namespace ash {
 
-ContextMenuMus::ContextMenuMus(ash::Shelf* shelf)
-    : ui::SimpleMenuModel(nullptr), shelf_(shelf), alignment_menu_(shelf) {
-  DCHECK(shelf_);
+ContextMenuMus::ContextMenuMus(WmShelf* wm_shelf)
+    : ui::SimpleMenuModel(nullptr),
+      wm_shelf_(wm_shelf),
+      alignment_menu_(wm_shelf) {
   set_delegate(this);
   AddCheckItemWithStringId(MENU_AUTO_HIDE,
                            IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
@@ -29,7 +30,7 @@ ContextMenuMus::~ContextMenuMus() {}
 
 bool ContextMenuMus::IsCommandIdChecked(int command_id) const {
   if (command_id == MENU_AUTO_HIDE)
-    return shelf_->auto_hide_behavior() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+    return wm_shelf_->GetAutoHideBehavior() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   return false;
 }
 
@@ -47,10 +48,10 @@ bool ContextMenuMus::GetAcceleratorForCommandId(int command_id,
 
 void ContextMenuMus::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == MENU_AUTO_HIDE) {
-    shelf_->SetAutoHideBehavior(shelf_->auto_hide_behavior() ==
-                                        SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
-                                    ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
-                                    : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+    wm_shelf_->SetAutoHideBehavior(wm_shelf_->GetAutoHideBehavior() ==
+                                           SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
+                                       ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
+                                       : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   } else if (command_id == MENU_CHANGE_WALLPAPER) {
     Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
   }

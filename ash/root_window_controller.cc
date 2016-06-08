@@ -566,8 +566,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   DCHECK(delegate);
-  menu_model_.reset(
-      delegate->CreateContextMenu(shelf_widget_->shelf(), nullptr));
+  menu_model_.reset(delegate->CreateContextMenu(wm_shelf_aura_.get(), nullptr));
   if (!menu_model_)
     return;
 

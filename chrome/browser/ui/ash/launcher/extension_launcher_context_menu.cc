@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -31,8 +30,8 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 ExtensionLauncherContextMenu::ExtensionLauncherContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
-    ash::Shelf* shelf)
-    : LauncherContextMenu(controller, item, shelf) {
+    ash::WmShelf* wm_shelf)
+    : LauncherContextMenu(controller, item, wm_shelf) {
   Init();
 }
 

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/shell_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -61,7 +60,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   std::unique_ptr<ash::ContainerDelegate> CreateContainerDelegate() override;
   std::unique_ptr<ash::PointerWatcherDelegate> CreatePointerWatcherDelegate()
       override;
-  ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,
+  ui::MenuModel* CreateContextMenu(ash::WmShelf* wm_shelf,
                                    const ash::ShelfItem* item) override;
   ash::GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;

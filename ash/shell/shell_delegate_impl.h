@@ -58,8 +58,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   std::unique_ptr<ContainerDelegate> CreateContainerDelegate() override;
   std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
       override;
-  ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,
-                                   const ash::ShelfItem* item) override;
+  ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
+                                   const ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;

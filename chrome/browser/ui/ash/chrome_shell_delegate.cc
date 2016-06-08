@@ -436,14 +436,14 @@ ChromeShellDelegate::CreatePointerWatcherDelegate() {
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
-    ash::Shelf* shelf,
+    ash::WmShelf* wm_shelf,
     const ash::ShelfItem* item) {
   DCHECK(shelf_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())
     return nullptr;
 
-  return LauncherContextMenu::Create(shelf_delegate_, item, shelf);
+  return LauncherContextMenu::Create(shelf_delegate_, item, wm_shelf);
 }
 
 ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {

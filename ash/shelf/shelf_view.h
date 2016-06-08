@@ -35,16 +35,17 @@ class MenuRunner;
 }
 
 namespace ash {
+class DragImageView;
+class OverflowBubble;
+class OverflowButton;
 class Shelf;
+class ShelfButton;
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfItemDelegateManager;
 class ShelfModel;
 struct ShelfItem;
-class DragImageView;
-class OverflowBubble;
-class OverflowButton;
-class ShelfButton;
+class WmShelf;
 
 namespace test {
 class ShelfViewTestAPI;
@@ -63,7 +64,10 @@ class ASH_EXPORT ShelfView : public views::View,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost {
  public:
-  ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf);
+  ShelfView(ShelfModel* model,
+            ShelfDelegate* delegate,
+            WmShelf* wm_shelf,
+            Shelf* shelf);
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -320,6 +324,9 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Delegate; owned by Launcher.
   ShelfDelegate* delegate_;
+
+  // The shelf controller; owned by RootWindowController.
+  WmShelf* wm_shelf_;
 
   // The shelf; owned by ShelfWidget.
   Shelf* shelf_;

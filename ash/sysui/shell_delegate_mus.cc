@@ -219,9 +219,9 @@ ShellDelegateMus::CreatePointerWatcherDelegate() {
   return base::WrapUnique(new PointerWatcherDelegateMus);
 }
 
-ui::MenuModel* ShellDelegateMus::CreateContextMenu(ash::Shelf* shelf,
+ui::MenuModel* ShellDelegateMus::CreateContextMenu(WmShelf* wm_shelf,
                                                    const ShelfItem* item) {
-  return new ContextMenuMus(shelf);
+  return new ContextMenuMus(wm_shelf);
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {

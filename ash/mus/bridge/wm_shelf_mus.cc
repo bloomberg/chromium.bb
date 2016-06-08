@@ -37,6 +37,19 @@ ShelfAlignment WmShelfMus::GetAlignment() const {
   return SHELF_ALIGNMENT_BOTTOM;
 }
 
+void WmShelfMus::SetAlignment(ShelfAlignment alignment) {
+  NOTIMPLEMENTED();
+}
+
+ShelfAutoHideBehavior WmShelfMus::GetAutoHideBehavior() const {
+  NOTIMPLEMENTED();
+  return SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+}
+
+void WmShelfMus::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
+  NOTIMPLEMENTED();
+}
+
 ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
   NOTIMPLEMENTED();
   return SHELF_BACKGROUND_DEFAULT;

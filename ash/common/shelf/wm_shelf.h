@@ -24,6 +24,10 @@ class ASH_EXPORT WmShelf {
   virtual WmWindow* GetWindow() = 0;
 
   virtual ShelfAlignment GetAlignment() const = 0;
+  virtual void SetAlignment(ShelfAlignment alignment) = 0;
+
+  virtual ShelfAutoHideBehavior GetAutoHideBehavior() const = 0;
+  virtual void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) = 0;
 
   virtual ShelfBackgroundType GetBackgroundType() const = 0;
 

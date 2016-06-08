@@ -6,8 +6,9 @@
 
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shell.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -43,19 +44,24 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     ash::test::AshTestBase::TearDown();
   }
 
+  ash::WmShelf* GetWmShelf() {
+    return ash::WmShell::Get()
+        ->GetPrimaryRootWindow()
+        ->GetRootWindowController()
+        ->GetShelf();
+  }
+
   LauncherContextMenu* CreateLauncherContextMenu(
       ash::ShelfItemType shelf_item_type) {
     ash::ShelfItem item;
     item.id = 1;  // dummy id
     item.type = shelf_item_type;
-    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
-    return LauncherContextMenu::Create(controller_.get(), &item, shelf);
+    return LauncherContextMenu::Create(controller_.get(), &item, GetWmShelf());
   }
 
   LauncherContextMenu* CreateLauncherContextMenuForDesktopShell() {
     ash::ShelfItem* item = nullptr;
-    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
-    return LauncherContextMenu::Create(controller_.get(), item, shelf);
+    return LauncherContextMenu::Create(controller_.get(), item, GetWmShelf());
   }
 
   ArcAppTest& arc_test() { return arc_test_; }
@@ -158,10 +164,10 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 
   ash::ShelfItem item;
   item.id = controller()->GetShelfIDForAppID(app_id);
-  ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
+  ash::WmShelf* wm_shelf = GetWmShelf();
 
   std::unique_ptr<LauncherContextMenu> menu(
-      new ArcLauncherContextMenu(controller(), &item, shelf));
+      new ArcLauncherContextMenu(controller(), &item, wm_shelf));
 
   // Arc app is pinned but not running.
   EXPECT_TRUE(
@@ -188,7 +194,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 
   // Arc app is running.
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0]);
-  menu.reset(new ArcLauncherContextMenu(controller(), &item, shelf));
+  menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));

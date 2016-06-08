@@ -52,8 +52,8 @@ class ShelfDelegate;
 class ShelfModel;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
-class Shelf;
 struct ShelfItem;
+class WmShelf;
 
 class ASH_EXPORT VirtualKeyboardStateObserver {
  public:
@@ -150,10 +150,10 @@ class ASH_EXPORT ShellDelegate {
 
   virtual std::unique_ptr<ContainerDelegate> CreateContainerDelegate() = 0;
 
-  // Creates a menu model for the |shelf| and optional shelf |item|.
+  // Creates a menu model for the |wm_shelf| and optional shelf |item|.
   // If |item| is null, this creates a context menu for the desktop or shelf.
-  virtual ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,
-                                           const ash::ShelfItem* item) = 0;
+  virtual ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
+                                           const ShelfItem* item) = 0;
 
   // Creates a GPU support object. Shell takes ownership of the object.
   virtual GPUSupport* CreateGPUSupport() = 0;

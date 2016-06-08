@@ -17,6 +17,8 @@ class ShelfTestAPI {
   explicit ShelfTestAPI(Shelf* shelf) : shelf_(shelf) {}
   ~ShelfTestAPI() {}
 
+  WmShelf* wm_shelf() { return shelf_->wm_shelf_; }
+
   ShelfView* shelf_view() { return shelf_->shelf_view_; }
 
   ShelfLockingManager* shelf_locking_manager() {

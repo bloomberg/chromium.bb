@@ -59,6 +59,18 @@ ShelfAlignment WmShelfAura::GetAlignment() const {
   return shelf_->alignment();
 }
 
+void WmShelfAura::SetAlignment(ShelfAlignment alignment) {
+  shelf_->SetAlignment(alignment);
+}
+
+ShelfAutoHideBehavior WmShelfAura::GetAutoHideBehavior() const {
+  return shelf_->auto_hide_behavior();
+}
+
+void WmShelfAura::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
+  shelf_->SetAutoHideBehavior(behavior);
+}
+
 ShelfBackgroundType WmShelfAura::GetBackgroundType() const {
   return shelf_->shelf_widget()->GetBackgroundType();
 }

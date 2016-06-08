@@ -40,6 +40,7 @@ class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfModel;
 class ShelfView;
+class WmShelf;
 
 namespace test {
 class ShelfTestAPI;
@@ -51,7 +52,10 @@ class ASH_EXPORT Shelf {
  public:
   static const char kNativeViewName[];
 
-  Shelf(ShelfModel* model, ShelfDelegate* delegate, ShelfWidget* widget);
+  Shelf(ShelfModel* model,
+        ShelfDelegate* delegate,
+        WmShelf* wm_shelf,
+        ShelfWidget* widget);
   virtual ~Shelf();
 
   // Return the shelf for the primary display. NULL if no user is logged in yet.
@@ -156,6 +160,8 @@ class ASH_EXPORT Shelf {
   friend class test::ShelfTestAPI;
 
   ShelfDelegate* delegate_;
+  // The shelf controller. Owned by the root window controller.
+  WmShelf* wm_shelf_;
   ShelfWidget* shelf_widget_;
   ShelfView* shelf_view_;
   ShelfLockingManager shelf_locking_manager_;

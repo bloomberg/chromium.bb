@@ -40,6 +40,9 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   // WmShelf:
   WmWindow* GetWindow() override;
   ShelfAlignment GetAlignment() const override;
+  void SetAlignment(ShelfAlignment alignment) override;
+  ShelfAutoHideBehavior GetAutoHideBehavior() const override;
+  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) override;
   ShelfBackgroundType GetBackgroundType() const override;
   void UpdateVisibilityState() override;
   ShelfVisibilityState GetVisibilityState() const override;

@@ -292,18 +292,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("Panel_Minimize_Caption_Gesture"));
       break;
-    case ash::UMA_SHELF_ALIGNMENT_SET_BOTTOM:
-      base::RecordAction(
-          base::UserMetricsAction("Shelf_AlignmentSetBottom"));
-      break;
-    case ash::UMA_SHELF_ALIGNMENT_SET_LEFT:
-      base::RecordAction(
-          base::UserMetricsAction("Shelf_AlignmentSetLeft"));
-      break;
-    case ash::UMA_SHELF_ALIGNMENT_SET_RIGHT:
-      base::RecordAction(
-          base::UserMetricsAction("Shelf_AlignmentSetRight"));
-      break;
     case ash::UMA_STATUS_AREA_AUDIO_CURRENT_INPUT_DEVICE:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Audio_CurrentInputDevice"));
@@ -597,6 +585,15 @@ void UserMetricsRecorder::RecordUserMetricsAction(
       break;
     case wm::WmUserMetricsAction::DRAG_MAXIMIZE_RIGHT:
       base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
+      break;
+    case wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_BOTTOM:
+      base::RecordAction(base::UserMetricsAction("Shelf_AlignmentSetBottom"));
+      break;
+    case wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_LEFT:
+      base::RecordAction(base::UserMetricsAction("Shelf_AlignmentSetLeft"));
+      break;
+    case wm::WmUserMetricsAction::SHELF_ALIGNMENT_SET_RIGHT:
+      base::RecordAction(base::UserMetricsAction("Shelf_AlignmentSetRight"));
       break;
     case wm::WmUserMetricsAction::WINDOW_OVERVIEW:
       base::RecordAction(base::UserMetricsAction("WindowSelector_Overview"));

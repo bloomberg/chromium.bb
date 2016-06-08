@@ -362,9 +362,13 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-ShelfView::ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf)
+ShelfView::ShelfView(ShelfModel* model,
+                     ShelfDelegate* delegate,
+                     WmShelf* wm_shelf,
+                     Shelf* shelf)
     : model_(model),
       delegate_(delegate),
+      wm_shelf_(wm_shelf),
       shelf_(shelf),
       view_model_(new views::ViewModel),
       first_visible_index_(0),
@@ -393,6 +397,7 @@ ShelfView::ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf)
       is_repost_event_(false),
       last_pressed_index_(-1) {
   DCHECK(model_);
+  DCHECK(wm_shelf_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
@@ -1355,7 +1360,8 @@ void ShelfView::ToggleOverflowBubble() {
   if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble());
 
-  ShelfView* overflow_view = new ShelfView(model_, delegate_, shelf_);
+  ShelfView* overflow_view =
+      new ShelfView(model_, delegate_, wm_shelf_, shelf_);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
@@ -1775,7 +1781,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   }
 
   std::unique_ptr<ui::MenuModel> context_menu_model(
-      Shell::GetInstance()->delegate()->CreateContextMenu(shelf_, item));
+      Shell::GetInstance()->delegate()->CreateContextMenu(wm_shelf_, item));
   if (!context_menu_model)
     return;
 

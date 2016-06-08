@@ -216,9 +216,8 @@ TestShellDelegate::CreatePointerWatcherDelegate() {
   return base::WrapUnique(new PointerWatcherDelegateAura);
 }
 
-ui::MenuModel* TestShellDelegate::CreateContextMenu(
-    ash::Shelf* shelf,
-    const ash::ShelfItem* item) {
+ui::MenuModel* TestShellDelegate::CreateContextMenu(WmShelf* wm_shelf,
+                                                    const ShelfItem* item) {
   return nullptr;
 }
 

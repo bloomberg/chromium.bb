@@ -11,6 +11,10 @@ namespace wm {
 enum class WmUserMetricsAction {
   DRAG_MAXIMIZE_LEFT,
   DRAG_MAXIMIZE_RIGHT,
+  SHELF_ALIGNMENT_SET_BOTTOM,
+  SHELF_ALIGNMENT_SET_LEFT,
+  SHELF_ALIGNMENT_SET_RIGHT,
+
   // Thumbnail sized overview of windows triggered by pressing the overview key.
   WINDOW_OVERVIEW,
 
