@@ -5,18 +5,17 @@
 /**
  * @fileoverview
  * 'settings-menu' shows a menu with a hardcoded set of pages and subpages.
- *
- * Example:
- *
- *     <settings-menu selected-page-id="{{selectedPageId}}">
- *     </settings-menu>
  */
 Polymer({
   is: 'settings-menu',
 
   properties: {
+    /** @private */
+    advancedOpened_: Boolean,
+
     /**
      * The current active route.
+     * @type {!SettingsRoute}
      */
     currentRoute: {
       type: Object,
@@ -25,21 +24,48 @@ Polymer({
     },
   },
 
-  /** @private */
-  currentRouteChanged_: function() {
-    // Sync URL changes to the side nav menu.
+  attached: function() {
+    document.addEventListener('toggle-advanced-page', function(e) {
+      if (e.detail)
+        this.$.advancedPage.open();
+      else
+        this.$.advancedPage.close();
+    }.bind(this));
 
-    this.$.advancedPage.opened = this.currentRoute.page == 'advanced';
-    this.$.basicPage.opened = this.currentRoute.page == 'basic';
+    this.$.advancedPage.addEventListener('paper-submenu-open', function() {
+      this.fire('toggle-advanced-page', true);
+    }.bind(this));
 
-    if (this.$.advancedPage.opened)
-      this.$.advancedMenu.selected = this.currentRoute.section;
+    this.$.advancedPage.addEventListener('paper-submenu-close', function() {
+      this.fire('toggle-advanced-page', false);
+    }.bind(this));
 
-    if (this.$.basicPage.opened)
-      this.$.basicMenu.selected = this.currentRoute.section;
+    this.fire('toggle-advanced-page', this.currentRoute.page == 'advanced');
   },
 
-  /** @private */
+  /**
+   * @param {!SettingsRoute} newRoute
+   * @private
+   */
+  currentRouteChanged_: function(newRoute) {
+    // Sync URL changes to the side nav menu.
+
+    if (newRoute.page == 'advanced') {
+      this.$.advancedMenu.selected = this.currentRoute.section;
+      this.$.basicMenu.selected = null;
+    } else if (newRoute.page == 'basic') {
+      this.$.advancedMenu.selected = null;
+      this.$.basicMenu.selected = this.currentRoute.section;
+    } else {
+      this.$.advancedMenu.selected = null;
+      this.$.basicMenu.selected = null;
+    }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
   openPage_: function(event) {
     var submenuRoute = event.currentTarget.parentNode.dataset.page;
     if (submenuRoute) {

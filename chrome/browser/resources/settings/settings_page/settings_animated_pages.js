@@ -144,6 +144,7 @@ Polymer({
 
   /**
    * Buttons in this pageset should use this method to transition to subpages.
+   * @param {!Array<string>} subpage The chain of subpages within the page.
    */
   setSubpageChain: function(subpage) {
     var node = window.event.currentTarget;

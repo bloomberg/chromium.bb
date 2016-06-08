@@ -12,39 +12,35 @@ cr.define('settings_menu', function() {
       setup(function() {
         PolymerTest.clearBody();
         settingsMenu = document.createElement('settings-menu');
+        settingsMenu.currentRoute = {
+          page: 'basic', section: '', subpage: []
+        };
         document.body.appendChild(settingsMenu);
       });
 
       teardown(function() { settingsMenu.remove(); });
 
+      test('openAdvanced', function() {
+        settingsMenu.fire('toggle-advanced-page', true);
+        Polymer.dom.flush();
+        assertTrue(settingsMenu.$.advancedPage.opened);
+      });
+
       test('upAndDownIcons', function() {
         // There should be different icons for a top level menu being open
         // vs. being closed. E.g. arrow-drop-up and arrow-drop-down.
-        settingsMenu.currentRoute = {
-          page: 'advanced', section: 'reset', subpage: []
-        };
         var ironIconElement = settingsMenu.$.advancedPage.querySelector(
             '.menu-trigger iron-icon');
         assertTrue(!!ironIconElement);
+
+        settingsMenu.fire('toggle-advanced-page', true);
+        Polymer.dom.flush();
         var openIcon = ironIconElement.icon;
         assertTrue(!!openIcon);
-        // Changing to basic will close advanced.
-        settingsMenu.currentRoute = {page: 'basic', section: '', subpage: []};
+
+        settingsMenu.fire('toggle-advanced-page', false);
+        Polymer.dom.flush();
         assertNotEquals(openIcon, ironIconElement.icon);
-      });
-
-      test('defaultToBasic', function() {
-        settingsMenu.currentRoute = {page: 'basic', section: '', subpage: []};
-        assertFalse(settingsMenu.$.advancedPage.opened);
-        assertTrue(settingsMenu.$.basicPage.opened);
-      });
-
-      test('openAdvanced', function() {
-        settingsMenu.currentRoute = {
-          page: 'advanced', section: '', subpage: []
-        };
-        assertTrue(settingsMenu.$.advancedPage.opened);
-        assertFalse(settingsMenu.$.basicPage.opened);
       });
 
       test('openResetSection', function() {
@@ -52,8 +48,6 @@ cr.define('settings_menu', function() {
           page: 'advanced', section: 'reset', subpage: []
         };
         var advancedPage = settingsMenu.$.advancedPage;
-        assertTrue(advancedPage.opened);
-        assertFalse(settingsMenu.$.basicPage.opened);
         assertEquals('reset',
             advancedPage.querySelector('paper-menu').selected);
       });

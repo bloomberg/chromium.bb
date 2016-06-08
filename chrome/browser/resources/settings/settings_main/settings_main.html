@@ -2,19 +2,29 @@
 <link rel="import" href="/about_page/about_page.html">
 <link rel="import" href="/advanced_page/advanced_page.html">
 <link rel="import" href="/basic_page/basic_page.html">
+<link rel="import" href="/settings_page/main_page_behavior.html">
 
 <dom-module id="settings-main">
   <template>
       <style>
+        #advancedToggle {
+          align-items: center;
+          display: flex;
+          min-height: 32px;
+          padding: 0 12px;  /* TODO(dschuyler): get real value. */
+        }
+
         #pageContainer {
           box-sizing: border-box;
-          height: 100%;
           overflow: auto;
           padding: 0 16px;
         }
 
-        ::content core-icon-button {
-          position: absolute;
+        #toggleContainer {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          min-height: 80px;  /* TODO(dschuyler): get real value. */
         }
       </style>
     <content select="paper-icon-button"></content>
@@ -22,6 +32,14 @@
       <template is="dom-if" if="[[showBasicPage_]]">
         <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}">
         </settings-basic-page>
+      </template>
+      <template is="dom-if" if="[[showAdvancedToggle_]]">
+        <div id="toggleContainer">
+          <div id="advancedToggle" on-tap="toggleAdvancedPage_">
+            $i18n{advancedPageTitle}
+            <!-- TODO(dschuyler): menu icons (up arrow/down arrow) -->
+          </div>
+        </div>
       </template>
       <template is="dom-if" if="[[showAdvancedPage_]]">
         <settings-advanced-page prefs="{{prefs}}"
