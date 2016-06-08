@@ -483,7 +483,7 @@ class MenuControllerTest : public ViewsTestBase {
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     owner_->Init(params);
     event_generator_.reset(
-        new ui::test::EventGenerator(GetContext(), owner_->GetNativeWindow()));
+        new ui::test::EventGenerator(owner_->GetNativeWindow()));
     owner_->Show();
 
     SetupMenuItem();

@@ -88,8 +88,7 @@ class MenuButtonTest : public ViewsTestBase {
  private:
   void CreateMenuButton(MenuButtonListener* menu_button_listener) {
     CreateWidget();
-    generator_.reset(new ui::test::EventGenerator(GetContext(),
-        widget_->GetNativeWindow()));
+    generator_.reset(new ui::test::EventGenerator(widget_->GetNativeWindow()));
     // Set initial mouse location in a consistent way so that the menu button we
     // are about to create initializes its hover state in a consistent manner.
     generator_->set_current_location(gfx::Point(10, 10));
@@ -354,6 +353,10 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
 
 // Test that the MenuButton stays pressed while there are any PressedLocks.
 TEST_F(MenuButtonTest, ButtonStateForMenuButtonsWithPressedLocks) {
+  // Hovered-state is not updated under mus when EventGenerator send a
+  // mouse-move event. https://crbug.com/615033
+  if (IsMus())
+    return;
   CreateMenuButtonWithNoListener();
 
   // Move the mouse over the button; the button should be in a hovered state.
@@ -542,6 +545,10 @@ TEST_F(MenuButtonTest,
 // Tests that the MenuButton does not become pressed if it can be dragged, and a
 // DragDropClient is processing the events.
 TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
+  // The test uses drag-n-drop, which isn't yet supported on mus.
+  // https://crbug.com/614037.
+  if (IsMus())
+    return;
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
   TestDragController drag_controller;
@@ -564,6 +571,10 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
 // Tests if the listener is notified correctly when a gesture tap happens on a
 // MenuButton that has a MenuButtonListener.
 TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
+  // Hovered-state is not updated under mus when EventGenerator send a
+  // mouse-move event. https://crbug.com/615033
+  if (IsMus())
+    return;
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 

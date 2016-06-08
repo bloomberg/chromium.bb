@@ -330,4 +330,5 @@ exec_script_whitelist = [
   "//tools/gn/setup.cc",
   "//ui/accessibility/BUILD.gn",
   "//ui/views/BUILD.gn",
+  "//ui/views/mus/BUILD.gn",
 ]

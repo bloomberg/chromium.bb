@@ -4045,6 +4045,9 @@ class PaintTrackingView : public View {
 // Makes sure child views with layers aren't painted when paint starts at an
 // ancestor.
 TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
+  // TODO(sad): DrawWaiterForTest does not work with mus. crbug.com/618136
+  if (IsMus())
+    return;
   PaintTrackingView* content_view = new PaintTrackingView;
   widget()->SetContentsView(content_view);
   content_view->SetPaintToLayer(true);

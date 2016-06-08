@@ -9,6 +9,10 @@ import("//mojo/public/mojo_application_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
+gypi = exec_script("//build/gypi_to_gn.py",
+                   [ rebase_path("../views.gyp") ],
+                   "scope",
+                   [ "../views.gyp" ])
 component("mus") {
   output_name = "ui_views_mus_lib"
 
@@ -128,8 +132,6 @@ source_set("test_support") {
 
   sources = [
     "../test/native_widget_factory_mus.cc",
-    "../views_test_suite.cc",
-    "../views_test_suite.h",
     "views_mus_test_suite.cc",
     "views_mus_test_suite.h",
   ]
@@ -161,17 +163,7 @@ test("views_mus_unittests") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  # TODO(sky): add more files.
   sources = [
-    "../controls/native/native_view_host_aura_unittest.cc",
-    "../controls/native/native_view_host_test_base.cc",
-    "../controls/native/native_view_host_test_base.h",
-    "../controls/native/native_view_host_unittest.cc",
-    "../focus/focus_manager_unittest.cc",
-    "../view_targeter_unittest.cc",
-    "../widget/native_widget_aura_unittest.cc",
-    "../widget/native_widget_unittest.cc",
-    "../widget/widget_unittest.cc",
     "display_list_unittest.cc",
     "native_widget_mus_unittest.cc",
     "run_all_unittests_mus.cc",
@@ -179,11 +171,30 @@ test("views_mus_unittests") {
     "window_manager_connection_unittest.cc",
   ]
 
+  sources += rebase_path(gypi.views_unittests_sources, ".", "//ui/views")
+  sources += rebase_path(gypi.views_unittests_aura_sources, ".", "//ui/views")
+
+  sources -= [
+    # Mus has its own runner.
+    "../run_all_unittests_main.cc",
+
+    # EventGenerator doesn't work well with IME in mus.
+    # crbug.com/615033 crbug.com/548407
+    "../controls/textfield/textfield_unittest.cc",
+
+    # Tooltips. crbug.com/599558
+    "../corewm/tooltip_controller_unittest.cc",
+
+    # Some of the tests need drag-drop support. crbug.com/614037
+    "../touchui/touch_selection_controller_impl_unittest.cc",
+  ]
+
   deps = [
     ":mus",
     ":test_support",
     "//base",
     "//base:i18n",
+    "//base/test:test_support",
     "//cc",
     "//components/mus/public/cpp",
     "//components/mus/public/cpp/tests:unittest_support",
@@ -205,7 +216,9 @@ test("views_mus_unittests") {
     "//ui/events/platform",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//ui/native_theme",
     "//ui/strings",
+    "//ui/touch_selection",
     "//ui/views",
     "//ui/views:test_support_internal",
     "//ui/wm",

@@ -205,8 +205,8 @@ void SliderTest::SetUp() {
   widget_->SetContentsView(slider_);
   widget_->Show();
 
-  event_generator_.reset(new ui::test::EventGenerator(
-      GetContext(), widget_->GetNativeWindow()));
+  event_generator_.reset(
+      new ui::test::EventGenerator(widget_->GetNativeWindow()));
 }
 
 void SliderTest::TearDown() {

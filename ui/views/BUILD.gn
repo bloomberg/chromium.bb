@@ -162,6 +162,7 @@ source_set("test_support_internal") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//ipc:test_support",
     "//skia",
     "//testing/gtest",
@@ -176,6 +177,7 @@ source_set("test_support_internal") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl:test_support",
   ]
 
   sources += [

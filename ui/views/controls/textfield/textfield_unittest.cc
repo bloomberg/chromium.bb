@@ -440,7 +440,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     textfield_->RequestFocus();
 
     event_generator_.reset(
-        new ui::test::EventGenerator(GetContext(), widget_->GetNativeWindow()));
+        new ui::test::EventGenerator(widget_->GetNativeWindow()));
   }
   ui::MenuModel* GetContextMenuModel() {
     test_api_->UpdateContextMenu();

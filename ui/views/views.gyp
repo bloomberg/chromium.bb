@@ -553,6 +553,8 @@
       'test/widget_test_mac.mm',
       'test/x11_property_change_waiter.cc',
       'test/x11_property_change_waiter.h',
+      'views_test_suite.cc',
+      'views_test_suite.h',
     ],
     'views_test_support_aura_sources': [
       'corewm/tooltip_controller_test_helper.cc',
@@ -630,8 +632,6 @@
       'view_model_utils_unittest.cc',
       'view_targeter_unittest.cc',
       'view_unittest.cc',
-      'views_test_suite.cc',
-      'views_test_suite.h',
       'widget/native_widget_mac_unittest.mm',
       'widget/native_widget_unittest.cc',
       'widget/root_view_unittest.cc',

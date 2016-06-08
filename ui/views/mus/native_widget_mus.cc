@@ -27,6 +27,8 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/view_prop.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -839,6 +841,12 @@ void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
   // TODO(beng): clear user-placed property and set preferred size property.
   window_->SetSharedProperty<gfx::Size>(
       mus::mojom::WindowManager::kPreferredSize_Property, size);
+
+  gfx::Rect bounds = display::Screen::GetScreen()
+                         ->GetDisplayNearestWindow(content_)
+                         .work_area();
+  bounds.ClampToCenteredSize(size);
+  window_->SetBounds(bounds);
 }
 
 void NativeWidgetMus::GetWindowPlacement(

@@ -21,8 +21,13 @@ class EventMonitorTest : public WidgetTest {
     widget_ = CreateTopLevelNativeWidget();
     widget_->SetSize(gfx::Size(100, 100));
     widget_->Show();
-    generator_.reset(
-        new ui::test::EventGenerator(GetContext(), widget_->GetNativeWindow()));
+    if (IsMus()) {
+      generator_.reset(
+          new ui::test::EventGenerator(widget_->GetNativeWindow()));
+    } else {
+      generator_.reset(new ui::test::EventGenerator(
+          GetContext(), widget_->GetNativeWindow()));
+    }
     generator_->set_targeting_application(true);
   }
   void TearDown() override {

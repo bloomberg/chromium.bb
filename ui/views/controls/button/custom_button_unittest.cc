@@ -140,7 +140,7 @@ class CustomButtonTest : public ViewsTestBase {
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
 
   generator.PressLeftButton();
   EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
@@ -192,21 +192,24 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   aura::test::TestCursorClient cursor_client(
       widget()->GetNativeView()->GetRootWindow());
 
-  // In Aura views, no new hover effects are invoked if mouse events
-  // are disabled.
-  cursor_client.DisableMouseEvents();
+  // Mus doesn't support disabling mouse events. https://crbug.com/618321
+  if (!IsMus()) {
+    // In Aura views, no new hover effects are invoked if mouse events
+    // are disabled.
+    cursor_client.DisableMouseEvents();
 
-  button()->SetEnabled(false);
-  EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
+    button()->SetEnabled(false);
+    EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
 
-  button()->SetEnabled(true);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+    button()->SetEnabled(true);
+    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-  button()->SetVisible(false);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+    button()->SetVisible(false);
+    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-  button()->SetVisible(true);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+    button()->SetVisible(true);
+    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+  }
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 }
 
@@ -349,7 +352,7 @@ TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.set_current_location(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
@@ -365,7 +368,7 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.set_current_location(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());

@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "mojo:views_mus_unittests",
+  "name": "exe:views_mus_unittests",
   "display_name": "Views Mus Unittests",
   "capabilities": {
     "required": {
