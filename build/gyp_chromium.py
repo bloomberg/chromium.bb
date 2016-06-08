@@ -284,6 +284,13 @@ def main():
     print 'Did you mean to use the `msvs-ninja` generator?'
     sys.exit(1)
 
+  # We explicitly don't support the native xcode gyp generator. Be nice and
+  # fail here, rather than generating broken projects.
+  if re.search(r'(^|,|\s)xcode($|,|\s)', os.environ.get('GYP_GENERATORS', '')):
+    print 'Error: xcode gyp generator not supported (check GYP_GENERATORS).'
+    print 'Did you mean to use the `xcode-ninja` generator?'
+    sys.exit(1)
+
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
   syntax_check = os.environ.get('CHROMIUM_GYP_SYNTAX_CHECK')
