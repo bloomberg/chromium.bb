@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -938,6 +939,11 @@ void InterstitialPageImpl::UnderlyingContentObserver::NavigationEntryCommitted(
 
 void InterstitialPageImpl::UnderlyingContentObserver::WebContentsDestroyed() {
   interstitial_->OnNavigatingAwayOrTabClosing();
+}
+
+TextInputManager* InterstitialPageImpl::GetTextInputManager() {
+  return !web_contents_ ? nullptr : static_cast<WebContentsImpl*>(web_contents_)
+                                        ->GetTextInputManager();
 }
 
 }  // namespace content

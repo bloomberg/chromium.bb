@@ -67,6 +67,7 @@ class BrowserAccessibilityManager;
 class RenderWidgetHostViewBaseObserver;
 class SyntheticGesture;
 class SyntheticGestureTarget;
+class TextInputManager;
 class WebCursor;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
@@ -128,6 +129,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Tells if the display property (work area/scale factor) has
   // changed since the last time.
   bool HasDisplayPropertyChanged(gfx::NativeView view);
+
+  // Called by the TextInputManager to notify the view about being removed from
+  // the list of registered views, i.e., TextInputManager is no longer tracking
+  // TextInputState from this view. The RWHV should reset |text_input_manager_|
+  // to nullptr.
+  void DidUnregisterFromTextInputManager(TextInputManager* text_input_manager);
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
@@ -245,6 +252,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                cc::SurfaceId original_surface,
                                                gfx::Point* transformed_point);
 
+  // Updates the state of the input method attached to the view.
+  // TODO(ekaramad): This method will not stay virtual. It will be moved up top
+  // with the other non-virtual methods after TextInputState tracking is fixed
+  // on all platforms (https://crbug.com/578168).
+  virtual void TextInputStateChanged(const TextInputState& text_input_state);
+
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 
@@ -269,9 +282,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
-
-  // Updates the state of the input method attached to the view.
-  virtual void TextInputStateChanged(const TextInputState& params) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;
@@ -390,6 +400,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   void NotifyObserversAboutShutdown();
 
+  // Returns a reference to the current instance of TextInputManager. The
+  // reference is obtained from RenderWidgetHostDelegate. The first time a non-
+  // null reference is obtained, its value is cached in |text_input_manager_|
+  // and this view is registered with it. The RWHV will unregister from the
+  // TextInputManager if it is destroyed or if the TextInputManager itself is
+  // destroyed. The unregistration of the RWHV from TextInputManager is
+  // necessary and must be done by explicitly calling
+  // TextInputManager::Unregister.
+  // It is safer to use this method rather than directly dereferencing
+  // |text_input_manager_|.
+  TextInputManager* GetTextInputManager();
+
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
   blink::WebPopupType popup_type_;
@@ -417,7 +439,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The current selection range relative to the start of the web page.
   gfx::Range selection_range_;
 
- protected:
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;
 
@@ -427,6 +448,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
   // renderer.
   bool pinch_zoom_enabled_;
+
+  // A reference to current TextInputManager instance this RWHV is registered
+  // with. This is initially nullptr until the first time the view calls
+  // GetTextInputManager(). It also becomes nullptr when TextInputManager is
+  // destroyed before the RWHV is destroyed.
+  TextInputManager* text_input_manager_;
 
  private:
   void FlushInput();

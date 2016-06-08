@@ -62,4 +62,8 @@ blink::WebDisplayMode RenderWidgetHostDelegate::GetDisplayMode(
   return blink::WebDisplayModeBrowser;
 }
 
+TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
+  return nullptr;
+}
+
 }  // namespace content

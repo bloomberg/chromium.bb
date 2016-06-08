@@ -453,10 +453,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       popup_parent_host_view_(nullptr),
       popup_child_host_view_(nullptr),
       is_loading_(false),
-      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
-      text_input_flags_(0),
-      can_compose_inline_(true),
       has_composition_text_(false),
       accept_return_character_(false),
       begin_frame_source_(nullptr),
@@ -483,6 +479,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
     host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
         GetSurfaceIdNamespace(), this);
   }
+
+  // We should start observing the TextInputManager for IME-related events as
+  // well as monitoring its lifetime.
+  if (GetTextInputManager())
+    GetTextInputManager()->AddObserver(this);
 
   bool overscroll_enabled = base::CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
@@ -972,25 +973,6 @@ void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
 void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
   UpdateCursorIfOverSelf();
-}
-
-void RenderWidgetHostViewAura::TextInputStateChanged(
-    const TextInputState& params) {
-  if (text_input_type_ != params.type ||
-      text_input_mode_ != params.mode ||
-      can_compose_inline_ != params.can_compose_inline ||
-      text_input_flags_ != params.flags) {
-    text_input_type_ = params.type;
-    text_input_mode_ = params.mode;
-    can_compose_inline_ = params.can_compose_inline;
-    text_input_flags_ = params.flags;
-    if (GetInputMethod())
-      GetInputMethod()->OnTextInputTypeChanged(this);
-  }
-  if (params.show_ime_if_needed && params.type != ui::TEXT_INPUT_TYPE_NONE) {
-    if (GetInputMethod())
-      GetInputMethod()->ShowImeIfNeeded();
-  }
 }
 
 void RenderWidgetHostViewAura::ImeCancelComposition() {
@@ -1502,7 +1484,8 @@ void RenderWidgetHostViewAura::ClearCompositionText() {
 }
 
 void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
-  DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
+  DCHECK_NE(GetTextInputType(), ui::TEXT_INPUT_TYPE_NONE);
+
   // TODO(wjmaclean): can host_ ever be null?
   if (host_)
     host_->ImeConfirmComposition(text, gfx::Range::InvalidRange(), false);
@@ -1525,19 +1508,27 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
-  return text_input_type_;
+  if (text_input_manager_ && text_input_manager_->GetTextInputState())
+    return text_input_manager_->GetTextInputState()->type;
+  return ui::TEXT_INPUT_TYPE_NONE;
 }
 
 ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
-  return text_input_mode_;
+  if (text_input_manager_ && text_input_manager_->GetTextInputState())
+    return text_input_manager_->GetTextInputState()->mode;
+  return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
 int RenderWidgetHostViewAura::GetTextInputFlags() const {
-  return text_input_flags_;
+  if (text_input_manager_ && text_input_manager_->GetTextInputState())
+    return text_input_manager_->GetTextInputState()->flags;
+  return 0;
 }
 
 bool RenderWidgetHostViewAura::CanComposeInline() const {
-  return can_compose_inline_;
+  if (text_input_manager_ && text_input_manager_->GetTextInputState())
+    return text_input_manager_->GetTextInputState()->can_compose_inline;
+  return true;
 }
 
 gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(
@@ -2417,6 +2408,9 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   }
 
 #endif
+
+  if (text_input_manager_)
+    text_input_manager_->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAura::CreateAuraWindow() {
@@ -2999,6 +2993,25 @@ uint32_t RenderWidgetHostViewAura::GetSurfaceIdNamespace() {
 
 cc::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
   return delegated_frame_host_->SurfaceIdForTesting();
+}
+
+void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view,
+    bool did_update_state) {
+  DCHECK_EQ(text_input_manager_, text_input_manager);
+
+  if (!GetInputMethod())
+    return;
+
+  if (did_update_state)
+    GetInputMethod()->OnTextInputTypeChanged(this);
+
+  const TextInputState* state = text_input_manager_->GetTextInputState();
+
+  if (state && state->show_ime_if_needed &&
+      state->type != ui::TEXT_INPUT_TYPE_NONE)
+    GetInputMethod()->ShowImeIfNeeded();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

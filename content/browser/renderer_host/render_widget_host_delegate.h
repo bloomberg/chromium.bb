@@ -31,6 +31,7 @@ namespace content {
 class BrowserAccessibilityManager;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
+class TextInputManager;
 struct NativeWebKeyboardEvent;
 
 //
@@ -184,6 +185,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // after a navigation.
   virtual void OnFirstPaintAfterLoad(RenderWidgetHostImpl* render_widget_host) {
   }
+
+  // Returns the TextInputManager tracking text input state.
+  virtual TextInputManager* GetTextInputManager();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

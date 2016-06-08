@@ -27,6 +27,7 @@
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/public/common/context_menu_params.h"
@@ -95,6 +96,7 @@ struct TextInputState;
 class CONTENT_EXPORT RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
       public DelegatedFrameHostClient,
+      public TextInputManager::Observer,
       public ui::TextInputClient,
       public display::DisplayObserver,
       public aura::WindowTreeHostObserver,
@@ -140,7 +142,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputStateChanged(const TextInputState& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -351,6 +352,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
  private:
   friend class RenderWidgetHostViewAuraCopyRequestTest;
+  friend class TestInputMethodObserver;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            PopupRetainsCaptureAfterMouseRelease);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SetCompositionText);
@@ -467,6 +469,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const base::TimeDelta& interval) override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
 
+  // TextInputManager::Observer implementation.
+  void OnUpdateTextInputStateCalled(TextInputManager* text_input_manager,
+                                    RenderWidgetHostViewBase* updated_view,
+                                    bool did_update_state) override;
+
   // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
@@ -575,14 +582,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Stores the current state of the active pointers targeting this
   // object.
   ui::MotionEventAura pointer_state_;
-
-  // The current text input type.
-  ui::TextInputType text_input_type_;
-  // The current text input mode corresponding to HTML5 inputmode attribute.
-  ui::TextInputMode text_input_mode_;
-  // The current text input flags.
-  int text_input_flags_;
-  bool can_compose_inline_;
 
   // Bounds for the selection.
   gfx::SelectionBound selection_anchor_;

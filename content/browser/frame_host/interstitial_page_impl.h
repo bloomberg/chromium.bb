@@ -30,6 +30,7 @@ class NavigationEntry;
 class NavigationControllerImpl;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
+class TextInputManager;
 class WebContentsView;
 
 enum ResourceRequestAction {
@@ -160,6 +161,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
+  TextInputManager* GetTextInputManager() override;
 
   bool enabled() const { return enabled_; }
   WebContents* web_contents() const;

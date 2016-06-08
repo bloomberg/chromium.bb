@@ -65,6 +65,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_context.h"
@@ -1415,6 +1416,15 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   static_cast<RenderWidgetHostViewChildFrame*>(
       render_manager->GetRenderWidgetHostView())
       ->RegisterSurfaceNamespaceId();
+
+  // At this point, we should destroy the TextInputManager which will notify all
+  // the RWHV in this WebContents. The RWHV in this WebContents should use the
+  // TextInputManager owned by the outer WebContents.
+  // TODO(ekaramad): Is it possible to have TextInputState before attaching to
+  // outer WebContents? In such a case, is this still the right way to hand off
+  // state tracking from inner WebContents's TextInputManager to that of the
+  // outer WebContent (crbug.com/609846)?
+  text_input_manager_.reset(nullptr);
 }
 
 void WebContentsImpl::Stop() {
@@ -2379,6 +2389,16 @@ void WebContentsImpl::OnFirstPaintAfterLoad(
     RenderWidgetHostImpl* render_widget_host) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFirstPaintAfterLoad(render_widget_host));
+}
+
+TextInputManager* WebContentsImpl::GetTextInputManager() {
+  if (GetOuterWebContents())
+    return GetOuterWebContents()->GetTextInputManager();
+
+  if (!text_input_manager_)
+    text_input_manager_.reset(new TextInputManager());
+
+  return text_input_manager_.get();
 }
 
 BrowserAccessibilityManager*

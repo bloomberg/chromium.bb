@@ -1392,6 +1392,8 @@
       'browser/renderer_host/text_input_client_mac.mm',
       'browser/renderer_host/text_input_client_message_filter.h',
       'browser/renderer_host/text_input_client_message_filter.mm',
+      'browser/renderer_host/text_input_manager.cc',
+      'browser/renderer_host/text_input_manager.h',
       'browser/renderer_host/ui_events_helper.cc',
       'browser/renderer_host/ui_events_helper.h',
       'browser/renderer_host/web_input_event_aura.cc',

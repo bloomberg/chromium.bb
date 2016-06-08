@@ -95,6 +95,8 @@
       'public/test/test_web_contents_factory.h',
       'public/test/test_web_ui.cc',
       'public/test/test_web_ui.h',
+      'public/test/text_input_test_utils.cc',
+      'public/test/text_input_test_utils.h',
       'public/test/unittest_test_suite.cc',
       'public/test/unittest_test_suite.h',
       'public/test/web_contents_tester.cc',

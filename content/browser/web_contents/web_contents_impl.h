@@ -73,6 +73,7 @@ class SavePackage;
 class ScreenOrientationDispatcherHost;
 class SiteInstance;
 class TestWebContents;
+class TextInputManager;
 class WakeLockServiceContext;
 class WebContentsAudioMuter;
 class WebContentsDelegate;
@@ -629,6 +630,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnRenderFrameProxyVisibilityChanged(bool visible) override;
   void SendScreenRects() override;
   void OnFirstPaintAfterLoad(RenderWidgetHostImpl* render_widget_host) override;
+  TextInputManager* GetTextInputManager() override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -1384,6 +1386,14 @@ class CONTENT_EXPORT WebContentsImpl
   PageImportanceSignals page_importance_signals_;
 
   bool page_scale_factor_is_one_;
+
+  // TextInputManager tracks the IME-related state for all the
+  // RenderWidgetHostViews on this WebContents. Only exists on the outermost
+  // WebContents and is automatically destroyed when a WebContents becomes an
+  // inner WebContents by attaching to an outer WebContents. Then the
+  // IME-related state for RenderWidgetHosts on the inner WebContents is tracked
+  // by the TextInputManager in the outer WebContents.
+  std::unique_ptr<TextInputManager> text_input_manager_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

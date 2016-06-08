@@ -263,11 +263,6 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   NOTREACHED();
 }
 
-void RenderWidgetHostViewChildFrame::TextInputStateChanged(
-    const TextInputState& params) {
-  // TODO(kenrb): Implement.
-}
-
 void RenderWidgetHostViewChildFrame::RenderProcessGone(
     base::TerminationStatus status,
     int error_code) {
