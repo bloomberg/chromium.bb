@@ -959,9 +959,6 @@ class VEAClient : public VideoEncodeAccelerator::Client {
 
   // The timer used to feed the encoder with the input frames.
   std::unique_ptr<base::RepeatingTimer> input_timer_;
-
-  // The timestamps for each frame in the order of CreateFrame() invocation.
-  std::queue<base::TimeDelta> frame_timestamps_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -1236,10 +1233,6 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
   if (state_ == CS_FINISHED || state_ == CS_VALIDATED)
     return;
 
-  ASSERT_FALSE(frame_timestamps_.empty());
-  ASSERT_EQ(timestamp, frame_timestamps_.front());
-  frame_timestamps_.pop();
-
   encoded_stream_size_since_last_check_ += payload_size;
 
   const uint8_t* stream_ptr = static_cast<const uint8_t*>(shm->memory());
@@ -1379,7 +1372,6 @@ void VEAClient::FeedEncoderWithOneInput() {
   int32_t input_id;
   scoped_refptr<media::VideoFrame> video_frame =
       PrepareInputFrame(pos_in_input_stream_, &input_id);
-  frame_timestamps_.push(video_frame->timestamp());
   pos_in_input_stream_ += test_stream_->aligned_buffer_size;
 
   bool force_keyframe = false;
