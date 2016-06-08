@@ -74,7 +74,9 @@ void RecordAutoSignInPromptFirstRunExperienceWasShown(PrefService* prefs);
 void TurnOffAutoSignin(PrefService* prefs);
 
 // Returns true if the Chrome Sign In promo should be shown.
-bool ShouldShowChromeSignInPasswordPromo(PrefService* prefs);
+bool ShouldShowChromeSignInPasswordPromo(
+    PrefService* prefs,
+    const sync_driver::SyncService* sync_service);
 
 }  // namespace password_bubble_experiment
 

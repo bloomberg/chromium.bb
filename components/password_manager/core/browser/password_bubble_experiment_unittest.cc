@@ -67,16 +67,16 @@ struct ShouldShowSavePromptFirstRunExperienceTestcase {
 
 class TestSyncService : public sync_driver::FakeSyncService {
  public:
-  TestSyncService() {}
-
-  ~TestSyncService() override {}
-
   // FakeSyncService overrides.
-  bool IsSyncAllowed() const override { return true; }
+  bool IsSyncAllowed() const override { return is_sync_allowed_; }
 
-  bool IsFirstSetupComplete() const override { return true; }
+  bool IsFirstSetupComplete() const override {
+    return is_first_setup_complete_;
+  }
 
-  bool IsSyncActive() const override { return true; }
+  bool IsSyncActive() const override {
+    return is_sync_allowed_ && is_first_setup_complete_;
+  }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override { return type_set_; }
 
@@ -88,12 +88,18 @@ class TestSyncService : public sync_driver::FakeSyncService {
     return is_using_secondary_passphrase_;
   }
 
-  void SetIsUsingSecondaryPassphrase(bool is_using_secondary_passphrase) {
+  void set_is_using_secondary_passphrase(bool is_using_secondary_passphrase) {
     is_using_secondary_passphrase_ = is_using_secondary_passphrase;
   }
 
-  void SetActiveDataTypes(syncer::ModelTypeSet type_set) {
+  void set_active_data_types(syncer::ModelTypeSet type_set) {
     type_set_ = type_set;
+  }
+
+  void set_sync_allowed(bool sync_allowed) { is_sync_allowed_ = sync_allowed; }
+
+  void set_first_setup_complete(bool setup_complete) {
+    is_first_setup_complete_ = setup_complete;
   }
 
   void ClearActiveDataTypes() { type_set_.Clear(); }
@@ -102,7 +108,9 @@ class TestSyncService : public sync_driver::FakeSyncService {
 
  private:
   syncer::ModelTypeSet type_set_;
-  bool is_using_secondary_passphrase_;
+  bool is_using_secondary_passphrase_ = false;
+  bool is_sync_allowed_ = true;
+  bool is_first_setup_complete_ = true;
 };
 
 }  // namespace
@@ -158,9 +166,9 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
     syncer::ModelTypeSet active_types;
     active_types.Put(type);
     sync_service()->ClearActiveDataTypes();
-    sync_service()->SetActiveDataTypes(active_types);
-    sync_service()->SetIsUsingSecondaryPassphrase(passphrase_state ==
-                                                  CustomPassphraseState::SET);
+    sync_service()->set_active_data_types(active_types);
+    sync_service()->set_is_using_secondary_passphrase(
+        passphrase_state == CustomPassphraseState::SET);
   }
 
   TestSyncService fake_sync_service_;
@@ -319,17 +327,18 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        ShouldShowChromeSignInPasswordPromo) {
   // By default the promo is off.
-  EXPECT_FALSE(ShouldShowChromeSignInPasswordPromo(prefs()));
+  EXPECT_FALSE(ShouldShowChromeSignInPasswordPromo(prefs(), nullptr));
   const struct {
     bool was_already_clicked;
+    bool is_sync_allowed;
+    bool is_first_setup_complete;
     int current_shown_count;
     int experiment_threshold;
     bool result;
   } kTestData[] = {
-      {false, 0, 5, true},
-      {false, 5, 5, false},
-      {true, 0, 5, false},
-      {true, 10, 5, false},
+      {false, true, false, 0, 5, true},   {false, true, false, 5, 5, false},
+      {true, true, false, 0, 5, false},   {true, true, false, 10, 5, false},
+      {false, false, false, 0, 5, false}, {false, true, true, 0, 5, false},
   };
   const char kFakeGroup[] = "FakeGroup";
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
@@ -341,12 +350,15 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
     prefs()->SetInteger(
         password_manager::prefs::kNumberSignInPasswordPromoShown,
         test_case.current_shown_count);
+    sync_service()->set_sync_allowed(test_case.is_sync_allowed);
+    sync_service()->set_first_setup_complete(test_case.is_first_setup_complete);
     variations::AssociateVariationParams(
         kChromeSignInPasswordPromoExperimentName, kFakeGroup,
         {{kChromeSignInPasswordPromoThresholdParam,
           base::IntToString(test_case.experiment_threshold)}});
 
-    EXPECT_EQ(test_case.result, ShouldShowChromeSignInPasswordPromo(prefs()));
+    EXPECT_EQ(test_case.result,
+              ShouldShowChromeSignInPasswordPromo(prefs(), sync_service()));
   }
 }
 

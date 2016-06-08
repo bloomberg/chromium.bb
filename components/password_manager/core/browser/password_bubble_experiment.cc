@@ -13,6 +13,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync_driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace password_bubble_experiment {
@@ -102,11 +103,16 @@ void TurnOffAutoSignin(PrefService* prefs) {
                     false);
 }
 
-bool ShouldShowChromeSignInPasswordPromo(PrefService* prefs) {
+bool ShouldShowChromeSignInPasswordPromo(
+    PrefService* prefs,
+    const sync_driver::SyncService* sync_service) {
   // Query the group first for correct UMA reporting.
   std::string param = variations::GetVariationParamValue(
       kChromeSignInPasswordPromoExperimentName,
       kChromeSignInPasswordPromoThresholdParam);
+  if (!sync_service || !sync_service->IsSyncAllowed() ||
+      sync_service->IsFirstSetupComplete())
+    return false;
   int threshold = 0;
   return base::StringToInt(param, &threshold) &&
          !prefs->GetBoolean(

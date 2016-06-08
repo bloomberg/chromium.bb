@@ -460,7 +460,10 @@ bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
 bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   PrefService* prefs = GetProfile()->GetPrefs();
-  if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(prefs)) {
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(GetProfile());
+  if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
+          prefs, sync_service)) {
     interaction_keeper_->ReportInteractions(this);
     title_brand_link_range_ = gfx::Range();
     title_ = l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE);
