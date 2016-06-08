@@ -29,10 +29,12 @@ public:
     static void resumeSuspendedObservers();
 
     // API methods
-    void observe(Element*);
-    void unobserve(Element*);
-    void disconnect();
-    HeapVector<Member<IntersectionObserverEntry>> takeRecords();
+    void observe(Element*, ExceptionState&);
+    void unobserve(Element*, ExceptionState&);
+    void disconnect(ExceptionState&);
+    HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
+
+    // API attributes
     Element* root() const;
     String rootMargin() const;
     const Vector<float>& thresholds() const { return m_thresholds; }

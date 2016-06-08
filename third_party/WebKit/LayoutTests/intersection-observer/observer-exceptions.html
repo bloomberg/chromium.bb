@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <div id="root"></div>
+<div id="target"></div>
 <script src="../resources/js-test.js"></script>
 <script src="../resources/gc.js"></script>
 <script>
@@ -49,5 +50,46 @@
   } catch(e) {
     exc = e;
     shouldBeType("exc", "TypeError");
+  }
+
+  observer = new IntersectionObserver(c => {}, {root: rootDiv});
+  rootDiv.parentNode.removeChild(rootDiv);
+  rootDiv = null;
+  gc();
+
+  try {
+    observer.observe(target);
+    testFailed("IntersectionObserver.observe() with a deleted root did not throw.");
+  } catch(e) {
+    exc = e;
+    shouldBeType("exc", "DOMException");
+    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
+  }
+
+  try {
+    observer.unobserve(target);
+    testFailed("IntersectionObserver.unobserve() with a deleted root did not throw.");
+  } catch(e) {
+    exc = e;
+    shouldBeType("exc", "DOMException");
+    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
+  }
+
+  try {
+    observer.disconnect();
+    testFailed("IntersectionObserver.disconnect() with a deleted root did not throw.");
+  } catch(e) {
+    exc = e;
+    shouldBeType("exc", "DOMException");
+    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
+  }
+
+  try {
+    observer.takeRecords();
+    testFailed("IntersectionObserver.takeRecords() with a deleted root did not throw.");
+  } catch(e) {
+    exc = e;
+    shouldBeType("exc", "DOMException");
+    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
   }
 </script>

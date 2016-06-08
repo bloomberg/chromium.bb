@@ -53,12 +53,12 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame)
 
     compositor().beginFrame();
     ASSERT_FALSE(compositor().needsAnimate());
-    EXPECT_TRUE(observer->takeRecords().isEmpty());
+    EXPECT_TRUE(observer->takeRecords(exceptionState).isEmpty());
     EXPECT_EQ(observerCallback->callCount(), 0);
 
     Element* target = document().getElementById("target");
     ASSERT_TRUE(target);
-    observer->observe(target);
+    observer->observe(target, exceptionState);
     EXPECT_TRUE(compositor().needsAnimate());
 }
 
