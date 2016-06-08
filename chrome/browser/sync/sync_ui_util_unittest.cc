@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -158,9 +159,6 @@ TEST_F(SyncUIUtilTest, AuthStateGlobalError) {
     GoogleServiceAuthError::HOSTED_NOT_ALLOWED
   };
 
-  FakeSigninManagerBase signin(
-      ChromeSigninClientFactory::GetForProfile(profile.get()),
-      AccountTrackerServiceFactory::GetForProfile(profile.get()));
   for (size_t i = 0; i < arraysize(table); ++i) {
     VerifySyncGlobalErrorResult(&service,
                                 table[i],
@@ -404,4 +402,37 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     provider.reset();
     signin.Shutdown();
   }
+}
+
+TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
+  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile.get());
+
+  ProfileSyncServiceMock service(
+      CreateProfileSyncServiceParamsForTest(profile.get()));
+  EXPECT_CALL(service, IsFirstSetupComplete()).WillRepeatedly(Return(true));
+  EXPECT_CALL(service, HasUnrecoverableError()).WillRepeatedly(Return(true));
+
+  // First time action is not set. We should get unrecoverable error.
+  syncer::SyncStatus status;
+  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
+      .WillOnce(DoAll(SetArgPointee<0>(status), Return(true)));
+
+  base::string16 link_label;
+  base::string16 unrecoverable_error_status_label;
+  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+                                sync_ui_util::PLAIN_TEXT,
+                                &unrecoverable_error_status_label, &link_label);
+
+  // This time set action to UPGRADE_CLIENT. Ensure that status label differs
+  // from previous one.
+  status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
+  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
+      .WillOnce(DoAll(SetArgPointee<0>(status), Return(true)));
+  base::string16 upgrade_client_status_label;
+  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+                                sync_ui_util::PLAIN_TEXT,
+                                &upgrade_client_status_label, &link_label);
+  EXPECT_NE(unrecoverable_error_status_label, upgrade_client_status_label);
 }

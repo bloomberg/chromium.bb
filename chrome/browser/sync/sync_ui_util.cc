@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/field_trial.h"
@@ -166,9 +168,19 @@ MessageType GetStatusInfo(Profile* profile,
 
     if (service && service->HasUnrecoverableError()) {
       if (status_label) {
-        status_label->assign(l10n_util::GetStringFUTF16(
-            IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
-            l10n_util::GetStringUTF16(IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL)));
+        // Unrecoverable error is sometimes accompanied by actionable error.
+        // If actionable error is set then display corresponding message,
+        // otherwise show generic unrecoverable error message.
+        ProfileSyncService::Status status;
+        service->QueryDetailedSyncStatus(&status);
+        if (ShouldShowActionOnUI(status.sync_protocol_error)) {
+          GetStatusForActionableError(status.sync_protocol_error, status_label);
+        } else {
+          status_label->assign(l10n_util::GetStringFUTF16(
+              IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
+              l10n_util::GetStringUTF16(
+                  IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL)));
+        }
       }
       return SYNC_ERROR;
     }
