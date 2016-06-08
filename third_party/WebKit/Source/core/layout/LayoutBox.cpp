@@ -4247,35 +4247,6 @@ void LayoutBox::clearLayoutOverflow()
     m_overflow->setLayoutOverflow(noOverflowRect());
 }
 
-static bool logicalWidthIsResolvable(const LayoutBox& layoutBox)
-{
-    const LayoutBox* box = &layoutBox;
-    while (!box->isLayoutView() && !box->isOutOfFlowPositioned()
-        && (box->style()->logicalWidth().isAuto() || box->isAnonymousBlock())
-        && !box->hasOverrideContainingBlockLogicalWidth())
-        box = box->containingBlock();
-
-    if (box->style()->logicalWidth().isFixed())
-        return true;
-    if (box->isLayoutView())
-        return true;
-    // The size of the containing block of an absolutely positioned element is always definite with respect to that
-    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
-    if (box->isOutOfFlowPositioned())
-        return true;
-    if (box->hasOverrideContainingBlockLogicalWidth())
-        return box->overrideContainingBlockContentLogicalWidth() != -1;
-    if (box->style()->logicalWidth().hasPercent())
-        return logicalWidthIsResolvable(*box->containingBlock());
-
-    return false;
-}
-
-bool LayoutBox::hasDefiniteLogicalWidth() const
-{
-    return logicalWidthIsResolvable(*this);
-}
-
 bool LayoutBox::percentageLogicalHeightIsResolvable() const
 {
     Length fakeLength(100, Percent);

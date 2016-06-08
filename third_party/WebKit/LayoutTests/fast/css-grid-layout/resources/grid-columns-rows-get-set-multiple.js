@@ -2,8 +2,8 @@ description('Test that setting and getting grid-template-columns and grid-templa
 
 debug("Test getting |grid-template-columns| and |grid-template-rows| set through CSS");
 testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "7px 11px", "17px 2px");
-testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "424px 792px", "162px 312px");
-testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "7px 0px", "11px 0px");
+testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "400px 800px", "162px 312px");
+testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "3.5px 7px", "11px 0px");
 testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "0px 17px", "0px 3px");
 testGridDefinitionsValues(document.getElementById("gridWithEMElement"), "100px 120px", "150px 170px");
 testGridDefinitionsValues(document.getElementById("gridWithThreeItems"), "15px 0px 100px", "120px 18px 0px");

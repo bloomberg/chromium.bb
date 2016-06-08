@@ -119,6 +119,7 @@ private:
 
     class GridIterator;
     struct GridSizingData;
+    enum SizingOperation { TrackSizing, IntrinsicSizeComputation };
     void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization);
     LayoutUnit computeUsedBreadthOfMinLength(const GridLength&, LayoutUnit maxBreadth) const;
     LayoutUnit computeUsedBreadthOfMaxLength(const GridLength&, LayoutUnit usedBreadth, LayoutUnit maxBreadth) const;
@@ -159,7 +160,7 @@ private:
     double findFlexFactorUnitSize(const Vector<GridTrack>&, const GridSpan&, GridTrackSizingDirection, LayoutUnit leftOverSpace) const;
 
     const GridTrackSize& rawGridTrackSize(GridTrackSizingDirection, size_t) const;
-    GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t) const;
+    GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t, SizingOperation = TrackSizing) const;
 
     bool updateOverrideContainingBlockContentSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
     LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&);
@@ -196,12 +197,10 @@ private:
 #endif
 
     size_t gridItemSpan(const LayoutBox&, GridTrackSizingDirection);
-    bool spanningItemCrossesFlexibleSizedTracks(const GridSpan&, GridTrackSizingDirection) const;
+    bool spanningItemCrossesFlexibleSizedTracks(const GridSpan&, GridTrackSizingDirection, SizingOperation) const;
 
     size_t gridColumnCount() const;
     size_t gridRowCount() const;
-
-    bool hasDefiniteLogicalSize(GridTrackSizingDirection) const;
 
     bool isOrthogonalChild(const LayoutBox&) const;
     GridTrackSizingDirection flowAwareDirectionForChild(const LayoutBox&, GridTrackSizingDirection) const;

@@ -5,7 +5,7 @@ testGridDefinitionsValues(document.getElementById("gridWithNoneElement"), "none"
 testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "10px", "15px");
 testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "400px", "150px");
 testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "0px", "0px");
-testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSizeWithChildren"), "7px", "11px");
+testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSizeWithChildren"), "3.5px", "11px");
 testGridDefinitionsValues(document.getElementById("gridWithAutoElement"), "0px", "0px");
 testGridDefinitionsValues(document.getElementById("gridWithAutoWithoutSizeElement"), "0px", "0px");
 testGridDefinitionsValues(document.getElementById("gridWithAutoWithChildrenElement"), "7px", "11px");

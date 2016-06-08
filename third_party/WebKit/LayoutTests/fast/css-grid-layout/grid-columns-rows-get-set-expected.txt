@@ -12,7 +12,7 @@ PASS window.getComputedStyle(gridWithPercentElement, '').getPropertyValue('grid-
 PASS window.getComputedStyle(gridWithPercentElement, '').getPropertyValue('grid-template-rows') is "150px"
 PASS window.getComputedStyle(gridWithPercentWithoutSize, '').getPropertyValue('grid-template-columns') is "0px"
 PASS window.getComputedStyle(gridWithPercentWithoutSize, '').getPropertyValue('grid-template-rows') is "0px"
-PASS window.getComputedStyle(gridWithPercentWithoutSizeWithChildren, '').getPropertyValue('grid-template-columns') is "7px"
+PASS window.getComputedStyle(gridWithPercentWithoutSizeWithChildren, '').getPropertyValue('grid-template-columns') is "3.5px"
 PASS window.getComputedStyle(gridWithPercentWithoutSizeWithChildren, '').getPropertyValue('grid-template-rows') is "11px"
 PASS window.getComputedStyle(gridWithAutoElement, '').getPropertyValue('grid-template-columns') is "0px"
 PASS window.getComputedStyle(gridWithAutoElement, '').getPropertyValue('grid-template-rows') is "0px"
