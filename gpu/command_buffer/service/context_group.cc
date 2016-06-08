@@ -290,11 +290,6 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
         max_rectangle_texture_size,
         feature_info_->workarounds().max_texture_size);
   }
-  if (feature_info_->workarounds().max_cube_map_texture_size) {
-    max_cube_map_texture_size = std::min(
-        max_cube_map_texture_size,
-        feature_info_->workarounds().max_cube_map_texture_size);
-  }
 
   texture_manager_.reset(new TextureManager(memory_tracker_.get(),
                                             feature_info_.get(),

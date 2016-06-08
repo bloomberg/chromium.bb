@@ -39,3 +39,6 @@ class GpuProcessExpectations(GpuTestExpectations):
     self.Skip('GpuProcess.skip_gpu_process',
               ['android', 'nvidia'], bug=610023)
 
+    # There are currently no blacklist entries disabling all GPU
+    # functionality on Mac OS.
+    self.Fail('GpuProcess.no_gpu_process', ['mac'], bug=579255)

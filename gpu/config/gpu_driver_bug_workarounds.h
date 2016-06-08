@@ -34,7 +34,6 @@ class GPU_EXPORT GpuDriverBugWorkarounds {
 
   // Note: 0 here means use driver limit.
   GLint max_texture_size;
-  GLint max_cube_map_texture_size;
   GLint max_fragment_uniform_vectors;
   GLint max_varying_vectors;
   GLint max_vertex_uniform_vectors;

@@ -29,13 +29,9 @@ class GLIOSurfaceReadbackWorkaroundTest : public testing::Test {
 
  protected:
   void SetUp() override {
-      base::CommandLine command_line(0, NULL);
-      command_line.AppendSwitchASCII(
-          switches::kGpuDriverBugWorkarounds,
-          base::IntToString(gpu::IOSURFACE_READBACK_WORKAROUND));
-      gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
-      gl_.set_use_iosurface_memory_buffers(true);
-      DCHECK(gl_.workarounds().iosurface_readback_workaround);
+    base::CommandLine command_line(0, NULL);
+    gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
+    gl_.set_use_iosurface_memory_buffers(true);
   }
 
   void TearDown() override {

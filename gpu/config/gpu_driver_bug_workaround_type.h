@@ -93,12 +93,6 @@
          max_copy_texture_chromium_size_1048576)             \
   GPU_OP(MAX_COPY_TEXTURE_CHROMIUM_SIZE_262144,              \
          max_copy_texture_chromium_size_262144)              \
-  GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \
-         max_cube_map_texture_size_limit_1024)               \
-  GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096,               \
-         max_cube_map_texture_size_limit_4096)               \
-  GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512,                \
-         max_cube_map_texture_size_limit_512)                \
   GPU_OP(MAX_FRAGMENT_UNIFORM_VECTORS_32,                    \
          max_fragment_uniform_vectors_32)                    \
   GPU_OP(MAX_TEXTURE_SIZE_LIMIT_4096,                        \
@@ -149,10 +143,6 @@
          unpack_alignment_workaround_with_unpack_buffer)     \
   GPU_OP(UNPACK_OVERLAPPING_ROWS_SEPARATELY_UNPACK_BUFFER,   \
          unpack_overlapping_rows_separately_unpack_buffer)   \
-  GPU_OP(IOSURFACE_READBACK_WORKAROUND,                      \
-         iosurface_readback_workaround)                      \
-  GPU_OP(UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX,           \
-         unroll_for_loop_with_sampler_array_index)           \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \
          use_client_side_arrays_for_stream_buffers)          \
   GPU_OP(USE_CURRENT_PROGRAM_AFTER_SUCCESSFUL_LINK,          \

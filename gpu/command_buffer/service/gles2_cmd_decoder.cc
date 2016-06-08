@@ -1965,13 +1965,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                        GLuint* source_texture_service_id,
                                        GLenum* source_texture_target);
 
-  // On Mac OS X, calling glReadPixels() against an FBO whose color attachment
-  // is an IOSurface-backed texture causes corruption of future glReadPixels()
-  // calls, even those on different OpenGL contexts. It is believed that this
-  // is the root cause of top crasher
-  // http://crbug.com/99393. <rdar://problem/10949687>
-  bool NeedsIOSurfaceReadbackWorkaround();
-
   bool InitializeCopyTextureCHROMIUM(const char* function_name);
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -3473,8 +3466,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_UNFOLD_SHORT_CIRCUIT;
   if (workarounds().init_varyings_without_static_use)
     driver_bug_workarounds |= SH_INIT_VARYINGS_WITHOUT_STATIC_USE;
-  if (workarounds().unroll_for_loop_with_sampler_array_index)
-    driver_bug_workarounds |= SH_UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX;
   if (workarounds().scalarize_vec_and_mat_constructor_args)
     driver_bug_workarounds |= SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS;
   if (workarounds().regenerate_struct_names)
@@ -10015,8 +10006,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
 
   ScopedResolvedFrameBufferBinder binder(this, false, true);
   std::unique_ptr<ScopedFrameBufferReadPixelHelper> helper;
-  if (NeedsIOSurfaceReadbackWorkaround())
-    helper.reset(new ScopedFrameBufferReadPixelHelper(&state_, this));
 
   gfx::Rect rect(x, y, width, height);  // Safe before we checked above.
   gfx::Rect max_rect(max_size);
@@ -16610,28 +16599,6 @@ bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
   *source_texture_target = texture->texture()->target();
   *source_texture_service_id = texture->service_id();
   return true;
-}
-
-bool GLES2DecoderImpl::NeedsIOSurfaceReadbackWorkaround() {
-  if (!workarounds().iosurface_readback_workaround)
-    return false;
-
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
-  if (!framebuffer)
-    return false;
-
-  const Framebuffer::Attachment* attachment =
-      framebuffer->GetReadBufferAttachment();
-  if (!attachment)
-    return false;
-
-  if (!attachment->IsTextureAttachment())
-    return false;
-
-  TextureRef* texture =
-      texture_manager()->GetTexture(attachment->object_name());
-  return texture->texture()->HasImages();
 }
 
 error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(

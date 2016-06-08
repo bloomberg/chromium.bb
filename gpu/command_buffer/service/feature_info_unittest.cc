@@ -219,7 +219,6 @@ TEST_P(FeatureInfoTest, Basic) {
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
   EXPECT_EQ(0, info_->workarounds().max_texture_size);
-  EXPECT_EQ(0, info_->workarounds().max_cube_map_texture_size);
   EXPECT_FALSE(info_->workarounds().gl_clear_broken);
 }
 
@@ -1335,12 +1334,10 @@ TEST_P(FeatureInfoTest, ParseDriverBugWorkaroundsMultiple) {
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
       base::IntToString(gpu::EXIT_ON_CONTEXT_LOST) + "," +
-      base::IntToString(gpu::MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024) + "," +
       base::IntToString(gpu::MAX_TEXTURE_SIZE_LIMIT_4096));
   // Workarounds should get parsed without the need for a context.
   SetupWithCommandLine(command_line);
   EXPECT_TRUE(info_->workarounds().exit_on_context_lost);
-  EXPECT_EQ(1024, info_->workarounds().max_cube_map_texture_size);
   EXPECT_EQ(4096, info_->workarounds().max_texture_size);
 }
 

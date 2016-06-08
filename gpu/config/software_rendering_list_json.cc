@@ -385,63 +385,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 38,
-      "description": "Accelerated 2D canvas is unstable for NVidia GeForce 9400M on Lion",
-      "cr_bugs": [130495],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "=",
-          "value": "10.7"
-        }
-      },
-      "vendor_id": "0x10de",
-      "device_id": ["0x0863"],
-      "multi_gpu_category": "any",
-      "features": [
-        "accelerated_2d_canvas",
-        "gpu_rasterization"
-      ]
-    },
-    {
-      "id": 42,
-      "description": "AMD Radeon HD 6490M and 6970M on Snow Leopard are buggy",
-      "cr_bugs": [137307, 285350],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "=",
-          "value": "10.6"
-        }
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x6760", "0x6720"],
-      "multi_gpu_category": "any",
-      "features": [
-        "webgl",
-        "gpu_rasterization"
-      ]
-    },
-    {
-      "id": 44,
-      "description": "Intel HD 4000 causes kernel panic on Lion",
-      "cr_bugs": [134015],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "between",
-          "value": "10.7.0",
-          "value2": "10.7.4"
-        }
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0166"],
-      "multi_gpu_category": "any",
-      "features": [
-        "all"
-      ]
-    },
-    {
       "id": 45,
       "description": "Parallels drivers older than 7 are buggy",
       "cr_bugs": [138105],
@@ -496,27 +439,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 49,
-      "description": "NVidia GeForce GT 650M can cause the system to hang with flash 3D",
-      "cr_bugs": [140175],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "between",
-          "value": "10.8.0",
-          "value2": "10.8.1"
-        }
-      },
-      "multi_gpu_style": "optimus",
-      "vendor_id": "0x10de",
-      "device_id": ["0x0fd5"],
-      "multi_gpu_category": "any",
-      "features": [
-        "flash_3d",
-        "flash_stage3d"
       ]
     },
     {
@@ -711,25 +633,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 73,
-      "description": "WebGL is buggy with the NVIDIA GeForce GT 330M, 9400, and 9400M on MacOSX earlier than 10.8",
-      "cr_bugs": [233523],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8"
-        }
-      },
-      "vendor_id": "0x10de",
-      "device_id": ["0x0a29", "0x0861", "0x0863"],
-      "multi_gpu_category": "any",
-      "features": [
-        "webgl",
-        "gpu_rasterization"
-      ]
-    },
-    {
       "id": 74,
       "description": "GPU access is blocked if users don't have proper graphics driver installed after Windows installation",
       "cr_bugs": [248178],
@@ -799,23 +702,6 @@ LONG_STRING_CONST(
           "value": "6.0"
         }
       },
-      "features": [
-        "all"
-      ]
-    },
-    {
-      "id": 81,
-      "description": "Apple software renderer used under VMWare hangs on Mac OS 10.6 and 10.7",
-      "cr_bugs": [230931],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<=",
-          "value": "10.7"
-        }
-      },
-      "vendor_id": "0x15ad",
-      "multi_gpu_category": "any",
       "features": [
         "all"
       ]
@@ -1063,24 +949,6 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"
-      ]
-    },
-    {
-      "id": 103,
-      "description": "Intel GM965/GL960 crash often on Mac OS 10.6",
-      "cr_bugs": [421641],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "=",
-          "value": "10.6"
-        }
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x2a02"],
-      "multi_gpu_category": "any",
-      "features": [
-        "all"
       ]
     },
     {

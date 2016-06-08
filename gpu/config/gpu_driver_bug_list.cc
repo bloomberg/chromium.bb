@@ -86,14 +86,6 @@ void GpuDriverBugList::AppendWorkaroundsFromCommandLine(
           workarounds->erase(FORCE_DISCRETE_GPU);
           workarounds->insert(FORCE_INTEGRATED_GPU);
           break;
-        case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512:
-        case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024:
-        case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096:
-          workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512);
-          workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024);
-          workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096);
-          workarounds->insert(kFeatureList[i].type);
-          break;
         default:
           workarounds->insert(kFeatureList[i].type);
           break;

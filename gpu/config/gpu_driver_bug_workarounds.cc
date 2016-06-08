@@ -33,12 +33,6 @@ void StringToWorkarounds(const std::string& types,
   }
   if (workarounds->max_texture_size_limit_4096)
     workarounds->max_texture_size = 4096;
-  if (workarounds->max_cube_map_texture_size_limit_4096)
-    workarounds->max_cube_map_texture_size = 4096;
-  if (workarounds->max_cube_map_texture_size_limit_1024)
-    workarounds->max_cube_map_texture_size = 1024;
-  if (workarounds->max_cube_map_texture_size_limit_512)
-    workarounds->max_cube_map_texture_size = 512;
 
   if (workarounds->max_fragment_uniform_vectors_32)
     workarounds->max_fragment_uniform_vectors = 32;
@@ -63,7 +57,6 @@ GpuDriverBugWorkarounds::GpuDriverBugWorkarounds()
       GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
           max_texture_size(0),
-      max_cube_map_texture_size(0),
       max_fragment_uniform_vectors(0),
       max_varying_vectors(0),
       max_vertex_uniform_vectors(0),
@@ -77,7 +70,6 @@ GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
       GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
           max_texture_size(0),
-      max_cube_map_texture_size(0),
       max_fragment_uniform_vectors(0),
       max_varying_vectors(0),
       max_vertex_uniform_vectors(0),

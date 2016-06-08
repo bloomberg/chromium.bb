@@ -44,38 +44,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 3,
-      "description": "glGenerateMipmap leaks vram without setting texture filters on some Mac drivers",
-      "webkit_bugs": [48489],
-      "cr_bugs": [349137],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "features": [
-        "set_texture_filter_before_generating_mipmap"
-      ]
-    },
-    {
-      "id": 4,
-      "description": "glReadPixels incorrectly sets alpha to 0 on some drivers from a drawing buffer without alpha channel",
-      "webkit_bugs": [33416],
-      "cr_bugs": [349137],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "features": [
-        "clear_alpha_in_readpixels"
-      ]
-    },
-    {
       "id": 5,
       "description": "Always call glUseProgram after a successful link to avoid a driver bug",
       "cr_bugs": [349137],
@@ -121,115 +89,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "features": [
         "needs_offscreen_buffer_workaround"
-      ]
-    },
-    {
-      "id": 8,
-      "description": "A few built-in glsl functions on Mac behave incorrectly",
-      "cr_bugs": [349137],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "needs_glsl_built_in_function_emulation"
-      ]
-    },
-    {
-      "id": 9,
-      "description": "AMD drivers get gl_PointCoord backward on OS X 10.8 or earlier",
-      "cr_bugs": [256349],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "reverse_point_sprite_coord_origin"
-      ]
-    },
-    {
-      "id": 10,
-      "description": "Intel drivers get gl_PointCoord backward on OS X 10.8 or earlier",
-      "cr_bugs": [256349],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "reverse_point_sprite_coord_origin"
-      ]
-    },
-    {
-      "id": 11,
-      "description": "Limit max texure size to 4096 on Macs with Intel GPUs",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "max_texture_size_limit_4096"
-      ]
-    },
-    {
-      "id": 12,
-      "description": "Limit max cube map texure size to 1024 on Macs with Intel GPUs",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "max_cube_map_texture_size_limit_1024"
-      ]
-    },
-    {
-      "id": 13,
-      "description": "Limit max cube map texure size to 512 on older Macs with Intel GPUs",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.7.3"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "max_cube_map_texture_size_limit_512"
-      ]
-    },
-    {
-      "id": 14,
-      "description": "Limit max texure size and cube map texture size to 4096 on Macs with AMD GPUs",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "max_texture_size_limit_4096",
-        "max_cube_map_texture_size_limit_4096"
       ]
     },
     {
@@ -329,21 +188,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_renderer": ".*Mali-4.*",
       "features": [
         "use_non_zero_size_for_client_side_stream_buffers"
-      ]
-    },
-    {
-      "id": 25,
-      "cr_bugs": [152225],
-      "description": "PBO + Readpixels don't work on OS X 10.7",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8"
-        }
-      },
-      "features": [
-        "disable_async_readpixels"
       ]
     },
     {
@@ -562,11 +406,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "description": "Force to use discrete GPU on older MacBookPro models",
       "cr_bugs": [113703],
       "os": {
-        "type": "macosx",
-        "version": {
-          "op": ">=",
-          "value": "10.7"
-        }
+        "type": "macosx"
       },
       "machine_model_name": ["MacBookPro"],
       "machine_model_version": {
@@ -622,11 +462,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "exceptions": [
         {
           "os": {
-            "type": "macosx",
-            "version": {
-              "op": ">=",
-              "value": "10.9"
-            }
+            "type": "macosx"
           }
         }
       ],
@@ -670,22 +506,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 58,
-      "description": "Multisampling is buggy in ATI cards on older Mac OS X",
-      "cr_bugs": [67752, 83153],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.7.2"
-        }
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "disable_chromium_framebuffer_multisample"
-      ]
-    },
-    {
       "id": 59,
       "description": "Multisampling is buggy in Intel IvyBridge",
       "cr_bugs": [116370],
@@ -696,36 +516,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "device_id": ["0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
       "features": [
         "disable_chromium_framebuffer_multisample"
-      ]
-    },
-    {
-      "id": 60,
-      "description": "Multisampling is buggy on Mac OS X prior to 10.8.3",
-      "cr_bugs": [137303, 162466],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.8.3"
-        }
-      },
-      "features": [
-        "disable_chromium_framebuffer_multisample"
-      ]
-    },
-    {
-      "id": 63,
-      "description": "Shaders with sampler arrays indexing for-loop indices cause the GLSL compiler to crash on OS X",
-      "cr_bugs": [348198, 349137],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "value": "10.9"
-        }
-      },
-      "features": [
-        "unroll_for_loop_with_sampler_array_index"
       ]
     },
     {
@@ -1814,28 +1604,6 @@ LONG_STRING_CONST(
       "gl_renderer": "Vivante GC1000",
       "features": [
         "disable_multisampled_render_to_texture"
-      ]
-    },
-    {
-      "id": 154,
-      "cr_bugs": [581777],
-      "description": "glReadPixels does not work on IOSurface backed textures",
-      "os": {
-        "type": "macosx"
-      },
-      "exceptions": [
-        {
-          "os": {
-            "type": "macosx",
-            "version": {
-              "op": ">=",
-              "value": "10.9"
-            }
-          }
-        }
-      ],
-      "features": [
-        "iosurface_readback_workaround"
       ]
     },
     {
