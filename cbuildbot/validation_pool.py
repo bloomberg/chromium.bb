@@ -68,6 +68,8 @@ CQ_PIPELINE_CONFIGS = {CQ_CONFIG, PRE_CQ_LAUNCHER_CONFIG}
 # normal.  Setting timeout to 3 minutes to be safe-ish.
 SUBMITTED_WAIT_TIMEOUT = 3 * 60 # Time in seconds.
 
+MAX_PLAN_RECURSION = 150
+
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -172,6 +174,18 @@ class PatchExceededRecursionLimit(cros_patch.PatchException):
   def ShortExplanation(self):
     return ('was part of a dependency stack that exceeded our recursion '
             'depth. Try breaking this stack into smaller pieces.')
+
+
+# Note: This exception differs slightly in meaning from
+# PatchExceededRecursionLimit. That exception is caused by a RuntimeError when
+# we hit recursion depth, where as this one is thrown by us before we reach the
+# python recursion limit.
+class PatchReachedRecursionLimit(cros_patch.PatchException):
+  """Raised if we gave up on a too-recursive patch plan."""
+
+  def ShortExplanation(self):
+    return ('was part of a dependency stack that reached our recursion '
+            'depth limit. Try breaking this stack into smaller pieces.')
 
 
 class PatchSubmittedWithoutDeps(cros_patch.DependencyError):
@@ -625,7 +639,8 @@ class PatchSeries(object):
   @_PatchWrapException
   def _AddChangeToPlanWithDeps(self, change, plan, gerrit_deps_seen,
                                cq_deps_seen, limit_to=None,
-                               include_cq_deps=True):
+                               include_cq_deps=True,
+                               remaining_depth=MAX_PLAN_RECURSION):
     """Add a change and its dependencies into a |plan|.
 
     Args:
@@ -640,6 +655,7 @@ class PatchSeries(object):
         what's in that container/mapping.
       include_cq_deps: If True, include CQ dependencies in the list
         of dependencies. Defaults to True.
+      remaining_depth: Amount of permissible recursion depth from this call.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
@@ -647,6 +663,9 @@ class PatchSeries(object):
     """
     if change in self._committed_cache:
       return
+
+    if remaining_depth == 0:
+      raise PatchReachedRecursionLimit(change)
 
     # Get a list of the changes that haven't been committed.
     # These are returned as cros_patch.PatchQuery objects.
@@ -662,7 +681,8 @@ class PatchSeries(object):
       gerrit_deps_seen.Inject(change)
       for dep in gerrit_deps:
         self._AddChangeToPlanWithDeps(dep, plan, gerrit_deps_seen, cq_deps_seen,
-                                      limit_to=limit_to, include_cq_deps=False)
+                                      limit_to=limit_to, include_cq_deps=False,
+                                      remaining_depth=remaining_depth - 1)
 
     if include_cq_deps and change not in cq_deps_seen:
       cq_deps = self._LookupUncommittedChanges(
@@ -673,7 +693,8 @@ class PatchSeries(object):
         # already in the process of doing that.
         if dep not in cq_deps_seen:
           self._AddChangeToPlanWithDeps(dep, plan, gerrit_deps_seen,
-                                        cq_deps_seen, limit_to=limit_to)
+                                        cq_deps_seen, limit_to=limit_to,
+                                        remaining_depth=remaining_depth - 1)
 
     # If there are cyclic dependencies, we might have already applied this
     # patch as part of dependency resolution. If not, apply this patch.
