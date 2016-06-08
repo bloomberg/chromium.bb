@@ -108,26 +108,6 @@ namespace blink {
 
 namespace {
 
-// Convert |event->deltaMode()| to scroll granularity and output as |granularity|.
-bool wheelGranularityToScrollGranularity(const WheelEvent* event, ScrollGranularity* granularity)
-{
-    DCHECK(granularity);
-    switch (event->deltaMode()) {
-    case WheelEvent::DOM_DELTA_PAGE:
-        *granularity = ScrollByPage;
-        return true;
-    case WheelEvent::DOM_DELTA_LINE:
-        *granularity = ScrollByLine;
-        return true;
-    case WheelEvent::DOM_DELTA_PIXEL:
-        *granularity = event->hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
-        return true;
-    default:
-        // Could be other values since the event might come from JavaScript.
-        return false;
-    }
-}
-
 // Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
 // If a mouse event handler changes the input element type to one that has a widget associated,
 // we'd like to EventHandler::handleMousePressEvent to pass the event to the widget and thus the
@@ -1641,90 +1621,22 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     if (!node && result.scrollbar())
         node = doc->documentElement();
 
-    bool sendDOMEvent = true;
     LocalFrame* subframe = subframeForTargetNode(node);
     if (subframe) {
         WebInputEventResult result = subframe->eventHandler().handleWheelEvent(event);
-        if (result != WebInputEventResult::NotHandled) {
+        if (result != WebInputEventResult::NotHandled)
             m_scrollManager.setFrameWasScrolledByUser();
-            return result;
-        }
-        // TODO(dtapuska): Remove this once wheel gesture scroll has
-        // been enabled everywhere; as we can just return early.
-        // http://crbug.com/568183
-        // Don't propagate the DOM event into the parent iframe
-        // but do dispatch the scroll event.
-        sendDOMEvent = false;
+        return result;
     }
 
     if (node) {
         WheelEvent* domEvent = WheelEvent::create(event, node->document().domWindow());
-        if (sendDOMEvent) {
-            DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
-            if (domEventResult != DispatchEventResult::NotCanceled)
-                return toWebInputEventResult(domEventResult);
-        } else {
-            defaultWheelEventHandler(node, domEvent);
-            if (domEvent->defaultHandled())
-                return WebInputEventResult::HandledSystem;
-        }
+        DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
+        if (domEventResult != DispatchEventResult::NotCanceled)
+            return toWebInputEventResult(domEventResult);
     }
 
     return WebInputEventResult::NotHandled;
-}
-
-void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEvent)
-{
-    if (!startNode || !wheelEvent)
-        return;
-
-    Settings* settings = m_frame->settings();
-    if (settings && settings->wheelGesturesEnabled())
-        return;
-
-    // When the wheelEvent do not scroll, we trigger zoom in/out instead.
-    if (!wheelEvent->canScroll())
-        return;
-
-    ScrollGranularity granularity;
-    if (!wheelGranularityToScrollGranularity(wheelEvent, &granularity))
-        return;
-    Node* node = nullptr;
-
-    // Diagonal movement on a MacBook pro is an example of a 2-dimensional
-    // mouse wheel event (where both deltaX and deltaY can be set).
-    FloatSize delta;
-
-    if (wheelEvent->getRailsMode() != Event::RailsModeVertical)
-        delta.setWidth(wheelEvent->deltaX());
-
-    if (wheelEvent->getRailsMode() != Event::RailsModeHorizontal)
-        delta.setHeight(wheelEvent->deltaY());
-
-    // We can get page wheel events with non-[0|1] deltas in the case where the
-    // events are coalesced but we still want to scroll by just one page length.
-    // TODO(bokan): This seems like it belongs in the coalescing logic.
-    if (granularity == ScrollByPage) {
-        if (delta.width())
-            delta.setWidth(delta.width() > 0 ? 1 : -1);
-        if (delta.height())
-            delta.setHeight(delta.height() > 0 ? 1 : -1);
-    }
-
-    // FIXME: enable scroll customization in this case. See crbug.com/410974.
-    bool consumed = false;
-
-    m_scrollManager.physicalScroll(
-        granularity,
-        delta,
-        FloatPoint(),
-        FloatSize(),
-        startNode,
-        &node,
-        &consumed);
-
-    if (consumed)
-        wheelEvent->setDefaultHandled();
 }
 
 WebInputEventResult EventHandler::handleGestureShowPress()

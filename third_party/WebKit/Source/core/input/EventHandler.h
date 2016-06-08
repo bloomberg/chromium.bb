@@ -150,7 +150,6 @@ public:
     WebInputEventResult handleMousePressEvent(const PlatformMouseEvent&);
     WebInputEventResult handleMouseReleaseEvent(const PlatformMouseEvent&);
     WebInputEventResult handleWheelEvent(const PlatformWheelEvent&);
-    void defaultWheelEventHandler(Node*, WheelEvent*);
 
     // Called on the local root frame exactly once per gesture event.
     WebInputEventResult handleGestureEvent(const PlatformGestureEvent&);

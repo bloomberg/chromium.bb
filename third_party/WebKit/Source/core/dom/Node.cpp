@@ -2165,19 +2165,6 @@ void Node::defaultEventHandler(Event* event)
             }
         }
 #endif
-    } else if ((eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) && event->hasInterface(EventNames::WheelEvent)) {
-        WheelEvent* wheelEvent = toWheelEvent(event);
-
-        // If we don't have a layoutObject, send the wheel event to the first node we find with a layoutObject.
-        // This is needed for <option> and <optgroup> elements so that <select>s get a wheel scroll.
-        Node* startNode = this;
-        while (startNode && !startNode->layoutObject())
-            startNode = startNode->parentOrShadowHostNode();
-
-        if (startNode && startNode->layoutObject()) {
-            if (LocalFrame* frame = document().frame())
-                frame->eventHandler().defaultWheelEventHandler(startNode, wheelEvent);
-        }
     } else if (event->type() == EventTypeNames::webkitEditableContentChanged) {
         dispatchInputEvent();
     }

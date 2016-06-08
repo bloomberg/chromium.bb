@@ -203,11 +203,6 @@ void WebSettingsImpl::setWebSecurityEnabled(bool enabled)
     m_settings->setWebSecurityEnabled(enabled);
 }
 
-void WebSettingsImpl::setWheelGesturesEnabled(bool enabled)
-{
-    m_settings->setWheelGesturesEnabled(enabled);
-}
-
 void WebSettingsImpl::setJavaScriptCanOpenWindowsAutomatically(bool canOpenWindows)
 {
     m_settings->setJavaScriptCanOpenWindowsAutomatically(canOpenWindows);
@@ -700,11 +695,6 @@ bool WebSettingsImpl::doubleTapToZoomEnabled() const
 bool WebSettingsImpl::mockGestureTapHighlightsEnabled() const
 {
     return m_settings->mockGestureTapHighlightsEnabled();
-}
-
-bool WebSettingsImpl::wheelGesturesEnabled() const
-{
-    return m_settings->wheelGesturesEnabled();
 }
 
 bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
