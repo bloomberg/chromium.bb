@@ -866,7 +866,7 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
   // If the loop attribute is set, timeChanged() will update the current time
   // to 0. It will perform a seek to 0. Issue a command to the player to start
   // playing after seek completes.
-  if (seeking_ && seek_time_.is_zero())
+  if (is_playing_ && seeking_ && seek_time_.is_zero())
     player_manager_->Start(player_id_);
   else
     playback_completed_ = true;
