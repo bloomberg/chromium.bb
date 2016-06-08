@@ -1701,7 +1701,7 @@ name=bug_398547
 system call NtWriteFile parameter #5
 KERNELBASE.dll!WriteFile
 KERNEL32.dll!WriteFile
-mojo_system_impl.dll!mojo::system::`anonymous namespace'::RawChannelWin::WriteNoLock
+mojo_system_impl.dll!mojo::edk::`anonymous namespace'::ChannelWin::WriteNoLock
 
 UNINITIALIZED READ
 name=bug_399842
@@ -2169,3 +2169,14 @@ name=bug_617740
 media.dll!mkvmuxer::Segment::WriteFramesAll
 media.dll!mkvmuxer::Segment::Finalize
 media.dll!media::WebmMuxer::~WebmMuxer
+
+UNADDRESSABLE ACCESS
+name=bug_618265
+...
+cc.dll!cc::ScrollTree::MaxScrollOffset
+cc.dll!cc::LayerImpl::MaxScrollOffset
+cc.dll!cc::LayerTreeImpl::TotalMaxScrollOffset
+cc.dll!cc::LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler
+cc.dll!cc::LayerTreeHostImpl::AnimateInternal
+cc.dll!cc::LayerTreeHostImpl::Animate
+cc.dll!cc::ProxyImpl::WillBeginImplFrame
