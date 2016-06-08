@@ -70,6 +70,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebFrameScheduler.h"
 
 #include <algorithm>
@@ -559,13 +560,18 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
             UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
     }
 
-    // Last of all, check for mixed content. We do this last so that when
-    // folks block mixed content with a CSP policy, they don't get a warning.
-    // They'll still get a warning in the console about CSP blocking the load.
+    // Check for mixed content. We do this second-to-last so that when folks block
+    // mixed content with a CSP policy, they don't get a warning. They'll still
+    // get a warning in the console about CSP blocking the load.
     MixedContentChecker::ReportingStatus mixedContentReporting = forPreload ?
         MixedContentChecker::SuppressReport : MixedContentChecker::SendReport;
     if (MixedContentChecker::shouldBlockFetch(frame(), resourceRequest, url, mixedContentReporting))
         return ResourceRequestBlockedReasonMixedContent;
+
+    // Let the client have the final say into whether or not the load should proceed.
+    DocumentLoader* documentLoader = masterDocumentLoader();
+    if (documentLoader && documentLoader->subresourceFilter() && type != Resource::MainResource && type != Resource::ImportResource && !documentLoader->subresourceFilter()->allowLoad(url, resourceRequest.requestContext()))
+        return ResourceRequestBlockedReasonSubresourceFilter;
 
     return ResourceRequestBlockedReasonNone;
 }

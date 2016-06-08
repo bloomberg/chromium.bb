@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class WebDocumentSubresourceFilter;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;
@@ -103,6 +104,12 @@ public:
     // Calling it later may confuse users, because JavaScript may have run and
     // the user may have already recorded the original value.
     virtual void setNavigationStartTime(double) = 0;
+
+    // Allows the embedder to inject a filter that will be consulted for each
+    // subsequent subresource load, and gets the final say in deciding whether
+    // or not to allow the load. The passed-in filter object is deleted when the
+    // datasource is destroyed or when a new filter is set.
+    virtual void setSubresourceFilter(WebDocumentSubresourceFilter*) = 0;
 
 protected:
     ~WebDataSource() { }

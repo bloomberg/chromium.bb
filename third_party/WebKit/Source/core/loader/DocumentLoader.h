@@ -58,6 +58,7 @@ class DocumentInit;
 class LocalFrame;
 class FrameLoader;
 class ResourceLoader;
+class WebDocumentSubresourceFilter;
 
 class CORE_EXPORT DocumentLoader : public GarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
 public:
@@ -82,6 +83,9 @@ public:
     const ResourceRequest& request() const;
 
     ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+
+    void setSubresourceFilter(PassOwnPtr<WebDocumentSubresourceFilter>);
+    WebDocumentSubresourceFilter* subresourceFilter() const { return m_subresourceFilter.get(); }
 
     const SubstituteData& substituteData() const { return m_substituteData; }
 
@@ -180,6 +184,7 @@ private:
 
     Member<LocalFrame> m_frame;
     Member<ResourceFetcher> m_fetcher;
+    OwnPtr<WebDocumentSubresourceFilter> m_subresourceFilter;
 
     Member<RawResource> m_mainResource;
 

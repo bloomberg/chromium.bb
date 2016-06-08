@@ -76,6 +76,7 @@
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/common/startup_metric_messages.h"
+#include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
@@ -516,6 +517,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
       new PasswordGenerationAgent(render_frame, password_autofill_agent);
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent);
+
+  new subresource_filter::SubresourceFilterAgent(render_frame);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

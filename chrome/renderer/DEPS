@@ -26,6 +26,7 @@ include_rules = [
   "+components/signin/core/common",
   "+components/startup_metric_utils/common",
   "+components/strings/grit",  # For generated headers
+  "+components/subresource_filter/content/renderer",
   "+components/translate/content/common",
   "+components/translate/content/renderer",
   "+components/translate/core/common",

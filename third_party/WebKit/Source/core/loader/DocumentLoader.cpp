@@ -70,6 +70,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebMimeRegistry.h"
 #include "wtf/Assertions.h"
 #include "wtf/TemporaryChange.h"
@@ -162,6 +163,11 @@ const ResourceRequest& DocumentLoader::request() const
 const KURL& DocumentLoader::url() const
 {
     return m_request.url();
+}
+
+void DocumentLoader::setSubresourceFilter(PassOwnPtr<WebDocumentSubresourceFilter> subresourceFilter)
+{
+    m_subresourceFilter = std::move(subresourceFilter);
 }
 
 Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)

@@ -260,6 +260,7 @@
         '../components/components.gyp:password_manager_content_renderer',
         '../components/components.gyp:plugins_renderer',
         '../components/components.gyp:startup_metric_utils_common',
+        '../components/components.gyp:subresource_filter_content_renderer',
         '../components/components.gyp:translate_content_renderer',
         '../components/components.gyp:visitedlink_renderer',
         '../components/components.gyp:web_cache_renderer',

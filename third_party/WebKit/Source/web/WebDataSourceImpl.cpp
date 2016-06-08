@@ -31,9 +31,11 @@
 #include "web/WebDataSourceImpl.h"
 
 #include "core/dom/Document.h"
+#include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -145,6 +147,11 @@ void WebDataSourceImpl::detachFromFrame()
 {
     DocumentLoader::detachFromFrame();
     m_extraData.reset();
+}
+
+void WebDataSourceImpl::setSubresourceFilter(WebDocumentSubresourceFilter* subresourceFilter)
+{
+    DocumentLoader::setSubresourceFilter(WTF::adoptPtr(subresourceFilter));
 }
 
 DEFINE_TRACE(WebDataSourceImpl)

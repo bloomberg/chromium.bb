@@ -233,6 +233,8 @@ String buildBlockedReason(ResourceRequestBlockedReason reason)
         return protocol::Network::BlockedReasonEnum::Origin;
     case ResourceRequestBlockedReasonInspector:
         return protocol::Network::BlockedReasonEnum::Inspector;
+    case ResourceRequestBlockedReasonSubresourceFilter:
+        return protocol::Network::BlockedReasonEnum::SubresourceFilter;
     case ResourceRequestBlockedReasonOther:
         return protocol::Network::BlockedReasonEnum::Other;
     case ResourceRequestBlockedReasonNone:

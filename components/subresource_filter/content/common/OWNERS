@@ -1,0 +1,13 @@
+# Changes to IPC messages require a security review to avoid introducing
+# new sandbox escapes.
+per-file subresource_filter_message*.h=set noparent
+per-file subresource_filter_message*.h=dcheng@chromium.org
+per-file subresource_filter_message*.h=inferno@chromium.org
+per-file subresource_filter_message*.h=jln@chromium.org
+per-file subresource_filter_message*.h=jschuh@chromium.org
+per-file subresource_filter_message*.h=kenrb@chromium.org
+per-file subresource_filter_message*.h=mkwst@chromium.org
+per-file subresource_filter_message*.h=nasko@chromium.org
+per-file subresource_filter_message*.h=palmer@chromium.org
+per-file subresource_filter_message*.h=tsepez@chromium.org
+per-file subresource_filter_message*.h=wfh@chromium.org

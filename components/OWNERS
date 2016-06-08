@@ -199,6 +199,8 @@ per-file startup_metric_utils.gypi=file://components/startup_metric_utils/OWNERS
 
 per-file storage_monitor.gypi=file://components/storage_monitor/OWNERS
 
+per-file subresource_filter.gypi=file://components/subresource_filter/OWNERS
+
 per-file suggestions.gypi=file://components/suggestions/OWNERS
 
 per-file supervised_user_error_page.gypi=file://components/supervised_user_error_page/OWNERS

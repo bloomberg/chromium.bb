@@ -83,6 +83,7 @@
     'signin.gypi',
     'ssl_config.gypi',
     'ssl_errors.gypi',
+    'subresource_filter.gypi',
     'suggestions.gypi',
     'supervised_user_error_page.gypi',
     'sync_bookmarks.gypi',

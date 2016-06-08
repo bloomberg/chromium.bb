@@ -1016,7 +1016,7 @@
                 "id": "BlockedReason",
                 "type": "string",
                 "description": "The reason why request was blocked.",
-                "enum": ["csp", "mixed-content", "origin", "inspector", "other"],
+                "enum": ["csp", "mixed-content", "origin", "inspector", "subresource-filter", "other"],
                 "hidden": true
             },
             {

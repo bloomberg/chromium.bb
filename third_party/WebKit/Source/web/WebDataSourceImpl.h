@@ -66,6 +66,7 @@ public:
     ExtraData* getExtraData() const override;
     void setExtraData(ExtraData*) override;
     void setNavigationStartTime(double) override;
+    void setSubresourceFilter(WebDocumentSubresourceFilter*) override;
 
     static WebNavigationType toWebNavigationType(NavigationType);
 

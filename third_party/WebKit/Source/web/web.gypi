@@ -274,6 +274,7 @@
       'tests/VirtualTimeTest.cpp',
       'tests/VisualViewportTest.cpp',
       'tests/WebDocumentTest.cpp',
+      'tests/WebDocumentSubresourceFilterTest.cpp',
       'tests/WebFrameSerializerTest.cpp',
       'tests/WebFrameTest.cpp',
       'tests/WebHelperPluginTest.cpp',

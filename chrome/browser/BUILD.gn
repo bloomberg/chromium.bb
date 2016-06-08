@@ -183,6 +183,7 @@ source_set("browser") {
     # crbug.com/577698
     "//components/startup_metric_utils/common",
     "//components/strings",
+    "//components/subresource_filter/core/browser",
     "//components/suggestions",
     "//components/supervised_user_error_page",
     "//components/sync_bookmarks",
@@ -362,6 +363,7 @@ source_set("browser") {
       "//components/sessions",
       "//components/ssl_config",
       "//components/storage_monitor",
+      "//components/subresource_filter/content/browser",
       "//components/syncable_prefs",
       "//components/translate/content/browser",
       "//components/upload_list",
@@ -1140,6 +1142,7 @@ source_set("test_support") {
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/search_engines:test_support",
+    "//components/subresource_filter/core/browser:test_support",
     "//components/syncable_prefs:test_support",
     "//components/user_prefs/tracked:user_prefs_tracked_test_support",
     "//content/test:browsertest_base",

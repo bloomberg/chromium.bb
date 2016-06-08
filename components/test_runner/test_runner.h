@@ -409,6 +409,13 @@ class TestRunner : public WebTestRunner {
   void SetAutoplayAllowed(bool allowed);
   void DumpPermissionClientCallbacks();
 
+  // Sets up a mock DocumentSubresourceFilter to disallow subsequent subresource
+  // loads within the current document with the given path |suffixes|. The
+  // filter is created and injected even if |suffixes| is empty. If |suffixes|
+  // contains the empty string, all subresource loads will be disallowed.
+  void SetDisallowedSubresourcePathSuffixes(
+      const std::vector<std::string>& suffixes);
+
   // This function sets a flag that tells the test_shell to dump all calls
   // to window.status().
   // It takes no arguments, and ignores any that may be present.

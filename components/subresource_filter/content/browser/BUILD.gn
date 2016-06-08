@@ -1,0 +1,21 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("browser") {
+  sources = [
+    "content_subresource_filter_driver.cc",
+    "content_subresource_filter_driver.h",
+    "content_subresource_filter_driver_factory.cc",
+    "content_subresource_filter_driver_factory.h",
+  ]
+  deps = [
+    "//base",
+    "//components/subresource_filter/content/common",
+    "//components/subresource_filter/core/browser",
+    "//components/subresource_filter/core/common",
+    "//content/public/browser",
+    "//content/public/common",
+    "//url",
+  ]
+}

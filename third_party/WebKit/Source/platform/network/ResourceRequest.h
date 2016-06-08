@@ -50,6 +50,7 @@ enum ResourceRequestBlockedReason {
     ResourceRequestBlockedReasonMixedContent,
     ResourceRequestBlockedReasonOrigin,
     ResourceRequestBlockedReasonInspector,
+    ResourceRequestBlockedReasonSubresourceFilter,
     ResourceRequestBlockedReasonOther,
     ResourceRequestBlockedReasonNone
 };

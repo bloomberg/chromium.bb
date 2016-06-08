@@ -59,6 +59,7 @@
       "platform/WebDeviceLightListener.h",
       "platform/WebDisplayItemList.h",
       "platform/WebDisplayMode.h",
+      "platform/WebDocumentSubresourceFilter.h",
       "platform/WebDoublePoint.h",
       "platform/WebDragData.h",
       "platform/WebDragOperation.h",

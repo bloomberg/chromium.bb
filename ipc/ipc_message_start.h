@@ -131,6 +131,7 @@ enum IPCMessageStart {
   MediaPlayerDelegateMsgStart,
   SurfaceViewManagerMsgStart,
   ExtensionWorkerMsgStart,
+  SubresourceFilterMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 
