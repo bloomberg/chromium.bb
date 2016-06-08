@@ -1170,7 +1170,7 @@ class Port(object):
 
     def is_wpt_test(self, test):
         """Whether this test is part of a web-platform-tests which require wptserve servers."""
-        return "web-platform-tests" in test
+        return test.startswith("imported/wpt/")
 
     def start_wptserve(self):
         """Start a WPT web server. Raise an error if it can't start or is already running.
