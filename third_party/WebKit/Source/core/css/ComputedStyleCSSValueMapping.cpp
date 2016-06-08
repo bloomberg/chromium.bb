@@ -461,7 +461,7 @@ static CSSValueList* valuesForGridShorthand(const StylePropertyShorthand& shorth
 {
     CSSValueList* list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        CSSValue* value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
+        const CSSValue* value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
         ASSERT(value);
         list->append(value);
     }
@@ -472,7 +472,7 @@ static CSSValueList* valuesForShorthandProperty(const StylePropertyShorthand& sh
 {
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        CSSValue* value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
+        const CSSValue* value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
         ASSERT(value);
         list->append(value);
     }
@@ -494,7 +494,7 @@ static CSSValue* valuesForFontVariantProperty(const ComputedStyle& style, const 
     enum VariantShorthandCases { AllNormal, NoneLigatures, ConcatenateNonNormal };
     VariantShorthandCases shorthandCase = AllNormal;
     for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
-        CSSValue* value = ComputedStyleCSSValueMapping::get(fontVariantShorthand().properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
+        const CSSValue* value = ComputedStyleCSSValueMapping::get(fontVariantShorthand().properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
 
         if (shorthandCase == AllNormal
             && value->isPrimitiveValue()
@@ -516,7 +516,7 @@ static CSSValue* valuesForFontVariantProperty(const ComputedStyle& style, const 
         {
         CSSValueList* list = CSSValueList::createSpaceSeparated();
         for (size_t i = 0; i < fontVariantShorthand().length(); ++i) {
-            CSSValue* value = ComputedStyleCSSValueMapping::get(fontVariantShorthand().properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
+            const CSSValue* value = ComputedStyleCSSValueMapping::get(fontVariantShorthand().properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
             ASSERT(value);
             if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone) {
                 list->append(expandNoneLigaturesValue());
@@ -540,7 +540,7 @@ static CSSValueList* valuesForBackgroundShorthand(const ComputedStyle& style, co
         CSSValueList* list = CSSValueList::createSlashSeparated();
         CSSValueList* beforeSlash = CSSValueList::createSpaceSeparated();
         if (!currLayer->next()) { // color only for final layer
-            CSSValue* value = ComputedStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, layoutObject, styledNode, allowVisitedStyle);
+            const CSSValue* value = ComputedStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, layoutObject, styledNode, allowVisitedStyle);
             ASSERT(value);
             beforeSlash->append(value);
         }
@@ -1118,7 +1118,7 @@ static CSSValueList* valuesForBorderRadiusCorner(LengthSize radius, const Comput
     return list;
 }
 
-static CSSValue* valueForBorderRadiusCorner(LengthSize radius, const ComputedStyle& style)
+static const CSSValue* valueForBorderRadiusCorner(LengthSize radius, const ComputedStyle& style)
 {
     CSSValueList* list = valuesForBorderRadiusCorner(radius, style);
     if (list->item(0)->equals(*list->item(1)))
@@ -1300,10 +1300,10 @@ static CSSValueList* valuesForSidesShorthand(const StylePropertyShorthand& short
 {
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     // Assume the properties are in the usual order top, right, bottom, left.
-    CSSValue* topValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[0], style, layoutObject, styledNode, allowVisitedStyle);
-    CSSValue* rightValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[1], style, layoutObject, styledNode, allowVisitedStyle);
-    CSSValue* bottomValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[2], style, layoutObject, styledNode, allowVisitedStyle);
-    CSSValue* leftValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[3], style, layoutObject, styledNode, allowVisitedStyle);
+    const CSSValue* topValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[0], style, layoutObject, styledNode, allowVisitedStyle);
+    const CSSValue* rightValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[1], style, layoutObject, styledNode, allowVisitedStyle);
+    const CSSValue* bottomValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[2], style, layoutObject, styledNode, allowVisitedStyle);
+    const CSSValue* leftValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[3], style, layoutObject, styledNode, allowVisitedStyle);
 
     // All 4 properties must be specified.
     if (!topValue || !rightValue || !bottomValue || !leftValue)
@@ -1622,7 +1622,7 @@ static EBreak mapToColumnBreakValue(EBreak genericBreakValue)
     }
 }
 
-CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style)
+const CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style)
 {
     StyleVariableData* variables = style.variables();
     if (!variables)
@@ -1643,7 +1643,7 @@ std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> ComputedStyleCSS
     return nullptr;
 }
 
-CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
+const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGComputedStyle& svgStyle = style.svgStyle();
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.getWritingMode());
@@ -2659,7 +2659,7 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
     case CSSPropertyBackground:
         return valuesForBackgroundShorthand(style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorder: {
-        CSSValue* value = get(CSSPropertyBorderTop, style, layoutObject, styledNode, allowVisitedStyle);
+        const CSSValue* value = get(CSSPropertyBorderTop, style, layoutObject, styledNode, allowVisitedStyle);
         const CSSPropertyID properties[] = {
             CSSPropertyBorderRight,
             CSSPropertyBorderBottom,

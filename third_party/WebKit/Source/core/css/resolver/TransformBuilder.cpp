@@ -89,7 +89,7 @@ void TransformBuilder::createTransformOperations(const CSSValue& inValue, const 
 
     float zoomFactor = conversionData.zoom();
     for (auto& value : toCSSValueList(inValue)) {
-        CSSFunctionValue* transformValue = toCSSFunctionValue(value.get());
+        const CSSFunctionValue* transformValue = toCSSFunctionValue(value.get());
         TransformOperation::OperationType transformType = getTransformOperationType(transformValue->functionType());
 
         const CSSPrimitiveValue* firstValue = toCSSPrimitiveValue(transformValue->item(0));

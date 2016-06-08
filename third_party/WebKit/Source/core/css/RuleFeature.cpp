@@ -397,7 +397,7 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
     for (auto& item : toCSSValueList(*contentValue)) {
         if (!item->isFunctionValue())
             continue;
-        CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
+        const CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
         if (functionValue->functionType() != CSSValueAttr)
             continue;
         ensureAttributeInvalidationSet(AtomicString(toCSSCustomIdentValue(functionValue->item(0))->value()), InvalidateDescendants).setInvalidatesSelf();

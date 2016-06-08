@@ -143,7 +143,7 @@ static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueI
     }
 }
 
-static bool convertFontFamilyName(StyleResolverState& state, CSSValue& value,
+static bool convertFontFamilyName(StyleResolverState& state, const CSSValue& value,
     FontDescription::GenericFamilyType& genericFamily, AtomicString& familyName)
 {
     if (value.isFontFamilyValue()) {
@@ -487,7 +487,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, con
     String gridLineName;
 
     auto it = values.begin();
-    CSSValue* currentValue = it->get();
+    const CSSValue* currentValue = it->get();
     if (currentValue->isPrimitiveValue() && toCSSPrimitiveValue(currentValue)->getValueID() == CSSValueSpan) {
         isSpanPosition = true;
         ++it;

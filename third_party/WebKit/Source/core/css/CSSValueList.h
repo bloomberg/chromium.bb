@@ -31,8 +31,8 @@ namespace blink {
 class CORE_EXPORT CSSValueList : public CSSValue {
     WTF_MAKE_NONCOPYABLE(CSSValueList);
 public:
-    using iterator = HeapVector<Member<CSSValue>, 4>::iterator;
-    using const_iterator = HeapVector<Member<CSSValue>, 4>::const_iterator;
+    using iterator = HeapVector<Member<const CSSValue>, 4>::iterator;
+    using const_iterator = HeapVector<Member<const CSSValue>, 4>::const_iterator;
 
     static CSSValueList* createCommaSeparated()
     {
@@ -53,14 +53,11 @@ public:
     const_iterator end() const { return m_values.end(); }
 
     size_t length() const { return m_values.size(); }
-    // TODO(sashab): Remove the non-const item() method.
-    CSSValue* item(size_t index) { return m_values[index].get(); }
     const CSSValue* item(size_t index) const { return m_values[index].get(); }
-    // TODO(sashab): Remove these methods.
-    CSSValue* itemWithBoundsCheck(size_t index) { return index < m_values.size() ? m_values[index].get() : nullptr; }
+    // TODO(sashab): Remove this method.
     const CSSValue* itemWithBoundsCheck(size_t index) const { return index < m_values.size() ? m_values[index].get() : nullptr; }
 
-    void append(CSSValue* value) { m_values.append(value); }
+    void append(const CSSValue* value) { m_values.append(value); }
     bool removeAll(const CSSValue&);
     bool hasValue(const CSSValue&) const;
     CSSValueList* copy() const;
@@ -78,7 +75,7 @@ protected:
 private:
     explicit CSSValueList(ValueListSeparator);
 
-    HeapVector<Member<CSSValue>, 4> m_values;
+    HeapVector<Member<const CSSValue>, 4> m_values;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());

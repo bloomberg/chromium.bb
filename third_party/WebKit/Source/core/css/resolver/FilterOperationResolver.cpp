@@ -129,7 +129,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
 
     const CSSToLengthConversionData& conversionData = state.cssToLengthConversionData();
     for (auto& currValue : toCSSValueList(inValue)) {
-        CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
+        const CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->functionType());
         countFilterUse(operationType, state.document());
         ASSERT(filterValue->length() <= 1);

@@ -474,7 +474,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
     TextIndentType textIndentTypeValue = ComputedStyle::initialTextIndentType();
 
     for (auto& listValue : toCSSValueList(value)) {
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(listValue.get());
+        const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(listValue.get());
         if (!primitiveValue->getValueID())
             lengthOrPercentageValue = primitiveValue->convertToLength(state.cssToLengthConversionData());
         else if (primitiveValue->getValueID() == CSSValueEachLine)
@@ -702,7 +702,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         if (item->isImageGeneratorValue() || item->isImageSetValue() || item->isImageValue()) {
             nextContent = ContentData::create(state.styleImage(CSSPropertyContent, *item));
         } else if (item->isCounterValue()) {
-            CSSCounterValue* counterValue = toCSSCounterValue(item.get());
+            const CSSCounterValue* counterValue = toCSSCounterValue(item.get());
             EListStyleType listStyleType = NoneListStyle;
             CSSValueID listStyleIdent = counterValue->listStyle();
             if (listStyleIdent != CSSValueNone)
@@ -731,7 +731,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         } else {
             String string;
             if (item->isFunctionValue()) {
-                CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
+                const CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
                 DCHECK_EQ(functionValue->functionType(), CSSValueAttr);
                 // FIXME: Can a namespace be specified for an attr(foo)?
                 if (state.style()->styleType() == PseudoIdNone)

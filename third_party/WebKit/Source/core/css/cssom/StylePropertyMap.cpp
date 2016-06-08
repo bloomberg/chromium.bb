@@ -128,7 +128,7 @@ StylePropertyMap::StyleValueVector StylePropertyMap::cssValueToStyleValueVector(
         return styleValueVector;
     }
 
-    for (CSSValue* value : *toCSSValueList(&cssValue)) {
+    for (const CSSValue* value : toCSSValueList(cssValue)) {
         CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, *value);
         if (!styleValue)
             return StyleValueVector();
