@@ -52,7 +52,6 @@ source_set("lib") {
     "//ui/aura",
     "//ui/events",
     "//ui/events/devices",
-    "//ui/events/mojo",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",

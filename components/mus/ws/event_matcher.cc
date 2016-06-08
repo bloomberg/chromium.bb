@@ -4,8 +4,6 @@
 
 #include "components/mus/ws/event_matcher.h"
 
-#include "ui/events/mojo/input_events_type_converters.h"
-
 namespace mus {
 namespace ws {
 

@@ -6,7 +6,6 @@
 
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
-#include "ui/events/mojo/input_events_type_converters.h"
 
 namespace mus {
 

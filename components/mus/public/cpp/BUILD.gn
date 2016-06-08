@@ -66,7 +66,6 @@ source_set("cpp") {
     "//services/shell/public/interfaces",
     "//ui/display",
     "//ui/events",
-    "//ui/events/mojo",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
   ]

@@ -22,7 +22,6 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "ui/events/event.h"
-#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/screen_mus.h"
 

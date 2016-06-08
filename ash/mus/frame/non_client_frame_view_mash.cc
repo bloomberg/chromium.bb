@@ -18,7 +18,6 @@
 #include "grit/ash_mus_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"

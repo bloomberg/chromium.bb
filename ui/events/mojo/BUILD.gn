@@ -4,29 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: mojo/mojo_converters.gypi:mojo_input_events_lib
-component("mojo") {
-  output_name = "input_events"
-  sources = [
-    "input_events_type_converters.cc",
-    "mojo_extended_key_event_data.cc",
-    "mojo_extended_key_event_data.h",
-    "mojo_input_events_export.h",
-  ]
-
-  defines = [ "MOJO_INPUT_EVENTS_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
-    "//components/mus/public/interfaces",
-    "//mojo/public/c/system:for_component",
-    "//ui/events",
-    "//ui/events:dom_keycode_converter",
-    "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo",
-  ]
-}
-
 mojom("interfaces") {
   sources = [
     "latency_info.mojom",

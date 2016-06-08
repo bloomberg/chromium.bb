@@ -23,7 +23,6 @@
 #include "components/mus/public/cpp/window_tree_client_observer.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/events/event.h"
-#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
