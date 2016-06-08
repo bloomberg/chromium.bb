@@ -5,60 +5,14 @@
 #ifndef BLIMP_COMMON_LOGGING_H_
 #define BLIMP_COMMON_LOGGING_H_
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
+#include <ostream>
 
 #include "base/macros.h"
 #include "blimp/common/blimp_common_export.h"
-#include "blimp/common/proto/blimp_message.pb.h"
 
 namespace blimp {
 
 class BlimpMessage;
-class LogExtractor;
-
-typedef std::vector<std::pair<std::string, std::string>> LogFields;
-
-// Defines an interface for classes that extract a set of loggable field
-// values from a message.
-class BLIMP_COMMON_EXPORT LogExtractor {
- public:
-  virtual ~LogExtractor() {}
-
-  // |message|: The message which is used for field extraction.
-  // |output|: A vector of KV pairs which will receive the extracted fields.
-  virtual void ExtractFields(const BlimpMessage& message,
-                             LogFields* output) const = 0;
-};
-
-// Registry of log extractors.
-class BLIMP_COMMON_EXPORT BlimpMessageLogger {
- public:
-  BlimpMessageLogger();
-  ~BlimpMessageLogger();
-
-  // Formats the loggable representation of |message| and sends it to |out|.
-  void LogMessageToStream(const BlimpMessage& message, std::ostream* out) const;
-
- private:
-  // Adds |extractor| to the registry for parsing messages of type
-  // |feature_case|.
-  // |feature_name|: The human readable name of |feature_case|.
-  void AddHandler(const std::string& feature_name,
-                  BlimpMessage::FeatureCase feature_case,
-                  std::unique_ptr<LogExtractor> extractor);
-
-  // Registry of log extractors. Map structure is:
-  // {message type => (human readable message type, LogExtractor*)}
-  std::map<BlimpMessage::FeatureCase,
-           std::pair<std::string, std::unique_ptr<LogExtractor>>>
-      extractors_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlimpMessageLogger);
-};
 
 // Serializes a BlimpMessage in a human-readable format for logging.
 // An example message would look like:

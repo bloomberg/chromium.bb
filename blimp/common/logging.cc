@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/format_macros.h"
@@ -21,8 +22,7 @@
 namespace blimp {
 namespace {
 
-static base::LazyInstance<BlimpMessageLogger> g_logger =
-    LAZY_INSTANCE_INITIALIZER;
+using LogFields = std::vector<std::pair<std::string, std::string>>;
 
 // The AddField() suite of functions are used to convert KV pairs with
 // arbitrarily typed values into string/string KV pairs for logging.
@@ -69,285 +69,282 @@ void AddField(const std::string& key, const T& value, LogFields* output) {
 // fields from BlimpMessages.
 
 // Logs fields from COMPOSITOR messages.
-class CompositorLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    AddField("render_widget_id", message.compositor().render_widget_id(),
-             output);
-  }
-};
+void ExtractCompositorMessageFields(const BlimpMessage& message,
+                                    LogFields* output) {
+  AddField("render_widget_id", message.compositor().render_widget_id(), output);
+}
 
 // Logs fields from IME messages.
-class ImeLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    AddField("render_widget_id", message.ime().render_widget_id(), output);
-    switch (message.ime().type()) {
-      case ImeMessage::SHOW_IME:
-        AddField("subtype", "SHOW_IME", output);
-        AddField("text_input_type", message.ime().text_input_type(), output);
-        break;
-      case ImeMessage::HIDE_IME:
-        AddField("subtype", "HIDE_IME", output);
-        break;
-      case ImeMessage::SET_TEXT:
-        AddField("subtype", "SET_TEXT", output);
-        AddField("ime_text(length)", message.ime().ime_text().size(), output);
-        break;
-      case ImeMessage::UNKNOWN:
-        AddField("subtype", "UNKNOWN", output);
-        break;
-    }
+void ExtractImeMessageFields(const BlimpMessage& message, LogFields* output) {
+  AddField("render_widget_id", message.ime().render_widget_id(), output);
+  switch (message.ime().type()) {
+    case ImeMessage::SHOW_IME:
+      AddField("subtype", "SHOW_IME", output);
+      AddField("text_input_type", message.ime().text_input_type(), output);
+      break;
+    case ImeMessage::HIDE_IME:
+      AddField("subtype", "HIDE_IME", output);
+      break;
+    case ImeMessage::SET_TEXT:
+      AddField("subtype", "SET_TEXT", output);
+      AddField("ime_text(length)", message.ime().ime_text().size(), output);
+      break;
+    case ImeMessage::UNKNOWN:
+      AddField("subtype", "UNKNOWN", output);
+      break;
   }
-};
+}
 
 // Logs fields from INPUT messages.
-class InputLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    AddField("render_widget_id", message.input().render_widget_id(), output);
-    AddField("timestamp_seconds", message.input().timestamp_seconds(), output);
-    switch (message.input().type()) {
-      case InputMessage::Type_GestureScrollBegin:
-        AddField("subtype", "GestureScrollBegin", output);
-        break;
-      case InputMessage::Type_GestureScrollEnd:
-        AddField("subtype", "GestureScrollEnd", output);
-        break;
-      case InputMessage::Type_GestureScrollUpdate:
-        AddField("subtype", "GestureScrollUpdate", output);
-        break;
-      case InputMessage::Type_GestureFlingStart:
-        AddField("subtype", "GestureFlingStart", output);
-        break;
-      case InputMessage::Type_GestureFlingCancel:
-        AddField("subtype", "GestureFlingCancel", output);
-        AddField("prevent_boosting",
-                 message.input().gesture_fling_cancel().prevent_boosting(),
-                 output);
-        break;
-      case InputMessage::Type_GestureTap:
-        AddField("subtype", "GestureTap", output);
-        break;
-      case InputMessage::Type_GesturePinchBegin:
-        AddField("subtype", "GesturePinchBegin", output);
-        break;
-      case InputMessage::Type_GesturePinchEnd:
-        AddField("subtype", "GesturePinchEnd", output);
-        break;
-      case InputMessage::Type_GesturePinchUpdate:
-        AddField("subtype", "GesturePinchUpdate", output);
-        break;
-      default:  // unknown
-        break;
-    }
+void ExtractInputMessageFields(const BlimpMessage& message, LogFields* output) {
+  AddField("render_widget_id", message.input().render_widget_id(), output);
+  AddField("timestamp_seconds", message.input().timestamp_seconds(), output);
+  switch (message.input().type()) {
+    case InputMessage::Type_GestureScrollBegin:
+      AddField("subtype", "GestureScrollBegin", output);
+      break;
+    case InputMessage::Type_GestureScrollEnd:
+      AddField("subtype", "GestureScrollEnd", output);
+      break;
+    case InputMessage::Type_GestureScrollUpdate:
+      AddField("subtype", "GestureScrollUpdate", output);
+      break;
+    case InputMessage::Type_GestureFlingStart:
+      AddField("subtype", "GestureFlingStart", output);
+      break;
+    case InputMessage::Type_GestureFlingCancel:
+      AddField("subtype", "GestureFlingCancel", output);
+      AddField("prevent_boosting",
+               message.input().gesture_fling_cancel().prevent_boosting(),
+               output);
+      break;
+    case InputMessage::Type_GestureTap:
+      AddField("subtype", "GestureTap", output);
+      break;
+    case InputMessage::Type_GesturePinchBegin:
+      AddField("subtype", "GesturePinchBegin", output);
+      break;
+    case InputMessage::Type_GesturePinchEnd:
+      AddField("subtype", "GesturePinchEnd", output);
+      break;
+    case InputMessage::Type_GesturePinchUpdate:
+      AddField("subtype", "GesturePinchUpdate", output);
+      break;
+    case InputMessage::Type_GestureTapDown:
+      AddField("subtype", "GestureTapDown", output);
+      break;
+    case InputMessage::Type_GestureTapCancel:
+      AddField("subtype", "GestureTapCancel", output);
+      break;
+    case InputMessage::Type_GestureTapUnconfirmed:
+      AddField("subtype", "GestureTapUnconfirmed", output);
+      break;
+    case InputMessage::Type_GestureShowPress:
+      AddField("subtype", "GestureShowPress", output);
+      break;
+    case InputMessage::UNKNOWN:
+      break;
   }
-};
+}
 
 // Logs fields from NAVIGATION messages.
-class NavigationLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    switch (message.navigation().type()) {
-      case NavigationMessage::NAVIGATION_STATE_CHANGED:
-        AddField("subtype", "NAVIGATION_STATE_CHANGED", output);
-        if (message.navigation().navigation_state_changed().has_url()) {
-          AddField("url", message.navigation().navigation_state_changed().url(),
-                   output);
-        }
-        if (message.navigation().navigation_state_changed().has_favicon()) {
-          AddField(
-              "favicon_size",
-              message.navigation().navigation_state_changed().favicon().size(),
-              output);
-        }
-        if (message.navigation().navigation_state_changed().has_title()) {
-          AddField("title",
-                   message.navigation().navigation_state_changed().title(),
-                   output);
-        }
-        if (message.navigation().navigation_state_changed().has_loading()) {
-          AddField("loading",
-                   message.navigation().navigation_state_changed().loading(),
-                   output);
-        }
-        break;
-      case NavigationMessage::LOAD_URL:
-        AddField("subtype", "LOAD_URL", output);
-        AddField("url", message.navigation().load_url().url(), output);
-        break;
-      case NavigationMessage::GO_BACK:
-        AddField("subtype", "GO_BACK", output);
-        break;
-      case NavigationMessage::GO_FORWARD:
-        AddField("subtype", "GO_FORWARD", output);
-        break;
-      case NavigationMessage::RELOAD:
-        AddField("subtype", "RELOAD", output);
-        break;
-      default:
-        break;
-    }
+void ExtractNavigationMessageFields(const BlimpMessage& message,
+                                    LogFields* output) {
+  switch (message.navigation().type()) {
+    case NavigationMessage::NAVIGATION_STATE_CHANGED:
+      AddField("subtype", "NAVIGATION_STATE_CHANGED", output);
+      if (message.navigation().navigation_state_changed().has_url()) {
+        AddField("url", message.navigation().navigation_state_changed().url(),
+                 output);
+      }
+      if (message.navigation().navigation_state_changed().has_favicon()) {
+        AddField(
+            "favicon_size",
+            message.navigation().navigation_state_changed().favicon().size(),
+            output);
+      }
+      if (message.navigation().navigation_state_changed().has_title()) {
+        AddField("title",
+                 message.navigation().navigation_state_changed().title(),
+                 output);
+      }
+      if (message.navigation().navigation_state_changed().has_loading()) {
+        AddField("loading",
+                 message.navigation().navigation_state_changed().loading(),
+                 output);
+      }
+      break;
+    case NavigationMessage::LOAD_URL:
+      AddField("subtype", "LOAD_URL", output);
+      AddField("url", message.navigation().load_url().url(), output);
+      break;
+    case NavigationMessage::GO_BACK:
+      AddField("subtype", "GO_BACK", output);
+      break;
+    case NavigationMessage::GO_FORWARD:
+      AddField("subtype", "GO_FORWARD", output);
+      break;
+    case NavigationMessage::RELOAD:
+      AddField("subtype", "RELOAD", output);
+      break;
+    case NavigationMessage::UNKNOWN:
+      break;
   }
-};
+}
 
 // Logs fields from PROTOCOL_CONTROL messages.
-class ProtocolControlLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    switch (message.protocol_control().connection_message_case()) {
-      case ProtocolControlMessage::kStartConnection:
-        AddField("subtype", "START_CONNECTION", output);
-        AddField("client_token",
-                 message.protocol_control().start_connection().client_token(),
-                 output);
-        AddField(
-            "protocol_version",
-            message.protocol_control().start_connection().protocol_version(),
-            output);
-        break;
-      case ProtocolControlMessage::kCheckpointAck:
-        AddField("subtype", "CHECKPOINT_ACK", output);
-        AddField("checkpoint_id",
-                 message.protocol_control().checkpoint_ack().checkpoint_id(),
-                 output);
-        break;
-      default:
-        break;
-    }
+void ExtractProtocolControlMessageFields(const BlimpMessage& message,
+                                         LogFields* output) {
+  switch (message.protocol_control().connection_message_case()) {
+    case ProtocolControlMessage::kStartConnection:
+      AddField("subtype", "START_CONNECTION", output);
+      AddField("client_token",
+               message.protocol_control().start_connection().client_token(),
+               output);
+      AddField("protocol_version",
+               message.protocol_control().start_connection().protocol_version(),
+               output);
+      break;
+    case ProtocolControlMessage::kCheckpointAck:
+      AddField("subtype", "CHECKPOINT_ACK", output);
+      AddField("checkpoint_id",
+               message.protocol_control().checkpoint_ack().checkpoint_id(),
+               output);
+      break;
+    case ProtocolControlMessage::kEndConnection:
+      AddField("subtype", "END_CONNECTION", output);
+      switch (message.protocol_control().end_connection().reason()) {
+        case EndConnectionMessage::AUTHENTICATION_FAILED:
+          AddField("reason", "AUTHENTICATION_FAILED", output);
+          break;
+        case EndConnectionMessage::PROTOCOL_MISMATCH:
+          AddField("reason", "PROTOCOL_MISMATCH", output);
+          break;
+        case EndConnectionMessage::UNKNOWN:
+          break;
+      }
+      break;
+    case ProtocolControlMessage::CONNECTION_MESSAGE_NOT_SET:
+      break;
   }
-};
+}
 
 // Logs fields from RENDER_WIDGET messages.
-class RenderWidgetLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    switch (message.render_widget().type()) {
-      case RenderWidgetMessage::INITIALIZE:
-        AddField("subtype", "INITIALIZE", output);
-        break;
-      case RenderWidgetMessage::CREATED:
-        AddField("subtype", "CREATED", output);
-        break;
-      case RenderWidgetMessage::DELETED:
-        AddField("subtype", "DELETED", output);
-        break;
-    }
-    AddField("render_widget_id", message.render_widget().render_widget_id(),
-             output);
+void ExtractRenderWidgetMessageFields(const BlimpMessage& message,
+                                      LogFields* output) {
+  switch (message.render_widget().type()) {
+    case RenderWidgetMessage::INITIALIZE:
+      AddField("subtype", "INITIALIZE", output);
+      break;
+    case RenderWidgetMessage::CREATED:
+      AddField("subtype", "CREATED", output);
+      break;
+    case RenderWidgetMessage::DELETED:
+      AddField("subtype", "DELETED", output);
+      break;
+    case RenderWidgetMessage::UNKNOWN:
+      break;
   }
-};
+  AddField("render_widget_id", message.render_widget().render_widget_id(),
+           output);
+}
 
 // Logs fields from SETTINGS messages.
-class SettingsLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    if (message.settings().has_engine_settings()) {
-      const EngineSettingsMessage& engine_settings =
-          message.settings().engine_settings();
-      AddField("subtype", "ENGINE_SETTINGS", output);
-      AddField("record_whole_document", engine_settings.record_whole_document(),
-               output);
-      AddField("client_os_info", engine_settings.client_os_info(), output);
-    }
+void ExtractSettingsMessageFields(const BlimpMessage& message,
+                                  LogFields* output) {
+  if (message.settings().has_engine_settings()) {
+    const EngineSettingsMessage& engine_settings =
+        message.settings().engine_settings();
+    AddField("subtype", "ENGINE_SETTINGS", output);
+    AddField("record_whole_document", engine_settings.record_whole_document(),
+             output);
+    AddField("client_os_info", engine_settings.client_os_info(), output);
   }
-};
+}
 
 // Logs fields from TAB_CONTROL messages.
-class TabControlLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    switch (message.tab_control().tab_control_case()) {
-      case TabControlMessage::kCreateTab:
-        AddField("subtype", "CREATE_TAB", output);
-        break;
-      case TabControlMessage::kCloseTab:
-        AddField("subtype", "CLOSE_TAB", output);
-        break;
-      case TabControlMessage::kSize:
-        AddField("subtype", "SIZE", output);
-        AddField("size", message.tab_control().size(), output);
-        break;
-      default:  // unknown
-        break;
-    }
+void ExtractTabControlMessageFields(const BlimpMessage& message,
+                                    LogFields* output) {
+  switch (message.tab_control().tab_control_case()) {
+    case TabControlMessage::kCreateTab:
+      AddField("subtype", "CREATE_TAB", output);
+      break;
+    case TabControlMessage::kCloseTab:
+      AddField("subtype", "CLOSE_TAB", output);
+      break;
+    case TabControlMessage::kSize:
+      AddField("subtype", "SIZE", output);
+      AddField("size", message.tab_control().size(), output);
+      break;
+    case TabControlMessage::TAB_CONTROL_NOT_SET:
+      break;
   }
-};
+}
 
 // Logs fields from BLOB_CHANNEL messages.
-class BlobChannelLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    switch (message.blob_channel().type_case()) {
-      case BlobChannelMessage::TypeCase::kTransferBlob:
-        AddField("subtype", "TRANSFER_BLOB", output);
-        AddField("id",
-                 base::HexEncode(
-                     message.blob_channel().transfer_blob().blob_id().data(),
-                     message.blob_channel().transfer_blob().blob_id().size()),
-                 output);
-        AddField("payload_size",
-                 message.blob_channel().transfer_blob().payload().size(),
-                 output);
-        break;
-      case BlobChannelMessage::TypeCase::TYPE_NOT_SET:  // unknown
-        break;
-    }
+void ExtractBlobChannelMessageFields(const BlimpMessage& message,
+                                     LogFields* output) {
+  switch (message.blob_channel().type_case()) {
+    case BlobChannelMessage::TypeCase::kTransferBlob:
+      AddField("subtype", "TRANSFER_BLOB", output);
+      AddField("id",
+               base::HexEncode(
+                   message.blob_channel().transfer_blob().blob_id().data(),
+                   message.blob_channel().transfer_blob().blob_id().size()),
+               output);
+      AddField("payload_size",
+               message.blob_channel().transfer_blob().payload().size(), output);
+      break;
+    case BlobChannelMessage::TypeCase::TYPE_NOT_SET:  // unknown
+      break;
   }
-};
-
-// No fields are extracted from |message|.
-class NullLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {}
-};
+}
 
 }  // namespace
 
-BlimpMessageLogger::BlimpMessageLogger() {
-  AddHandler("COMPOSITOR", BlimpMessage::kCompositor,
-             base::WrapUnique(new CompositorLogExtractor));
-  AddHandler("IME", BlimpMessage::kIme, base::WrapUnique(new ImeLogExtractor));
-  AddHandler("INPUT", BlimpMessage::kInput,
-             base::WrapUnique(new InputLogExtractor));
-  AddHandler("NAVIGATION", BlimpMessage::kNavigation,
-             base::WrapUnique(new NavigationLogExtractor));
-  AddHandler("PROTOCOL_CONTROL", BlimpMessage::kProtocolControl,
-             base::WrapUnique(new ProtocolControlLogExtractor));
-  AddHandler("RENDER_WIDGET", BlimpMessage::kRenderWidget,
-             base::WrapUnique(new RenderWidgetLogExtractor));
-  AddHandler("SETTINGS", BlimpMessage::kSettings,
-             base::WrapUnique(new SettingsLogExtractor));
-  AddHandler("TAB_CONTROL", BlimpMessage::kTabControl,
-             base::WrapUnique(new TabControlLogExtractor));
-  AddHandler("BLOB_CHANNEL", BlimpMessage::kBlobChannel,
-             base::WrapUnique(new BlobChannelLogExtractor));
-}
-
-BlimpMessageLogger::~BlimpMessageLogger() {}
-
-void BlimpMessageLogger::AddHandler(const std::string& feature_name,
-                                    BlimpMessage::FeatureCase feature_case,
-                                    std::unique_ptr<LogExtractor> extractor) {
-  DCHECK(extractors_.find(feature_case) == extractors_.end());
-  DCHECK(!feature_name.empty());
-  extractors_[feature_case] = make_pair(feature_name, std::move(extractor));
-}
-
-void BlimpMessageLogger::LogMessageToStream(const BlimpMessage& message,
-                                            std::ostream* out) const {
+std::ostream& operator<<(std::ostream& out, const BlimpMessage& message) {
   LogFields fields;
 
-  auto extractor = extractors_.find(message.feature_case());
-  if (extractor != extractors_.end()) {
-    // An extractor is registered for |message|.
-    // Add the human-readable name of |message.type|.
-    fields.push_back(make_pair("type", extractor->second.first));
-    extractor->second.second->ExtractFields(message, &fields);
-  } else {
-    // Don't know the human-readable name of |message.type|.
-    // Just represent it using its numeric form instead.
-    AddField("type", message.feature_case(), &fields);
+  switch (message.feature_case()) {
+    case BlimpMessage::kCompositor:
+      AddField("type", "COMPOSITOR", &fields);
+      ExtractCompositorMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kInput:
+      AddField("type", "INPUT", &fields);
+      ExtractInputMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kNavigation:
+      AddField("type", "NAVIGATION", &fields);
+      ExtractNavigationMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kProtocolControl:
+      AddField("type", "PROTOCOL_CONTROL", &fields);
+      ExtractProtocolControlMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kRenderWidget:
+      AddField("type", "RENDER_WIDGET", &fields);
+      ExtractRenderWidgetMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kSettings:
+      AddField("type", "SETTINGS", &fields);
+      ExtractSettingsMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kTabControl:
+      AddField("type", "TAB_CONTROL", &fields);
+      ExtractTabControlMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kBlobChannel:
+      AddField("type", "BLOB_CHANNEL", &fields);
+      ExtractBlobChannelMessageFields(message, &fields);
+      break;
+    case BlimpMessage::kIme:
+      AddField("type", "IME", &fields);
+      ExtractImeMessageFields(message, &fields);
+      break;
+    case BlimpMessage::FEATURE_NOT_SET:
+      AddField("type", "<UNKNOWN>", &fields);
+      break;
   }
 
   // Append "target_tab_id" (if present) and "byte_size" to the field set.
@@ -358,16 +355,13 @@ void BlimpMessageLogger::LogMessageToStream(const BlimpMessage& message,
 
   // Format message using the syntax:
   // <BlimpMessage field1=value1 field2="value 2">
-  *out << "<BlimpMessage ";
+  out << "<BlimpMessage ";
   for (size_t i = 0; i < fields.size(); ++i) {
-    *out << fields[i].first << "=" << fields[i].second
-         << (i != fields.size() - 1 ? " " : "");
+    out << fields[i].first << "=" << fields[i].second
+        << (i != fields.size() - 1 ? " " : "");
   }
-  *out << ">";
-}
+  out << ">";
 
-std::ostream& operator<<(std::ostream& out, const BlimpMessage& message) {
-  g_logger.Get().LogMessageToStream(message, &out);
   return out;
 }
 

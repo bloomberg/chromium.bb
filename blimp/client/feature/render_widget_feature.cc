@@ -100,6 +100,7 @@ void RenderWidgetFeature::ProcessMessage(
       break;
     default:
       NOTREACHED();
+      break;
   }
 
   callback.Run(net::OK);
@@ -119,6 +120,9 @@ void RenderWidgetFeature::ProcessRenderWidgetMessage(
       break;
     case RenderWidgetMessage::DELETED:
       delegate->OnRenderWidgetDeleted(render_widget_id);
+      break;
+    case RenderWidgetMessage::UNKNOWN:
+      NOTREACHED();
       break;
   }
 }
