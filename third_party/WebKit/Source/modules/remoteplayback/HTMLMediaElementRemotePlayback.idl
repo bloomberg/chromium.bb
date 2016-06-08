@@ -6,5 +6,5 @@
 
 partial interface HTMLMediaElement {
     [RuntimeEnabled=RemotePlayback] readonly attribute RemotePlayback remote;
-    [Reflect] attribute boolean disableRemotePlayback;
+    [CEReactions, Reflect] attribute boolean disableRemotePlayback;
 };
