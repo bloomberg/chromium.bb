@@ -194,6 +194,8 @@ component("proxy") {
     "video_frame_resource.h",
     "video_source_resource.cc",
     "video_source_resource.h",
+    "vpn_provider_resource.cc",
+    "vpn_provider_resource.h",
     "websocket_resource.cc",
     "websocket_resource.h",
   ]

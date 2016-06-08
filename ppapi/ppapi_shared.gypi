@@ -133,6 +133,8 @@
           'shared_impl/var.h',
           'shared_impl/var_tracker.cc',
           'shared_impl/var_tracker.h',
+          'shared_impl/vpn_provider_util.cc',
+          'shared_impl/vpn_provider_util.h',
 
           'shared_impl/private/ppb_char_set_shared.cc',
           'shared_impl/private/ppb_char_set_shared.h',

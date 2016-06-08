@@ -118,6 +118,8 @@ component("shared_impl") {
     "var.h",
     "var_tracker.cc",
     "var_tracker.h",
+    "vpn_provider_util.cc",
+    "vpn_provider_util.h",
 
     # TODO(viettrungluu): Split these out; it won"t be used in NaCl.
     "private/net_address_private_impl.cc",

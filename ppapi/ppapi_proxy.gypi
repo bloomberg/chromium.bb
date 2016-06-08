@@ -243,6 +243,8 @@
           'proxy/video_frame_resource.h',
           'proxy/video_source_resource.cc',
           'proxy/video_source_resource.h',
+          'proxy/vpn_provider_resource.cc',
+          'proxy/vpn_provider_resource.h',
           'proxy/websocket_resource.cc',
           'proxy/websocket_resource.h',
         ],
