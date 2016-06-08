@@ -244,12 +244,19 @@
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
+      # TODO(kbr): remove the Android Debug bots once the waterfalls
+      # are restarted. crbug.com/617848
       'Android Debug (Nexus 5)': 'android_gn_debug_static_trybot',
       'Android Debug (Nexus 5X)': 'android_gn_debug_static_trybot_arm64',
       'Android Swarmed Debug (Nexus 5X)':
         'android_gn_debug_static_trybot_arm64',
       'Android Debug (Nexus 6)': 'android_gn_debug_static_trybot',
       'Android Debug (Nexus 9)': 'android_gn_debug_static_trybot_arm64',
+      'Android Release (Nexus 5)': 'android_gn_release_trybot',
+      'Android Release (Nexus 5X)': 'swarming_android_gn_release_trybot_arm64',
+      'Android Release (Nexus 6)': 'android_gn_release_trybot',
+      'Android Release (Nexus 6P)': 'android_gn_release_trybot_arm64',
+      'Android Release (Nexus 9)': 'android_gn_release_trybot_arm64',
       'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_trybot',
       'GPU Linux Builder': 'swarming_gpu_fyi_tests_gn_release_trybot',
       'GPU Mac Builder': 'swarming_gpu_fyi_tests_gyp_release_trybot',
@@ -1023,6 +1030,10 @@
 
     'android_gn_release_trybot': [
       'android', 'gn', 'release_trybot',
+    ],
+
+    'android_gn_release_trybot_arm64': [
+      'android', 'gn', 'release_trybot', 'arm64',
     ],
 
     'android_without_codecs_gn_release_bot_minimal_symbols': [
