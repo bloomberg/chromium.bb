@@ -243,7 +243,14 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {
 // Note: This test is inherently racy because KillProcessObserver lives on the
 // UI thread but ImageDecoder does its work mainly on the IO thread. So the test
 // checks for both possible valid outcomes.
-IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndKillProcess) {
+//
+// Flaky timeouts on Linux ASan / LSan. crbug.com/618206
+#if (defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)) && defined(OS_LINUX)
+#define MAYBE_StartAndKillProcess DISABLED_StartAndKillProcess
+#else
+#define MAYBE_StartAndKillProcess StartAndKillProcess
+#endif
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, MAYBE_StartAndKillProcess) {
   KillProcessObserver observer;
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
