@@ -18,9 +18,6 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.widget.Toast;
@@ -58,7 +55,6 @@ public class FullscreenHtmlApiHandler {
     private Toast mNotificationToast;
 
     private OnLayoutChangeListener mFullscreenOnLayoutChangeListener;
-    private FullscreenInfoBarDelegate mFullscreenInfoBarDelegate;
 
     /**
      * Delegate that allows embedders to react to fullscreen API requests.
@@ -251,11 +247,6 @@ public class FullscreenHtmlApiHandler {
         if (contentViewCore.getWebContents() != null) {
             contentViewCore.getWebContents().exitFullscreen();
         }
-
-        if (mFullscreenInfoBarDelegate != null) {
-            mFullscreenInfoBarDelegate.closeFullscreenInfoBar();
-            mFullscreenInfoBarDelegate = null;
-        }
     }
 
     /**
@@ -308,13 +299,6 @@ public class FullscreenHtmlApiHandler {
         contentView.setSystemUiVisibility(systemUiVisibility);
         mContentViewCoreInFullscreen = contentViewCore;
         mTabInFullscreen = tab;
-        FullscreenInfo fullscreenInfo = new FullscreenInfo(tab.getUrl(), null, tab.isIncognito());
-        ContentSetting fullscreenPermission = fullscreenInfo.getContentSetting();
-        // In simplified fullscreen mode, do not show the infobar (always allow). The toast will
-        // still be shown.
-        if (fullscreenPermission != ContentSetting.ALLOW && !isSimplifiedFullscreenUIEnabled()) {
-            mFullscreenInfoBarDelegate = FullscreenInfoBarDelegate.create(this, tab);
-        }
     }
 
     /**
@@ -381,9 +365,5 @@ public class FullscreenHtmlApiHandler {
             flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         return flags;
-    }
-
-    private static boolean isSimplifiedFullscreenUIEnabled() {
-        return ChromeFeatureList.isEnabled("ViewsSimplifiedFullscreenUI");
     }
 }

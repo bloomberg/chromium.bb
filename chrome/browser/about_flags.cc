@@ -1615,7 +1615,7 @@ const FeatureEntry kFeatureEntries[] = {
                                switches::kDisableClearBrowsingDataCounters)},
     {"simplified-fullscreen-ui", IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME,
      IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
+     kOsWin | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSimplifiedFullscreenUI)},
     {"experimental-keyboard-lock-ui",
      IDS_FLAGS_EXPERIMENTAL_KEYBOARD_LOCK_UI_NAME,

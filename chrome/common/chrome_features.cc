@@ -69,8 +69,7 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // A new user experience for transitioning into fullscreen and mouse pointer
-// lock states. The name is a misnomer (for historical reasons); affects both
-// Views and Android builds.
+// lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 

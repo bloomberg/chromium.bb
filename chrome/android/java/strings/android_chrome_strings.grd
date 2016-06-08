@@ -657,9 +657,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_ASK" desc="Summary text explaining that sites need to ask for permission before sending notifications and that it is the recommended setting.">
         Ask before allowing sites to send notifications (recommended)
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_FULLSCREEN_ASK" desc="Summary text explaining that sites need to ask for permission before going fullscreen and that it is the recommended setting.">
-        Ask first before allowing sites to enter fullscreen (recommended)
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_CAMERA_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the camera and that it is the recommended setting.">
         Ask first before allowing sites to use your camera (recommended)
       </message>

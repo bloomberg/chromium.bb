@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
 import org.chromium.chrome.browser.tab.Tab;
 
+// TODO(mgiuca): Delete this class (no longer used). https://crbug.com/610900.
 /**
  * Class for managing the fullscreen infobar.
  */
