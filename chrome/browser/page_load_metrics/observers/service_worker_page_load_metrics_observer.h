@@ -8,6 +8,22 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 
+namespace internal {
+
+// Expose metrics for tests.
+extern const char kHistogramServiceWorkerFirstContentfulPaint[];
+extern const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[];
+extern const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[];
+extern const char kHistogramServiceWorkerDomContentLoaded[];
+extern const char kHistogramServiceWorkerLoad[];
+extern const char kHistogramServiceWorkerFirstContentfulPaintInbox[];
+extern const char
+    kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox[];
+extern const char kHistogramServiceWorkerDomContentLoadedInbox[];
+extern const char kHistogramServiceWorkerLoadInbox[];
+
+}  // namespace internal
+
 class ServiceWorkerPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:

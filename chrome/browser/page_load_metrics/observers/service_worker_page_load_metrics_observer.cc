@@ -112,6 +112,6 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
                       timing.load_event_start);
   if (IsInboxSite(info.committed_url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
-                        timing.dom_content_loaded_event_start);
+                        timing.load_event_start);
   }
 }
