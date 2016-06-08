@@ -16,16 +16,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 
-#if defined(USE_AURA)
-#include "base/memory/weak_ptr.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "ui/aura/window.h"
-#include "ui/gfx/native_widget_types.h"
-#endif
-
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::OffscreenTabsOwner);
@@ -40,84 +30,6 @@ const int kMaxOffscreenTabsPerExtension = 3;
 // offscreen tab has stopped, to automatically tear it down and free resources.
 const int kMaxSecondsToWaitForCapture = 60;
 const int kPollIntervalInSeconds = 1;
-
-#if defined(USE_AURA)
-
-// A WindowObserver that automatically finds a root Window to adopt the
-// WebContents native view containing the OffscreenTab content.  This is a
-// workaround for Aura, which requires the WebContents native view be attached
-// somewhere in the window tree in order to gain access to the compositing and
-// capture functionality.  The WebContents native view, although attached to the
-// window tree, will never become visible on-screen.
-class WindowAdoptionAgent : protected aura::WindowObserver {
- public:
-  static void Start(aura::Window* offscreen_window) {
-    new WindowAdoptionAgent(offscreen_window);
-    // WindowAdoptionAgent destroys itself when the Window calls
-    // OnWindowDestroyed().
-  }
-
- protected:
-  void OnWindowParentChanged(aura::Window* target,
-                             aura::Window* parent) final {
-    if (target != offscreen_window_ || parent != nullptr)
-      return;
-
-    // Post a task to return to the event loop before finding a new parent, to
-    // avoid clashing with the currently-in-progress window tree hierarchy
-    // changes.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&WindowAdoptionAgent::FindNewParent,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  void OnWindowDestroyed(aura::Window* window) final {
-    delete this;
-  }
-
- private:
-  explicit WindowAdoptionAgent(aura::Window* offscreen_window)
-      : offscreen_window_(offscreen_window),
-        weak_ptr_factory_(this) {
-    DVLOG(2) << "WindowAdoptionAgent for offscreen window " << offscreen_window_
-             << " is being created.";
-    offscreen_window->AddObserver(this);
-    OnWindowParentChanged(offscreen_window_, offscreen_window_->parent());
-  }
-
-  ~WindowAdoptionAgent() final {
-    DVLOG(2) << "WindowAdoptionAgent for offscreen window " << offscreen_window_
-             << " is self-destructing.";
-  }
-
-  void FindNewParent() {
-    BrowserList* const browsers = BrowserList::GetInstance();
-    Browser* const active_browser =
-        browsers ? browsers->GetLastActive() : nullptr;
-    BrowserWindow* const active_window =
-        active_browser ? active_browser->window() : nullptr;
-    aura::Window* const native_window =
-        active_window ? active_window->GetNativeWindow() : nullptr;
-    aura::Window* const root_window =
-        native_window ? native_window->GetRootWindow() : nullptr;
-    if (root_window) {
-      DVLOG(2) << "Root window " << root_window
-               << " adopts the offscreen window " << offscreen_window_ << '.';
-      root_window->AddChild(offscreen_window_);
-    } else {
-      LOG(DFATAL) << "Unable to find an aura root window.  "
-                     "OffscreenTab compositing may be halted!";
-    }
-  }
-
-  aura::Window* const offscreen_window_;
-  base::WeakPtrFactory<WindowAdoptionAgent> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowAdoptionAgent);
-};
-
-#endif  // USE_AURA
 
 }  // namespace
 
@@ -183,10 +95,6 @@ void OffscreenTab::Start(const GURL& start_url,
       WebContents::Create(WebContents::CreateParams(profile_.get())));
   offscreen_tab_web_contents_->SetDelegate(this);
   WebContentsObserver::Observe(offscreen_tab_web_contents_.get());
-
-#if defined(USE_AURA)
-  WindowAdoptionAgent::Start(offscreen_tab_web_contents_->GetNativeView());
-#endif
 
   // Set initial size, if specified.
   if (!initial_size.IsEmpty())
