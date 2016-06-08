@@ -227,6 +227,10 @@ def AddDeviceOptions(parser):
                      help='Do not wipe app data between tests. Use this to '
                      'speed up local development and never on bots '
                      '(increases flakiness)')
+  group.add_argument('--target-devices-file',
+                     help='Path to file with json list of device serials to '
+                          'run tests on. When not specified, all available '
+                          'devices are used.')
 
 
 def AddGTestOptions(parser):
