@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"

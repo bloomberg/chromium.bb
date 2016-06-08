@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/shell_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/shell_observer.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"

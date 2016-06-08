@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"

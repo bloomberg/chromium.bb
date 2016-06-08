@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shell_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"

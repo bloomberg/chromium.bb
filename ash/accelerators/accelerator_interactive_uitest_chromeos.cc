@@ -4,9 +4,9 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"

@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "ash/wm/lock_state_observer.h"
 
 namespace ash {

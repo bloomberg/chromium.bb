@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/aura/wm_lookup_aura.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/wm/public/activation_change_observer.h"

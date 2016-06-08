@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/events/devices/input_device_event_observer.h"

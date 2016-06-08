@@ -23,11 +23,11 @@
 #include <string>
 #include <utility>
 
+#include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"

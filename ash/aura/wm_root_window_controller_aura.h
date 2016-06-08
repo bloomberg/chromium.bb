@@ -6,8 +6,8 @@
 #define ASH_AURA_WM_ROOT_CONTROLLER_AURA_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm_root_window_controller.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

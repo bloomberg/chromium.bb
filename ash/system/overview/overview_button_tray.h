@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 

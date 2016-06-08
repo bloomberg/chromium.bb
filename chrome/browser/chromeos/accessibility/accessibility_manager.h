@@ -8,7 +8,7 @@
 #include <set>
 
 #include "ash/common/session/session_state_observer.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"

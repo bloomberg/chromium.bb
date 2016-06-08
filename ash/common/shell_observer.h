@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELL_OBSERVER_H_
-#define ASH_SHELL_OBSERVER_H_
+#ifndef ASH_COMMON_SHELL_OBSERVER_H_
+#define ASH_COMMON_SHELL_OBSERVER_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
@@ -73,4 +73,4 @@ class ASH_EXPORT ShellObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SHELL_OBSERVER_H_
+#endif  // ASH_COMMON_SHELL_OBSERVER_H_

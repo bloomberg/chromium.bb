@@ -10,7 +10,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/common/shell_observer.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "base/memory/weak_ptr.h"
