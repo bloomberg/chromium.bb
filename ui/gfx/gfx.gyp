@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../../mojo/mojo_variables.gypi',
-  ],
-  'variables': {
+ 'variables': {
     'chromium_code': 1,
   },
   'targets': [

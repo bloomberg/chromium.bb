@@ -37,6 +37,7 @@ source_set("embedder") {
     "embedder.h",
     "embedder_internal.h",
     "entrypoints.cc",
+    "entrypoints.h",
 
     # Test-only code:
     # TODO(vtl): It's a little unfortunate that these end up in the same
@@ -46,12 +47,7 @@ source_set("embedder") {
     "test_embedder.h",
   ]
 
-  defines = [
-    "MOJO_SYSTEM_IMPL_IMPLEMENTATION",
-    "MOJO_SYSTEM_IMPLEMENTATION",
-  ]
-
-  configs += [ "//mojo/edk/system:system_config" ]
+  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
   public_deps = [
     ":delegates",
@@ -98,8 +94,6 @@ source_set("platform") {
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
-  configs += [ "//mojo/edk/system:system_config" ]
-
   public_deps = [
     "//mojo/public/cpp/system",
   ]
@@ -130,8 +124,6 @@ source_set("delegates") {
   ]
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
-
-  configs += [ "//mojo/edk/system:system_config" ]
 
   public_deps = [
     "//mojo/public/cpp/system",

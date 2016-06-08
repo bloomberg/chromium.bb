@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/platform/native/system_thunks.h"
+#include "mojo/public/c/system/thunks.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include "mojo/public/platform/native/thunk_export.h"
 
 extern "C" {
 
@@ -277,11 +275,10 @@ MojoResult MojoUnwrapPlatformSharedBufferHandle(
                                                    num_bytes, flags);
 }
 
-extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
-    const MojoSystemThunks* system_thunks) {
+}  // extern "C"
+
+size_t MojoEmbedderSetSystemThunks(const MojoSystemThunks* system_thunks) {
   if (system_thunks->size >= sizeof(g_thunks))
     g_thunks = *system_thunks;
   return sizeof(g_thunks);
 }
-
-}  // extern "C"
