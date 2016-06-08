@@ -11,24 +11,7 @@
 
 namespace mojo {
 
-// A buffer used to read bytes directly from LatencyInfoDataView into
-// ui::LatencyInfo's input_coordinates_.
-struct InputCoordinateArray {
-  size_t size;
-  gfx::PointF* data;
-};
-
-// TODO(fsamuel): We should add a common ArrayTraits<CArray<T>> utility struct.
-template <>
-struct ArrayTraits<InputCoordinateArray> {
-  using Element = gfx::PointF;
-  static size_t GetSize(const InputCoordinateArray& b);
-  static Element* GetData(InputCoordinateArray& b);
-  static const Element* GetData(const InputCoordinateArray& b);
-  static Element& GetAt(InputCoordinateArray& b, size_t i);
-  static const Element& GetAt(const InputCoordinateArray& b, size_t i);
-  static bool Resize(InputCoordinateArray& b, size_t size);
-};
+using InputCoordinateArray = CArray<gfx::PointF>;
 
 template <>
 struct StructTraits<ui::mojom::LatencyComponent,

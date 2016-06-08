@@ -12,22 +12,7 @@
 namespace mojo {
 
 // A buffer used to read pixel data directly from BitmapDataView to SkBitmap.
-struct BitmapBuffer {
-  uint8_t* data = nullptr;
-  size_t size = 0;
-};
-
-// ArrayTraits needed for ReadPixelData use with BitmapBuffer.
-template <>
-struct ArrayTraits<BitmapBuffer> {
-  using Element = uint8_t;
-  static size_t GetSize(const BitmapBuffer& b);
-  static uint8_t* GetData(BitmapBuffer& b);
-  static const uint8_t* GetData(const BitmapBuffer& b);
-  static uint8_t& GetAt(BitmapBuffer& b, size_t i);
-  static const uint8_t& GetAt(const BitmapBuffer& b, size_t i);
-  static bool Resize(BitmapBuffer& b, size_t size);
-};
+using BitmapBuffer = CArray<uint8_t>;
 
 // Struct traits to use SkBitmap for skia::mojom::Bitmap in Chrome C++ code.
 template <>

@@ -112,37 +112,6 @@ skia::mojom::ColorProfileType SkProfileTypeToMojo(SkColorProfileType type) {
 }  // namespace
 
 // static
-size_t ArrayTraits<BitmapBuffer>::GetSize(const BitmapBuffer& b) {
-  return b.size;
-}
-
-// static
-uint8_t* ArrayTraits<BitmapBuffer>::GetData(BitmapBuffer& b) {
-  return b.data;
-}
-
-// static
-const uint8_t* ArrayTraits<BitmapBuffer>::GetData(const BitmapBuffer& b) {
-  return b.data;
-}
-
-// static
-uint8_t& ArrayTraits<BitmapBuffer>::GetAt(BitmapBuffer& b, size_t i) {
-  return *(b.data + i);
-}
-
-// static
-const uint8_t& ArrayTraits<BitmapBuffer>::GetAt(const BitmapBuffer& b,
-                                                size_t i) {
-  return *(b.data + i);
-}
-
-// static
-bool ArrayTraits<BitmapBuffer>::Resize(BitmapBuffer& b, size_t size) {
-  return b.size == size;
-}
-
-// static
 bool StructTraits<skia::mojom::Bitmap, SkBitmap>::IsNull(const SkBitmap& b) {
   return b.isNull();
 }
@@ -184,10 +153,7 @@ uint32_t StructTraits<skia::mojom::Bitmap, SkBitmap>::height(
 // static
 BitmapBuffer StructTraits<skia::mojom::Bitmap, SkBitmap>::pixel_data(
     const SkBitmap& b) {
-  BitmapBuffer bitmap_buffer;
-  bitmap_buffer.data = static_cast<uint8_t*>(b.getPixels());
-  bitmap_buffer.size = b.getSize();
-  return bitmap_buffer;
+  return {b.getSize(), b.getSize(), static_cast<uint8_t*>(b.getPixels())};
 }
 
 // static
@@ -215,10 +181,9 @@ bool StructTraits<skia::mojom::Bitmap, SkBitmap>::Read(
     return false;
   }
 
-  BitmapBuffer bitmap_buffer;
-  bitmap_buffer.data = static_cast<uint8_t*>(b->getPixels());
-  bitmap_buffer.size = b->getSize();
-  if (!data.ReadPixelData(&bitmap_buffer))
+  BitmapBuffer bitmap_buffer = {0, b->getSize(),
+                                static_cast<uint8_t*>(b->getPixels())};
+  if (!data.ReadPixelData(&bitmap_buffer) || bitmap_buffer.size != b->getSize())
     return false;
 
   b->notifyPixelsChanged();

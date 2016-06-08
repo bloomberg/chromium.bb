@@ -179,46 +179,6 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
 }  // namespace
 
 // static
-size_t ArrayTraits<InputCoordinateArray>::GetSize(
-    const InputCoordinateArray& b) {
-  return b.size;
-}
-
-// static
-gfx::PointF* ArrayTraits<InputCoordinateArray>::GetData(
-    InputCoordinateArray& b) {
-  return b.data;
-}
-
-// static
-const gfx::PointF* ArrayTraits<InputCoordinateArray>::GetData(
-    const InputCoordinateArray& b) {
-  return b.data;
-}
-
-// static
-gfx::PointF& ArrayTraits<InputCoordinateArray>::GetAt(InputCoordinateArray& b,
-                                                      size_t i) {
-  return b.data[i];
-}
-
-// static
-const gfx::PointF& ArrayTraits<InputCoordinateArray>::GetAt(
-    const InputCoordinateArray& b,
-    size_t i) {
-  return b.data[i];
-}
-
-// static
-bool ArrayTraits<InputCoordinateArray>::Resize(InputCoordinateArray& b,
-                                               size_t size) {
-  if (size > ui::LatencyInfo::kMaxInputCoordinates)
-    return false;
-  b.size = size;
-  return true;
-}
-
-// static
 int64_t
 StructTraits<ui::mojom::LatencyComponent, ui::LatencyInfo::LatencyComponent>::
     sequence_number(const ui::LatencyInfo::LatencyComponent& component) {
@@ -319,10 +279,8 @@ StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::latency_components(
 InputCoordinateArray
 StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::input_coordinates(
     const ui::LatencyInfo& info) {
-  InputCoordinateArray input_coordinates_array = {
-      ui::LatencyInfo::kMaxInputCoordinates,
-      const_cast<gfx::PointF*>(info.input_coordinates_)};
-  return input_coordinates_array;
+  return {info.input_coordinates_size_, ui::LatencyInfo::kMaxInputCoordinates,
+          const_cast<gfx::PointF*>(info.input_coordinates_)};
 }
 
 int64_t StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::trace_id(
@@ -353,7 +311,7 @@ bool StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::Read(
     out->latency_components_[components[i]->key] = components[i]->value;
 
   InputCoordinateArray input_coordinate_array = {
-      ui::LatencyInfo::kMaxInputCoordinates, out->input_coordinates_};
+      0, ui::LatencyInfo::kMaxInputCoordinates, out->input_coordinates_};
   if (!data.ReadInputCoordinates(&input_coordinate_array))
     return false;
   // TODO(fsamuel): ui::LatencyInfo::input_coordinates_size_ should be a size_t.

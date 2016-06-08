@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_H_
 
+#include "mojo/public/cpp/bindings/array_traits_carray.h"
 #include "mojo/public/cpp/bindings/array_traits_standard.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"

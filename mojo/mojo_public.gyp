@@ -94,6 +94,7 @@
       'sources': [
         'public/cpp/bindings/array.h',
         'public/cpp/bindings/array_traits.h',
+        'public/cpp/bindings/array_traits_carray.h',
         'public/cpp/bindings/array_traits_standard.h',
         'public/cpp/bindings/array_traits_stl.h',
         'public/cpp/bindings/associated_binding.h',
