@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
+import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
@@ -52,6 +53,7 @@ source_set("alsa_cma_backend") {
 
   deps = [
     ":alsa_features",
+    ":audio_filter_includes",
     "//base",
     "//chromecast/base",
     "//chromecast/media/cma/backend",
@@ -60,6 +62,34 @@ source_set("alsa_cma_backend") {
     "//chromecast/public/media",
     "//media",
     "//media:shared_memory_support",
+  ]
+
+  if (chromecast_branding == "public") {
+    deps += [ ":audio_filter_null" ]
+  } else {
+    deps += [ "//chromecast/internal/media/cma/backend/alsa:filter" ]
+  }
+}
+
+source_set("audio_filter_null") {
+  sources = [
+    "audio_filter_factory_default.cc",
+  ]
+
+  deps = [
+    ":audio_filter_includes",
+  ]
+}
+
+source_set("audio_filter_includes") {
+  sources = [
+    "audio_filter_factory.h",
+    "audio_filter_interface.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
   ]
 }
 

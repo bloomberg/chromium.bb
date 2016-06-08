@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "chromecast/media/cma/backend/alsa/audio_filter_interface.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input.h"
 #include "chromecast/public/cast_media_shlib.h"
@@ -231,6 +232,9 @@ class StreamMixerAlsa {
   std::unique_ptr<base::Timer> check_close_timer_;
 
   std::vector<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
+
+  std::unique_ptr<AudioFilterInterface> pre_loopback_filter_;
+  std::unique_ptr<AudioFilterInterface> post_loopback_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsa);
 };
