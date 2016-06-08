@@ -23,6 +23,15 @@ if (use_goma) {
   goma_prefix = ""
 }
 
+if (current_toolchain == default_toolchain) {
+  # Reduce the number of tasks using the copy_bundle_data and compile_xcassets
+  # tools as they can cause lots of I/O contention when invoking ninja with a
+  # large number of parallel jobs (e.g. when using distributed build like goma).
+  pool("bundle_pool") {
+    depth = concurrent_links
+  }
+}
+
 # This will copy the gyp-mac-tool to the build directory. We pass in the source
 # file of the mac tool.
 gyp_mac_tool_source =
@@ -271,6 +280,7 @@ template("mac_toolchain") {
                           root_build_dir)
       command = "python $_tool {{source}} {{output}}"
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
+      pool = ":bundle_pool($default_toolchain)"
     }
     tool("compile_xcassets") {
       _tool = rebase_path("//build/toolchain/mac/compile_xcassets.py",
@@ -287,6 +297,7 @@ template("mac_toolchain") {
                 "-o {{output}} {{inputs}}"
 
       description = "COMPILE_XCASSETS {{output}}"
+      pool = ":bundle_pool($default_toolchain)"
     }
 
     toolchain_args() {
