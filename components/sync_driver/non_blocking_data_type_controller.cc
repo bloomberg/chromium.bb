@@ -17,7 +17,6 @@
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/activation_context.h"
-#include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/util/data_type_histogram.h"
 
 namespace sync_driver_v2 {
@@ -30,6 +29,7 @@ NonBlockingDataTypeController::NonBlockingDataTypeController(
     : sync_driver::DataTypeController(ui_thread, error_callback),
       model_type_(model_type),
       sync_client_(sync_client),
+      sync_prefs_(sync_client->GetPrefService()),
       state_(NOT_RUNNING) {
   DCHECK(BelongsToUIThread());
 }
@@ -178,7 +178,25 @@ void NonBlockingDataTypeController::Stop() {
   if (state() == NOT_RUNNING)
     return;
 
+  // Check preferences if datatype is not in preferred datatypes. Only call
+  // DisableSync if service is ready to handle it (controller is in loaded
+  // state).
+  syncer::ModelTypeSet preferred_types =
+      sync_prefs_.GetPreferredDataTypes(syncer::ModelTypeSet(type()));
+  if ((state() == MODEL_LOADED || state() == RUNNING) &&
+      (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
+    RunOnModelThread(FROM_HERE, base::Bind(
+        &NonBlockingDataTypeController::DisableSyncOnModelThread, this));
+  }
+
   state_ = NOT_RUNNING;
+}
+
+void NonBlockingDataTypeController::DisableSyncOnModelThread() {
+  syncer_v2::ModelTypeService* model_type_service =
+      sync_client_->GetModelTypeServiceForType(type());
+  DCHECK(model_type_service);
+  model_type_service->DisableSync();
 }
 
 std::string NonBlockingDataTypeController::name() const {

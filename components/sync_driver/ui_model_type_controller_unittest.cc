@@ -137,8 +137,7 @@ class UIModelTypeControllerTest : public testing::Test,
       : auto_run_tasks_(true),
         load_models_callback_called_(false),
         association_callback_called_(false),
-        sync_thread_runner_(new base::TestSimpleTaskRunner()),
-        configurer_(&backend_, sync_thread_runner_) {}
+        configurer_(&backend_, ui_loop_.task_runner()) {}
 
   ~UIModelTypeControllerTest() override {}
 
@@ -151,7 +150,7 @@ class UIModelTypeControllerTest : public testing::Test,
 
   void TearDown() override {
     controller_ = NULL;
-    RunQueuedUIThreadTasks();
+    RunAllTasks();
   }
 
   syncer_v2::ModelTypeService* GetModelTypeServiceForType(
@@ -213,17 +212,8 @@ class UIModelTypeControllerTest : public testing::Test,
 
   // These threads can ping-pong for a bit so we run the UI thread twice.
   void RunAllTasks() {
-    RunQueuedUIThreadTasks();
-    RunQueuedSyncThreadTasks();
-    RunQueuedUIThreadTasks();
+    base::RunLoop().RunUntilIdle();
   }
-
-  // Runs any tasks posted on UI thread.
-  void RunQueuedUIThreadTasks() { ui_loop_.RunUntilIdle(); }
-
-  // Processes any pending connect or disconnect requests and sends
-  // responses synchronously.
-  void RunQueuedSyncThreadTasks() { sync_thread_runner_->RunUntilIdle(); }
 
   void SetAutoRunTasks(bool auto_run_tasks) {
     auto_run_tasks_ = auto_run_tasks;
@@ -249,7 +239,6 @@ class UIModelTypeControllerTest : public testing::Test,
   syncer::SyncError load_models_error_;
   bool association_callback_called_;
   base::MessageLoopForUI ui_loop_;
-  scoped_refptr<base::TestSimpleTaskRunner> sync_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
   std::unique_ptr<syncer_v2::FakeModelTypeService> service_;

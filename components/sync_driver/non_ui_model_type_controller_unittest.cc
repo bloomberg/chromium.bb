@@ -151,8 +151,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
         load_models_callback_called_(false),
         association_callback_called_(false),
         model_thread_("modelthread"),
-        sync_thread_runner_(new base::TestSimpleTaskRunner()),
-        configurer_(&backend_, sync_thread_runner_) {}
+        configurer_(&backend_, ui_loop_.task_runner()) {}
 
   ~NonUIModelTypeControllerTest() override {}
 
@@ -279,7 +278,6 @@ class NonUIModelTypeControllerTest : public testing::Test,
   void RunAllTasks() {
     RunQueuedModelThreadTasks();
     RunQueuedUIThreadTasks();
-    RunQueuedSyncThreadTasks();
     RunQueuedModelThreadTasks();
   }
 
@@ -294,10 +292,6 @@ class NonUIModelTypeControllerTest : public testing::Test,
         base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
     run_loop.Run();
   }
-
-  // Processes any pending connect or disconnect requests and sends
-  // responses synchronously.
-  void RunQueuedSyncThreadTasks() { sync_thread_runner_->RunUntilIdle(); }
 
   void SetAutoRunTasks(bool auto_run_tasks) {
     auto_run_tasks_ = auto_run_tasks;
@@ -325,7 +319,6 @@ class NonUIModelTypeControllerTest : public testing::Test,
   base::MessageLoopForUI ui_loop_;
   base::Thread model_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> model_thread_runner_;
-  scoped_refptr<base::TestSimpleTaskRunner> sync_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
   std::unique_ptr<syncer_v2::FakeModelTypeService> service_;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync_driver/fake_sync_service.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "sync/util/extensions_activity.h"
 
 namespace sync_driver {
@@ -20,12 +21,21 @@ void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
 }  // namespace
 
 FakeSyncClient::FakeSyncClient()
-    : factory_(nullptr),
-      sync_service_(base::WrapUnique(new FakeSyncService())) {}
+    : model_type_service_(nullptr),
+      factory_(nullptr),
+      sync_service_(base::WrapUnique(new FakeSyncService())) {
+  // Register sync preferences and set them to "Sync everything" state.
+  sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+  sync_driver::SyncPrefs sync_prefs(GetPrefService());
+  sync_prefs.SetFirstSetupComplete();
+  sync_prefs.SetKeepEverythingSynced(true);
+}
 
 FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
     : factory_(factory),
-      sync_service_(base::WrapUnique(new FakeSyncService())) {}
+      sync_service_(base::WrapUnique(new FakeSyncService())) {
+  sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+}
 
 FakeSyncClient::~FakeSyncClient() {}
 
@@ -36,7 +46,7 @@ SyncService* FakeSyncClient::GetSyncService() {
 }
 
 PrefService* FakeSyncClient::GetPrefService() {
-  return nullptr;
+  return &pref_service_;
 }
 
 bookmarks::BookmarkModel* FakeSyncClient::GetBookmarkModel() {
@@ -88,7 +98,7 @@ FakeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 syncer_v2::ModelTypeService* FakeSyncClient::GetModelTypeServiceForType(
     syncer::ModelType type) {
-  return nullptr;
+  return model_type_service_;
 }
 
 scoped_refptr<syncer::ModelSafeWorker>
@@ -100,6 +110,11 @@ FakeSyncClient::CreateModelWorkerForGroup(
 
 SyncApiComponentFactory* FakeSyncClient::GetSyncApiComponentFactory() {
   return factory_;
+}
+
+void FakeSyncClient::SetModelTypeService(
+    syncer_v2::ModelTypeService* model_type_service) {
+  model_type_service_ = model_type_service;
 }
 
 }  // namespace sync_driver

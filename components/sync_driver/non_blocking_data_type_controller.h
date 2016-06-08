@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/sync_prefs.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_driver {
@@ -19,7 +20,6 @@ class SyncClient;
 
 namespace syncer_v2 {
 struct ActivationContext;
-class SharedModelTypeProcessor;
 }
 
 namespace sync_driver_v2 {
@@ -35,13 +35,6 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
       const base::Closure& error_callback,
       syncer::ModelType model_type,
       sync_driver::SyncClient* sync_client);
-
-  // Connects the ModelTypeProcessor to this controller.
-  // TODO(stanisc): replace this with a proper initialization mechanism similar
-  // to how directory DTC obtain SyncableService.
-  void InitializeType(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const base::WeakPtr<syncer_v2::SharedModelTypeProcessor>& type_processor);
 
   // DataTypeErrorHandler interface.
   void OnSingleDataTypeUnrecoverableError(
@@ -112,11 +105,19 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // need to be done on model thread.
   void LoadModelsOnModelThread();
 
+  // Stop() posts call to DisableSyncOnModelThread to model thread when it
+  // decides sync metadata should be cleared.
+  void DisableSyncOnModelThread();
+
   // Model Type for this controller
   syncer::ModelType model_type_;
 
   // Sync client
   sync_driver::SyncClient* const sync_client_;
+
+  // Sync prefs. Used for determinig if DisableSync should be called during call
+  // to Stop().
+  sync_driver::SyncPrefs sync_prefs_;
 
   // State of this datatype controller.
   State state_;

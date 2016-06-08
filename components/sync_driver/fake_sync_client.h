@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/sync_driver/sync_client.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 
 namespace sync_driver {
 class FakeSyncService;
@@ -44,7 +45,11 @@ class FakeSyncClient : public SyncClient {
       syncer::WorkerLoopDestructionObserver* observer) override;
   SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
+  void SetModelTypeService(syncer_v2::ModelTypeService* model_type_service);
+
  private:
+  syncable_prefs::TestingPrefServiceSyncable pref_service_;
+  syncer_v2::ModelTypeService* model_type_service_;
   SyncApiComponentFactory* factory_;
   std::unique_ptr<FakeSyncService> sync_service_;
 

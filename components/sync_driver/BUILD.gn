@@ -194,6 +194,7 @@ source_set("test_support") {
 
   deps = [
     "//base",
+    "//components/syncable_prefs:test_support",
     "//components/version_info",
     "//google_apis",
     "//sync:test_support_sync_internal_api",
@@ -221,6 +222,7 @@ source_set("unit_tests") {
     "glue/ui_model_worker_unittest.cc",
     "local_device_info_provider_unittest.cc",
     "model_association_manager_unittest.cc",
+    "non_blocking_data_type_controller_unittest.cc",
     "non_ui_data_type_controller_unittest.cc",
     "non_ui_model_type_controller_unittest.cc",
     "profile_sync_auth_provider_unittest.cc",

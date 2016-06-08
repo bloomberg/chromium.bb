@@ -804,6 +804,7 @@
       'sync_driver/glue/ui_model_worker_unittest.cc',
       'sync_driver/local_device_info_provider_unittest.cc',
       'sync_driver/model_association_manager_unittest.cc',
+      'sync_driver/non_blocking_data_type_controller_unittest.cc',
       'sync_driver/non_ui_data_type_controller_unittest.cc',
       'sync_driver/non_ui_model_type_controller_unittest.cc',
       'sync_driver/profile_sync_auth_provider_unittest.cc',
