@@ -6,7 +6,7 @@
 #define ASH_SHELL_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/user/login_status.h"
+#include "ash/common/login_status.h"
 
 namespace ash {
 
@@ -18,7 +18,7 @@ class ASH_EXPORT ShellObserver {
   virtual void OnDisplayWorkAreaInsetsChanged() {}
 
   // Invoked when the user logs in.
-  virtual void OnLoginStateChanged(user::LoginStatus status) {}
+  virtual void OnLoginStateChanged(LoginStatus status) {}
 
   // Invoked when the application is exiting.
   virtual void OnAppTerminating() {}

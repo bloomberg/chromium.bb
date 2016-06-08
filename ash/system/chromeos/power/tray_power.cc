@@ -161,7 +161,7 @@ TrayPower::~TrayPower() {
   message_center_->RemoveNotification(kUsbNotificationId, false);
 }
 
-views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
+views::View* TrayPower::CreateTrayView(LoginStatus status) {
   // There may not be enough information when this is created about whether
   // there is a battery or not. So always create this, and adjust visibility as
   // necessary.
@@ -171,7 +171,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
   return power_tray_;
 }
 
-views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayPower::CreateDefaultView(LoginStatus status) {
   // Make sure icon status is up-to-date. (Also triggers stub activation).
   PowerStatus::Get()->RequestStatusUpdate();
   return NULL;
@@ -184,8 +184,7 @@ void TrayPower::DestroyTrayView() {
 void TrayPower::DestroyDefaultView() {
 }
 
-void TrayPower::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayPower::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayImageItemBorder(power_tray_, alignment);

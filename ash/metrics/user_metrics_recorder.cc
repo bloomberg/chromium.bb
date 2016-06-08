@@ -74,22 +74,22 @@ ActiveWindowStateType GetActiveWindowState() {
 // Returns true if kiosk mode is active.
 bool IsKioskModeActive() {
   return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() ==
-         user::LOGGED_IN_KIOSK_APP;
+         LoginStatus::KIOSK_APP;
 }
 
 // Returns true if there is an active user and their session isn't currently
 // locked.
 bool IsUserActive() {
   switch (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus()) {
-    case user::LOGGED_IN_NONE:
-    case user::LOGGED_IN_LOCKED:
+    case LoginStatus::NOT_LOGGED_IN:
+    case LoginStatus::LOCKED:
       return false;
-    case user::LOGGED_IN_USER:
-    case user::LOGGED_IN_OWNER:
-    case user::LOGGED_IN_GUEST:
-    case user::LOGGED_IN_PUBLIC:
-    case user::LOGGED_IN_SUPERVISED:
-    case user::LOGGED_IN_KIOSK_APP:
+    case LoginStatus::USER:
+    case LoginStatus::OWNER:
+    case LoginStatus::GUEST:
+    case LoginStatus::PUBLIC:
+    case LoginStatus::SUPERVISED:
+    case LoginStatus::KIOSK_APP:
       return true;
   }
   NOTREACHED();

@@ -17,7 +17,7 @@ namespace test {
 
 namespace {
 
-user::LoginStatus g_initial_status = user::LOGGED_IN_USER;
+LoginStatus g_initial_status = LoginStatus::USER;
 
 }  // namespace
 
@@ -31,12 +31,11 @@ TestSystemTrayDelegate::~TestSystemTrayDelegate() {
 }
 
 // static
-void TestSystemTrayDelegate::SetInitialLoginStatus(
-    user::LoginStatus login_status) {
+void TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus login_status) {
   g_initial_status = login_status;
 }
 
-void TestSystemTrayDelegate::SetLoginStatus(user::LoginStatus login_status) {
+void TestSystemTrayDelegate::SetLoginStatus(LoginStatus login_status) {
   login_status_ = login_status;
   Shell::GetInstance()->UpdateAfterLoginStatusChange(login_status);
 }
@@ -51,9 +50,9 @@ void TestSystemTrayDelegate::ClearSessionLengthLimit() {
   session_length_limit_set_ = false;
 }
 
-user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
+LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   // Initial login status has been changed for testing.
-  if (g_initial_status != user::LOGGED_IN_USER &&
+  if (g_initial_status != LoginStatus::USER &&
       g_initial_status == login_status_) {
     return login_status_;
   }
@@ -64,14 +63,14 @@ user::LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
       Shell::GetInstance()->session_state_delegate();
 
   if (!delegate->IsActiveUserSessionStarted())
-    return ash::user::LOGGED_IN_NONE;
+    return LoginStatus::NOT_LOGGED_IN;
   if (delegate->IsScreenLocked())
-    return user::LOGGED_IN_LOCKED;
+    return LoginStatus::LOCKED;
   return login_status_;
 }
 
 bool TestSystemTrayDelegate::IsUserSupervised() const {
-  return login_status_ == ash::user::LOGGED_IN_SUPERVISED;
+  return login_status_ == LoginStatus::SUPERVISED;
 }
 
 bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {

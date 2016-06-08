@@ -181,7 +181,7 @@ void SystemTrayBubble::UpdateView(
 }
 
 void SystemTrayBubble::InitView(views::View* anchor,
-                                user::LoginStatus login_status,
+                                LoginStatus login_status,
                                 TrayBubbleView::InitParams* init_params) {
   DCHECK(bubble_view_ == NULL);
 
@@ -281,13 +281,13 @@ bool SystemTrayBubble::ShouldShowShelf() const {
   return false;
 }
 
-void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
+void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
   std::vector<views::View*> item_views;
   // If a system modal dialog is present, create the same tray as
   // in locked state.
   if (Shell::GetInstance()->IsSystemModalWindowOpen() &&
-      login_status != user::LOGGED_IN_NONE) {
-    login_status = user::LOGGED_IN_LOCKED;
+      login_status != LoginStatus::NOT_LOGGED_IN) {
+    login_status = LoginStatus::LOCKED;
   }
 
   views::View* focus_view = NULL;

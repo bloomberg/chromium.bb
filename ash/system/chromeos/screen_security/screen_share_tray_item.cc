@@ -35,13 +35,13 @@ ScreenShareTrayItem::~ScreenShareTrayItem() {
       RemoveScreenShareObserver(this);
 }
 
-views::View* ScreenShareTrayItem::CreateTrayView(user::LoginStatus status) {
+views::View* ScreenShareTrayItem::CreateTrayView(LoginStatus status) {
   set_tray_view(
       new tray::ScreenTrayView(this, IDR_AURA_UBER_TRAY_SCREENSHARE));
   return tray_view();
 }
 
-views::View* ScreenShareTrayItem::CreateDefaultView(user::LoginStatus status) {
+views::View* ScreenShareTrayItem::CreateDefaultView(LoginStatus status) {
   set_default_view(new tray::ScreenStatusView(
       this,
       IDR_AURA_UBER_TRAY_SCREENSHARE_DARK,

@@ -19,19 +19,19 @@ SystemTrayItem::SystemTrayItem(SystemTray* system_tray)
 SystemTrayItem::~SystemTrayItem() {
 }
 
-views::View* SystemTrayItem::CreateTrayView(user::LoginStatus status) {
+views::View* SystemTrayItem::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* SystemTrayItem::CreateDefaultView(user::LoginStatus status) {
+views::View* SystemTrayItem::CreateDefaultView(LoginStatus status) {
   return NULL;
 }
 
-views::View* SystemTrayItem::CreateDetailedView(user::LoginStatus status) {
+views::View* SystemTrayItem::CreateDetailedView(LoginStatus status) {
   return NULL;
 }
 
-views::View* SystemTrayItem::CreateNotificationView(user::LoginStatus status) {
+views::View* SystemTrayItem::CreateNotificationView(LoginStatus status) {
   return NULL;
 }
 
@@ -51,8 +51,7 @@ void SystemTrayItem::TransitionDetailedView() {
   system_tray()->ShowDetailedView(this, 0, true, BUBBLE_USE_EXISTING);
 }
 
-void SystemTrayItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void SystemTrayItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void SystemTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }

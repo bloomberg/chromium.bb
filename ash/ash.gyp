@@ -63,6 +63,7 @@
       'common/accessibility_delegate.h',
       'common/default_accessibility_delegate.cc',
       'common/default_accessibility_delegate.h',
+      'common/login_status.h',
       'common/root_window_controller_common.cc',
       'common/root_window_controller_common.h',
       'common/session/session_state_delegate.cc',

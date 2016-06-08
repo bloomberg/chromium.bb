@@ -194,7 +194,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
-  void UpdateAfterLoginStatusChange(user::LoginStatus status);
+  void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // Called when the brightness/grayscale animation from white to the login
   // desktop background image has started.  Starts |boot_splash_screen_|'s
@@ -270,7 +270,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void OnMenuClosed();
 
   // Overridden from ShellObserver.
-  void OnLoginStateChanged(user::LoginStatus status) override;
+  void OnLoginStateChanged(LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;

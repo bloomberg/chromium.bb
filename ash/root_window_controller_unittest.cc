@@ -371,7 +371,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
   RootWindowController* controller = shell->GetPrimaryRootWindowController();
-  EXPECT_EQ(user::LOGGED_IN_USER,
+  EXPECT_EQ(LoginStatus::USER,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
                 ->layout_manager(),
@@ -385,7 +385,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
                 session_modal_widget->GetNativeView()));
 
   shell->session_state_delegate()->LockScreen();
-  EXPECT_EQ(user::LOGGED_IN_LOCKED,
+  EXPECT_EQ(LoginStatus::LOCKED,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_LockSystemModalContainer)
                 ->layout_manager(),
@@ -413,7 +413,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
 
   // Configure login screen environment.
   SetUserLoggedIn(false);
-  EXPECT_EQ(user::LOGGED_IN_NONE,
+  EXPECT_EQ(LoginStatus::NOT_LOGGED_IN,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(0, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_FALSE(shell->session_state_delegate()->IsActiveUserSessionStarted());
@@ -436,7 +436,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   // Configure user session environment.
   SetUserLoggedIn(true);
   SetSessionStarted(true);
-  EXPECT_EQ(user::LOGGED_IN_USER,
+  EXPECT_EQ(LoginStatus::USER,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(1, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_TRUE(shell->session_state_delegate()->IsActiveUserSessionStarted());

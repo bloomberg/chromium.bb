@@ -134,7 +134,7 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual bool GetTrayVisibilityOnStartup();
 
   // Gets information about the active user.
-  virtual user::LoginStatus GetUserLoginStatus() const;
+  virtual LoginStatus GetUserLoginStatus() const;
 
   // Shows UI for changing user's profile picture.
   virtual void ChangeProfilePicture();

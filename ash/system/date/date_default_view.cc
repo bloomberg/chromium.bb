@@ -34,7 +34,7 @@ const int kPaddingVertical = 19;
 
 namespace ash {
 
-DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
+DateDefaultView::DateDefaultView(LoginStatus login)
     : help_button_(NULL),
       shutdown_button_(NULL),
       lock_button_(NULL),
@@ -53,8 +53,8 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
-  if (login == user::LOGGED_IN_LOCKED ||
-      login == user::LOGGED_IN_NONE || userAddingRunning)
+  if (login == LoginStatus::LOCKED || login == LoginStatus::NOT_LOGGED_IN ||
+      userAddingRunning)
     return;
 
   date_view_->SetAction(TrayDate::SHOW_DATE_SETTINGS);
@@ -75,7 +75,7 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
   view->AddButton(help_button_);
 
 #if !defined(OS_WIN)
-  if (login != ash::user::LOGGED_IN_LOCKED) {
+  if (login != LoginStatus::LOCKED) {
     shutdown_button_ = new TrayPopupHeaderButton(
         this, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
         IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER, IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,

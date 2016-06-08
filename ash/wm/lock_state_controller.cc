@@ -83,7 +83,7 @@ LockStateController::TestApi::~TestApi() {
 
 LockStateController::LockStateController()
     : animator_(new SessionStateAnimatorImpl()),
-      login_status_(user::LOGGED_IN_NONE),
+      login_status_(LoginStatus::NOT_LOGGED_IN),
       system_is_locked_(false),
       shutting_down_(false),
       shutdown_after_lock_(false),
@@ -225,14 +225,14 @@ void LockStateController::OnHostCloseRequested(
   Shell::GetInstance()->delegate()->Exit();
 }
 
-void LockStateController::OnLoginStateChanged(
-    user::LoginStatus status) {
+void LockStateController::OnLoginStateChanged(LoginStatus status) {
   // TODO(jdufault): Remove after resolving crbug.com/452599.
   VLOG(0) << "LockStateController::OnLoginStateChanged login_status_: "
-          << login_status_ << ", status: " << status;
-  if (status != user::LOGGED_IN_LOCKED)
+          << static_cast<int>(login_status_)
+          << ", status: " << static_cast<int>(status);
+  if (status != LoginStatus::LOCKED)
     login_status_ = status;
-  system_is_locked_ = (status == user::LOGGED_IN_LOCKED);
+  system_is_locked_ = (status == LoginStatus::LOCKED);
 }
 
 void LockStateController::OnAppTerminating() {

@@ -81,16 +81,16 @@ class TestItem : public SystemTrayItem {
   TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
   // Overridden from SystemTrayItem:
-  views::View* CreateTrayView(user::LoginStatus status) override {
+  views::View* CreateTrayView(LoginStatus status) override {
     tray_view_ = new views::View;
     return tray_view_;
   }
-  views::View* CreateDefaultView(user::LoginStatus status) override {
+  views::View* CreateDefaultView(LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     return default_view_;
   }
-  views::View* CreateDetailedView(user::LoginStatus status) override {
+  views::View* CreateDetailedView(LoginStatus status) override {
     detailed_view_ = new TestDetailsView(this);
     return detailed_view_;
   }

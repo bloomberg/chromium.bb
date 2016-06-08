@@ -372,7 +372,7 @@ void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
 class CastDetailedView : public TrayDetailsView, public ViewClickListener {
  public:
   CastDetailedView(SystemTrayItem* owner,
-                   user::LoginStatus login,
+                   LoginStatus login,
                    const CastConfigDelegate::ReceiversAndActivities&
                        receivers_and_activities);
   ~CastDetailedView() override;
@@ -398,7 +398,7 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
   // Overridden from ViewClickListener.
   void OnViewClicked(views::View* sender) override;
 
-  user::LoginStatus login_;
+  LoginStatus login_;
   views::View* options_ = nullptr;
   // A mapping from the receiver id to the receiver/activity data.
   std::map<std::string, CastConfigDelegate::ReceiverAndActivity>
@@ -411,7 +411,7 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
 
 CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
-    user::LoginStatus login,
+    LoginStatus login,
     const CastConfigDelegate::ReceiversAndActivities& receivers_and_activities)
     : TrayDetailsView(owner), login_(login) {
   CreateItems();
@@ -506,7 +506,7 @@ void CastDetailedView::AppendSettingsEntries() {
                                      ->session_state_delegate()
                                      ->IsInSecondaryLoginScreen();
 
-  if (login_ == user::LOGGED_IN_NONE || login_ == user::LOGGED_IN_LOCKED ||
+  if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
       userAddingRunning)
     return;
 
@@ -570,14 +570,14 @@ const views::View* TrayCast::GetDefaultView() const {
   return default_;
 }
 
-views::View* TrayCast::CreateTrayView(user::LoginStatus status) {
+views::View* TrayCast::CreateTrayView(LoginStatus status) {
   CHECK(tray_ == nullptr);
   tray_ = new tray::CastTrayView(this);
   tray_->SetVisible(is_casting_);
   return tray_;
 }
 
-views::View* TrayCast::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayCast::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == nullptr);
 
   if (HasCastExtension()) {
@@ -600,7 +600,7 @@ views::View* TrayCast::CreateDefaultView(user::LoginStatus status) {
     cast_config_delegate->RequestDeviceRefresh();
   }
 
-  default_ = new tray::CastDuplexView(this, status != user::LOGGED_IN_LOCKED,
+  default_ = new tray::CastDuplexView(this, status != LoginStatus::LOCKED,
                                       receivers_and_activities_);
   default_->set_id(TRAY_VIEW);
   default_->select_view()->set_id(SELECT_VIEW);
@@ -610,7 +610,7 @@ views::View* TrayCast::CreateDefaultView(user::LoginStatus status) {
   return default_;
 }
 
-views::View* TrayCast::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayCast::CreateDetailedView(LoginStatus status) {
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);

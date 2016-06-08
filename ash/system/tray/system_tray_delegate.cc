@@ -62,8 +62,8 @@ bool SystemTrayDelegate::GetTrayVisibilityOnStartup() {
   return false;
 }
 
-user::LoginStatus SystemTrayDelegate::GetUserLoginStatus() const {
-  return user::LOGGED_IN_NONE;
+LoginStatus SystemTrayDelegate::GetUserLoginStatus() const {
+  return LoginStatus::NOT_LOGGED_IN;
 }
 
 void SystemTrayDelegate::ChangeProfilePicture() {

@@ -33,7 +33,7 @@ class ASH_EXPORT TrayRotationLock
   void OnRotationLockChanged(bool rotation_locked) override;
 
   // SystemTrayItem:
-  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
 
   // ShellObserver:
   void OnMaximizeModeStarted() override;

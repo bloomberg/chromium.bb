@@ -254,7 +254,7 @@ TrayNetwork::~TrayNetwork() {
   notifier->RemoveNetworkPortalDetectorObserver(this);
 }
 
-views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
+views::View* TrayNetwork::CreateTrayView(LoginStatus status) {
   CHECK(tray_ == NULL);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
@@ -262,17 +262,16 @@ views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
   return tray_;
 }
 
-views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayNetwork::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   CHECK(tray_ != NULL);
-  default_ =
-      new tray::NetworkDefaultView(this, status != user::LOGGED_IN_LOCKED);
+  default_ = new tray::NetworkDefaultView(this, status != LoginStatus::LOCKED);
   return default_;
 }
 
-views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayNetwork::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       ash::UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
@@ -301,8 +300,7 @@ void TrayNetwork::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayNetwork::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (tray_) {

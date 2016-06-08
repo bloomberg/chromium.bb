@@ -251,7 +251,7 @@ class AshInit {
         base::Bind(&KeyboardUIMus::Create, connector);
     Shell::CreateInstance(init_params);
     Shell::GetInstance()->CreateShelf();
-    Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
+    Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 
     Shell::GetPrimaryRootWindow()->GetHost()->Show();
   }

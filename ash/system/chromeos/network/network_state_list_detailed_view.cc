@@ -294,7 +294,7 @@ class InfoThrobberLayout : public views::LayoutManager {
 NetworkStateListDetailedView::NetworkStateListDetailedView(
     SystemTrayItem* owner,
     ListType list_type,
-    user::LoginStatus login)
+    LoginStatus login)
     : NetworkDetailedView(owner),
       list_type_(list_type),
       login_(login),
@@ -412,7 +412,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
     return;
   }
 
-  if (login_ == user::LOGGED_IN_LOCKED)
+  if (login_ == LoginStatus::LOCKED)
     return;
 
   std::string service_path;
@@ -502,7 +502,7 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
 }
 
 void NetworkStateListDetailedView::CreateNetworkExtra() {
-  if (login_ == user::LOGGED_IN_LOCKED)
+  if (login_ == LoginStatus::LOCKED)
     return;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -660,7 +660,7 @@ bool NetworkStateListDetailedView::OrderChild(views::View* view, int index) {
 }
 
 void NetworkStateListDetailedView::UpdateNetworkExtra() {
-  if (login_ == user::LOGGED_IN_LOCKED)
+  if (login_ == LoginStatus::LOCKED)
     return;
 
   View* layout_parent = nullptr;  // All these buttons have the same parent.
@@ -718,7 +718,7 @@ void NetworkStateListDetailedView::CreateSettingsEntry() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool show_settings =
       ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings();
-  if (login_ != user::LOGGED_IN_NONE) {
+  if (login_ != LoginStatus::NOT_LOGGED_IN) {
     // Allow user access settings only if user is logged in
     // and showing settings is allowed. There're situations (supervised user
     // creation flow) when session is started but UI flow continues within

@@ -151,9 +151,8 @@ class ShutdownPolicyInSessionTest
                                  ->GetPrimarySystemTray()
                                  ->GetTrayDateForTesting();
     ASSERT_TRUE(tray_date);
-    date_default_view_.reset(
-        static_cast<ash::DateDefaultView*>(
-            tray_date->CreateDefaultViewForTesting(ash::user::LOGGED_IN_USER)));
+    date_default_view_.reset(static_cast<ash::DateDefaultView*>(
+        tray_date->CreateDefaultViewForTesting(ash::LoginStatus::USER)));
     ASSERT_TRUE(date_default_view_);
   }
 

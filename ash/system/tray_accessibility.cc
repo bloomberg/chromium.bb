@@ -62,7 +62,7 @@ uint32_t GetAccessibilityState() {
   return state;
 }
 
-user::LoginStatus GetCurrentLoginStatus() {
+LoginStatus GetCurrentLoginStatus() {
   return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 }
 
@@ -123,25 +123,24 @@ views::Label* AccessibilityPopupView::CreateLabel(uint32_t enabled_state_bits) {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::tray::AccessibilityDetailedView
 
-AccessibilityDetailedView::AccessibilityDetailedView(
-    SystemTrayItem* owner, user::LoginStatus login) :
-        TrayDetailsView(owner),
-        spoken_feedback_view_(NULL),
-        high_contrast_view_(NULL),
-        screen_magnifier_view_(NULL),
-        large_cursor_view_(NULL),
-        help_view_(NULL),
-        settings_view_(NULL),
-        autoclick_view_(NULL),
-        virtual_keyboard_view_(NULL),
-        spoken_feedback_enabled_(false),
-        high_contrast_enabled_(false),
-        screen_magnifier_enabled_(false),
-        large_cursor_enabled_(false),
-        autoclick_enabled_(false),
-        virtual_keyboard_enabled_(false),
-        login_(login) {
-
+AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner,
+                                                     LoginStatus login)
+    : TrayDetailsView(owner),
+      spoken_feedback_view_(nullptr),
+      high_contrast_view_(nullptr),
+      screen_magnifier_view_(nullptr),
+      large_cursor_view_(nullptr),
+      help_view_(nullptr),
+      settings_view_(nullptr),
+      autoclick_view_(nullptr),
+      virtual_keyboard_view_(nullptr),
+      spoken_feedback_enabled_(false),
+      high_contrast_enabled_(false),
+      screen_magnifier_enabled_(false),
+      large_cursor_enabled_(false),
+      autoclick_enabled_(false),
+      virtual_keyboard_enabled_(false),
+      login_(login) {
   Reset();
 
   AppendAccessibilityList();
@@ -164,7 +163,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
                         spoken_feedback_enabled_, spoken_feedback_enabled_);
 
   // Large Cursor item is shown only in Login screen.
-  if (login_ == user::LOGGED_IN_NONE) {
+  if (login_ == LoginStatus::NOT_LOGGED_IN) {
     large_cursor_enabled_ = delegate->IsLargeCursorEnabled();
     large_cursor_view_ =
         AddScrollListItem(bundle.GetLocalizedString(
@@ -184,7 +183,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
                         screen_magnifier_enabled_, screen_magnifier_enabled_);
 
   // Don't show autoclick option at login screen.
-  if (login_ != user::LOGGED_IN_NONE) {
+  if (login_ != LoginStatus::NOT_LOGGED_IN) {
     autoclick_enabled_ = delegate->IsAutoclickEnabled();
     autoclick_view_ = AddScrollListItem(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
@@ -205,8 +204,8 @@ void AccessibilityDetailedView::AppendHelpEntries() {
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
-  if (login_ == user::LOGGED_IN_NONE ||
-      login_ == user::LOGGED_IN_LOCKED || userAddingRunning)
+  if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
+      userAddingRunning)
     return;
 
   views::View* bottom_row = new View();
@@ -342,7 +341,7 @@ bool TrayAccessibility::GetInitialVisibility() {
   return GetAccessibilityState() != A11Y_NONE;
 }
 
-views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
 
   // Shows accessibility menu if:
@@ -352,10 +351,10 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   // Otherwise, not shows it.
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
-  if (login_ != user::LOGGED_IN_NONE &&
+  if (login_ != LoginStatus::NOT_LOGGED_IN &&
       !delegate->ShouldShowAccessibilityMenu() &&
       // On login screen, keeps the initial visibility of the menu.
-      (status != user::LOGGED_IN_LOCKED || !show_a11y_menu_on_lock_screen_))
+      (status != LoginStatus::LOCKED || !show_a11y_menu_on_lock_screen_))
     return NULL;
 
   CHECK(default_ == NULL);
@@ -364,7 +363,7 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   return default_;
 }
 
-views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_popup_ == NULL);
   CHECK(detailed_menu_ == NULL);
 
@@ -390,9 +389,9 @@ void TrayAccessibility::DestroyDetailedView() {
   detailed_menu_ = NULL;
 }
 
-void TrayAccessibility::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+void TrayAccessibility::UpdateAfterLoginStatusChange(LoginStatus status) {
   // Stores the a11y feature status on just entering the lock screen.
-  if (login_ != user::LOGGED_IN_LOCKED && status == user::LOGGED_IN_LOCKED)
+  if (login_ != LoginStatus::LOCKED && status == LoginStatus::LOCKED)
     show_a11y_menu_on_lock_screen_ = (GetAccessibilityState() != A11Y_NONE);
 
   login_ = status;

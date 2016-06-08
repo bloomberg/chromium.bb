@@ -299,14 +299,14 @@ TraySms::~TraySms() {
   }
 }
 
-views::View* TraySms::CreateDefaultView(user::LoginStatus status) {
+views::View* TraySms::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   default_ = new SmsDefaultView(this);
   default_->SetVisible(!messages_.empty());
   return default_;
 }
 
-views::View* TraySms::CreateDetailedView(user::LoginStatus status) {
+views::View* TraySms::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
   HideNotificationView();
   if (messages_.empty())
@@ -315,7 +315,7 @@ views::View* TraySms::CreateDetailedView(user::LoginStatus status) {
   return detailed_;
 }
 
-views::View* TraySms::CreateNotificationView(user::LoginStatus status) {
+views::View* TraySms::CreateNotificationView(LoginStatus status) {
   CHECK(notification_ == NULL);
   if (detailed_)
     return NULL;

@@ -212,7 +212,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
   // ShellObserver overrides:
-  void OnLoginStateChanged(user::LoginStatus status) override;
+  void OnLoginStateChanged(LoginStatus status) override;
   void OnAppTerminating() override;
   void OnLockStateChanged(bool locked) override;
 
@@ -294,7 +294,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   base::ObserverList<LockStateObserver> observers_;
 
   // The current login status, or original login status from before we locked.
-  user::LoginStatus login_status_;
+  LoginStatus login_status_;
 
   // Current lock status.
   bool system_is_locked_;

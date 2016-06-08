@@ -426,9 +426,8 @@ Shelf* RootWindowController::GetShelf() const {
   return shelf_widget_->shelf();
 }
 
-void RootWindowController::UpdateAfterLoginStatusChange(
-    user::LoginStatus status) {
-  if (status != user::LOGGED_IN_NONE)
+void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
+  if (status != LoginStatus::NOT_LOGGED_IN)
     mouse_event_target_.reset();
   if (shelf_widget_->status_area_widget())
     shelf_widget_->status_area_widget()->UpdateAfterLoginStatusChange(status);
@@ -863,7 +862,7 @@ void RootWindowController::OnMenuClosed() {
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
-void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
+void RootWindowController::OnLoginStateChanged(LoginStatus status) {
   shelf_widget_->shelf_layout_manager()->UpdateVisibilityState();
 }
 

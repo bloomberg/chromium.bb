@@ -38,7 +38,7 @@ void TrayAudioChromeOs::Update() {
     audio_detail_view_->Update();
 }
 
-views::View* TrayAudioChromeOs::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayAudioChromeOs::CreateDetailedView(LoginStatus status) {
   if (pop_up_volume_view_) {
     volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), false);
     return volume_view_;

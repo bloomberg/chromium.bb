@@ -181,11 +181,12 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(true);
   SetUserLoggedIn(false);
-  Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_NONE);
+  Shell::GetInstance()->UpdateAfterLoginStatusChange(
+      LoginStatus::NOT_LOGGED_IN);
   EXPECT_FALSE(GetTray()->visible());
   SetUserLoggedIn(true);
   SetSessionStarted(true);
-  Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
+  Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   EXPECT_TRUE(GetTray()->visible());
   SetUserAddingScreenRunning(true);
   NotifySessionStateChanged();

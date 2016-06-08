@@ -5,21 +5,11 @@
 #ifndef ASH_SYSTEM_USER_LOGIN_STATUS_H_
 #define ASH_SYSTEM_USER_LOGIN_STATUS_H_
 
+#include "ash/common/login_status.h"
 #include "base/strings/string16.h"
 
 namespace ash {
 namespace user {
-
-enum LoginStatus {
-  LOGGED_IN_NONE,             // Not logged in
-  LOGGED_IN_LOCKED,           // A user has locked the screen
-  LOGGED_IN_USER,             // A regular user is logged in
-  LOGGED_IN_OWNER,            // The owner of the device is logged in
-  LOGGED_IN_GUEST,            // A guest is logged in (i.e. incognito)
-  LOGGED_IN_PUBLIC,           // A public account is logged in
-  LOGGED_IN_SUPERVISED,       // A supervised user is logged in
-  LOGGED_IN_KIOSK_APP         // Is in kiosk app mode
-};
 
 base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
                                                   bool multiline);

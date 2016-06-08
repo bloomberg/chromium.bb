@@ -18,10 +18,10 @@ base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
                                                   bool multiline) {
   int message_id;
   switch (status) {
-    case LOGGED_IN_GUEST:
+    case LoginStatus::GUEST:
       message_id = IDS_ASH_STATUS_TRAY_EXIT_GUEST;
       break;
-    case LOGGED_IN_PUBLIC:
+    case LoginStatus::PUBLIC:
       message_id = IDS_ASH_STATUS_TRAY_EXIT_PUBLIC;
       break;
     default:

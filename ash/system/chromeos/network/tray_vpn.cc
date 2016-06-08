@@ -120,15 +120,15 @@ TrayVPN::TrayVPN(SystemTray* system_tray)
 TrayVPN::~TrayVPN() {
 }
 
-views::View* TrayVPN::CreateTrayView(user::LoginStatus status) {
+views::View* TrayVPN::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayVPN::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
-  if (status == user::LOGGED_IN_NONE)
+  if (status == LoginStatus::NOT_LOGGED_IN)
     return NULL;
   if (!tray::VpnDefaultView::ShouldShow())
     return NULL;
@@ -138,12 +138,12 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
                                ->IsInSecondaryLoginScreen();
 
   default_ = new tray::VpnDefaultView(
-      this, status != user::LOGGED_IN_LOCKED && !userAddingRunning);
+      this, status != LoginStatus::LOCKED && !userAddingRunning);
 
   return default_;
 }
 
-views::View* TrayVPN::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayVPN::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
   if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
@@ -167,8 +167,7 @@ void TrayVPN::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayVPN::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayVPN::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayVPN::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {}
 

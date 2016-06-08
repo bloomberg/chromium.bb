@@ -23,9 +23,9 @@ class TraySms : public SystemTrayItem,
   ~TraySms() override;
 
   // Overridden from SystemTrayItem.
-  views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateDetailedView(user::LoginStatus status) override;
-  views::View* CreateNotificationView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
+  views::View* CreateNotificationView(LoginStatus status) override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
   void DestroyNotificationView() override;

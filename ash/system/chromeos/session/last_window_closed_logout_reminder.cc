@@ -28,7 +28,7 @@ LastWindowClosedLogoutReminder::~LastWindowClosedLogoutReminder() {
 
 void LastWindowClosedLogoutReminder::OnLastWindowClosed() {
   if (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() !=
-      user::LOGGED_IN_PUBLIC) {
+      LoginStatus::PUBLIC) {
     return;
   }
 

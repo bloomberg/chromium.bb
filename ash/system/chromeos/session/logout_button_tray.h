@@ -43,13 +43,13 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
+  void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
  private:
   void UpdateVisibility();
 
   views::LabelButton* button_;
-  user::LoginStatus login_status_;
+  LoginStatus login_status_;
   bool show_logout_button_in_tray_;
   base::TimeDelta dialog_duration_;
 

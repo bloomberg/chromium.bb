@@ -32,12 +32,12 @@ TrayEmpty::TrayEmpty(SystemTray* system_tray)
 
 TrayEmpty::~TrayEmpty() {}
 
-views::View* TrayEmpty::CreateTrayView(user::LoginStatus status) {
+views::View* TrayEmpty::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayEmpty::CreateDefaultView(user::LoginStatus status) {
-  if (status == user::LOGGED_IN_NONE)
+views::View* TrayEmpty::CreateDefaultView(LoginStatus status) {
+  if (status == LoginStatus::NOT_LOGGED_IN)
     return NULL;
 
   views::View* view = new views::View;
@@ -50,7 +50,7 @@ views::View* TrayEmpty::CreateDefaultView(user::LoginStatus status) {
   return view;
 }
 
-views::View* TrayEmpty::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayEmpty::CreateDetailedView(LoginStatus status) {
   return NULL;
 }
 
@@ -60,6 +60,6 @@ void TrayEmpty::DestroyDefaultView() {}
 
 void TrayEmpty::DestroyDetailedView() {}
 
-void TrayEmpty::UpdateAfterLoginStatusChange(user::LoginStatus status) {}
+void TrayEmpty::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 }  // namespace ash

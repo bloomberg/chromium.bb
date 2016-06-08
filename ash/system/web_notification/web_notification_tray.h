@@ -77,7 +77,7 @@ class ASH_EXPORT WebNotificationTray
   void ShowMessageCenterBubble();
 
   // Called when the login status is changed.
-  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
+  void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   // Overridden from TrayBackgroundView.
   void SetShelfAlignment(ShelfAlignment alignment) override;

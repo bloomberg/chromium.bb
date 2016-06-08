@@ -96,7 +96,7 @@ LogoutButton::~LogoutButton() {
 LogoutButtonTray::LogoutButtonTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       button_(NULL),
-      login_status_(user::LOGGED_IN_NONE),
+      login_status_(LoginStatus::NOT_LOGGED_IN),
       show_logout_button_in_tray_(false) {
   button_ = new LogoutButton(this);
   tray_container()->AddChildView(button_);
@@ -145,11 +145,10 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
   }
 }
 
-void LogoutButtonTray::UpdateAfterLoginStatusChange(
-    user::LoginStatus login_status) {
+void LogoutButtonTray::UpdateAfterLoginStatusChange(LoginStatus login_status) {
   login_status_ = login_status;
   const base::string16 title =
-      GetLocalizedSignOutStringForStatus(login_status, false);
+      user::GetLocalizedSignOutStringForStatus(login_status, false);
   button_->SetText(title);
   button_->SetAccessibleName(title);
   UpdateVisibility();
@@ -157,8 +156,8 @@ void LogoutButtonTray::UpdateAfterLoginStatusChange(
 
 void LogoutButtonTray::UpdateVisibility() {
   SetVisible(show_logout_button_in_tray_ &&
-             login_status_ != user::LOGGED_IN_NONE &&
-             login_status_ != user::LOGGED_IN_LOCKED);
+             login_status_ != LoginStatus::NOT_LOGGED_IN &&
+             login_status_ != LoginStatus::LOCKED);
 }
 
 }  // namespace ash

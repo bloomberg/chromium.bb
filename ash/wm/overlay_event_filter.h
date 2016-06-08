@@ -59,7 +59,7 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   void OnKeyEvent(ui::KeyEvent* event) override;
 
   // ShellObserver overrides:
-  void OnLoginStateChanged(user::LoginStatus status) override;
+  void OnLoginStateChanged(LoginStatus status) override;
   void OnAppTerminating() override;
   void OnLockStateChanged(bool locked) override;
 

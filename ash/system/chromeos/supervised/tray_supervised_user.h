@@ -28,9 +28,9 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   void UpdateMessage();
 
   // Overridden from SystemTrayItem.
-  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyDefaultView() override;
-  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
   // Overridden from ViewClickListener.
   void OnViewClicked(views::View* sender) override;
@@ -52,7 +52,7 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   LabelTrayView* tray_view_;
 
   // Previous login status to avoid showing notification upon unlock.
-  user::LoginStatus status_;
+  LoginStatus status_;
 
   // Previous user supervised state to avoid showing notification upon unlock.
   bool is_user_supervised_;

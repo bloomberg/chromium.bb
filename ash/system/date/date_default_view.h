@@ -24,7 +24,7 @@ class ASH_EXPORT DateDefaultView : public views::View,
                                    public views::ButtonListener,
                                    public ash::ShutdownPolicyObserver {
  public:
-  explicit DateDefaultView(ash::user::LoginStatus login);
+  explicit DateDefaultView(LoginStatus login);
 
   ~DateDefaultView() override;
 

@@ -36,7 +36,7 @@ public:
   ~TraySessionLengthLimit() override;
 
   // SystemTrayItem:
-  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyDefaultView() override;
 
   // SessionLengthLimitObserver:

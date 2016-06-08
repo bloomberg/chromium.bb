@@ -98,7 +98,7 @@ class BluetoothDetailedView : public TrayDetailsView,
                               public ViewClickListener,
                               public views::ButtonListener {
  public:
-  BluetoothDetailedView(SystemTrayItem* owner, user::LoginStatus login)
+  BluetoothDetailedView(SystemTrayItem* owner, LoginStatus login)
       : TrayDetailsView(owner),
         login_(login),
         manage_devices_(NULL),
@@ -194,7 +194,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   void AppendHeaderEntry() {
     CreateSpecialRow(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
 
-    if (login_ == user::LOGGED_IN_LOCKED)
+    if (login_ == LoginStatus::LOCKED)
       return;
 
     throbber_ = new ThrobberView;
@@ -304,7 +304,7 @@ class BluetoothDetailedView : public TrayDetailsView,
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
 
-    if (login_ == user::LOGGED_IN_NONE || login_ == user::LOGGED_IN_LOCKED ||
+    if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
         userAddingRunning)
       return;
 
@@ -392,7 +392,7 @@ class BluetoothDetailedView : public TrayDetailsView,
       NOTREACHED();
   }
 
-  user::LoginStatus login_;
+  LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
   views::View* manage_devices_;
@@ -418,18 +418,18 @@ TrayBluetooth::~TrayBluetooth() {
   Shell::GetInstance()->system_tray_notifier()->RemoveBluetoothObserver(this);
 }
 
-views::View* TrayBluetooth::CreateTrayView(user::LoginStatus status) {
+views::View* TrayBluetooth::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayBluetooth::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   default_ =
-      new tray::BluetoothDefaultView(this, status != user::LOGGED_IN_LOCKED);
+      new tray::BluetoothDefaultView(this, status != LoginStatus::LOCKED);
   return default_;
 }
 
-views::View* TrayBluetooth::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayBluetooth::CreateDetailedView(LoginStatus status) {
   if (!Shell::GetInstance()->system_tray_delegate()->GetBluetoothAvailable())
     return NULL;
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
@@ -450,7 +450,7 @@ void TrayBluetooth::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayBluetooth::UpdateAfterLoginStatusChange(user::LoginStatus status) {}
+void TrayBluetooth::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayBluetooth::OnBluetoothRefresh() {
   if (default_)

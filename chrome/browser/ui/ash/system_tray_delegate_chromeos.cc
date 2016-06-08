@@ -146,15 +146,15 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
   info->third_party = extension_ime_util::IsExtensionIME(ime.id());
 }
 
-gfx::NativeWindow GetNativeWindowByStatus(ash::user::LoginStatus login_status,
+gfx::NativeWindow GetNativeWindowByStatus(ash::LoginStatus login_status,
                                           bool session_started) {
   bool isUserAddingRunning = ash::Shell::GetInstance()
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
 
   int container_id =
-      (!session_started || login_status == ash::user::LOGGED_IN_NONE ||
-       login_status == ash::user::LOGGED_IN_LOCKED || isUserAddingRunning)
+      (!session_started || login_status == ash::LoginStatus::NOT_LOGGED_IN ||
+       login_status == ash::LoginStatus::LOCKED || isUserAddingRunning)
           ? ash::kShellWindowId_LockSystemModalContainer
           : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
@@ -211,7 +211,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   registrar_->Add(this,
                   chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                   content::NotificationService::AllSources());
-  if (GetUserLoginStatus() == ash::user::LOGGED_IN_NONE) {
+  if (GetUserLoginStatus() == ash::LoginStatus::NOT_LOGGED_IN) {
     registrar_->Add(this,
                     chrome::NOTIFICATION_SESSION_STARTED,
                     content::NotificationService::AllSources());
@@ -334,35 +334,33 @@ bool SystemTrayDelegateChromeOS::GetTrayVisibilityOnStartup() {
   return LoginState::Get()->IsUserLoggedIn();
 }
 
-ash::user::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
-  // All non-logged in ChromeOS specific LOGGED_IN states map to the same
-  // Ash specific LOGGED_IN state.
+ash::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
   if (!LoginState::Get()->IsUserLoggedIn())
-    return ash::user::LOGGED_IN_NONE;
+    return ash::LoginStatus::NOT_LOGGED_IN;
 
   if (screen_locked_)
-    return ash::user::LOGGED_IN_LOCKED;
+    return ash::LoginStatus::LOCKED;
 
   LoginState::LoggedInUserType user_type =
       LoginState::Get()->GetLoggedInUserType();
   switch (user_type) {
     case LoginState::LOGGED_IN_USER_NONE:
-      return ash::user::LOGGED_IN_NONE;
+      return ash::LoginStatus::NOT_LOGGED_IN;
     case LoginState::LOGGED_IN_USER_REGULAR:
-      return ash::user::LOGGED_IN_USER;
+      return ash::LoginStatus::USER;
     case LoginState::LOGGED_IN_USER_OWNER:
-      return ash::user::LOGGED_IN_OWNER;
+      return ash::LoginStatus::OWNER;
     case LoginState::LOGGED_IN_USER_GUEST:
-      return ash::user::LOGGED_IN_GUEST;
+      return ash::LoginStatus::GUEST;
     case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
-      return ash::user::LOGGED_IN_PUBLIC;
+      return ash::LoginStatus::PUBLIC;
     case LoginState::LOGGED_IN_USER_SUPERVISED:
-      return ash::user::LOGGED_IN_SUPERVISED;
+      return ash::LoginStatus::SUPERVISED;
     case LoginState::LOGGED_IN_USER_KIOSK_APP:
-      return ash::user::LOGGED_IN_KIOSK_APP;
+      return ash::LoginStatus::KIOSK_APP;
   }
   NOTREACHED();
-  return ash::user::LOGGED_IN_NONE;
+  return ash::LoginStatus::NOT_LOGGED_IN;
 }
 
 void SystemTrayDelegateChromeOS::ChangeProfilePicture() {
@@ -540,13 +538,13 @@ void SystemTrayDelegateChromeOS::ShowSupervisedUserInfo() {
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
-  ash::user::LoginStatus status = GetUserLoginStatus();
+  ash::LoginStatus status = GetUserLoginStatus();
   bool userAddingRunning = ash::Shell::GetInstance()
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
-  if (status == ash::user::LOGGED_IN_NONE ||
-      status == ash::user::LOGGED_IN_LOCKED || userAddingRunning) {
+  if (status == ash::LoginStatus::NOT_LOGGED_IN ||
+      status == ash::LoginStatus::LOCKED || userAddingRunning) {
     scoped_refptr<chromeos::HelpAppLauncher> help_app(
         new chromeos::HelpAppLauncher(GetNativeWindow()));
     help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
@@ -777,7 +775,7 @@ bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
 }
 
 void SystemTrayDelegateChromeOS::ChangeProxySettings() {
-  CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
+  CHECK(GetUserLoginStatus() == ash::LoginStatus::NOT_LOGGED_IN);
   LoginDisplayHost::default_host()->OpenProxySettings();
 }
 
@@ -1084,7 +1082,7 @@ void SystemTrayDelegateChromeOS::Observe(
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
       // This notification is also sent on login screen when user avatar
       // is loaded from file.
-      if (GetUserLoginStatus() != ash::user::LOGGED_IN_NONE) {
+      if (GetUserLoginStatus() != ash::LoginStatus::NOT_LOGGED_IN) {
         GetSystemTrayNotifier()->NotifyUserUpdate();
       }
       break;

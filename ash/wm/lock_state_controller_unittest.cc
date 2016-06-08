@@ -331,12 +331,12 @@ class LockStateControllerTest : public AshTestBase {
         EnableMaximizeModeWindowManager(enable);
   }
 
-  void Initialize(bool legacy_button, user::LoginStatus status) {
+  void Initialize(bool legacy_button, LoginStatus status) {
     power_button_controller_->set_has_legacy_power_button_for_test(
         legacy_button);
     lock_state_controller_->OnLoginStateChanged(status);
-    SetUserLoggedIn(status != user::LOGGED_IN_NONE);
-    if (status == user::LOGGED_IN_GUEST)
+    SetUserLoggedIn(status != LoginStatus::NOT_LOGGED_IN);
+    if (status == LoginStatus::GUEST)
       SetCanLockScreen(false);
     lock_state_controller_->OnLockStateChanged(false);
   }
@@ -359,7 +359,7 @@ class LockStateControllerTest : public AshTestBase {
 // time the button is pressed and shut down when it's pressed from the locked
 // state.
 TEST_F(LockStateControllerTest, LegacyLockAndShutDown) {
-  Initialize(true, user::LOGGED_IN_USER);
+  Initialize(true, LoginStatus::USER);
 
   ExpectUnlockedState();
 
@@ -409,7 +409,7 @@ TEST_F(LockStateControllerTest, LegacyLockAndShutDown) {
 // Test that we start shutting down immediately if the power button is pressed
 // while we're not logged in on an unofficial system.
 TEST_F(LockStateControllerTest, LegacyNotLoggedIn) {
-  Initialize(true, user::LOGGED_IN_NONE);
+  Initialize(true, LoginStatus::NOT_LOGGED_IN);
 
   PressPowerButton();
   ExpectShutdownAnimationStarted();
@@ -420,7 +420,7 @@ TEST_F(LockStateControllerTest, LegacyNotLoggedIn) {
 // Test that we start shutting down immediately if the power button is pressed
 // while we're logged in as a guest on an unofficial system.
 TEST_F(LockStateControllerTest, LegacyGuest) {
-  Initialize(true, user::LOGGED_IN_GUEST);
+  Initialize(true, LoginStatus::GUEST);
 
   PressPowerButton();
   ExpectShutdownAnimationStarted();
@@ -431,7 +431,7 @@ TEST_F(LockStateControllerTest, LegacyGuest) {
 // When we hold the power button while the user isn't logged in, we should shut
 // down the machine directly.
 TEST_F(LockStateControllerTest, ShutdownWhenNotLoggedIn) {
-  Initialize(false, user::LOGGED_IN_NONE);
+  Initialize(false, LoginStatus::NOT_LOGGED_IN);
 
   // Press the power button and check that we start the shutdown timer.
   PressPowerButton();
@@ -470,7 +470,7 @@ TEST_F(LockStateControllerTest, ShutdownWhenNotLoggedIn) {
 
 // Test that we lock the screen and deal with unlocking correctly.
 TEST_F(LockStateControllerTest, LockAndUnlock) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   ExpectUnlockedState();
 
@@ -529,7 +529,7 @@ TEST_F(LockStateControllerTest, LockAndUnlock) {
 
 // Test that we deal with cancelling lock correctly.
 TEST_F(LockStateControllerTest, LockAndCancel) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   ExpectUnlockedState();
 
@@ -555,7 +555,7 @@ TEST_F(LockStateControllerTest, LockAndCancel) {
 
 // Test that we deal with cancelling lock correctly.
 TEST_F(LockStateControllerTest, LockAndCancelAndLockAgain) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   ExpectUnlockedState();
 
@@ -591,7 +591,7 @@ TEST_F(LockStateControllerTest, LockAndCancelAndLockAgain) {
 
 // Hold the power button down from the unlocked state to eventual shutdown.
 TEST_F(LockStateControllerTest, LockToShutdown) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   // Hold the power button and lock the screen.
   PressPowerButton();
@@ -624,7 +624,7 @@ TEST_F(LockStateControllerTest, LockToShutdown) {
 // Hold the power button down from the unlocked state to eventual shutdown,
 // then release the button while system does locking.
 TEST_F(LockStateControllerTest, CancelLockToShutdown) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   PressPowerButton();
 
@@ -650,7 +650,7 @@ TEST_F(LockStateControllerTest, CancelLockToShutdown) {
 #ifndef OS_WIN
 // Test that we handle the case where lock requests are ignored.
 TEST_F(LockStateControllerTest, Lock) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   // Hold the power button and lock the screen.
   PressPowerButton();
@@ -672,7 +672,7 @@ TEST_F(LockStateControllerTest, Lock) {
 // Test the basic operation of the lock button (not logged in).
 TEST_F(LockStateControllerTest, LockButtonBasicNotLoggedIn) {
   // The lock button shouldn't do anything if we aren't logged in.
-  Initialize(false, user::LOGGED_IN_NONE);
+  Initialize(false, LoginStatus::NOT_LOGGED_IN);
 
   PressLockButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
@@ -683,7 +683,7 @@ TEST_F(LockStateControllerTest, LockButtonBasicNotLoggedIn) {
 // Test the basic operation of the lock button (guest).
 TEST_F(LockStateControllerTest, LockButtonBasicGuest) {
   // The lock button shouldn't do anything when we're logged in as a guest.
-  Initialize(false, user::LOGGED_IN_GUEST);
+  Initialize(false, LoginStatus::GUEST);
 
   PressLockButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
@@ -695,7 +695,7 @@ TEST_F(LockStateControllerTest, LockButtonBasicGuest) {
 TEST_F(LockStateControllerTest, LockButtonBasic) {
   // If we're logged in as a regular user, we should start the lock timer and
   // the pre-lock animation.
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   PressLockButton();
   ExpectPreLockAnimationStarted();
@@ -741,7 +741,7 @@ TEST_F(LockStateControllerTest, LockButtonBasic) {
 
 // Test that the power button takes priority over the lock button.
 TEST_F(LockStateControllerTest, PowerButtonPreemptsLockButton) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   // While the lock button is down, hold the power button.
   PressLockButton();
@@ -791,7 +791,7 @@ TEST_F(LockStateControllerTest, PowerButtonPreemptsLockButton) {
 // slow-close path (e.g. via the wrench menu), test that we still show the
 // fast-close animation.
 TEST_F(LockStateControllerTest, LockWithoutButton) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
   lock_state_controller_->OnStartingLock();
 
   ExpectPreLockAnimationStarted();
@@ -805,7 +805,7 @@ TEST_F(LockStateControllerTest, LockWithoutButton) {
 // When we hear that the process is exiting but we haven't had a chance to
 // display an animation, we should just blank the screen.
 TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
   lock_state_controller_->OnAppTerminating();
 
   EXPECT_TRUE(
@@ -819,7 +819,7 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
 // Test that we display the fast-close animation and shut down when we get an
 // outside request to shut down (e.g. from the login or lock screen).
 TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
-  Initialize(false, user::LOGGED_IN_NONE);
+  Initialize(false, LoginStatus::NOT_LOGGED_IN);
 
   lock_state_controller_->RequestShutdown();
 
@@ -836,7 +836,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
 }
 
 TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   SystemLocks();
 
@@ -858,7 +858,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
 }
 
 TEST_F(LockStateControllerTest, RequestAndCancelShutdownFromLockScreen) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   SystemLocks();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
@@ -886,7 +886,7 @@ TEST_F(LockStateControllerTest, RequestAndCancelShutdownFromLockScreen) {
 
 // Test that we ignore power button presses when the screen is turned off.
 TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
 
   // When the screen brightness is at 0%, we shouldn't do anything in response
   // to power button presses.
@@ -947,7 +947,7 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
 
 // Test that hidden background appears and revers correctly on lock/cancel.
 TEST_F(LockStateControllerTest, TestHiddenBackgroundLockCancel) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
   HideBackground();
 
   ExpectUnlockedState();
@@ -977,7 +977,7 @@ TEST_F(LockStateControllerTest, TestHiddenBackgroundLockCancel) {
 
 // Test that hidden background appears and revers correctly on lock/unlock.
 TEST_F(LockStateControllerTest, TestHiddenBackgroundLockUnlock) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
   HideBackground();
 
   ExpectUnlockedState();
@@ -1076,7 +1076,7 @@ TEST_F(LockStateControllerTest, Screenshot) {
 // Tests that a lock action is cancellable when quick lock is turned on and
 // maximize mode is not active.
 TEST_F(LockStateControllerTest, QuickLockWhileNotInMaximizeMode) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
   power_button_controller_->set_enable_quick_lock_for_test(true);
   EnableMaximizeMode(false);
 
@@ -1094,7 +1094,7 @@ TEST_F(LockStateControllerTest, QuickLockWhileNotInMaximizeMode) {
 // Tests that a lock action is not cancellable when quick lock is turned on and
 // maximize mode is active.
 TEST_F(LockStateControllerTest, QuickLockWhileInMaximizeMode) {
-  Initialize(false, user::LOGGED_IN_USER);
+  Initialize(false, LoginStatus::USER);
   power_button_controller_->set_enable_quick_lock_for_test(true);
   EnableMaximizeMode(true);
 

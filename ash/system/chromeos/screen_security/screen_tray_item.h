@@ -119,8 +119,8 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   virtual std::string GetNotificationId() = 0;
 
   // Overridden from SystemTrayItem.
-  views::View* CreateTrayView(user::LoginStatus status) override = 0;
-  views::View* CreateDefaultView(user::LoginStatus status) override = 0;
+  views::View* CreateTrayView(LoginStatus status) override = 0;
+  views::View* CreateDefaultView(LoginStatus status) override = 0;
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;

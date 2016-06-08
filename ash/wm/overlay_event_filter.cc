@@ -34,8 +34,7 @@ void OverlayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
 }
 
-void OverlayEventFilter::OnLoginStateChanged(
-    user::LoginStatus status) {
+void OverlayEventFilter::OnLoginStateChanged(LoginStatus status) {
   Cancel();
 }
 

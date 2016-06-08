@@ -109,7 +109,7 @@ void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
   tray_view()->SetVisible(ShouldBeVisible());
 }
 
-views::View* TrayRotationLock::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayRotationLock::CreateDefaultView(LoginStatus status) {
   if (OnPrimaryDisplay())
     return new tray::RotationLockDefaultView(this);
   return NULL;

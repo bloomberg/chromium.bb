@@ -33,19 +33,19 @@ class ASH_EXPORT SystemTrayItem {
   // automatically resizes the widget when the size of the view changes, and
   // adds animation when the visibility of the view changes. If a view wants to
   // avoid this behavior, then it should not be a TrayItemView.
-  virtual views::View* CreateTrayView(user::LoginStatus status);
+  virtual views::View* CreateTrayView(LoginStatus status);
 
   // Returns a view for the item to be displayed in the list. This view can be
   // displayed with a number of other tray items, so this should not be too
   // big.
-  virtual views::View* CreateDefaultView(user::LoginStatus status);
+  virtual views::View* CreateDefaultView(LoginStatus status);
 
   // Returns a detailed view for the item. This view is displayed standalone.
-  virtual views::View* CreateDetailedView(user::LoginStatus status);
+  virtual views::View* CreateDetailedView(LoginStatus status);
 
   // Returns a notification view for the item. This view is displayed with
   // other notifications and should be the same size as default views.
-  virtual views::View* CreateNotificationView(user::LoginStatus status);
+  virtual views::View* CreateNotificationView(LoginStatus status);
 
   // These functions are called when the corresponding view item is about to be
   // removed. An item should do appropriate cleanup in these functions.
@@ -59,7 +59,7 @@ class ASH_EXPORT SystemTrayItem {
   // It is not necessary the update the default or detailed view, since the
   // default/detailed popup is closed when login status changes. The default
   // implementation does nothing.
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
+  virtual void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // Updates the tray view (if applicable) when shelf's alignment changes.
   // The default implementation does nothing.

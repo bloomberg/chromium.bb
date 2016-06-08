@@ -23,7 +23,7 @@ TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       time_tray_(NULL),
       default_view_(NULL),
-      login_status_(user::LOGGED_IN_NONE) {
+      login_status_(LoginStatus::NOT_LOGGED_IN) {
 #if defined(OS_CHROMEOS)
   system_clock_observer_.reset(new SystemClockObserver());
 #endif
@@ -48,11 +48,11 @@ const DateDefaultView* TrayDate::GetDefaultViewForTesting() const {
   return default_view_;
 }
 
-views::View* TrayDate::CreateDefaultViewForTesting(user::LoginStatus status) {
+views::View* TrayDate::CreateDefaultViewForTesting(LoginStatus status) {
   return CreateDefaultView(status);
 }
 
-views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
+views::View* TrayDate::CreateTrayView(LoginStatus status) {
   CHECK(time_tray_ == NULL);
   ClockLayout clock_layout =
       system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM
@@ -64,7 +64,7 @@ views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   return view;
 }
 
-views::View* TrayDate::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayDate::CreateDefaultView(LoginStatus status) {
   default_view_ = new DateDefaultView(status);
 
 #if defined(OS_CHROMEOS)
@@ -76,7 +76,7 @@ views::View* TrayDate::CreateDefaultView(user::LoginStatus status) {
   return default_view_;
 }
 
-views::View* TrayDate::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayDate::CreateDetailedView(LoginStatus status) {
   return NULL;
 }
 
@@ -91,8 +91,7 @@ void TrayDate::DestroyDefaultView() {
 void TrayDate::DestroyDetailedView() {
 }
 
-void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayDate::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (time_tray_) {
@@ -119,7 +118,7 @@ void TrayDate::OnSystemClockTimeUpdated() {
 void TrayDate::OnSystemClockCanSetTimeChanged(bool can_set_time) {
   // Outside of a logged-in session, the date button should launch the set time
   // dialog if the time can be set.
-  if (default_view_ && login_status_ == user::LOGGED_IN_NONE) {
+  if (default_view_ && login_status_ == LoginStatus::NOT_LOGGED_IN) {
     default_view_->GetDateView()->SetAction(
         can_set_time ? TrayDate::SET_SYSTEM_TIME : TrayDate::NONE);
   }

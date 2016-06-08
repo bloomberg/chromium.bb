@@ -15,12 +15,12 @@ TrayUserSeparator::TrayUserSeparator(SystemTray* system_tray)
       separator_shown_(false) {
 }
 
-views::View* TrayUserSeparator::CreateTrayView(user::LoginStatus status) {
+views::View* TrayUserSeparator::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayUserSeparator::CreateDefaultView(user::LoginStatus status) {
-  if (status == user::LOGGED_IN_NONE)
+views::View* TrayUserSeparator::CreateDefaultView(LoginStatus status) {
+  if (status == LoginStatus::NOT_LOGGED_IN)
     return NULL;
 
   const SessionStateDelegate* session_state_delegate =
@@ -37,7 +37,7 @@ views::View* TrayUserSeparator::CreateDefaultView(user::LoginStatus status) {
   return new views::View();
 }
 
-views::View* TrayUserSeparator::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayUserSeparator::CreateDetailedView(LoginStatus status) {
   return NULL;
 }
 

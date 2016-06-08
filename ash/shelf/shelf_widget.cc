@@ -670,21 +670,21 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
   if (Shell::GetInstance()->system_tray_delegate()->IsUserSupervised())
     return false;
 
-  user::LoginStatus login_status =
+  LoginStatus login_status =
       Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 
   switch (login_status) {
-    case user::LOGGED_IN_LOCKED:
-      // Shelf alignment changes can be requested while being locked, but will
-      // be applied upon unlock.
-    case user::LOGGED_IN_USER:
-    case user::LOGGED_IN_OWNER:
+    case LoginStatus::LOCKED:
+    // Shelf alignment changes can be requested while being locked, but will
+    // be applied upon unlock.
+    case LoginStatus::USER:
+    case LoginStatus::OWNER:
       return true;
-    case user::LOGGED_IN_PUBLIC:
-    case user::LOGGED_IN_SUPERVISED:
-    case user::LOGGED_IN_GUEST:
-    case user::LOGGED_IN_KIOSK_APP:
-    case user::LOGGED_IN_NONE:
+    case LoginStatus::PUBLIC:
+    case LoginStatus::SUPERVISED:
+    case LoginStatus::GUEST:
+    case LoginStatus::KIOSK_APP:
+    case LoginStatus::NOT_LOGGED_IN:
       return false;
   }
 

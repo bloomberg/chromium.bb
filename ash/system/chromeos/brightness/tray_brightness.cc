@@ -209,17 +209,17 @@ void TrayBrightness::HandleInitialBrightness(double percent) {
     HandleBrightnessChanged(percent, false);
 }
 
-views::View* TrayBrightness::CreateTrayView(user::LoginStatus status) {
+views::View* TrayBrightness::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayBrightness::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayBrightness::CreateDefaultView(LoginStatus status) {
   CHECK(brightness_view_ == NULL);
   brightness_view_ = new tray::BrightnessView(true, current_percent_);
   return brightness_view_;
 }
 
-views::View* TrayBrightness::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayBrightness::CreateDetailedView(LoginStatus status) {
   CHECK(brightness_view_ == NULL);
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       ash::UMA_STATUS_AREA_DETAILED_BRIGHTNESS_VIEW);
@@ -240,8 +240,7 @@ void TrayBrightness::DestroyDetailedView() {
     brightness_view_ = NULL;
 }
 
-void TrayBrightness::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayBrightness::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 bool TrayBrightness::ShouldHideArrow() const {
   return true;

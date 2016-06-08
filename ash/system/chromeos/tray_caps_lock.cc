@@ -173,7 +173,7 @@ bool TrayCapsLock::GetInitialVisibility() {
   return CapsLockIsEnabled();
 }
 
-views::View* TrayCapsLock::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayCapsLock::CreateDefaultView(LoginStatus status) {
   if (!caps_lock_enabled_)
     return NULL;
   DCHECK(default_ == NULL);
@@ -182,7 +182,7 @@ views::View* TrayCapsLock::CreateDefaultView(user::LoginStatus status) {
   return default_;
 }
 
-views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
   DCHECK(detailed_ == NULL);
   detailed_ = new views::View;
 

@@ -69,8 +69,7 @@ MultiProfileMediaTrayItem::MultiProfileMediaTrayItem(SystemTray* system_tray)
 MultiProfileMediaTrayItem::~MultiProfileMediaTrayItem() {
 }
 
-views::View* MultiProfileMediaTrayItem::CreateTrayView(
-    user::LoginStatus status) {
+views::View* MultiProfileMediaTrayItem::CreateTrayView(LoginStatus status) {
   tray_view_ = new tray::MultiProfileMediaTrayView(this);
   return tray_view_;
 }

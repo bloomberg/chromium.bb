@@ -332,12 +332,12 @@ void PublicAccountUserDetails::CalculatePreferredSize(int max_allowed_width) {
 
 }  // namespace
 
-UserCardView::UserCardView(user::LoginStatus login_status,
+UserCardView::UserCardView(LoginStatus login_status,
                            int max_width,
                            int user_index) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
-  if (login_status == user::LOGGED_IN_PUBLIC) {
+  if (login_status == LoginStatus::PUBLIC) {
     AddPublicModeUserContent(max_width);
   } else {
     AddUserContent(login_status, user_index);
@@ -355,15 +355,14 @@ void UserCardView::GetAccessibleState(ui::AXViewState* state) {
 }
 
 void UserCardView::AddPublicModeUserContent(int max_width) {
-  views::View* icon = CreateIcon(user::LOGGED_IN_PUBLIC, 0);
+  views::View* icon = CreateIcon(LoginStatus::PUBLIC, 0);
   AddChildView(icon);
   int details_max_width = max_width - icon->GetPreferredSize().width() -
                           kTrayPopupPaddingBetweenItems;
   AddChildView(new PublicAccountUserDetails(details_max_width));
 }
 
-void UserCardView::AddUserContent(user::LoginStatus login_status,
-                                  int user_index) {
+void UserCardView::AddUserContent(LoginStatus login_status, int user_index) {
   views::View* icon = CreateIcon(login_status, user_index);
   AddChildView(icon);
   views::Label* user_name = NULL;
@@ -371,7 +370,7 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
       Shell::GetInstance()->session_state_delegate();
   if (!user_index) {
     base::string16 user_name_string =
-        login_status == user::LOGGED_IN_GUEST
+        login_status == LoginStatus::GUEST
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL)
             : delegate->GetUserInfo(user_index)->GetDisplayName();
     if (!user_name_string.empty()) {
@@ -381,7 +380,7 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
   }
 
   views::Label* user_email = NULL;
-  if (login_status != user::LOGGED_IN_GUEST) {
+  if (login_status != LoginStatus::GUEST) {
     SystemTrayDelegate* tray_delegate =
         Shell::GetInstance()->system_tray_delegate();
     base::string16 user_email_string =
@@ -441,11 +440,11 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
   }
 }
 
-views::View* UserCardView::CreateIcon(user::LoginStatus login_status,
+views::View* UserCardView::CreateIcon(LoginStatus login_status,
                                       int user_index) {
   RoundedImageView* icon =
       new RoundedImageView(kTrayAvatarCornerRadius, user_index == 0);
-  if (login_status == user::LOGGED_IN_GUEST) {
+  if (login_status == LoginStatus::GUEST) {
     icon->SetImage(*ui::ResourceBundle::GetSharedInstance()
                         .GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON)
                         .ToImageSkia(),

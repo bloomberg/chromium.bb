@@ -118,16 +118,16 @@ void OpenSettings() {
   // switch is intentionally introduced without default, to cause an error when
   // a new type of login status is introduced.
   switch (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus()) {
-    case user::LOGGED_IN_NONE:
-    case user::LOGGED_IN_LOCKED:
+    case LoginStatus::NOT_LOGGED_IN:
+    case LoginStatus::LOCKED:
       return;
 
-    case user::LOGGED_IN_USER:
-    case user::LOGGED_IN_OWNER:
-    case user::LOGGED_IN_GUEST:
-    case user::LOGGED_IN_PUBLIC:
-    case user::LOGGED_IN_SUPERVISED:
-    case user::LOGGED_IN_KIOSK_APP:
+    case LoginStatus::USER:
+    case LoginStatus::OWNER:
+    case LoginStatus::GUEST:
+    case LoginStatus::PUBLIC:
+    case LoginStatus::SUPERVISED:
+    case LoginStatus::KIOSK_APP:
       ash::SystemTrayDelegate* delegate =
           Shell::GetInstance()->system_tray_delegate();
       if (delegate->ShouldShowSettings())
@@ -415,7 +415,7 @@ void TrayDisplay::CreateOrUpdateNotification(
       std::move(notification));
 }
 
-views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayDisplay::CreateDefaultView(LoginStatus status) {
   DCHECK(default_ == NULL);
   default_ = new DisplayView();
   return default_;

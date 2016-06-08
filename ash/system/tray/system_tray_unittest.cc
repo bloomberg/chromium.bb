@@ -54,7 +54,7 @@ class TestItem : public SystemTrayItem {
  public:
   TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
-  views::View* CreateTrayView(user::LoginStatus status) override {
+  views::View* CreateTrayView(LoginStatus status) override {
     tray_view_ = new views::View;
     // Add a label so it has non-zero width.
     tray_view_->SetLayoutManager(new views::FillLayout);
@@ -62,14 +62,14 @@ class TestItem : public SystemTrayItem {
     return tray_view_;
   }
 
-  views::View* CreateDefaultView(user::LoginStatus status) override {
+  views::View* CreateDefaultView(LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetLayoutManager(new views::FillLayout);
     default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view_;
   }
 
-  views::View* CreateDetailedView(user::LoginStatus status) override {
+  views::View* CreateDetailedView(LoginStatus status) override {
     detailed_view_ = new views::View;
     detailed_view_->SetLayoutManager(new views::FillLayout);
     detailed_view_->AddChildView(
@@ -77,7 +77,7 @@ class TestItem : public SystemTrayItem {
     return detailed_view_;
   }
 
-  views::View* CreateNotificationView(user::LoginStatus status) override {
+  views::View* CreateNotificationView(LoginStatus status) override {
     notification_view_ = new views::View;
     return notification_view_;
   }
@@ -90,7 +90,7 @@ class TestItem : public SystemTrayItem {
 
   void DestroyNotificationView() override { notification_view_ = NULL; }
 
-  void UpdateAfterLoginStatusChange(user::LoginStatus status) override {}
+  void UpdateAfterLoginStatusChange(LoginStatus status) override {}
 
   views::View* tray_view() const { return tray_view_; }
   views::View* default_view() const { return default_view_; }
@@ -110,27 +110,25 @@ class TestNoViewItem : public SystemTrayItem {
  public:
   TestNoViewItem() : SystemTrayItem(GetSystemTray()) {}
 
-  views::View* CreateTrayView(user::LoginStatus status) override {
-    return NULL;
+  views::View* CreateTrayView(LoginStatus status) override { return nullptr; }
+
+  views::View* CreateDefaultView(LoginStatus status) override {
+    return nullptr;
   }
 
-  views::View* CreateDefaultView(user::LoginStatus status) override {
-    return NULL;
+  views::View* CreateDetailedView(LoginStatus status) override {
+    return nullptr;
   }
 
-  views::View* CreateDetailedView(user::LoginStatus status) override {
-    return NULL;
-  }
-
-  views::View* CreateNotificationView(user::LoginStatus status) override {
-    return NULL;
+  views::View* CreateNotificationView(LoginStatus status) override {
+    return nullptr;
   }
 
   void DestroyTrayView() override {}
   void DestroyDefaultView() override {}
   void DestroyDetailedView() override {}
   void DestroyNotificationView() override {}
-  void UpdateAfterLoginStatusChange(user::LoginStatus status) override {}
+  void UpdateAfterLoginStatusChange(LoginStatus status) override {}
 };
 
 class ModalWidgetDelegate : public views::WidgetDelegateView {

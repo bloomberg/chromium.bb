@@ -93,7 +93,7 @@ class SystemBubbleWrapper {
                 TrayBubbleView::InitParams* init_params,
                 bool is_persistent) {
     DCHECK(anchor);
-    user::LoginStatus login_status =
+    LoginStatus login_status =
         Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
     bubble_->InitView(anchor, login_status, init_params);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_->bubble_view()));
@@ -306,7 +306,7 @@ void SystemTray::HideNotificationView(SystemTrayItem* item) {
     UpdateNotificationBubble();
 }
 
-void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
+void SystemTray::UpdateAfterLoginStatusChange(LoginStatus login_status) {
   DestroySystemBubble();
   UpdateNotificationBubble();
 
@@ -453,7 +453,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool persistent) {
   // No system tray bubbles in kiosk mode.
   if (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() ==
-      ash::user::LOGGED_IN_KIOSK_APP) {
+      LoginStatus::KIOSK_APP) {
     return;
   }
 

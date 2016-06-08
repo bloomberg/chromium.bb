@@ -30,7 +30,7 @@ class TrayEnterprise : public SystemTrayItem,
   void UpdateEnterpriseMessage();
 
   // Overridden from SystemTrayItem.
-  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyDefaultView() override;
 
   // Overridden from EnterpriseDomainObserver.

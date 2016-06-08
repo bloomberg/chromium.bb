@@ -36,7 +36,7 @@ void TrayImageItem::SetImageFromResourceId(int resource_id) {
       GetImageNamed(resource_id_).ToImageSkia());
 }
 
-views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
+views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
   CHECK(tray_view_ == NULL);
   tray_view_ = new TrayItemView(this);
   tray_view_->CreateImageView();
@@ -47,16 +47,15 @@ views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
   return tray_view_;
 }
 
-views::View* TrayImageItem::CreateDefaultView(user::LoginStatus status) {
-  return NULL;
+views::View* TrayImageItem::CreateDefaultView(LoginStatus status) {
+  return nullptr;
 }
 
-views::View* TrayImageItem::CreateDetailedView(user::LoginStatus status) {
-  return NULL;
+views::View* TrayImageItem::CreateDetailedView(LoginStatus status) {
+  return nullptr;
 }
 
-void TrayImageItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayImageItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayImageItemBorder(tray_view_, alignment);

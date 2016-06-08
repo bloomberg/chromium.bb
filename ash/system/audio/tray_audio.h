@@ -55,8 +55,8 @@ class TrayAudio : public TrayImageItem,
   bool GetInitialVisibility() override;
 
   // Overridden from SystemTrayItem.
-  views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
   bool ShouldHideArrow() const override;

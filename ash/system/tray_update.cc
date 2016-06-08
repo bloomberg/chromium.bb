@@ -173,13 +173,13 @@ bool TrayUpdate::GetInitialVisibility() {
   return info.update_required;
 }
 
-views::View* TrayUpdate::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayUpdate::CreateDefaultView(LoginStatus status) {
   UpdateInfo info;
   Shell::GetInstance()->system_tray_delegate()->GetSystemUpdateInfo(&info);
   return info.update_required ? new UpdateView(info) : nullptr;
 }
 
-views::View* TrayUpdate::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayUpdate::CreateDetailedView(LoginStatus status) {
   return CreateDefaultView(status);
 }
 

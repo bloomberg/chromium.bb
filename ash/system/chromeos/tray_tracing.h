@@ -37,8 +37,8 @@ class TrayTracing : public TrayImageItem,
 
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
-  views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
 

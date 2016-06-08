@@ -25,15 +25,15 @@ gfx::NativeWindow GetNativeWindow() {
   bool session_started = ash::Shell::GetInstance()
                              ->session_state_delegate()
                              ->IsActiveUserSessionStarted();
-  ash::user::LoginStatus login_status =
+  ash::LoginStatus login_status =
       ash::Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
   bool isUserAddingRunning = ash::Shell::GetInstance()
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
 
   int container_id =
-      (!session_started || login_status == ash::user::LOGGED_IN_NONE ||
-       login_status == ash::user::LOGGED_IN_LOCKED || isUserAddingRunning)
+      (!session_started || login_status == ash::LoginStatus::NOT_LOGGED_IN ||
+       login_status == ash::LoginStatus::LOCKED || isUserAddingRunning)
           ? ash::kShellWindowId_LockSystemModalContainer
           : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),

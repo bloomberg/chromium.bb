@@ -30,7 +30,7 @@ class ASH_EXPORT TrayAudioChromeOs
 
  private:
   // Overridden from SystemTrayItem.
-  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyDetailedView() override;
 
   // Overridden from display::DisplayObserver.

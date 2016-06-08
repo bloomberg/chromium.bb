@@ -74,14 +74,14 @@ class TestItem : public SystemTrayItem {
  public:
   TestItem() : SystemTrayItem(GetSystemTray()) {}
 
-  views::View* CreateDefaultView(user::LoginStatus status) override {
+  views::View* CreateDefaultView(LoginStatus status) override {
     views::View* default_view = new views::View;
     default_view->SetLayoutManager(new views::FillLayout);
     default_view->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view;
   }
 
-  views::View* CreateNotificationView(user::LoginStatus status) override {
+  views::View* CreateNotificationView(LoginStatus status) override {
     return new views::View;
   }
 

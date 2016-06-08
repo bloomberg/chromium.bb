@@ -36,7 +36,7 @@ StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
       logout_button_tray_(NULL),
       virtual_keyboard_tray_(NULL),
 #endif
-      login_status_(user::LOGGED_IN_NONE),
+      login_status_(LoginStatus::NOT_LOGGED_IN),
       shelf_widget_(shelf_widget) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -196,8 +196,7 @@ void StatusAreaWidget::SetHideSystemNotifications(bool hide) {
     system_tray_->SetHideNotifications(hide);
 }
 
-void StatusAreaWidget::UpdateAfterLoginStatusChange(
-    user::LoginStatus login_status) {
+void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
   if (login_status_ == login_status)
     return;
   login_status_ = login_status;

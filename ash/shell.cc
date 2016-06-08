@@ -380,7 +380,7 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
                     OnDisplayWorkAreaInsetsChanged());
 }
 
-void Shell::OnLoginStateChanged(user::LoginStatus status) {
+void Shell::OnLoginStateChanged(LoginStatus status) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
 }
 
@@ -389,7 +389,7 @@ void Shell::OnLoginUserProfilePrepared() {
   CreateKeyboard();
 }
 
-void Shell::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)

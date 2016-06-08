@@ -63,8 +63,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
                                   public views::ButtonListener,
                                   public ShellObserver {
  public:
-  explicit AccessibilityDetailedView(SystemTrayItem* owner,
-                                     user::LoginStatus login);
+  AccessibilityDetailedView(SystemTrayItem* owner, LoginStatus login);
   ~AccessibilityDetailedView() override {}
 
  private:
@@ -97,7 +96,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
   bool large_cursor_enabled_;
   bool autoclick_enabled_;
   bool virtual_keyboard_enabled_;
-  user::LoginStatus login_;
+  LoginStatus login_;
 
   friend class chromeos::TrayAccessibilityTest;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDetailedView);
@@ -117,11 +116,11 @@ class TrayAccessibility : public TrayImageItem,
 
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
-  views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
-  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
   // Overridden from AccessibilityObserver.
   void OnAccessibilityModeChanged(
@@ -136,7 +135,7 @@ class TrayAccessibility : public TrayImageItem,
   uint32_t request_popup_view_state_;
 
   bool tray_icon_visible_;
-  user::LoginStatus login_;
+  LoginStatus login_;
 
   // Bitmap of values from AccessibilityState enum.
   uint32_t previous_accessibility_state_;

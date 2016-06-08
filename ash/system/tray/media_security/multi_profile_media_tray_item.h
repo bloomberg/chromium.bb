@@ -22,7 +22,7 @@ class ASH_EXPORT MultiProfileMediaTrayItem : public SystemTrayItem {
   ~MultiProfileMediaTrayItem() override;
 
   // SystemTrayItem:
-  views::View* CreateTrayView(user::LoginStatus status) override;
+  views::View* CreateTrayView(LoginStatus status) override;
   void DestroyTrayView() override;
 
  private:

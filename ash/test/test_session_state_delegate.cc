@@ -175,8 +175,7 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
     user_manager_->SessionStarted();
     session_state_ = SESSION_STATE_ACTIVE;
     Shell::GetInstance()->CreateShelf();
-    Shell::GetInstance()->UpdateAfterLoginStatusChange(
-        user::LOGGED_IN_USER);
+    Shell::GetInstance()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   } else {
     session_state_ = SESSION_STATE_LOGIN_PRIMARY;
     user_manager_.reset(new TestUserManager());

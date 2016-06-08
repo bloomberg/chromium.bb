@@ -12,7 +12,7 @@
 
 namespace ash {
 
-user::LoginStatus StatusAreaWidgetTestHelper::GetUserLoginStatus() {
+LoginStatus StatusAreaWidgetTestHelper::GetUserLoginStatus() {
   return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
 }
 

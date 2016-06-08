@@ -54,8 +54,7 @@ OverviewButtonTray::~OverviewButtonTray() {
       this);
 }
 
-void OverviewButtonTray::UpdateAfterLoginStatusChange(
-    user::LoginStatus status) {
+void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
   UpdateIconVisibility();
 }
 
@@ -136,7 +135,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
       session_state_delegate->GetSessionState() ==
           SessionStateDelegate::SESSION_STATE_ACTIVE &&
       shell->system_tray_delegate()->GetUserLoginStatus() !=
-          user::LOGGED_IN_KIOSK_APP);
+          LoginStatus::KIOSK_APP);
 }
 
 }  // namespace ash

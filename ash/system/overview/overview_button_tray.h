@@ -31,7 +31,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
 
   // Updates the tray's visibility based on the LoginStatus and the current
   // state of MaximizeMode
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
+  virtual void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;

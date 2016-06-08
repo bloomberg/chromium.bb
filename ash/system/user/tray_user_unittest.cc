@@ -124,10 +124,10 @@ void TrayUserTest::ClickUserItem(ui::test::EventGenerator* generator,
 // Make sure that we show items for all users in the tray accordingly.
 TEST_F(TrayUserTest, CheckTrayItemSize) {
   InitializeParameters(1, false);
-  tray_user(0)->UpdateAfterLoginStatusChangeForTest(user::LOGGED_IN_GUEST);
+  tray_user(0)->UpdateAfterLoginStatusChangeForTest(LoginStatus::GUEST);
   gfx::Size size = tray_user(0)->GetLayoutSizeForTest();
   EXPECT_EQ(kTrayItemSize, size.height());
-  tray_user(0)->UpdateAfterLoginStatusChangeForTest(user::LOGGED_IN_USER);
+  tray_user(0)->UpdateAfterLoginStatusChangeForTest(LoginStatus::USER);
   size = tray_user(0)->GetLayoutSizeForTest();
   EXPECT_EQ(kTrayItemSize, size.height());
 }

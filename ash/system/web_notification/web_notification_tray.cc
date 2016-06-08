@@ -336,8 +336,8 @@ void WebNotificationTray::ShowMessageCenterBubble() {
 }
 
 void WebNotificationTray::UpdateAfterLoginStatusChange(
-    user::LoginStatus login_status) {
-  message_center()->SetLockedState(login_status == user::LOGGED_IN_LOCKED);
+    LoginStatus login_status) {
+  message_center()->SetLockedState(login_status == LoginStatus::LOCKED);
   OnMessageCenterTrayChanged();
 }
 
@@ -415,12 +415,12 @@ bool WebNotificationTray::ShowNotifierSettings() {
 }
 
 bool WebNotificationTray::IsContextMenuEnabled() const {
-  user::LoginStatus login_status = status_area_widget()->login_status();
+  LoginStatus login_status = status_area_widget()->login_status();
   bool userAddingRunning = ash::Shell::GetInstance()
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
-  return login_status != user::LOGGED_IN_NONE && !userAddingRunning;
+  return login_status != LoginStatus::NOT_LOGGED_IN && !userAddingRunning;
 }
 
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
@@ -487,8 +487,9 @@ void WebNotificationTray::UpdateTrayContent() {
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
-  SetVisible((status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
-             !userAddingRunning);
+  SetVisible(
+      (status_area_widget()->login_status() != LoginStatus::NOT_LOGGED_IN) &&
+      !userAddingRunning);
   Layout();
   SchedulePaint();
 }

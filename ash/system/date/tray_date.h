@@ -47,17 +47,17 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
 
   const tray::TimeView* GetTimeTrayForTesting() const;
   const DateDefaultView* GetDefaultViewForTesting() const;
-  views::View* CreateDefaultViewForTesting(user::LoginStatus status);
+  views::View* CreateDefaultViewForTesting(LoginStatus status);
 
  private:
   // Overridden from SystemTrayItem.
-  views::View* CreateTrayView(user::LoginStatus status) override;
-  views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateTrayView(LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
-  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from ClockObserver.
@@ -70,7 +70,7 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
 
   tray::TimeView* time_tray_;
   DateDefaultView* default_view_;
-  user::LoginStatus login_status_;
+  LoginStatus login_status_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<SystemClockObserver> system_clock_observer_;

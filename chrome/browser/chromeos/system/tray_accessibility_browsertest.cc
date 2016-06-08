@@ -140,13 +140,11 @@ class TrayAccessibilityTest
     return menu_item_view != NULL;
   }
 
-  void SetLoginStatus(ash::user::LoginStatus status) {
+  void SetLoginStatus(ash::LoginStatus status) {
     tray()->UpdateAfterLoginStatusChange(status);
   }
 
-  ash::user::LoginStatus GetLoginStatus() {
-    return tray()->login_;
-  }
+  ash::LoginStatus GetLoginStatus() { return tray()->login_; }
 
   bool CreateDetailedMenu() {
     tray()->PopupDetailedView(0, false);
@@ -268,18 +266,18 @@ class TrayAccessibilityTest
 };
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
-  EXPECT_EQ(ash::user::LOGGED_IN_NONE, GetLoginStatus());
+  EXPECT_EQ(ash::LoginStatus::NOT_LOGGED_IN, GetLoginStatus());
 
   user_manager::UserManager::Get()->UserLoggedIn(
       AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain",
       true);
   user_manager::UserManager::Get()->SessionStarted();
 
-  EXPECT_EQ(ash::user::LOGGED_IN_USER, GetLoginStatus());
+  EXPECT_EQ(ash::LoginStatus::USER, GetLoginStatus());
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
-  SetLoginStatus(ash::user::LOGGED_IN_NONE);
+  SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
 
   // Confirms that the icon is invisible before login.
   EXPECT_FALSE(IsTrayIconVisible());
@@ -492,7 +490,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
-  SetLoginStatus(ash::user::LOGGED_IN_NONE);
+  SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
 
   // Confirms that the menu is visible.
   EXPECT_TRUE(CanCreateMenuItem());
@@ -597,7 +595,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
 
   // Locks the screen.
-  SetLoginStatus(ash::user::LOGGED_IN_LOCKED);
+  SetLoginStatus(ash::LoginStatus::LOCKED);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // Disables high contrast mode.
@@ -608,7 +606,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
-  SetLoginStatus(ash::user::LOGGED_IN_USER);
+  SetLoginStatus(ash::LoginStatus::USER);
 
   // Confirms that the check item toggles the spoken feedback.
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
@@ -668,7 +666,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
-  SetLoginStatus(ash::user::LOGGED_IN_NONE);
+  SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
 
   // At first, all of the check is unchecked.
   EXPECT_TRUE(CreateDetailedMenu());
@@ -825,7 +823,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   CloseDetailMenu();
 
   // Autoclick is disabled on login screen.
-  SetLoginStatus(ash::user::LOGGED_IN_USER);
+  SetLoginStatus(ash::LoginStatus::USER);
 
   // Enabling autoclick.
   AccessibilityManager::Get()->EnableAutoclick(true);
@@ -851,7 +849,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
-  SetLoginStatus(ash::user::LOGGED_IN_NONE);
+  SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -863,7 +861,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_FALSE(IsSettingsShownOnDetailMenu());
   CloseDetailMenu();
 
-  SetLoginStatus(ash::user::LOGGED_IN_USER);
+  SetLoginStatus(ash::LoginStatus::USER);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -875,7 +873,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSettingsShownOnDetailMenu());
   CloseDetailMenu();
 
-  SetLoginStatus(ash::user::LOGGED_IN_LOCKED);
+  SetLoginStatus(ash::LoginStatus::LOCKED);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -892,7 +890,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   ash::test::ShellTestApi test_api(ash::Shell::GetInstance());
   test_api.SetSessionStateDelegate(session_state_delegate);
   session_state_delegate->SetUserAddingScreenRunning(true);
-  SetLoginStatus(ash::user::LOGGED_IN_USER);
+  SetLoginStatus(ash::LoginStatus::USER);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());

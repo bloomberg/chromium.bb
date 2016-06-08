@@ -45,7 +45,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // Called by the client when the login status changes. Caches login_status
   // and calls UpdateAfterLoginStatusChange for the system tray and the web
   // notification tray.
-  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
+  void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;
@@ -59,7 +59,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   }
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
-  user::LoginStatus login_status() const { return login_status_; }
+  LoginStatus login_status() const { return login_status_; }
 
   // Returns true if the shelf should be visible. This is used when the
   // shelf is configured to auto-hide and test if the shelf should force
@@ -96,7 +96,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   LogoutButtonTray* logout_button_tray_;
   VirtualKeyboardTray* virtual_keyboard_tray_;
 #endif
-  user::LoginStatus login_status_;
+  LoginStatus login_status_;
 
   ShelfWidget* shelf_widget_;
 

@@ -91,7 +91,7 @@ class IMEDefaultView : public TrayItemMore {
 class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
  public:
   IMEDetailedView(SystemTrayItem* owner,
-                  user::LoginStatus login,
+                  LoginStatus login,
                   bool show_keyboard_toggle)
       : TrayDetailsView(owner), login_(login) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
@@ -126,7 +126,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
     bool userAddingRunning = ash::Shell::GetInstance()
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
-    if (login_ != user::LOGGED_IN_NONE && login_ != user::LOGGED_IN_LOCKED &&
+    if (login_ != LoginStatus::NOT_LOGGED_IN && login_ != LoginStatus::LOCKED &&
         !userAddingRunning)
       AppendSettings();
     AppendHeaderEntry();
@@ -219,7 +219,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
     }
   }
 
-  user::LoginStatus login_;
+  LoginStatus login_;
 
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
@@ -311,7 +311,7 @@ base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
   }
 }
 
-views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
+views::View* TrayIME::CreateTrayView(LoginStatus status) {
   CHECK(tray_label_ == NULL);
   tray_label_ = new TrayItemView(this);
   tray_label_->CreateLabel();
@@ -322,7 +322,7 @@ views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   return tray_label_;
 }
 
-views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayIME::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   default_ =
       new tray::IMEDefaultView(this, GetDefaultViewLabel(ime_list_.size() > 1));
@@ -330,7 +330,7 @@ views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
   return default_;
 }
 
-views::View* TrayIME::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayIME::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
   detailed_ =
       new tray::IMEDetailedView(this, status, ShouldShowKeyboardToggle());
@@ -349,8 +349,7 @@ void TrayIME::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TrayIME::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   SetTrayLabelItemBorder(tray_label_, alignment);

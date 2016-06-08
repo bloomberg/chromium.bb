@@ -22,14 +22,14 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // restarted right after the login (such like a flag is set).
   // This value will be reset in AshTestHelper::TearDown,  most test fixtures
   // don't need to care its lifecycle.
-  static void SetInitialLoginStatus(user::LoginStatus login_status);
+  static void SetInitialLoginStatus(LoginStatus login_status);
 
   // Changes the current login status in the test. This also invokes
   // UpdateAfterLoginStatusChange(). Usually this is called in the test code to
   // set up a login status. This will fit to most of the test cases, but this
   // cannot be set during the initialization. To test the initialization,
   // consider using SetInitialLoginStatus() instead.
-  void SetLoginStatus(user::LoginStatus login_status);
+  void SetLoginStatus(LoginStatus login_status);
 
   void set_should_show_display_notification(bool should_show) {
     should_show_display_notification_ = should_show;
@@ -43,7 +43,7 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   void ClearSessionLengthLimit();
 
   // Overridden from SystemTrayDelegate:
-  user::LoginStatus GetUserLoginStatus() const override;
+  LoginStatus GetUserLoginStatus() const override;
   bool IsUserSupervised() const override;
   bool ShouldShowDisplayNotification() override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
@@ -52,7 +52,7 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
 
  private:
   bool should_show_display_notification_;
-  user::LoginStatus login_status_;
+  LoginStatus login_status_;
   base::TimeDelta session_length_limit_;
   bool session_length_limit_set_;
 

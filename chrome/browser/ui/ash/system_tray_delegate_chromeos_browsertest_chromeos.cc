@@ -55,7 +55,7 @@ void CreateDefaultView() {
   ash::TrayDate* tray_date = ash::Shell::GetInstance()
                                  ->GetPrimarySystemTray()
                                  ->GetTrayDateForTesting();
-  tray_date->CreateDefaultViewForTesting(ash::user::LOGGED_IN_NONE);
+  tray_date->CreateDefaultViewForTesting(ash::LoginStatus::NOT_LOGGED_IN);
 }
 
 }  // namespace

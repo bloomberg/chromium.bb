@@ -59,8 +59,7 @@ TraySessionLengthLimit::~TraySessionLengthLimit() {
 }
 
 // Add view to tray bubble.
-views::View* TraySessionLengthLimit::CreateDefaultView(
-    user::LoginStatus status) {
+views::View* TraySessionLengthLimit::CreateDefaultView(LoginStatus status) {
   CHECK(!tray_bubble_view_);
   UpdateState();
   if (limit_state_ == LIMIT_NONE)

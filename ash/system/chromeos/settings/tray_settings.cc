@@ -31,10 +31,8 @@ namespace tray {
 class SettingsDefaultView : public ActionableView,
                             public PowerStatus::Observer {
  public:
-  explicit SettingsDefaultView(user::LoginStatus status)
-      : login_status_(status),
-        label_(NULL),
-        power_status_view_(NULL) {
+  explicit SettingsDefaultView(LoginStatus status)
+      : login_status_(status), label_(NULL), power_status_view_(NULL) {
     PowerStatus::Get()->AddObserver(this);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
         ash::kTrayPopupPaddingHorizontal, 0,
@@ -45,8 +43,8 @@ class SettingsDefaultView : public ActionableView,
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
 
-    if (login_status_ != user::LOGGED_IN_NONE &&
-        login_status_ != user::LOGGED_IN_LOCKED && !userAddingRunning) {
+    if (login_status_ != LoginStatus::NOT_LOGGED_IN &&
+        login_status_ != LoginStatus::LOCKED && !userAddingRunning) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon =
           new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
@@ -78,8 +76,8 @@ class SettingsDefaultView : public ActionableView,
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
 
-    if (login_status_ == user::LOGGED_IN_NONE ||
-        login_status_ == user::LOGGED_IN_LOCKED || userAddingRunning)
+    if (login_status_ == LoginStatus::NOT_LOGGED_IN ||
+        login_status_ == LoginStatus::LOCKED || userAddingRunning)
       return false;
 
     ash::Shell::GetInstance()->system_tray_delegate()->ShowSettings();
@@ -120,7 +118,7 @@ class SettingsDefaultView : public ActionableView,
   }
 
  private:
-  user::LoginStatus login_status_;
+  LoginStatus login_status_;
   views::Label* label_;
   ash::PowerStatusView* power_status_view_;
 
@@ -137,12 +135,12 @@ TraySettings::TraySettings(SystemTray* system_tray)
 TraySettings::~TraySettings() {
 }
 
-views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
+views::View* TraySettings::CreateTrayView(LoginStatus status) {
   return NULL;
 }
 
-views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
-  if ((status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED) &&
+views::View* TraySettings::CreateDefaultView(LoginStatus status) {
+  if ((status == LoginStatus::NOT_LOGGED_IN || status == LoginStatus::LOCKED) &&
       !PowerStatus::Get()->IsBatteryPresent())
     return NULL;
   if (!ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings())
@@ -152,7 +150,7 @@ views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
   return default_view_;
 }
 
-views::View* TraySettings::CreateDetailedView(user::LoginStatus status) {
+views::View* TraySettings::CreateDetailedView(LoginStatus status) {
   NOTIMPLEMENTED();
   return NULL;
 }
@@ -167,7 +165,6 @@ void TraySettings::DestroyDefaultView() {
 void TraySettings::DestroyDetailedView() {
 }
 
-void TraySettings::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-}
+void TraySettings::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
 }  // namespace ash

@@ -49,7 +49,7 @@ class NetworkStateListDetailedView
 
   NetworkStateListDetailedView(SystemTrayItem* owner,
                                ListType list_type,
-                               user::LoginStatus login);
+                               LoginStatus login);
   ~NetworkStateListDetailedView() override;
 
   // Overridden from NetworkDetailedView:
@@ -122,7 +122,7 @@ class NetworkStateListDetailedView
   ListType list_type_;
 
   // Track login state.
-  user::LoginStatus login_;
+  LoginStatus login_;
 
   // Track WiFi scanning state.
   bool wifi_scanning_;

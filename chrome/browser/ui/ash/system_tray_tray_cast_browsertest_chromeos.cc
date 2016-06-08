@@ -72,9 +72,8 @@ bool StartCastWithVerification(const extensions::Extension* extension,
 
   // We will simulate a button click in the detail view to begin the cast, so we
   // need to make a detail view available.
-  std::unique_ptr<views::View> detailed_view =
-      base::WrapUnique(system_tray_item->CreateDetailedView(
-          ash::user::LoginStatus::LOGGED_IN_USER));
+  std::unique_ptr<views::View> detailed_view = base::WrapUnique(
+      system_tray_item->CreateDetailedView(ash::LoginStatus::USER));
 
   // Clear out any old state and execute any pending JS calls created from the
   // CreateDetailedView call.

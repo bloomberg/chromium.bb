@@ -34,11 +34,11 @@ void TrayEnterprise::UpdateEnterpriseMessage() {
     tray_view_->SetMessage(message);
 }
 
-views::View* TrayEnterprise::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayEnterprise::CreateDefaultView(LoginStatus status) {
   CHECK(tray_view_ == NULL);
   // For public accounts, enterprise ownership is indicated in the user details
   // instead.
-  if (status == ash::user::LOGGED_IN_PUBLIC)
+  if (status == LoginStatus::PUBLIC)
     return NULL;
   tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_ENTERPRISE);
   UpdateEnterpriseMessage();

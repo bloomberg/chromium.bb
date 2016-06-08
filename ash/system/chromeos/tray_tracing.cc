@@ -84,14 +84,14 @@ bool TrayTracing::GetInitialVisibility() {
   return false;
 }
 
-views::View* TrayTracing::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayTracing::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   if (tray_view() && tray_view()->visible())
     default_ = new tray::DefaultTracingView();
   return default_;
 }
 
-views::View* TrayTracing::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayTracing::CreateDetailedView(LoginStatus status) {
   return NULL;
 }
 

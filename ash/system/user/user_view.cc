@@ -182,9 +182,7 @@ void AddUserView::AddContent() {
 
 }  // namespace
 
-UserView::UserView(SystemTrayItem* owner,
-                   user::LoginStatus login,
-                   UserIndex index)
+UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
     : user_index_(index),
       user_card_view_(NULL),
       owner_(owner),
@@ -192,13 +190,13 @@ UserView::UserView(SystemTrayItem* owner,
       logout_button_(NULL),
       add_user_enabled_(true),
       focus_manager_(NULL) {
-  CHECK_NE(user::LOGGED_IN_NONE, login);
+  CHECK_NE(LoginStatus::NOT_LOGGED_IN, login);
   if (!index) {
     // Only the logged in user will have a background. All other users will have
     // to allow the TrayPopupContainer highlighting the menu line.
     set_background(views::Background::CreateSolidBackground(
-        login == user::LOGGED_IN_PUBLIC ? kPublicAccountBackgroundColor
-                                        : kBackgroundColor));
+        login == LoginStatus::PUBLIC ? kPublicAccountBackgroundColor
+                                     : kBackgroundColor));
   }
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
@@ -333,14 +331,14 @@ void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
   // Nothing to do here.
 }
 
-void UserView::AddLogoutButton(user::LoginStatus login) {
+void UserView::AddLogoutButton(LoginStatus login) {
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login, true);
   auto* logout_button = new TrayPopupLabelButton(this, title);
   logout_button->SetAccessibleName(title);
   logout_button_ = logout_button;
   // In public account mode, the logout button border has a custom color.
-  if (login == user::LOGGED_IN_PUBLIC) {
+  if (login == LoginStatus::PUBLIC) {
     std::unique_ptr<TrayPopupLabelButtonBorder> border(
         new TrayPopupLabelButtonBorder());
     border->SetPainter(false,
@@ -360,7 +358,7 @@ void UserView::AddLogoutButton(user::LoginStatus login) {
   AddChildView(logout_button_);
 }
 
-void UserView::AddUserCard(user::LoginStatus login) {
+void UserView::AddUserCard(LoginStatus login) {
   // Add padding around the panel.
   SetBorder(views::Border::CreateEmptyBorder(kTrayPopupUserCardVerticalPadding,
                                              kTrayPopupPaddingHorizontal,
@@ -414,7 +412,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
   AddChildViewAt(user_card_view_, 0);
   // Card for supervised user can consume more space than currently
   // available. In that case we should increase system bubble's width.
-  if (login == user::LOGGED_IN_PUBLIC)
+  if (login == LoginStatus::PUBLIC)
     bubble_view->SetWidth(GetPreferredSize().width());
 }
 

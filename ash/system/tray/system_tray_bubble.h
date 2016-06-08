@@ -37,7 +37,7 @@ class SystemTrayBubble {
   // Creates |bubble_view_| and a child views for each member of |items_|.
   // Also creates |bubble_wrapper_|. |init_params| may be modified.
   void InitView(views::View* anchor,
-                user::LoginStatus login_status,
+                LoginStatus login_status,
                 views::TrayBubbleView::InitParams* init_params);
 
   // Focus the default item if no item is focused. Othewise, do nothing.
@@ -60,7 +60,7 @@ class SystemTrayBubble {
   bool ShouldShowShelf() const;
 
  private:
-  void CreateItemViews(user::LoginStatus login_status);
+  void CreateItemViews(LoginStatus login_status);
 
   ash::SystemTray* tray_;
   views::TrayBubbleView* bubble_view_;

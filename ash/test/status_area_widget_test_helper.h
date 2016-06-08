@@ -14,7 +14,7 @@ class StatusAreaWidget;
 
 class StatusAreaWidgetTestHelper {
  public:
-  static user::LoginStatus GetUserLoginStatus();
+  static LoginStatus GetUserLoginStatus();
 
   // Returns the StatusAreaWidget that appears on the primary display.
   static StatusAreaWidget* GetStatusAreaWidget();

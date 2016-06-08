@@ -60,7 +60,7 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
                                   const base::string16& additional_message);
 
   // Overridden from SystemTrayItem.
-  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyDefaultView() override;
 
   // Test accessors.

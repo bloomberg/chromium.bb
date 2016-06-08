@@ -53,8 +53,7 @@ class TraySupervisedUserInitialTest : public TraySupervisedUserTest {
 };
 
 void TraySupervisedUserInitialTest::SetUp() {
-  test::TestSystemTrayDelegate::SetInitialLoginStatus(
-      user::LOGGED_IN_SUPERVISED);
+  test::TestSystemTrayDelegate::SetInitialLoginStatus(LoginStatus::SUPERVISED);
   test::AshTestBase::SetUp();
 }
 
@@ -67,7 +66,7 @@ TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
   test::TestSystemTrayDelegate* delegate =
       static_cast<test::TestSystemTrayDelegate*>(
           ash::Shell::GetInstance()->system_tray_delegate());
-  delegate->SetLoginStatus(user::LOGGED_IN_SUPERVISED);
+  delegate->SetLoginStatus(LoginStatus::SUPERVISED);
 
   message_center::Notification* notification = GetPopup();
   ASSERT_NE(static_cast<message_center::Notification*>(NULL), notification);

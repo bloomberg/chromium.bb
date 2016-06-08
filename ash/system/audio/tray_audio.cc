@@ -69,12 +69,12 @@ bool TrayAudio::GetInitialVisibility() {
   return audio_delegate_->IsOutputAudioMuted();
 }
 
-views::View* TrayAudio::CreateDefaultView(user::LoginStatus status) {
+views::View* TrayAudio::CreateDefaultView(LoginStatus status) {
   volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), true);
   return volume_view_;
 }
 
-views::View* TrayAudio::CreateDetailedView(user::LoginStatus status) {
+views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
   volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), false);
   return volume_view_;
 }

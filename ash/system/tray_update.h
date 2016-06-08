@@ -31,8 +31,8 @@ class TrayUpdate : public TrayImageItem,
  private:
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
-  views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateDetailedView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
+  views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyDetailedView() override;
 
   // Overridden from UpdateObserver.

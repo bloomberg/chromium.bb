@@ -57,25 +57,25 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
   gfx::Rect GetUserPanelBoundsInScreenForTest() const;
 
   // Update the TrayUser as if the current LoginStatus is |status|.
-  void UpdateAfterLoginStatusChangeForTest(user::LoginStatus status);
+  void UpdateAfterLoginStatusChangeForTest(LoginStatus status);
 
   // Use for access inside of tests.
   tray::UserView* user_view_for_test() const { return user_; }
 
  private:
   // Overridden from SystemTrayItem.
-  views::View* CreateTrayView(user::LoginStatus status) override;
-  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateTrayView(LoginStatus status) override;
+  views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
-  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from UserObserver.
   void OnUserUpdate() override;
   void OnUserAddedToSession() override;
 
-  void UpdateAvatarImage(user::LoginStatus status);
+  void UpdateAvatarImage(LoginStatus status);
 
   // Updates the layout of this item.
   void UpdateLayoutOfItem();

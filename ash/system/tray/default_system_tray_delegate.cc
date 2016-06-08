@@ -26,8 +26,8 @@ bool DefaultSystemTrayDelegate::GetTrayVisibilityOnStartup() {
   return true;
 }
 
-user::LoginStatus DefaultSystemTrayDelegate::GetUserLoginStatus() const {
-  return user::LOGGED_IN_USER;
+LoginStatus DefaultSystemTrayDelegate::GetUserLoginStatus() const {
+  return LoginStatus::USER;
 }
 
 std::string DefaultSystemTrayDelegate::GetSupervisedUserManager() const {
@@ -37,7 +37,7 @@ std::string DefaultSystemTrayDelegate::GetSupervisedUserManager() const {
 }
 
 bool DefaultSystemTrayDelegate::IsUserSupervised() const {
-  return GetUserLoginStatus() == ash::user::LOGGED_IN_SUPERVISED;
+  return GetUserLoginStatus() == LoginStatus::SUPERVISED;
 }
 
 void DefaultSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {

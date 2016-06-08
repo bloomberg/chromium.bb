@@ -81,7 +81,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void HideNotificationView(SystemTrayItem* item);
 
   // Updates the items when the login status of the system changes.
-  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
+  void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   // Updates the items when the shelf alignment changes.
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);

@@ -72,11 +72,11 @@ gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {
   return user_->GetBoundsInScreenOfUserButtonForTest();
 }
 
-void TrayUser::UpdateAfterLoginStatusChangeForTest(user::LoginStatus status) {
+void TrayUser::UpdateAfterLoginStatusChangeForTest(LoginStatus status) {
   UpdateAfterLoginStatusChange(status);
 }
 
-views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
+views::View* TrayUser::CreateTrayView(LoginStatus status) {
   CHECK(layout_view_ == nullptr);
 
   layout_view_ = new views::View;
@@ -87,8 +87,8 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   return layout_view_;
 }
 
-views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
-  if (status == user::LOGGED_IN_NONE)
+views::View* TrayUser::CreateDefaultView(LoginStatus status) {
+  if (status == LoginStatus::NOT_LOGGED_IN)
     return nullptr;
   const SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
@@ -121,7 +121,7 @@ void TrayUser::DestroyDefaultView() {
   user_ = nullptr;
 }
 
-void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   // Only the active user is represented in the tray.
   if (!layout_view_)
     return;
@@ -133,21 +133,21 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   if (delegate->IsUserSupervised())
     need_label =  true;
   switch (status) {
-    case user::LOGGED_IN_LOCKED:
-    case user::LOGGED_IN_USER:
-    case user::LOGGED_IN_OWNER:
-    case user::LOGGED_IN_PUBLIC:
+    case LoginStatus::LOCKED:
+    case LoginStatus::USER:
+    case LoginStatus::OWNER:
+    case LoginStatus::PUBLIC:
       need_avatar = true;
       break;
-    case user::LOGGED_IN_SUPERVISED:
+    case LoginStatus::SUPERVISED:
       need_avatar = true;
       need_label = true;
       break;
-    case user::LOGGED_IN_GUEST:
+    case LoginStatus::GUEST:
       need_label = true;
       break;
-    case user::LOGGED_IN_KIOSK_APP:
-    case user::LOGGED_IN_NONE:
+    case LoginStatus::KIOSK_APP:
+    case LoginStatus::NOT_LOGGED_IN:
       break;
   }
 
@@ -172,7 +172,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   if (delegate->IsUserSupervised()) {
     label_->SetText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL));
-  } else if (status == user::LOGGED_IN_GUEST) {
+  } else if (status == LoginStatus::GUEST) {
     label_->SetText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }
 
@@ -252,7 +252,7 @@ void TrayUser::OnUserAddedToSession() {
       Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus());
 }
 
-void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
+void TrayUser::UpdateAvatarImage(LoginStatus status) {
   SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
   if (!avatar_ ||

@@ -31,7 +31,7 @@ const char TraySupervisedUser::kNotificationId[] =
 TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
-      status_(ash::user::LOGGED_IN_NONE),
+      status_(LoginStatus::NOT_LOGGED_IN),
       is_user_supervised_(false) {
   Shell::GetInstance()->system_tray_delegate()->
       AddCustodianInfoTrayObserver(this);
@@ -55,8 +55,7 @@ void TraySupervisedUser::UpdateMessage() {
     CreateOrUpdateNotification(message);
 }
 
-views::View* TraySupervisedUser::CreateDefaultView(
-    user::LoginStatus status) {
+views::View* TraySupervisedUser::CreateDefaultView(LoginStatus status) {
   CHECK(tray_view_ == NULL);
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   if (!delegate->IsUserSupervised())
@@ -75,17 +74,15 @@ void TraySupervisedUser::OnViewClicked(views::View* sender) {
   Shell::GetInstance()->system_tray_delegate()->ShowSupervisedUserInfo();
 }
 
-void TraySupervisedUser::UpdateAfterLoginStatusChange(
-    user::LoginStatus status) {
+void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
 
   bool is_user_supervised = delegate->IsUserSupervised();
   if (status == status_ && is_user_supervised == is_user_supervised_)
     return;
 
-  if (is_user_supervised &&
-      !delegate->IsUserChild() &&
-      status_ != ash::user::LOGGED_IN_LOCKED &&
+  if (is_user_supervised && !delegate->IsUserChild() &&
+      status_ != LoginStatus::LOCKED &&
       !delegate->GetSupervisedUserManager().empty())
     CreateOrUpdateSupervisedWarningNotification();
 
