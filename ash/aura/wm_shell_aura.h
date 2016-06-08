@@ -5,8 +5,6 @@
 #ifndef ASH_AURA_WM_SHELL_AURA_H_
 #define ASH_AURA_WM_SHELL_AURA_H_
 
-#include <set>
-
 #include "ash/ash_export.h"
 #include "ash/aura/wm_lookup_aura.h"
 #include "ash/common/wm_shell.h"
@@ -18,25 +16,27 @@
 
 namespace ash {
 
+class WmShellCommon;
+
 class ASH_EXPORT WmShellAura : public WmShell,
                                public aura::client::ActivationChangeObserver,
                                public WindowTreeHostManager::Observer,
                                public ShellObserver {
  public:
-  WmShellAura();
+  // |shell_common| is not owned by this class and must outlive this class.
+  explicit WmShellAura(WmShellCommon* wm_shell_common);
   ~WmShellAura() override;
 
   static WmShellAura* Get();
 
   // WmShell:
+  MruWindowTracker* GetMruWindowTracker() override;
   WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
-  std::vector<WmWindow*> GetMruWindowList() override;
-  std::vector<WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;
   bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
@@ -70,6 +70,9 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   // ShellObserver:
   void OnOverviewModeEnded() override;
+
+  // Owned by Shell.
+  WmShellCommon* wm_shell_common_;
 
   WmLookupAura wm_lookup_;
   bool added_activation_observer_ = false;

@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/window_positioner.h"
 
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_screen_util.h"
@@ -161,8 +162,9 @@ WmWindow* GetReferenceWindow(const WmWindow* root_window,
     active = NULL;
 
   // Get a list of all windows.
-  const std::vector<WmWindow*> windows =
-      root_window->GetShell()->GetMruWindowListIgnoreModals();
+  const std::vector<WmWindow*> windows = root_window->GetShell()
+                                             ->GetMruWindowTracker()
+                                             ->BuildWindowListIgnoreModal();
 
   if (windows.empty())
     return nullptr;
@@ -475,7 +477,8 @@ gfx::Rect WindowPositioner::NormalPopupPosition(const gfx::Rect& old_pos,
 gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Rect& old_pos,
                                                const gfx::Rect& work_area,
                                                int grid) {
-  const std::vector<WmWindow*> windows = shell_->GetMruWindowListIgnoreModals();
+  const std::vector<WmWindow*> windows =
+      shell_->GetMruWindowTracker()->BuildWindowListIgnoreModal();
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

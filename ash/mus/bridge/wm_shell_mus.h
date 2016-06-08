@@ -19,6 +19,9 @@ class WindowTreeClient;
 }
 
 namespace ash {
+
+class WmShellCommon;
+
 namespace mus {
 
 class WmRootWindowControllerMus;
@@ -42,14 +45,13 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
 
   // WmShell:
+  MruWindowTracker* GetMruWindowTracker() override;
   WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
-  std::vector<WmWindow*> GetMruWindowList() override;
-  std::vector<WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;
   bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
@@ -81,6 +83,8 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   void OnWillDestroyClient(::mus::WindowTreeClient* client) override;
 
   ::mus::WindowTreeClient* client_;
+
+  std::unique_ptr<WmShellCommon> wm_shell_common_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 

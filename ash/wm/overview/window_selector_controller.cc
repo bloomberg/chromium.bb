@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -44,7 +45,8 @@ void WindowSelectorController::ToggleOverview() {
     if (!CanSelect())
       return;
 
-    std::vector<WmWindow*> windows = WmShell::Get()->GetMruWindowList();
+    std::vector<WmWindow*> windows =
+        WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList();
     auto end =
         std::remove_if(windows.begin(), windows.end(),
                        std::not1(std::ptr_fun(&WindowSelector::IsSelectable)));

@@ -11,6 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/wm_shell_common.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/cursor_manager_chromeos.h"
@@ -386,7 +387,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return lock_state_controller_.get();
   }
   MruWindowTracker* mru_window_tracker() {
-    return mru_window_tracker_.get();
+    return wm_shell_common_->mru_window_tracker();
   }
   VideoDetector* video_detector() {
     return video_detector_.get();
@@ -658,6 +659,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
       scoped_overview_animation_settings_factory_;
+  std::unique_ptr<WmShellCommon> wm_shell_common_;
   std::unique_ptr<WmShellAura> wm_shell_;
 
   // When no explicit target display/RootWindow is given, new windows are
@@ -701,7 +703,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
-  std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;

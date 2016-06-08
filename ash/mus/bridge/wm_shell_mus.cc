@@ -6,8 +6,10 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_shell_common.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
@@ -89,9 +91,13 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
     : client_(client), session_state_delegate_(new SessionStateDelegateStub) {
   client_->AddObserver(this);
   WmShell::Set(this);
+
+  wm_shell_common_.reset(new WmShellCommon);
+  wm_shell_common_->CreateMruWindowTracker();
 }
 
 WmShellMus::~WmShellMus() {
+  wm_shell_common_->DeleteMruWindowTracker();
   RemoveClientObserver();
   WmShell::Set(nullptr);
 }
@@ -135,6 +141,10 @@ WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
+MruWindowTracker* WmShellMus::GetMruWindowTracker() {
+  return wm_shell_common_->mru_window_tracker();
+}
+
 WmWindow* WmShellMus::NewContainerWindow() {
   return WmWindowMus::Get(client_->NewWindow());
 }
@@ -158,16 +168,6 @@ WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
 WmWindow* WmShellMus::GetRootWindowForNewWindows() {
   NOTIMPLEMENTED();
   return root_window_controllers_[0]->GetWindow();
-}
-
-std::vector<WmWindow*> WmShellMus::GetMruWindowList() {
-  NOTIMPLEMENTED();
-  return std::vector<WmWindow*>();
-}
-
-std::vector<WmWindow*> WmShellMus::GetMruWindowListIgnoreModals() {
-  NOTIMPLEMENTED();
-  return std::vector<WmWindow*>();
 }
 
 bool WmShellMus::IsForceMaximizeOnFirstRun() {

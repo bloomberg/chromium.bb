@@ -10,6 +10,7 @@
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_overview_mode_observer.h"
+#include "ash/common/wm_shell_common.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -22,7 +23,8 @@
 
 namespace ash {
 
-WmShellAura::WmShellAura() {
+WmShellAura::WmShellAura(WmShellCommon* wm_shell_common)
+    : wm_shell_common_(wm_shell_common) {
   WmShell::Set(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
@@ -37,6 +39,10 @@ WmShellAura::~WmShellAura() {
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
   Shell::GetInstance()->RemoveShellObserver(this);
+}
+
+MruWindowTracker* WmShellAura::GetMruWindowTracker() {
+  return wm_shell_common_->mru_window_tracker();
 }
 
 WmWindow* WmShellAura::NewContainerWindow() {
@@ -69,19 +75,6 @@ WmWindow* WmShellAura::GetRootWindowForNewWindows() {
   return WmWindowAura::Get(Shell::GetTargetRootWindow());
 }
 
-std::vector<WmWindow*> WmShellAura::GetMruWindowList() {
-  // TODO(sky): remove this and provide accessor for MruWindowTracker.
-  // http://crbug.com/617789.
-  return Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
-}
-
-std::vector<WmWindow*> WmShellAura::GetMruWindowListIgnoreModals() {
-  // TODO(sky): remove this and provide accessor for MruWindowTracker.
-  // http://crbug.com/617789.
-  return Shell::GetInstance()
-      ->mru_window_tracker()
-      ->BuildWindowListIgnoreModal();
-}
 
 bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();

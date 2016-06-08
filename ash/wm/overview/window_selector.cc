@@ -14,6 +14,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
@@ -395,7 +396,8 @@ void WindowSelector::SelectWindow(WmWindow* window) {
   // Record UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED if the user is selecting
   // a window other than the window that was active prior to entering overview
   // mode (i.e., the window at the front of the MRU list).
-  std::vector<WmWindow*> window_list = WmShell::Get()->GetMruWindowList();
+  std::vector<WmWindow*> window_list =
+      WmShell::Get()->GetMruWindowTracker()->BuildMruWindowList();
   if (!window_list.empty() && window_list[0] != window) {
     WmShell::Get()->RecordUserMetricsAction(
         wm::WmUserMetricsAction::WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED);

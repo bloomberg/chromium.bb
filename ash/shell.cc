@@ -23,6 +23,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm_shell_common.h"
 #include "ash/container_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_view.h"
@@ -772,7 +773,7 @@ Shell::~Shell() {
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
-  mru_window_tracker_.reset();
+  wm_shell_common_->DeleteMruWindowTracker();
 
   // Chrome implementation of shelf delegate depends on FocusClient,
   // so must be deleted before |focus_client_| (below).
@@ -825,6 +826,9 @@ Shell::~Shell() {
   // also needs to be destroyed before |instance_| reset to null.
   wm_shell_.reset();
 
+  // Must happen after |wm_shell_| is deleted.
+  wm_shell_common_.reset();
+
   // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_->Shutdown();
   window_tree_host_manager_.reset();
@@ -867,7 +871,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   DCHECK(in_mus_) << "linux desktop does not support ash.";
 #endif
 
-  wm_shell_.reset(new WmShellAura);
+  wm_shell_common_.reset(new WmShellCommon);
+  wm_shell_.reset(new WmShellAura(wm_shell_common_.get()));
   scoped_overview_animation_settings_factory_.reset(
       new ScopedOverviewAnimationSettingsFactoryAura);
   window_positioner_.reset(new WindowPositioner(wm_shell_.get()));
@@ -1048,7 +1053,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   magnification_controller_.reset(
       MagnificationController::CreateInstance());
-  mru_window_tracker_.reset(new MruWindowTracker);
+  wm_shell_common_->CreateMruWindowTracker();
 
   partial_magnification_controller_.reset(
       new PartialMagnificationController());

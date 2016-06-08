@@ -18,6 +18,7 @@ class Rect;
 
 namespace ash {
 
+class MruWindowTracker;
 class SessionStateDelegate;
 class WindowResizer;
 class WmActivationObserver;
@@ -35,12 +36,12 @@ enum class WmUserMetricsAction;
 // Similar to ash::Shell. Eventually the two will be merged.
 class ASH_EXPORT WmShell {
  public:
-  virtual ~WmShell() {}
-
   // This is necessary for a handful of places that is difficult to plumb
   // through context.
   static void Set(WmShell* instance);
   static WmShell* Get();
+
+  virtual MruWindowTracker* GetMruWindowTracker() = 0;
 
   // Creates a new window used as a container of other windows. No painting is
   // done to the created window.
@@ -58,12 +59,6 @@ class ASH_EXPORT WmShell {
   // NOTE: this returns the root, newly created window should be added to the
   // appropriate container in the returned window.
   virtual WmWindow* GetRootWindowForNewWindows() = 0;
-
-  // Returns the list of most recently used windows.
-  virtual std::vector<WmWindow*> GetMruWindowList() = 0;
-
-  // Returns the list of most recently used windows excluding modals.
-  virtual std::vector<WmWindow*> GetMruWindowListIgnoreModals() = 0;
 
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses
@@ -105,6 +100,9 @@ class ASH_EXPORT WmShell {
 
   virtual void AddOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
   virtual void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
+
+ protected:
+  virtual ~WmShell() {}
 
  private:
   static WmShell* instance_;
