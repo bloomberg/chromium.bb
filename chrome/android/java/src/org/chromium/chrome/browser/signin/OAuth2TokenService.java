@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.os.StrictMode;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
@@ -222,7 +223,15 @@ public final class OAuth2TokenService
      */
     @CalledByNative
     public static boolean hasOAuth2RefreshToken(Context context, String accountName) {
-        return AccountManagerHelper.get(context).hasAccountForName(accountName);
+        // Temporarily allowing disk read while fixing. TODO: http://crbug.com/618096.
+        // This function is called in RefreshTokenIsAvailable of OAuth2TokenService which is
+        // expected to be called in the UI thread synchronously.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return AccountManagerHelper.get(context).hasAccountForName(accountName);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**
