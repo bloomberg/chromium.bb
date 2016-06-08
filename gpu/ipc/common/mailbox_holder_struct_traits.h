@@ -12,11 +12,11 @@ namespace mojo {
 
 template <>
 struct StructTraits<gpu::mojom::MailboxHolder, gpu::MailboxHolder> {
-  static gpu::Mailbox mailbox(const gpu::MailboxHolder& holder) {
+  static const gpu::Mailbox& mailbox(const gpu::MailboxHolder& holder) {
     return holder.mailbox;
   }
 
-  static gpu::SyncToken sync_token(const gpu::MailboxHolder& holder) {
+  static const gpu::SyncToken& sync_token(const gpu::MailboxHolder& holder) {
     return holder.sync_token;
   }
 
@@ -26,11 +26,10 @@ struct StructTraits<gpu::mojom::MailboxHolder, gpu::MailboxHolder> {
 
   static bool Read(gpu::mojom::MailboxHolderDataView data,
                    gpu::MailboxHolder* out) {
-    gpu::Mailbox mailbox;
-    gpu::SyncToken sync_token;
-    if (!data.ReadMailbox(&mailbox) || !data.ReadSyncToken(&sync_token))
+    if (!data.ReadMailbox(&out->mailbox) ||
+        !data.ReadSyncToken(&out->sync_token))
       return false;
-    *out = gpu::MailboxHolder(mailbox, sync_token, data.texture_target());
+    out->texture_target = data.texture_target();
     return true;
   }
 };

@@ -12,12 +12,12 @@ namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::Selection, cc::Selection<gfx::SelectionBound>> {
-  static gfx::SelectionBound start(
+  static const gfx::SelectionBound& start(
       const cc::Selection<gfx::SelectionBound>& selection) {
     return selection.start;
   }
 
-  static gfx::SelectionBound end(
+  static const gfx::SelectionBound& end(
       const cc::Selection<gfx::SelectionBound>& selection) {
     return selection.end;
   }

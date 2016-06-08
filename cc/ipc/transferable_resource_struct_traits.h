@@ -29,7 +29,7 @@ struct StructTraits<cc::mojom::TransferableResource, cc::TransferableResource> {
     return resource.size;
   }
 
-  static gpu::MailboxHolder mailbox_holder(
+  static const gpu::MailboxHolder& mailbox_holder(
       const cc::TransferableResource& resource) {
     return resource.mailbox_holder;
   }
@@ -54,15 +54,12 @@ struct StructTraits<cc::mojom::TransferableResource, cc::TransferableResource> {
 
   static bool Read(cc::mojom::TransferableResourceDataView data,
                    cc::TransferableResource* out) {
-    gfx::Size size;
-    gpu::MailboxHolder holder;
-    if (!data.ReadSize(&size) || !data.ReadMailboxHolder(&holder))
+    if (!data.ReadSize(&out->size) ||
+        !data.ReadMailboxHolder(&out->mailbox_holder))
       return false;
     out->id = data.id();
     out->format = static_cast<cc::ResourceFormat>(data.format());
     out->filter = data.filter();
-    out->size = size;
-    out->mailbox_holder = holder;
     out->read_lock_fences_enabled = data.read_lock_fences_enabled();
     out->is_software = data.is_software();
     out->gpu_memory_buffer_id.id = data.gpu_memory_buffer_id();

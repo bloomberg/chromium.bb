@@ -16,7 +16,8 @@ struct StructTraits<cc::mojom::ReturnedResource, cc::ReturnedResource> {
     return resource.id;
   }
 
-  static gpu::SyncToken sync_token(const cc::ReturnedResource& resource) {
+  static const gpu::SyncToken& sync_token(
+      const cc::ReturnedResource& resource) {
     return resource.sync_token;
   }
 

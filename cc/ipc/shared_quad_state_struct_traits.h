@@ -12,7 +12,7 @@ namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::SharedQuadState, cc::SharedQuadState> {
-  static gfx::Transform quad_to_target_transform(
+  static const gfx::Transform& quad_to_target_transform(
       const cc::SharedQuadState& sqs) {
     return sqs.quad_to_target_transform;
   }
