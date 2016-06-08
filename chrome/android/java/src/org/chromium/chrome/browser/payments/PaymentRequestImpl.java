@@ -214,7 +214,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     && profile.getStreetAddress() != null && profile.getRegion() != null
                     && profile.getLocality() != null && profile.getDependentLocality() != null
                     && profile.getPostalCode() != null && profile.getSortingCode() != null
-                    && profile.getCompanyName() != null && profile.getFullName() != null) {
+                    && profile.getCompanyName() != null && profile.getFullName() != null
+                    && profile.getPhoneNumber() != null) {
                 addresses.add(new AutofillAddress(profile));
             }
         }

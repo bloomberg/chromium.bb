@@ -23,7 +23,7 @@ public:
     static bool isValidAmountFormat(const String& amount, String* optionalErrorMessage);
 
     // Returns true if |code| is a valid ISO 3166 country code.
-    static bool isValidRegionCodeFormat(const String& code, String* optionalErrorMessage);
+    static bool isValidCountryCodeFormat(const String& code, String* optionalErrorMessage);
 
     // Returns true if |code| is a valid ISO 639 language code.
     static bool isValidLanguageCodeFormat(const String& code, String* optionalErrorMessage);

@@ -7,16 +7,18 @@
 namespace blink {
 
 PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
-    : m_regionCode(address->region_code)
+    : m_country(address->country)
     , m_addressLine(address->address_line.PassStorage())
-    , m_administrativeArea(address->administrative_area)
-    , m_locality(address->locality)
+    , m_region(address->region)
+    , m_city(address->city)
     , m_dependentLocality(address->dependent_locality)
     , m_postalCode(address->postal_code)
     , m_sortingCode(address->sorting_code)
     , m_languageCode(address->language_code)
     , m_organization(address->organization)
     , m_recipient(address->recipient)
+    , m_careOf(address->careOf)
+    , m_phone(address->phone)
 {
     if (!m_languageCode.isEmpty() && !address->script_code.isEmpty()) {
         m_languageCode.append("-");

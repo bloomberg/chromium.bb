@@ -269,7 +269,7 @@ TEST_F(PaymentRequestTest, RejectShowPromiseWithRequestShippingFalseAndShippingA
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentAddressPtr shippingAddress = mojom::blink::PaymentAddress::New();
-    shippingAddress->region_code = "US";
+    shippingAddress->country = "US";
     shippingAddress->language_code = "en";
     shippingAddress->script_code = "Latn";
 
@@ -287,7 +287,7 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingTrueAndValidShip
     EXPECT_FALSE(getExceptionState().hadException());
     mojom::blink::PaymentResponsePtr response = mojom::blink::PaymentResponse::New();
     response->shipping_address = mojom::blink::PaymentAddress::New();
-    response->shipping_address->region_code = "US";
+    response->shipping_address->country = "US";
     response->shipping_address->language_code = "en";
     response->shipping_address->script_code = "Latn";
 
@@ -298,7 +298,7 @@ TEST_F(PaymentRequestTest, ResolveShowPromiseWithRequestShippingTrueAndValidShip
     v8::MicrotasksScope::PerformCheckpoint(getScriptState()->isolate());
     PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(getScriptState()->isolate(), outValue.v8Value());
 
-    EXPECT_EQ("US", pr->shippingAddress()->regionCode());
+    EXPECT_EQ("US", pr->shippingAddress()->country());
     EXPECT_EQ("en-Latn", pr->shippingAddress()->languageCode());
 }
 

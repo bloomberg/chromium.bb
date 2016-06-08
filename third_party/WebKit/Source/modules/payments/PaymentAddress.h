@@ -23,30 +23,34 @@ public:
     explicit PaymentAddress(mojom::blink::PaymentAddressPtr);
     virtual ~PaymentAddress();
 
-    const String& regionCode() const { return m_regionCode; }
+    const String& country() const { return m_country; }
     const Vector<String>& addressLine() const { return m_addressLine; }
-    const String& administrativeArea() const { return m_administrativeArea; }
-    const String& locality() const { return m_locality; }
+    const String& region() const { return m_region; }
+    const String& city() const { return m_city; }
     const String& dependentLocality() const { return m_dependentLocality; }
     const String& postalCode() const { return m_postalCode; }
     const String& sortingCode() const { return m_sortingCode; }
     const String& languageCode() const { return m_languageCode; }
     const String& organization() const { return m_organization; }
     const String& recipient() const { return m_recipient; }
+    const String& careOf() const { return m_careOf; }
+    const String& phone() const { return m_phone; }
 
     DEFINE_INLINE_TRACE() {}
 
 private:
-    String m_regionCode;
+    String m_country;
     Vector<String> m_addressLine;
-    String m_administrativeArea;
-    String m_locality;
+    String m_region;
+    String m_city;
     String m_dependentLocality;
     String m_postalCode;
     String m_sortingCode;
     String m_languageCode;
     String m_organization;
     String m_recipient;
+    String m_careOf;
+    String m_phone;
 };
 
 } // namespace blink

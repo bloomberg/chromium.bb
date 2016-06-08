@@ -20,9 +20,9 @@ function print(msg) {  // eslint-disable-line no-unused-vars
 function toDictionary(addr) {  // eslint-disable-line no-unused-vars
   var dict = {};
   if (addr) {
-    dict.regionCode = addr.regionCode;
-    dict.administrativeArea = addr.administrativeArea;
-    dict.locality = addr.locality;
+    dict.country = addr.country;
+    dict.region = addr.region;
+    dict.city = addr.city;
     dict.dependentLocality = addr.dependentLocality;
     dict.addressLine = addr.addressLine;
     dict.postalCode = addr.postalCode;
@@ -30,6 +30,8 @@ function toDictionary(addr) {  // eslint-disable-line no-unused-vars
     dict.languageCode = addr.languageCode;
     dict.organization = addr.organization;
     dict.recipient = addr.recipient;
+    dict.careOf = addr.careOf;
+    dict.phone = addr.phone;
   }
   return dict;
 }

@@ -7,14 +7,16 @@
 [
     RuntimeEnabled=PaymentRequest,
 ] interface PaymentAddress {
-    readonly attribute DOMString regionCode;
-    readonly attribute sequence<DOMString> addressLine;
-    readonly attribute DOMString administrativeArea;
-    readonly attribute DOMString locality;
+    readonly attribute DOMString country;
+    readonly attribute FrozenArray<DOMString> addressLine;
+    readonly attribute DOMString region;
+    readonly attribute DOMString city;
     readonly attribute DOMString dependentLocality;
     readonly attribute DOMString postalCode;
     readonly attribute DOMString sortingCode;
     readonly attribute DOMString languageCode;
     readonly attribute DOMString organization;
     readonly attribute DOMString recipient;
+    readonly attribute DOMString careOf;
+    readonly attribute DOMString phone;
 };

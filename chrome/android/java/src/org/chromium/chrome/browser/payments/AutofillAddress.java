@@ -47,6 +47,7 @@ public class AutofillAddress extends PaymentOption {
         assert profile.getSortingCode() != null : "Sorting code should not be null";
         assert profile.getCompanyName() != null : "Company name should not be null";
         assert profile.getFullName() != null : "Full name should not be null";
+        assert profile.getPhoneNumber() != null : "Phone number should not be null";
 
         mProfile = profile;
     }
@@ -57,10 +58,10 @@ public class AutofillAddress extends PaymentOption {
     public PaymentAddress toPaymentAddress() {
         PaymentAddress result = new PaymentAddress();
 
-        result.regionCode = mProfile.getCountryCode();
+        result.country = mProfile.getCountryCode();
         result.addressLine = mProfile.getStreetAddress().split("\n");
-        result.administrativeArea = mProfile.getRegion();
-        result.locality = mProfile.getLocality();
+        result.region = mProfile.getRegion();
+        result.city = mProfile.getLocality();
         result.dependentLocality = mProfile.getDependentLocality();
         result.postalCode = mProfile.getPostalCode();
         result.sortingCode = mProfile.getSortingCode();
@@ -68,6 +69,8 @@ public class AutofillAddress extends PaymentOption {
         result.recipient = mProfile.getFullName();
         result.languageCode = "";
         result.scriptCode = "";
+        result.careOf = "";
+        result.phone = mProfile.getPhoneNumber();
 
         if (mProfile.getLanguageCode() == null) return result;
 

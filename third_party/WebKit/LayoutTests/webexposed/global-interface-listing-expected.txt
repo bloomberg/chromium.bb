@@ -4184,14 +4184,16 @@ interface Path2D
 interface PaymentAddress
     attribute @@toStringTag
     getter addressLine
-    getter administrativeArea
+    getter careOf
+    getter city
+    getter country
     getter dependentLocality
     getter languageCode
-    getter locality
     getter organization
+    getter phone
     getter postalCode
     getter recipient
-    getter regionCode
+    getter region
     getter sortingCode
     method constructor
 interface PaymentRequest : EventTarget

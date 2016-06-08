@@ -97,20 +97,20 @@ INSTANTIATE_TEST_CASE_P(Amounts,
 class PaymentsRegionValidatorTest : public testing::TestWithParam<TestCase> {
 };
 
-TEST_P(PaymentsRegionValidatorTest, IsValidRegionCodeFormat)
+TEST_P(PaymentsRegionValidatorTest, IsValidCountryCodeFormat)
 {
     String errorMessage;
-    EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidRegionCodeFormat(GetParam().input, &errorMessage)) << errorMessage;
+    EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidCountryCodeFormat(GetParam().input, &errorMessage)) << errorMessage;
     EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
 
-    EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidRegionCodeFormat(GetParam().input, nullptr));
+    EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidCountryCodeFormat(GetParam().input, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(RegionCodes,
+INSTANTIATE_TEST_CASE_P(CountryCodes,
     PaymentsRegionValidatorTest,
     testing::Values(
         TestCase("US", true),
-        // Invalid region code formats
+        // Invalid country code formats
         TestCase("U1", false),
         TestCase("U", false),
         TestCase("us", false),
@@ -168,8 +168,8 @@ INSTANTIATE_TEST_CASE_P(ScriptCodes,
         TestCase("LATN", false)));
 
 struct ShippingAddressTestCase {
-    ShippingAddressTestCase(const char* regionCode, const char* languageCode, const char* scriptCode, bool expectedValid)
-        : regionCode(regionCode)
+    ShippingAddressTestCase(const char* countryCode, const char* languageCode, const char* scriptCode, bool expectedValid)
+        : countryCode(countryCode)
         , languageCode(languageCode)
         , scriptCode(scriptCode)
         , expectedValid(expectedValid)
@@ -177,7 +177,7 @@ struct ShippingAddressTestCase {
     }
     ~ShippingAddressTestCase() {}
 
-    const char* regionCode;
+    const char* countryCode;
     const char* languageCode;
     const char* scriptCode;
     bool expectedValid;
@@ -189,7 +189,7 @@ class PaymentsShippingAddressValidatorTest : public testing::TestWithParam<Shipp
 TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress)
 {
     mojom::blink::PaymentAddressPtr address = mojom::blink::PaymentAddress::New();
-    address->region_code = GetParam().regionCode;
+    address->country = GetParam().countryCode;
     address->language_code = GetParam().languageCode;
     address->script_code = GetParam().scriptCode;
 
@@ -208,7 +208,7 @@ INSTANTIATE_TEST_CASE_P(ShippingAddresses,
         ShippingAddressTestCase("US", "", "", true),
         // Invalid shipping addresses
         ShippingAddressTestCase("", "", "", false),
-        ShippingAddressTestCase("InvalidRegionCode", "", "", false),
+        ShippingAddressTestCase("InvalidCountryCode", "", "", false),
         ShippingAddressTestCase("US", "InvalidLanguageCode", "", false),
         ShippingAddressTestCase("US", "en", "InvalidScriptCode", false),
         ShippingAddressTestCase("US", "", "Latn", false)));

@@ -31,7 +31,7 @@ bool PaymentsValidators::isValidAmountFormat(const String& amount, String* optio
     return false;
 }
 
-bool PaymentsValidators::isValidRegionCodeFormat(const String& code, String* optionalErrorMessage)
+bool PaymentsValidators::isValidCountryCodeFormat(const String& code, String* optionalErrorMessage)
 {
     if (ScriptRegexp("^[A-Z]{2}$", TextCaseSensitive).match(code) == 0)
         return true;
@@ -66,7 +66,7 @@ bool PaymentsValidators::isValidScriptCodeFormat(const String& code, String* opt
 
 bool PaymentsValidators::isValidShippingAddress(const mojom::blink::PaymentAddressPtr& address, String* optionalErrorMessage)
 {
-    if (!isValidRegionCodeFormat(address->region_code, optionalErrorMessage))
+    if (!isValidCountryCodeFormat(address->country, optionalErrorMessage))
         return false;
 
     if (!isValidLanguageCodeFormat(address->language_code, optionalErrorMessage))

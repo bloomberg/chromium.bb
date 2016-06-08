@@ -9,11 +9,11 @@ module blink.mojom;
 // process. Built either by the browser or a payment app.
 struct PaymentAddress {
   // ISO 3166 country code. Two upper case ASCII letters.
-  string region_code;
+  string country;
 
   array<string> address_line;
-  string administrative_area;
-  string locality;
+  string region;
+  string city;
   string dependent_locality;
   string postal_code;
   string sorting_code;
@@ -28,6 +28,8 @@ struct PaymentAddress {
 
   string organization;
   string recipient;
+  string careOf;
+  string phone;
 };
 
 struct PaymentResponse {

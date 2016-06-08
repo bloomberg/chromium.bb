@@ -40,10 +40,10 @@ public class AutofillAddressTest {
                 "locality", "dependent locality", "postal code", "sorting code", "US",
                 "phone number", "email@address.com", "en-Latn-US"));
         PaymentAddress output = input.toPaymentAddress();
-        Assert.assertEquals("US", output.regionCode);
+        Assert.assertEquals("US", output.country);
         Assert.assertArrayEquals(new String[]{"street", "address"}, output.addressLine);
-        Assert.assertEquals("region", output.administrativeArea);
-        Assert.assertEquals("locality", output.locality);
+        Assert.assertEquals("region", output.region);
+        Assert.assertEquals("locality", output.city);
         Assert.assertEquals("dependent locality", output.dependentLocality);
         Assert.assertEquals("postal code", output.postalCode);
         Assert.assertEquals("sorting code", output.sortingCode);
@@ -51,6 +51,8 @@ public class AutofillAddressTest {
         Assert.assertEquals("full name", output.recipient);
         Assert.assertEquals("en", output.languageCode);
         Assert.assertEquals("Latn", output.scriptCode);
+        Assert.assertEquals("", output.careOf);
+        Assert.assertEquals("phone number", output.phone);
     }
 
     @Test
