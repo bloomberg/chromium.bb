@@ -7,18 +7,23 @@
  */
 
 goog.provide('PanelMenu');
+goog.provide('PanelNodeMenu');
 
 goog.require('PanelMenuItem');
+goog.require('constants');
 
 /**
- * @param {string} menuTitle The title of the menu.
+ * @param {string} menuMsg The msg id of the menu.
  * @constructor
  */
-PanelMenu = function(menuTitle) {
+PanelMenu = function(menuMsg) {
+  /** @type {string} */
+  this.menuMsg = menuMsg;
   // The item in the menu bar containing the menu's title.
   this.menuBarItemElement = document.createElement('div');
   this.menuBarItemElement.className = 'menu-bar-item';
   this.menuBarItemElement.setAttribute('role', 'menu');
+  var menuTitle = Msgs.getMsg(menuMsg);
   this.menuBarItemElement.textContent = menuTitle;
 
   // The container for the menu. This part is fixed and scrolls its
@@ -182,5 +187,55 @@ PanelMenu.prototype = {
         return this.items_[i].callback;
     }
     return null;
+  }
+};
+
+/**
+ * @param {string} menuMsg The msg id of the menu.
+ * @param {chrome.automation.AutomationNode} node ChromeVox's current position.
+ * @param {AutomationPredicate.Unary} pred Filter to use on the document.
+ * @extends {PanelMenu}
+ * @constructor
+ */
+PanelNodeMenu = function(menuMsg, node, pred) {
+  PanelMenu.call(this, menuMsg);
+  var nodes = [];
+  var selectNext = false;
+  var activeIndex = -1;
+  AutomationUtil.findNodePre(node.root, constants.Dir.FORWARD,
+      /** @type {AutomationPredicate.Unary} */(function(n) {
+        if (n === node)
+          selectNext = true;
+
+        if (pred(n)) {
+          this.addMenuItem(n.name, '', function() {
+            chrome.extension.getBackgroundPage().ChromeVoxState
+                .instance['navigateToRange'](cursors.Range.fromNode(n));
+          });
+          if (selectNext) {
+            activeIndex = this.items_.length - 1;
+            selectNext = false;
+          }
+        }
+      }).bind(this)
+  );
+
+  if (!this.items_.length) {
+    this.addMenuItem(
+        Msgs.getMsg('panel_menu_item_none'), '', function() {});
+    this.activateItem(0);
+  }
+  if (activeIndex >= 0)
+    this.activateItem(activeIndex);
+};
+
+PanelNodeMenu.prototype = {
+  __proto__: PanelMenu.prototype,
+
+  /** @override */
+  activate: function() {
+    var activeItem = this.activeIndex_;
+    PanelMenu.prototype.activate.call(this);
+    this.activateItem(activeItem);
   }
 };

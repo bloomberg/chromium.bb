@@ -1106,6 +1106,12 @@
       <message desc="This is an ARIA widget role name shown on a braille display. If the translation is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TAB_BRL">
         tab
       </message>
+      <message desc="Describes an element with the ARIA role table." name="IDS_CHROMEVOX_ROLE_TABLE">
+        Table
+      </message>
+      <message desc="This is an ARIA widget role name shown on a braille display. If the translation is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TABLE_BRL">
+        table
+      </message>
       <message desc="Describes an element with the ARIA role tablist." name="IDS_CHROMEVOX_ROLE_TABLIST">
         Tab list
       </message>
@@ -2404,6 +2410,21 @@
       </message>
       <message desc="Text in parentheses to be appended next to a tab that's currently active." name="IDS_CHROMEVOX_ACTIVE_TAB">
         (active)
+      </message>
+      <message desc="Title displayed in the panel for the jump menu." name="IDS_CHROMEVOX_PANEL_MENU_JUMP">
+        Jump
+      </message>
+      <message desc="Title displayed in the panel for the speech menu." name="IDS_CHROMEVOX_PANEL_MENU_SPEECH">
+        Speech
+      </message>
+      <message desc="Title displayed in the panel for the tabs menu." name="IDS_CHROMEVOX_PANEL_MENU_TABS">
+        Tabs
+      </message>
+      <message desc="Title displayed in the panel for the ChromeVox menu." name="IDS_CHROMEVOX_PANEL_MENU_CHROMEVOX">
+        ChromeVox
+      </message>
+      <message desc="Title displayed in the panel when there are no menu items." name="IDS_CHROMEVOX_PANEL_MENU_ITEM_NONE">
+        No items.
       </message>
     </messages>
   </release>

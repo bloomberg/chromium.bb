@@ -351,7 +351,7 @@
       }
     },
     {
-      "command": "openChromeVoxMenus",
+      "command": "toggleKeyboardHelp",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -499,7 +499,56 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
+          "keyCode": [191]
+        }
+      }
+    },
+    {
+      "command": "showHeadingsList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [72],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "showFormsList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
           "keyCode": [70],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "showLandmarksList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [186],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "showLinksList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [76],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "showTablesList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [84],
           "ctrlKey": [true]
         }
       }

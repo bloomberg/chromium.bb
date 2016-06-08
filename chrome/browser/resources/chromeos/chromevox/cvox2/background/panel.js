@@ -185,7 +185,7 @@ Panel.exec = function(command) {
       Panel.onDisableMenus();
       break;
     case PanelCommandType.OPEN_MENUS:
-      Panel.onOpenMenus();
+      Panel.onOpenMenus(undefined, command.data);
       break;
     case PanelCommandType.SEARCH:
       Panel.onSearch();
@@ -214,8 +214,9 @@ Panel.onDisableMenus = function() {
 /**
  * Open / show the ChromeVox Menus.
  * @param {Event=} opt_event An optional event that triggered this.
+ * @param {*=} opt_activateMenuTitle Title msg id of menu to open.
  */
-Panel.onOpenMenus = function(opt_event) {
+Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   // Don't open the menu if it's not enabled, such as when ChromeVox Next
   // is not active.
   if (!Panel.menusEnabled_)
@@ -237,10 +238,10 @@ Panel.onOpenMenus = function(opt_event) {
   Panel.pendingCallback_ = null;
 
   // Build the top-level menus.
-  var jumpMenu = Panel.addMenu('Jump');
-  var speechMenu = Panel.addMenu('Speech');
-  var tabsMenu = Panel.addMenu('Tabs');
-  var chromevoxMenu = Panel.addMenu('ChromeVox');
+  var jumpMenu = Panel.addMenu('panel_menu_jump');
+  var speechMenu = Panel.addMenu('panel_menu_speech');
+  var tabsMenu = Panel.addMenu('panel_menu_tabs');
+  var chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
 
   // Create a mapping between categories from CommandStore, and our
   // top-level menus. Some categories aren't mapped to any menu.
@@ -326,8 +327,21 @@ Panel.onOpenMenus = function(opt_event) {
         Panel.onClose();
       });
 
-  // Activate the first menu.
-  Panel.activateMenu(Panel.menus_[0]);
+  // Add menus for various role types.
+  var node = bkgnd.ChromeVoxState.instance.getCurrentRange().start.node;
+  Panel.addNodeMenu('role_heading', node, AutomationPredicate.heading);
+  Panel.addNodeMenu('role_landmark', node, AutomationPredicate.landmark);
+  Panel.addNodeMenu('role_link', node, AutomationPredicate.link);
+  Panel.addNodeMenu('role_form', node, AutomationPredicate.formField);
+  Panel.addNodeMenu('role_table', node, AutomationPredicate.table);
+
+  // Activate either the specified menu or the first menu.
+  var selectedMenu = Panel.menus_[0];
+  for (var i = 0; i < Panel.menus_.length; i++) {
+    if (this.menus_[i].menuMsg == opt_activateMenuTitle)
+      selectedMenu = this.menus_[i];
+  }
+  Panel.activateMenu(selectedMenu);
 };
 
 /** Open incremental search. */
@@ -357,11 +371,31 @@ Panel.clearMenus = function() {
 
 /**
  * Create a new menu with the given name and add it to the menu bar.
- * @param {string} menuTitle The title of the new menu to add.
+ * @param {string} menuMsg The msg id of the new menu to add.
  * @return {PanelMenu} The menu just created.
  */
-Panel.addMenu = function(menuTitle) {
-  var menu = new PanelMenu(menuTitle);
+Panel.addMenu = function(menuMsg) {
+  var menu = new PanelMenu(menuMsg);
+  $('menu-bar').appendChild(menu.menuBarItemElement);
+  menu.menuBarItemElement.addEventListener('mouseover', function() {
+    Panel.activateMenu(menu);
+  }, false);
+
+  $('menus_background').appendChild(menu.menuContainerElement);
+  this.menus_.push(menu);
+  return menu;
+};
+
+
+/**
+ * Create a new node menu with the given name and add it to the menu bar.
+ * @param {string} menuMsg The msg id of the new menu to add.
+ * @param {chrome.automation.AutomationNode} node
+ * @param {AutomationPredicate.Unary} pred
+ * @return {PanelMenu} The menu just created.
+ */
+Panel.addNodeMenu = function(menuMsg, node, pred) {
+  var menu = new PanelNodeMenu(menuMsg, node, pred);
   $('menu-bar').appendChild(menu.menuBarItemElement);
   menu.menuBarItemElement.addEventListener('mouseover', function() {
     Panel.activateMenu(menu);
@@ -542,9 +576,7 @@ Panel.closeMenusAndRestoreFocus = function() {
 
   var bkgnd =
       chrome.extension.getBackgroundPage()['global']['backgroundObj'];
-  bkgnd['endExcursion']();
-  if (Panel.pendingCallback_)
-    Panel.pendingCallback_();
+  bkgnd['endExcursion'](Panel.pendingCallback_);
 };
 
 window.addEventListener('load', function() {

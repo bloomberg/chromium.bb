@@ -638,9 +638,30 @@ Background.prototype = {
         cvox.ChromeVox.tts.speak(
             Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
         return true;
-      case 'openChromeVoxMenus':
+      case 'toggleKeyboardHelp':
         this.startExcursion();
         (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
+        return false;
+      case 'showHeadingsList':
+        this.startExcursion();
+        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
+        return false;
+      case 'showFormsList':
+        this.startExcursion();
+        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_form')).send();
+        return false;
+      case 'showLandmarksList':
+        this.startExcursion();
+        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_landmark')).send();
+        return false;
+      case 'showLinksList':
+        this.startExcursion();
+        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link')).send();
+        return false;
+      case 'showTablesList':
+        this.startExcursion();
+        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'table_strategy'))
+            .send();
         return false;
       case 'toggleSearchWidget':
         (new PanelCommand(PanelCommandType.SEARCH)).send();
@@ -792,7 +813,7 @@ Background.prototype = {
     }
 
     if (current)
-      this.navigateToRange_(current);
+      this.navigateToRange(current);
 
     return false;
   },
@@ -829,20 +850,24 @@ Background.prototype = {
   /**
    * Navigate to the given range - it both sets the range and outputs it.
    * @param {!cursors.Range} range The new range.
+   * @param {boolean=} opt_focus Focus the range; defaults to true.
    * @private
    */
-  navigateToRange_: function(range) {
-    // TODO(dtseng): Figure out what it means to focus a range.
-    var actionNode = range.start.node;
-    if (actionNode.role == RoleType.inlineTextBox)
-      actionNode = actionNode.parent;
+  navigateToRange: function(range, opt_focus) {
+    opt_focus = opt_focus === undefined ? true : opt_focus;
 
-    // Iframes, when focused, causes the child webArea to fire focus event.
-    // This can result in getting stuck when navigating backward.
-    if (actionNode.role != RoleType.iframe && !actionNode.state.focused &&
-        !AutomationPredicate.container(actionNode))
-      actionNode.focus();
+    if (opt_focus) {
+      // TODO(dtseng): Figure out what it means to focus a range.
+      var actionNode = range.start.node;
+      if (actionNode.role == RoleType.inlineTextBox)
+        actionNode = actionNode.parent;
 
+      // Iframes, when focused, causes the child webArea to fire focus event.
+      // This can result in getting stuck when navigating backward.
+      if (actionNode.role != RoleType.iframe && !actionNode.state.focused &&
+          !AutomationPredicate.container(actionNode))
+        actionNode.focus();
+    }
     var prevRange = this.currentRange_;
     this.setCurrentRange(range);
 
@@ -1043,9 +1068,10 @@ Background.prototype = {
   /**
    * Restore the range to the last range that was *not* in the ChromeVox
    * panel. This is used when the ChromeVox Panel closes.
+   * @param {function()=} opt_callback
    * @private
    */
-  restoreCurrentRange_: function() {
+  restoreCurrentRange_: function(opt_callback) {
     if (this.savedRange_) {
       var node = this.savedRange_.start.node;
       var containingWebView = node;
@@ -1057,14 +1083,16 @@ Background.prototype = {
         // away from the saved range.
         var saved = this.savedRange_;
         var setSavedRange = function(e) {
-          if (e.target.root == saved.start.node.root)
-            this.navigateToRange_(saved);
+          if (e.target.root == saved.start.node.root) {
+          this.navigateToRange(saved, false);
+          opt_callback && opt_callback();
+        }
           node.root.removeEventListener(EventType.focus, setSavedRange, true);
         }.bind(this);
         node.root.addEventListener(EventType.focus, setSavedRange, true);
         containingWebView.focus();
       }
-      this.navigateToRange_(this.savedRange_);
+      this.navigateToRange(this.savedRange_);
       this.savedRange_ = null;
     }
   },
@@ -1078,10 +1106,11 @@ Background.prototype = {
 
   /**
    * Move ChromeVox back to the last saved range.
+   * @param {function()=} opt_callback Called when range has been restored.
    */
-  endExcursion: function() {
+  endExcursion: function(opt_callback) {
     this.inExcursion_ = false;
-    this.restoreCurrentRange_();
+    this.restoreCurrentRange_(opt_callback);
   },
 
   /**
