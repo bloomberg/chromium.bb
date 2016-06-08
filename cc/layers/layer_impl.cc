@@ -104,12 +104,11 @@ LayerImpl::~LayerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
 
-  // The mask and replica layers should have been removed already.
   if (mask_layer_)
-    DCHECK(!layer_tree_impl_->RemoveLayer(mask_layer_id_));
+    layer_tree_impl_->RemoveLayer(mask_layer_id_);
   if (replica_layer_)
-    DCHECK(!layer_tree_impl_->RemoveLayer(replica_layer_id_));
-  children_.clear();
+    layer_tree_impl_->RemoveLayer(replica_layer_id_);
+  ClearChildList();
 }
 
 void LayerImpl::AddChild(std::unique_ptr<LayerImpl> child) {
@@ -129,6 +128,14 @@ std::unique_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
 
 void LayerImpl::SetParent(LayerImpl* parent) {
   parent_ = parent;
+}
+
+void LayerImpl::ClearChildList() {
+  if (children_.empty())
+    return;
+  for (auto* child : children_)
+    layer_tree_impl_->RemoveLayer(child->id());
+  children_.clear();
 }
 
 void LayerImpl::ClearLinksToOtherLayers() {
@@ -841,14 +848,11 @@ void LayerImpl::SetReplicaLayer(std::unique_ptr<LayerImpl> replica_layer) {
   replica_layer_id_ = new_layer_id;
 }
 
-std::unique_ptr<LayerImpl> LayerImpl::TakeReplicaLayerForTesting() {
+std::unique_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
   replica_layer_id_ = -1;
   std::unique_ptr<LayerImpl> ret;
-  if (replica_layer_) {
-    if (replica_layer_->mask_layer())
-      replica_layer_->SetMaskLayer(nullptr);
+  if (replica_layer_)
     ret = layer_tree_impl_->RemoveLayer(replica_layer_->id());
-  }
   replica_layer_ = nullptr;
   return ret;
 }
