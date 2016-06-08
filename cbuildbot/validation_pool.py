@@ -166,6 +166,14 @@ class PatchConflict(cros_patch.PatchException):
             'rebase?')
 
 
+class PatchExceededRecursionLimit(cros_patch.PatchException):
+  """Raised if we encountered recursion limit while trying to apply patch."""
+
+  def ShortExplanation(self):
+    return ('was part of a dependency stack that exceeded our recursion '
+            'depth. Try breaking this stack into smaller pieces.')
+
+
 class PatchSubmittedWithoutDeps(cros_patch.DependencyError):
   """Exception thrown when a patch was submitted incorrectly."""
 
@@ -535,6 +543,11 @@ class PatchSeries(object):
         plan = self.CreateTransaction(change, limit_to=limit_to)
       except cros_patch.PatchException as e:
         yield (change, (), e)
+      except RuntimeError as e:
+        if 'maximum recursion depth' in e.message:
+          yield (change, (), PatchExceededRecursionLimit(change))
+        else:
+          raise
       else:
         yield (change, plan, None)
 
