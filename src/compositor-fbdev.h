@@ -41,7 +41,6 @@ struct weston_fbdev_backend_config {
 
 	int tty;
 	char *device;
-	int use_gl;
 
 	uint32_t output_transform;
 

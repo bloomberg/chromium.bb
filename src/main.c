@@ -516,7 +516,7 @@ usage(int error_code)
 		"Options for fbdev-backend.so:\n\n"
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --device=DEVICE\tThe framebuffer device to use\n"
-		"  --use-gl\t\tUse the GL renderer\n\n");
+		"\n");
 #endif
 
 #if defined(BUILD_HEADLESS_COMPOSITOR)
@@ -1111,7 +1111,6 @@ load_fbdev_backend(struct weston_compositor *c,
 	const struct weston_option fbdev_options[] = {
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
 		{ WESTON_OPTION_STRING, "device", 0, &config.device },
-		{ WESTON_OPTION_BOOLEAN, "use-gl", 0, &config.use_gl },
 	};
 
 	parse_options(fbdev_options, ARRAY_LENGTH(fbdev_options), argc, argv);
