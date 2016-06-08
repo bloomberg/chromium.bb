@@ -62191,6 +62191,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.SelectedRtcpMuxPolicy"
+    enum="PeerConnectionRtcpMuxPolicy">
+  <owner>zhihuang@chromium.org</owner>
+  <summary>
+    Whether the application specified a value for RTCP-mux policy, and if so,
+    which value, &quot;Require&quot; or &quot;Negotiate&quot;. Recorded after
+    parsing the configuration when creating the RTCPeerConnection.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.SrtpCryptoSuite"
     enum="DTLS_SRTPCryptoSuite">
   <owner>guoweis@chromium.org</owner>
@@ -83634,6 +83644,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled"/>
   <int value="2" label="No media"/>
+</enum>
+
+<enum name="PeerConnectionRtcpMuxPolicy" type="int">
+  <int value="0" label="Require"/>
+  <int value="1" label="Negotiate"/>
+  <int value="2" label="Default"/>
 </enum>
 
 <enum name="PepperInterface" type="int">

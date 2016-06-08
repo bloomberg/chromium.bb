@@ -249,6 +249,9 @@ bool MockWebRTCPeerConnectionHandler::updateICE(
   return true;
 }
 
+void MockWebRTCPeerConnectionHandler::logSelectedRtcpMuxPolicy(
+    blink::RtcpMuxPolicy selectedRtcpMuxPolicy) {}
+
 bool MockWebRTCPeerConnectionHandler::addICECandidate(
     const WebRTCICECandidate& ice_candidate) {
   client_->didGenerateICECandidate(ice_candidate);

@@ -198,7 +198,7 @@ private:
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-RTCConfiguration* parseConfiguration(const Dictionary& configuration, ExceptionState& exceptionState)
+RTCConfiguration* parseConfiguration(const Dictionary& configuration, ExceptionState& exceptionState, RtcpMuxPolicy* selectedRtcpMuxPolicy)
 {
     if (configuration.isUndefinedOrNull())
         return 0;
@@ -243,12 +243,18 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration, ExceptionS
         }
     }
 
+    // For the histogram value of "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
+    *selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
     RTCRtcpMuxPolicy rtcpMuxPolicy = RTCRtcpMuxPolicyNegotiate;
     String rtcpMuxPolicyString;
     if (DictionaryHelper::get(configuration, "rtcpMuxPolicy", rtcpMuxPolicyString)) {
         if (rtcpMuxPolicyString == "require") {
+            *selectedRtcpMuxPolicy = RtcpMuxPolicyRequire;
             rtcpMuxPolicy = RTCRtcpMuxPolicyRequire;
-        } else if (rtcpMuxPolicyString != "negotiate") {
+        } else if (rtcpMuxPolicyString == "negotiate") {
+            *selectedRtcpMuxPolicy = RtcpMuxPolicyNegotiate;
+            rtcpMuxPolicy = RTCRtcpMuxPolicyNegotiate;
+        } else {
             exceptionState.throwTypeError("Malformed RTCRtcpMuxPolicy");
             return 0;
         }
@@ -392,7 +398,9 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     else
         UseCounter::count(context, UseCounter::RTCPeerConnectionConstructorCompliant);
 
-    RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState);
+    // Record the RtcpMuxPolicy for histogram "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
+    RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
+    RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
     if (exceptionState.hadException())
         return 0;
 
@@ -419,6 +427,8 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     peerConnection->suspendIfNeeded();
     if (exceptionState.hadException())
         return 0;
+
+    peerConnection->m_peerHandler->logSelectedRtcpMuxPolicy(selectedRtcpMuxPolicy);
 
     return peerConnection;
 }
@@ -658,7 +668,9 @@ void RTCPeerConnection::updateIce(ExecutionContext* context, const Dictionary& r
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState);
+    RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
+    RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
+
     if (exceptionState.hadException())
         return;
 

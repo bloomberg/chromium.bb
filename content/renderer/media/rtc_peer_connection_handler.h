@@ -135,6 +135,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   bool updateICE(
       const blink::WebRTCConfiguration& server_configuration) override;
+  void logSelectedRtcpMuxPolicy(
+      blink::RtcpMuxPolicy selectedRtcpMuxPolicy) override;
   bool addICECandidate(const blink::WebRTCICECandidate& candidate) override;
   bool addICECandidate(const blink::WebRTCVoidRequest& request,
                        const blink::WebRTCICECandidate& candidate) override;

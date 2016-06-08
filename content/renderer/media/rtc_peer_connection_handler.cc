@@ -1253,6 +1253,12 @@ bool RTCPeerConnectionHandler::updateICE(
   return native_peer_connection_->UpdateIce(config.servers);
 }
 
+void RTCPeerConnectionHandler::logSelectedRtcpMuxPolicy(
+    blink::RtcpMuxPolicy selectedRtcpMuxPolicy) {
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.SelectedRtcpMuxPolicy",
+                            selectedRtcpMuxPolicy, blink::RtcpMuxPolicyMax);
+}
+
 bool RTCPeerConnectionHandler::addICECandidate(
     const blink::WebRTCVoidRequest& request,
     const blink::WebRTCICECandidate& candidate) {

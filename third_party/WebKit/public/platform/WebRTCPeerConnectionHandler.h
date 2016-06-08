@@ -49,6 +49,14 @@ class WebRTCVoidRequest;
 class WebString;
 struct WebRTCDataChannelInit;
 
+// Used to back histogram value of "WebRTC.PeerConnection.SelectedRtcpMuxPolicy", so treat as append-only.
+enum RtcpMuxPolicy {
+    RtcpMuxPolicyRequire,
+    RtcpMuxPolicyNegotiate,
+    RtcpMuxPolicyDefault,
+    RtcpMuxPolicyMax
+};
+
 class WebRTCPeerConnectionHandler {
 public:
     virtual ~WebRTCPeerConnectionHandler() { }
@@ -64,6 +72,7 @@ public:
     virtual WebRTCSessionDescription localDescription() = 0;
     virtual WebRTCSessionDescription remoteDescription() = 0;
     virtual bool updateICE(const WebRTCConfiguration&) = 0;
+    virtual void logSelectedRtcpMuxPolicy(RtcpMuxPolicy) = 0;
 
     // DEPRECATED
     virtual bool addICECandidate(const WebRTCICECandidate&) { return false; }
