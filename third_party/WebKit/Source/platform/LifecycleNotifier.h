@@ -58,7 +58,6 @@ public:
 protected:
     LifecycleNotifier()
         : m_iterating(IteratingNone)
-        , m_didCallContextDestroyed(false)
     {
     }
 
@@ -77,37 +76,25 @@ protected:
 #if DCHECK_IS_ON()
     T* context() { return static_cast<T*>(this); }
 #endif
-
-private:
-    bool m_didCallContextDestroyed;
 };
 
 template<typename T, typename Observer>
 inline LifecycleNotifier<T, Observer>::~LifecycleNotifier()
 {
     // FIXME: Enable the following ASSERT. Also see a FIXME in Document::detach().
-    // ASSERT(!m_observers.size() || m_didCallContextDestroyed);
+    // ASSERT(!m_observers.size());
 }
 
 template<typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
 {
-    // Don't notify contextDestroyed() twice.
-    if (m_didCallContextDestroyed)
-        return;
-
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    Vector<UntracedMember<Observer>> snapshotOfObservers;
-    copyToVector(m_observers, snapshotOfObservers);
-    for (Observer* observer : snapshotOfObservers) {
-        if (!m_observers.contains(observer))
-            continue;
-
+    ObserverSet observers;
+    m_observers.swap(observers);
+    for (Observer* observer : observers) {
         ASSERT(observer->lifecycleContext() == context());
         observer->contextDestroyed();
     }
-
-    m_didCallContextDestroyed = true;
 }
 
 template<typename T, typename Observer>
