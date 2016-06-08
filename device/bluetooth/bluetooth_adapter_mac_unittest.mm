@@ -70,7 +70,7 @@ class BluetoothAdapterMacTest : public testing::Test {
     return [mock_peripheral.get().peripheral retain];
   }
 
-  NSDictionary* CreateAdvertisementData() {
+  NSDictionary* AdvertisementData() {
     NSDictionary* advertisement_data = @{
       CBAdvertisementDataIsConnectable : @(YES),
       CBAdvertisementDataServiceDataKey : [NSDictionary dictionary],
@@ -261,8 +261,7 @@ TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
       CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
-  base::scoped_nsobject<NSDictionary> advertisement_data(
-      CreateAdvertisementData());
+  base::scoped_nsobject<NSDictionary> advertisement_data(AdvertisementData());
 
   EXPECT_EQ(0, NumDevices());
   EXPECT_FALSE(DevicePresent(mock_peripheral));
@@ -278,8 +277,7 @@ TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedOldDevice) {
       CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
-  base::scoped_nsobject<NSDictionary> advertisement_data(
-      CreateAdvertisementData());
+  base::scoped_nsobject<NSDictionary> advertisement_data(AdvertisementData());
 
   // Update the device for the first time and check it was correctly added to
   // |devices_|.
@@ -311,8 +309,7 @@ TEST_F(BluetoothAdapterMacTest, UpdateDevicesRemovesLowEnergyDevice) {
       CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
     return;
-  base::scoped_nsobject<NSDictionary> advertisement_data(
-      CreateAdvertisementData());
+  base::scoped_nsobject<NSDictionary> advertisement_data(AdvertisementData());
 
   BluetoothLowEnergyDeviceMac* device = new BluetoothLowEnergyDeviceMac(
       adapter_mac_, mock_peripheral, advertisement_data, kTestRssi);
