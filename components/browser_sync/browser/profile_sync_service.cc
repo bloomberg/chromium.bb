@@ -299,7 +299,7 @@ void ProfileSyncService::Initialize() {
     // as the Local State file is guaranteed to be UTF-8.
     device_info_service_.reset(new DeviceInfoService(
         local_device_.get(),
-        base::Bind(&ModelTypeStore::CreateStore,
+        base::Bind(&ModelTypeStore::CreateStore, syncer::DEVICE_INFO,
                    directory_path_.Append(base::FilePath(kLevelDBFolderName))
                        .AsUTF8Unsafe(),
                    blocking_task_runner),

@@ -22,8 +22,8 @@ namespace syncer_v2 {
 namespace {
 
 // Key prefix for data/metadata records.
-const char kDataPrefix[] = "dt-";
-const char kMetadataPrefix[] = "md-";
+const char kDataPrefix[] = "-dt-";
+const char kMetadataPrefix[] = "-md-";
 
 // Key for global metadata record.
 const char kGlobalMetadataKey[] = "GlobalMetadata";
@@ -35,13 +35,13 @@ void NoOpForBackendDtor(std::unique_ptr<ModelTypeStoreBackend> backend) {
 }  // namespace
 
 // static
-std::string ModelTypeStoreImpl::FormatDataKey(const std::string& id) {
-  return kDataPrefix + id;
+std::string ModelTypeStoreImpl::FormatDataPrefix(const syncer::ModelType type) {
+  return std::string(syncer::ModelTypeToTag(type)) + kDataPrefix;
 }
 
 // static
-std::string ModelTypeStoreImpl::FormatMetadataKey(const std::string& id) {
-  return kMetadataPrefix + id;
+std::string ModelTypeStoreImpl::FormatMetaPrefix(const syncer::ModelType type) {
+  return std::string(syncer::ModelTypeToTag(type)) + kMetadataPrefix;
 }
 
 // static
@@ -50,11 +50,22 @@ leveldb::WriteBatch* ModelTypeStoreImpl::GetLeveldbWriteBatch(
   return static_cast<WriteBatchImpl*>(write_batch)->leveldb_write_batch_.get();
 }
 
+std::string ModelTypeStoreImpl::FormatDataKey(const std::string& id) {
+  return dataPrefix_ + id;
+}
+
+std::string ModelTypeStoreImpl::FormatMetadataKey(const std::string& id) {
+  return metadataPrefix_ + id;
+}
+
 ModelTypeStoreImpl::ModelTypeStoreImpl(
+    const syncer::ModelType type,
     std::unique_ptr<ModelTypeStoreBackend> backend,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(std::move(backend)),
       backend_task_runner_(backend_task_runner),
+      dataPrefix_(FormatDataPrefix(type)),
+      metadataPrefix_(FormatMetaPrefix(type)),
       weak_ptr_factory_(this) {
   DCHECK(backend_);
   DCHECK(backend_task_runner_);
@@ -68,6 +79,7 @@ ModelTypeStoreImpl::~ModelTypeStoreImpl() {
 
 // static
 void ModelTypeStoreImpl::CreateStore(
+    const syncer::ModelType type,
     const std::string& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
@@ -76,7 +88,7 @@ void ModelTypeStoreImpl::CreateStore(
   std::unique_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
 
   std::unique_ptr<ModelTypeStoreImpl> store(
-      new ModelTypeStoreImpl(std::move(backend), blocking_task_runner));
+      new ModelTypeStoreImpl(type, std::move(backend), blocking_task_runner));
 
   auto task =
       base::Bind(&ModelTypeStoreBackend::Init,
@@ -106,8 +118,8 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
   // In-memory store backend works on the same thread as test.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  std::unique_ptr<ModelTypeStoreImpl> store(
-      new ModelTypeStoreImpl(std::move(backend), task_runner));
+  std::unique_ptr<ModelTypeStoreImpl> store(new ModelTypeStoreImpl(
+      syncer::UNSPECIFIED, std::move(backend), task_runner));
 
   std::string path;
   env_ptr->GetTestDirectory(&path);
@@ -153,7 +165,7 @@ void ModelTypeStoreImpl::ReadData(const IdList& id_list,
   std::unique_ptr<IdList> missing_id_list(new IdList());
 
   auto task = base::Bind(&ModelTypeStoreBackend::ReadRecordsWithPrefix,
-                         base::Unretained(backend_.get()), kDataPrefix, id_list,
+                         base::Unretained(backend_.get()), dataPrefix_, id_list,
                          base::Unretained(record_list.get()),
                          base::Unretained(missing_id_list.get()));
   auto reply = base::Bind(
@@ -176,7 +188,7 @@ void ModelTypeStoreImpl::ReadAllData(const ReadAllDataCallback& callback) {
   DCHECK(!callback.is_null());
   std::unique_ptr<RecordList> record_list(new RecordList());
   auto task = base::Bind(&ModelTypeStoreBackend::ReadAllRecordsWithPrefix,
-                         base::Unretained(backend_.get()), kDataPrefix,
+                         base::Unretained(backend_.get()), dataPrefix_,
                          base::Unretained(record_list.get()));
   auto reply = base::Bind(&ModelTypeStoreImpl::ReadAllDataDone,
                           weak_ptr_factory_.GetWeakPtr(), callback,
@@ -203,7 +215,7 @@ void ModelTypeStoreImpl::ReadAllMetadata(const ReadMetadataCallback& callback) {
   // issue read operation for global metadata record.
   std::unique_ptr<RecordList> metadata_records(new RecordList());
   auto task = base::Bind(&ModelTypeStoreBackend::ReadAllRecordsWithPrefix,
-                         base::Unretained(backend_.get()), kMetadataPrefix,
+                         base::Unretained(backend_.get()), metadataPrefix_,
                          base::Unretained(metadata_records.get()));
   auto reply = base::Bind(&ModelTypeStoreImpl::ReadMetadataRecordsDone,
                           weak_ptr_factory_.GetWeakPtr(), callback,

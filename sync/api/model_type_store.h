@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -103,6 +104,7 @@ class SYNC_EXPORT ModelTypeStore {
   //
   // In test get task runner from MessageLoop::task_runner().
   static void CreateStore(
+      const syncer::ModelType type,
       const std::string& path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback);

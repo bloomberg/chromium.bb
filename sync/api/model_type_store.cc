@@ -15,10 +15,11 @@ void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
 
 // static
 void ModelTypeStore::CreateStore(
+    const syncer::ModelType type,
     const std::string& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
-  ModelTypeStoreImpl::CreateStore(path, blocking_task_runner, callback);
+  ModelTypeStoreImpl::CreateStore(type, path, blocking_task_runner, callback);
 }
 
 ModelTypeStore::~ModelTypeStore() {}

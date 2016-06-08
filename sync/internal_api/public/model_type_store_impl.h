@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/model_type_store.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 namespace leveldb {
 class WriteBatch;
@@ -29,6 +30,7 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   ~ModelTypeStoreImpl() override;
 
   static void CreateStore(
+      const syncer::ModelType type,
       const std::string& path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback);
@@ -66,13 +68,18 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
                               std::unique_ptr<ModelTypeStoreImpl> store,
                               Result result);
 
-  // Format key for data/metadata records with given id.
-  static std::string FormatDataKey(const std::string& id);
-  static std::string FormatMetadataKey(const std::string& id);
+  // Format prefix key for data/metadata records with |type|.
+  static std::string FormatDataPrefix(const syncer::ModelType type);
+  static std::string FormatMetaPrefix(const syncer::ModelType type);
 
   static leveldb::WriteBatch* GetLeveldbWriteBatch(WriteBatch* write_batch);
 
+  // Format key for data/metadata records with given id.
+  std::string FormatDataKey(const std::string& id);
+  std::string FormatMetadataKey(const std::string& id);
+
   ModelTypeStoreImpl(
+      const syncer::ModelType type,
       std::unique_ptr<ModelTypeStoreBackend> backend,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
@@ -100,6 +107,10 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   // ownership to task parameter.
   std::unique_ptr<ModelTypeStoreBackend> backend_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
+
+  // Key prefix for data/metadata records of this model type.
+  const std::string dataPrefix_;
+  const std::string metadataPrefix_;
 
   base::WeakPtrFactory<ModelTypeStoreImpl> weak_ptr_factory_;
 };

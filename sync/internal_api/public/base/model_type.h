@@ -354,6 +354,11 @@ SYNC_EXPORT bool TypeSupportsHierarchy(ModelType model_type);
 // Returns true if |model_type| supports ordering of sibling entries.
 SYNC_EXPORT bool TypeSupportsOrdering(ModelType model_type);
 
+// Returns root_tag for |model_type| in ModelTypeInfo.
+// Difference with ModelTypeToRootTag(), this just simply return toor_tag in
+// ModelTypeInfo.
+SYNC_EXPORT const char* ModelTypeToTag(ModelType model_type);
+
 }  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_

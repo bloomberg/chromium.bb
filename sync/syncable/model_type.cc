@@ -749,4 +749,8 @@ bool TypeSupportsOrdering(ModelType model_type) {
   return model_type == BOOKMARKS;
 }
 
+const char* ModelTypeToTag(ModelType model_type) {
+  return kModelTypeInfoMap[model_type].root_tag;
+}
+
 }  // namespace syncer
