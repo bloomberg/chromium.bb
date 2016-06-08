@@ -39,7 +39,9 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // Methods to update the status displayed by the dialog.
   void UpdateSinks(const std::vector<MediaSinkWithCastModes>& sinks);
   void UpdateRoutes(const std::vector<MediaRoute>& routes,
-                    const std::vector<MediaRoute::Id>& joinable_route_ids);
+                    const std::vector<MediaRoute::Id>& joinable_route_ids,
+                    const std::unordered_map<MediaRoute::Id, MediaCastMode>&
+                        current_cast_modes);
   void UpdateCastModes(const CastModeSet& cast_modes,
                        const std::string& source_host);
   void OnCreateRouteResponseReceived(const MediaSink::Id& sink_id,
@@ -98,11 +100,20 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // initializing the WebUI.
   void MaybeUpdateFirstRunFlowData();
 
+  // Returns the current cast mode for the route with ID |route_id| or -1 if the
+  // route has no current cast mode.
+  int CurrentCastModeForRouteId(
+      const MediaRoute::Id& route_id,
+      const std::unordered_map<MediaRoute::Id, MediaCastMode>&
+          current_cast_modes) const;
+
   // Converts |routes| and |joinable_route_ids| into base::ListValue that can be
   // passed to WebUI.
   std::unique_ptr<base::ListValue> RoutesToValue(
       const std::vector<MediaRoute>& routes,
-      const std::vector<MediaRoute::Id>& joinable_route_ids) const;
+      const std::vector<MediaRoute::Id>& joinable_route_ids,
+      const std::unordered_map<MediaRoute::Id, MediaCastMode>&
+          current_cast_modes) const;
 
   // Retrieve the account info for email and domain of signed in users. This is
   // used when updating sinks to determine if identity should be displayed.

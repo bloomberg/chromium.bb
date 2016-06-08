@@ -137,6 +137,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
     return joinable_route_ids_;
   }
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
+  const std::unordered_map<MediaRoute::Id, MediaCastMode>& current_cast_modes()
+      const {
+    return current_cast_modes_;
+  }
   const content::WebContents* initiator() const { return initiator_; }
 
   // Marked virtual for tests.
@@ -159,6 +163,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                            UIMediaRoutesObserverFiltersNonDisplayRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
       UIMediaRoutesObserverFiltersNonDisplayJoinableRoutes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+      UIMediaRoutesObserverAssignsCurrentCastModes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+      UIMediaRoutesObserverSkipsUnavailableCastModes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, GetExtensionNameExtensionPresent);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            GetExtensionNameEmptyWhenNotInstalled);
@@ -174,8 +182,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
    public:
     using RoutesUpdatedCallback =
         base::Callback<void(const std::vector<MediaRoute>&,
-            const std::vector<MediaRoute::Id>&)>;
-    UIMediaRoutesObserver(MediaRouter* router, const MediaSource::Id& source_id,
+                            const std::vector<MediaRoute::Id>&)>;
+    UIMediaRoutesObserver(MediaRouter* router,
+                          const MediaSource::Id& source_id,
                           const RoutesUpdatedCallback& callback);
     ~UIMediaRoutesObserver() override;
 
@@ -205,7 +214,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Called by |routes_observer_| when the set of active routes has changed.
   void OnRoutesUpdated(const std::vector<MediaRoute>& routes,
-      const std::vector<MediaRoute::Id>& joinable_route_ids);
+                       const std::vector<MediaRoute::Id>& joinable_route_ids);
 
   // Callback passed to MediaRouter to receive response to route creation
   // requests.
@@ -288,6 +297,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   std::vector<MediaRoute> routes_;
   std::vector<MediaRoute::Id> joinable_route_ids_;
   CastModeSet cast_modes_;
+  std::unordered_map<MediaRoute::Id, MediaCastMode> current_cast_modes_;
 
   std::unique_ptr<QueryResultManager> query_result_manager_;
 

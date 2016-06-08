@@ -123,7 +123,8 @@ class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
 };
 
 MediaRouterUI::UIMediaRoutesObserver::UIMediaRoutesObserver(
-    MediaRouter* router, const MediaSource::Id& source_id,
+    MediaRouter* router,
+    const MediaSource::Id& source_id,
     const RoutesUpdatedCallback& callback)
     : MediaRoutesObserver(router, source_id), callback_(callback) {
   DCHECK(!callback_.is_null());
@@ -224,8 +225,9 @@ void MediaRouterUI::InitWithDefaultMediaSource(
         presentation_service_delegate_->GetDefaultPresentationRequest());
   } else {
     // Register for MediaRoute updates without a media source.
-    routes_observer_.reset(new UIMediaRoutesObserver(router_, MediaSource::Id(),
-          base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
+    routes_observer_.reset(new UIMediaRoutesObserver(
+        router_, MediaSource::Id(),
+        base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
   }
 }
 
@@ -312,8 +314,8 @@ void MediaRouterUI::OnDefaultPresentationRemoved() {
   query_result_manager_->StopSinksQuery(MediaCastMode::DEFAULT);
   // Register for MediaRoute updates without a media source.
   routes_observer_.reset(new UIMediaRoutesObserver(
-        router_, MediaSource::Id(),
-        base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
+      router_, MediaSource::Id(),
+      base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
   UpdateCastModes();
 }
 
@@ -522,7 +524,25 @@ void MediaRouterUI::OnRoutesUpdated(
     const std::vector<MediaRoute::Id>& joinable_route_ids) {
   routes_ = routes;
   joinable_route_ids_ = joinable_route_ids;
-  if (ui_initialized_) handler_->UpdateRoutes(routes_, joinable_route_ids_);
+
+  std::unordered_map<MediaSource::Id, MediaCastMode> available_source_map;
+  for (const auto& cast_mode : cast_modes_) {
+    available_source_map.insert(std::make_pair(
+        query_result_manager_->GetSourceForCastMode(cast_mode).id(),
+        cast_mode));
+  }
+
+  current_cast_modes_.clear();
+  for (const auto& route : routes) {
+    auto source_entry = available_source_map.find(route.media_source().id());
+    if (source_entry != available_source_map.end()) {
+      current_cast_modes_.insert(
+          std::make_pair(route.media_route_id(), source_entry->second));
+    }
+  }
+
+  if (ui_initialized_)
+    handler_->UpdateRoutes(routes_, joinable_route_ids_, current_cast_modes_);
 }
 
 void MediaRouterUI::OnRouteResponseReceived(

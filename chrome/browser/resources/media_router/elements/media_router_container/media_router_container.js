@@ -618,22 +618,6 @@ Polymer({
   },
 
   /**
-   * @param {!media_router.Route} route
-   * @return {number} Bitmask of cast modes available for the sink of |route|.
-   *     There will be no more than 1 bit set if the user has selected a
-   *     specific cast mode.
-   */
-  computeAvailableCastModesForRoute_: function(route) {
-    if (route && route.sinkId && this.sinkMap_[route.sinkId]) {
-      var sinkCastModes = this.sinkMap_[route.sinkId].castModes;
-      return this.shownCastModeValue_ == media_router.CastModeType.AUTO ?
-          sinkCastModes :
-          this.shownCastModeValue_ & sinkCastModes;
-    }
-    return 0;
-  },
-
-  /**
    * If |allSinks| supports only a single cast mode, returns that cast mode.
    * Otherwise, returns AUTO_MODE. Only called if |userHasSelectedCastMode_| is
    * |false|.
@@ -704,6 +688,18 @@ Polymer({
    */
   computeDeviceMissingHidden_: function(sinksToShow) {
     return sinksToShow.length != 0;
+  },
+
+  /**
+   * @param {?Element} element Element to compute padding for.
+   * @return {number} Computes the amount of vertical padding (top + bottom) on
+   *     |element|.
+   * @private
+   */
+  computeElementVerticalPadding_: function(element) {
+    var paddingBottom, paddingTop;
+    [paddingBottom, paddingTop] = this.getElementVerticalPadding_(element);
+    return paddingBottom + paddingTop;
   },
 
   /**
@@ -817,18 +813,6 @@ Polymer({
   computeRouteDetailsHidden_: function(view, issue) {
     return view != media_router.MediaRouterView.ROUTE_DETAILS ||
         (!!issue && issue.isBlocking);
-  },
-
-  /**
-   * @param {?Element} element Element to compute padding for.
-   * @return {number} Computes the amount of vertical padding (top + bottom) on
-   *     |element|.
-   * @private
-   */
-  computeElementVerticalPadding_: function(element) {
-    var paddingBottom, paddingTop;
-    [paddingBottom, paddingTop] = this.getElementVerticalPadding_(element);
-    return paddingBottom + paddingTop;
   },
 
   /**
@@ -1190,6 +1174,15 @@ Polymer({
   getFirstRunFlowCloudPrefText_: function() {
     return loadTimeData.valueExists('firstRunFlowCloudPrefText') ?
         this.i18n('firstRunFlowCloudPrefText') : '';
+  },
+
+  /**
+   * @param {?media_router.Route} route Route to get the sink for.
+   * @return {?media_router.Sink|undefined} Sink associated with |route| or
+   *     undefined if we don't have data for the sink.
+   */
+  getSinkForRoute_: function(route) {
+    return this.sinkMap_[route.sinkId];
   },
 
   /**

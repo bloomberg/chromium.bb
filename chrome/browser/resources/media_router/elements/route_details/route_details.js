@@ -17,22 +17,22 @@ Polymer({
     },
 
     /**
-     * Bitmask of available cast modes compatible with the sink of the current
-     * route.
-     * @type {number}
+     * Whether a sink is currently launching in the container.
+     * @type {boolean}
      */
-    availableCastModes: {
-      type: Number,
-      value: 0,
+    isAnySinkCurrentlyLaunching: {
+      type: Boolean,
+      value: false,
     },
 
     /**
      * Whether the external container will accept replace-route-click events.
-     * @type {boolean}
+     * @private {boolean}
      */
-    replaceRouteAvailable: {
+    replaceRouteAvailable_: {
       type: Boolean,
-      value: true,
+      computed: 'computeReplaceRouteAvailable_(route, sink,' +
+                    'isAnySinkCurrentlyLaunching, shownCastModeValue)',
     },
 
     /**
@@ -42,6 +42,25 @@ Polymer({
     route: {
       type: Object,
       observer: 'maybeLoadCustomController_',
+    },
+
+    /**
+     * The cast mode shown to the user. Initially set to auto mode. (See
+     * media_router.CastMode documentation for details on auto mode.)
+     * @type {number}
+     */
+    shownCastModeValue: {
+      type: Number,
+      value: media_router.AUTO_CAST_MODE.type,
+    },
+
+    /**
+     * Sink associated with |route|.
+     * @type {?media_router.Sink}
+     */
+    sink: {
+      type: Object,
+      value: null,
     },
 
     /**
@@ -72,15 +91,42 @@ Polymer({
 
   /**
    * @param {?media_router.Route|undefined} route
-   * @param {number} availableCastModes
    * @param {boolean} replaceRouteAvailable
    * @return {boolean} Whether to show the button that allows casting to the
    *     current route or the current route's sink.
    */
-  computeCastButtonHidden_: function(
-      route, availableCastModes, replaceRouteAvailable) {
-    return !((route && route.canJoin) ||
-             (availableCastModes && replaceRouteAvailable));
+  computeCastButtonHidden_: function(route, replaceRouteAvailable) {
+    return !((route && route.canJoin) || replaceRouteAvailable);
+  },
+
+  /**
+   * @param {?media_router.Route|undefined} route The current route for the
+   *     route details view.
+   * @param {?media_router.Sink|undefined} sink Sink associated with |route|.
+   * @param {boolean} isAnySinkCurrentlyLaunching Whether a sink is launching
+   *     now.
+   * @param {number} shownCastModeValue Currently selected cast mode value or
+   *     AUTO if no value has been explicitly selected.
+   * @return {boolean} Whether the replace route function should be available
+   *     when displaying |currentRoute| in the route details view. Replace route
+   *     should not be available when the source that would be cast from when
+   *     creating a new route would be the same as the route's current source.
+   * @private
+   */
+  computeReplaceRouteAvailable_: function(
+      route, sink, isAnySinkCurrentlyLaunching, shownCastModeValue) {
+    if (isAnySinkCurrentlyLaunching || !route || !sink) {
+      return false;
+    }
+    if (!route.currentCastMode) {
+      return true;
+    }
+    var selectedCastMode = shownCastModeValue;
+    if (selectedCastMode == media_router.CastModeType.AUTO) {
+      selectedCastMode = sink.castModes & -sink.castModes;
+    }
+    return ((selectedCastMode & sink.castModes) != 0) &&
+        (selectedCastMode != route.currentCastMode);
   },
 
   /**

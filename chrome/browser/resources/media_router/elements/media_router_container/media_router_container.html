@@ -85,8 +85,10 @@
       <template is="dom-if"
           if="[[!computeRouteDetailsHidden_(currentView_, issue)]]">
         <route-details id="route-details" route="[[currentRoute_]]"
-            available-cast-modes="[[computeAvailableCastModesForRoute_(currentRoute_)]]"
-            replace-route-available="[[!currentLaunchingSinkId_]]"
+            shown-cast-mode-value="[[shownCastModeValue_]]"
+            sink="[[getSinkForRoute_(currentRoute_)]]"
+            is-any-sink-currently-launching=
+                "[[computeIsLaunching_(currentLaunchingSinkId_)]]"
             on-close-route="onCloseRoute_"
             on-replace-route-click="onReplaceRouteClick_">
         </route-details>

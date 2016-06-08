@@ -341,10 +341,12 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
                               is_local, kControllerPathForTesting, true));
   std::vector<MediaRoute::Id> joinable_route_ids;
   joinable_route_ids.push_back(route_id);
+  std::unordered_map<MediaRoute::Id, MediaCastMode> current_cast_modes;
+  current_cast_modes.insert(std::make_pair(route_id, MediaCastMode::DEFAULT));
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));
-  handler_->UpdateRoutes(routes, joinable_route_ids);
+  handler_->UpdateRoutes(routes, joinable_route_ids, current_cast_modes);
   EXPECT_EQ(1u, web_ui_->call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setRouteList", call_data.function_name());
@@ -368,6 +370,10 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   bool actual_can_join = false;
   EXPECT_TRUE(route_value->GetBoolean("canJoin", &actual_can_join));
   EXPECT_TRUE(actual_can_join);
+  int actual_current_cast_mode = -1;
+  EXPECT_TRUE(
+      route_value->GetInteger("currentCastMode", &actual_current_cast_mode));
+  EXPECT_EQ(MediaCastMode::DEFAULT, actual_current_cast_mode);
 
   std::string custom_controller_path;
   EXPECT_TRUE(route_value->GetString("customControllerPath",
@@ -394,7 +400,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesOffTheRecord) {
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId())
       .WillOnce(ReturnRef(provider_extension_id()));
-  handler_->UpdateRoutes(routes, std::vector<MediaRoute::Id>());
+  handler_->UpdateRoutes(routes, std::vector<MediaRoute::Id>(),
+                         std::unordered_map<MediaRoute::Id, MediaCastMode>());
   EXPECT_EQ(1u, web_ui_->call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setRouteList", call_data.function_name());
@@ -418,6 +425,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutesOffTheRecord) {
   bool actual_can_join = false;
   EXPECT_TRUE(route_value->GetBoolean("canJoin", &actual_can_join));
   EXPECT_FALSE(actual_can_join);
+  int actual_current_cast_mode = -1;
+  EXPECT_FALSE(
+      route_value->GetInteger("currentCastMode", &actual_current_cast_mode));
 
   std::string custom_controller_path;
   EXPECT_FALSE(

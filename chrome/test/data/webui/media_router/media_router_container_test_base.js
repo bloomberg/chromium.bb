@@ -36,6 +36,20 @@ cr.define('media_router_container_test_base', function() {
     };
 
     /**
+     * Checks the visibility of an element. An element is considered visible if
+     * it exists and its |hidden| property is |false|.
+     *
+     * @param {boolean} visible Whether the element should be visible.
+     * @param {?Element} element The element to test.
+     * @param {?string} elementId Optional element id to display.
+     */
+    var checkElementVisible = function(visible, element, elementId) {
+      var elementVisible = !!element && !element.hidden &&
+          element.style.display != 'none';
+      assertEquals(visible, elementVisible, elementId);
+    };
+
+    /**
      * Checks the visibility of an element with |elementId| in |container|.
      * An element is considered visible if it exists and its |hidden| property
      * is |false|.
@@ -45,9 +59,7 @@ cr.define('media_router_container_test_base', function() {
      */
     var checkElementVisibleWithId = function(visible, elementId) {
       var element = container.$$('#' + elementId);
-      var elementVisible = !!element && !element.hidden &&
-          element.style.display != 'none';
-      assertEquals(visible, elementVisible, elementId);
+      checkElementVisible(visible, element);
     };
 
     /**
@@ -171,6 +183,7 @@ cr.define('media_router_container_test_base', function() {
     return {
       checkCurrentView: checkCurrentView,
       checkElementsVisibleWithId: checkElementsVisibleWithId,
+      checkElementVisible: checkElementVisible,
       checkElementVisibleWithId: checkElementVisibleWithId,
       checkElementText: checkElementText,
       fakeBlockingIssue: fakeBlockingIssue,

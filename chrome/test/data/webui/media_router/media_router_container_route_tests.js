@@ -26,6 +26,16 @@ cr.define('media_router_container_route', function() {
       var checkElementsVisibleWithId;
 
       /**
+       * Checks the visibility of an element. An element is considered visible
+       * if it exists and its |hidden| property is |false|.
+       *
+       * @param {boolean} visible Whether the element should be visible.
+       * @param {?Element} element The element to test.
+       * @param {elementId=} elementId Optional element id to display.
+       */
+      var checkElementVisible;
+
+      /**
        * Checks whether |expected| and the text in the |element| are equal.
        *
        * @param {!string} expected Expected text.
@@ -87,6 +97,7 @@ cr.define('media_router_container_route', function() {
 
         checkCurrentView = test_base.checkCurrentView;
         checkElementsVisibleWithId = test_base.checkElementsVisibleWithId;
+        checkElementVisible = test_base.checkElementVisible;
         checkElementText = test_base.checkElementText;
         fakeBlockingIssue = test_base.fakeBlockingIssue;
         fakeCastModeList = test_base.fakeCastModeList;
@@ -338,6 +349,164 @@ cr.define('media_router_container_route', function() {
             // 'create-route' event.
             MockInteractions.tap(sinkList[2]);
           });
+        });
+      });
+
+      // Tests that the route details cast button is not shown when another sink
+      // is launching.
+      test('no cast button when sink launching', function(done) {
+        container.allSinks = fakeSinkList;
+        container.routeList = fakeRouteList;
+        setTimeout(function() {
+          var sinkList =
+              container.$$('#sink-list').querySelectorAll('paper-item');
+          MockInteractions.tap(sinkList[2]);
+          setTimeout(function() {
+            assertTrue(!!container.currentLaunchingSinkId_);
+            MockInteractions.tap(sinkList[0]);
+            setTimeout(function() {
+              checkElementVisible(
+                  false, container.$$('#route-details')
+                             .$$('#start-casting-to-route-button'),
+                  'start-casting-to-route-button');
+              // The other sink stopped launching, due to route failure, so the
+              // cast button should now appear.
+              container.onCreateRouteResponseReceived(fakeSinkList[0].id, null,
+                                                      true);
+              setTimeout(function() {
+                checkElementVisible(
+                    true, container.$$('#route-details')
+                               .$$('#start-casting-to-route-button'),
+                    'start-casting-to-route-button');
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      // Tests that the route details cast button is shown when the current
+      // route has no |currentCastMode| field defined.
+      test('cast button when no current cast mode', function(done) {
+        container.allSinks = fakeSinkList;
+        container.routeList = fakeRouteList;
+        setTimeout(function() {
+          assertTrue(!container.currentLaunchingSinkId_);
+          MockInteractions.tap(
+              container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+          setTimeout(function() {
+            assertEquals(undefined, container.currentRoute_.currentCastMode);
+            checkElementVisible(
+                true, container.$$('#route-details')
+                           .$$('#start-casting-to-route-button'),
+                'start-casting-to-route-button');
+            done();
+          });
+        });
+      });
+
+      // Tests that the route details cast button is shown when the user has
+      // selected a cast mode that is different from the current cast mode of
+      // the route.
+      test('cast button when selected cast mode differs', function(done) {
+        container.allSinks = fakeSinkList;
+        container.routeList = fakeRouteList;
+        container.castModeList = fakeCastModeList;
+        for (var i = 0; i < fakeRouteList.length; ++i) {
+          fakeRouteList[i].currentCastMode = 2;
+        }
+        MockInteractions.tap(
+            container.$['container-header'].$['arrow-drop-icon']);
+        setTimeout(function() {
+          MockInteractions.tap(container.$$('#cast-mode-list')
+                                   .querySelectorAll('paper-item')[2]);
+          setTimeout(function() {
+            assertTrue(container.shownCastModeValue_ != 2);
+            MockInteractions.tap(
+                container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+            setTimeout(function() {
+              checkElementVisible(
+                  true, container.$$('#route-details')
+                             .$$('#start-casting-to-route-button'),
+                  'start-casting-to-route-button');
+              done();
+            });
+          });
+        });
+      });
+
+      // Tests that the route details cast button is not shown when the user has
+      // selected a the same cast mode as the route's current cast mode.
+      test('no cast button when selected cast mode same', function(done) {
+        container.allSinks = fakeSinkList;
+        container.routeList = fakeRouteList;
+        container.castModeList = fakeCastModeList;
+        for (var i = 0; i < fakeRouteList.length; ++i) {
+          fakeRouteList[i].currentCastMode = 2;
+        }
+        MockInteractions.tap(
+            container.$['container-header'].$['arrow-drop-icon']);
+        setTimeout(function() {
+          MockInteractions.tap(container.$$('#cast-mode-list')
+                                   .querySelectorAll('paper-item')[1]);
+          setTimeout(function() {
+            assertEquals(2, container.shownCastModeValue_);
+            MockInteractions.tap(
+                container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+            setTimeout(function() {
+              checkElementVisible(
+                  false, container.$$('#route-details')
+                             .$$('#start-casting-to-route-button'),
+                  'start-casting-to-route-button');
+              done();
+            });
+          });
+        });
+      });
+
+      // Tests that the route details cast button is not shown when AUTO cast
+      // mode would pick the same cast mode for the route's sink as the route's
+      // current cast mode.
+      test('no cast button when auto cast mode same', function(done) {
+        container.allSinks = fakeSinkList;
+        container.routeList = fakeRouteList;
+        container.castModeList = fakeCastModeList;
+        for (var i = 0; i < fakeRouteList.length; ++i) {
+          // The lowest cast mode value will be used in AUTO mode. We set it on
+          // the route here so AUTO mode matches the route's current cast mode.
+          fakeRouteList[i].currentCastMode = 2;
+        }
+        setTimeout(function() {
+          assertEquals(-1, container.shownCastModeValue_);
+          MockInteractions.tap(
+              container.$$('#sink-list').querySelectorAll('paper-item')[0]);
+          setTimeout(function() {
+            checkElementVisible(
+                false, container.$$('#route-details')
+                           .$$('#start-casting-to-route-button'),
+                'start-casting-to-route-button');
+            done();
+          });
+        });
+      });
+
+      // Tests that the route details cast button is not shown when there is no
+      // sink structure in the container that corresponds to the route whose
+      // details are being viewed. This occurs when there is only one local
+      // route, so it is shown upon opening the dialog, and its sink isn't
+      // compatible with any currently available cast modes.
+      test('no cast button when sink missing', function(done) {
+        container.routeList = fakeRouteList;
+        // Simulate opening dialog with a local route for sink that is
+        // unsupported in the current context, and therefore won't be in the
+        // container's sink list.
+        container.showRouteDetails_(fakeRouteList[0]);
+        setTimeout(function() {
+          checkElementVisible(
+              false, container.$$('#route-details')
+                         .$$('#start-casting-to-route-button'),
+              'start-casting-to-route-button');
+          done();
         });
       });
     });

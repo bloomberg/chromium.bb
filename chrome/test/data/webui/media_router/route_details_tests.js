@@ -61,6 +61,12 @@ cr.define('route_details', function() {
         assertEquals(expected, details.$[elementId].innerText);
       };
 
+      /**
+       * Fake sink that corresponds to |fakeRouteOne|.
+       * @type {media_router.Sink}
+       */
+      var fakeSinkOne;
+
       // Import route_details.html before running suite.
       suiteSetup(function() {
         return PolymerTest.importHtml(
@@ -80,6 +86,10 @@ cr.define('route_details', function() {
             'chrome-extension://123/custom_view.html');
         fakeRouteTwo = new media_router.Route('route id 2', 'sink id 2',
             'Video 2', 2, false, true);
+        fakeSinkOne = new media_router.Sink(
+            'sink id 1', 'sink 1', 'description', null,
+            media_router.SinkIconType.CAST, media_router.SinkStatus.ACTIVE,
+            2 | 4);
 
         // Allow for the route details to be created and attached.
         setTimeout(done);
@@ -92,12 +102,35 @@ cr.define('route_details', function() {
         details.route = fakeRouteTwo;
         checkStartCastButtonIsShown();
 
-        details.availableCastModes = 1;
-        details.replaceRouteAvailable = false;
         details.route = fakeRouteOne;
         checkStartCastButtonIsNotShown();
 
-        details.replaceRouteAvailable = true;
+        details.sink = fakeSinkOne;
+        checkStartCastButtonIsShown();
+
+        // Retrigger observer because it's not necessary for it to watch
+        // |route.currentCastMode| in general.
+        fakeRouteOne.currentCastMode = 2;
+        details.route = null;
+        details.route = fakeRouteOne;
+        checkStartCastButtonIsNotShown();
+
+        // Simulate user changing cast modes to be compatible or incompatible
+        // with the route's sink.
+        details.shownCastModeValue = 4;
+        checkStartCastButtonIsShown();
+
+        details.shownCastModeValue = 1;
+        checkStartCastButtonIsNotShown();
+
+        details.shownCastModeValue = 4;
+        checkStartCastButtonIsShown();
+
+        // Cast button should be hidden while another sink is launching.
+        details.isAnySinkCurrentlyLaunching = true;
+        checkStartCastButtonIsNotShown();
+
+        details.isAnySinkCurrentlyLaunching = false;
         checkStartCastButtonIsShown();
       });
 
@@ -145,7 +178,6 @@ cr.define('route_details', function() {
       test('route is undefined or set', function() {
         // |route| is initially undefined.
         assertEquals(undefined, details.route);
-        assertEquals(0, details.availableCastModes);
         checkDefaultViewIsShown();
 
         // Set |route|.
@@ -162,23 +194,6 @@ cr.define('route_details', function() {
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeRouteTwo.description), 'route-information');
         checkDefaultViewIsShown();
-        checkStartCastButtonIsShown();
-      });
-
-      // Tests when |availableCastModes| is undefined or set.
-      test('route available cast modes undefined or set', function() {
-        details.route = fakeRouteOne;
-        assertEquals(0, details.availableCastModes);
-        assertFalse(details.route.canJoin);
-        checkStartCastButtonIsNotShown();
-
-        details.availableCastModes = 1;
-        checkStartCastButtonIsShown();
-
-        details.availableCastModes = 2;
-        checkStartCastButtonIsShown();
-
-        details.availableCastModes = 3;
         checkStartCastButtonIsShown();
       });
 

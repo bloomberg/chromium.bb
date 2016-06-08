@@ -198,6 +198,9 @@ cr.define('media_router', function() {
     /** @type {boolean} */
     this.canJoin = canJoin;
 
+    /** @type {number|undefined} */
+    this.currentCastMode = undefined;
+
     /** @type {?string} */
     this.customControllerPath = customControllerPath;
   };

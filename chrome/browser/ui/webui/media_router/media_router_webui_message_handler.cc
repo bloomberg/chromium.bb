@@ -141,13 +141,17 @@ std::unique_ptr<base::DictionaryValue> RouteToValue(
     const MediaRoute& route,
     bool can_join,
     const std::string& extension_id,
-    bool off_the_record) {
+    bool off_the_record,
+    int current_cast_mode) {
   std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetString("id", route.media_route_id());
   dictionary->SetString("sinkId", route.media_sink_id());
   dictionary->SetString("description", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
   dictionary->SetBoolean("canJoin", can_join);
+  if (current_cast_mode > 0) {
+    dictionary->SetInteger("currentCastMode", current_cast_mode);
+  }
 
   const std::string& custom_path = route.custom_controller_path();
   if (!off_the_record && !custom_path.empty()) {
@@ -247,9 +251,11 @@ void MediaRouterWebUIMessageHandler::UpdateSinks(
 
 void MediaRouterWebUIMessageHandler::UpdateRoutes(
     const std::vector<MediaRoute>& routes,
-    const std::vector<MediaRoute::Id>& joinable_route_ids) {
+    const std::vector<MediaRoute::Id>& joinable_route_ids,
+    const std::unordered_map<MediaRoute::Id, MediaCastMode>&
+        current_cast_modes) {
   std::unique_ptr<base::ListValue> routes_val(
-      RoutesToValue(routes, joinable_route_ids));
+      RoutesToValue(routes, joinable_route_ids, current_cast_modes));
   web_ui()->CallJavascriptFunctionUnsafe(kSetRouteList, *routes_val);
 }
 
@@ -267,9 +273,11 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
     const MediaRoute* route) {
   DVLOG(2) << "OnCreateRouteResponseReceived";
   if (route) {
+    int current_cast_mode = CurrentCastModeForRouteId(
+        route->media_route_id(), media_router_ui_->current_cast_modes());
     std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
         *route, false, media_router_ui_->GetRouteProviderExtensionId(),
-        off_the_record_));
+        off_the_record_, current_cast_mode));
     web_ui()->CallJavascriptFunctionUnsafe(
         kOnCreateRouteResponseReceived, base::StringValue(sink_id),
         *route_value, base::FundamentalValue(route->for_display()));
@@ -403,7 +411,8 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.Set("sinksAndIdentity", sinks_and_identity.release());
 
   std::unique_ptr<base::ListValue> routes(RoutesToValue(
-      media_router_ui_->routes(), media_router_ui_->joinable_route_ids()));
+      media_router_ui_->routes(), media_router_ui_->joinable_route_ids(),
+      media_router_ui_->current_cast_modes()));
   initial_data.Set("routes", routes.release());
 
   const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
@@ -850,17 +859,32 @@ AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
   return AccountInfo();
 }
 
+int MediaRouterWebUIMessageHandler::CurrentCastModeForRouteId(
+    const MediaRoute::Id& route_id,
+    const std::unordered_map<MediaRoute::Id, MediaCastMode>& current_cast_modes)
+    const {
+  auto current_cast_mode_entry = current_cast_modes.find(route_id);
+  int current_cast_mode = current_cast_mode_entry != current_cast_modes.end()
+                              ? current_cast_mode_entry->second
+                              : -1;
+  return current_cast_mode;
+}
+
 std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
     const std::vector<MediaRoute>& routes,
-    const std::vector<MediaRoute::Id>& joinable_route_ids) const {
+    const std::vector<MediaRoute::Id>& joinable_route_ids,
+    const std::unordered_map<MediaRoute::Id, MediaCastMode>& current_cast_modes)
+    const {
   std::unique_ptr<base::ListValue> value(new base::ListValue);
   const std::string& extension_id =
       media_router_ui_->GetRouteProviderExtensionId();
 
   for (const MediaRoute& route : routes) {
     bool can_join = ContainsValue(joinable_route_ids, route.media_route_id());
-    std::unique_ptr<base::DictionaryValue> route_val(
-        RouteToValue(route, can_join, extension_id, off_the_record_));
+    int current_cast_mode = CurrentCastModeForRouteId(route.media_route_id(),
+                                                      current_cast_modes);
+    std::unique_ptr<base::DictionaryValue> route_val(RouteToValue(
+        route, can_join, extension_id, off_the_record_, current_cast_mode));
     value->Append(route_val.release());
   }
 
