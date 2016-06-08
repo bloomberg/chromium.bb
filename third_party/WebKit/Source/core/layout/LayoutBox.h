@@ -199,6 +199,7 @@ public:
 
     // Use this with caution! No type checking is done!
     LayoutBox* firstChildBox() const;
+    LayoutBox* firstInFlowChildBox() const;
     LayoutBox* lastChildBox() const;
 
     int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
@@ -739,7 +740,6 @@ public:
     virtual LayoutUnit computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth = LayoutUnit()) const;
 
     bool percentageLogicalHeightIsResolvable() const;
-    bool hasDefiniteLogicalHeight() const;
     LayoutUnit computePercentageLogicalHeight(const Length& height) const;
 
     // Block flows subclass availableWidth/Height to handle multi column layout (shrinking the width/height available to children when laying out.)
@@ -1167,6 +1167,14 @@ inline LayoutBox* LayoutBox::parentBox() const
 inline LayoutBox* LayoutBox::firstChildBox() const
 {
     return toLayoutBox(slowFirstChild());
+}
+
+inline LayoutBox* LayoutBox::firstInFlowChildBox() const
+{
+    LayoutBox* child = firstChildBox();
+    while (child && child->isOutOfFlowPositioned())
+        child = child->nextSiblingBox();
+    return child;
 }
 
 inline LayoutBox* LayoutBox::lastChildBox() const

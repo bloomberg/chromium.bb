@@ -750,7 +750,8 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
 
     // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto>.
     // For the inline axis this only happens when we're computing the intrinsic sizes (AvailableSpaceIndefinite).
-    if (sizingOperation == IntrinsicSizeComputation || (direction == ForRows && !hasDefiniteLogicalHeight())) {
+    // For the block axis we check that the percentage height is resolvable on the first in-flow child.
+    if ((sizingOperation == IntrinsicSizeComputation) || (direction == ForRows && firstInFlowChildBox() && !firstInFlowChildBox()->percentageLogicalHeightIsResolvable())) {
         if (minTrackBreadth.hasPercentage())
             minTrackBreadth = Length(Auto);
         if (maxTrackBreadth.hasPercentage())

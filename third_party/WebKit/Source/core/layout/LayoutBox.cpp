@@ -4253,23 +4253,6 @@ bool LayoutBox::percentageLogicalHeightIsResolvable() const
     return computePercentageLogicalHeight(fakeLength) != -1;
 }
 
-bool LayoutBox::hasDefiniteLogicalHeight() const
-{
-    const Length& logicalHeight = style()->logicalHeight();
-    if (logicalHeight.isIntrinsicOrAuto())
-        return false;
-    if (logicalHeight.isFixed())
-        return true;
-    // The size of the containing block of an absolutely positioned element is always definite with respect to that
-    // element (http://dev.w3.org/csswg/css-sizing-3/#definite).
-    if (isOutOfFlowPositioned())
-        return true;
-    if (hasOverrideContainingBlockLogicalHeight())
-        return overrideContainingBlockContentLogicalHeight() != -1;
-
-    return percentageLogicalHeightIsResolvable();
-}
-
 bool LayoutBox::hasUnsplittableScrollingOverflow() const
 {
     // We will paginate as long as we don't scroll overflow in the pagination direction.
