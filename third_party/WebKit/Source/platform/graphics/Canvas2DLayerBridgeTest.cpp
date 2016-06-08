@@ -800,6 +800,58 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
     postAndWaitDestroyBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge);
 }
 
+#if CANVAS2D_HIBERNATION_ENABLED
+TEST_F(Canvas2DLayerBridgeTest, SnapshotWhileHibernating)
+#else
+TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
+#endif
+{
+    FakeGLES2Interface gl;
+    OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
+
+    // The Canvas2DLayerBridge has to be created on the thread that will use it
+    // to avoid WeakPtr thread check issues.
+    Canvas2DLayerBridgePtr bridge;
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &gl, this);
+
+    // Register an alternate Logger for tracking hibernation events
+    OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
+    MockLogger* mockLoggerPtr = mockLogger.get();
+    bridge->setLoggerForTesting(std::move(mockLogger));
+
+    // Test entering hibernation
+    OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
+    EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
+        .WillOnce(testing::Invoke(hibernationStartedEvent.get(), &WaitableEvent::signal));
+    postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), true);
+    hibernationStartedEvent->wait();
+    ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_TRUE(bridge->isHibernating());
+    EXPECT_TRUE(bridge->checkSurfaceValid());
+
+    // Take a snapshot and verify that it is not accelerated due to hibernation
+    RefPtr<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
+    EXPECT_FALSE(image->isTextureBacked());
+    image.clear();
+
+    // Verify that taking a snapshot did not affect the state of bridge
+    EXPECT_FALSE(bridge->isAccelerated());
+    EXPECT_TRUE(bridge->isHibernating());
+    EXPECT_TRUE(bridge->checkSurfaceValid());
+
+    // End hibernation normally
+    OwnPtr<WaitableEvent> hibernationEndedEvent = adoptPtr(new WaitableEvent());
+    EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedNormally))
+        .WillOnce(testing::InvokeWithoutArgs(hibernationEndedEvent.get(), &WaitableEvent::signal));
+    postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), false);
+    hibernationEndedEvent->wait();
+
+    // Tear down the bridge while hibernating
+    postAndWaitDestroyBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge);
+}
+
 class IdleFenceTask : public WebThread::IdleTask {
 public:
     IdleFenceTask(WaitableEvent* doneEvent)
@@ -1047,5 +1099,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
     // without crashing due to thread checks
     postAndWaitDestroyBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge);
 }
+
 
 } // namespace blink

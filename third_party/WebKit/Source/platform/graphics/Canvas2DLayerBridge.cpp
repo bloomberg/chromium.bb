@@ -947,6 +947,8 @@ void Canvas2DLayerBridge::willProcessTask()
 
 PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint, SnapshotReason)
 {
+    if (isHibernating())
+        return m_hibernationImage;
     if (!checkSurfaceValid())
         return nullptr;
     if (!getOrCreateSurface(hint))
