@@ -55,10 +55,10 @@ if (enable_vulkan) {
       ]
       libs = [ "vulkan" ]
 
-      if (target_cpu == "x64") {
+      if (current_cpu == "x64") {
         lib_dirs = [ "/usr/lib/x86_64-linux-gnu" ]
       } else {
-        assert(false, "Unsupported vulkan target: " + target_cpu)
+        assert(false, "Unsupported vulkan target: " + current_cpu)
       }
 
       deps = [
@@ -86,10 +86,10 @@ if (enable_vulkan) {
     ]
 
     include_dirs = [ "/usr/include" ]
-    if (target_cpu == "x64") {
+    if (current_cpu == "x64") {
       lib_dirs = [ "/usr/lib/x86_64-linux-gnu" ]
     } else {
-      assert(false, "Unsupported vulkan target: " + target_cpu)
+      assert(false, "Unsupported vulkan target: " + current_cpu)
     }
 
     deps = [
