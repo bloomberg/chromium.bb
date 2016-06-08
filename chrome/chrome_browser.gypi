@@ -3654,8 +3654,8 @@
         }],
         ['chromeos==1', {
           'sources': [
-            'browser/metrics/leak_detector_controller.cc',
-            'browser/metrics/leak_detector_controller.h',
+            'browser/metrics/leak_detector/leak_detector_controller.cc',
+            'browser/metrics/leak_detector/leak_detector_controller.h',
           ],
           'dependencies': [
             '../components/components.gyp:metrics_leak_detector',

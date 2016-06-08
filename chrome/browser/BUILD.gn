@@ -573,8 +573,8 @@ source_set("browser") {
 
   if (is_chromeos) {
     sources += [
-      "metrics/leak_detector_controller.cc",
-      "metrics/leak_detector_controller.h",
+      "metrics/leak_detector/leak_detector_controller.cc",
+      "metrics/leak_detector/leak_detector_controller.h",
     ]
     public_deps += [ "//components/metrics:leak_detector" ]
   }

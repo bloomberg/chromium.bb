@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/metrics/leak_detector_controller.h"
+#include "chrome/browser/metrics/leak_detector/leak_detector_controller.h"
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 #include "components/metrics/metrics_provider.h"
 

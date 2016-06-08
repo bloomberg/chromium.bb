@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_LEAK_DETECTOR_CONTROLLER_H_
-#define CHROME_BROWSER_METRICS_LEAK_DETECTOR_CONTROLLER_H_
+#ifndef CHROME_BROWSER_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_CONTROLLER_H_
+#define CHROME_BROWSER_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_CONTROLLER_H_
 
 #include <vector>
 
@@ -46,4 +46,4 @@ class LeakDetectorController : public LeakDetector::Observer {
 
 }  // namespace metrics
 
-#endif  // CHROME_BROWSER_METRICS_LEAK_DETECTOR_CONTROLLER_H_
+#endif  // CHROME_BROWSER_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_CONTROLLER_H_
