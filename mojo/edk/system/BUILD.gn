@@ -11,6 +11,13 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+config("system_config") {
+  defines = [
+    # Ensures that dependent projects import the core functions on Windows.
+    "MOJO_USE_SYSTEM_IMPL",
+  ]
+}
+
 component("system") {
   output_name = "mojo_system_impl"
 
@@ -75,7 +82,12 @@ component("system") {
     "watcher_set.h",
   ]
 
-  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+  defines = [
+    "MOJO_SYSTEM_IMPL_IMPLEMENTATION",
+    "MOJO_SYSTEM_IMPLEMENTATION",
+  ]
+
+  all_dependent_configs = [ ":system_config" ]
 
   public_deps = [
     "//mojo/edk/embedder",

@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
-  },
+  'includes': [
+    'mojo_variables.gypi',
+  ],
   'target_defaults' : {
     'include_dirs': [
       '..',
@@ -54,11 +54,13 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
-        'mojo_public.gyp:mojo_public_system',
+        'mojo_public.gyp:mojo_system_headers',
         'mojo_system_ports',
       ],
       'defines': [
         'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
+        'MOJO_SYSTEM_IMPLEMENTATION',
+        'MOJO_USE_SYSTEM_IMPL',
       ],
       'sources': [
         'edk/embedder/configuration.h',
@@ -146,6 +148,10 @@
         'edk/embedder/test_embedder.cc',
         'edk/embedder/test_embedder.h',
       ],
+      'all_dependent_settings': {
+        # Ensures that dependent projects import the core functions on Windows.
+        'defines': ['MOJO_USE_SYSTEM_IMPL'],
+      },
       'conditions': [
         ['OS=="android"', {
           'dependencies': [

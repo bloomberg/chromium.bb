@@ -3,11 +3,9 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
-  },
   'includes': [
     '../build/common_untrusted.gypi',
+    'mojo_variables.gypi',
   ],
   'target_defaults' : {
    'include_dirs': [
@@ -32,10 +30,12 @@
         '../base/base_nacl.gyp:base_nacl',
         '../base/base_nacl.gyp:base_nacl_nonsfi',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_public.gyp:mojo_public_system',
+        'mojo_public.gyp:mojo_system_headers',
       ],
       'defines': [
         'MOJO_SYSTEM_IMPL_IMPLEMENTATION',
+        'MOJO_SYSTEM_IMPLEMENTATION',
+        'MOJO_USE_SYSTEM_IMPL',
       ],
       'sources': [
         'edk/embedder/configuration.h',
@@ -126,6 +126,10 @@
         'edk/embedder/test_embedder.cc',
         'edk/embedder/test_embedder.h',
       ],
+      'all_dependent_settings': {
+        # Ensures that dependent projects import the core functions on Windows.
+        'defines': ['MOJO_USE_SYSTEM_IMPL'],
+      },
     },
   ],
 }

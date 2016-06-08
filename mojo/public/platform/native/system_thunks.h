@@ -4,14 +4,13 @@
 
 // Note: This header should be compilable as C.
 
-#ifndef MOJO_PUBLIC_C_SYSTEM_THUNKS_H_
-#define MOJO_PUBLIC_C_SYSTEM_THUNKS_H_
+#ifndef MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
+#define MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "mojo/public/c/system/core.h"
-#include "mojo/public/c/system/system_export.h"
 
 // The embedder needs to bind the basic Mojo Core functions of a DSO to those of
 // the embedder when loading a DSO that is dependent on mojo_system.
@@ -156,19 +155,59 @@ struct MojoSystemThunks {
 };
 #pragma pack(pop)
 
+
+#ifdef __cplusplus
+// Intended to be called from the embedder. Returns a |MojoCore| initialized
+// to contain pointers to each of the embedder's MojoCore functions.
+inline MojoSystemThunks MojoMakeSystemThunks() {
+  MojoSystemThunks system_thunks = {sizeof(MojoSystemThunks),
+                                    MojoGetTimeTicksNow,
+                                    MojoClose,
+                                    MojoWait,
+                                    MojoWaitMany,
+                                    MojoCreateMessagePipe,
+                                    MojoWriteMessage,
+                                    MojoReadMessage,
+                                    MojoCreateDataPipe,
+                                    MojoWriteData,
+                                    MojoBeginWriteData,
+                                    MojoEndWriteData,
+                                    MojoReadData,
+                                    MojoBeginReadData,
+                                    MojoEndReadData,
+                                    MojoCreateSharedBuffer,
+                                    MojoDuplicateBufferHandle,
+                                    MojoMapBuffer,
+                                    MojoUnmapBuffer,
+                                    MojoCreateWaitSet,
+                                    MojoAddHandle,
+                                    MojoRemoveHandle,
+                                    MojoGetReadyHandles,
+                                    MojoWatch,
+                                    MojoCancelWatch,
+                                    MojoFuseMessagePipes,
+                                    MojoWriteMessageNew,
+                                    MojoReadMessageNew,
+                                    MojoAllocMessage,
+                                    MojoFreeMessage,
+                                    MojoGetMessageBuffer,
+                                    MojoWrapPlatformHandle,
+                                    MojoUnwrapPlatformHandle,
+                                    MojoWrapPlatformSharedBufferHandle,
+                                    MojoUnwrapPlatformSharedBufferHandle};
+  return system_thunks;
+}
+#endif
+
+
 // Use this type for the function found by dynamically discovering it in
 // a DSO linked with mojo_system. For example:
 // MojoSetSystemThunksFn mojo_set_system_thunks_fn =
 //     reinterpret_cast<MojoSetSystemThunksFn>(app_library.GetFunctionPointer(
 //         "MojoSetSystemThunks"));
-// The expected size of |system_thunks| is returned.
+// The expected size of |system_thunks} is returned.
 // The contents of |system_thunks| are copied.
 typedef size_t (*MojoSetSystemThunksFn)(
     const struct MojoSystemThunks* system_thunks);
 
-// A function for setting up the embedder's own system thunks. This should only
-// be called by Mojo embedder code.
-MOJO_SYSTEM_EXPORT size_t MojoEmbedderSetSystemThunks(
-    const struct MojoSystemThunks* system_thunks);
-
-#endif  // MOJO_PUBLIC_C_SYSTEM_THUNKS_H_
+#endif  // MOJO_PUBLIC_PLATFORM_NATIVE_SYSTEM_THUNKS_H_

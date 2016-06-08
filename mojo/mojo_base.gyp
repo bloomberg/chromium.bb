@@ -6,9 +6,9 @@
 # Chrome should be here.  Other components that are useful only in
 # Mojo land like mojo_shell should be in mojo.gyp.
 {
-  'variables': {
-    'chromium_code': 1,
-  },
+  'includes': [
+    'mojo_variables.gypi',
+  ],
   'targets': [
     {
       'target_name': 'mojo_base',
@@ -45,7 +45,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../mojo/mojo_public.gyp:mojo_public_system',
+        '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -83,7 +83,7 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../url/url.gyp:url_lib',
-        '../mojo/mojo_public.gyp:mojo_public_system',
+        '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',

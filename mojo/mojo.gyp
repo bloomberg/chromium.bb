@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'mojo_variables.gypi',
+  ],
   'targets': [
     {
       # GN version: //mojo
