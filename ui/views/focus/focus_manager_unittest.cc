@@ -866,6 +866,9 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
 
 // Verifies focus wrapping happens in the same widget.
 TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
+  // Mus doesn't support child Widgets well yet. https://crbug.com/612820
+  if (IsMus())
+    return;
   // Add |widget_view| as a child of the Widget.
   View* widget_view = new View;
   widget_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);

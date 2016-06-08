@@ -49,7 +49,7 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
   explicit FocusController(FocusRules* rules);
   ~FocusController() override;
 
- private:
+ protected:
   // Overridden from aura::client::ActivationClient:
   void AddObserver(aura::client::ActivationChangeObserver* observer) override;
   void RemoveObserver(
@@ -81,6 +81,7 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
+ private:
   // Internal implementation that coordinates window focus and activation
   // changes.
   void FocusAndActivateWindow(

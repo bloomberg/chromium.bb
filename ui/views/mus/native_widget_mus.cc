@@ -73,6 +73,28 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
+// This makes sure that an aura::Window focused (or activated) through the
+// aura::client::FocusClient (or ActivationClient) focuses (or activates) the
+// corresponding mus::Window too.
+class FocusControllerMus : public wm::FocusController {
+ public:
+  explicit FocusControllerMus(wm::FocusRules* rules) : FocusController(rules) {}
+  ~FocusControllerMus() override {}
+
+ private:
+  void FocusWindow(aura::Window* window) override {
+    FocusController::FocusWindow(window);
+    if (window) {
+      mus::Window* mus_window =
+          window->GetRootWindow()->GetProperty(kMusWindow);
+      if (mus_window)
+        mus_window->SetFocus();
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FocusControllerMus);
+};
+
 class ContentWindowLayoutManager : public aura::LayoutManager {
  public:
    ContentWindowLayoutManager(aura::Window* outer, aura::Window* inner)
@@ -663,7 +685,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   hosted_window->SetProperty(kMusWindow, window_);
 
   focus_client_.reset(
-      new wm::FocusController(new FocusRulesImpl(hosted_window)));
+      new FocusControllerMus(new FocusRulesImpl(hosted_window)));
 
   aura::client::SetFocusClient(hosted_window, focus_client_.get());
   aura::client::SetActivationClient(hosted_window, focus_client_.get());
@@ -981,10 +1003,11 @@ bool NativeWidgetMus::IsVisible() const {
 }
 
 void NativeWidgetMus::Activate() {
-  if (window_)
-    window_->SetFocus();
   static_cast<aura::client::ActivationClient*>(focus_client_.get())
       ->ActivateWindow(content_);
+  // FocusControllerMus should have focused |window_| when |content_| is
+  // activated.
+  DCHECK(!window_ || window_->HasFocus());
 }
 
 void NativeWidgetMus::Deactivate() {

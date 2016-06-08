@@ -168,6 +168,7 @@ test("views_mus_unittests") {
     "../controls/native/native_view_host_test_base.cc",
     "../controls/native/native_view_host_test_base.h",
     "../controls/native/native_view_host_unittest.cc",
+    "../focus/focus_manager_unittest.cc",
     "../view_targeter_unittest.cc",
     "../widget/native_widget_aura_unittest.cc",
     "../widget/native_widget_unittest.cc",
