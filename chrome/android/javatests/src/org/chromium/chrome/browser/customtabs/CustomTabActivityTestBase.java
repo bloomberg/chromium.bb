@@ -61,7 +61,7 @@ public abstract class CustomTabActivityTestBase extends
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 pageLoadFinishedHelper.notifyCalled();
             }
         });
