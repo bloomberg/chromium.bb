@@ -24,6 +24,8 @@
                       backing:NSBackingStoreBuffered
                         defer:NO]) {
     eventTargetWindow_.reset(eventTargetWindow, base::scoped_policy::RETAIN);
+    [self setCollectionBehavior:NSWindowCollectionBehaviorIgnoresCycle];
+    [self setExcludedFromWindowsMenu:YES];
     [self setReleasedWhenClosed:NO];
     [self setIgnoresMouseEvents:YES];
 
@@ -58,6 +60,9 @@ FullscreenLowPowerCoordinatorCocoa::FullscreenLowPowerCoordinatorCocoa(
                           withLayer:fullscreen_low_power_layer]);
     }
   }
+
+  SetHasActiveSheet([content_window_ attachedSheet]);
+  ChildWindowsChanged();
 }
 
 FullscreenLowPowerCoordinatorCocoa::~FullscreenLowPowerCoordinatorCocoa() {
@@ -69,6 +74,12 @@ FullscreenLowPowerCoordinatorCocoa::~FullscreenLowPowerCoordinatorCocoa() {
 
 NSWindow* FullscreenLowPowerCoordinatorCocoa::GetFullscreenLowPowerWindow() {
   return low_power_window_.get();
+}
+
+void FullscreenLowPowerCoordinatorCocoa::SetInFullscreenTransition(
+    bool in_fullscreen_transition) {
+  allowed_by_fullscreen_transition_ = !in_fullscreen_transition;
+  EnterOrExitLowPowerModeIfNeeded();
 }
 
 void FullscreenLowPowerCoordinatorCocoa::SetLayoutParameters(
@@ -95,6 +106,31 @@ void FullscreenLowPowerCoordinatorCocoa::SetLayoutParameters(
   EnterOrExitLowPowerModeIfNeeded();
 }
 
+void FullscreenLowPowerCoordinatorCocoa::SetHasActiveSheet(bool has_sheet) {
+  allowed_by_active_sheet_ = !has_sheet;
+  EnterOrExitLowPowerModeIfNeeded();
+}
+
+void FullscreenLowPowerCoordinatorCocoa::ChildWindowsChanged() {
+  allowed_by_child_windows_ = true;
+  for (NSWindow* child_window in [content_window_ childWindows]) {
+    // The toolbar correctly appears on top of the fullscreen low power window.
+    if ([child_window
+            isKindOfClass:NSClassFromString(@"NSToolbarFullScreenWindow")]) {
+      continue;
+    }
+    // There is a persistent 1x1 StatusBubbleWindow child window at 0,0.
+    if ([child_window isKindOfClass:NSClassFromString(@"StatusBubbleWindow")] &&
+        NSEqualRects([child_window frame], NSMakeRect(0, 0, 1, 1))) {
+      continue;
+    }
+
+    // Don't make any assumptions about other child windows.
+    allowed_by_child_windows_ = false;
+    return;
+  }
+}
+
 void FullscreenLowPowerCoordinatorCocoa::SetLowPowerLayerValid(bool valid) {
   low_power_layer_valid_ = valid;
   EnterOrExitLowPowerModeIfNeeded();
@@ -113,10 +149,18 @@ void FullscreenLowPowerCoordinatorCocoa::EnterOrExitLowPowerModeIfNeeded() {
           switches::kEnableFullscreenLowPowerMode);
 
   bool new_in_low_power_mode =
-      widget_ && low_power_window_ && allowed_by_nsview_layout_ &&
-      low_power_layer_valid_ && enabled_at_command_line;
+      widget_ && low_power_window_ && low_power_layer_valid_ &&
+      allowed_by_fullscreen_transition_ &&
+      allowed_by_nsview_layout_ && allowed_by_child_windows_ &&
+      allowed_by_active_sheet_ && enabled_at_command_line;
 
   if (new_in_low_power_mode) {
+    // Update whether or not we are in low power mode based on whether or not
+    // the low power window is in front (we do not get notifications of window
+    // order change).
+    in_low_power_mode_ &=
+        [[NSApp orderedWindows] firstObject] == low_power_window_.get();
+
     if (!in_low_power_mode_) {
       [low_power_window_ setFrame:[content_window_ frame] display:YES];
       [low_power_window_

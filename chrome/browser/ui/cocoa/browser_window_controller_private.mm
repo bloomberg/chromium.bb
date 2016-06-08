@@ -761,9 +761,15 @@ willPositionSheet:(NSWindow*)sheet
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
+
+  if (fullscreenLowPowerCoordinator_)
+    fullscreenLowPowerCoordinator_->SetInFullscreenTransition(false);
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
+  if (fullscreenLowPowerCoordinator_)
+    fullscreenLowPowerCoordinator_->SetInFullscreenTransition(true);
+
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
   exitingAppKitFullscreen_ = YES;
@@ -1266,6 +1272,21 @@ willPositionSheet:(NSWindow*)sheet
       browser_->exclusive_access_manager()->fullscreen_controller();
   return controller->IsWindowFullscreenForTabOrPending() ||
          controller->IsExtensionFullscreenOrPending();
+}
+
+- (void)windowWillBeginSheet:(NSNotification*)notification {
+  if (fullscreenLowPowerCoordinator_)
+    fullscreenLowPowerCoordinator_->SetHasActiveSheet(true);
+}
+
+- (void)windowDidEndSheet:(NSNotification*)notification {
+  if (fullscreenLowPowerCoordinator_)
+    fullscreenLowPowerCoordinator_->SetHasActiveSheet(false);
+}
+
+- (void)childWindowsDidChange {
+  if (fullscreenLowPowerCoordinator_)
+    fullscreenLowPowerCoordinator_->ChildWindowsChanged();
 }
 
 @end  // @implementation BrowserWindowController(Private)

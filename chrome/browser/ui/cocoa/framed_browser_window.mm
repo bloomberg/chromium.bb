@@ -44,6 +44,7 @@ const CGFloat kWindowGradientHeight = 24.0;
 - (void)adjustZoomButton:(NSNotification*)notification;
 - (void)adjustButton:(NSButton*)button
               ofKind:(NSWindowButton)kind;
+- (void)childWindowsDidChange;
 
 @end
 
@@ -357,6 +358,23 @@ const CGFloat kWindowGradientHeight = 24.0;
     return [NSColor whiteColor];
   else
     return [NSColor windowFrameTextColor];
+}
+
+- (void)addChildWindow:(NSWindow*)childWindow
+               ordered:(NSWindowOrderingMode)orderingMode {
+  [super addChildWindow:childWindow ordered:orderingMode];
+  [self childWindowsDidChange];
+}
+
+- (void)removeChildWindow:(NSWindow*)childWindow {
+  [super removeChildWindow:childWindow];
+  [self childWindowsDidChange];
+}
+
+- (void)childWindowsDidChange {
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(childWindowsDidChange)])
+    [delegate childWindowsDidChange];
 }
 
 @end

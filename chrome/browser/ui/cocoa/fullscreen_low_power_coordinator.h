@@ -29,10 +29,14 @@ class FullscreenLowPowerCoordinatorCocoa
 
   // Interface to BrowserWindowController.
   NSWindow* GetFullscreenLowPowerWindow();
+  // Note that the initial transition state is in-transition.
+  void SetInFullscreenTransition(bool in_fullscreen_transition);
   void SetLayoutParameters(const NSRect& toolbar_frame,
                            const NSRect& infobar_frame,
                            const NSRect& content_frame,
                            const NSRect& download_shelf_frame);
+  void SetHasActiveSheet(bool has_sheet);
+  void ChildWindowsChanged();
 
   // ui::FullscreenLowPowerCoordinator implementation.
   void SetLowPowerLayerValid(bool valid) override;
@@ -53,6 +57,10 @@ class FullscreenLowPowerCoordinatorCocoa
   // can.
   base::scoped_nsobject<FullscreenLowPowerWindow> low_power_window_;
 
+  // Don't use the fullscreen low power window until we have completely
+  // transitioned to low power mode.
+  bool allowed_by_fullscreen_transition_ = false;
+
   // Set by the AcceleratedWidgetHost with each frame. This must be true to
   // enter low power mode.
   bool low_power_layer_valid_ = false;
@@ -60,6 +68,14 @@ class FullscreenLowPowerCoordinatorCocoa
   // Set if the NSView hierarchy allows low power mode. Low power mode is only
   // allowed when nothing but the web contents is on-screen.
   bool allowed_by_nsview_layout_ = true;
+
+  // Set if there are no NSWindows that would be covered by the fullscreen low
+  // power window.
+  bool allowed_by_child_windows_ = false;
+
+  // Set if there are no sheets (modal dialogues) that would be covered by the
+  // fullscreen low power window.
+  bool allowed_by_active_sheet_ = false;
 
   // Updated by EnterOrExitLowPowerModeIfNeeded.
   bool in_low_power_mode_ = false;
