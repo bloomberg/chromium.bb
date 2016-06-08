@@ -51,6 +51,7 @@ source_set("renderer") {
     "//device/bluetooth",
     "//device/usb/public/interfaces",
     "//device/vibration:mojo_bindings",
+    "//device/vr:mojo_bindings",
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",

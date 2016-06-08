@@ -72,6 +72,7 @@ test("device_unittests") {
     "//device/nfc",
     "//device/vr",
     "//device/vr:fakes",
+    "//device/vr:mojo_bindings",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",

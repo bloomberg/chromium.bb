@@ -14,7 +14,7 @@ VREyeParameters::VREyeParameters()
     m_renderHeight = 0;
 }
 
-void VREyeParameters::update(const mojom::blink::VREyeParametersPtr& eyeParameters)
+void VREyeParameters::update(const device::blink::VREyeParametersPtr& eyeParameters)
 {
     m_offset->data()[0] = eyeParameters->offset[0];
     m_offset->data()[1] = eyeParameters->offset[1];

@@ -5,9 +5,9 @@
 #ifndef VRDisplayCollection_h
 #define VRDisplayCollection_h
 
+#include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplay.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 
 namespace blink {
 
@@ -17,7 +17,7 @@ class VRDisplayCollection final : public GarbageCollected<VRDisplayCollection> {
 public:
     explicit VRDisplayCollection(NavigatorVR*);
 
-    VRDisplayVector updateDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr>);
+    VRDisplayVector updateDisplays(mojo::WTFArray<device::blink::VRDisplayPtr>);
     VRDisplay* getDisplayForIndex(unsigned index);
 
     DECLARE_VIRTUAL_TRACE();

@@ -6,9 +6,9 @@
 #define VRController_h
 
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "device/vr/vr_service.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
-#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 #include "wtf/Deque.h"
 
 #include <memory>
@@ -29,7 +29,7 @@ public:
 
     void getDisplays(std::unique_ptr<VRGetDevicesCallback>);
 
-    mojom::blink::VRPosePtr getPose(unsigned index);
+    device::blink::VRPosePtr getPose(unsigned index);
 
     void resetPose(unsigned index);
 
@@ -46,10 +46,10 @@ private:
     void willDetachFrameHost() override;
 
     // Binding callbacks.
-    void onGetDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr>);
+    void onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr>);
 
     Deque<std::unique_ptr<VRGetDevicesCallback>> m_pendingGetDevicesCallbacks;
-    mojom::blink::VRServicePtr m_service;
+    device::blink::VRServicePtr m_service;
 };
 
 } // namespace blink

@@ -16,16 +16,16 @@ class FakeVRDevice : public VRDevice {
   explicit FakeVRDevice(VRDeviceProvider* provider);
   ~FakeVRDevice() override;
 
-  void SetVRDevice(const blink::mojom::VRDisplayPtr& device);
-  void SetPose(const blink::mojom::VRPosePtr& state);
+  void SetVRDevice(const VRDisplayPtr& device);
+  void SetPose(const VRPosePtr& state);
 
-  blink::mojom::VRDisplayPtr GetVRDevice() override;
-  blink::mojom::VRPosePtr GetPose() override;
+  VRDisplayPtr GetVRDevice() override;
+  VRPosePtr GetPose() override;
   void ResetPose() override;
 
  private:
-  blink::mojom::VRDisplayPtr device_;
-  blink::mojom::VRPosePtr pose_;
+  VRDisplayPtr device_;
+  VRPosePtr pose_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRDevice);
 };

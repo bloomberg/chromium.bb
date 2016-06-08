@@ -23,7 +23,7 @@ VRPose::VRPose()
 {
 }
 
-void VRPose::setPose(const mojom::blink::VRPosePtr& state)
+void VRPose::setPose(const device::blink::VRPosePtr& state)
 {
     if (state.is_null())
         return;

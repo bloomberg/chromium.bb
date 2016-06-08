@@ -19,7 +19,7 @@ VRGetDevicesCallback::~VRGetDevicesCallback()
 {
 }
 
-void VRGetDevicesCallback::onSuccess(mojo::WTFArray<mojom::blink::VRDisplayPtr> displays)
+void VRGetDevicesCallback::onSuccess(mojo::WTFArray<device::blink::VRDisplayPtr> displays)
 {
     m_resolver->resolve(m_displays->updateDisplays(std::move(displays)));
 }

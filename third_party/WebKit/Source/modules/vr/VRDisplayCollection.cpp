@@ -13,7 +13,7 @@ VRDisplayCollection::VRDisplayCollection(NavigatorVR* navigatorVR)
 {
 }
 
-VRDisplayVector VRDisplayCollection::updateDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr> displays)
+VRDisplayVector VRDisplayCollection::updateDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> displays)
 {
     VRDisplayVector vrDisplays;
 

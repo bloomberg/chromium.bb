@@ -40,9 +40,9 @@ CardboardVRDevice::~CardboardVRDevice() {
                                       j_cardboard_device_.obj());
 }
 
-blink::mojom::VRDisplayPtr CardboardVRDevice::GetVRDevice() {
+VRDisplayPtr CardboardVRDevice::GetVRDevice() {
   TRACE_EVENT0("input", "CardboardVRDevice::GetVRDevice");
-  blink::mojom::VRDisplayPtr device = blink::mojom::VRDisplay::New();
+  VRDisplayPtr device = VRDisplay::New();
 
   JNIEnv* env = AttachCurrentThread();
 
@@ -58,18 +58,18 @@ blink::mojom::VRDisplayPtr CardboardVRDevice::GetVRDevice() {
   std::vector<float> fov;
   base::android::JavaFloatArrayToFloatVector(env, j_fov.obj(), &fov);
 
-  device->capabilities = blink::mojom::VRDisplayCapabilities::New();
+  device->capabilities = VRDisplayCapabilities::New();
   device->capabilities->hasOrientation = true;
   device->capabilities->hasPosition = false;
   device->capabilities->hasExternalDisplay = false;
   device->capabilities->canPresent = false;
 
-  device->leftEye = blink::mojom::VREyeParameters::New();
-  device->rightEye = blink::mojom::VREyeParameters::New();
-  blink::mojom::VREyeParametersPtr& left_eye = device->leftEye;
-  blink::mojom::VREyeParametersPtr& right_eye = device->rightEye;
+  device->leftEye = VREyeParameters::New();
+  device->rightEye = VREyeParameters::New();
+  VREyeParametersPtr& left_eye = device->leftEye;
+  VREyeParametersPtr& right_eye = device->rightEye;
 
-  left_eye->fieldOfView = blink::mojom::VRFieldOfView::New();
+  left_eye->fieldOfView = VRFieldOfView::New();
   left_eye->fieldOfView->upDegrees = fov[0];
   left_eye->fieldOfView->downDegrees = fov[1];
   left_eye->fieldOfView->leftDegrees = fov[2];
@@ -77,7 +77,7 @@ blink::mojom::VRDisplayPtr CardboardVRDevice::GetVRDevice() {
 
   // Cardboard devices always assume a mirrored FOV, so this is just the left
   // eye FOV with the left and right degrees swapped.
-  right_eye->fieldOfView = blink::mojom::VRFieldOfView::New();
+  right_eye->fieldOfView = VRFieldOfView::New();
   right_eye->fieldOfView->upDegrees = fov[0];
   right_eye->fieldOfView->downDegrees = fov[1];
   right_eye->fieldOfView->leftDegrees = fov[3];
@@ -112,9 +112,9 @@ blink::mojom::VRDisplayPtr CardboardVRDevice::GetVRDevice() {
   return device;
 }
 
-blink::mojom::VRPosePtr CardboardVRDevice::GetPose() {
+VRPosePtr CardboardVRDevice::GetPose() {
   TRACE_EVENT0("input", "CardboardVRDevice::GetSensorState");
-  blink::mojom::VRPosePtr pose = blink::mojom::VRPose::New();
+  VRPosePtr pose = VRPose::New();
 
   pose->timestamp = base::Time::Now().ToJsTime();
 

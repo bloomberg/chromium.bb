@@ -47,15 +47,15 @@ void VRController::getDisplays(std::unique_ptr<VRGetDevicesCallback> callback)
     }
 
     m_pendingGetDevicesCallbacks.append(std::move(callback));
-    m_service->GetDisplays(createBaseCallback(bind<mojo::WTFArray<mojom::blink::VRDisplayPtr>>(&VRController::onGetDisplays, this)));
+    m_service->GetDisplays(createBaseCallback(bind<mojo::WTFArray<device::blink::VRDisplayPtr>>(&VRController::onGetDisplays, this)));
 }
 
-mojom::blink::VRPosePtr VRController::getPose(unsigned index)
+device::blink::VRPosePtr VRController::getPose(unsigned index)
 {
     if (!m_service)
         return nullptr;
 
-    mojom::blink::VRPosePtr pose;
+    device::blink::VRPosePtr pose;
     m_service->GetPose(index, &pose);
     return pose;
 }
@@ -72,7 +72,7 @@ void VRController::willDetachFrameHost()
     // TODO(kphanee): Detach from the mojo service connection.
 }
 
-void VRController::onGetDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr> displays)
+void VRController::onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> displays)
 {
     std::unique_ptr<VRGetDevicesCallback> callback = m_pendingGetDevicesCallbacks.takeFirst();
     if (!callback)

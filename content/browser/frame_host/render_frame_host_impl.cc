@@ -2025,7 +2025,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
       *base::CommandLine::ForCurrentProcess();
 
   if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
-    GetServiceRegistry()->AddService<blink::mojom::VRService>(
+    GetServiceRegistry()->AddService<device::VRService>(
         base::Bind(&device::VRDeviceManager::BindRequest));
   }
 #endif

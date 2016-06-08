@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "device/vr/vr_service.mojom-blink.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -23,7 +23,7 @@ public:
     float sizeX() const { return m_sizeX; }
     float sizeZ() const { return m_sizeZ; }
 
-    void update(const mojom::blink::VRStageParametersPtr&);
+    void update(const device::blink::VRStageParametersPtr&);
 
     DECLARE_VIRTUAL_TRACE()
 

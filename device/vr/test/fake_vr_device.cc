@@ -7,25 +7,25 @@
 namespace device {
 
 FakeVRDevice::FakeVRDevice(VRDeviceProvider* provider) : VRDevice(provider) {
-  device_ = blink::mojom::VRDisplay::New();
-  pose_ = blink::mojom::VRPose::New();
+  device_ = VRDisplay::New();
+  pose_ = VRPose::New();
 }
 
 FakeVRDevice::~FakeVRDevice() {}
 
-void FakeVRDevice::SetVRDevice(const blink::mojom::VRDisplayPtr& device) {
+void FakeVRDevice::SetVRDevice(const VRDisplayPtr& device) {
   device_ = device.Clone();
 }
 
-void FakeVRDevice::SetPose(const blink::mojom::VRPosePtr& pose) {
+void FakeVRDevice::SetPose(const VRPosePtr& pose) {
   pose_ = pose.Clone();
 }
 
-blink::mojom::VRDisplayPtr FakeVRDevice::GetVRDevice() {
+VRDisplayPtr FakeVRDevice::GetVRDevice() {
   return device_.Clone();
 }
 
-blink::mojom::VRPosePtr FakeVRDevice::GetPose() {
+VRPosePtr FakeVRDevice::GetPose() {
   return pose_.Clone();
 }
 

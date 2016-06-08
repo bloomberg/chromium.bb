@@ -52,7 +52,7 @@ VRController* VRDisplay::controller()
     return m_navigatorVR->controller();
 }
 
-void VRDisplay::update(const mojom::blink::VRDisplayPtr& display)
+void VRDisplay::update(const device::blink::VRDisplayPtr& display)
 {
     m_displayId = display->index;
     m_displayName = display->displayName;

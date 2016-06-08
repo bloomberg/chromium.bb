@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRFieldOfView.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 
 #include "wtf/Forward.h"
 
@@ -27,7 +27,7 @@ public:
     unsigned long renderWidth() const { return m_renderWidth; }
     unsigned long renderHeight() const { return m_renderHeight; }
 
-    void update(const mojom::blink::VREyeParametersPtr&);
+    void update(const device::blink::VREyeParametersPtr&);
 
     DECLARE_VIRTUAL_TRACE()
 

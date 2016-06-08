@@ -17,22 +17,22 @@
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
+#include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h"
 
 namespace device {
 
-class VRDeviceManager : public blink::mojom::VRService {
+class VRDeviceManager : public VRService {
  public:
   DEVICE_VR_EXPORT ~VRDeviceManager() override;
 
   DEVICE_VR_EXPORT static void BindRequest(
-      mojo::InterfaceRequest<blink::mojom::VRService> request);
+      mojo::InterfaceRequest<VRService> request);
 
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
 
-  DEVICE_VR_EXPORT mojo::Array<blink::mojom::VRDisplayPtr> GetVRDevices();
+  DEVICE_VR_EXPORT mojo::Array<VRDisplayPtr> GetVRDevices();
   DEVICE_VR_EXPORT VRDevice* GetDevice(unsigned int index);
 
  private:
@@ -66,7 +66,7 @@ class VRDeviceManager : public blink::mojom::VRService {
 
   bool vr_initialized_;
 
-  mojo::BindingSet<blink::mojom::VRService> bindings_;
+  mojo::BindingSet<VRService> bindings_;
 
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;

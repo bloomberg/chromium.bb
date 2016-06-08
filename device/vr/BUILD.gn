@@ -21,6 +21,7 @@ component("vr") {
   ]
 
   deps = [
+    ":mojo_bindings",
     "//base",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
@@ -57,6 +58,12 @@ static_library("fakes") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:mojo_bindings",
+  ]
+}
+
+mojom("mojo_bindings") {
+  sources = [
+    "vr_service.mojom",
   ]
 }
 

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "device/vr/vr_export.h"
-#include "third_party/WebKit/public/platform/modules/vr/vr_service.mojom.h"
+#include "device/vr/vr_service.mojom.h"
 
 namespace blink {
 struct WebHMDSensorState;
@@ -31,8 +31,8 @@ class VRDevice {
   DEVICE_VR_EXPORT VRDeviceProvider* provider() const { return provider_; }
   DEVICE_VR_EXPORT unsigned int id() const { return id_; }
 
-  virtual blink::mojom::VRDisplayPtr GetVRDevice() = 0;
-  virtual blink::mojom::VRPosePtr GetPose() = 0;
+  virtual VRDisplayPtr GetVRDevice() = 0;
+  virtual VRPosePtr GetPose() = 0;
   virtual void ResetPose() = 0;
 
  private:
