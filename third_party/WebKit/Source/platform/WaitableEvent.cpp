@@ -13,9 +13,13 @@ namespace blink {
 
 WaitableEvent::WaitableEvent(ResetPolicy policy, InitialState state)
 {
-    bool manualReset = policy == ResetPolicy::Manual;
-    bool initiallySignaled = state == InitialState::Signaled;
-    m_impl = adoptPtr(new base::WaitableEvent(manualReset, initiallySignaled));
+    m_impl = adoptPtr(new base::WaitableEvent(
+        policy == ResetPolicy::Manual
+            ? base::WaitableEvent::ResetPolicy::MANUAL
+            : base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        state == InitialState::Signaled
+            ? base::WaitableEvent::InitialState::SIGNALED
+            : base::WaitableEvent::InitialState::NOT_SIGNALED));
 }
 
 WaitableEvent::~WaitableEvent() {}
