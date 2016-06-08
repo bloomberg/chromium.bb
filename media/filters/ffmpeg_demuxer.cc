@@ -1488,6 +1488,8 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   // - either underlying ffmpeg returned an error
   // - or FFMpegDemuxer reached the maximum allowed memory usage.
   if (result < 0 || IsMaxMemoryUsageReached()) {
+    LOG(ERROR) << __FUNCTION__ << " result=" << result
+               << " IsMaxMemoryUsageReached=" << IsMaxMemoryUsageReached();
     // Update the duration based on the highest elapsed time across all streams
     // if it was previously unknown.
     if (!duration_known_) {
