@@ -36,6 +36,7 @@ class RasterBufferImpl : public RasterBuffer {
       uint64_t new_content_id,
       float scale,
       const RasterSource::PlaybackSettings& playback_settings) override {
+    TRACE_EVENT0("cc", "ZeroCopyRasterBuffer::Playback");
     gfx::GpuMemoryBuffer* buffer = lock_.GetGpuMemoryBuffer();
     if (!buffer)
       return;

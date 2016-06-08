@@ -53,7 +53,8 @@ void RasterBufferProvider::PlaybackToMemory(
     const gfx::Rect& canvas_playback_rect,
     float scale,
     const RasterSource::PlaybackSettings& playback_settings) {
-  TRACE_EVENT0("cc", "RasterBufferProvider::PlaybackToMemory");
+  TRACE_EVENT0("disabled-by-default-cc.debug",
+               "RasterBufferProvider::PlaybackToMemory");
 
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 

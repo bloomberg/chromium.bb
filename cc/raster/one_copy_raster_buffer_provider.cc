@@ -46,6 +46,7 @@ class RasterBufferImpl : public RasterBuffer {
       uint64_t new_content_id,
       float scale,
       const RasterSource::PlaybackSettings& playback_settings) override {
+    TRACE_EVENT0("cc", "OneCopyRasterBuffer::Playback");
     worker_pool_->PlaybackAndCopyOnWorkerThread(
         resource_, &lock_, raster_source, raster_full_rect, raster_dirty_rect,
         scale, playback_settings, previous_content_id_, new_content_id);

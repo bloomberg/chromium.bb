@@ -44,7 +44,7 @@ class RasterBufferImpl : public RasterBuffer {
       uint64_t new_content_id,
       float scale,
       const RasterSource::PlaybackSettings& playback_settings) override {
-    TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
+    TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
     // GPU raster doesn't do low res tiles, so should always include images.
     DCHECK(!playback_settings.skip_images);
 

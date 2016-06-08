@@ -42,6 +42,7 @@ class RasterBufferImpl : public RasterBuffer {
       uint64_t new_content_id,
       float scale,
       const RasterSource::PlaybackSettings& playback_settings) override {
+    TRACE_EVENT0("cc", "BitmapRasterBuffer::Playback");
     gfx::Rect playback_rect = raster_full_rect;
     if (resource_has_previous_content_) {
       playback_rect.Intersect(raster_dirty_rect);
