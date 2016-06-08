@@ -9,6 +9,7 @@
 <link rel="import" href="/settings_shared_css.html">
 <link rel="import" href="/site_settings/all_sites.html">
 <link rel="import" href="/site_settings/constants.html">
+<link rel="import" href="/site_settings/media_picker.html">
 <link rel="import" href="/site_settings_page/site_settings_page.html">
 
 <if expr="use_nss_certs">
@@ -149,6 +150,7 @@
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
               category="{{ContentSettingsTypes.CAMERA}}">
+            <media-picker type="camera" class="media-picker"></media-picker>
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -216,6 +218,7 @@
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
               category="{{ContentSettingsTypes.MIC}}">
+            <media-picker type="mic" class="media-picker"></media-picker>
           </site-settings-category>
         </settings-subpage>
       </template>

@@ -34,6 +34,12 @@ var ExceptionListPref;
  */
 var SiteSettingsPref;
 
+/**
+ * @typedef {{name: string,
+ *            id: string}}
+ */
+var MediaPickerEntry;
+
 cr.define('settings', function() {
   /** @interface */
   function SiteSettingsPrefsBrowserProxy() {}
@@ -89,6 +95,20 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>} True if the pattern is valid.
      */
     isPatternValid: function(pattern) {},
+
+    /**
+     * Gets the list of default capture devices for a given type of media. List
+     * is returned through a JS call to updateDevicesMenu.
+     * @param {string} type The type to look up.
+     */
+    getDefaultCaptureDevices: function(type) {},
+
+    /**
+     * Sets a default devices for a given type of media.
+     * @param {string} type The type of media to configure.
+     * @param {string} defaultValue The id of the media device to set.
+     */
+    setDefaultCaptureDevice: function(type, defaultValue) {},
   };
 
   /**
@@ -136,6 +156,15 @@ cr.define('settings', function() {
       return cr.sendWithPromise('isPatternValid', pattern);
     },
 
+    /** @override */
+    getDefaultCaptureDevices: function(type) {
+      chrome.send('getDefaultCaptureDevices', [type]);
+    },
+
+    /** @override */
+    setDefaultCaptureDevice: function(type, defaultValue) {
+      chrome.send('setDefaultCaptureDevice', [type, defaultValue]);
+    },
   };
 
   return {
