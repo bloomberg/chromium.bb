@@ -928,8 +928,10 @@ BrowserAccessibilityWin
     // |hyperlinks_|.
     std::map<int32_t, int32_t> hyperlink_offset_to_index;
 
-    // The id of a BrowserAccessibilityWin for each hyperlink.
-    // TODO(nektar): Replace object IDs with child indices.
+    // The unique id of a BrowserAccessibilityWin for each hyperlink.
+    // TODO(nektar): Replace object IDs with child indices if we decide that
+    // we are not implementing IA2 hyperlinks for anything other than IA2
+    // Hypertext.
     std::vector<int32_t> hyperlinks;
   };
 

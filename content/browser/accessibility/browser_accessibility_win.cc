@@ -731,7 +731,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_uniqueID(LONG* unique_id) {
   if (!unique_id)
     return E_INVALIDARG;
 
-  *unique_id = -unique_id_;
+  *unique_id = -this->unique_id();
   return S_OK;
 }
 
@@ -2411,7 +2411,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
   }
 
   int32_t id = hyperlinks()[index];
-  BrowserAccessibilityWin* link = GetFromID(id);
+  BrowserAccessibilityWin* link =
+      ToBrowserAccessibilityWin(GetFromUniqueID(id));
   if (!link)
     return E_FAIL;
 
@@ -2777,7 +2778,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
   *name_space_id = 0;
   *node_value = SysAllocString(value().c_str());
   *num_children = PlatformChildCount();
-  *unique_id = -unique_id_;
+  *unique_id = -this->unique_id();
 
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
     GetRole() == ui::AX_ROLE_WEB_AREA) {
@@ -3509,18 +3510,15 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   win_attributes_->description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
 
   base::string16 value = GetValue();
-
   // On Windows, the value of a document should be its url.
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
       GetRole() == ui::AX_ROLE_WEB_AREA) {
     value = base::UTF8ToUTF16(manager()->GetTreeData().url);
   }
-
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
   if (value.empty() && (ia_state() & STATE_SYSTEM_LINKED))
     value = GetString16Attribute(ui::AX_ATTR_URL);
-
   win_attributes_->value = value;
 
   // Clear any old relationships between this node and other nodes.
@@ -3545,10 +3543,13 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 }
 
 void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
-  if (PlatformIsLeaf()) {
-    if (IsSimpleTextControl())
+  if (!PlatformChildCount()) {
+    if (IsSimpleTextControl()) {
       win_attributes_->hypertext = value();
-    else {
+    } else if (IsRichTextControl()) {
+      // We don't want to expose any associated label in IA2 Hypertext.
+      return;
+    } else {
       win_attributes_->hypertext = name();
     }
 
@@ -3568,10 +3569,10 @@ void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
       win_attributes_->hypertext += child->name();
     } else {
       int32_t char_offset = static_cast<int32_t>(GetText().size());
-      int32_t child_id = child->GetId();
+      int32_t child_unique_id = child->unique_id();
       int32_t index = hyperlinks().size();
       win_attributes_->hyperlink_offset_to_index[char_offset] = index;
-      win_attributes_->hyperlinks.push_back(child_id);
+      win_attributes_->hyperlinks.push_back(child_unique_id);
       win_attributes_->hypertext += kEmbeddedCharacter;
     }
   }
@@ -4032,7 +4033,8 @@ BrowserAccessibilityWin::GetHyperlinkFromHypertextOffset(int offset) const {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int32_t>(hyperlinks().size()));
   int32_t id = hyperlinks()[index];
-  BrowserAccessibilityWin* hyperlink = GetFromID(id);
+  BrowserAccessibilityWin* hyperlink =
+      ToBrowserAccessibilityWin(GetFromUniqueID(id));
   if (!hyperlink)
     return nullptr;
   return hyperlink;
@@ -4043,8 +4045,8 @@ int32_t BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
   if (hyperlinks().empty())
     return -1;
 
-  auto iterator = std::find(
-      hyperlinks().begin(), hyperlinks().end(), child.GetId());
+  auto iterator =
+      std::find(hyperlinks().begin(), hyperlinks().end(), child.unique_id());
   if (iterator == hyperlinks().end())
     return -1;
 

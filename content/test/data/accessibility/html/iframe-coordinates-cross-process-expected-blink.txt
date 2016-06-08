@@ -13,4 +13,3 @@ rootWebArea location=(0, 0) scrollX=0 scrollXMin=0 scrollXMax=0 scrollY=0 scroll
 ++++++rootWebArea location=(0, 0) size=(300, 100) scrollX=150 scrollXMin=0 scrollXMax=150 scrollY=50 scrollYMin=0 scrollYMax=50
 ++++++++div location=(0, 0) size=(300, 100)
 ++++++++++button location=(25, 25) size=(250, 50) name='Scrolled Button'
-<-- End-of-file -->

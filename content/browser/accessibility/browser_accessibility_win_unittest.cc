@@ -1424,23 +1424,27 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   ui::AXNodeData div_editable;
   div_editable.id = 2;
   div_editable.role = ui::AX_ROLE_DIV;
-  div_editable.state = (1 << ui::AX_STATE_FOCUSABLE);
+  div_editable.state =
+      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_EDITABLE);
 
   ui::AXNodeData text;
   text.id = 3;
   text.role = ui::AX_ROLE_STATIC_TEXT;
+  text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_EDITABLE);
   text.SetName("Click ");
 
   ui::AXNodeData link;
   link.id = 4;
   link.role = ui::AX_ROLE_LINK;
-  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_EDITABLE) |
+               (1 << ui::AX_STATE_LINKED);
   link.SetName("here");
 
   ui::AXNodeData link_text;
   link_text.id = 5;
   link_text.role = ui::AX_ROLE_STATIC_TEXT;
-  link_text.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_LINKED);
+  link_text.state = (1 << ui::AX_STATE_FOCUSABLE) |
+                    (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_LINKED);
   link_text.SetName("here");
 
   root.child_ids.push_back(2);

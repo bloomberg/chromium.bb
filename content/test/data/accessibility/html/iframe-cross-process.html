@@ -1,9 +1,13 @@
 <!DOCTYPE html>
+<!--
+@WIN-ALLOW:ia2_hypertext=*
+-->
 <html>
 <body>
 <p>Before frame</p>
 <div>
-  <iframe src="/cross-site/1.com/accessibility/html/frame/static_text.html">
+  <iframe aria-label="Cross-process iframe"
+      src="/cross-site/1.com/accessibility/html/frame/static_text.html">
   </iframe>
 </div>
 <p>After frame</p>
