@@ -275,10 +275,10 @@ void ThreadHeap::detach(ThreadState* thread)
     }
     // The main thread must be the last thread that gets detached.
     ASSERT(!thread->isMainThread() || m_threads.isEmpty());
-    if (thread->isMainThread()) {
-        ASSERT(heapStats().allocatedSpace() == 0);
+    if (thread->isMainThread())
+        DCHECK_EQ(heapStats().allocatedSpace(), 0u);
+    if (m_threads.isEmpty())
         delete this;
-    }
 }
 
 bool ThreadHeap::park()
