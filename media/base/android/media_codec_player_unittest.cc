@@ -1001,7 +1001,13 @@ TEST_F(MediaCodecPlayerTest, AudioNoPermission) {
                        start_timeout));
 }
 
-TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
+// crbug.com/618274
+#if defined(OS_ANDROID)
+#define MAYBE_VideoPlayTillCompletion DISABLED_VideoPlayTillCompletion
+#else
+#define MAYBE_VideoPlayTillCompletion VideoPlayTillCompletion
+#endif
+TEST_F(MediaCodecPlayerTest, MAYBE_VideoPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
