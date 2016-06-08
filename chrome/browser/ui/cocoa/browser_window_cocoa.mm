@@ -132,11 +132,12 @@ base::string16 TrimText(NSString* controlText) {
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller)
-  : browser_(browser),
-    controller_(controller),
-    initial_show_state_(ui::SHOW_STATE_DEFAULT),
-    attention_request_id_(0) {
-
+    : browser_(browser),
+      controller_(controller),
+      initial_show_state_(ui::SHOW_STATE_DEFAULT),
+      attention_request_id_(0),
+      alert_state_(TabAlertState::NONE),
+      window_closed_(false) {
   gfx::Rect bounds;
   chrome::GetSavedWindowBoundsAndShowState(browser_,
                                            &bounds,
@@ -761,10 +762,9 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
 
 web_modal::WebContentsModalDialogHost*
     BrowserWindowCocoa::GetWebContentsModalDialogHost() {
-  DCHECK([controller_ window]);
+  DCHECK(window());
   ConstrainedWindowSheetController* sheet_controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:[controller_ window]];
+      [ConstrainedWindowSheetController controllerForParentWindow:window()];
   DCHECK(sheet_controller);
   return [sheet_controller dialogHost];
 }
@@ -792,6 +792,12 @@ void BrowserWindowCocoa::DestroyBrowser() {
 }
 
 NSWindow* BrowserWindowCocoa::window() const {
+  // AppKit doesn't seem to guarantee that [controller_ window] returns nil once
+  // the NSWindow is destroyed. Since |this| is deleted only once
+  // -[NSWindowController dealloc] completes, there's a possibility of
+  // a WeakPtr to Browser* requesting the NSWindow, which may be a zombie.
+  if (window_closed_)
+    return nil;
   return [controller_ window];
 }
 
@@ -840,4 +846,8 @@ void BrowserWindowCocoa::ShowImeWarningBubble(
     const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
         callback) {
   NOTREACHED() << "The IME warning bubble is unsupported on this platform.";
+}
+
+void BrowserWindowCocoa::OnWindowWillClose() {
+  window_closed_ = true;
 }
