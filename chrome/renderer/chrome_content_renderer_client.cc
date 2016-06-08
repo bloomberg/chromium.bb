@@ -128,10 +128,6 @@
 #include "extensions/renderer/renderer_extension_registry.h"
 #endif
 
-#if defined(ENABLE_IPC_FUZZER)
-#include "chrome/common/external_ipc_dumper.h"
-#endif
-
 #if defined(ENABLE_PLUGINS)
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
@@ -407,16 +403,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(OS_ANDROID)
   WebSecurityPolicy::registerURLSchemeAsAllowedForReferrer(
       WebString::fromUTF8(chrome::kAndroidAppScheme));
-#endif
-
-#if defined(ENABLE_IPC_FUZZER)
-  if (command_line->HasSwitch(switches::kIpcDumpDirectory)) {
-    base::FilePath dump_directory =
-        command_line->GetSwitchValuePath(switches::kIpcDumpDirectory);
-    IPC::ChannelProxy::OutgoingMessageFilter* filter =
-        LoadExternalIPCDumper(dump_directory);
-    thread->GetChannel()->set_outgoing_message_filter(filter);
-  }
 #endif
 
   // chrome-search: pages should not be accessible by bookmarklets

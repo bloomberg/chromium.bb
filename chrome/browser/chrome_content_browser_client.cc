@@ -1423,15 +1423,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
                                  arraysize(kCommonSwitchNames));
 
-#if defined(ENABLE_IPC_FUZZER)
-  static const char* const kIpcFuzzerSwitches[] = {
-      switches::kIpcDumpDirectory,
-      switches::kIpcFuzzerTestcase,
-  };
-  command_line->CopySwitchesFrom(browser_command_line, kIpcFuzzerSwitches,
-                                 arraysize(kIpcFuzzerSwitches));
-#endif
-
   static const char* const kDinosaurEasterEggSwitches[] = {
       error_page::switches::kDisableDinosaurEasterEgg,
   };

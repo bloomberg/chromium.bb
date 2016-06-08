@@ -188,7 +188,6 @@ extern const char kInstallChromeApp[];
 extern const char kInstallSupervisedUserWhitelists[];
 extern const char kInstantProcess[];
 extern const char kInterestsURL[];
-extern const char kIpcDumpDirectory[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
@@ -366,10 +365,6 @@ extern const char kViewerLaunchViaAppId[];
 extern const char kWatcherProcess[];
 extern const char kWindows8Search[];
 #endif  // defined(OS_WIN)
-
-#if defined(ENABLE_IPC_FUZZER)
-extern const char kIpcFuzzerTestcase[];
-#endif
 
 #if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 extern const char kDebugPrint[];

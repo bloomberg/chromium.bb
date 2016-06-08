@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//content/renderer/renderer.gni")
 import("//media/media_options.gni")
 import("//third_party/webrtc/build/webrtc.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 source_set("renderer") {
   # Only the public target should depend on this. All other targets (even
@@ -248,6 +249,10 @@ source_set("renderer") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+
+  if (enable_ipc_fuzzer) {
+    configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
 }
 

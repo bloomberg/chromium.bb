@@ -269,10 +269,6 @@
       'common/importer/safari_importer_utils.h',
       'common/importer/safari_importer_utils.mm',
     ],
-    'chrome_common_ipc_fuzzer_sources': [
-      'common/external_ipc_dumper.cc',
-      'common/external_ipc_dumper.h',
-    ],
     'chrome_common_service_process_sources': [
       'common/service_messages.h',
       'common/service_process_util.cc',
@@ -461,9 +457,6 @@
           'dependencies': [
             '<(DEPTH)/components/nacl.gyp:nacl_common',
           ],
-        }],
-        ['enable_ipc_fuzzer==1', {
-          'sources': [ '<@(chrome_common_ipc_fuzzer_sources)' ],
         }],
         ['enable_plugins==1', {
           'dependencies': [

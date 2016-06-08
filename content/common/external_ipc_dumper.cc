@@ -7,7 +7,9 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "chrome/common/external_ipc_dumper.h"
+#include "content/common/external_ipc_dumper.h"
+
+namespace {
 
 typedef IPC::ChannelProxy::OutgoingMessageFilter* (*GetFilterFunction)();
 typedef void (*SetDumpDirectoryFunction)(const base::FilePath&);
@@ -20,6 +22,10 @@ const char kSetDumpDirectoryEntryName[] = "SetDumpDirectory";
 #else
 #define IPC_MESSAGE_DUMP_MODULE FILE_PATH_LITERAL("libipc_message_dump.so")
 #endif
+
+}  // namespace
+
+namespace content {
 
 IPC::ChannelProxy::OutgoingMessageFilter* LoadExternalIPCDumper(
     const base::FilePath& dump_directory) {
@@ -59,3 +65,5 @@ IPC::ChannelProxy::OutgoingMessageFilter* LoadExternalIPCDumper(
 
   return filter_entry_point();
 }
+
+}  // namespace content

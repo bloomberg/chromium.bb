@@ -1576,6 +1576,10 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(MOJO_SHELL_CLIENT)
     switches::kUseMusInRenderer,
 #endif
+#if defined(ENABLE_IPC_FUZZER)
+    switches::kIpcDumpDirectory,
+    switches::kIpcFuzzerTestcase,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

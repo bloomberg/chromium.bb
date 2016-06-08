@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/browser/browser.gni")
 import("//media/media_options.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 source_set("browser") {
   # Only the public target should depend on this. All other targets (even
@@ -514,6 +515,10 @@ source_set("browser") {
 
   if (enable_webvr) {
     deps += [ "//device/vr" ]
+  }
+
+  if (enable_ipc_fuzzer) {
+    configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
 }
 

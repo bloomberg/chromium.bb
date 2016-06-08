@@ -660,5 +660,11 @@
         'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h',
       ],
     }],
+    ['enable_ipc_fuzzer==1', {
+      'sources': [
+        'common/external_ipc_dumper.cc',
+        'common/external_ipc_dumper.h',
+      ],
+    }],
   ],
 }

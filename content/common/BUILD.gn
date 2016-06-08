@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//content/common/common.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -199,6 +200,14 @@ source_set("common") {
         "sandbox_linux/android/sandbox_bpf_base_policy_android.h",
       ]
     }
+  }
+
+  if (enable_ipc_fuzzer) {
+    configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
+    sources += [
+      "external_ipc_dumper.cc",
+      "external_ipc_dumper.h",
+    ]
   }
 }
 

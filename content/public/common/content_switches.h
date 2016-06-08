@@ -311,6 +311,11 @@ CONTENT_EXPORT extern const char kMemoryPressureThresholdsMb[];
 CONTENT_EXPORT extern const char kTraceExportEventsToETW[];
 #endif
 
+#if defined(ENABLE_IPC_FUZZER)
+extern const char kIpcDumpDirectory[];
+extern const char kIpcFuzzerTestcase[];
+#endif
+
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 

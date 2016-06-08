@@ -201,6 +201,10 @@
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 #endif
 
+#if defined(ENABLE_IPC_FUZZER)
+#include "content/common/external_ipc_dumper.h"
+#endif
+
 using base::ThreadRestrictions;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -705,6 +709,16 @@ void RenderThreadImpl::Init(
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+#if defined(ENABLE_IPC_FUZZER)
+  if (command_line.HasSwitch(switches::kIpcDumpDirectory)) {
+    base::FilePath dump_directory =
+        command_line.GetSwitchValuePath(switches::kIpcDumpDirectory);
+    IPC::ChannelProxy::OutgoingMessageFilter* filter =
+        LoadExternalIPCDumper(dump_directory);
+    GetChannel()->set_outgoing_message_filter(filter);
+  }
+#endif
 
   cc::SetClientNameForMetrics("Renderer");
 

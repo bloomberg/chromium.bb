@@ -650,10 +650,6 @@ const char kInstantProcess[]                = "instant-process";
 // The URL for the interests API.
 const char kInterestsURL[]                  = "interests-url";
 
-// Dumps IPC messages sent from renderer processes to the browser process to
-// the given directory. Used primarily to gather samples for IPC fuzzing.
-const char kIpcDumpDirectory[]              = "ipc-dump-directory";
-
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
 
@@ -1233,11 +1229,6 @@ const char kWatcherProcess[]                = "watcher";
 // Indicates that chrome was launched to service a search request in Windows 8.
 const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)
-
-#if defined(ENABLE_IPC_FUZZER)
-// Specifies the testcase used by the IPC fuzzer.
-const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
-#endif
 
 #if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 // Enables support to debug printing subsystem.
