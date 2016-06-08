@@ -35,25 +35,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/draw.html', bug=483282)
-    self.Skip('deqp/functional/gles3/fbocolorbuffer.html', bug=483282)
     self.Skip('deqp/functional/gles3/fboinvalidate.html', bug=483282)
     self.Skip('deqp/functional/gles3/fbomultisample.html', bug=483282)
     self.Skip('deqp/functional/gles3/fborender.html', bug=483282)
     self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
-    self.Skip('deqp/functional/gles3/instancedrendering.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Skip('deqp/functional/gles3/negativebufferapi.html', bug=483282)
-    self.Skip('deqp/functional/gles3/negativetextureapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/occlusionquery.html', bug=483282)
-    self.Skip('deqp/functional/gles3/shadercommonfunction.html', bug=483282)
-    self.Skip('deqp/functional/gles3/shaderderivate.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderoperator.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
-    self.Skip('deqp/functional/gles3/shadertexturefunction/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/sync.html', bug=483282)
     self.Skip('deqp/functional/gles3/textureshadow/*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/transformfeedback.html', bug=483282)
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
@@ -83,6 +76,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
+        ['win'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
+        ['win'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/transformfeedback.html',
+        ['win'], bug=483282)
+    self.Fail('deqp/functional/gles3/negativetextureapi.html',
+        ['win'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/*',
         ['win'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shaderloop_for.html',
@@ -370,6 +373,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/framebuffer-completeness-unaffected.html',
         ['mac'], bug=604053)
 
+    self.Fail('deqp/functional/gles3/instancedrendering.html',
+        ['mac'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/negativetextureapi.html',
+        ['mac'], bug=483282)
+
     # Mac Retina NVIDIA
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
@@ -430,15 +439,47 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texsubimage3d_pbo_3d_01.html',
         ['mac', ('nvidia', 0xfe9)], bug=614174)
 
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturelod.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/primitiverestart.html',
         ['mac', 'amd'], bug=598930)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback.html',
+        ['mac', 'amd'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturesize.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'textureprojlodoffset.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturelod.html',
+        ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'textureprojlod.html',
+        ['mac', 'amd'], bug=483282)
 
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel', 'no_angle'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderderivate.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback.html',
+        ['mac', 'intel'], bug=483282)
+
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
@@ -450,6 +491,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_08.html',
         ['mac', 'intel'], bug=606074)
+
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['mac', 'intel'], bug=483282)
@@ -458,6 +500,25 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_pbo_params.html',
+        ['mac', 'intel'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texture.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturelod.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturegrad.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'textureprojgrad.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texelfetchoffset.html',
+        ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturesize.html',
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
