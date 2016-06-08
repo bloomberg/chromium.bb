@@ -102,14 +102,11 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   }
 
   if (browser_status == ash::STATUS_CLOSED) {
-    const BrowserList* browser_list = BrowserList::GetInstance();
-    for (BrowserList::const_reverse_iterator it =
-             browser_list->begin_last_active();
-         it != browser_list->end_last_active() &&
-         browser_status == ash::STATUS_CLOSED;
-         ++it) {
-      if (IsBrowserRepresentedInBrowserList(*it))
+    for (auto* browser : *BrowserList::GetInstance()) {
+      if (IsBrowserRepresentedInBrowserList(browser)) {
         browser_status = ash::STATUS_RUNNING;
+        break;
+      }
     }
   }
 
