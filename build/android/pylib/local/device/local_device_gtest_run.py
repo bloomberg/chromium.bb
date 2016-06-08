@@ -241,12 +241,16 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
       def push_test_data():
         # Push data dependencies.
-        external_storage = dev.GetExternalStoragePath()
+        device_root = posixpath.join(dev.GetExternalStoragePath(),
+                                     'chromium_tests_root')
         data_deps = self._test_instance.GetDataDependencies()
         host_device_tuples = [
-            (h, d if d is not None else external_storage)
+            (h, d if d is not None else device_root)
             for h, d in data_deps]
-        dev.PushChangedFiles(host_device_tuples)
+        dev.PushChangedFiles(host_device_tuples, delete_device_stale=True)
+        if not host_device_tuples:
+          dev.RunShellCommand(['rm', '-rf', device_root], check_return=True)
+          dev.RunShellCommand(['mkdir', '-p', device_root], check_return=True)
 
       def init_tool_and_start_servers():
         tool = self.GetTool(dev)

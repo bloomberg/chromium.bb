@@ -9,6 +9,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
+#include "base/test/test_support_android.h"
 #include "crypto/sha2.h"
 #include "jni/MockCertVerifier_jni.h"
 #include "net/base/net_errors.h"
@@ -49,9 +51,15 @@ static bool CalculatePublicKeySha256(const net::X509Certificate& cert,
 
 }  // namespace
 
-static jlong CreateMockCertVerifier(JNIEnv* env,
-                                    const JavaParamRef<jclass>& jcaller,
-                                    const JavaParamRef<jobjectArray>& jcerts) {
+static jlong CreateMockCertVerifier(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobjectArray>& jcerts,
+    const JavaParamRef<jstring>& jtest_data_dir) {
+  base::FilePath test_data_dir(
+      base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
+  base::InitAndroidTestPaths(test_data_dir);
+
   std::vector<std::string> certs;
   base::android::AppendJavaStringArrayToStringVector(env, jcerts, &certs);
   net::MockCertVerifier* mock_cert_verifier = new net::MockCertVerifier();

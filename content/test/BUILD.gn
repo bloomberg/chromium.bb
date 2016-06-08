@@ -349,6 +349,7 @@ if (is_android) {
     deps = [
       ":content_browsertests_resources",
       "//base:base_java",
+      "//base:base_java_test_support",
       "//content/public/android:content_java",
       "//content/public/test/android:content_java_test_support",
       "//content/shell/android:content_shell_browsertests_java",

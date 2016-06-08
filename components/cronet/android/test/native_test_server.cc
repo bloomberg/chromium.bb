@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_support_android.h"
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/NativeTestServer_jni.h"
 #include "net/base/host_port_pair.h"
@@ -164,10 +165,16 @@ std::unique_ptr<net::test_server::HttpResponse> SdchRequestHandler(
 
 jboolean StartNativeTestServer(JNIEnv* env,
                                const JavaParamRef<jclass>& jcaller,
-                               const JavaParamRef<jstring>& jtest_files_root) {
+                               const JavaParamRef<jstring>& jtest_files_root,
+                               const JavaParamRef<jstring>& jtest_data_dir) {
   // Shouldn't happen.
   if (g_test_server)
     return false;
+
+  base::FilePath test_data_dir(
+      base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
+  base::InitAndroidTestPaths(test_data_dir);
+
   g_test_server = new net::EmbeddedTestServer();
   g_test_server->RegisterRequestHandler(
       base::Bind(&NativeTestServerRequestHandler));
