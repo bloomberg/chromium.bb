@@ -32,7 +32,7 @@ private:
         // Only size lists without keywords may interpolate smoothly:
         // https://drafts.csswg.org/css-backgrounds-3/#the-background-size
         return ListInterpolationFunctions::createList(list.length() * 2, [&list](size_t index) -> InterpolationValue {
-            const CSSValue& item = *list.item(index / 2);
+            const CSSValue& item = list.item(index / 2);
             if (!item.isValuePair())
                 return nullptr;
             const CSSValuePair& pair = toCSSValuePair(item);

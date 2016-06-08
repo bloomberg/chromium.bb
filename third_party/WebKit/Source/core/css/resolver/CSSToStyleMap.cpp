@@ -442,7 +442,7 @@ void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID p
         imageProperty = property;
 
     for (unsigned i = 0 ; i < borderImage.length() ; ++i) {
-        const CSSValue& current = *borderImage.item(i);
+        const CSSValue& current = borderImage.item(i);
 
         if (current.isImageValue() || current.isImageGeneratorValue() || current.isImageSetValue()) {
             image.setImage(state.styleImage(imageProperty, current));
@@ -452,16 +452,16 @@ void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID p
             const CSSValueList& slashList = toCSSValueList(current);
             size_t length = slashList.length();
             // Map in the image slices.
-            if (length && slashList.item(0)->isBorderImageSliceValue())
-                mapNinePieceImageSlice(state, *slashList.item(0), image);
+            if (length && slashList.item(0).isBorderImageSliceValue())
+                mapNinePieceImageSlice(state, slashList.item(0), image);
 
             // Map in the border slices.
             if (length > 1)
-                image.setBorderSlices(mapNinePieceImageQuad(state, *slashList.item(1)));
+                image.setBorderSlices(mapNinePieceImageQuad(state, slashList.item(1)));
 
             // Map in the outset.
             if (length > 2)
-                image.setOutset(mapNinePieceImageQuad(state, *slashList.item(2)));
+                image.setOutset(mapNinePieceImageQuad(state, slashList.item(2)));
         } else if (current.isPrimitiveValue() || current.isValuePair()) {
             // Set the appropriate rules for stretch/round/repeat of the slices.
             mapNinePieceImageRepeat(state, current, image);

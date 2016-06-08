@@ -85,7 +85,7 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertValue(const CSSVa
 
     const CSSValueList& valueList = toCSSValueList(value);
     return ListInterpolationFunctions::createList(valueList.length(), [&valueList](size_t index) {
-        return ShadowInterpolationFunctions::maybeConvertCSSValue(*valueList.item(index));
+        return ShadowInterpolationFunctions::maybeConvertCSSValue(valueList.item(index));
     });
 }
 

@@ -100,7 +100,7 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(const CSSVal
     for (size_t i = 0; i < TranslateComponentIndexCount; i++) {
         InterpolationValue component = nullptr;
         if (i < list.length()) {
-            component = CSSLengthInterpolationType::maybeConvertCSSValue(*list.item(i));
+            component = CSSLengthInterpolationType::maybeConvertCSSValue(list.item(i));
             if (!component)
                 return nullptr;
         } else {

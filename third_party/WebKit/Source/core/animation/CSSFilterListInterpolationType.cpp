@@ -114,7 +114,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertValue(const CSSVa
     OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
-        InterpolationValue itemResult = FilterInterpolationFunctions::maybeConvertCSSFilter(*list.item(i));
+        InterpolationValue itemResult = FilterInterpolationFunctions::maybeConvertCSSFilter(list.item(i));
         if (!itemResult)
             return nullptr;
         interpolableList->set(i, std::move(itemResult.interpolableValue));

@@ -252,7 +252,7 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
         exceptionState.throwTypeError("Easing may not be set to a list of values");
         return nullptr;
     }
-    return CSSToStyleMap::mapAnimationTimingFunction(*valueList->item(0), true);
+    return CSSToStyleMap::mapAnimationTimingFunction(valueList->item(0), true);
 }
 
 } // namespace blink

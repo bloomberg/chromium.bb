@@ -135,21 +135,21 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
         ASSERT(filterValue->length() <= 1);
 
         if (operationType == FilterOperation::REFERENCE) {
-            const CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(filterValue->item(0));
-            KURL url = state.document().completeURL(svgDocumentValue->url());
+            const CSSSVGDocumentValue& svgDocumentValue = toCSSSVGDocumentValue(filterValue->item(0));
+            KURL url = state.document().completeURL(svgDocumentValue.url());
 
-            ReferenceFilterOperation* operation = ReferenceFilterOperation::create(svgDocumentValue->url(), AtomicString(url.fragmentIdentifier()));
-            if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), state.document())) {
-                if (!svgDocumentValue->loadRequested())
-                    state.elementStyleResources().addPendingSVGDocument(operation, svgDocumentValue);
-                else if (svgDocumentValue->cachedSVGDocument())
-                    ReferenceFilterBuilder::setDocumentResourceReference(operation, new DocumentResourceReference(svgDocumentValue->cachedSVGDocument()));
+            ReferenceFilterOperation* operation = ReferenceFilterOperation::create(svgDocumentValue.url(), AtomicString(url.fragmentIdentifier()));
+            if (SVGURIReference::isExternalURIReference(svgDocumentValue.url(), state.document())) {
+                if (!svgDocumentValue.loadRequested())
+                    state.elementStyleResources().addPendingSVGDocument(operation, &svgDocumentValue);
+                else if (svgDocumentValue.cachedSVGDocument())
+                    ReferenceFilterBuilder::setDocumentResourceReference(operation, new DocumentResourceReference(svgDocumentValue.cachedSVGDocument()));
             }
             operations.operations().append(operation);
             continue;
         }
 
-        const CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : nullptr;
+        const CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0).isPrimitiveValue() ? &toCSSPrimitiveValue(filterValue->item(0)) : nullptr;
         switch (filterValue->functionType()) {
         case CSSValueGrayscale:
         case CSSValueSepia:
@@ -194,12 +194,12 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
             break;
         }
         case CSSValueDropShadow: {
-            const CSSShadowValue* item = toCSSShadowValue(filterValue->item(0));
-            IntPoint location(item->x->computeLength<int>(conversionData), item->y->computeLength<int>(conversionData));
-            int blur = item->blur ? item->blur->computeLength<int>(conversionData) : 0;
+            const CSSShadowValue& item = toCSSShadowValue(filterValue->item(0));
+            IntPoint location(item.x->computeLength<int>(conversionData), item.y->computeLength<int>(conversionData));
+            int blur = item.blur ? item.blur->computeLength<int>(conversionData) : 0;
             Color shadowColor = Color::black;
-            if (item->color)
-                shadowColor = state.document().textLinkColors().colorFromCSSValue(*item->color, state.style()->color());
+            if (item.color)
+                shadowColor = state.document().textLinkColors().colorFromCSSValue(*item.color, state.style()->color());
 
             operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor));
             break;

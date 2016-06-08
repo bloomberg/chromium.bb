@@ -53,7 +53,7 @@ public:
     const_iterator end() const { return m_values.end(); }
 
     size_t length() const { return m_values.size(); }
-    const CSSValue* item(size_t index) const { return m_values[index].get(); }
+    const CSSValue& item(size_t index) const { return *m_values[index]; }
 
     void append(const CSSValue& value) { m_values.append(value); }
     bool removeAll(const CSSValue&);

@@ -25,7 +25,7 @@ private:
         const CSSValueList& list = toCSSValueList(value);
         ASSERT(list.length() == 3);
         return ListInterpolationFunctions::createList(list.length(), [&list](size_t index) {
-            const CSSValue& item = *list.item(index);
+            const CSSValue& item = list.item(index);
             if (index < 2)
                 return CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(item);
             return CSSLengthInterpolationType::maybeConvertCSSValue(item);

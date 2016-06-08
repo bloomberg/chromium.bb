@@ -103,7 +103,7 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
 {
     size_t length = valueList.length();
     for (size_t index = 0; index < length; ++index) {
-        if (interpolationRequiresStyleResolve(*valueList.item(index)))
+        if (interpolationRequiresStyleResolve(valueList.item(index)))
             return true;
     }
     return false;

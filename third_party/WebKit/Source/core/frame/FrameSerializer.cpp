@@ -434,32 +434,32 @@ void FrameSerializer::retrieveResourcesForProperties(const StylePropertySet* sty
     unsigned propertyCount = styleDeclaration->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
         CSSValue* cssValue = styleDeclaration->propertyAt(i).value();
-        retrieveResourcesForCSSValue(cssValue, document);
+        retrieveResourcesForCSSValue(*cssValue, document);
     }
 }
 
-void FrameSerializer::retrieveResourcesForCSSValue(const CSSValue* cssValue, Document& document)
+void FrameSerializer::retrieveResourcesForCSSValue(const CSSValue& cssValue, Document& document)
 {
-    if (cssValue->isImageValue()) {
-        const CSSImageValue* imageValue = toCSSImageValue(cssValue);
-        if (imageValue->isCachePending())
+    if (cssValue.isImageValue()) {
+        const CSSImageValue& imageValue = toCSSImageValue(cssValue);
+        if (imageValue.isCachePending())
             return;
-        StyleImage* styleImage = imageValue->cachedImage();
+        StyleImage* styleImage = imageValue.cachedImage();
         if (!styleImage || !styleImage->isImageResource())
             return;
 
         addImageToResources(styleImage->cachedImage(), styleImage->cachedImage()->url());
-    } else if (cssValue->isFontFaceSrcValue()) {
-        const CSSFontFaceSrcValue* fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
-        if (fontFaceSrcValue->isLocal()) {
+    } else if (cssValue.isFontFaceSrcValue()) {
+        const CSSFontFaceSrcValue& fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
+        if (fontFaceSrcValue.isLocal()) {
             return;
         }
 
-        addFontToResources(fontFaceSrcValue->fetch(&document));
-    } else if (cssValue->isValueList()) {
-        const CSSValueList* cssValueList = toCSSValueList(cssValue);
-        for (unsigned i = 0; i < cssValueList->length(); i++)
-            retrieveResourcesForCSSValue(cssValueList->item(i), document);
+        addFontToResources(fontFaceSrcValue.fetch(&document));
+    } else if (cssValue.isValueList()) {
+        const CSSValueList& cssValueList = toCSSValueList(cssValue);
+        for (unsigned i = 0; i < cssValueList.length(); i++)
+            retrieveResourcesForCSSValue(cssValueList.item(i), document);
     }
 }
 

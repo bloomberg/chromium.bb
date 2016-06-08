@@ -145,7 +145,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertValue(const CSSValue& 
         return nullptr;
 
     for (size_t i = 0; i < list.length(); i++) {
-        const CSSValue& item = *list.item(i);
+        const CSSValue& item = list.item(i);
         if (!item.isPrimitiveValue() || !toCSSPrimitiveValue(item).isNumber())
             return nullptr;
         scale.array[i] = toCSSPrimitiveValue(item).getDoubleValue();

@@ -94,7 +94,7 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertValue(const CSSVa
 
     const CSSValueList& list = toCSSValueList(value);
     return ListInterpolationFunctions::createList(list.length(), [&list](size_t index) {
-        return CSSLengthInterpolationType::maybeConvertCSSValue(*list.item(index));
+        return CSSLengthInterpolationType::maybeConvertCSSValue(list.item(index));
     });
 }
 

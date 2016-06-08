@@ -702,7 +702,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                 const CSSValueList* propertyValues = toCSSValueList(values[propertyIndex]);
                 // There might not be an item for this layer for this property.
                 if (layer < propertyValues->length())
-                    value = propertyValues->item(layer);
+                    value = &propertyValues->item(layer);
             } else if (layer == 0 || (layer != numLayers - 1 && property == CSSPropertyBackgroundColor)) {
                 // Singletons except background color belong in the 0th layer.
                 // Background color belongs in the last layer.
@@ -717,17 +717,17 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                 && (property == CSSPropertyBackgroundRepeatX || property == CSSPropertyWebkitMaskRepeatX)) {
                 ASSERT(shorthand.properties()[propertyIndex + 1] == CSSPropertyBackgroundRepeatY
                     || shorthand.properties()[propertyIndex + 1] == CSSPropertyWebkitMaskRepeatY);
-                const CSSValue* yValue = values[propertyIndex + 1]->isValueList() ?
-                    toCSSValueList(values[propertyIndex + 1])->item(layer) : values[propertyIndex + 1].get();
+                const CSSValue& yValue = values[propertyIndex + 1]->isValueList() ?
+                    toCSSValueList(values[propertyIndex + 1])->item(layer) : *values[propertyIndex + 1];
 
 
                 // FIXME: At some point we need to fix this code to avoid returning an invalid shorthand,
                 // since some longhand combinations are not serializable into a single shorthand.
-                if (!value->isPrimitiveValue() || !yValue->isPrimitiveValue())
+                if (!value->isPrimitiveValue() || !yValue.isPrimitiveValue())
                     continue;
 
                 CSSValueID xId = toCSSPrimitiveValue(value)->getValueID();
-                CSSValueID yId = toCSSPrimitiveValue(yValue)->getValueID();
+                CSSValueID yId = toCSSPrimitiveValue(yValue).getValueID();
                 // Maybe advance propertyIndex to look at the next CSSValue in the list for the checks below.
                 if (xId == yId) {
                     useSingleWordShorthand = true;
@@ -853,24 +853,24 @@ static void appendBackgroundRepeatValue(StringBuilder& builder, const CSSValue& 
 
 String StylePropertySerializer::backgroundRepeatPropertyValue() const
 {
-    const CSSValue* repeatX = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatX);
-    const CSSValue* repeatY = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatY);
+    const CSSValue& repeatX = *m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatX);
+    const CSSValue& repeatY = *m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatY);
 
     const CSSValueList* repeatXList = 0;
     int repeatXLength = 1;
-    if (repeatX->isValueList()) {
-        repeatXList = toCSSValueList(repeatX);
+    if (repeatX.isValueList()) {
+        repeatXList = &toCSSValueList(repeatX);
         repeatXLength = repeatXList->length();
-    } else if (!repeatX->isPrimitiveValue()) {
+    } else if (!repeatX.isPrimitiveValue()) {
         return String();
     }
 
     const CSSValueList* repeatYList = 0;
     int repeatYLength = 1;
-    if (repeatY->isValueList()) {
-        repeatYList = toCSSValueList(repeatY);
+    if (repeatY.isValueList()) {
+        repeatYList = &toCSSValueList(repeatY);
         repeatYLength = repeatYList->length();
-    } else if (!repeatY->isPrimitiveValue()) {
+    } else if (!repeatY.isPrimitiveValue()) {
         return String();
     }
 
@@ -880,9 +880,9 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const
         if (i)
             builder.append(", ");
 
-        const CSSValue* xValue = repeatXList ? repeatXList->item(i % repeatXList->length()) : repeatX;
-        const CSSValue* yValue = repeatYList ? repeatYList->item(i % repeatYList->length()) : repeatY;
-        appendBackgroundRepeatValue(builder, *xValue, *yValue);
+        const CSSValue& xValue = repeatXList ? repeatXList->item(i % repeatXList->length()) : repeatX;
+        const CSSValue& yValue = repeatYList ? repeatYList->item(i % repeatYList->length()) : repeatY;
+        appendBackgroundRepeatValue(builder, xValue, yValue);
     }
     return builder.toString();
 }

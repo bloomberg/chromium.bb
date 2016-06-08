@@ -3288,8 +3288,8 @@ static bool isGridTrackFixedSized(const CSSValue& value)
     if (value.isPrimitiveValue())
         return isGridTrackFixedSized(toCSSPrimitiveValue(value));
 
-    const CSSPrimitiveValue& minPrimitiveValue = toCSSPrimitiveValue(*toCSSFunctionValue(value).item(0));
-    const CSSPrimitiveValue& maxPrimitiveValue = toCSSPrimitiveValue(*toCSSFunctionValue(value).item(1));
+    const CSSPrimitiveValue& minPrimitiveValue = toCSSPrimitiveValue(toCSSFunctionValue(value).item(0));
+    const CSSPrimitiveValue& maxPrimitiveValue = toCSSPrimitiveValue(toCSSFunctionValue(value).item(1));
     return isGridTrackFixedSized(minPrimitiveValue) || isGridTrackFixedSized(maxPrimitiveValue);
 }
 
@@ -3491,7 +3491,7 @@ static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParser
         repetitions = std::min(repetitions, kGridMaxTracks / numberOfTracks);
         for (size_t i = 0; i < repetitions; ++i) {
             for (size_t j = 0; j < repeatedValues->length(); ++j)
-                list.append(*repeatedValues->item(j));
+                list.append(repeatedValues->item(j));
         }
     }
     return true;

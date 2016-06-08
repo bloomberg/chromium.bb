@@ -57,17 +57,17 @@ void CSSImageSetValue::fillImageSet()
     size_t length = this->length();
     size_t i = 0;
     while (i < length) {
-        const CSSImageValue* imageValue = toCSSImageValue(item(i));
-        String imageURL = imageValue->url();
+        const CSSImageValue& imageValue = toCSSImageValue(item(i));
+        String imageURL = imageValue.url();
 
         ++i;
         ASSERT_WITH_SECURITY_IMPLICATION(i < length);
-        const CSSValue* scaleFactorValue = item(i);
-        float scaleFactor = toCSSPrimitiveValue(scaleFactorValue)->getFloatValue();
+        const CSSValue& scaleFactorValue = item(i);
+        float scaleFactor = toCSSPrimitiveValue(scaleFactorValue).getFloatValue();
 
         ImageWithScale image;
         image.imageURL = imageURL;
-        image.referrer = SecurityPolicy::generateReferrer(imageValue->referrer().referrerPolicy, KURL(ParsedURLString, imageURL), imageValue->referrer().referrer);
+        image.referrer = SecurityPolicy::generateReferrer(imageValue.referrer().referrerPolicy, KURL(ParsedURLString, imageURL), imageValue.referrer().referrer);
         image.scaleFactor = scaleFactor;
         m_imagesInSet.append(image);
         ++i;
@@ -139,14 +139,14 @@ String CSSImageSetValue::customCSSText() const
         if (i > 0)
             result.append(", ");
 
-        const CSSValue* imageValue = item(i);
-        result.append(imageValue->cssText());
+        const CSSValue& imageValue = item(i);
+        result.append(imageValue.cssText());
         result.append(' ');
 
         ++i;
         ASSERT_WITH_SECURITY_IMPLICATION(i < length);
-        const CSSValue* scaleFactorValue = item(i);
-        result.append(scaleFactorValue->cssText());
+        const CSSValue& scaleFactorValue = item(i);
+        result.append(scaleFactorValue.cssText());
         // FIXME: Eventually the scale factor should contain it's own unit http://wkb.ug/100120.
         // For now 'x' is hard-coded in the parser, so we hard-code it here too.
         result.append('x');

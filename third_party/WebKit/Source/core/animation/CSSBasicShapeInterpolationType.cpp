@@ -89,7 +89,7 @@ InterpolationValue CSSBasicShapeInterpolationType::maybeConvertValue(const CSSVa
     const CSSValueList& list = toCSSValueList(value);
     if (list.length() != 1)
         return nullptr;
-    return BasicShapeInterpolationFunctions::maybeConvertCSSValue(*list.item(0));
+    return BasicShapeInterpolationFunctions::maybeConvertCSSValue(list.item(0));
 }
 
 PairwiseInterpolationValue CSSBasicShapeInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const

@@ -1118,11 +1118,11 @@ static CSSValueList* valuesForBorderRadiusCorner(LengthSize radius, const Comput
     return list;
 }
 
-static const CSSValue* valueForBorderRadiusCorner(LengthSize radius, const ComputedStyle& style)
+static const CSSValue& valueForBorderRadiusCorner(LengthSize radius, const ComputedStyle& style)
 {
-    CSSValueList* list = valuesForBorderRadiusCorner(radius, style);
-    if (list->item(0)->equals(*list->item(1)))
-        return list->item(0);
+    CSSValueList& list = *valuesForBorderRadiusCorner(radius, style);
+    if (list.item(0).equals(list.item(1)))
+        return list.item(0);
     return list;
 }
 
@@ -1342,26 +1342,26 @@ static CSSValueList* valueForBorderRadiusShorthand(const ComputedStyle& style)
     CSSValueList* bottomLeftRadius = valuesForBorderRadiusCorner(style.borderBottomLeftRadius(), style);
 
     CSSValueList* horizontalRadii = CSSValueList::createSpaceSeparated();
-    horizontalRadii->append(*topLeftRadius->item(0));
+    horizontalRadii->append(topLeftRadius->item(0));
     if (showHorizontalTopRight)
-        horizontalRadii->append(*topRightRadius->item(0));
+        horizontalRadii->append(topRightRadius->item(0));
     if (showHorizontalBottomRight)
-        horizontalRadii->append(*bottomRightRadius->item(0));
+        horizontalRadii->append(bottomRightRadius->item(0));
     if (showHorizontalBottomLeft)
-        horizontalRadii->append(*bottomLeftRadius->item(0));
+        horizontalRadii->append(bottomLeftRadius->item(0));
 
     list->append(*horizontalRadii);
 
     CSSValueList* verticalRadii = CSSValueList::createSpaceSeparated();
-    verticalRadii->append(*topLeftRadius->item(1));
+    verticalRadii->append(topLeftRadius->item(1));
     if (showVerticalTopRight)
-        verticalRadii->append(*topRightRadius->item(1));
+        verticalRadii->append(topRightRadius->item(1));
     if (showVerticalBottomRight)
-        verticalRadii->append(*bottomRightRadius->item(1));
+        verticalRadii->append(bottomRightRadius->item(1));
     if (showVerticalBottomLeft)
-        verticalRadii->append(*bottomLeftRadius->item(1));
+        verticalRadii->append(bottomLeftRadius->item(1));
 
-    if (!verticalRadii->equals(*toCSSValueList(list->item(0))))
+    if (!verticalRadii->equals(toCSSValueList(list->item(0))))
         list->append(*verticalRadii);
 
     return list;
@@ -2528,13 +2528,13 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyWebkitUserSelect:
         return CSSPrimitiveValue::create(style.userSelect());
     case CSSPropertyBorderBottomLeftRadius:
-        return valueForBorderRadiusCorner(style.borderBottomLeftRadius(), style);
+        return &valueForBorderRadiusCorner(style.borderBottomLeftRadius(), style);
     case CSSPropertyBorderBottomRightRadius:
-        return valueForBorderRadiusCorner(style.borderBottomRightRadius(), style);
+        return &valueForBorderRadiusCorner(style.borderBottomRightRadius(), style);
     case CSSPropertyBorderTopLeftRadius:
-        return valueForBorderRadiusCorner(style.borderTopLeftRadius(), style);
+        return &valueForBorderRadiusCorner(style.borderTopLeftRadius(), style);
     case CSSPropertyBorderTopRightRadius:
-        return valueForBorderRadiusCorner(style.borderTopRightRadius(), style);
+        return &valueForBorderRadiusCorner(style.borderTopRightRadius(), style);
     case CSSPropertyClip: {
         if (style.hasAutoClip())
             return CSSPrimitiveValue::createIdentifier(CSSValueAuto);

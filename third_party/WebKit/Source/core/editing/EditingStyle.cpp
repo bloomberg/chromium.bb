@@ -1609,7 +1609,7 @@ static void diffTextDecorations(MutableStylePropertySet* style, CSSPropertyID pr
     const CSSValueList* valuesInRefTextDecoration = toCSSValueList(refTextDecoration);
 
     for (size_t i = 0; i < valuesInRefTextDecoration->length(); i++)
-        newTextDecoration->removeAll(*valuesInRefTextDecoration->item(i));
+        newTextDecoration->removeAll(valuesInRefTextDecoration->item(i));
 
     setTextDecorationProperty(style, newTextDecoration, propertyID);
 }

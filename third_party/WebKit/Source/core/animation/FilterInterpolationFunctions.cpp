@@ -105,7 +105,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSS
     case FilterOperation::SEPIA: {
         double amount = defaultParameter(type);
         if (filter.length() == 1) {
-            const CSSPrimitiveValue& firstValue = toCSSPrimitiveValue(*filter.item(0));
+            const CSSPrimitiveValue& firstValue = toCSSPrimitiveValue(filter.item(0));
             amount = firstValue.getDoubleValue();
             if (firstValue.isPercentage())
                 amount /= 100;
@@ -117,7 +117,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSS
     case FilterOperation::HUE_ROTATE: {
         double angle = defaultParameter(type);
         if (filter.length() == 1)
-            angle = toCSSPrimitiveValue(*filter.item(0)).computeDegrees();
+            angle = toCSSPrimitiveValue(filter.item(0)).computeDegrees();
         result.interpolableValue = InterpolableNumber::create(angle);
         break;
     }
@@ -126,12 +126,12 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(const CSS
         if (filter.length() == 0)
             result.interpolableValue = CSSLengthInterpolationType::createNeutralInterpolableValue();
         else
-            result = CSSLengthInterpolationType::maybeConvertCSSValue(*filter.item(0));
+            result = CSSLengthInterpolationType::maybeConvertCSSValue(filter.item(0));
         break;
     }
 
     case FilterOperation::DROP_SHADOW: {
-        result = ShadowInterpolationFunctions::maybeConvertCSSValue(*filter.item(0));
+        result = ShadowInterpolationFunctions::maybeConvertCSSValue(filter.item(0));
         break;
     }
 
