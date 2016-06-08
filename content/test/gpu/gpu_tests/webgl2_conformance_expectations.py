@@ -577,6 +577,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['linux', 'intel', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
+        ['linux', 'intel', 'opengl'], bug=618408)
+    self.Fail('deqp/functional/gles3/shaderderivate.html',
+        ['linux', 'intel', 'opengl'], bug=618408)
 
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
@@ -604,6 +608,26 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/lifetime.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'textureprojoffset.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'textureprojlodoffset.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texturegrad.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texelfetchoffset.html',
+        ['linux', 'amd'], bug=483282)
+
+    self.Fail('deqp/functional/gles3/instancedrendering.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/negativetextureapi.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/transformfeedback.html',
         ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
