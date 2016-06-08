@@ -183,11 +183,11 @@
     "extension_types": "all"
   },
   "kiosk": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "kiosk.required_platform_version": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "kiosk_enabled": {
