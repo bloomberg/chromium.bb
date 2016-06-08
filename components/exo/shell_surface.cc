@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
@@ -128,6 +129,20 @@ class ShellSurface::ScopedConfigure {
   DISALLOW_COPY_AND_ASSIGN(ScopedConfigure);
 };
 
+// Helper class used to temporarily disable animations. Restores the
+// animations disabled property when instance is destroyed.
+class ShellSurface::ScopedAnimationsDisabled {
+ public:
+  explicit ScopedAnimationsDisabled(ShellSurface* shell_surface);
+  ~ScopedAnimationsDisabled();
+
+ private:
+  ShellSurface* const shell_surface_;
+  bool saved_animations_disabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAnimationsDisabled);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, ScopedConfigure:
 
@@ -149,6 +164,29 @@ ShellSurface::ScopedConfigure::~ScopedConfigure() {
   // ScopedConfigure instance might have suppressed a widget bounds update.
   if (shell_surface_->widget_)
     shell_surface_->UpdateWidgetBounds();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, ScopedAnimationsDisabled:
+
+ShellSurface::ScopedAnimationsDisabled::ScopedAnimationsDisabled(
+    ShellSurface* shell_surface)
+    : shell_surface_(shell_surface) {
+  if (shell_surface_->widget_) {
+    aura::Window* window = shell_surface_->widget_->GetNativeWindow();
+    saved_animations_disabled_ =
+        window->GetProperty(aura::client::kAnimationsDisabledKey);
+    window->SetProperty(aura::client::kAnimationsDisabledKey, true);
+  }
+}
+
+ShellSurface::ScopedAnimationsDisabled::~ScopedAnimationsDisabled() {
+  if (shell_surface_->widget_) {
+    aura::Window* window = shell_surface_->widget_->GetNativeWindow();
+    DCHECK_EQ(window->GetProperty(aura::client::kAnimationsDisabledKey), true);
+    window->SetProperty(aura::client::kAnimationsDisabledKey,
+                        saved_animations_disabled_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -551,14 +589,28 @@ gfx::Size ShellSurface::GetPreferredSize() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::wm::WindowStateObserver overrides:
 
+void ShellSurface::OnPreWindowStateTypeChange(
+    ash::wm::WindowState* window_state,
+    ash::wm::WindowStateType old_type) {
+  ash::wm::WindowStateType new_type = window_state->GetStateType();
+  if (ash::wm::IsMaximizedOrFullscreenWindowStateType(old_type) ||
+      ash::wm::IsMaximizedOrFullscreenWindowStateType(new_type)) {
+    // When transitioning in/out of maximized or fullscreen mode we need to
+    // make sure we have a configure callback before we allow the default
+    // cross-fade animations. The configure callback provides a mechanism for
+    // the client to inform us that a frame has taken the state change into
+    // account and without this cross-fade animations are unreliable.
+    if (configure_callback_.is_null())
+      scoped_animations_disabled_.reset(new ScopedAnimationsDisabled(this));
+  }
+}
+
 void ShellSurface::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::wm::WindowStateType old_type) {
   ash::wm::WindowStateType new_type = window_state->GetStateType();
-  if (old_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED ||
-      new_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED ||
-      old_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN ||
-      new_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN) {
+  if (ash::wm::IsMaximizedOrFullscreenWindowStateType(old_type) ||
+      ash::wm::IsMaximizedOrFullscreenWindowStateType(new_type)) {
     Configure();
   }
 
@@ -567,6 +619,9 @@ void ShellSurface::OnPostWindowStateTypeChange(
 
   if (!state_changed_callback_.is_null())
     state_changed_callback_.Run(old_type, new_type);
+
+  // Re-enable animations if they were disabled in pre state change handler.
+  scoped_animations_disabled_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

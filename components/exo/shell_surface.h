@@ -172,6 +172,8 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Size GetPreferredSize() const override;
 
   // Overridden from ash::wm::WindowStateObserver:
+  void OnPreWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                  ash::wm::WindowStateType old_type) override;
   void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
                                    ash::wm::WindowStateType old_type) override;
 
@@ -193,6 +195,7 @@ class ShellSurface : public SurfaceDelegate,
 
  private:
   class ScopedConfigure;
+  class ScopedAnimationsDisabled;
 
   // Surface state associated with each configure request.
   struct Config {
@@ -255,6 +258,7 @@ class ShellSurface : public SurfaceDelegate,
   int pending_resize_component_;
   std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
+  std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };
