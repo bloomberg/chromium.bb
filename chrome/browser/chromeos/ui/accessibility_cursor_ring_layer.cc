@@ -53,10 +53,6 @@ void AccessibilityCursorRingLayer::Set(const gfx::Point& location) {
   CreateOrUpdateLayer(root_window, "AccessibilityCursorRing", bounds);
 }
 
-void AccessibilityCursorRingLayer::SetOpacity(float opacity) {
-  layer()->SetOpacity(opacity);
-}
-
 void AccessibilityCursorRingLayer::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());

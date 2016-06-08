@@ -1014,8 +1014,14 @@ void AccessibilityManager::UpdateFocusHighlightFromPref() {
   if (!profile_)
     return;
 
-  const bool enabled = profile_->GetPrefs()->GetBoolean(
+  bool enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAccessibilityFocusHighlightEnabled);
+
+  // Focus highlighting can't be on when spoken feedback is on, because
+  // ChromeVox does its own focus highlighting.
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kAccessibilitySpokenFeedbackEnabled))
+    enabled = false;
 
   if (focus_highlight_enabled_ == enabled)
     return;
@@ -1501,7 +1507,8 @@ void AccessibilityManager::PostUnloadChromeVox(Profile* profile) {
   ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_DISABLED);
   // Clear the accessibility focus ring.
   AccessibilityFocusRingController::GetInstance()->SetFocusRing(
-      std::vector<gfx::Rect>());
+      std::vector<gfx::Rect>(),
+      AccessibilityFocusRingController::PERSIST_FOCUS_RING);
 }
 
 void AccessibilityManager::OnChromeVoxPanelClosing() {

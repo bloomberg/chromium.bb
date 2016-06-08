@@ -23,9 +23,6 @@ class AccessibilityCursorRingLayer : public FocusRingLayer {
   // Create the layer and update its bounds and position in the hierarchy.
   void Set(const gfx::Point& location);
 
-  // Set the layer's opacity.
-  void SetOpacity(float opacity);
-
  private:
   // ui::LayerDelegate overrides:
   void OnPaintLayer(const ui::PaintContext& context) override;

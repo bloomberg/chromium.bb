@@ -49,6 +49,10 @@ bool FocusRingLayer::CanAnimate() const {
   return compositor_ && compositor_->HasAnimationObserver(this);
 }
 
+void FocusRingLayer::SetOpacity(float opacity) {
+  layer()->SetOpacity(opacity);
+}
+
 void FocusRingLayer::CreateOrUpdateLayer(aura::Window* root_window,
                                          const char* layer_name,
                                          const gfx::Rect& bounds) {

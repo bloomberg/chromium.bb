@@ -54,7 +54,8 @@ AccessibilityHighlightManager::~AccessibilityHighlightManager() {
     shell->RemovePreTargetHandler(this);
 
     AccessibilityFocusRingController::GetInstance()->SetFocusRing(
-        std::vector<gfx::Rect>());
+        std::vector<gfx::Rect>(),
+        AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
     AccessibilityFocusRingController::GetInstance()->SetCaretRing(
         OffscreenPoint());
     AccessibilityFocusRingController::GetInstance()->SetCursorRing(
@@ -126,16 +127,21 @@ void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
   // both are visible.
   if (caret_ && caret_visible_) {
     controller->SetCaretRing(caret_point_);
-    controller->SetFocusRing(std::vector<gfx::Rect>());
+    controller->SetFocusRing(
+        std::vector<gfx::Rect>(),
+        AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
   } else if (focus_) {
     controller->SetCaretRing(OffscreenPoint());
     std::vector<gfx::Rect> rects;
     if (!focus_rect_.IsEmpty())
       rects.push_back(focus_rect_);
-    controller->SetFocusRing(rects);
+    controller->SetFocusRing(
+        rects, AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
   } else {
     controller->SetCaretRing(OffscreenPoint());
-    controller->SetFocusRing(std::vector<gfx::Rect>());
+    controller->SetFocusRing(
+        std::vector<gfx::Rect>(),
+        AccessibilityFocusRingController::FADE_OUT_FOCUS_RING);
   }
 }
 

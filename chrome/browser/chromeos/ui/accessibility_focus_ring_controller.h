@@ -24,14 +24,18 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   // Get the single instance of this class.
   static AccessibilityFocusRingController* GetInstance();
 
-  // Draw a focus ring around the given set of rects, in global screen
-  // coordinates.
-  void SetFocusRing(const std::vector<gfx::Rect>& rects);
+  enum FocusRingBehavior { FADE_OUT_FOCUS_RING, PERSIST_FOCUS_RING };
 
-  // Draw a ring around the mouse cursor.
+  // Draw a focus ring around the given set of rects, in global screen
+  // coordinates. Use |focus_ring_behavior| to specify whether the focus
+  // ring should persist or fade out.
+  void SetFocusRing(const std::vector<gfx::Rect>& rects,
+                    FocusRingBehavior focus_ring_behavior);
+
+  // Draw a ring around the mouse cursor. It fades out automatically.
   void SetCursorRing(const gfx::Point& location);
 
-  // Draw a ring around the text caret.
+  // Draw a ring around the text caret. It fades out automatically.
   void SetCaretRing(const gfx::Point& location);
 
  protected:
@@ -53,10 +57,11 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   void OnDeviceScaleFactorChanged() override;
   void OnAnimationStep(base::TimeTicks timestamp) override;
 
-  void Update();
+  void UpdateFocusRingsFromFocusRects();
 
   void AnimateFocusRings(base::TimeTicks timestamp);
   void AnimateCursorRing(base::TimeTicks timestamp);
+  void AnimateCaretRing(base::TimeTicks timestamp);
 
   AccessibilityFocusRing RingFromSortedRects(
       const std::vector<gfx::Rect>& rects) const;
@@ -67,18 +72,30 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
       gfx::Rect* bottom) const;
   bool Intersects(const gfx::Rect& r1, const gfx::Rect& r2) const;
 
-  std::vector<gfx::Rect> rects_;
-  std::vector<AccessibilityFocusRing> previous_rings_;
-  std::vector<AccessibilityFocusRing> rings_;
-  ScopedVector<AccessibilityFocusRingLayer> layers_;
-  base::TimeTicks focus_change_time_;
+  struct LayerAnimationInfo {
+    base::TimeTicks start_time;
+    base::TimeTicks change_time;
+    base::TimeDelta fade_in_time;
+    base::TimeDelta fade_out_time;
+    float opacity = 0;
+    bool smooth = false;
+  };
+  void OnLayerChange(LayerAnimationInfo* animation_info);
+  void ComputeOpacity(LayerAnimationInfo* animation_info,
+                      base::TimeTicks timestamp);
 
-  base::TimeTicks cursor_start_time_;
-  base::TimeTicks cursor_change_time_;
+  LayerAnimationInfo focus_animation_info_;
+  std::vector<gfx::Rect> focus_rects_;
+  std::vector<AccessibilityFocusRing> previous_focus_rings_;
+  std::vector<AccessibilityFocusRing> focus_rings_;
+  ScopedVector<AccessibilityFocusRingLayer> focus_layers_;
+  FocusRingBehavior focus_ring_behavior_ = FADE_OUT_FOCUS_RING;
+
+  LayerAnimationInfo cursor_animation_info_;
   gfx::Point cursor_location_;
-  float cursor_opacity_;
   std::unique_ptr<AccessibilityCursorRingLayer> cursor_layer_;
 
+  LayerAnimationInfo caret_animation_info_;
   gfx::Point caret_location_;
   std::unique_ptr<AccessibilityCursorRingLayer> caret_layer_;
 

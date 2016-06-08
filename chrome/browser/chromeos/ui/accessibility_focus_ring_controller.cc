@@ -24,15 +24,20 @@ const int kAccessibilityFocusRingMargin = 7;
 // Time to transition between one location and the next.
 const int kTransitionTimeMilliseconds = 300;
 
+// Focus constants.
+const int kFocusFadeInTimeMilliseconds = 100;
+const int kFocusFadeOutTimeMilliseconds = 1600;
+
+// Cursor constants.
 const int kCursorFadeInTimeMilliseconds = 400;
 const int kCursorFadeOutTimeMilliseconds = 1200;
-
-// The color of the cursor ring.
 const int kCursorRingColorRed = 255;
 const int kCursorRingColorGreen = 51;
 const int kCursorRingColorBlue = 51;
 
-// The color of the caret ring.
+// Caret constants.
+const int kCaretFadeInTimeMilliseconds = 100;
+const int kCaretFadeOutTimeMilliseconds = 1600;
 const int kCaretRingColorRed = 51;
 const int kCaretRingColorGreen = 51;
 const int kCaretRingColorBlue = 255;
@@ -57,57 +62,76 @@ AccessibilityFocusRingController*
   return base::Singleton<AccessibilityFocusRingController>::get();
 }
 
-AccessibilityFocusRingController::AccessibilityFocusRingController()
-    : cursor_opacity_(0) {}
+AccessibilityFocusRingController::AccessibilityFocusRingController() {
+  focus_animation_info_.fade_in_time =
+      base::TimeDelta::FromMilliseconds(kFocusFadeInTimeMilliseconds);
+  focus_animation_info_.fade_out_time =
+      base::TimeDelta::FromMilliseconds(kFocusFadeOutTimeMilliseconds);
+  cursor_animation_info_.fade_in_time =
+      base::TimeDelta::FromMilliseconds(kCursorFadeInTimeMilliseconds);
+  cursor_animation_info_.fade_out_time =
+      base::TimeDelta::FromMilliseconds(kCursorFadeOutTimeMilliseconds);
+  caret_animation_info_.fade_in_time =
+      base::TimeDelta::FromMilliseconds(kCaretFadeInTimeMilliseconds);
+  caret_animation_info_.fade_out_time =
+      base::TimeDelta::FromMilliseconds(kCaretFadeOutTimeMilliseconds);
+}
 
 AccessibilityFocusRingController::~AccessibilityFocusRingController() {
 }
 
 void AccessibilityFocusRingController::SetFocusRing(
-    const std::vector<gfx::Rect>& rects) {
-  rects_ = rects;
-  Update();
+    const std::vector<gfx::Rect>& rects,
+    AccessibilityFocusRingController::FocusRingBehavior focus_ring_behavior) {
+  focus_ring_behavior_ = focus_ring_behavior;
+  OnLayerChange(&focus_animation_info_);
+  focus_rects_ = rects;
+  UpdateFocusRingsFromFocusRects();
 }
 
-void AccessibilityFocusRingController::Update() {
-  previous_rings_.swap(rings_);
-  rings_.clear();
-  RectsToRings(rects_, &rings_);
-  layers_.resize(rings_.size());
-  if (rings_.empty())
+void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
+  previous_focus_rings_.swap(focus_rings_);
+  focus_rings_.clear();
+  RectsToRings(focus_rects_, &focus_rings_);
+  focus_layers_.resize(focus_rings_.size());
+  if (focus_rings_.empty())
     return;
 
-  for (size_t i = 0; i < rings_.size(); ++i) {
-    if (!layers_[i])
-      layers_[i] = new AccessibilityFocusRingLayer(this);
-
-    if (i > 0) {
-      // Focus rings other than the first one don't animate.
-      layers_[i]->Set(rings_[i]);
-    }
+  for (size_t i = 0; i < focus_rings_.size(); ++i) {
+    if (!focus_layers_[i])
+      focus_layers_[i] = new AccessibilityFocusRingLayer(this);
   }
 
-  if (layers_[0]->CanAnimate()) {
-    focus_change_time_ = base::TimeTicks::Now();
+  if (focus_ring_behavior_ == PERSIST_FOCUS_RING &&
+      focus_layers_[0]->CanAnimate()) {
+    // In PERSIST mode, animate the first ring to its destination
+    // location, then set the rest of the rings directly.
+    for (size_t i = 1; i < focus_rings_.size(); ++i)
+      focus_layers_[i]->Set(focus_rings_[i]);
   } else {
-    // If we can't animate, set the location of the first ring.
-    layers_[0]->Set(rings_[0]);
+    // In FADE mode, set all focus rings to their destination location.
+    for (size_t i = 0; i < focus_rings_.size(); ++i)
+      focus_layers_[i]->Set(focus_rings_[i]);
   }
+}
+
+void AccessibilityFocusRingController::OnLayerChange(
+    AccessibilityFocusRingController::LayerAnimationInfo* animation_info) {
+  animation_info->change_time = base::TimeTicks::Now();
+  if (animation_info->opacity == 0)
+    animation_info->start_time = animation_info->change_time;
 }
 
 void AccessibilityFocusRingController::SetCursorRing(
     const gfx::Point& location) {
   cursor_location_ = location;
-  cursor_change_time_ = base::TimeTicks::Now();
-  if (cursor_opacity_ == 0)
-    cursor_start_time_ = cursor_change_time_;
-
   if (!cursor_layer_) {
     cursor_layer_.reset(new AccessibilityCursorRingLayer(
         this, kCursorRingColorRed, kCursorRingColorGreen,
         kCursorRingColorBlue));
   }
   cursor_layer_->Set(location);
+  OnLayerChange(&cursor_animation_info_);
 }
 
 void AccessibilityFocusRingController::SetCaretRing(
@@ -120,6 +144,7 @@ void AccessibilityFocusRingController::SetCaretRing(
   }
 
   caret_layer_->Set(location);
+  OnLayerChange(&caret_animation_info_);
 }
 
 void AccessibilityFocusRingController::RectsToRings(
@@ -313,86 +338,117 @@ bool AccessibilityFocusRingController::Intersects(
 }
 
 void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
-  Update();
+  UpdateFocusRingsFromFocusRects();
 }
 
 void AccessibilityFocusRingController::OnAnimationStep(
     base::TimeTicks timestamp) {
-  if (!rings_.empty() && layers_[0]->CanAnimate())
+  if (!focus_rings_.empty() && focus_layers_[0]->CanAnimate())
     AnimateFocusRings(timestamp);
 
   if (cursor_layer_ && cursor_layer_->CanAnimate())
     AnimateCursorRing(timestamp);
+
+  if (caret_layer_ && caret_layer_->CanAnimate())
+    AnimateCaretRing(timestamp);
 }
 
 void AccessibilityFocusRingController::AnimateFocusRings(
     base::TimeTicks timestamp) {
-  CHECK(!rings_.empty());
-  CHECK(!layers_.empty());
-  CHECK(layers_[0]);
+  CHECK(!focus_rings_.empty());
+  CHECK(!focus_layers_.empty());
+  CHECK(focus_layers_[0]);
 
   // It's quite possible for the first 1 or 2 animation frames to be
   // for a timestamp that's earlier than the time we received the
   // focus change, so we just treat those as a delta of zero.
-  if (timestamp < focus_change_time_)
-    timestamp = focus_change_time_;
+  if (timestamp < focus_animation_info_.change_time)
+    timestamp = focus_animation_info_.change_time;
 
-  base::TimeDelta delta = timestamp - focus_change_time_;
-  base::TimeDelta transition_time =
-      base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
-  if (delta >= transition_time) {
-    layers_[0]->Set(rings_[0]);
+  if (focus_ring_behavior_ == PERSIST_FOCUS_RING) {
+    base::TimeDelta delta = timestamp - focus_animation_info_.change_time;
+    base::TimeDelta transition_time =
+        base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
+    if (delta >= transition_time) {
+      focus_layers_[0]->Set(focus_rings_[0]);
+      return;
+    }
+
+    double fraction = delta.InSecondsF() / transition_time.InSecondsF();
+
+    // Ease-in effect.
+    fraction = pow(fraction, 0.3);
+
+    // Handle corner case where we're animating but we don't have previous
+    // rings.
+    if (previous_focus_rings_.empty())
+      previous_focus_rings_ = focus_rings_;
+
+    focus_layers_[0]->Set(AccessibilityFocusRing::Interpolate(
+        previous_focus_rings_[0], focus_rings_[0], fraction));
+  } else {
+    ComputeOpacity(&focus_animation_info_, timestamp);
+    for (size_t i = 0; i < focus_layers_.size(); ++i)
+      focus_layers_[i]->SetOpacity(focus_animation_info_.opacity);
+  }
+}
+
+void AccessibilityFocusRingController::ComputeOpacity(
+    AccessibilityFocusRingController::LayerAnimationInfo* animation_info,
+    base::TimeTicks timestamp) {
+  // It's quite possible for the first 1 or 2 animation frames to be
+  // for a timestamp that's earlier than the time we received the
+  // mouse movement, so we just treat those as a delta of zero.
+  if (timestamp < animation_info->start_time)
+    timestamp = animation_info->start_time;
+
+  base::TimeDelta start_delta = timestamp - animation_info->start_time;
+  base::TimeDelta change_delta = timestamp - animation_info->change_time;
+  base::TimeDelta fade_in_time = animation_info->fade_in_time;
+  base::TimeDelta fade_out_time = animation_info->fade_out_time;
+
+  if (change_delta > fade_in_time + fade_out_time) {
+    animation_info->opacity = 0.0;
     return;
   }
 
-  double fraction = delta.InSecondsF() / transition_time.InSecondsF();
+  float opacity;
+  if (start_delta < fade_in_time) {
+    opacity = start_delta.InSecondsF() / fade_in_time.InSecondsF();
+    if (opacity > 1.0)
+      opacity = 1.0;
+  } else {
+    opacity = 1.0 - (change_delta.InSecondsF() /
+                     (fade_in_time + fade_out_time).InSecondsF());
+    if (opacity < 0.0)
+      opacity = 0.0;
+  }
 
-  // Ease-in effect.
-  fraction = pow(fraction, 0.3);
-
-  // Handle corner case where we're animating but we don't have previous
-  // rings.
-  if (previous_rings_.empty())
-    previous_rings_ = rings_;
-
-  layers_[0]->Set(AccessibilityFocusRing::Interpolate(
-      previous_rings_[0], rings_[0], fraction));
+  animation_info->opacity = opacity;
 }
 
 void AccessibilityFocusRingController::AnimateCursorRing(
     base::TimeTicks timestamp) {
   CHECK(cursor_layer_);
 
-  // It's quite possible for the first 1 or 2 animation frames to be
-  // for a timestamp that's earlier than the time we received the
-  // mouse movement, so we just treat those as a delta of zero.
-  if (timestamp < cursor_start_time_)
-    timestamp = cursor_start_time_;
-
-  base::TimeDelta start_delta = timestamp - cursor_start_time_;
-  base::TimeDelta change_delta = timestamp - cursor_change_time_;
-  base::TimeDelta fade_in_time =
-      base::TimeDelta::FromMilliseconds(kCursorFadeInTimeMilliseconds);
-  base::TimeDelta fade_out_time =
-      base::TimeDelta::FromMilliseconds(kCursorFadeOutTimeMilliseconds);
-
-  if (change_delta > fade_in_time + fade_out_time) {
-    cursor_opacity_ = 0.0;
+  ComputeOpacity(&cursor_animation_info_, timestamp);
+  if (cursor_animation_info_.opacity == 0.0) {
     cursor_layer_.reset();
     return;
   }
+  cursor_layer_->SetOpacity(cursor_animation_info_.opacity);
+}
 
-  if (start_delta < fade_in_time) {
-    cursor_opacity_ = start_delta.InSecondsF() / fade_in_time.InSecondsF();
-    if (cursor_opacity_ > 1.0)
-      cursor_opacity_ = 1.0;
-  } else {
-    cursor_opacity_ = 1.0 - (change_delta.InSecondsF() /
-                             (fade_in_time + fade_out_time).InSecondsF());
-    if (cursor_opacity_ < 0.0)
-      cursor_opacity_ = 0.0;
+void AccessibilityFocusRingController::AnimateCaretRing(
+    base::TimeTicks timestamp) {
+  CHECK(caret_layer_);
+
+  ComputeOpacity(&caret_animation_info_, timestamp);
+  if (caret_animation_info_.opacity == 0.0) {
+    caret_layer_.reset();
+    return;
   }
-  cursor_layer_->SetOpacity(cursor_opacity_);
+  caret_layer_->SetOpacity(caret_animation_info_.opacity);
 }
 
 }  // namespace chromeos

@@ -49,6 +49,9 @@ class FocusRingLayer : public ui::LayerDelegate,
   // animation observer.
   bool CanAnimate() const;
 
+  // Set the layer's opacity.
+  void SetOpacity(float opacity);
+
   ui::Layer* layer() { return layer_.get(); }
   aura::Window* root_window() { return root_window_; }
 
