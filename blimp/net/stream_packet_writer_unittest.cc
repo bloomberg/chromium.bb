@@ -63,8 +63,8 @@ TEST_F(StreamPacketWriterTest, TestWriteAsync) {
   EXPECT_CALL(socket_,
               Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
       .WillOnce(DoAll(SaveArg<2>(&payload_cb), Return(net::ERR_IO_PENDING)));
-  header_cb.Run(kPacketHeaderSizeBytes);
 
+  header_cb.Run(kPacketHeaderSizeBytes);
   payload_cb.Run(test_data_str_.size());
   EXPECT_EQ(net::OK, writer_cb.WaitForResult());
 }
@@ -242,6 +242,62 @@ TEST_F(StreamPacketWriterTest, DeletedDuringPayloadWrite) {
   // Payload write completion callback is invoked after the writer died.
   writer.reset();
   payload_cb.Run(test_data_str_.size());
+}
+
+TEST_F(StreamPacketWriterTest, TestWriteHeaderEOFSync) {
+  net::TestCompletionCallback writer_cb;
+
+  EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
+                             kPacketHeaderSizeBytes, _))
+      .WillOnce(Return(net::OK));
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, writer_cb.WaitForResult());
+}
+
+TEST_F(StreamPacketWriterTest, TestWritePayloadEOFSync) {
+  net::TestCompletionCallback writer_cb;
+
+  EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
+                             kPacketHeaderSizeBytes, _))
+      .WillOnce(Return(kPacketHeaderSizeBytes));
+  EXPECT_CALL(socket_,
+              Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
+      .WillOnce(Return(0));
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, writer_cb.WaitForResult());
+}
+
+TEST_F(StreamPacketWriterTest, TestWriteHeaderEOFAsync) {
+  net::TestCompletionCallback writer_cb;
+  net::CompletionCallback header_cb;
+
+  EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
+                             kPacketHeaderSizeBytes, _))
+      .WillOnce(DoAll(SaveArg<2>(&header_cb), Return(net::ERR_IO_PENDING)));
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+  header_cb.Run(0);
+
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, writer_cb.WaitForResult());
+}
+
+TEST_F(StreamPacketWriterTest, TestWritePayloadEOFAsync) {
+  net::TestCompletionCallback writer_cb;
+  net::CompletionCallback header_cb;
+  net::CompletionCallback payload_cb;
+
+  EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
+                             kPacketHeaderSizeBytes, _))
+      .WillOnce(DoAll(SaveArg<2>(&header_cb), Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(socket_,
+              Write(BufferEquals(test_data_str_), test_data_str_.size(), _))
+      .WillOnce(DoAll(SaveArg<2>(&payload_cb), Return(net::ERR_IO_PENDING)));
+  message_writer_.WritePacket(test_data_, writer_cb.callback());
+  header_cb.Run(kPacketHeaderSizeBytes);
+  payload_cb.Run(0);
+
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, writer_cb.WaitForResult());
 }
 
 }  // namespace

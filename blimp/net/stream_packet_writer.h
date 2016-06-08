@@ -64,6 +64,13 @@ class BLIMP_NET_EXPORT StreamPacketWriter : public PacketWriter {
   // Invokes |callback_| on packet write completion or on error.
   void OnWriteComplete(int result);
 
+  // Executes a socket write.
+  // Returns a positive value indicating the number of bytes written
+  // on success.
+  // Returns a negative net::Error value if the socket was closed or an error
+  // occurred.
+  int DoWrite(net::IOBuffer* buf, int buf_len);
+
   WriteState write_state_;
 
   net::StreamSocket* socket_;

@@ -113,11 +113,8 @@ int StreamPacketReader::DoReadHeader(int result) {
   header_buffer_->set_offset(header_buffer_->offset() + result);
   if (static_cast<size_t>(header_buffer_->offset()) < kPacketHeaderSizeBytes) {
     // There is more header to read.
-    int result = socket_->Read(
-        header_buffer_.get(), kPacketHeaderSizeBytes - header_buffer_->offset(),
-        base::Bind(&StreamPacketReader::OnReadComplete,
-                   weak_factory_.GetWeakPtr()));
-    return (result != 0 ? result : net::ERR_CONNECTION_CLOSED);
+    return DoRead(header_buffer_.get(),
+                  kPacketHeaderSizeBytes - header_buffer_->offset());
   }
 
   // Finished reading the header. Parse the size and prepare for payload read.
@@ -140,10 +137,8 @@ int StreamPacketReader::DoReadPayload(int result) {
 
   payload_buffer_->set_offset(payload_buffer_->offset() + result);
   if (static_cast<size_t>(payload_buffer_->offset()) < payload_size_) {
-    return socket_->Read(payload_buffer_.get(),
-                         payload_size_ - payload_buffer_->offset(),
-                         base::Bind(&StreamPacketReader::OnReadComplete,
-                                    weak_factory_.GetWeakPtr()));
+    return DoRead(payload_buffer_.get(),
+                  payload_size_ - payload_buffer_->offset());
   }
   statistics_->Add(BlimpConnectionStatistics::BYTES_RECEIVED, payload_size_);
 
@@ -171,9 +166,15 @@ void StreamPacketReader::OnReadComplete(int result) {
   // caller.
   if (result != net::ERR_IO_PENDING) {
     payload_buffer_ = nullptr;
-    base::ResetAndReturn(&callback_)
-        .Run(result == net::OK ? payload_size_ : result);
+    base::ResetAndReturn(&callback_).Run(result);
   }
+}
+
+int StreamPacketReader::DoRead(net::IOBuffer* buf, int buf_len) {
+  int result = socket_->Read(buf, buf_len,
+                             base::Bind(&StreamPacketReader::OnReadComplete,
+                                        weak_factory_.GetWeakPtr()));
+  return (result != 0 ? result : net::ERR_CONNECTION_CLOSED);
 }
 
 }  // namespace blimp

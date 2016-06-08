@@ -285,6 +285,58 @@ TEST_F(StreamPacketReaderTest, ReadPayloadErrorSync) {
   EXPECT_EQ(net::ERR_FAILED, callback_.WaitForResult());
 }
 
+// Verify EOF handling during synchronous header reads.
+TEST_F(StreamPacketReaderTest, ReadHeaderEOFSync) {
+  net::CompletionCallback cb;
+  EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
+      .WillOnce(Return(0));
+  ReadPacket();
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, callback_.WaitForResult());
+}
+
+// Verify EOF handling during synchronous payload reads.
+TEST_F(StreamPacketReaderTest, ReadPayloadEOFSync) {
+  net::CompletionCallback cb;
+
+  EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
+      .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
+                      Return(kPacketHeaderSizeBytes)));
+  EXPECT_CALL(socket_, Read(NotNull(), test_msg_.size(), _))
+      .WillOnce(Return(0));
+
+  ReadPacket();
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, callback_.WaitForResult());
+}
+
+// Verify EOF handling during asynchronous header reads.
+TEST_F(StreamPacketReaderTest, ReadHeaderEOFAsync) {
+  net::CompletionCallback cb;
+  net::TestCompletionCallback test_cb;
+
+  EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
+      .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
+                      SaveArg<2>(&cb), Return(net::ERR_IO_PENDING)));
+
+  ReadPacket();
+  cb.Run(0);
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, callback_.WaitForResult());
+}
+
+// Verify EOF handling during asynchronous payload reads.
+TEST_F(StreamPacketReaderTest, ReadPayloadEOFAsync) {
+  net::CompletionCallback cb;
+
+  EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
+      .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
+                      Return(kPacketHeaderSizeBytes)));
+  EXPECT_CALL(socket_, Read(NotNull(), test_msg_.size(), _))
+      .WillOnce(DoAll(SaveArg<2>(&cb), Return(net::ERR_IO_PENDING)));
+
+  ReadPacket();
+  cb.Run(0);
+  EXPECT_EQ(net::ERR_CONNECTION_CLOSED, callback_.WaitForResult());
+}
+
 // Verify that async header read errors are reported correctly.
 TEST_F(StreamPacketReaderTest, ReadHeaderErrorAsync) {
   net::CompletionCallback cb;
