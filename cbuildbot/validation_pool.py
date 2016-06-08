@@ -531,6 +531,7 @@ class PatchSeries(object):
     """
     for change in changes:
       try:
+        logging.info('Attempting to create transaction for %s', change)
         plan = self.CreateTransaction(change, limit_to=limit_to)
       except cros_patch.PatchException as e:
         yield (change, (), e)
