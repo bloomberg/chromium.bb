@@ -199,6 +199,10 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/notifications/notification_platform_bridge_android.h"
+#endif
+
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
@@ -527,6 +531,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   default_apps::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(OS_ANDROID)
+  NotificationPlatformBridgeAndroid::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_CHROMEOS)

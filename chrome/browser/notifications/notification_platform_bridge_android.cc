@@ -19,6 +19,8 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
 #include "jni/NotificationPlatformBridge_jni.h"
@@ -257,9 +259,16 @@ bool NotificationPlatformBridgeAndroid::SupportsNotificationCenter() const {
   return true;
 }
 
+// static
 bool NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge(
     JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+// static
+void NotificationPlatformBridgeAndroid::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kNotificationsVibrateEnabled, true);
 }
 
 NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::

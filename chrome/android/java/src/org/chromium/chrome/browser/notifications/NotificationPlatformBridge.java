@@ -30,6 +30,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
@@ -69,6 +70,8 @@ public class NotificationPlatformBridge {
     // We always use the same request code for pending intents. We use other ways to force
     // uniqueness of pending intents when necessary.
     private static final int PENDING_INTENT_REQUEST_CODE = 0;
+
+    private static final int[] EMPTY_VIBRATION_PATTERN = new int[0];
 
     private static NotificationPlatformBridge sInstance;
     private static NotificationManagerProxy sNotificationManagerOverride;
@@ -411,25 +414,26 @@ public class NotificationPlatformBridge {
     }
 
     /**
-     * Generates the notfiication defaults from vibrationPattern's size and silent.
+     * Generates the notification defaults from vibrationPattern's size and silent.
      *
      * Use the system's default ringtone, vibration and indicator lights unless the notification
      * has been marked as being silent.
      * If a vibration pattern is set, the notification should use the provided pattern
-     * rather than the defaulting to system settings.
+     * rather than defaulting to the system settings.
      *
      * @param vibrationPatternLength Vibration pattern's size for the Notification.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
+     * @param vibrateEnabled Whether vibration is enabled in preferences.
      * @return The generated notification's default value.
     */
     @VisibleForTesting
-    static int makeDefaults(int vibrationPatternLength, boolean silent) {
+    static int makeDefaults(int vibrationPatternLength, boolean silent, boolean vibrateEnabled) {
         assert !silent || vibrationPatternLength == 0;
 
         if (silent) return 0;
 
         int defaults = Notification.DEFAULT_ALL;
-        if (vibrationPatternLength > 0) {
+        if (vibrationPatternLength > 0 || !vibrateEnabled) {
             defaults &= ~Notification.DEFAULT_VIBRATE;
         }
         return defaults;
@@ -552,10 +556,16 @@ public class NotificationPlatformBridge {
         // one, so add it after the other actions.
         notificationBuilder.addSettingsAction(settingsIconId, settingsTitle, pendingSettingsIntent);
 
-        notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
-        if (vibrationPattern.length > 0) {
-            notificationBuilder.setVibrate(makeVibrationPattern(vibrationPattern));
+        // The Android framework applies a fallback vibration pattern for the sound when the device
+        // is in vibrate mode, there is no custom pattern, and the vibration default has been
+        // disabled. To truly prevent vibration, provide a custom empty pattern.
+        boolean vibrateEnabled = PrefServiceBridge.getInstance().isNotificationsVibrateEnabled();
+        if (!vibrateEnabled) {
+            vibrationPattern = EMPTY_VIBRATION_PATTERN;
         }
+        notificationBuilder.setDefaults(
+                makeDefaults(vibrationPattern.length, silent, vibrateEnabled));
+        notificationBuilder.setVibrate(makeVibrationPattern(vibrationPattern));
 
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         if (webApkPackage.isEmpty()) {

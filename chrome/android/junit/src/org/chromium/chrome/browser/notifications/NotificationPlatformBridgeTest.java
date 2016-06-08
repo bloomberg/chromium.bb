@@ -58,17 +58,23 @@ public class NotificationPlatformBridgeTest {
     @Test
     @Feature({"Browser", "Notifications"})
     public void testMakeDefaults() throws Exception {
-        // 0 should be returned if silent is true and vibration's length is 0.
-        assertEquals(0, NotificationPlatformBridge.makeDefaults(0, true));
+        // 0 should be returned if pattern length is 0, silent is true, and vibration is enabled.
+        assertEquals(0, NotificationPlatformBridge.makeDefaults(0, true, true));
 
-        // Notification.DEFAULT_ALL should be returned if silent is false and
-        // vibration's length is 0.
-        assertEquals(Notification.DEFAULT_ALL, NotificationPlatformBridge.makeDefaults(0, false));
+        // Notification.DEFAULT_ALL should be returned if pattern length is 0, silent is false and
+        // vibration is enabled.
+        assertEquals(
+                Notification.DEFAULT_ALL, NotificationPlatformBridge.makeDefaults(0, false, true));
 
-        // Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE should be returned
-        // if silent is false and vibration's length is greater than 0.
+        // Vibration should be removed from the defaults if pattern length is greater than 0, silent
+        // is false, and vibration is enabled.
         assertEquals(Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE,
-                NotificationPlatformBridge.makeDefaults(10, false));
+                NotificationPlatformBridge.makeDefaults(10, false, true));
+
+        // Vibration should be removed from the defaults if pattern length is greater than 0, silent
+        // is false, and vibration is disabled.
+        assertEquals(Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE,
+                NotificationPlatformBridge.makeDefaults(7, false, false));
     }
 
     /**

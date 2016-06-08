@@ -368,6 +368,12 @@ static jboolean GetNotificationsEnabled(JNIEnv* env,
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
+static jboolean GetNotificationsVibrateEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetBoolean(prefs::kNotificationsVibrateEnabled);
+}
+
 static jboolean GetAllowLocationEnabled(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
@@ -820,6 +826,12 @@ static void SetNotificationsEnabled(JNIEnv* env,
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void SetNotificationsVibrateEnabled(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj,
+                                           jboolean enabled) {
+  GetPrefService()->SetBoolean(prefs::kNotificationsVibrateEnabled, enabled);
 }
 
 static void SetCrashReportingEnabled(JNIEnv* env,

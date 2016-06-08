@@ -1182,6 +1182,11 @@ const char kFullscreenAllowed[] = "fullscreen.allowed";
 const char kLocalDiscoveryNotificationsEnabled[] =
     "local_discovery.notifications_enabled";
 
+#if defined(OS_ANDROID)
+// Enable vibration for web notifications.
+const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
+#endif
+
 // Maps from app ids to origin + Service Worker registration ID.
 const char kPushMessagingAppIdentifierMap[] =
     "gcm.push_messaging_application_id_map";

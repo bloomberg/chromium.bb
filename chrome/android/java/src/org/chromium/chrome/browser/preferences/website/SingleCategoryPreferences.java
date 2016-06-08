@@ -80,6 +80,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // Keys for individual preferences.
     public static final String READ_WRITE_TOGGLE_KEY = "read_write_toggle";
     public static final String THIRD_PARTY_COOKIES_TOGGLE_KEY = "third_party_cookies";
+    public static final String NOTIFICATIONS_VIBRATE_TOGGLE_KEY = "notifications_vibrate";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
     private static final String ADD_EXCEPTION_KEY = "add_exception";
     // Keys for Allowed/Blocked preference groups/headers.
@@ -417,6 +418,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 PrefServiceBridge.getInstance().setMicEnabled((boolean) newValue);
             } else if (mCategory.showNotificationsSites()) {
                 PrefServiceBridge.getInstance().setNotificationsEnabled((boolean) newValue);
+                updateNotificationsVibrateCheckBox();
             } else if (mCategory.showPopupSites()) {
                 PrefServiceBridge.getInstance().setAllowPopupsEnabled((boolean) newValue);
             } else if (mCategory.showProtectedMediaSites()) {
@@ -447,6 +449,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             PrefServiceBridge.getInstance().setBlockThirdPartyCookiesEnabled(!((boolean) newValue));
+        } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
+            PrefServiceBridge.getInstance().setNotificationsVibrateEnabled((boolean) newValue);
         }
         return true;
     }
@@ -535,6 +539,16 @@ public class SingleCategoryPreferences extends PreferenceFragment
             updateThirdPartyCookiesCheckBox();
         } else {
             getPreferenceScreen().removePreference(thirdPartyCookies);
+        }
+
+        // Configure/hide the notifications vibrate toggle, as needed.
+        Preference notificationsVibrate =
+                getPreferenceScreen().findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
+        if (mCategory.showNotificationsSites()) {
+            notificationsVibrate.setOnPreferenceChangeListener(this);
+            updateNotificationsVibrateCheckBox();
+        } else {
+            getPreferenceScreen().removePreference(notificationsVibrate);
         }
 
         // Show/hide the link that explains protected media settings, as needed.
@@ -649,6 +663,13 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 return PrefServiceBridge.getInstance().isBlockThirdPartyCookiesManaged();
             }
         });
+    }
+
+    private void updateNotificationsVibrateCheckBox() {
+        ChromeBaseCheckBoxPreference preference =
+                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
+                        NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
+        preference.setEnabled(PrefServiceBridge.getInstance().isNotificationsEnabled());
     }
 
     private void showManagedToast() {

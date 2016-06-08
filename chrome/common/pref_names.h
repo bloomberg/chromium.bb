@@ -404,6 +404,10 @@ extern const char kFullscreenAllowed[];
 
 extern const char kLocalDiscoveryNotificationsEnabled[];
 
+#if defined(OS_ANDROID)
+extern const char kNotificationsVibrateEnabled[];
+#endif
+
 extern const char kPushMessagingAppIdentifierMap[];
 extern const char kBackgroundBudgetMap[];
 

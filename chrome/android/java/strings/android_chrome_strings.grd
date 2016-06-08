@@ -561,6 +561,12 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">
         Notifications
       </message>
+      <message name="IDS_ENABLE_NOTIFICATIONS_VIBRATE_TITLE" desc="Title for the preference to enable vibration for notifications">
+        Vibrate
+      </message>
+      <message name="IDS_ENABLE_NOTIFICATIONS_VIBRATE_SUMMARY" desc="Summary for the preference to enable vibration for notifications">
+        Notifications may vibrate the device
+      </message>
       <message name="IDS_MIDI_SYSEX_PERMISSION_TITLE" desc="Title of the permission that allows a website to get full control of MIDI devices [CHAR-LIMIT=32]">
         Allow full control of MIDI devices
       </message>
@@ -1754,7 +1760,7 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_SIGNIN_OPEN_SETTINGS_ACCOUNTS" desc="Text for button to open Accounts page in device's Settings app">
         Open settings
-      </message>      
+      </message>
       <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
         Make Chrome yours
       </message>

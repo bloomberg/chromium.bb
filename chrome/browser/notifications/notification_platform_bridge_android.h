@@ -15,6 +15,10 @@
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // Implementation of the NotificationPlatformBridge for Android, which defers to
 // the Android framework for displaying notifications.
 //
@@ -68,6 +72,8 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   bool SupportsNotificationCenter() const override;
 
   static bool RegisterNotificationPlatformBridge(JNIEnv* env);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   // Contains information necessary in order to enable closing notifications

@@ -313,6 +313,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return whether vibration is enabled for notifications.
+     */
+    public boolean isNotificationsVibrateEnabled() {
+        return nativeGetNotificationsVibrateEnabled();
+    }
+
+    /**
      * @return whether geolocation information can be shared with content.
      */
     public boolean isAllowLocationEnabled() {
@@ -853,6 +860,10 @@ public final class PrefServiceBridge {
         nativeSetNotificationsEnabled(allow);
     }
 
+    public void setNotificationsVibrateEnabled(boolean enabled) {
+        nativeSetNotificationsVibrateEnabled(enabled);
+    }
+
     public void setAllowLocationEnabled(boolean allow) {
         nativeSetAllowLocationEnabled(allow);
     }
@@ -1158,8 +1169,10 @@ public final class PrefServiceBridge {
     private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);
     private native boolean nativeGetAllowLocationEnabled();
     private native boolean nativeGetNotificationsEnabled();
+    private native boolean nativeGetNotificationsVibrateEnabled();
     private native void nativeSetAllowLocationEnabled(boolean allow);
     private native void nativeSetNotificationsEnabled(boolean allow);
+    private native void nativeSetNotificationsVibrateEnabled(boolean enabled);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
     private native void nativeSetCrashReportingEnabled(boolean reporting);
     private native boolean nativeIsCrashReportingEnabled();
