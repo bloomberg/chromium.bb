@@ -396,7 +396,6 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
     network_quality_estimator_->RemoveRTTObserver(this);
     network_quality_estimator_->RemoveThroughputObserver(this);
   }
-  StopNetLogOnNetworkThread();
 }
 
 void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
@@ -704,31 +703,12 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jfile_name,
     jboolean jlog_all) {
-  PostTaskToNetworkThread(
-      FROM_HERE,
-      base::Bind(
-          &CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread,
-          base::Unretained(this),
-          base::android::ConvertJavaStringToUTF8(env, jfile_name), jlog_all));
-}
-
-void CronetURLRequestContextAdapter::StopNetLog(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller) {
-  PostTaskToNetworkThread(
-      FROM_HERE,
-      base::Bind(&CronetURLRequestContextAdapter::StopNetLogOnNetworkThread,
-                 base::Unretained(this)));
-}
-
-void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
-    const std::string& file_name, bool log_all) {
-  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
-  DCHECK(is_context_initialized_);
-  DCHECK(context_);
+  base::AutoLock lock(write_to_file_observer_lock_);
   // Do nothing if already logging to a file.
   if (write_to_file_observer_)
     return;
+  std::string file_name =
+      base::android::ConvertJavaStringToUTF8(env, jfile_name);
   base::FilePath file_path(file_name);
   base::ScopedFILE file(base::OpenFile(file_path, "w"));
   if (!file) {
@@ -737,18 +717,21 @@ void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
   }
 
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-  if (log_all) {
+  if (jlog_all == JNI_TRUE) {
     write_to_file_observer_->set_capture_mode(
         net::NetLogCaptureMode::IncludeSocketBytes());
   }
-  write_to_file_observer_->StartObserving(context_->net_log(), std::move(file),
-                                          nullptr, context_.get());
+  write_to_file_observer_->StartObserving(
+      g_net_log.Get().net_log(), std::move(file),
+      /*constants=*/nullptr, /*url_request_context=*/nullptr);
 }
 
-void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
-  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+void CronetURLRequestContextAdapter::StopNetLog(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
+  base::AutoLock lock(write_to_file_observer_lock_);
   if (write_to_file_observer_) {
-    write_to_file_observer_->StopObserving(context_.get());
+    write_to_file_observer_->StopObserving(/*url_request_context=*/nullptr);
     write_to_file_observer_.reset();
   }
 }

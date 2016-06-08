@@ -76,11 +76,14 @@ class CronetURLRequestContextAdapter
 
   net::URLRequestContext* GetURLRequestContext();
 
+  // Starts NetLog logging to file. This can be called on any thread.
   void StartNetLogToFile(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller,
                          const base::android::JavaParamRef<jstring>& jfile_name,
                          jboolean jlog_all);
 
+  // Stops NetLog logging to file. This can be called on any thread. This will
+  // flush any remaining writes to disk.
   void StopNetLog(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& jcaller);
 
@@ -124,11 +127,6 @@ class CronetURLRequestContextAdapter
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const;
 
-  void StartNetLogToFileOnNetworkThread(const std::string& file_name,
-                                        bool log_all);
-
-  void StopNetLogOnNetworkThread();
-
   // Gets the file thread. Create one if there is none.
   base::Thread* GetFileThread();
 
@@ -160,9 +158,10 @@ class CronetURLRequestContextAdapter
   // File thread should be destroyed last.
   std::unique_ptr<base::Thread> file_thread_;
 
-  // |write_to_file_observer_| and |context_| should only be accessed on
-  // network thread.
+  // |write_to_file_observer_| should only be accessed with
+  // |write_to_file_observer_lock_|.
   std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  base::Lock write_to_file_observer_lock_;
 
   // |pref_service_| should outlive the HttpServerPropertiesManager owned by
   // |context_|.
