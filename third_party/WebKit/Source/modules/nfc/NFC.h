@@ -8,26 +8,39 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/StringOrArrayBufferOrNFCMessage.h"
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "device/nfc/nfc.mojom-blink.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
 
 class MessageCallback;
+class NFCError;
 class NFCPushOptions;
 using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;
+class ServiceRegistry;
 
 class NFC final
-    : public GarbageCollected<NFC>
+    : public GarbageCollectedFinalized<NFC>
     , public ScriptWrappable
-    , public LocalFrameLifecycleObserver
-    , public PageLifecycleObserver {
+    , public PageLifecycleObserver
+    , public ContextLifecycleObserver
+    , public device::nfc::blink::NFCClient {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(NFC);
+    USING_PRE_FINALIZER(NFC, dispose);
 
 public:
     static NFC* create(LocalFrame*);
+
+    virtual ~NFC();
+
+    void dispose();
+
+    // ContextLifecycleObserver overrides.
+    void contextDestroyed() override;
 
     // Pushes NFCPushMessage asynchronously to NFC tag / peer.
     ScriptPromise push(ScriptState*, const NFCPushMessage&, const NFCPushOptions&);
@@ -44,9 +57,6 @@ public:
     // Cancels all watch operations.
     ScriptPromise cancelWatch(ScriptState*);
 
-    // Implementation of LocalFrameLifecycleObserver.
-    void willDetachFrameHost() override;
-
     // Implementation of PageLifecycleObserver.
     void pageVisibilityChanged() override;
 
@@ -54,7 +64,17 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    void OnRequestCompleted(ScriptPromiseResolver*, device::nfc::blink::NFCErrorPtr);
+    void OnConnectionError();
+
+    // device::nfc::blink::NFCClient implementation.
+    void OnWatch(mojo::WTFArray<uint32_t> ids, device::nfc::blink::NFCMessagePtr) override;
+
+private:
     explicit NFC(LocalFrame*);
+    device::nfc::blink::NFCPtr m_nfc;
+    mojo::Binding<device::nfc::blink::NFCClient> m_client;
+    HeapHashSet<Member<ScriptPromiseResolver>> m_requests;
 };
 
 } // namespace blink

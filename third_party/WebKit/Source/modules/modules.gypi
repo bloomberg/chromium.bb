@@ -1331,6 +1331,8 @@
       'nfc/NavigatorNFC.h',
       'nfc/NFC.cpp',
       'nfc/NFC.h',
+      'nfc/NFCError.cpp',
+      'nfc/NFCError.h',
       'notifications/Notification.cpp',
       'notifications/Notification.h',
       'notifications/NotificationData.cpp',

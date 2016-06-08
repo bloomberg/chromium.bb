@@ -453,6 +453,7 @@ test("content_browsertests") {
     "//content/test:test_support",
     "//device/battery",
     "//device/battery:mojo_bindings",
+    "//device/nfc:mojo_bindings",
     "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",

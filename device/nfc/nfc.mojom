@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device;
+module device.nfc;
 
 enum NFCErrorType {
   SECURITY,
@@ -68,16 +68,37 @@ struct NFCWatchOptions {
 };
 
 interface NFC {
+  // NFCClient interface is used to notify |client| when NFCMessage matches one
+  // or more pending watch operations.
   SetClient(NFCClient client);
+
+  // Pushes data to NFC device.
+  // NFCPushOptions specify timeout and type of device where data should be
+  // pushed. If timeout is defined and data is not pushed before timeout is
+  // expired, callback with corresponding error is called.
   Push(NFCMessage message, NFCPushOptions? options) => (NFCError? error);
+
+  // Cancels pending push request.
   CancelPush(NFCPushTarget target) => (NFCError? error);
+
+  // Starts watching for nearby NFC devices with data that matches
+  // NFCWatchOptions filtering criteria. On success, watch ID is returned.
   Watch(NFCWatchOptions options) => (uint32 id, NFCError? error);
+
+  // Cancels watch operation with provided id.
   CancelWatch (uint32 id) => (NFCError? error);
+
+  // Cancels all watch operations.
   CancelAllWatches () => (NFCError? error);
+
+  // Suspends all pending NFC operations. Could be used when web page
+  // visibility or focus is lost.
   SuspendNFCOperations();
+
+  // Resumes all suspended NFC operations.
   ResumeNFCOperations();
 };
 
 interface NFCClient {
-  OnWatch(uint32 id, NFCMessage message);
+  OnWatch(array<uint32> watchIDs, NFCMessage message);
 };
