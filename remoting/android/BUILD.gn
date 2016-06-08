@@ -106,7 +106,7 @@ remoting_android_client_java_tmpl("remoting_android_client_java") {
   remoting_google_play_services_library = google_play_services_library
 }
 
-if (target_cpu == "arm") {
+if (current_cpu == "arm") {
   action("remoting_cardboard_extract_native_lib") {
     script = "//remoting/tools/extract_android_native_lib.py"
     sources = [

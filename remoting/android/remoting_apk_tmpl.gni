@@ -17,7 +17,7 @@ template("remoting_apk_tmpl") {
       "//remoting/android:remoting_client_jni",
     ]
 
-    if (remoting_enable_cardboard && target_cpu == "arm") {
+    if (remoting_enable_cardboard && current_cpu == "arm") {
       deps += [ "//remoting/android:remoting_cardboard_extract_native_lib" ]
       loadable_modules = [ "$root_out_dir/libvrtoolkit.so" ]
     }
