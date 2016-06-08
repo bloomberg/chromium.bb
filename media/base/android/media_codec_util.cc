@@ -89,11 +89,13 @@ bool MediaCodecUtil::IsMediaCodecAvailable() {
   // MediaCodec is only available on JB and greater.
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 16)
     return false;
+
   // Blacklist some devices on Jellybean as for MediaCodec support is buggy.
-  // http://crbug.com/365494.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() == 16) {
+  // http://crbug.com/365494, http://crbug.com/615872
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <= 19) {
     std::string model(base::android::BuildInfo::GetInstance()->model());
-    return model != "GT-I9100" && model != "GT-I9300" && model != "GT-N7000";
+    return model != "GT-I9100" && model != "GT-I9300" && model != "GT-N7000" &&
+           model != "GT-N7100";
   }
   return true;
 }
