@@ -356,7 +356,7 @@ config("compiler") {
     # TODO(crbug.com/576197) - gcc on x86 platforms + gold + icf=all
     # doesn't currently work. Once it does, use icf=all everywhere.
     # Additionally, on Android x86 --icf=safe seems to cause issues as well.
-    if (is_clang || (target_cpu != "x86" && target_cpu != "x64")) {
+    if (is_clang || (current_cpu != "x86" && current_cpu != "x64")) {
       ldflags += [ "-Wl,--icf=all" ]
     } else if (!is_android) {
       ldflags += [ "-Wl,--icf=safe" ]
@@ -1227,7 +1227,7 @@ if (is_win) {
     # We don't omit frame pointers on arm64 since they are required
     # to correctly unwind stackframes which contain system library
     # function frames (crbug.com/391706).
-    if (!using_sanitizer && !enable_profiling && target_cpu != "arm64") {
+    if (!using_sanitizer && !enable_profiling && current_cpu != "arm64") {
       common_optimize_on_cflags += [ "-fomit-frame-pointer" ]
     }
 
@@ -1326,7 +1326,7 @@ config("no_optimize") {
     # We don't omit frame pointers on arm64 since they are required
     # to correctly unwind stackframes which contain system library
     # function frames (crbug.com/391706).
-    if (!using_sanitizer && !enable_profiling && target_cpu != "arm64") {
+    if (!using_sanitizer && !enable_profiling && current_cpu != "arm64") {
       cflags += [ "-fomit-frame-pointer" ]
     }
 
