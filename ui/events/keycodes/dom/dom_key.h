@@ -10,10 +10,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 
-#if !defined(OS_IOS)
-#include "ipc/ipc_param_traits.h"  // nogncheck
-#endif
-
 namespace ui {
 
 // Integer representation of UI Events KeyboardEvent.key value.
@@ -152,10 +148,6 @@ class DomKey {
   };
 
  private:
-#if !defined(OS_IOS)
-  friend struct IPC::ParamTraits<ui::DomKey>;
-#endif
-
   Base value_;
 };
 

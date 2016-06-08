@@ -13,10 +13,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace IPC {
-template <class P> struct ParamTraits;
-}
-
 namespace ui {
 
 struct EVENTS_BASE_EXPORT GestureEventDetails {
@@ -201,10 +197,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     // ET_GESTURE_TAP_UNCONFIRMED, and ET_GESTURE_DOUBLE_TAP events.
     int tap_count;  // TAP repeat count.
   } data_;
-
-  // For mojo native implementation of (de)serialization.
-  friend struct IPC::ParamTraits<ui::GestureEventDetails>;
-  friend struct IPC::ParamTraits<ui::GestureEventDetails::Details>;
 
   GestureDeviceType device_type_;
 

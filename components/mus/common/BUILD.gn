@@ -10,9 +10,6 @@ component("mus_common") {
   sources = [
     "event_matcher_util.cc",
     "event_matcher_util.h",
-    "event_param_traits.cc",
-    "event_param_traits.h",
-    "event_param_traits_macros.h",
     "gpu_memory_buffer_impl.cc",
     "gpu_memory_buffer_impl.h",
     "gpu_service.cc",
@@ -73,7 +70,6 @@ source_set("run_all_shelltests") {
 
 test("mus_common_unittests") {
   sources = [
-    "event_param_traits_unittest.cc",
     "gpu_type_converters_unittest.cc",
   ]
   public_deps = [
@@ -87,7 +83,6 @@ test("mus_common_unittests") {
     "//ipc:ipc",
     "//mojo/edk/test:test_support",
     "//testing/gtest",
-    "//ui/events:events",
     "//ui/gfx:test_support",
     "//ui/gfx/ipc",
   ]
