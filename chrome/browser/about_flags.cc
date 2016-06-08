@@ -797,9 +797,6 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::switches::kEnableNetworkPortalNotification,
          chromeos::switches::kDisableNetworkPortalNotification)},
 #endif
-    {"enable-download-resumption", IDS_FLAGS_DOWNLOAD_RESUMPTION_NAME,
-     IDS_FLAGS_DOWNLOAD_RESUMPTION_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kDownloadResumption)},
 #if defined(OS_ANDROID)
     {"enable-system-download-manager",
      IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_NAME,

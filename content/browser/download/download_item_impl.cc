@@ -95,10 +95,6 @@ static void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
   download_file->Cancel();
 }
 
-bool IsDownloadResumptionEnabled() {
-  return base::FeatureList::IsEnabled(features::kDownloadResumption);
-}
-
 }  // namespace
 
 const uint32_t DownloadItem::kInvalidId = 0;
@@ -483,9 +479,8 @@ bool DownloadItemImpl::CanResume() const {
       ResumeMode resume_mode = GetResumeMode();
       // Only allow Resume() calls if the resumption mode requires a user
       // action.
-      return IsDownloadResumptionEnabled() &&
-             (resume_mode == RESUME_MODE_USER_RESTART ||
-              resume_mode == RESUME_MODE_USER_CONTINUE);
+      return resume_mode == RESUME_MODE_USER_RESTART ||
+             resume_mode == RESUME_MODE_USER_CONTINUE;
     }
 
     case MAX_DOWNLOAD_INTERNAL_STATE:
@@ -843,9 +838,6 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
 
 DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!IsDownloadResumptionEnabled())
-    return RESUME_MODE_INVALID;
 
   // Only support resumption for HTTP(S).
   if (!GetURL().SchemeIsHTTPOrHTTPS())
@@ -1884,9 +1876,6 @@ void DownloadItemImpl::AutoResumeIfValid() {
 void DownloadItemImpl::ResumeInterruptedDownload(
     ResumptionRequestSource source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsDownloadResumptionEnabled())
-    return;
-
   // If we're not interrupted, ignore the request; our caller is drunk.
   if (state_ != INTERRUPTED_INTERNAL)
     return;

@@ -17,15 +17,6 @@
 
 using content::DownloadItem;
 
-namespace {
-
-// Returns true if downloads resumption is enabled.
-bool IsDownloadResumptionEnabled() {
-  return base::FeatureList::IsEnabled(features::kDownloadResumption);
-}
-
-}  // namespace
-
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
   DetachFromDownloadItem();
 }
@@ -264,23 +255,13 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetInterruptedMenuModel() {
-#if !defined(OS_WIN)
-  // If resumption isn't enabled and we aren't on Windows, then none of the
-  // options here are applicable.
-  if (!IsDownloadResumptionEnabled())
-    return GetInProgressMenuModel();
-#endif
-
   if (interrupted_download_menu_model_)
     return interrupted_download_menu_model_.get();
 
   interrupted_download_menu_model_.reset(new ui::SimpleMenuModel(this));
 
-  if (IsDownloadResumptionEnabled()) {
-    interrupted_download_menu_model_->AddItem(
-        DownloadCommands::RESUME,
-        GetLabelForCommandId(DownloadCommands::RESUME));
-  }
+  interrupted_download_menu_model_->AddItem(
+      DownloadCommands::RESUME, GetLabelForCommandId(DownloadCommands::RESUME));
 #if defined(OS_WIN)
   // The Help Center article is currently Windows specific.
   // TODO(asanka): Enable this for other platforms when the article is expanded
@@ -289,12 +270,9 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetInterruptedMenuModel() {
       DownloadCommands::LEARN_MORE_INTERRUPTED,
       GetLabelForCommandId(DownloadCommands::LEARN_MORE_INTERRUPTED));
 #endif
-  if (IsDownloadResumptionEnabled()) {
-    interrupted_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    interrupted_download_menu_model_->AddItem(
-        DownloadCommands::CANCEL,
-        GetLabelForCommandId(DownloadCommands::CANCEL));
-  }
+  interrupted_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  interrupted_download_menu_model_->AddItem(
+      DownloadCommands::CANCEL, GetLabelForCommandId(DownloadCommands::CANCEL));
 
   return interrupted_download_menu_model_.get();
 }

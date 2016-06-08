@@ -244,12 +244,6 @@ class DownloadItemTest : public testing::Test {
  public:
   DownloadItemTest()
       : delegate_(), next_download_id_(DownloadItem::kInvalidId + 1) {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(features::kDownloadResumption.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
-
     create_info_.reset(new DownloadCreateInfo());
     create_info_->save_info =
         std::unique_ptr<DownloadSaveInfo>(new DownloadSaveInfo());

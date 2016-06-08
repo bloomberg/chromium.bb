@@ -5754,12 +5754,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Allow a download button to show up when opening a page with media url.
         </message>
       </if>
-      <message name="IDS_FLAGS_DOWNLOAD_RESUMPTION_NAME" desc="Title for the flag to enable the download resume feature.">
-        Download Resumption
-      </message>
-      <message name="IDS_FLAGS_DOWNLOAD_RESUMPTION_DESCRIPTION" desc="Description for the flag to enable the download resume feature.">
-        Allow downloads that have been interrupted to be continued or restarted, using the Resume context menu item.
-      </message>
       <message name="IDS_FLAGS_DOWNLOAD_NOTIFICATION_NAME" desc="Title for the flag to enable experimental download notification feature.">
         Download Status in Notification Center
       </message>

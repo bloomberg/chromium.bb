@@ -548,13 +548,6 @@ class TestRequestStartHandler {
 class DownloadContentTest : public ContentBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    // Enable downloads resumption.
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(features::kDownloadResumption.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
-
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
     test_delegate_.reset(new TestShellDownloadManagerDelegate());
