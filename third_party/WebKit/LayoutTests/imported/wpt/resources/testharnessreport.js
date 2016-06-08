@@ -66,10 +66,24 @@
         return !!document.querySelector('script[src*="/resources/testharness"]');
     }
 
+    function injectSyntheticInput() {
+        var path = window.location.pathname;
+        if (path.match(/imported\/wpt\/.*\.html$/)) {
+            path = path.replace(/imported\/wpt\/(.*)\.html$/, "imported/wpt_automation/$1-input.js");
+            var input_script = document.createElement('script');
+            input_script.setAttribute('src', path);
+            document.head.appendChild(input_script);
+        }
+    }
+
     var didDispatchLoadEvent = false;
     var handleLoad = function() {
         didDispatchLoadEvent = true;
         window.removeEventListener('load', handleLoad);
+        // Add synthetic input to pointer event manual tests
+        if(window.location.pathname.includes('imported/wpt/pointerevents/')) {
+            setTimeout(injectSyntheticInput, 0);
+        }
     };
     window.addEventListener('load', handleLoad, false);
 

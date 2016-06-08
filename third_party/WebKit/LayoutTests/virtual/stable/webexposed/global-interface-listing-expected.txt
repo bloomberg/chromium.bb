@@ -6459,6 +6459,7 @@ interface webkitURL
     attribute accessibilityController
     attribute applicationCache
     attribute caches
+    attribute chrome
     attribute clientInformation
     attribute closed
     attribute console
