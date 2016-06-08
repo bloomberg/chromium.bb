@@ -107,7 +107,7 @@ static String16 calculateHash(const String16& str)
     uint64_t hashes[] = { 0, 0, 0, 0, 0 };
     uint64_t zi[] = { 1, 1, 1, 1, 1 };
 
-    const size_t hashesSize = WTF_ARRAY_LENGTH(hashes);
+    const size_t hashesSize = PROTOCOL_ARRAY_LENGTH(hashes);
 
     size_t current = 0;
     const uint32_t* data = nullptr;

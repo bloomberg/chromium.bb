@@ -31,7 +31,7 @@
 namespace blink {
 namespace protocol {
 
-class FrontendChannel {
+class PLATFORM_EXPORT FrontendChannel {
 public:
     virtual ~FrontendChannel() { }
     virtual void sendProtocolResponse(int callId, const String16& message) = 0;

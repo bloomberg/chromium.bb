@@ -8,7 +8,7 @@
 #define protocol_{{domain.domain}}_h
 
 {% if export_macro == "PLATFORM_EXPORT" %}
-#include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Platform.h"
 {% else %}
 #include "core/CoreExport.h"
 {% endif %}
@@ -19,15 +19,13 @@
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Maybe.h"
 #include "platform/inspector_protocol/Object.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/inspector_protocol/ValueConversions.h"
 {% for name in domain.dependencies %}
 #include "{{output_package}}/{{name}}.h"
 {% endfor %}
-
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 namespace protocol {
@@ -165,7 +163,14 @@ public:
     }
 
 private:
-    {{type.id}}() { }
+    {{type.id}}()
+    {
+    {% for property in type.properties %}
+      {% if not(property.optional) and "default_value" in resolve_type(property) %}
+          m_{{property.name}} = {{resolve_type(property).default_value}};
+      {%endif %}
+    {% endfor %}
+    }
 
     {% for property in type.properties %}
       {% if property.optional %}

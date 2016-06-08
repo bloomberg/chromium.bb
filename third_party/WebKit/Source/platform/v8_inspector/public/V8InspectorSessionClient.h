@@ -5,18 +5,17 @@
 #ifndef V8InspectorSessionClient_h
 #define V8InspectorSessionClient_h
 
-#include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
-#include "wtf/Compiler.h"
+#include "platform/inspector_protocol/Platform.h"
 
 #include <v8.h>
 
 namespace blink {
 
-class PLATFORM_EXPORT V8InspectorSessionClient : WTF_NON_EXPORTED_BASE(public protocol::FrontendChannel)
+class PLATFORM_EXPORT V8InspectorSessionClient
 {
 public:
-    ~V8InspectorSessionClient() override { }
+    virtual ~V8InspectorSessionClient() { }
     virtual void startInstrumenting() = 0;
     virtual void stopInstrumenting() = 0;
     virtual void resumeStartup() = 0;
@@ -26,6 +25,5 @@ public:
 };
 
 } // namespace blink
-
 
 #endif // V8InspectorSessionClient_h

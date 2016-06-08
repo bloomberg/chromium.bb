@@ -847,6 +847,8 @@
       'inspector_protocol/Object.h',
       'inspector_protocol/Parser.cpp',
       'inspector_protocol/Parser.h',
+      'inspector_protocol/Platform.h',
+      'inspector_protocol/PlatformWTF.h',
       'inspector_protocol/FrontendChannel.h',
       'inspector_protocol/String16.h',
       'inspector_protocol/String16WTF.cpp',

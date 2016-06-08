@@ -59,7 +59,7 @@ int V8Regex::match(const String16& string, int startFrom, int* matchLength) cons
         return -1;
     v8::Local<v8::Value> argv[] = { toV8String(isolate, string.substring(startFrom)) };
     v8::Local<v8::Value> returnValue;
-    if (!exec.As<v8::Function>()->Call(context, regex, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&returnValue))
+    if (!exec.As<v8::Function>()->Call(context, regex, PROTOCOL_ARRAY_LENGTH(argv), argv).ToLocal(&returnValue))
         return -1;
 
     // RegExp#exec returns null if there's no match, otherwise it returns an

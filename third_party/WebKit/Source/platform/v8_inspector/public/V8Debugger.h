@@ -5,9 +5,8 @@
 #ifndef V8Debugger_h
 #define V8Debugger_h
 
-#include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
-#include "wtf/PtrUtil.h"
 
 #include <v8.h>
 
@@ -21,6 +20,7 @@ class V8StackTrace;
 
 namespace protocol {
 class DictionaryValue;
+class FrontendChannel;
 }
 
 class PLATFORM_EXPORT V8Debugger {
@@ -40,7 +40,7 @@ public:
     virtual void idleStarted() = 0;
     virtual void idleFinished() = 0;
 
-    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, V8InspectorSessionClient*, const String16* state) = 0;
+    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, V8InspectorSessionClient*, const String16* state) = 0;
     virtual bool isPaused() = 0;
 
     static v8::Local<v8::Private> scopeExtensionPrivate(v8::Isolate*);

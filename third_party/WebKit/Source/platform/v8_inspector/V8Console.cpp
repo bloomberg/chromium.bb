@@ -4,6 +4,7 @@
 
 #include "platform/v8_inspector/V8Console.h"
 
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
@@ -714,7 +715,7 @@ bool V8Debugger::isCommandLineAPIMethod(const String16& name)
     if (methods.size() == 0) {
         const char* members[] = { "dir", "dirxml", "keys", "values", "profile", "profileEnd", "inspect",
             "copy", "clear", "debug", "undebug", "monitor", "unmonitor", "table" };
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
+        for (size_t i = 0; i < PROTOCOL_ARRAY_LENGTH(members); ++i)
             methods.add(members[i]);
     }
     return methods.find(name) != methods.end();
@@ -725,7 +726,7 @@ bool V8Debugger::isCommandLineAPIGetter(const String16& name)
     DEFINE_STATIC_LOCAL(protocol::HashSet<String16>, getters, ());
     if (getters.size() == 0) {
         const char* members[] = { "$0", "$1", "$2", "$3", "$4", "$_" };
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
+        for (size_t i = 0; i < PROTOCOL_ARRAY_LENGTH(members); ++i)
             getters.add(members[i]);
     }
     return getters.find(name) != getters.end();

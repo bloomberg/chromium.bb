@@ -177,7 +177,7 @@ void V8DebuggerImpl::getCompiledScripts(int contextGroupId, protocol::Vector<V8D
     v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString("getScripts")));
     v8::Local<v8::Value> argv[] = { v8::Integer::New(m_isolate, contextGroupId) };
     v8::Local<v8::Value> value;
-    if (!getScriptsFunction->Call(debuggerContext(), debuggerScript, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&value))
+    if (!getScriptsFunction->Call(debuggerContext(), debuggerScript, PROTOCOL_ARRAY_LENGTH(argv), argv).ToLocal(&value))
         return;
     DCHECK(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
@@ -430,7 +430,7 @@ JavaScriptCallFrames V8DebuggerImpl::currentCallFrames(int limit)
         currentCallFramesV8 = v8::Debug::Call(debuggerContext(), currentCallFramesFunction, v8::Integer::New(m_isolate, limit)).ToLocalChecked();
     } else {
         v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, limit) };
-        currentCallFramesV8 = callDebuggerMethod("currentCallFrames", WTF_ARRAY_LENGTH(argv), argv).ToLocalChecked();
+        currentCallFramesV8 = callDebuggerMethod("currentCallFrames", PROTOCOL_ARRAY_LENGTH(argv), argv).ToLocalChecked();
     }
     DCHECK(!currentCallFramesV8.IsEmpty());
     if (!currentCallFramesV8->IsArray())
@@ -731,10 +731,10 @@ std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::Sta
     return V8StackTraceImpl::create(agent, stackTrace, V8StackTrace::maxCallStackSizeToCapture);
 }
 
-std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
 {
     DCHECK(!m_sessions.contains(contextGroupId));
-    std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, client, state);
+    std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, channel, client, state);
     m_sessions.set(contextGroupId, session.get());
     return std::move(session);
 }

@@ -127,7 +127,7 @@ v8::MaybeLocal<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber,
         variableName,
         newValue
     };
-    return setVariableValueFunction->Call(m_isolate->GetCurrentContext(), callFrame, WTF_ARRAY_LENGTH(argv), argv);
+    return setVariableValueFunction->Call(m_isolate->GetCurrentContext(), callFrame, PROTOCOL_ARRAY_LENGTH(argv), argv);
 }
 
 } // namespace blink

@@ -5,13 +5,12 @@
 #ifndef CollectionsSTL_h
 #define CollectionsSTL_h
 
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
-#include "wtf/PtrUtil.h"
 
 #include <algorithm>
-#include <unordered_map>
+#include <map>
 #include <vector>
-
 
 namespace blink {
 namespace protocol {
@@ -51,15 +50,14 @@ private:
 
 template <typename T>
 class Vector<std::unique_ptr<T>> {
-    WTF_MAKE_NONCOPYABLE(Vector);
 public:
     Vector() { }
     Vector(size_t capacity) : m_impl(capacity) { }
-    Vector(Vector&& other) : m_impl(std::move(other.m_impl)) { }
-    ~Vector() { }
+    Vector(Vector&& other) { m_impl.swap(other.m_impl); }
+    ~Vector() { clear(); }
 
-    typedef typename std::vector<std::unique_ptr<T>>::iterator iterator;
-    typedef typename std::vector<std::unique_ptr<T>>::const_iterator const_iterator;
+    typedef typename std::vector<T*>::iterator iterator;
+    typedef typename std::vector<T*>::const_iterator const_iterator;
 
     iterator begin() { return m_impl.begin(); }
     iterator end() { return m_impl.end(); }
@@ -69,27 +67,44 @@ public:
     void resize(size_t s) { m_impl.resize(s); }
     size_t size() const { return m_impl.size(); }
     bool isEmpty() const { return !m_impl.size(); }
-    std::unique_ptr<T>& operator[](size_t i) { return at(i); }
-    const std::unique_ptr<T>& operator[](size_t i) const { return at(i); }
-    std::unique_ptr<T>& at(size_t i) { return m_impl[i]; }
-    const std::unique_ptr<T>& at(size_t i) const { return m_impl.at(i); }
-    std::unique_ptr<T>& last() { return m_impl[m_impl.size() - 1]; }
-    const std::unique_ptr<T>& last() const { return m_impl[m_impl.size() - 1]; }
-    void append(std::unique_ptr<T> t) { m_impl.emplace_back(std::move(t)); }
-    void prepend(std::unique_ptr<T> t) { m_impl.insert(m_impl.begin(), std::move(t)); }
-    void remove(size_t i) { m_impl.erase(m_impl.begin() + i); }
-    void clear() { m_impl.clear(); }
+    T* operator[](size_t i) { return at(i); }
+    const T* operator[](size_t i) const { return at(i); }
+    T* at(size_t i) { return m_impl[i]; }
+    const T* at(size_t i) const { return m_impl.at(i); }
+    T* last() { return m_impl[m_impl.size() - 1]; }
+    const T* last() const { return m_impl[m_impl.size() - 1]; }
+    void append(std::unique_ptr<T> t) { m_impl.push_back(t.release()); }
+    void prepend(std::unique_ptr<T> t) { m_impl.insert(m_impl.begin(), t.release()); }
+
+    void remove(size_t i)
+    {
+        delete m_impl[i];
+        m_impl.erase(m_impl.begin() + i);
+    }
+
+    void clear()
+    {
+        for (auto t : m_impl)
+            delete t;
+        m_impl.clear();
+    }
+
     void swap(Vector& other) { m_impl.swap(other.m_impl); }
     void swap(Vector&& other) { m_impl.swap(other.m_impl); }
-    void removeLast() { m_impl.pop_back(); }
+    void removeLast()
+    {
+        delete last();
+        m_impl.pop_back();
+    }
 
 private:
-    std::vector<std::unique_ptr<T>> m_impl;
+    Vector(const Vector&) = delete;
+    Vector& operator=(const Vector&) = delete;
+    std::vector<T*> m_impl;
 };
 
 template <typename K, typename V, typename I>
 class HashMapIterator {
-    STACK_ALLOCATED();
 public:
     HashMapIterator(const I& impl) : m_impl(impl) { }
     std::pair<K, V*>* get() const { m_pair.first = m_impl->first; m_pair.second = &m_impl->second; return &m_pair; }
@@ -108,10 +123,9 @@ private:
 
 template <typename K, typename V, typename I>
 class HashMapIterator<K, std::unique_ptr<V>, I> {
-    STACK_ALLOCATED();
 public:
     HashMapIterator(const I& impl) : m_impl(impl) { }
-    std::pair<K, V*>* get() const { m_pair.first = m_impl->first; m_pair.second = m_impl->second.get(); return &m_pair; }
+    std::pair<K, V*>* get() const { m_pair.first = m_impl->first; m_pair.second = m_impl->second; return &m_pair; }
     std::pair<K, V*>& operator*() const { return *get(); }
     std::pair<K, V*>* operator->() const { return get(); }
 
@@ -131,8 +145,8 @@ public:
     HashMap() { }
     ~HashMap() { }
 
-    using iterator = HashMapIterator<K, V, typename std::unordered_map<K, V>::iterator>;
-    using const_iterator = HashMapIterator<K, const V, typename std::unordered_map<K, V>::const_iterator>;
+    using iterator = HashMapIterator<K, V, typename std::map<K, V>::iterator>;
+    using const_iterator = HashMapIterator<K, const V, typename std::map<K, V>::const_iterator>;
 
     iterator begin() { return iterator(m_impl.begin()); }
     iterator end() { return iterator(m_impl.end()); }
@@ -161,17 +175,17 @@ public:
     }
 
 private:
-    std::unordered_map<K, V> m_impl;
+    std::map<K, V> m_impl;
 };
 
 template <typename K, typename V>
 class HashMap<K, std::unique_ptr<V>> {
 public:
     HashMap() { }
-    ~HashMap() { }
+    ~HashMap() { clear(); }
 
-    using iterator = HashMapIterator<K, std::unique_ptr<V>, typename std::unordered_map<K, std::unique_ptr<V>>::iterator>;
-    using const_iterator = HashMapIterator<K, std::unique_ptr<V>, typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator>;
+    using iterator = HashMapIterator<K, std::unique_ptr<V>, typename std::map<K, V*>::iterator>;
+    using const_iterator = HashMapIterator<K, std::unique_ptr<V>, typename std::map<K, V*>::const_iterator>;
 
     iterator begin() { return iterator(m_impl.begin()); }
     iterator end() { return iterator(m_impl.end()); }
@@ -185,24 +199,37 @@ public:
     bool set(const K& k, std::unique_ptr<V> v)
     {
         bool isNew = m_impl.find(k) == m_impl.end();
-        m_impl[k] = std::move(v);
+        if (!isNew)
+            delete m_impl[k];
+        m_impl[k] = v.release();
         return isNew;
     }
     bool contains(const K& k) const { return m_impl.find(k) != m_impl.end(); }
-    V* get(const K& k) const { auto it = m_impl.find(k); return it == m_impl.end() ? nullptr : it->second.get(); }
+    V* get(const K& k) const { auto it = m_impl.find(k); return it == m_impl.end() ? nullptr : it->second; }
     std::unique_ptr<V> take(const K& k)
     {
         if (!contains(k))
             return nullptr;
-        std::unique_ptr<V> result = std::move(m_impl[k]);
+        std::unique_ptr<V> result(m_impl[k]);
+        delete m_impl[k];
         m_impl.erase(k);
-        return result.release();
+        return result;
     }
-    void remove(const K& k) { m_impl.erase(k); }
-    void clear() { m_impl.clear(); }
+    void remove(const K& k)
+    {
+        delete m_impl[k];
+        m_impl.erase(k);
+    }
+
+    void clear()
+    {
+        for (auto pair : m_impl)
+            delete pair.second;
+        m_impl.clear();
+    }
 
 private:
-    std::unordered_map<K, std::unique_ptr<V>> m_impl;
+    std::map<K, V*> m_impl;
 };
 
 template <typename K>

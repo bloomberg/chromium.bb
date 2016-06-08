@@ -94,7 +94,7 @@ std::unique_ptr<InjectedScript> InjectedScript::create(InspectedContext* inspect
     v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(isolate, inspectedContext->contextId()) };
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Value> injectedScriptValue;
-    if (!function->Call(context, windowGlobal, WTF_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
+    if (!function->Call(context, windowGlobal, PROTOCOL_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
         return nullptr;
     if (!injectedScriptValue->IsObject())
         return nullptr;

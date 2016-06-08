@@ -5,10 +5,10 @@
 #ifndef DispatcherBase_h
 #define DispatcherBase_h
 
-#include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/BackendCallback.h"
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 

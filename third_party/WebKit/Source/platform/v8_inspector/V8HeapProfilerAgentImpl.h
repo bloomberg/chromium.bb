@@ -9,6 +9,8 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/protocol/HeapProfiler.h"
 
+#include <v8.h>
+
 namespace blink {
 
 class V8InspectorSessionImpl;

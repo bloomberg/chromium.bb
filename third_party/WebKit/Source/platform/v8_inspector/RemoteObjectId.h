@@ -6,8 +6,8 @@
 #define RemoteObjectId_h
 
 #include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

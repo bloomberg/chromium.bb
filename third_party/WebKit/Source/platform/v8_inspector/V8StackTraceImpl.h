@@ -6,8 +6,8 @@
 #define V8StackTraceImpl_h
 
 #include "platform/inspector_protocol/Collections.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

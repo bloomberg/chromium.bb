@@ -5,7 +5,7 @@
 #ifndef V8ContentSearchUtil_h
 #define V8ContentSearchUtil_h
 
-#include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
 
 namespace blink {

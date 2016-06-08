@@ -26,18 +26,18 @@ bool V8InspectorSession::isV8ProtocolMethod(const String16& method)
     return method.startWith("Debugger.") || method.startWith("HeapProfiler.") || method.startWith("Profiler.") || method.startWith("Runtime.");
 }
 
-std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* state)
 {
-    return wrapUnique(new V8InspectorSessionImpl(debugger, contextGroupId, client, state));
+    return wrapUnique(new V8InspectorSessionImpl(debugger, contextGroupId, channel, client, state));
 }
 
-V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int contextGroupId, V8InspectorSessionClient* client, const String16* savedState)
+V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int contextGroupId, protocol::FrontendChannel* channel, V8InspectorSessionClient* client, const String16* savedState)
     : m_contextGroupId(contextGroupId)
     , m_debugger(debugger)
     , m_client(client)
     , m_customObjectFormatterEnabled(false)
     , m_instrumentationCounter(0)
-    , m_dispatcher(client)
+    , m_dispatcher(channel)
     , m_state(nullptr)
     , m_runtimeAgent(nullptr)
     , m_debuggerAgent(nullptr)
@@ -54,16 +54,16 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
         m_state = protocol::DictionaryValue::create();
     }
 
-    m_runtimeAgent = wrapUnique(new V8RuntimeAgentImpl(this, client, agentState(protocol::Runtime::Metainfo::domainName)));
+    m_runtimeAgent = wrapUnique(new V8RuntimeAgentImpl(this, channel, agentState(protocol::Runtime::Metainfo::domainName)));
     protocol::Runtime::Dispatcher::wire(&m_dispatcher, m_runtimeAgent.get());
 
-    m_debuggerAgent = wrapUnique(new V8DebuggerAgentImpl(this, client, agentState(protocol::Debugger::Metainfo::domainName)));
+    m_debuggerAgent = wrapUnique(new V8DebuggerAgentImpl(this, channel, agentState(protocol::Debugger::Metainfo::domainName)));
     protocol::Debugger::Dispatcher::wire(&m_dispatcher, m_debuggerAgent.get());
 
-    m_profilerAgent = wrapUnique(new V8ProfilerAgentImpl(this, client, agentState(protocol::Profiler::Metainfo::domainName)));
+    m_profilerAgent = wrapUnique(new V8ProfilerAgentImpl(this, channel, agentState(protocol::Profiler::Metainfo::domainName)));
     protocol::Profiler::Dispatcher::wire(&m_dispatcher, m_profilerAgent.get());
 
-    m_heapProfilerAgent = wrapUnique(new V8HeapProfilerAgentImpl(this, client, agentState(protocol::HeapProfiler::Metainfo::domainName)));
+    m_heapProfilerAgent = wrapUnique(new V8HeapProfilerAgentImpl(this, channel, agentState(protocol::HeapProfiler::Metainfo::domainName)));
     protocol::HeapProfiler::Dispatcher::wire(&m_dispatcher, m_heapProfilerAgent.get());
 
     if (savedState) {

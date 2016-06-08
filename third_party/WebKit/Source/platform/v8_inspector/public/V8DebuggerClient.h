@@ -5,7 +5,7 @@
 #ifndef V8DebuggerClient_h
 #define V8DebuggerClient_h
 
-#include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/public/ConsoleAPITypes.h"
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"

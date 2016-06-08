@@ -5,9 +5,8 @@
 #ifndef V8InspectorSession_h
 #define V8InspectorSession_h
 
-#include "platform/PlatformExport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
-#include "wtf/PtrUtil.h"
 
 #include <v8.h>
 

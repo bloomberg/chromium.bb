@@ -28,7 +28,8 @@ class V8InspectorSession;
 
 class CORE_EXPORT InspectorSession
     : public GarbageCollectedFinalized<InspectorSession>
-    , public V8InspectorSessionClient {
+    , public V8InspectorSessionClient
+    , public protocol::FrontendChannel {
     WTF_MAKE_NONCOPYABLE(InspectorSession);
 public:
     class Client {

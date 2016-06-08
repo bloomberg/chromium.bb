@@ -5,8 +5,8 @@
 #ifndef Object_h
 #define Object_h
 
-#include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/Values.h"
 
 namespace blink {

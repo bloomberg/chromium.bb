@@ -45,7 +45,7 @@ InspectorSession::InspectorSession(Client* client, InspectedFrames* inspectedFra
 
     String16 v8State;
     m_state->getString(kV8StateKey, &v8State);
-    m_v8Session = debugger->connect(contextGroupId, this, savedState ? &v8State : nullptr);
+    m_v8Session = debugger->connect(contextGroupId, this, this, savedState ? &v8State : nullptr);
 }
 
 InspectorSession::~InspectorSession()
