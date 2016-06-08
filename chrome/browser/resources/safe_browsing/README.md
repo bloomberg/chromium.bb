@@ -14,11 +14,13 @@ Rendered version of this file: https://chromium.googlesource.com/chromium/src/+/
   * Get it reviewed, **submit.**
   * **Push** it to all users via component update:
     * Wait 1-3 day for this to run on Canary to verify it doesn't crash Chrome.
-    * In a synced checkout, generate protos for all platforms:
-        * % `ninja -C out-gn/Debug
-         chrome/browser/resources/safe_browsing:make_all_file_types_protobuf`
-    * That will instruct you to run another command to push the files to GCS.
-      You must a member of chrome-file-type-policies-pushers@google.com to have
+    * In a synced checkout, run the following to generate protos for all
+      platforms and push them to GCS. Replace the arg with your build directory:
+        * % `chrome/browser/resources/safe_browsing/push_file_type_proto.py -d
+          out-gn/Debug`
+    * It will ask you to double check its actions before proceeding.  It will
+      fail if you're not a member of
+      `chrome-file-type-policies-pushers@google.com`, since that's required for
       access to the GCS bucket.
     * The Component Updater system will notice those files and push them to
       users withing ~6 hours. If not, contact `waffles@.`
@@ -110,6 +112,5 @@ See `download_file_types.proto` for all fields.
 
   * `default_file_type`: Settings used if a downloaded file is not in
     the above list. `extension` is ignored, but other settings are used.
-    The ping_setting should be SAMPLED_PING for all platforms. Only the
-    first platform_setting is used.
+    The ping_setting should be SAMPLED_PING for all platforms.
 
