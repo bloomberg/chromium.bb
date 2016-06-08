@@ -13,7 +13,7 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Next tag: 23
+// Next tag: 24
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -773,8 +773,46 @@ message SystemProfileProto {
     OPT_IN = 0;
     // The enable checkbox was checked by default.
     OPT_OUT = 1;
-    // Policy mandated that UMA be enaled, the user had no choice.
+    // Policy mandated that UMA be enabled, the user had no choice.
     POLICY_FORCED_ENABLED = 2;
   }
   optional UmaDefaultState uma_default_state = 22;
+
+  enum AntiVirusState {
+    // The security product software is turned on and protecting the user.
+    STATE_ON = 0;
+    // The security product software is turned off and protection is disabled.
+    STATE_OFF = 1;
+    // The security product software is in the snoozed state, temporarily off,
+    // and not actively protecting the computer.
+    STATE_SNOOZED = 2;
+    // The security product software has expired and is no longer actively
+    // protecting the computer.
+    STATE_EXPIRED = 3;
+  }
+
+  // Information about AntiVirus products installed.
+  // Next Tag: 6
+  message AntiVirusProduct {
+    // The product name e.g. "System Center Endpoint Protection". This might not
+    // be recorded, see ShouldReportFullNames() in
+    // chrome/browser/metrics/antivirus_metrics_provider_win.cc.
+    optional string product_name = 1;
+
+    // The hash of the product name.
+    optional fixed32 product_name_hash = 2;
+
+    // The version of the product, as read from the file information. This might
+    // not be recorded, see ShouldReportFullNames() in
+    // chrome/browser/metrics/antivirus_metrics_provider_win.cc.
+    optional string product_version = 3;
+
+    // The hash of the product version. Might not be set if the product version
+    // could not be obtained from the disk.
+    optional fixed32 product_version_hash = 4;
+
+    // The current state of the product.
+    optional AntiVirusState product_state = 5;
+  }
+  repeated AntiVirusProduct antivirus_product = 23;
 }

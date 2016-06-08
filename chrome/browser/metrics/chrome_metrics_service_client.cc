@@ -88,6 +88,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include "chrome/browser/metrics/antivirus_metrics_provider_win.h"
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -447,6 +448,14 @@ void ChromeMetricsServiceClient::Initialize() {
           new browser_watcher::WatcherMetricsProviderWin(
               chrome::GetBrowserExitCodesRegistryPath(),
               content::BrowserThread::GetBlockingPool())));
+
+  antivirus_metrics_provider_ = new AntiVirusMetricsProvider(
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::unique_ptr<metrics::MetricsProvider>(antivirus_metrics_provider_));
 #endif  // defined(OS_WIN)
 
 #if defined(ENABLE_PLUGINS)
@@ -525,6 +534,18 @@ void ChromeMetricsServiceClient::OnInitTaskGotPluginInfo() {
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
+  const base::Closure got_metrics_callback =
+      base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotAntiVirusData,
+                 weak_ptr_factory_.GetWeakPtr());
+
+#if defined(OS_WIN)
+  antivirus_metrics_provider_->GetAntiVirusMetrics(got_metrics_callback);
+#else
+  got_metrics_callback.Run();
+#endif  // defined(OS_WIN)
+}
+
+void ChromeMetricsServiceClient::OnInitTaskGotAntiVirusData() {
   drive_metrics_provider_->GetDriveMetrics(
       base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotDriveMetrics,
                  weak_ptr_factory_.GetWeakPtr()));

@@ -1473,6 +1473,8 @@
       'browser/google/did_run_updater_win.h',
       'browser/hang_monitor/hang_crash_dump_win.cc',
       'browser/hang_monitor/hang_crash_dump_win.h',
+      'browser/metrics/antivirus_metrics_provider_win.cc',
+      'browser/metrics/antivirus_metrics_provider_win.h',
       'browser/password_manager/password_manager_util_win.cc',
       'browser/password_manager/password_manager_util_win.h',
       'browser/themes/theme_service_win.cc',

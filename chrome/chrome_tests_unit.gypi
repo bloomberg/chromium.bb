@@ -137,6 +137,7 @@
       'browser/manifest/manifest_icon_selector_unittest.cc',
       'browser/media/media_stream_device_permission_context_unittest.cc',
       'browser/media/midi_permission_context_unittest.cc',
+      'browser/metrics/antivirus_metrics_provider_win_unittest.cc',
       'browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/perf/perf_provider_chromeos_unittest.cc',

@@ -57941,6 +57941,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.AntiVirusMetricsProvider.Result"
+    enum="AntiVirusMetricsProviderResult">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Records the result of the attempt to enumerate the installed AntiVirus on
+    the machine. This is recorded once during metrics initialization.
+  </summary>
+</histogram>
+
 <histogram name="UMA.CleanExitBeaconConsistency" enum="UmaCleanExitConsistency">
   <owner>siggi@chromium.org</owner>
   <summary>
@@ -63881,6 +63890,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Undo Pressed"/>
   <int value="3" label="Undos Dismissed (Timeout) (Deprecated)"/>
   <int value="4" label="Undos Dismissed (Action) (Deprecated)"/>
+</enum>
+
+<enum name="AntiVirusMetricsProviderResult" type="int">
+  <int value="0" label="RESULT_SUCCESS"/>
+  <int value="1" label="RESULT_GENERIC_FAILURE"/>
+  <int value="2" label="RESULT_FAILED_TO_INITIALIZE_COM"/>
+  <int value="3" label="RESULT_FAILED_TO_CREATE_INSTANCE"/>
+  <int value="4" label="RESULT_FAILED_TO_INITIALIZE_PRODUCT_LIST"/>
+  <int value="5" label="RESULT_FAILED_TO_GET_PRODUCT_COUNT"/>
+  <int value="6" label="RESULT_FAILED_TO_GET_ITEM"/>
+  <int value="7" label="RESULT_FAILED_TO_GET_PRODUCT_STATE"/>
+  <int value="8" label="RESULT_PRODUCT_STATE_INVALID"/>
+  <int value="9" label="RESULT_FAILED_TO_GET_PRODUCT_NAME"/>
+  <int value="10" label="RESULT_FAILED_TO_GET_REMEDIATION_PATH"/>
 </enum>
 
 <enum name="AppBannersDismissEvent" type="int">
