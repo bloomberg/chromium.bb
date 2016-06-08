@@ -26,11 +26,11 @@ String CSSContentDistributionValue::customCSSText() const
     CSSValueList* list = CSSValueList::createSpaceSeparated();
 
     if (m_distribution != CSSValueInvalid)
-        list->append(distribution());
+        list->append(*distribution());
     if (m_position != CSSValueInvalid)
-        list->append(position());
+        list->append(*position());
     if (m_overflow != CSSValueInvalid)
-        list->append(overflow());
+        list->append(*overflow());
 
     return list->customCSSText();
 }

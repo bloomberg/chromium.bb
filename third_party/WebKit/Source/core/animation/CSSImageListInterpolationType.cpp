@@ -103,7 +103,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(const CSSVal
     CSSValueList* tempList = nullptr;
     if (!value.isBaseValueList()) {
         tempList = CSSValueList::createCommaSeparated();
-        tempList->append(const_cast<CSSValue*>(&value)); // Take ref.
+        tempList->append(value);
     }
     const CSSValueList& valueList = tempList ? *tempList : toCSSValueList(value);
 

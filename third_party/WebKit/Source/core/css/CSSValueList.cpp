@@ -79,7 +79,7 @@ CSSValueList* CSSValueList::copy() const
         ASSERT_NOT_REACHED();
     }
     for (size_t index = 0; index < m_values.size(); index++)
-        newList->append(m_values[index]);
+        newList->append(*m_values[index]);
     return newList;
 }
 

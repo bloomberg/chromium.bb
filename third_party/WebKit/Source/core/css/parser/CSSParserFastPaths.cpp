@@ -874,7 +874,7 @@ static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsi
             return false;
         if (unit != CSSPrimitiveValue::UnitType::Pixels && (number || unit != CSSPrimitiveValue::UnitType::Number))
             return false;
-        transformValue->append(CSSPrimitiveValue::create(number, CSSPrimitiveValue::UnitType::Pixels));
+        transformValue->append(*CSSPrimitiveValue::create(number, CSSPrimitiveValue::UnitType::Pixels));
         pos += argumentLength + 1;
         --expectedCount;
     }
@@ -893,7 +893,7 @@ static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigne
         double number = charactersToDouble(pos, argumentLength, &ok);
         if (!ok)
             return false;
-        transformValue->append(CSSPrimitiveValue::create(number, CSSPrimitiveValue::UnitType::Number));
+        transformValue->append(*CSSPrimitiveValue::create(number, CSSPrimitiveValue::UnitType::Number));
         pos += argumentLength + 1;
         --expectedCount;
     }
@@ -1050,7 +1050,7 @@ static CSSValueList* parseSimpleTransformList(const CharType* chars, unsigned le
             return nullptr;
         if (!transformList)
             transformList = CSSValueList::createSpaceSeparated();
-        transformList->append(transformValue);
+        transformList->append(*transformValue);
     }
     return transformList;
 }

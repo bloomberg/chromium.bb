@@ -21,10 +21,10 @@ CSSTranslation* CSSTranslation::create(CSSLengthValue* x, CSSLengthValue* y, CSS
 CSSFunctionValue* CSSTranslation::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(is2D() ? CSSValueTranslate : CSSValueTranslate3d);
-    result->append(m_x->toCSSValue());
-    result->append(m_y->toCSSValue());
+    result->append(*m_x->toCSSValue());
+    result->append(*m_y->toCSSValue());
     if (!is2D())
-        result->append(m_z->toCSSValue());
+        result->append(*m_z->toCSSValue());
     return result;
 }
 

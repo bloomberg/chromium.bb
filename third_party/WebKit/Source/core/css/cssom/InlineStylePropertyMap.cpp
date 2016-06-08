@@ -58,7 +58,7 @@ void InlineStylePropertyMap::set(CSSPropertyID propertyID, CSSStyleValueOrCSSSty
                 exceptionState.throwTypeError("Invalid type for property");
                 return;
             }
-            valueList->append(value->toCSSValue());
+            valueList->append(*value->toCSSValue());
         }
 
         m_ownerElement->setInlineStyleProperty(propertyID, valueList);
@@ -93,14 +93,14 @@ void InlineStylePropertyMap::append(CSSPropertyID propertyID, CSSStyleValueOrCSS
             exceptionState.throwTypeError("Invalid type for property");
             return;
         }
-        cssValueList->append(item.getAsCSSStyleValue()->toCSSValue());
+        cssValueList->append(*item.getAsCSSStyleValue()->toCSSValue());
     } else if (item.isCSSStyleValueSequence()) {
         for (CSSStyleValue* styleValue : item.getAsCSSStyleValueSequence()) {
             if (!CSSOMTypes::propertyCanTake(propertyID, *styleValue)) {
                 exceptionState.throwTypeError("Invalid type for property");
                 return;
             }
-            cssValueList->append(styleValue->toCSSValue());
+            cssValueList->append(*styleValue->toCSSValue());
         }
     } else {
         // Parse it.

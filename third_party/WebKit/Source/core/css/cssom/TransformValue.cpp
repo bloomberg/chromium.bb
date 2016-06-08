@@ -58,7 +58,7 @@ CSSValue* TransformValue::toCSSValue() const
 {
     CSSValueList* transformCSSValue = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < m_transformComponents.size(); i++) {
-        transformCSSValue->append(m_transformComponents[i]->toCSSValue());
+        transformCSSValue->append(*m_transformComponents[i]->toCSSValue());
     }
     return transformCSSValue;
 }

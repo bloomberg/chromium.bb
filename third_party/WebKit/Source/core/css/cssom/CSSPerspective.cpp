@@ -20,7 +20,7 @@ CSSPerspective* CSSPerspective::create(const CSSLengthValue* length, ExceptionSt
 CSSFunctionValue* CSSPerspective::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(CSSValuePerspective);
-    result->append(m_length->toCSSValue());
+    result->append(*m_length->toCSSValue());
     return result;
 }
 

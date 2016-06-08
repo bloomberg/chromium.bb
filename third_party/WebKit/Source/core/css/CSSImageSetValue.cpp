@@ -177,7 +177,7 @@ CSSImageSetValue* CSSImageSetValue::valueWithURLsMadeAbsolute()
 {
     CSSImageSetValue* value = CSSImageSetValue::create();
     for (auto& item : *this)
-        item->isImageValue() ? value->append(toCSSImageValue(*item).valueWithURLMadeAbsolute()) : value->append(item);
+        item->isImageValue() ? value->append(*toCSSImageValue(*item).valueWithURLMadeAbsolute()) : value->append(*item);
     return value;
 }
 

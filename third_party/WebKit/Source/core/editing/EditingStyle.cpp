@@ -1147,10 +1147,10 @@ static CSSValueList* mergeTextDecorationValues(const CSSValueList* mergedValue, 
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
     CSSValueList* result = mergedValue->copy();
     if (valueToMerge->hasValue(underline) && !mergedValue->hasValue(underline))
-        result->append(&underline);
+        result->append(underline);
 
     if (valueToMerge->hasValue(lineThrough) && !mergedValue->hasValue(lineThrough))
-        result->append(&lineThrough);
+        result->append(lineThrough);
 
     return result;
 }
