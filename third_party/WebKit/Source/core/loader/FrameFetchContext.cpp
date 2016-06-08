@@ -516,18 +516,8 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
         break;
     }
 
-    // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    bool shouldBypassMainWorldCSP = frame()->script().shouldBypassMainWorldCSP() || options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy;
-
-    // Don't send CSP messages for preloads, we might never actually display those items.
-    ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
-        ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
-
-    if (m_document) {
-        DCHECK(m_document->contentSecurityPolicy());
-        if (!shouldBypassMainWorldCSP && !m_document->contentSecurityPolicy()->allowRequest(resourceRequest.requestContext(), url, options.contentSecurityPolicyNonce, redirectStatus, cspReporting))
-            return ResourceRequestBlockedReasonCSP;
-    }
+    if (contentSecurityPolicyBlocksRequest(type, resourceRequest, url, options, forPreload, redirectStatus))
+        return ResourceRequestBlockedReasonCSP;
 
     if (type == Resource::Script || type == Resource::ImportResource) {
         ASSERT(frame());
@@ -574,6 +564,37 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
         return ResourceRequestBlockedReasonSubresourceFilter;
 
     return ResourceRequestBlockedReasonNone;
+}
+
+bool FrameFetchContext::contentSecurityPolicyBlocksRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, ResourceRequest::RedirectStatus redirectStatus) const
+{
+    // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
+    if (!frame()->script().shouldBypassMainWorldCSP() && options.contentSecurityPolicyOption == CheckContentSecurityPolicy) {
+        // Don't send CSP messages for preloads, we might never actually display those items.
+        ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ? ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
+        if (m_document) {
+            DCHECK(m_document->contentSecurityPolicy());
+            if (!m_document->contentSecurityPolicy()->allowRequest(resourceRequest.requestContext(), url, options.contentSecurityPolicyNonce, redirectStatus, cspReporting))
+                return true;
+        } else if (type == Resource::MainResource) {
+            // When loading the main document of an iframe, we won't have a document
+            // yet. We instead need to grab the frame's parent's policy in order to
+            // perform 'frame-src' checks:
+            if (Frame* parentFrame = frame()->tree().parent()) {
+                if (!parentFrame->securityContext()->contentSecurityPolicy()->allowChildFrameFromSource(url, redirectStatus, cspReporting)) {
+                    // TODO(mkwst): If we cancel the request after a redirect, we never instantiate
+                    // a document, and therefore don't inherit the loader's sandbox flags, or trigger
+                    // a load event. This is strange.
+                    if (redirectStatus == ResourceRequest::RedirectStatus::FollowedRedirect) {
+                        frame()->document()->enforceSandboxFlags(SandboxOrigin);
+                        frame()->owner()->dispatchLoad();
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool FrameFetchContext::isControlledByServiceWorker() const

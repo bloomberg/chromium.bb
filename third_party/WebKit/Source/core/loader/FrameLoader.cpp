@@ -201,7 +201,7 @@ void FrameLoader::init()
     initialRequest.setRequestContext(WebURLRequest::RequestContextInternal);
     initialRequest.setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, initialRequest, SubstituteData());
-    m_provisionalDocumentLoader->startLoadingMainResource();
+    m_provisionalDocumentLoader->startLoadingMainResource(CheckContentSecurityPolicy);
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
     takeObjectSnapshot();
@@ -1358,30 +1358,14 @@ bool FrameLoader::shouldClose(bool isReload)
 }
 
 bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, const SubstituteData& substituteData,
-    DocumentLoader* loader, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy,
-    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
+    DocumentLoader* loader, NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || substituteData.isValid())
         return true;
 
-    // If we're loading content into a subframe, check against the parent's Content Security Policy
-    // and kill the load if that check fails, unless we should bypass the main world's CSP.
-    if (shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) {
-        Frame* parentFrame = m_frame->tree().parent();
-        if (parentFrame) {
-            ContentSecurityPolicy* parentPolicy = parentFrame->securityContext()->contentSecurityPolicy();
-            if (!parentPolicy->allowChildFrameFromSource(request.url(), request.redirectStatus())) {
-                // Fire a load event, as timing attacks would otherwise reveal that the
-                // frame was blocked. This way, it looks like every other cross-origin
-                // page load.
-                m_frame->document()->enforceSandboxFlags(SandboxOrigin);
-                m_frame->owner()->dispatchLoad();
-                return false;
-            }
-        }
-    }
-
+    // TODO(mkwst): Look into moving this to 'FrameFetchContext::canRequestInternal' alongside the
+    // 'frame-src' checks.
     bool isFormSubmission = type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;
     if (isFormSubmission && !m_frame->document()->contentSecurityPolicy()->allowFormAction(request.url()))
         return false;
@@ -1412,7 +1396,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
-    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect))
+    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect))
         return;
 
     m_frame->document()->cancelParsing();
@@ -1448,7 +1432,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     double triggeringEventTime = frameLoadRequest.triggeringEvent() ? frameLoadRequest.triggeringEvent()->platformTimeStamp() : 0;
     client()->dispatchDidStartProvisionalLoad(triggeringEventTime);
     ASSERT(m_provisionalDocumentLoader);
-    m_provisionalDocumentLoader->startLoadingMainResource();
+    m_provisionalDocumentLoader->startLoadingMainResource(frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy());
 
     takeObjectSnapshot();
 }

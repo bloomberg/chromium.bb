@@ -3368,6 +3368,31 @@ TEST_P(ParameterizedWebFrameTest, IframeRedirect)
     EXPECT_EQ(toKURL("http://internal.test/visible_iframe.html"), KURL(redirects[1]));
 }
 
+TEST_P(ParameterizedWebFrameTest, IframeRedirectBlocked)
+{
+    registerMockedHttpURLLoad("iframe_redirect_blocked.html");
+    registerMockedHttpURLLoad("visible_iframe.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    webViewHelper.initializeAndLoad(m_baseURL + "iframe_redirect_blocked.html", true);
+    // Pump pending requests one more time. The test page loads script that navigates
+    // to a resource which is blocked.
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
+
+    WebFrame* iframe = webViewHelper.webView()->findFrameByName(WebString::fromUTF8("ifr"));
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(iframe);
+    ASSERT_TRUE(iframe);
+    WebDataSource* iframeDataSource = iframe->dataSource();
+    ASSERT_TRUE(iframeDataSource);
+    WebVector<WebURL> redirects;
+    iframeDataSource->redirectChain(redirects);
+    ASSERT_EQ(3U, redirects.size());
+    EXPECT_EQ(toKURL("about:blank"), KURL(redirects[0]));
+    EXPECT_EQ(toKURL("http://internal.test/visible_iframe.html"), KURL(redirects[1]));
+    EXPECT_EQ(toKURL("data:,"), KURL(redirects[2]));
+}
+
 TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest)
 {
     registerMockedHttpURLLoad("iframe_clear_focused_node_test.html");

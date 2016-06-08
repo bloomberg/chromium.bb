@@ -314,7 +314,7 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
         m_fetcher->stopFetching();
         return;
     }
-    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect())) {
+    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect())) {
         m_fetcher->stopFetching();
         return;
     }
@@ -614,7 +614,14 @@ bool DocumentLoader::maybeLoadEmpty()
     return true;
 }
 
-void DocumentLoader::startLoadingMainResource()
+void DocumentLoader::loadUnique()
+{
+    m_request = ResourceRequest(SecurityOrigin::urlWithUniqueSecurityOrigin());
+    m_response = ResourceResponse(m_request.url(), "text/html", 0, nullAtom, String());
+    finishedLoading(monotonicallyIncreasingTime());
+}
+
+void DocumentLoader::startLoadingMainResource(ContentSecurityPolicyDisposition cspDisposition)
 {
     timing().markNavigationStart();
     ASSERT(!m_mainResource);
@@ -631,10 +638,15 @@ void DocumentLoader::startLoadingMainResource()
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
     FetchRequest fetchRequest(m_request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
+    fetchRequest.setContentSecurityCheck(cspDisposition);
+
     m_mainResource = RawResource::fetchMainResource(fetchRequest, fetcher(), m_substituteData);
     if (!m_mainResource) {
-        m_request = ResourceRequest(blankURL());
-        maybeLoadEmpty();
+        // If we block a main resource request, ensure that the resulting frame's
+        // origin is unique, and that the redirect list is up-to-date with the
+        // resource we actually commit:
+        loadUnique();
+        appendRedirect(SecurityOrigin::urlWithUniqueSecurityOrigin());
         return;
     }
     // A bunch of headers are set when the underlying ResourceLoader is created, and m_request needs to include those.

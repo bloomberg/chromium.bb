@@ -112,7 +112,7 @@ public:
     NavigationType getNavigationType() const { return m_navigationType; }
     void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
 
-    void startLoadingMainResource();
+    void startLoadingMainResource(ContentSecurityPolicyDisposition);
 
     void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);
     DocumentLoadTiming& timing() { return m_documentLoadTiming; }
@@ -177,6 +177,7 @@ private:
     String debugName() const override { return "DocumentLoader"; }
 
     bool maybeLoadEmpty();
+    void loadUnique();
 
     bool isRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
