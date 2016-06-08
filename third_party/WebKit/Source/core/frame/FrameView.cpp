@@ -1056,6 +1056,8 @@ void FrameView::layout()
     if (!inSubtreeLayout && !document->printing())
         adjustViewSizeAndLayout();
 
+    RELEASE_ASSERT(!needsLayout());
+
     m_frameTimingRequestsDirty = true;
 
     // FIXME: Could find the common ancestor layer of all dirty subtrees and mark from there. crbug.com/462719
@@ -1074,8 +1076,10 @@ void FrameView::layout()
             cache->handleLayoutComplete(document);
     }
     updateDocumentAnnotatedRegions();
+    RELEASE_ASSERT(!needsLayout());
 
     scheduleOrPerformPostLayoutTasks();
+    RELEASE_ASSERT(!needsLayout());
 
     // FIXME: The notion of a single root for layout is no longer applicable. Remove or update this code. crbug.com/460596
     TRACE_EVENT_END1("devtools.timeline", "Layout", "endData", InspectorLayoutEvent::endData(rootForThisLayout));
@@ -1091,6 +1095,7 @@ void FrameView::layout()
 #endif
 
     frame().document()->layoutUpdated();
+    RELEASE_ASSERT(!needsLayout());
 }
 
 void FrameView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
@@ -2624,8 +2629,6 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     if (needsLayout())
         layout();
 
-    RELEASE_ASSERT(!needsLayout());
-
     // WebView plugins need to update regardless of whether the LayoutEmbeddedObject
     // that owns them needed layout.
     // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews. We
@@ -2636,8 +2639,6 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
         if ((*child).isPluginContainer())
             toPluginView(child.get())->updateAllLifecyclePhases();
     }
-
-    RELEASE_ASSERT(!needsLayout());
 
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
@@ -2651,8 +2652,6 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
 
     for (const auto& frameView : frameViews)
         frameView->updateStyleAndLayoutIfNeededRecursiveInternal();
-
-    RELEASE_ASSERT(!needsLayout());
 
     // When SVG filters are invalidated using Document::scheduleSVGFilterLayerUpdateHack() they may trigger an
     // extra style recalc. See PaintLayer::filterNeedsPaintInvalidation().
