@@ -562,6 +562,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/*',
+        ['linux', 'nvidia', 'opengl'], bug=618408)
+    self.Fail('deqp/functional/gles3/transformfeedback.html',
+        ['linux', 'nvidia', 'opengl'], bug=618408)
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
+        ['linux', 'nvidia', 'opengl'], bug=618408)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['linux', 'nvidia', 'opengl'], bug=618408)
 
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
