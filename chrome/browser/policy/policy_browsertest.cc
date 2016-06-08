@@ -3898,10 +3898,6 @@ class ArcPolicyTest : public PolicyTest {
     arc::ArcAuthService::DisableUIForTesting();
 
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
-    arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-        multi_user_util::GetAccountIdFromProfile(browser()->profile()));
-    arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(
-        browser()->profile());
   }
 
   void TearDownTest() {

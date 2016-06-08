@@ -6,11 +6,15 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -20,12 +24,10 @@ namespace chromeos {
 RestoreAfterCrashSessionManagerDelegate::
     RestoreAfterCrashSessionManagerDelegate(Profile* profile,
                                             const std::string& login_user_id)
-    : profile_(profile), login_user_id_(login_user_id) {
-}
+    : profile_(profile), login_user_id_(login_user_id) {}
 
 RestoreAfterCrashSessionManagerDelegate::
-    ~RestoreAfterCrashSessionManagerDelegate() {
-}
+    ~RestoreAfterCrashSessionManagerDelegate() {}
 
 void RestoreAfterCrashSessionManagerDelegate::Start() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -50,6 +52,15 @@ void RestoreAfterCrashSessionManagerDelegate::Start() {
     user_session_mgr->InitializeCerts(profile());
     user_session_mgr->InitializeCRLSetFetcher(user);
     user_session_mgr->InitializeCertificateTransparencyComponents(user);
+
+    if (arc::ArcBridgeService::GetEnabled(
+            base::CommandLine::ForCurrentProcess())) {
+      DCHECK(arc::ArcServiceManager::Get());
+      arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
+          multi_user_util::GetAccountIdFromProfile(profile()));
+      DCHECK(arc::ArcAuthService::Get());
+      arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile());
+    }
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
     // so that the Launcher and other Profile dependent classes are created.
