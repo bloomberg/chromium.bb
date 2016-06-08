@@ -57,6 +57,8 @@ EXTRA_DIST =						\
 	no_g1_harness.yaml				\
 	no_g2_harness.yaml				\
 	no_harness.yaml					\
+	emphasis-full.yaml				\
+	emphasis-no-context.yaml			\
 	pl-pl-comp8_harness.yaml			\
 	sr-g1_harness.yaml				\
 	ta-ta-g1_harness.txt.bak.yaml			\

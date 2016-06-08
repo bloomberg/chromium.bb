@@ -9,6 +9,8 @@ EXTRA_DIST =					\
 	inpos_pass1.ctb				\
 	inpos_pass2.ctb				\
 	inpos_pass3.ctb				\
+	emphasis-full.utb			\
+	emphasis-no-context.utb			\
 	large.ctb				\
 	letterDefTest.ctb			\
 	letterDefTest_letter.ctb		\

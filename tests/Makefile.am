@@ -160,6 +160,8 @@ dist_yaml_TESTS =					\
 	yaml/no_8dot_harness.yaml			\
 	yaml/noletsignafter.yaml			\
 	yaml/nocross_harness.yaml			\
+	yaml/emphasis-full.yaml				\
+	yaml/emphasis-no-context.yaml			\
 	yaml/pl-pl-comp8_harness.yaml			\
 	yaml/sr-g1_harness.yaml				\
 	yaml/ta-ta-g1_harness.yaml			\
