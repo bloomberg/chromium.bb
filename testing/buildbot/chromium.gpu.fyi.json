@@ -51,7 +51,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -74,7 +74,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -97,7 +97,7 @@
         "args": [
           "gpu_rasterization",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -120,7 +120,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -143,7 +143,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -172,7 +172,7 @@
         "args": [
           "memory_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -195,7 +195,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -232,7 +232,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -255,7 +255,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -278,7 +278,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -349,7 +349,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -372,7 +372,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -395,7 +395,7 @@
         "args": [
           "gpu_rasterization",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -418,7 +418,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -441,7 +441,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -470,7 +470,7 @@
         "args": [
           "memory_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -493,7 +493,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -530,7 +530,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -553,7 +553,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -576,7 +576,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -647,7 +647,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -670,7 +670,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -693,7 +693,7 @@
         "args": [
           "gpu_rasterization",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -716,7 +716,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -739,7 +739,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -768,7 +768,7 @@
         "args": [
           "memory_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -791,7 +791,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -828,7 +828,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -851,7 +851,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -874,7 +874,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -945,7 +945,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -968,7 +968,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -991,7 +991,7 @@
         "args": [
           "gpu_rasterization",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1014,7 +1014,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1037,7 +1037,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -1066,7 +1066,7 @@
         "args": [
           "memory_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1089,7 +1089,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -1126,7 +1126,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1149,7 +1149,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1172,7 +1172,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1243,7 +1243,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1266,7 +1266,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1289,7 +1289,7 @@
         "args": [
           "gpu_rasterization",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1312,7 +1312,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1335,7 +1335,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -1364,7 +1364,7 @@
         "args": [
           "memory_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1387,7 +1387,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -1424,7 +1424,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1447,7 +1447,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1470,7 +1470,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1544,7 +1544,7 @@
         "args": [
           "context_lost",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1568,7 +1568,7 @@
         "args": [
           "gpu_process",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1592,7 +1592,7 @@
         "args": [
           "gpu_rasterization",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1616,7 +1616,7 @@
         "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1640,7 +1640,7 @@
         "args": [
           "maps",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--os-type",
@@ -1670,7 +1670,7 @@
         "args": [
           "memory_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1694,7 +1694,7 @@
         "args": [
           "pixel",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
@@ -1732,7 +1732,7 @@
         "args": [
           "screenshot_sync",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1756,7 +1756,7 @@
         "args": [
           "trace_test",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
@@ -1780,7 +1780,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=android-content-shell",
+          "--browser=android-chromium",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],

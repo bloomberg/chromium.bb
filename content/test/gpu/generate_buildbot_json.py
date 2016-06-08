@@ -404,7 +404,7 @@ FYI_WATERFALL = {
         'gpu': '0000:0000',
         'os': 'Android'
       },
-      'build_config': 'android-content-shell',
+      'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -417,7 +417,7 @@ FYI_WATERFALL = {
         'gpu': '0000:0000',
         'os': 'Android'
       },
-      'build_config': 'android-content-shell',
+      'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -429,7 +429,7 @@ FYI_WATERFALL = {
         'device_os': 'M',
         'os': 'Android'
       },
-      'build_config': 'android-content-shell',
+      'build_config': 'android-chromium',
       'swarming': True,
       'os_type': 'android',
     },
@@ -440,7 +440,7 @@ FYI_WATERFALL = {
         'gpu': '0000:0000',
         'os': 'Android'
       },
-      'build_config': 'android-content-shell',
+      'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -453,7 +453,7 @@ FYI_WATERFALL = {
         'gpu': '0000:0000',
         'os': 'Android'
       },
-      'build_config': 'android-content-shell',
+      'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -466,7 +466,7 @@ FYI_WATERFALL = {
         'gpu': '0000:0000',
         'os': 'Android'
       },
-      'build_config': 'android-content-shell',
+      'build_config': 'android-chromium',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
