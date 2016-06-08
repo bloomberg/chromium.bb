@@ -50,7 +50,15 @@ public class WebApkServiceFactory extends Service {
     private static final String RUNTIME_DEX_VERSION_PREF =
             "org.chromium.webapk.shell_apk.dex_version";
 
+    /**
+     * Key for passing id of icon to represent WebAPK notifications in status bar.
+     */
     private static final String KEY_SMALL_ICON_ID = "small_icon_id";
+
+    /**
+     * Key for passing package name of only process allowed to call the service's methods.
+     */
+    private static final String KEY_HOST_BROWSER_PACKAGE = "host_browser_package";
 
     /*
      * ClassLoader for loading {@link WEBAPK_SERVICE_IMPL_CLASS_NAME}. Static so that all
@@ -72,8 +80,10 @@ public class WebApkServiceFactory extends Service {
                     webApkClassLoader.loadClass(WEBAPK_SERVICE_IMPL_CLASS_NAME);
             Constructor<?> webApkServiceImplConstructor =
                     webApkServiceImplClass.getConstructor(Context.class, Bundle.class);
+            String hostPackageName = WebApkUtils.getHostBrowserPackageName(this);
             Bundle bundle = new Bundle();
             bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.app_icon);
+            bundle.putString(KEY_HOST_BROWSER_PACKAGE, hostPackageName);
             return (IBinder) webApkServiceImplConstructor.newInstance(new Object[] {this, bundle});
         } catch (Exception e) {
             Log.w(TAG, "Unable to create WebApkServiceImpl.");

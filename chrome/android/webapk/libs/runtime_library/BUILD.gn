@@ -41,3 +41,11 @@ android_assets("runtime_library_assets") {
     ":runtime_library",
   ]
 }
+
+junit_binary("webapk_runtime_library_junit_tests") {
+  java_files = [ "junit/src/org/chromium/webapk/lib/runtime_library/WebApkServiceImplTest.java" ]
+  deps = [
+    ":runtime_library",
+    "//base:base_junit_test_support",
+  ]
+}
