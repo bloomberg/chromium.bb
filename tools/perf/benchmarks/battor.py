@@ -5,6 +5,7 @@
 from core import perf_benchmark
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
+from telemetry import benchmark
 
 
 class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
@@ -33,6 +34,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Disabled('android')  # crbug.com/618330
 class BattOrPowerMobileSites(_BattOrBenchmark):
   page_set = page_sets.power_cases.PowerCasesPageSet
 
