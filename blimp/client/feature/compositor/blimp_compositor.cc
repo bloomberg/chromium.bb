@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/feature/compositor/blimp_context_provider.h"
 #include "blimp/client/feature/compositor/blimp_output_surface.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/proto/compositor_message.pb.h"
@@ -201,6 +202,7 @@ void BlimpCompositor::CreateLayerTreeHost(
   params.image_serialization_processor =
       client_->GetImageSerializationProcessor();
   params.settings = client_->GetLayerTreeSettings();
+  params.animation_host = cc::AnimationHost::CreateMainInstance();
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       client_->GetCompositorTaskRunner();

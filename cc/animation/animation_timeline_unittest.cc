@@ -16,9 +16,9 @@ namespace {
 
 TEST(AnimationTimelineTest, SyncPlayersAttachDetach) {
   std::unique_ptr<AnimationHost> host(
-      AnimationHost::Create(ThreadInstance::MAIN));
+      AnimationHost::CreateForTesting(ThreadInstance::MAIN));
   std::unique_ptr<AnimationHost> host_impl(
-      AnimationHost::Create(ThreadInstance::IMPL));
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   const int player_id = AnimationIdProvider::NextPlayerId();
@@ -62,9 +62,9 @@ TEST(AnimationTimelineTest, SyncPlayersAttachDetach) {
 
 TEST(AnimationTimelineTest, ClearPlayers) {
   std::unique_ptr<AnimationHost> host(
-      AnimationHost::Create(ThreadInstance::MAIN));
+      AnimationHost::CreateForTesting(ThreadInstance::MAIN));
   std::unique_ptr<AnimationHost> host_impl(
-      AnimationHost::Create(ThreadInstance::IMPL));
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   const int player_id1 = AnimationIdProvider::NextPlayerId();

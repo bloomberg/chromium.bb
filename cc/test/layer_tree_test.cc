@@ -185,6 +185,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           shared_bitmap_manager,
                           gpu_memory_buffer_manager,
                           task_graph_runner,
+                          AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0),
         test_hooks_(test_hooks),
         block_notify_ready_to_activate_for_testing_(false),
@@ -425,6 +426,8 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
     params.task_graph_runner = task_graph_runner;
     params.settings = &settings;
+    params.animation_host =
+        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     std::unique_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, &params, mode));
     std::unique_ptr<TaskRunnerProvider> task_runner_provider =

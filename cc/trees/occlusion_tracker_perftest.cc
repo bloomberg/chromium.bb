@@ -8,6 +8,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "cc/animation/animation_host.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_iterator.h"
 #include "cc/layers/solid_color_layer_impl.h"
@@ -42,7 +43,8 @@ class OcclusionTrackerPerfTest : public testing::Test {
     LayerTreeSettings settings;
     host_impl_ = LayerTreeHostImpl::Create(
         settings, &client_, &impl_task_runner_provider_, &stats_,
-        &shared_bitmap_manager_, nullptr, &task_graph_runner_, 1);
+        &shared_bitmap_manager_, nullptr, &task_graph_runner_,
+        AnimationHost::CreateForTesting(ThreadInstance::IMPL), 1);
     host_impl_->SetVisible(true);
     host_impl_->InitializeRenderer(output_surface_.get());
 

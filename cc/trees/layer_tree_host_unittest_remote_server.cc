@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
@@ -32,6 +33,8 @@ class LayerTreeHostTestRemoteServer : public testing::Test,
     params.settings = &settings_;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     params.image_serialization_processor = image_serialization_processor_.get();
+    params.animation_host =
+        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     layer_tree_host_ = LayerTreeHost::CreateRemoteServer(this, &params);
   }
 

@@ -1,6 +1,6 @@
 include_rules = [
+  "+cc/animation/animation_host.h",
   "+cc/layers/layer.h",
-  "+cc/layers/layer_settings.h",
   "+cc/layers/ui_resource_layer.h",
   "+cc/output/copy_output_request.h",
   "+cc/resources/scoped_ui_resource.h",

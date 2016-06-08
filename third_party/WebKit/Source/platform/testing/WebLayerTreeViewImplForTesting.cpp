@@ -29,6 +29,7 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(const cc::LayerTr
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
     params.task_graph_runner = &m_taskGraphRunner;
+    params.animation_host = cc::AnimationHost::CreateForTesting(cc::ThreadInstance::MAIN);
     m_layerTreeHost = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
     ASSERT(m_layerTreeHost);
 }

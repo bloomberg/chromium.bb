@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
@@ -71,6 +72,8 @@ class MockLayerTreeHost : public LayerTreeHost {
     LayerTreeHost::InitParams params;
     params.client = client;
     params.task_graph_runner = task_graph_runner;
+    params.animation_host =
+        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     LayerTreeSettings settings;
     params.settings = &settings;
     return base::WrapUnique(new MockLayerTreeHost(client, &params));

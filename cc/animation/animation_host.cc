@@ -25,9 +25,18 @@
 
 namespace cc {
 
-std::unique_ptr<AnimationHost> AnimationHost::Create(
+std::unique_ptr<AnimationHost> AnimationHost::CreateMainInstance() {
+  return base::WrapUnique(new AnimationHost(ThreadInstance::MAIN));
+}
+
+std::unique_ptr<AnimationHost> AnimationHost::CreateForTesting(
     ThreadInstance thread_instance) {
-  return base::WrapUnique(new AnimationHost(thread_instance));
+  auto animation_host = base::WrapUnique(new AnimationHost(thread_instance));
+
+  if (thread_instance == ThreadInstance::IMPL)
+    animation_host->SetSupportsScrollAnimations(true);
+
+  return animation_host;
 }
 
 AnimationHost::AnimationHost(ThreadInstance thread_instance)
@@ -50,6 +59,15 @@ AnimationHost::~AnimationHost() {
   ClearTimelines();
   DCHECK(!mutator_host_client());
   DCHECK(element_to_animations_map_.empty());
+}
+
+std::unique_ptr<AnimationHost> AnimationHost::CreateImplInstance(
+    bool supports_impl_scrolling) const {
+  DCHECK_EQ(thread_instance_, ThreadInstance::MAIN);
+  auto animation_host_impl =
+      base::WrapUnique(new AnimationHost(ThreadInstance::IMPL));
+  animation_host_impl->SetSupportsScrollAnimations(supports_impl_scrolling);
+  return animation_host_impl;
 }
 
 AnimationTimeline* AnimationHost::GetTimelineById(int timeline_id) const {

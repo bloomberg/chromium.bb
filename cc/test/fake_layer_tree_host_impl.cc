@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/test/fake_layer_tree_host_impl.h"
+
 #include <stddef.h>
 
+#include "cc/animation/animation_host.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_tree_settings_for_testing.h"
@@ -46,6 +49,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
                         manager,
                         gpu_memory_buffer_manager,
                         task_graph_runner,
+                        AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                         0),
       notify_tile_state_changed_called_(false) {
   // Explicitly clear all debug settings.

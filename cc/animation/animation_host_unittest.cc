@@ -25,9 +25,9 @@ class AnimationHostTest : public AnimationTimelinesTest {
 
 TEST_F(AnimationHostTest, SyncTimelinesAddRemove) {
   std::unique_ptr<AnimationHost> host(
-      AnimationHost::Create(ThreadInstance::MAIN));
+      AnimationHost::CreateForTesting(ThreadInstance::MAIN));
   std::unique_ptr<AnimationHost> host_impl(
-      AnimationHost::Create(ThreadInstance::IMPL));
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   scoped_refptr<AnimationTimeline> timeline(
@@ -58,9 +58,9 @@ TEST_F(AnimationHostTest, SyncTimelinesAddRemove) {
 
 TEST_F(AnimationHostTest, ImplOnlyTimeline) {
   std::unique_ptr<AnimationHost> host(
-      AnimationHost::Create(ThreadInstance::MAIN));
+      AnimationHost::CreateForTesting(ThreadInstance::MAIN));
   std::unique_ptr<AnimationHost> host_impl(
-      AnimationHost::Create(ThreadInstance::IMPL));
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL));
 
   const int timeline_id1 = AnimationIdProvider::NextTimelineId();
   const int timeline_id2 = AnimationIdProvider::NextTimelineId();

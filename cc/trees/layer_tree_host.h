@@ -93,6 +93,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     std::unique_ptr<BeginFrameSource> external_begin_frame_source;
     ImageSerializationProcessor* image_serialization_processor = nullptr;
+    std::unique_ptr<AnimationHost> animation_host;
 
     InitParams();
     ~InitParams();

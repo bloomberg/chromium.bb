@@ -53,6 +53,7 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
+  params.animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
 }
 
@@ -67,6 +68,7 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
   params.image_serialization_processor = image_serialization_processor;
+  params.animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
 }
 

@@ -508,6 +508,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.task_graph_runner = task_graph_runner;
   params.main_task_runner = main_thread_compositor_task_runner;
   params.external_begin_frame_source = std::move(external_begin_frame_source);
+  params.animation_host = cc::AnimationHost::CreateMainInstance();
   if (use_remote_compositing) {
     DCHECK(!compositor_thread_task_runner.get());
     params.image_serialization_processor =

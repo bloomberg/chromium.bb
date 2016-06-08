@@ -194,7 +194,8 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_ = LayerTreeHostImpl::Create(
         settings, this, task_runner_provider, &stats_instrumentation_,
         &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
-        &task_graph_runner_, 0);
+        &task_graph_runner_,
+        AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
     output_surface_ = std::move(output_surface);
     host_impl_->SetVisible(true);
     bool init = host_impl_->InitializeRenderer(output_surface_.get());
@@ -2713,6 +2714,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           manager,
                           nullptr,
                           task_graph_runner,
+                          AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0) {}
 
   BeginFrameArgs CurrentBeginFrameArgs() const override {
@@ -6920,7 +6922,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl =
       LayerTreeHostImpl::Create(
           settings, this, &task_runner_provider_, &stats_instrumentation_,
-          &shared_bitmap_manager_, NULL, &task_graph_runner_, 0);
+          &shared_bitmap_manager_, NULL, &task_graph_runner_,
+          AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
   layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeRenderer(output_surface.get());
   layer_tree_host_impl->WillBeginImplFrame(
@@ -7217,7 +7220,8 @@ static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   settings.renderer_settings.partial_swap_enabled = partial_swap;
   std::unique_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
       settings, client, task_runner_provider, stats_instrumentation, manager,
-      nullptr, task_graph_runner, 0);
+      nullptr, task_graph_runner,
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
   my_host_impl->SetVisible(true);
   my_host_impl->InitializeRenderer(output_surface);
   my_host_impl->WillBeginImplFrame(
@@ -7709,7 +7713,7 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
-      0);
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
 
   output_surface_ =
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create());
@@ -10826,7 +10830,7 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnOutputSurfaceChange) {
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, &task_graph_runner_,
-      0);
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
   host_impl_->SetVisible(true);
 
   // InitializeRenderer with a gpu-raster enabled output surface.

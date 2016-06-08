@@ -883,6 +883,9 @@ class LayerTest : public testing::Test {
     params.client = &fake_client_;
     params.settings = &settings_;
     params.task_graph_runner = &task_graph_runner_;
+    params.animation_host =
+        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+
     layer_tree_host_.reset(
         new StrictMock<MockLayerTreeHost>(&fake_client_, &params));
   }
@@ -1818,6 +1821,8 @@ class LayerTreeHostFactory {
     params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+    params.animation_host =
+        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     return LayerTreeHost::CreateSingleThreaded(&client_, &params);
   }
 

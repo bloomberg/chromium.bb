@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/painted_scrollbar_layer.h"
@@ -109,6 +110,8 @@ class ScrollbarLayerTest : public testing::Test {
     params.client = &fake_client_;
     params.settings = &layer_tree_settings_;
     params.task_graph_runner = &task_graph_runner_;
+    params.animation_host =
+        AnimationHost::CreateForTesting(ThreadInstance::MAIN);
 
     layer_tree_host_.reset(
         new FakeResourceTrackingLayerTreeHost(&fake_client_, &params));

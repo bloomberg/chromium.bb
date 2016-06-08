@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/empty_content_layer_client.h"
@@ -434,14 +435,24 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params.settings = &settings;
   params.task_graph_runner = &task_graph_runner;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params.animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<LayerTreeHost> host1 =
       LayerTreeHost::CreateSingleThreaded(&host_client1, &params);
   host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
-  params.client = &host_client2;
+  // TODO(sad): InitParams will be movable.
+  LayerTreeHost::InitParams params2;
+  params2.client = &host_client1;
+  params2.shared_bitmap_manager = &shared_bitmap_manager;
+  params2.settings = &settings;
+  params2.task_graph_runner = &task_graph_runner;
+  params2.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params2.client = &host_client2;
+  params2.animation_host =
+      AnimationHost::CreateForTesting(ThreadInstance::MAIN);
   std::unique_ptr<LayerTreeHost> host2 =
-      LayerTreeHost::CreateSingleThreaded(&host_client2, &params);
+      LayerTreeHost::CreateSingleThreaded(&host_client2, &params2);
   host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 

@@ -177,10 +177,12 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
+    std::unique_ptr<AnimationHost> animation_host,
     int id) {
   return base::WrapUnique(new LayerTreeHostImpl(
       settings, client, task_runner_provider, rendering_stats_instrumentation,
-      shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner, id));
+      shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner,
+      std::move(animation_host), id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -191,6 +193,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     TaskGraphRunner* task_graph_runner,
+    std::unique_ptr<AnimationHost> animation_host,
     int id)
     : client_(client),
       task_runner_provider_(task_runner_provider),
@@ -230,7 +233,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
       max_memory_needed_bytes_(0),
       resourceless_software_draw_(false),
-      animation_host_(),
+      animation_host_(std::move(animation_host)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       shared_bitmap_manager_(shared_bitmap_manager),
@@ -241,9 +244,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_likely_to_require_a_draw_(false),
       mutator_(nullptr),
       has_fixed_raster_scale_blurry_content_(false) {
-  animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
+  DCHECK(animation_host_);
   animation_host_->SetMutatorHostClient(this);
-  animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
 
   DCHECK(task_runner_provider_->IsImplThread());
   DidVisibilityChange(this, visible_);

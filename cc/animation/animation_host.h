@@ -49,7 +49,11 @@ class CC_EXPORT AnimationHost {
                          scoped_refptr<ElementAnimations>,
                          ElementIdHash>;
 
-  static std::unique_ptr<AnimationHost> Create(ThreadInstance thread_instance);
+  static std::unique_ptr<AnimationHost> CreateMainInstance();
+  static std::unique_ptr<AnimationHost> CreateForTesting(
+      ThreadInstance thread_instance);
+  std::unique_ptr<AnimationHost> CreateImplInstance(
+      bool supports_impl_scrolling) const;
   ~AnimationHost();
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);

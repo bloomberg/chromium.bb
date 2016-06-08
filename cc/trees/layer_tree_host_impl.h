@@ -158,6 +158,7 @@ class CC_EXPORT LayerTreeHostImpl
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
+      std::unique_ptr<AnimationHost> animation_host,
       int id);
   ~LayerTreeHostImpl() override;
 
@@ -637,6 +638,7 @@ class CC_EXPORT LayerTreeHostImpl
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       TaskGraphRunner* task_graph_runner,
+      std::unique_ptr<AnimationHost> animation_host,
       int id);
 
   // Virtual for testing.

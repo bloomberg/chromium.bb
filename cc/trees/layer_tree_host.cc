@@ -237,6 +237,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       has_transparent_background_(false),
       have_scroll_event_handlers_(false),
       event_listener_properties_(),
+      animation_host_(std::move(params->animation_host)),
       did_complete_scale_animation_(false),
       in_paint_layer_contents_(false),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
@@ -249,7 +250,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       next_surface_sequence_(1u) {
   DCHECK(task_graph_runner_);
 
-  animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
+  DCHECK(animation_host_);
   animation_host_->SetMutatorHostClient(this);
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
@@ -612,10 +613,16 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
+
+  const bool supports_impl_scrolling = task_runner_provider_->HasImplThread();
+  std::unique_ptr<AnimationHost> animation_host_impl =
+      animation_host_->CreateImplInstance(supports_impl_scrolling);
+
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
       rendering_stats_instrumentation_.get(), shared_bitmap_manager_,
-      gpu_memory_buffer_manager_, task_graph_runner_, id_);
+      gpu_memory_buffer_manager_, task_graph_runner_,
+      std::move(animation_host_impl), id_);
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentIsSuitableForGpuRasterization(
       content_is_suitable_for_gpu_rasterization_);
