@@ -718,11 +718,11 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
   explicit PointerEvent(const TouchEvent& touch_event);
 
   PointerEvent(EventType type,
-               EventPointerType pointer_type,
                const gfx::Point& location,
                const gfx::Point& root_location,
                int flags,
                int pointer_id,
+               const PointerDetails& pointer_details,
                base::TimeDelta time_stamp);
 
   int32_t pointer_id() const { return pointer_id_; }

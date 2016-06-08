@@ -923,11 +923,11 @@ PointerEvent::PointerEvent(const TouchEvent& touch_event)
 }
 
 PointerEvent::PointerEvent(EventType type,
-                           EventPointerType pointer_type,
                            const gfx::Point& location,
                            const gfx::Point& root_location,
                            int flags,
                            int pointer_id,
+                           const PointerDetails& pointer_details,
                            base::TimeDelta time_stamp)
     : LocatedEvent(type,
                    gfx::PointF(location),
@@ -935,7 +935,7 @@ PointerEvent::PointerEvent(EventType type,
                    time_stamp,
                    flags),
       pointer_id_(pointer_id),
-      details_(PointerDetails(pointer_type)) {}
+      details_(pointer_details) {}
 
 const int PointerEvent::kMousePointerId = std::numeric_limits<int32_t>::max();
 

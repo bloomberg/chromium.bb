@@ -440,9 +440,10 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
 // CompositorMusConnection does not consume the ack, nor calls it.
 TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
   mus::TestWindow test_window;
-  ui::PointerEvent event(ui::ET_POINTER_DOWN,
-                         ui::EventPointerType::POINTER_TYPE_MOUSE, gfx::Point(),
-                         gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
+  ui::PointerEvent event(
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
@@ -464,9 +465,10 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
   mus::TestWindow test_window;
-  ui::PointerEvent event(ui::ET_POINTER_DOWN,
-                         ui::EventPointerType::POINTER_TYPE_TOUCH, gfx::Point(),
-                         gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
+  ui::PointerEvent event(
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(

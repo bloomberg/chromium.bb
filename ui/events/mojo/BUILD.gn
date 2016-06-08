@@ -23,5 +23,6 @@ mojom("test_interfaces") {
 
   public_deps = [
     ":interfaces",
+    "//components/mus/public/interfaces",
   ]
 }

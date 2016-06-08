@@ -4,9 +4,13 @@
 
 module ui.mojom;
 
+import "components/mus/public/interfaces/input_events.mojom";
 import "ui/events/mojo/latency_info.mojom";
 
 interface TraitsTestService {
+  [Sync]
+  EchoEvent(mus.mojom.Event e) => (mus.mojom.Event pass);
+
   [Sync]
   EchoLatencyComponent(LatencyComponent l) => (LatencyComponent pass);
 

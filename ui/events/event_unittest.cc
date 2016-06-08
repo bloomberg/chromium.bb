@@ -929,9 +929,10 @@ TEST(EventTest, PointerEventToMouseEvent) {
 
   for (size_t i = 0; i < arraysize(kTestData); i++) {
     ui::PointerEvent pointer_event(
-        kTestData[i].in_type, ui::EventPointerType::POINTER_TYPE_MOUSE,
-        kTestData[i].location, kTestData[i].root_location, kTestData[i].flags,
-        0, base::TimeDelta());
+        kTestData[i].in_type, kTestData[i].location, kTestData[i].root_location,
+        kTestData[i].flags, 0,
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+        base::TimeDelta());
     ui::MouseEvent mouse_event(pointer_event);
 
     EXPECT_EQ(kTestData[i].out_type, mouse_event.type());
@@ -951,8 +952,9 @@ TEST(EventTest, PointerEventToTouchEventType) {
 
   for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
     ui::PointerEvent pointer_event(
-        kTouchTypeMap[i][0], ui::EventPointerType::POINTER_TYPE_TOUCH,
-        gfx::Point(), gfx::Point(), 0, 0, base::TimeDelta());
+        kTouchTypeMap[i][0], gfx::Point(), gfx::Point(), 0, 0,
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+        base::TimeDelta());
     ui::TouchEvent touch_event(pointer_event);
 
     EXPECT_EQ(kTouchTypeMap[i][1], touch_event.type());

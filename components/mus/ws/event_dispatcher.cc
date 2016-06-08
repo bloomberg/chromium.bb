@@ -150,9 +150,9 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
                                      : ui::EventPointerType::POINTER_TYPE_TOUCH;
       // TODO(jonross): Track previous location in PointerTarget for sending
       // cancels.
-      ui::PointerEvent event(event_type, pointer_type, gfx::Point(),
-                             gfx::Point(), ui::EF_NONE, pair.first,
-                             ui::EventTimeForNow());
+      ui::PointerEvent event(
+          event_type, gfx::Point(), gfx::Point(), ui::EF_NONE, pair.first,
+          ui::PointerDetails(pointer_type), ui::EventTimeForNow());
       DispatchToPointerTarget(pair.second, event);
     }
     pointer_targets_.clear();
@@ -397,9 +397,10 @@ void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
   // The targets are changing. Send an exit if appropriate.
   if (event.IsMousePointerEvent()) {
     ui::PointerEvent exit_event(
-        ui::ET_POINTER_EXITED, ui::EventPointerType::POINTER_TYPE_MOUSE,
-        event.location(), event.root_location(), event.flags(),
-        ui::PointerEvent::kMousePointerId, event.time_stamp());
+        ui::ET_POINTER_EXITED, event.location(), event.root_location(),
+        event.flags(), ui::PointerEvent::kMousePointerId,
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+        event.time_stamp());
     DispatchToPointerTarget(pointer_targets_[pointer_id], exit_event);
   }
 

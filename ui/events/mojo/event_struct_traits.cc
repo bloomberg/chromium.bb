@@ -54,52 +54,28 @@ mus::mojom::EventType UIEventTypeToMojo(ui::EventType type) {
   return mus::mojom::EventType::UNKNOWN;
 }
 
-ui::EventType MojoMouseEventTypeToUIEvent(mus::mojom::EventType action,
-                                          int32_t flags) {
+ui::EventType MojoPointerEventTypeToUIEvent(mus::mojom::EventType action) {
   switch (action) {
     case mus::mojom::EventType::POINTER_DOWN:
-      return ui::ET_MOUSE_PRESSED;
+      return ui::ET_POINTER_DOWN;
 
     case mus::mojom::EventType::POINTER_UP:
-      return ui::ET_MOUSE_RELEASED;
+      return ui::ET_POINTER_UP;
 
     case mus::mojom::EventType::POINTER_MOVE:
-      if (flags & (mus::mojom::kEventFlagLeftMouseButton |
-                   mus::mojom::kEventFlagMiddleMouseButton |
-                   mus::mojom::kEventFlagRightMouseButton)) {
-        return ui::ET_MOUSE_DRAGGED;
-      }
-      return ui::ET_MOUSE_MOVED;
-
-    case mus::mojom::EventType::MOUSE_EXIT:
-      return ui::ET_MOUSE_EXITED;
-
-    default:
-      NOTREACHED();
-  }
-
-  return ui::ET_MOUSE_RELEASED;
-}
-
-ui::EventType MojoTouchEventTypeToUIEvent(mus::mojom::EventType action) {
-  switch (action) {
-    case mus::mojom::EventType::POINTER_DOWN:
-      return ui::ET_TOUCH_PRESSED;
-
-    case mus::mojom::EventType::POINTER_UP:
-      return ui::ET_TOUCH_RELEASED;
-
-    case mus::mojom::EventType::POINTER_MOVE:
-      return ui::ET_TOUCH_MOVED;
+      return ui::ET_POINTER_MOVED;
 
     case mus::mojom::EventType::POINTER_CANCEL:
-      return ui::ET_TOUCH_CANCELLED;
+      return ui::ET_POINTER_CANCELLED;
+
+    case mus::mojom::EventType::MOUSE_EXIT:
+      return ui::ET_POINTER_EXITED;
 
     default:
       NOTREACHED();
   }
 
-  return ui::ET_TOUCH_CANCELLED;
+  return ui::ET_UNKNOWN;
 }
 
 }  // namespace
@@ -327,25 +303,24 @@ bool StructTraits<mus::mojom::Event, EventUniquePtr>::Read(
                 ui::EventFlags(event.flags()), ui::EventFlags(event.flags())));
             return true;
           }
-          // TODO(moshayedi): Construct pointer event directly.
-          ui::PointerEvent* mouse_event = new ui::PointerEvent(ui::MouseEvent(
-              MojoMouseEventTypeToUIEvent(event.action(), event.flags()),
-              location, screen_location, ui::EventTimeForNow(),
-              ui::EventFlags(event.flags()), ui::EventFlags(event.flags())));
-          out->reset(mouse_event);
+          out->reset(new ui::PointerEvent(
+              MojoPointerEventTypeToUIEvent(event.action()), location,
+              screen_location, event.flags(), ui::PointerEvent::kMousePointerId,
+              ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+              ui::EventTimeForNow()));
           return true;
         }
         case mus::mojom::PointerKind::TOUCH: {
-          // TODO(moshayedi): Construct pointer event directly.
-          ui::PointerEvent* pointer_event = new ui::PointerEvent(ui::TouchEvent(
-              MojoTouchEventTypeToUIEvent(event.action()), gfx::Point(),
-              ui::EventFlags(event.flags()), pointer_data->pointer_id,
-              base::TimeDelta::FromInternalValue(event.time_stamp()),
-              pointer_data->brush_data->width, pointer_data->brush_data->height,
-              0, pointer_data->brush_data->pressure));
-          pointer_event->set_location(location);
-          pointer_event->set_root_location(screen_location);
-          out->reset(pointer_event);
+          out->reset(new ui::PointerEvent(
+              MojoPointerEventTypeToUIEvent(event.action()), location,
+              screen_location, event.flags(), pointer_data->pointer_id,
+              ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                 pointer_data->brush_data->width,
+                                 pointer_data->brush_data->height,
+                                 pointer_data->brush_data->pressure,
+                                 pointer_data->brush_data->tilt_x,
+                                 pointer_data->brush_data->tilt_y),
+              ui::EventTimeForNow()));
           return true;
         }
         case mus::mojom::PointerKind::PEN:
