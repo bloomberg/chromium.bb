@@ -565,8 +565,6 @@
       'graphics/ColorSpaceProfileData.h',
       'graphics/CompositingReasons.cpp',
       'graphics/CompositingReasons.h',
-      'graphics/CompositorElementId.cpp',
-      'graphics/CompositorElementId.h',
       'graphics/CompositorFactory.cpp',
       'graphics/CompositorFactory.h',
       'graphics/CompositorFilterOperations.cpp',

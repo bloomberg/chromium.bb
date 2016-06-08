@@ -78,6 +78,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       scroll_tree_index_(-1),
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
+      element_id_(0),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
       scrolls_drawn_descendant_(false),
@@ -948,18 +949,16 @@ bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
   return layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
-void LayerImpl::SetElementId(ElementId element_id) {
+void LayerImpl::SetElementId(uint64_t element_id) {
   if (element_id == element_id_)
     return;
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
-               "LayerImpl::SetElementId", "element",
-               element_id.AsValue().release());
+               "LayerImpl::SetElementId", "id", element_id);
 
   layer_tree_impl_->RemoveFromElementMap(this);
   element_id_ = element_id;
   layer_tree_impl_->AddToElementMap(this);
-
   SetNeedsPushProperties();
 }
 
@@ -1150,11 +1149,10 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("gpu_memory_usage",
                     base::saturated_cast<int>(GPUMemoryUsageInBytes()));
 
-  if (element_id_)
-    element_id_.AddToTracedValue(state);
-
-  if (mutable_properties_ != MutableProperty::kNone)
+  if (mutable_properties_ != MutableProperty::kNone) {
+    state->SetInteger("element_id", base::saturated_cast<int>(element_id_));
     state->SetInteger("mutable_properties", mutable_properties_);
+  }
 
   MathUtil::AddToTracedValue("scroll_offset", CurrentScrollOffset(), state);
 

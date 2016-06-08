@@ -38,19 +38,19 @@ void CompositorAnimationPlayer::setAnimationDelegate(CompositorAnimationDelegate
     m_animationPlayer->set_animation_delegate(delegate ? this : nullptr);
 }
 
-void CompositorAnimationPlayer::attachElement(const CompositorElementId& id)
+void CompositorAnimationPlayer::attachLayer(WebLayer* webLayer)
 {
-    m_animationPlayer->AttachElement(id);
+    m_animationPlayer->AttachElement(webLayer->id());
 }
 
-void CompositorAnimationPlayer::detachElement()
+void CompositorAnimationPlayer::detachLayer()
 {
     m_animationPlayer->DetachElement();
 }
 
-bool CompositorAnimationPlayer::isElementAttached() const
+bool CompositorAnimationPlayer::isLayerAttached() const
 {
-    return !!m_animationPlayer->element_id();
+    return m_animationPlayer->element_id() != 0;
 }
 
 void CompositorAnimationPlayer::addAnimation(CompositorAnimation* animation)
@@ -59,17 +59,17 @@ void CompositorAnimationPlayer::addAnimation(CompositorAnimation* animation)
     delete animation;
 }
 
-void CompositorAnimationPlayer::removeAnimation(uint64_t animationId)
+void CompositorAnimationPlayer::removeAnimation(int animationId)
 {
     m_animationPlayer->RemoveAnimation(animationId);
 }
 
-void CompositorAnimationPlayer::pauseAnimation(uint64_t animationId, double timeOffset)
+void CompositorAnimationPlayer::pauseAnimation(int animationId, double timeOffset)
 {
     m_animationPlayer->PauseAnimation(animationId, timeOffset);
 }
 
-void CompositorAnimationPlayer::abortAnimation(uint64_t animationId)
+void CompositorAnimationPlayer::abortAnimation(int animationId)
 {
     m_animationPlayer->AbortAnimation(animationId);
 }

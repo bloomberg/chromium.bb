@@ -6,8 +6,6 @@
 
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutableState.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "wtf/PassOwnPtr.h"
@@ -25,10 +23,9 @@ CompositorMutableStateProvider::~CompositorMutableStateProvider() {}
 PassOwnPtr<CompositorMutableState>
 CompositorMutableStateProvider::getMutableStateFor(uint64_t element_id)
 {
-    cc::LayerImpl* mainLayer = m_state->LayerByElementId(createCompositorElementId(element_id, CompositorSubElementId::Primary));
-    cc::LayerImpl* scrollLayer = m_state->LayerByElementId(createCompositorElementId(element_id, CompositorSubElementId::Scroll));
+    cc::LayerTreeImpl::ElementLayers layers = m_state->GetMutableLayers(element_id);
 
-    if (!mainLayer && !scrollLayer)
+    if (!layers.main && !layers.scroll)
         return nullptr;
 
     // Ensure that we have an entry in the map for |element_id| but do as few
@@ -40,7 +37,7 @@ CompositorMutableStateProvider::getMutableStateFor(uint64_t element_id)
     if (result.isNewEntry)
         result.storedValue->value = adoptPtr(new CompositorMutation);
 
-    return adoptPtr(new CompositorMutableState(result.storedValue->value.get(), mainLayer, scrollLayer));
+    return adoptPtr(new CompositorMutableState(result.storedValue->value.get(), layers.main, layers.scroll));
 }
 
 } // namespace blink

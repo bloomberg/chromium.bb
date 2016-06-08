@@ -45,9 +45,7 @@ enum class ThreadInstance { MAIN, IMPL };
 class CC_EXPORT AnimationHost {
  public:
   using ElementToAnimationsMap =
-      std::unordered_map<ElementId,
-                         scoped_refptr<ElementAnimations>,
-                         ElementIdHash>;
+      std::unordered_map<ElementId, scoped_refptr<ElementAnimations>>;
 
   static std::unique_ptr<AnimationHost> CreateMainInstance();
   static std::unique_ptr<AnimationHost> CreateForTesting(

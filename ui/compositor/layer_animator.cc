@@ -156,7 +156,7 @@ void LayerAnimator::SetCompositor(Compositor* compositor) {
   // AnimationHost::RegisterPlayerForLayer via
   // AnimationHost::GetElementAnimationsForLayerId.
   if (element_animations_state_) {
-    DCHECK_EQ(element_animations_state_->element_id().primaryId,
+    DCHECK_EQ(element_animations_state_->element_id(),
               delegate_->GetCcLayer()->id());
     timeline->animation_host()->RegisterElementAnimations(
         element_animations_state_.get());
@@ -176,14 +176,13 @@ void LayerAnimator::ResetCompositor(Compositor* compositor) {
   cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();
   DCHECK(timeline);
 
-  cc::ElementId element_id(animation_player_->element_id());
+  const int layer_id = animation_player_->element_id();
 
   // Store a reference to ElementAnimations (if any)
   // so it may be picked up in LayerAnimator::SetCompositor.
-  if (element_id) {
+  if (layer_id) {
     element_animations_state_ =
-        timeline->animation_host()->GetElementAnimationsForElementId(
-            element_id);
+        timeline->animation_host()->GetElementAnimationsForElementId(layer_id);
   }
 
   DetachLayerFromAnimationPlayer();
@@ -192,12 +191,10 @@ void LayerAnimator::ResetCompositor(Compositor* compositor) {
 }
 
 void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
-  // For ui, layer and element ids are equivalent.
-  cc::ElementId element_id(layer_id, 0);
   if (!animation_player_->element_id())
-    animation_player_->AttachElement(element_id);
+    animation_player_->AttachElement(layer_id);
   else
-    DCHECK_EQ(animation_player_->element_id(), element_id);
+    DCHECK_EQ(animation_player_->element_id(), layer_id);
 
   animation_player_->set_animation_delegate(this);
 }

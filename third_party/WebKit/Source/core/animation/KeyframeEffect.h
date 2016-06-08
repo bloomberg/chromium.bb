@@ -84,6 +84,7 @@ public:
     void cancelIncompatibleAnimationsOnCompositor();
     void pauseAnimationForTestingOnCompositor(double pauseTime);
 
+    bool canAttachCompositedLayers() const;
     void attachCompositedLayers();
 
     void setCompositorAnimationIdsForTesting(const Vector<int>& compositorAnimationIds) { m_compositorAnimationIds = compositorAnimationIds; }

@@ -360,7 +360,7 @@ void ScrollAnimator::updateCompositorAnimations()
     }
 
     if (m_runState == RunState::WaitingToSendToCompositor) {
-        if (!m_compositorAnimationAttachedToElementId)
+        if (!m_compositorAnimationAttachedToLayerId)
             reattachCompositorPlayerIfNeeded(getScrollableArea()->compositorAnimationTimeline());
 
         if (!m_animationCurve)

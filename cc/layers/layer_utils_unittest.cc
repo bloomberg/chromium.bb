@@ -13,7 +13,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -42,7 +41,6 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
     timeline_ =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
     host_impl_.animation_host()->AddAnimationTimeline(timeline_);
-    host_impl_.active_tree()->SetElementIdsForTesting();
   }
 
   LayerImpl* root() { return root_; }
@@ -96,8 +94,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, ScaleRoot) {
   start.AppendScale(1.f, 1.f, 1.f);
   TransformOperations end;
   end.AppendScale(2.f, 2.f, 1.f);
-  AddAnimatedTransformToElementWithPlayer(root()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(root()->id(), timeline(), duration,
+                                        start, end);
 
   root()->SetPosition(gfx::PointF());
   parent1()->SetPosition(gfx::PointF());
@@ -123,8 +121,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, TranslateParentLayer) {
   start.AppendTranslate(0.f, 0.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(50.f, 50.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(parent1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(parent1()->id(), timeline(), duration,
+                                        start, end);
 
   parent1()->SetBounds(gfx::Size(350, 200));
 
@@ -148,8 +146,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, TranslateChildLayer) {
   start.AppendTranslate(0.f, 0.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(50.f, 50.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(child1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(child1()->id(), timeline(), duration,
+                                        start, end);
   parent1()->SetBounds(gfx::Size(350, 200));
 
   child1()->SetDrawsContent(true);
@@ -172,13 +170,13 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, TranslateBothLayers) {
   start.AppendTranslate(0.f, 0.f, 0.f);
   TransformOperations child_end;
   child_end.AppendTranslate(50.f, 0.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(parent1()->element_id(), timeline(),
-                                          duration, start, child_end);
+  AddAnimatedTransformToLayerWithPlayer(parent1()->id(), timeline(), duration,
+                                        start, child_end);
 
   TransformOperations grand_child_end;
   grand_child_end.AppendTranslate(0.f, 50.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(child1()->element_id(), timeline(),
-                                          duration, start, grand_child_end);
+  AddAnimatedTransformToLayerWithPlayer(child1()->id(), timeline(), duration,
+                                        start, grand_child_end);
 
   parent1()->SetBounds(gfx::Size(350, 200));
 
@@ -203,8 +201,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXNoPerspective) {
   TransformOperations end;
   end.AppendRotate(1.f, 0.f, 0.f, 90.f);
 
-  AddAnimatedTransformToElementWithPlayer(child1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(child1()->id(), timeline(), duration,
+                                        start, end);
 
   parent1()->SetBounds(gfx::Size(350, 200));
 
@@ -232,8 +230,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspective) {
   TransformOperations end;
   end.AppendRotate(1.f, 0.f, 0.f, 90.f);
 
-  AddAnimatedTransformToElementWithPlayer(child1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(child1()->id(), timeline(), duration,
+                                        start, end);
 
   // Make the anchor point not the default 0.5 value and line up with the
   // child center to make the math easier.
@@ -273,8 +271,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateXWithPerspectiveOnSameLayer) {
   TransformOperations end;
   end.AppendRotate(1.f, 0.f, 0.f, 90.f);
 
-  AddAnimatedTransformToElementWithPlayer(parent1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(parent1()->id(), timeline(), duration,
+                                        start, end);
 
   // Make the anchor point not the default 0.5 value and line up
   // with the child center to make the math easier.
@@ -309,8 +307,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, RotateZ) {
   start.AppendRotate(0.f, 0.f, 1.f, 0.f);
   TransformOperations end;
   end.AppendRotate(0.f, 0.f, 1.f, 90.f);
-  AddAnimatedTransformToElementWithPlayer(child1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(child1()->id(), timeline(), duration,
+                                        start, end);
 
   parent1()->SetBounds(gfx::Size(350, 200));
 
@@ -343,8 +341,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest, MismatchedTransforms) {
   start.AppendTranslate(5, 6, 7);
   TransformOperations end;
   end.AppendRotate(0.f, 0.f, 1.f, 90.f);
-  AddAnimatedTransformToElementWithPlayer(child1()->element_id(), timeline(),
-                                          duration, start, end);
+  AddAnimatedTransformToLayerWithPlayer(child1()->id(), timeline(), duration,
+                                        start, end);
 
   parent1()->SetBounds(gfx::Size(350, 200));
 
@@ -378,9 +376,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   start.AppendTranslate(0.f, 0.f, 0.f);
   TransformOperations great_grand_child_end;
   great_grand_child_end.AppendTranslate(50.f, 0.f, 0.f);
-  AddAnimatedTransformToElementWithPlayer(grand_child()->element_id(),
-                                          timeline(), duration, start,
-                                          great_grand_child_end);
+  AddAnimatedTransformToLayerWithPlayer(grand_child()->id(), timeline(),
+                                        duration, start, great_grand_child_end);
 
   gfx::Transform translate_2d_transform;
   translate_2d_transform.Translate(80.f, 60.f);
@@ -407,9 +404,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   start.AppendRotate(0.f, 0.f, 1.f, 0.f);
   TransformOperations great_grand_child_end;
   great_grand_child_end.AppendRotate(0.f, 0.f, 1.f, 90.f);
-  AddAnimatedTransformToElementWithPlayer(grand_child()->element_id(),
-                                          timeline(), duration, start,
-                                          great_grand_child_end);
+  AddAnimatedTransformToLayerWithPlayer(grand_child()->id(), timeline(),
+                                        duration, start, great_grand_child_end);
 
   gfx::Transform translate_2d_transform;
   translate_2d_transform.Translate(80.f, 60.f);
@@ -455,9 +451,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   start.AppendRotate(1.f, 0.f, 0.f, 0.f);
   TransformOperations great_grand_child_end;
   great_grand_child_end.AppendRotate(1.f, 0.f, 0.f, 90.f);
-  AddAnimatedTransformToElementWithPlayer(great_grand_child()->element_id(),
-                                          timeline(), duration, start,
-                                          great_grand_child_end);
+  AddAnimatedTransformToLayerWithPlayer(great_grand_child()->id(), timeline(),
+                                        duration, start, great_grand_child_end);
 
   gfx::Transform translate_2d_transform;
   translate_2d_transform.Translate(80.f, 60.f);
@@ -537,9 +532,8 @@ TEST_F(LayerUtilsGetAnimationBoundsTest,
   start.AppendRotate(1.f, 0.f, 0.f, 0.f);
   TransformOperations rotate_x_end;
   rotate_x_end.AppendRotate(1.f, 0.f, 0.f, 90.f);
-  AddAnimatedTransformToElementWithPlayer(great_grand_child()->element_id(),
-                                          timeline(), duration, start,
-                                          rotate_x_end);
+  AddAnimatedTransformToLayerWithPlayer(great_grand_child()->id(), timeline(),
+                                        duration, start, rotate_x_end);
 
   gfx::Transform translate_2d_transform;
   translate_2d_transform.Translate(80.f, 60.f);

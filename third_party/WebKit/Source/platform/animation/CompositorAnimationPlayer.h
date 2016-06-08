@@ -11,7 +11,6 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_player.h"
 #include "platform/PlatformExport.h"
-#include "platform/graphics/CompositorElementId.h"
 #include "wtf/Noncopyable.h"
 
 #include <memory>
@@ -37,14 +36,14 @@ public:
     // deleting the delegate.
     void setAnimationDelegate(CompositorAnimationDelegate*);
 
-    void attachElement(const CompositorElementId&);
-    void detachElement();
-    bool isElementAttached() const;
+    void attachLayer(WebLayer*);
+    void detachLayer();
+    bool isLayerAttached() const;
 
     void addAnimation(CompositorAnimation*);
-    void removeAnimation(uint64_t animationId);
-    void pauseAnimation(uint64_t animationId, double timeOffset);
-    void abortAnimation(uint64_t animationId);
+    void removeAnimation(int animationId);
+    void pauseAnimation(int animationId, double timeOffset);
+    void abortAnimation(int animationId);
 
 private:
     // cc::AnimationDelegate implementation.

@@ -23,28 +23,26 @@ ScrollStateData::ScrollStateData()
       delta_granularity(0),
       caused_scroll_x(false),
       caused_scroll_y(false),
-      current_native_scrolling_node_(nullptr) {}
+      current_native_scrolling_node_(nullptr),
+      current_native_scrolling_element_(0) {}
 
 ScrollStateData::ScrollStateData(const ScrollStateData& other) = default;
 
 ScrollNode* ScrollStateData::current_native_scrolling_node() const {
   return current_native_scrolling_node_;
 }
-
 void ScrollStateData::set_current_native_scrolling_node(
     ScrollNode* current_native_scrolling_node) {
   current_native_scrolling_node_ = current_native_scrolling_node;
-  current_native_scrolling_element_ = ElementId();
+  current_native_scrolling_element_ = 0;
 }
-
-ElementId ScrollStateData::current_native_scrolling_element() const {
+uint64_t ScrollStateData::current_native_scrolling_element() const {
   if (current_native_scrolling_node_)
     return current_native_scrolling_node_->data.element_id;
   return current_native_scrolling_element_;
 }
-
 void ScrollStateData::set_current_native_scrolling_element(
-    ElementId element_id) {
+    uint64_t element_id) {
   current_native_scrolling_element_ = element_id;
   current_native_scrolling_node_ = nullptr;
 }

@@ -466,28 +466,22 @@ LayerListReverseIterator<LayerImpl> LayerTreeImpl::rend() {
   return LayerListReverseIterator<LayerImpl>(nullptr);
 }
 
-LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
-  auto iter = element_layers_map_.find(element_id);
-  if (iter == element_layers_map_.end())
-    return nullptr;
-
-  return iter->second;
-}
-
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
-  if (!layer->element_id())
+  if (!layer->element_id() || !layer->mutable_properties())
     return;
 
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
-               "LayerTreeImpl::AddToElementMap", "element",
-               layer->element_id().AsValue().release(), "layer_id",
-               layer->id());
+               "LayerTreeImpl::AddToElementMap", "element_id",
+               layer->element_id(), "layer_id", layer->id());
 
-  element_layers_map_[layer->element_id()] = layer;
-
-  layer_tree_host_impl_->animation_host()->RegisterElement(
-      layer->element_id(),
-      IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
+  ElementLayers& layers = element_layers_map_[layer->element_id()];
+  if ((!layers.main || layer->IsActive()) && !layer->scrollable()) {
+    layers.main = layer;
+  } else if ((!layers.scroll || layer->IsActive()) && layer->scrollable()) {
+    TRACE_EVENT2("compositor-worker", "LayerTreeImpl::AddToElementMap scroll",
+                 "element_id", layer->element_id(), "layer_id", layer->id());
+    layers.scroll = layer;
+  }
 }
 
 void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
@@ -495,15 +489,17 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
     return;
 
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
-               "LayerTreeImpl::RemoveFromElementMap", "element",
-               layer->element_id().AsValue().release(), "layer_id",
-               layer->id());
+               "LayerTreeImpl::RemoveFromElementMap", "element_id",
+               layer->element_id(), "layer_id", layer->id());
 
-  layer_tree_host_impl_->animation_host()->UnregisterElement(
-      layer->element_id(),
-      IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
+  ElementLayers& layers = element_layers_map_[layer->element_id()];
+  if (!layer->scrollable())
+    layers.main = nullptr;
+  if (layer->scrollable())
+    layers.scroll = nullptr;
 
-  element_layers_map_.erase(layer->element_id());
+  if (!layers.main && !layers.scroll)
+    element_layers_map_.erase(layer->element_id());
 }
 
 void LayerTreeImpl::AddToOpacityAnimationsMap(int id, float opacity) {
@@ -513,6 +509,15 @@ void LayerTreeImpl::AddToOpacityAnimationsMap(int id, float opacity) {
 void LayerTreeImpl::AddToTransformAnimationsMap(int id,
                                                 gfx::Transform transform) {
   transform_animations_map_[id] = transform;
+}
+
+LayerTreeImpl::ElementLayers LayerTreeImpl::GetMutableLayers(
+    uint64_t element_id) {
+  auto iter = element_layers_map_.find(element_id);
+  if (iter == element_layers_map_.end())
+    return ElementLayers();
+
+  return iter->second;
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
@@ -813,15 +818,6 @@ void LayerTreeImpl::ClearViewportLayers() {
   outer_viewport_scroll_layer_id_ = Layer::INVALID_ID;
 }
 
-// For unit tests, we use the layer's id as its element id.
-static void SetElementIdForTesting(LayerImpl* layer) {
-  layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
-}
-
-void LayerTreeImpl::SetElementIdsForTesting() {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, SetElementIdForTesting);
-}
-
 bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   if (!needs_update_draw_properties_)
     return true;
@@ -1054,10 +1050,16 @@ bool LayerTreeImpl::LayerNeedsPushPropertiesForTesting(LayerImpl* layer) {
 void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
   DCHECK(!LayerById(layer->id()));
   layer_id_map_[layer->id()] = layer;
+  layer_tree_host_impl_->animation_host()->RegisterElement(
+      layer->id(),
+      IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
 }
 
 void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
   DCHECK(LayerById(layer->id()));
+  layer_tree_host_impl_->animation_host()->UnregisterElement(
+      layer->id(),
+      IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
   layer_id_map_.erase(layer->id());
   DCHECK_NE(root_layer_, layer);
 }
@@ -1947,21 +1949,21 @@ bool LayerTreeImpl::IsAnimatingFilterProperty(const LayerImpl* layer) const {
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()->IsAnimatingFilterProperty(
-      layer->element_id(), list_type);
+      layer->id(), list_type);
 }
 
 bool LayerTreeImpl::IsAnimatingOpacityProperty(const LayerImpl* layer) const {
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()->IsAnimatingOpacityProperty(
-      layer->element_id(), list_type);
+      layer->id(), list_type);
 }
 
 bool LayerTreeImpl::IsAnimatingTransformProperty(const LayerImpl* layer) const {
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()->IsAnimatingTransformProperty(
-      layer->element_id(), list_type);
+      layer->id(), list_type);
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningFilterAnimation(
@@ -1969,7 +1971,7 @@ bool LayerTreeImpl::HasPotentiallyRunningFilterAnimation(
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()
-      ->HasPotentiallyRunningFilterAnimation(layer->element_id(), list_type);
+      ->HasPotentiallyRunningFilterAnimation(layer->id(), list_type);
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningOpacityAnimation(
@@ -1977,7 +1979,7 @@ bool LayerTreeImpl::HasPotentiallyRunningOpacityAnimation(
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()
-      ->HasPotentiallyRunningOpacityAnimation(layer->element_id(), list_type);
+      ->HasPotentiallyRunningOpacityAnimation(layer->id(), list_type);
 }
 
 bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
@@ -1985,27 +1987,27 @@ bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()
-      ->HasPotentiallyRunningTransformAnimation(layer->element_id(), list_type);
+      ->HasPotentiallyRunningTransformAnimation(layer->id(), list_type);
 }
 
 bool LayerTreeImpl::HasAnyAnimationTargetingProperty(
     const LayerImpl* layer,
     TargetProperty::Type property) const {
   return layer_tree_host_impl_->animation_host()
-      ->HasAnyAnimationTargetingProperty(layer->element_id(), property);
+      ->HasAnyAnimationTargetingProperty(layer->id(), property);
 }
 
 bool LayerTreeImpl::AnimationsPreserveAxisAlignment(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()
-      ->AnimationsPreserveAxisAlignment(layer->element_id());
+      ->AnimationsPreserveAxisAlignment(layer->id());
 }
 
 bool LayerTreeImpl::HasOnlyTranslationTransforms(const LayerImpl* layer) const {
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()->HasOnlyTranslationTransforms(
-      layer->element_id(), list_type);
+      layer->id(), list_type);
 }
 
 bool LayerTreeImpl::MaximumTargetScale(const LayerImpl* layer,
@@ -2014,7 +2016,7 @@ bool LayerTreeImpl::MaximumTargetScale(const LayerImpl* layer,
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()->MaximumTargetScale(
-      layer->element_id(), list_type, max_scale);
+      layer->id(), list_type, max_scale);
 }
 
 bool LayerTreeImpl::AnimationStartScale(const LayerImpl* layer,
@@ -2023,32 +2025,32 @@ bool LayerTreeImpl::AnimationStartScale(const LayerImpl* layer,
   ElementListType list_type =
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
   return layer_tree_host_impl_->animation_host()->AnimationStartScale(
-      layer->element_id(), list_type, start_scale);
+      layer->id(), list_type, start_scale);
 }
 
 bool LayerTreeImpl::HasFilterAnimationThatInflatesBounds(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()
-      ->HasFilterAnimationThatInflatesBounds(layer->element_id());
+      ->HasFilterAnimationThatInflatesBounds(layer->id());
 }
 
 bool LayerTreeImpl::HasTransformAnimationThatInflatesBounds(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()
-      ->HasTransformAnimationThatInflatesBounds(layer->element_id());
+      ->HasTransformAnimationThatInflatesBounds(layer->id());
 }
 
 bool LayerTreeImpl::HasAnimationThatInflatesBounds(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()
-      ->HasAnimationThatInflatesBounds(layer->element_id());
+      ->HasAnimationThatInflatesBounds(layer->id());
 }
 
 bool LayerTreeImpl::FilterAnimationBoundsForBox(const LayerImpl* layer,
                                                 const gfx::BoxF& box,
                                                 gfx::BoxF* bounds) const {
   return layer_tree_host_impl_->animation_host()->FilterAnimationBoundsForBox(
-      layer->element_id(), box, bounds);
+      layer->id(), box, bounds);
 }
 
 bool LayerTreeImpl::TransformAnimationBoundsForBox(const LayerImpl* layer,
@@ -2056,7 +2058,7 @@ bool LayerTreeImpl::TransformAnimationBoundsForBox(const LayerImpl* layer,
                                                    gfx::BoxF* bounds) const {
   *bounds = gfx::BoxF();
   return layer_tree_host_impl_->animation_host()
-      ->TransformAnimationBoundsForBox(layer->element_id(), box, bounds);
+      ->TransformAnimationBoundsForBox(layer->id(), box, bounds);
 }
 
 void LayerTreeImpl::ScrollAnimationAbort(bool needs_completion) {

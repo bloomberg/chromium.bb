@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "cc/animation/element_id.h"
 #include "cc/base/region.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_blend_mode.h"
@@ -380,11 +379,11 @@ cc::Layer* WebLayerImpl::ccLayer() {
   return layer_.get();
 }
 
-void WebLayerImpl::setElementId(const cc::ElementId& id) {
+void WebLayerImpl::setElementId(uint64_t id) {
   layer_->SetElementId(id);
 }
 
-cc::ElementId WebLayerImpl::elementId() const {
+uint64_t WebLayerImpl::elementId() const {
   return layer_->element_id();
 }
 

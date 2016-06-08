@@ -34,7 +34,6 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
@@ -244,7 +243,7 @@ public:
     // Exposed for tests.
     WebLayer* contentsLayer() const { return m_contentsLayer; }
 
-    void setElementId(const CompositorElementId&);
+    void setElementId(uint64_t);
     void setCompositorMutableProperties(uint32_t);
 
     static void setDrawDebugRedFillForTesting(bool);

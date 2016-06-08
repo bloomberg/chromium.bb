@@ -949,13 +949,14 @@ void Animation::attachCompositedLayers()
     ASSERT(m_content);
     ASSERT(m_content->isKeyframeEffect());
 
-    toKeyframeEffect(m_content.get())->attachCompositedLayers();
+    if (toKeyframeEffect(m_content.get())->canAttachCompositedLayers())
+        toKeyframeEffect(m_content.get())->attachCompositedLayers();
 }
 
 void Animation::detachCompositedLayers()
 {
-    if (m_compositorPlayer && m_compositorPlayer->isElementAttached())
-        m_compositorPlayer->detachElement();
+    if (m_compositorPlayer && m_compositorPlayer->isLayerAttached())
+        m_compositorPlayer->detachLayer();
 }
 
 void Animation::notifyAnimationStarted(double monotonicTime, int group)

@@ -37,7 +37,6 @@
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/dom/DOMNodeIds.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -377,13 +376,39 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
     compositorPlayer->pauseAnimation(id, pauseTime);
 }
 
-void CompositorAnimations::attachCompositedLayers(Element& element, const Animation& animation)
+bool CompositorAnimations::canAttachCompositedLayers(const Element& element, const Animation& animation)
 {
     if (!animation.compositorPlayer())
-        return;
+        return false;
+
+    if (!element.layoutObject() || !element.layoutObject()->isBoxModelObject())
+        return false;
+
+    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+
+    if (!layer || !layer->isAllowedToQueryCompositingState()
+        || !layer->compositedLayerMapping()
+        || !layer->compositedLayerMapping()->mainGraphicsLayer())
+        return false;
+
+    if (!layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer())
+        return false;
+
+    return true;
+}
+
+void CompositorAnimations::attachCompositedLayers(const Element& element, const Animation& animation)
+{
+    ASSERT(element.layoutObject());
+
+    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+    ASSERT(layer);
 
     CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-    compositorPlayer->attachElement(createCompositorElementId(DOMNodeIds::idForNode(&element), CompositorSubElementId::Primary));
+    ASSERT(compositorPlayer);
+
+    ASSERT(layer->compositedLayerMapping());
+    compositorPlayer->attachLayer(layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer());
 }
 
 bool CompositorAnimations::convertTimingForCompositor(const Timing& timing, double timeOffset, CompositorTiming& out, double animationPlaybackRate)
