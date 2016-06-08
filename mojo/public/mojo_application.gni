@@ -91,7 +91,7 @@ template("mojo_native_application") {
     data_deps += mojo_data_deps
 
     deps = [
-      "//mojo/public/c/system:set_thunks_for_app",
+      "//mojo/public/c/system:for_shared_library",
       "//services/shell/public/cpp:application_support",
     ]
 
