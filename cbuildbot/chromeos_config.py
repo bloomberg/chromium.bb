@@ -2596,6 +2596,7 @@ def GetConfig():
       lakitu_test_customizations,
       sign_types=['base'],
       important=True,
+      images=['base', 'recovery', 'test'],
   )
 
   site_config.Add(
@@ -2603,6 +2604,7 @@ def GetConfig():
       _base_configs['lakitu_next'],
       lakitu_test_customizations,
       signer_tests=False,
+      images=['base', 'recovery', 'test'],
   )
 
   site_config.Add(

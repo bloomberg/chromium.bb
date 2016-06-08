@@ -11192,6 +11192,11 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "important": true,
         "run_gce_tests": true,
         "sign_types": [
@@ -11422,6 +11427,11 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
         "run_gce_tests": true,
         "signer_tests": false,
         "sync_chrome": false,
