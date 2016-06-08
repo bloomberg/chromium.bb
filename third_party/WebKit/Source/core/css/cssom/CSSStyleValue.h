@@ -47,6 +47,8 @@ protected:
     CSSStyleValue() {}
 };
 
+typedef HeapVector<Member<CSSStyleValue>> CSSStyleValueVector;
+
 } // namespace blink
 
 #endif

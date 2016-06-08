@@ -55,14 +55,14 @@ CSSStyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState&
         return nullptr;
     }
 
-    StyleValueVector styleVector = getAll(propertyID);
+    CSSStyleValueVector styleVector = getAll(propertyID);
     if (styleVector.isEmpty())
         return nullptr;
 
     return styleVector[0];
 }
 
-StylePropertyMap::StyleValueVector StylePropertyMap::getAll(const String& propertyName, ExceptionState& exceptionState)
+CSSStyleValueVector StylePropertyMap::getAll(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid)
@@ -70,7 +70,7 @@ StylePropertyMap::StyleValueVector StylePropertyMap::getAll(const String& proper
 
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
-    return StyleValueVector();
+    return CSSStyleValueVector();
 }
 
 bool StylePropertyMap::has(const String& propertyName, ExceptionState& exceptionState)
@@ -115,26 +115,6 @@ void StylePropertyMap::remove(const String& propertyName, ExceptionState& except
     }
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
-}
-
-StylePropertyMap::StyleValueVector StylePropertyMap::cssValueToStyleValueVector(CSSPropertyID propertyID, const CSSValue& cssValue)
-{
-    StyleValueVector styleValueVector;
-
-    if (!cssValue.isValueList()) {
-        CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, cssValue);
-        if (styleValue)
-            styleValueVector.append(styleValue);
-        return styleValueVector;
-    }
-
-    for (const CSSValue* value : toCSSValueList(cssValue)) {
-        CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, *value);
-        if (!styleValue)
-            return StyleValueVector();
-        styleValueVector.append(styleValue);
-    }
-    return styleValueVector;
 }
 
 StylePropertyMap::IterationSource* StylePropertyMap::startIteration(ScriptState*, ExceptionState&)

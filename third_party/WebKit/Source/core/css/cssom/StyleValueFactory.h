@@ -6,18 +6,18 @@
 #define StyleValueFactory_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
 class CSSValue;
-class CSSStyleValue;
 
 class StyleValueFactory {
     STATIC_ONLY(StyleValueFactory);
 
 public:
-    static CSSStyleValue* create(CSSPropertyID, const CSSValue&);
+    static CSSStyleValueVector cssValueToStyleValueVector(CSSPropertyID, const CSSValue&);
 };
 
 } // namespace blink

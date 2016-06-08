@@ -34,11 +34,14 @@ ScriptValue CSSStyleValue::parse(ScriptState* scriptState, const String& propert
     if (!cssValue)
         return ScriptValue::createNull(scriptState);
 
-    CSSStyleValue* styleValue = StyleValueFactory::create(propertyID, *cssValue);
-    if (!styleValue)
+    CSSStyleValueVector styleValueVector = StyleValueFactory::cssValueToStyleValueVector(propertyID, *cssValue);
+    if (styleValueVector.size() != 1) {
+        // TODO(meade): Support returning a CSSStyleValueOrCSSStyleValueSequence
+        // from this function.
         return ScriptValue::createNull(scriptState);
+    }
 
-    v8::Local<v8::Value> wrappedValue = toV8(styleValue, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> wrappedValue = toV8(styleValueVector[0], scriptState->context()->Global(), scriptState->isolate());
     return ScriptValue(scriptState, wrappedValue);
 }
 

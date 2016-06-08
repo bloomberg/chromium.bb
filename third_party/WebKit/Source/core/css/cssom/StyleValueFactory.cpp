@@ -10,16 +10,19 @@
 
 namespace blink {
 
-CSSStyleValue* StyleValueFactory::create(CSSPropertyID propertyID, const CSSValue& value)
+CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(CSSPropertyID propertyID, const CSSValue& value)
 {
+    CSSStyleValueVector styleValueVector;
+
     if (value.isPrimitiveValue()) {
         const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue.isLength() && !primitiveValue.isCalculated()) {
-            return CSSSimpleLength::create(primitiveValue.getDoubleValue(), primitiveValue.typeWithCalcResolved());
+            styleValueVector.append(CSSSimpleLength::create(primitiveValue.getDoubleValue(), primitiveValue.typeWithCalcResolved()));
+            return styleValueVector;
         }
     }
     // TODO(meade): Implement the rest.
-    return nullptr;
+    return styleValueVector;
 }
 
 } // namespace blink

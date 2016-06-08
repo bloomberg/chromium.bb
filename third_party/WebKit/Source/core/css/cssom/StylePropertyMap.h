@@ -21,17 +21,16 @@ class CORE_EXPORT StylePropertyMap : public GarbageCollectedFinalized<StylePrope
     WTF_MAKE_NONCOPYABLE(StylePropertyMap);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    typedef HeapVector<Member<CSSStyleValue>> StyleValueVector;
     typedef std::pair<String, CSSStyleValueOrCSSStyleValueSequence> StylePropertyMapEntry;
 
     virtual ~StylePropertyMap() { }
 
     // Accessors.
     CSSStyleValue* get(const String& propertyName, ExceptionState&);
-    StyleValueVector getAll(const String& propertyName, ExceptionState&);
+    CSSStyleValueVector getAll(const String& propertyName, ExceptionState&);
     bool has(const String& propertyName, ExceptionState&);
 
-    virtual StyleValueVector getAll(CSSPropertyID) = 0;
+    virtual CSSStyleValueVector getAll(CSSPropertyID) = 0;
     virtual Vector<String> getProperties() = 0;
 
     // Modifiers.
@@ -50,7 +49,6 @@ protected:
 
     virtual HeapVector<StylePropertyMapEntry> getIterationEntries() = 0;
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
-    StyleValueVector cssValueToStyleValueVector(CSSPropertyID, const CSSValue&);
 };
 
 } // namespace blink

@@ -12,16 +12,17 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSSimpleLength.h"
+#include "core/css/cssom/StyleValueFactory.h"
 
 namespace blink {
 
-StylePropertyMap::StyleValueVector InlineStylePropertyMap::getAll(CSSPropertyID propertyID)
+CSSStyleValueVector InlineStylePropertyMap::getAll(CSSPropertyID propertyID)
 {
     CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
     if (!cssValue)
-        return StyleValueVector();
+        return CSSStyleValueVector();
 
-    return cssValueToStyleValueVector(propertyID, *cssValue);
+    return StyleValueFactory::cssValueToStyleValueVector(propertyID, *cssValue);
 }
 
 Vector<String> InlineStylePropertyMap::getProperties()
@@ -52,7 +53,7 @@ void InlineStylePropertyMap::set(CSSPropertyID propertyID, CSSStyleValueOrCSSSty
 
         // TODO(meade): This won't always work. Figure out what kind of CSSValueList to create properly.
         CSSValueList* valueList = CSSValueList::createSpaceSeparated();
-        StyleValueVector styleValueVector = item.getAsCSSStyleValueSequence();
+        CSSStyleValueVector styleValueVector = item.getAsCSSStyleValueSequence();
         for (const Member<CSSStyleValue> value : styleValueVector) {
             if (!CSSOMTypes::propertyCanTake(propertyID, *value)) {
                 exceptionState.throwTypeError("Invalid type for property");
@@ -125,7 +126,7 @@ HeapVector<StylePropertyMap::StylePropertyMapEntry> InlineStylePropertyMap::getI
     for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
         StylePropertySet::PropertyReference propertyReference = inlineStyleSet.propertyAt(i);
         CSSPropertyID propertyID = propertyReference.id();
-        StyleValueVector styleValueVector = cssValueToStyleValueVector(propertyID, *propertyReference.value());
+        CSSStyleValueVector styleValueVector = StyleValueFactory::cssValueToStyleValueVector(propertyID, *propertyReference.value());
         CSSStyleValueOrCSSStyleValueSequence value;
         if (styleValueVector.size() == 1)
             value.setCSSStyleValue(styleValueVector[0]);

@@ -19,7 +19,7 @@ public:
         return new ComputedStylePropertyMap(computedStyleDeclaration);
     }
 
-    StyleValueVector getAll(CSSPropertyID) override;
+    CSSStyleValueVector getAll(CSSPropertyID) override;
     Vector<String> getProperties() override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
