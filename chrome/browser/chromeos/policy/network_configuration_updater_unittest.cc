@@ -92,13 +92,19 @@ class FakeWebTrustedCertsObserver
 
 class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
  public:
-  FakeNetworkDeviceHandler() : allow_roaming_(false) {}
+  FakeNetworkDeviceHandler()
+      : allow_roaming_(false), mac_addr_randomization_(false) {}
 
   void SetCellularAllowRoaming(bool allow_roaming) override {
     allow_roaming_ = allow_roaming;
   }
 
+  void SetMACAddressRandomizationEnabled(bool enabled) override {
+    mac_addr_randomization_ = enabled;
+  }
+
   bool allow_roaming_;
+  bool mac_addr_randomization_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkDeviceHandler);
