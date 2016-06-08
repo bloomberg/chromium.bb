@@ -717,9 +717,6 @@
       'filepath': 'remoting/' \
                   '|testing/chromoting'
     },
-    'resource_scheduler': {
-      'filepath' : 'content/browser/loader/resource_scheduler*'
-    },
     'rlz_id': {
       'filepath' :'rlz/lib/machine_id.cc|'\
                   'rlz/lib/machine_id.h|'\
@@ -1442,7 +1439,7 @@
                 'darin-cc@chromium.org' ],
     'content_bluetooth': ['scheib+watch@chromium.org',
                           'ortuno+watch@chromium.org'],
-    'content_loader': ['loading-reviews@chromium.org'],
+    'content_loader': ['loading-reviews@chromium.org', 'rdsmith@chromium.org'],
     'content_renderer': [ 'mkwst+moarreviews-renderer@chromium.org',
                           'mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
@@ -1590,7 +1587,6 @@
                'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
-    'resource_scheduler': ['rdsmith@chromium.org'],
     'rlz_id': ['gab+watch@chromium.org',
                'robertshield+watch@chromium.org',
                'alito+watch@chromium.org'],
