@@ -45,7 +45,7 @@ class CoreOobeActor {
   virtual void ShowEnableDebuggingScreen() = 0;
   virtual void InitDemoModeDetection() = 0;
   virtual void StopDemoModeDetection() = 0;
-
+  virtual void UpdateKeyboardState() = 0;
 };
 
 }  // namespace chromeos

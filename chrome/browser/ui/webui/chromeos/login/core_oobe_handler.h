@@ -115,6 +115,7 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   void InitDemoModeDetection() override;
   void StopDemoModeDetection() override;
+  void UpdateKeyboardState() override;
 
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);
@@ -145,9 +146,6 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   // Updates the device requisition string on the UI side.
   void UpdateDeviceRequisition();
-
-  // Updates virtual keyboard state.
-  void UpdateKeyboardState();
 
   // Updates client area size based on the primary screen size.
   void UpdateClientAreaSize();
