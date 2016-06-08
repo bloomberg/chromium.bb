@@ -1650,33 +1650,35 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   AV1_COMMON *const cm = &cpi->common;
   FRAME_CONTEXT *const fc = cm->fc;
   FRAME_COUNTS *counts = cpi->td.counts;
-  aom_writer header_bc;
+  aom_writer *header_bc;
   int i, j;
+  aom_writer real_header_bc;
 
-  aom_start_encode(&header_bc, data);
+  header_bc = &real_header_bc;
+  aom_start_encode(header_bc, data);
 
 #if !CONFIG_MISC_FIXES
   if (cpi->td.mb.e_mbd.lossless[0]) {
     cm->tx_mode = TX_4X4;
   } else {
-    write_txfm_mode(cm->tx_mode, &header_bc);
-    update_txfm_probs(cm, &header_bc, counts);
+    write_txfm_mode(cm->tx_mode, header_bc);
+    update_txfm_probs(cm, header_bc, counts);
   }
 #else
-  update_txfm_probs(cm, &header_bc, counts);
+  update_txfm_probs(cm, header_bc, counts);
 #endif
-  update_coef_probs(cpi, &header_bc);
-  update_skip_probs(cm, &header_bc, counts);
+  update_coef_probs(cpi, header_bc);
+  update_skip_probs(cm, header_bc, counts);
 #if CONFIG_MISC_FIXES
-  update_seg_probs(cpi, &header_bc);
+  update_seg_probs(cpi, header_bc);
 
   for (i = 0; i < INTRA_MODES; ++i)
     prob_diff_update(av1_intra_mode_tree, fc->uv_mode_prob[i],
-                     counts->uv_mode[i], INTRA_MODES, &header_bc);
+                     counts->uv_mode[i], INTRA_MODES, header_bc);
 
   for (i = 0; i < PARTITION_CONTEXTS; ++i)
     prob_diff_update(av1_partition_tree, fc->partition_prob[i],
-                     counts->partition[i], PARTITION_TYPES, &header_bc);
+                     counts->partition[i], PARTITION_TYPES, header_bc);
 #endif
 
   if (frame_is_intra_only(cm)) {
@@ -1685,15 +1687,15 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     for (i = 0; i < INTRA_MODES; ++i)
       for (j = 0; j < INTRA_MODES; ++j)
         prob_diff_update(av1_intra_mode_tree, cm->kf_y_prob[i][j],
-                         counts->kf_y_mode[i][j], INTRA_MODES, &header_bc);
+                         counts->kf_y_mode[i][j], INTRA_MODES, header_bc);
 #endif
   } else {
 #if CONFIG_REF_MV
-    update_inter_mode_probs(cm, &header_bc, counts);
+    update_inter_mode_probs(cm, header_bc, counts);
 #else
     for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
       prob_diff_update(av1_inter_mode_tree, cm->fc->inter_mode_probs[i],
-                       counts->inter_mode[i], INTER_MODES, &header_bc);
+                       counts->inter_mode[i], INTER_MODES, header_bc);
 #endif
 #if CONFIG_MOTION_VAR
     for (i = 0; i < BLOCK_SIZES; ++i)
@@ -1702,10 +1704,10 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                          counts->motion_mode[i], MOTION_MODES, &header_bc);
 #endif  // CONFIG_MOTION_VAR
     if (cm->interp_filter == SWITCHABLE)
-      update_switchable_interp_probs(cm, &header_bc, counts);
+      update_switchable_interp_probs(cm, header_bc, counts);
 
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
-      av1_cond_prob_diff_update(&header_bc, &fc->intra_inter_prob[i],
+      av1_cond_prob_diff_update(header_bc, &fc->intra_inter_prob[i],
                                 counts->intra_inter[i]);
 
     if (cpi->allow_comp_inter_inter) {
@@ -1713,18 +1715,18 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if !CONFIG_MISC_FIXES
       const int use_compound_pred = cm->reference_mode != SINGLE_REFERENCE;
 
-      aom_write_bit(&header_bc, use_compound_pred);
+      aom_write_bit(header_bc, use_compound_pred);
       if (use_compound_pred) {
-        aom_write_bit(&header_bc, use_hybrid_pred);
+        aom_write_bit(header_bc, use_hybrid_pred);
         if (use_hybrid_pred)
           for (i = 0; i < COMP_INTER_CONTEXTS; i++)
-            av1_cond_prob_diff_update(&header_bc, &fc->comp_inter_prob[i],
+            av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
                                       counts->comp_inter[i]);
       }
 #else
       if (use_hybrid_pred)
         for (i = 0; i < COMP_INTER_CONTEXTS; i++)
-          av1_cond_prob_diff_update(&header_bc, &fc->comp_inter_prob[i],
+          av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
                                     counts->comp_inter[i]);
 #endif
     }
@@ -1732,7 +1734,7 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     if (cm->reference_mode != COMPOUND_REFERENCE)
       for (i = 0; i < REF_CONTEXTS; i++)
         for (j = 0; j < (SINGLE_REFS - 1); j++)
-          av1_cond_prob_diff_update(&header_bc, &fc->single_ref_prob[i][j],
+          av1_cond_prob_diff_update(header_bc, &fc->single_ref_prob[i][j],
                                     counts->single_ref[i][j]);
 
     if (cm->reference_mode != SINGLE_REFERENCE)
@@ -1747,33 +1749,33 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
       }
 #else
       for (i = 0; i < REF_CONTEXTS; i++)
-        av1_cond_prob_diff_update(&header_bc, &fc->comp_ref_prob[i],
+        av1_cond_prob_diff_update(header_bc, &fc->comp_ref_prob[i],
                                   counts->comp_ref[i]);
 #endif  // CONFIG_EXT_REFS
 
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
       prob_diff_update(av1_intra_mode_tree, cm->fc->y_mode_prob[i],
-                       counts->y_mode[i], INTRA_MODES, &header_bc);
+                       counts->y_mode[i], INTRA_MODES, header_bc);
 
 #if !CONFIG_MISC_FIXES
     for (i = 0; i < PARTITION_CONTEXTS; ++i)
       prob_diff_update(av1_partition_tree, fc->partition_prob[i],
-                       counts->partition[i], PARTITION_TYPES, &header_bc);
+                       counts->partition[i], PARTITION_TYPES, header_bc);
 #endif
 
-    av1_write_nmv_probs(cm, cm->allow_high_precision_mv, &header_bc,
+    av1_write_nmv_probs(cm, cm->allow_high_precision_mv, header_bc,
 #if CONFIG_REF_MV
                         counts->mv);
 #else
                         &counts->mv);
 #endif
-    update_ext_tx_probs(cm, &header_bc);
+    update_ext_tx_probs(cm, header_bc);
   }
 
-  aom_stop_encode(&header_bc);
-  assert(header_bc.pos <= 0xffff);
+  aom_stop_encode(header_bc);
+  assert(header_bc->pos <= 0xffff);
 
-  return header_bc.pos;
+  return header_bc->pos;
 }
 
 #if CONFIG_MISC_FIXES
