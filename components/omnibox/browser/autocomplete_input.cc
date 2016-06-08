@@ -120,36 +120,11 @@ AutocompleteInput::AutocompleteInput(
        canonicalized_url.SchemeIsFileSystem() ||
        !canonicalized_url.host().empty()))
     canonicalized_url_ = canonicalized_url;
-
-  size_t chars_removed = RemoveForcedQueryStringIfNecessary(type_, &text_);
-  AdjustCursorPositionIfNecessary(chars_removed, &cursor_position_);
-  if (chars_removed) {
-    // Remove spaces between opening question mark and first actual character.
-    base::string16 trimmed_text;
-    if ((base::TrimWhitespace(text_, base::TRIM_LEADING, &trimmed_text) &
-         base::TRIM_LEADING) != 0) {
-      AdjustCursorPositionIfNecessary(text_.length() - trimmed_text.length(),
-                                      &cursor_position_);
-      text_ = trimmed_text;
-    }
-  }
 }
 
 AutocompleteInput::AutocompleteInput(const AutocompleteInput& other) = default;
 
 AutocompleteInput::~AutocompleteInput() {
-}
-
-// static
-size_t AutocompleteInput::RemoveForcedQueryStringIfNecessary(
-    metrics::OmniboxInputType::Type type,
-    base::string16* text) {
-  if ((type != metrics::OmniboxInputType::FORCED_QUERY) || text->empty() ||
-      (*text)[0] != L'?')
-    return 0;
-  // Drop the leading '?'.
-  text->erase(0, 1);
-  return 1;
 }
 
 // static
@@ -162,7 +137,8 @@ std::string AutocompleteInput::TypeToString(
       return "deprecated-requested-url";
     case metrics::OmniboxInputType::URL:          return "url";
     case metrics::OmniboxInputType::QUERY:        return "query";
-    case metrics::OmniboxInputType::FORCED_QUERY: return "forced-query";
+    case metrics::OmniboxInputType::DEPRECATED_FORCED_QUERY:
+      return "deprecated-forced-query";
   }
   return std::string();
 }
@@ -178,12 +154,6 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   size_t first_non_white = text.find_first_not_of(base::kWhitespaceUTF16, 0);
   if (first_non_white == base::string16::npos)
     return metrics::OmniboxInputType::INVALID;  // All whitespace.
-
-  if (text[first_non_white] == L'?') {
-    // If the first non-whitespace character is a '?', we magically treat this
-    // as a query.
-    return metrics::OmniboxInputType::FORCED_QUERY;
-  }
 
   // Ask our parsing back-end to help us understand what the user typed.  We
   // use the URLFixerUpper here because we want to be smart about what we

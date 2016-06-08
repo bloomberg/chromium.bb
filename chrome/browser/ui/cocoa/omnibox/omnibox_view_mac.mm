@@ -214,7 +214,6 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
       popup_view_(new OmniboxPopupViewMac(this, model(), field)),
       field_(field),
       saved_temporary_selection_(NSMakeRange(0, 0)),
-      selection_before_change_(NSMakeRange(0, 0)),
       marked_range_before_change_(NSMakeRange(0, 0)),
       delete_was_pressed_(false),
       delete_at_end_pressed_(false),
@@ -388,18 +387,15 @@ void OmniboxViewMac::SetWindowTextAndCaretPos(const base::string16& text,
     TextChanged();
 }
 
-void OmniboxViewMac::SetForcedQuery() {
+void OmniboxViewMac::EnterKeywordModeForDefaultSearchProvider() {
   // We need to do this first, else |SetSelectedRange()| won't work.
   FocusLocation(true);
 
-  const base::string16 current_text(GetText());
-  const size_t start = current_text.find_first_not_of(base::kWhitespaceUTF16);
-  if (start == base::string16::npos || (current_text[start] != '?')) {
-    SetUserText(base::ASCIIToUTF16("?"));
-  } else {
-    NSRange range = NSMakeRange(start + 1, current_text.size() - start - 1);
-    [[field_ currentEditor] setSelectedRange:range];
-  }
+  // Transition the user into keyword mode using their default search provider.
+  // Select their query if they typed one.
+  model()->EnterKeywordModeForDefaultSearchProvider(
+      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+  SelectAll(false);
 }
 
 bool OmniboxViewMac::IsSelectAll() const {
@@ -683,8 +679,7 @@ void OmniboxViewMac::OnBeforePossibleChange() {
   // We should only arrive here when the field is focused.
   DCHECK(IsFirstResponder());
 
-  selection_before_change_ = GetSelectedRange();
-  text_before_change_ = GetText();
+  GetState(&state_before_change_);
   marked_range_before_change_ = GetMarkedRange();
 }
 
@@ -692,37 +687,17 @@ bool OmniboxViewMac::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   // We should only arrive here when the field is focused.
   DCHECK(IsFirstResponder());
 
-  const NSRange new_selection(GetSelectedRange());
-  const base::string16 new_text(GetText());
-  const size_t length = new_text.length();
+  State new_state;
+  GetState(&new_state);
+  OmniboxView::StateChanges state_changes =
+      GetStateChanges(state_before_change_, new_state);
 
-  const bool selection_differs =
-      (new_selection.length || selection_before_change_.length) &&
-      !NSEqualRanges(new_selection, selection_before_change_);
-  const bool at_end_of_edit = (length == new_selection.location);
-  const bool text_differs = (new_text != text_before_change_) ||
-      !NSEqualRanges(marked_range_before_change_, GetMarkedRange());
-
-  // When the user has deleted text, we don't allow inline
-  // autocomplete.  This is assumed if the text has gotten shorter AND
-  // the selection has shifted towards the front of the text.  During
-  // normal typing the text will almost always be shorter (as the new
-  // input replaces the autocomplete suggestion), but in that case the
-  // selection point will have moved towards the end of the text.
-  // TODO(shess): In our implementation, we can catch -deleteBackward:
-  // and other methods to provide positive knowledge that a delete
-  // occurred, rather than intuiting it from context.  Consider whether
-  // that would be a stronger approach.
-  const bool just_deleted_text =
-      (length < text_before_change_.length() &&
-       new_selection.location <= selection_before_change_.location);
+  const bool at_end_of_edit = (new_state.text.length() == new_state.sel_end);
 
   delete_at_end_pressed_ = false;
 
   const bool something_changed = model()->OnAfterPossibleChange(
-      text_before_change_, new_text, new_selection.location,
-      NSMaxRange(new_selection), selection_differs, text_differs,
-      just_deleted_text, allow_keyword_ui_change && !IsImeComposing());
+      state_changes, allow_keyword_ui_change && !IsImeComposing());
 
   if (delete_was_pressed_ && at_end_of_edit)
     delete_at_end_pressed_ = true;
@@ -870,7 +845,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   if ((cmd == @selector(insertTab:) ||
       cmd == @selector(insertTabIgnoringFieldEditor:)) &&
       model()->is_keyword_hint()) {
-    return model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
+    return model()->AcceptKeyword(KeywordModeEntryMethod::TAB);
   }
 
   // |-noop:| is sent when the user presses Cmd+Return. Override the no-op
@@ -1023,7 +998,7 @@ void OmniboxViewMac::OnPaste() {
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted
     // into the text box.
-    text_before_change_.clear();
+    state_before_change_.text.clear();
 
     [editor replaceCharactersInRange:selectedRange withString:s];
     [editor didChangeText];

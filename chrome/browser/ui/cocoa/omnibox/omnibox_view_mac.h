@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/security_state/security_state_model.h"
+#include "third_party/skia/include/core/SKColor.h"
 
 class CommandUpdater;
 class OmniboxPopupView;
@@ -66,7 +67,7 @@ class OmniboxViewMac : public OmniboxView,
                                 size_t caret_pos,
                                 bool update_popup,
                                 bool notify_text_changed) override;
-  void SetForcedQuery() override;
+  void EnterKeywordModeForDefaultSearchProvider() override;
   bool IsSelectAll() const override;
   bool DeleteAtEndPressed() override;
   void GetSelectionBounds(base::string16::size_type* start,
@@ -211,8 +212,7 @@ class OmniboxViewMac : public OmniboxView,
 
   // Tracking state before and after a possible change for reporting
   // to model_.
-  NSRange selection_before_change_;
-  base::string16 text_before_change_;
+  State state_before_change_;
   NSRange marked_range_before_change_;
 
   // Was delete pressed?

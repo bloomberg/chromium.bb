@@ -18,6 +18,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_controller.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
@@ -37,11 +38,13 @@ class Rect;
 
 // Reasons why the Omnibox could change into keyword mode.
 // These numeric values are used in UMA logs; do not change them.
-enum EnteredKeywordModeMethod {
-  ENTERED_KEYWORD_MODE_VIA_TAB = 0,
-  ENTERED_KEYWORD_MODE_VIA_SPACE_AT_END = 1,
-  ENTERED_KEYWORD_MODE_VIA_SPACE_IN_MIDDLE = 2,
-  ENTERED_KEYWORD_MODE_NUM_ITEMS
+enum class KeywordModeEntryMethod {
+  TAB = 0,
+  SPACE_AT_END = 1,
+  SPACE_IN_MIDDLE = 2,
+  KEYBOARD_SHORTCUT = 3,
+  QUESTION_MARK = 4,
+  NUM_ITEMS,
 };
 
 class OmniboxEditModel {
@@ -60,6 +63,7 @@ class OmniboxEditModel {
           const base::string16& gray_text,
           const base::string16& keyword,
           bool is_keyword_hint,
+          KeywordModeEntryMethod keyword_mode_entry_method,
           bool url_replacement_enabled,
           OmniboxFocusState focus_state,
           FocusSource focus_source,
@@ -72,6 +76,7 @@ class OmniboxEditModel {
     const base::string16 gray_text;
     const base::string16 keyword;
     const bool is_keyword_hint;
+    KeywordModeEntryMethod keyword_mode_entry_method;
     bool url_replacement_enabled;
     OmniboxFocusState focus_state;
     FocusSource focus_source;
@@ -237,10 +242,14 @@ class OmniboxEditModel {
   }
 
   // Accepts the current keyword hint as a keyword. It always returns true for
-  // caller convenience. |entered_method| indicates how the use entered
-  // keyword mode. This parameter is only used for metrics/logging; it's not
-  // used to change user-visible behavior.
-  bool AcceptKeyword(EnteredKeywordModeMethod entered_method);
+  // caller convenience. |entered_method| indicates how the user entered
+  // keyword mode.
+  bool AcceptKeyword(KeywordModeEntryMethod entry_method);
+
+  // Sets the current keyword to that of the user's default search provider and
+  // updates the view so the user sees the keyword chip in the omnibox.
+  void EnterKeywordModeForDefaultSearchProvider(
+      KeywordModeEntryMethod entry_method);
 
   // Accepts the current temporary text as the user text.
   void AcceptTemporaryTextAsUserText();
@@ -324,19 +333,13 @@ class OmniboxEditModel {
   // Called by the OmniboxView after something changes, with details about what
   // state changes occured.  Updates internal state, updates the popup if
   // necessary, and returns true if any significant changes occurred.  Note that
-  // |text_differs| may be set even if |old_text| == |new_text|, e.g. if we've
-  // just committed an IME composition.
+  // |text_change.text_differs| may be set even if |text_change.old_text| ==
+  // |text_change.new_text|, e.g. if we've just committed an IME composition.
   //
   // If |allow_keyword_ui_change| is false then the change should not affect
   // keyword ui state, even if the text matches a keyword exactly. This value
   // may be false when the user is composing a text with an IME.
-  bool OnAfterPossibleChange(const base::string16& old_text,
-                             const base::string16& new_text,
-                             size_t selection_start,
-                             size_t selection_end,
-                             bool selection_differs,
-                             bool text_differs,
-                             bool just_deleted_text,
+  bool OnAfterPossibleChange(const OmniboxView::StateChanges& state_changes,
                              bool allow_keyword_ui_change);
 
   // Called when the current match has changed in the OmniboxController.
@@ -546,6 +549,11 @@ class OmniboxEditModel {
   // user hasn't actually selected a keyword yet.  When this is true, we can use
   // keyword_ to show a "Press <tab> to search" sort of hint.
   bool is_keyword_hint_;
+
+  // Indicates how the user entered keyword mode if the user is actually in
+  // keyword mode.  Otherwise, the value of this variable is undefined.  This
+  // is used to restore the user's search terms upon a call to ClearKeyword().
+  KeywordModeEntryMethod keyword_mode_entry_method_;
 
   // This is needed to properly update the SearchModel state when the user
   // presses escape.

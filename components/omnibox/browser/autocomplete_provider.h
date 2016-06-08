@@ -92,14 +92,6 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
 //
-// FORCED_QUERY input type:
-// --------------------------------------------------------------------|-----
-// Search Primary Provider (past query in history within 2 days)       | 1399**
-// Search Primary Provider (what you typed)                            | 1300
-// Search Primary Provider (past query in history older than 2 days)   | 1050--
-// Search Primary Provider (navigational suggestion)                   |  800++
-// Search Primary Provider (suggestion)                                |  600++
-//
 // (A search keyword is a keyword with a replacement string; a bookmark keyword
 // is a keyword with no replacement string, that is, a shortcut for a URL.)
 //

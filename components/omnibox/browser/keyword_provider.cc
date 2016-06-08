@@ -359,8 +359,7 @@ KeywordProvider::~KeywordProvider() {}
 bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
                                               base::string16* keyword,
                                               base::string16* remaining_input) {
-  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+  if ((input.type() == metrics::OmniboxInputType::INVALID))
     return false;
 
   *keyword = TemplateURLService::CleanUserInputKeyword(

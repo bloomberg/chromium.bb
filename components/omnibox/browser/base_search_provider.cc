@@ -239,11 +239,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       (base::CollapseWhitespace(input.text(), false) ==
        suggestion.match_contents());
 
-  // When the user forced a query, we need to make sure all the fill_into_edit
-  // values preserve that property.  Otherwise, if the user starts editing a
-  // suggestion, non-Search results will suddenly appear.
-  if (input.type() == metrics::OmniboxInputType::FORCED_QUERY)
-    match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
   if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
   // We only allow inlinable navsuggestions that were received before the

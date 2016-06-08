@@ -220,16 +220,6 @@ class SearchProviderTest : public testing::Test,
   // Be sure and wrap calls to this in ASSERT_NO_FATAL_FAILURE.
   void FinishDefaultSuggestQuery();
 
-  // Runs SearchProvider on |input|, for which the suggest server replies
-  // with |json|, and expects that the resulting matches' contents equals
-  // that in |matches|.  An empty entry in |matches| means no match should
-  // be returned in that position.  Reports any errors with a message that
-  // includes |error_description|.
-  void ForcedQueryTestHelper(const std::string& input,
-                             const std::string& json,
-                             const std::string matches[3],
-                             const std::string& error_description);
-
   // Verifies that |matches| and |expected_matches| agree on the first
   // |num_expected_matches|, displaying an error message that includes
   // |description| for any disagreement.
@@ -491,34 +481,6 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
   // Tell the SearchProvider the default suggest query is done.
   default_fetcher->set_response_code(200);
   default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
-}
-
-void SearchProviderTest::ForcedQueryTestHelper(
-    const std::string& input,
-    const std::string& json,
-    const std::string expected_matches[3],
-    const std::string& error_description) {
-  // Send the query twice in order to have a synchronous pass after the first
-  // response is received.  This is necessary because SearchProvider doesn't
-  // allow an asynchronous response to change the default match.
-  for (size_t i = 0; i < 2; ++i) {
-    QueryForInputAndWaitForFetcherResponses(
-        ASCIIToUTF16(input), false, json, std::string());
-  }
-
-  const ACMatches& matches = provider_->matches();
-  ASSERT_LE(matches.size(), 3u);
-  size_t i = 0;
-  // Ensure that the returned matches equal the expectations.
-  for (; i < matches.size(); ++i) {
-    EXPECT_EQ(ASCIIToUTF16(expected_matches[i]), matches[i].contents) <<
-        error_description;
-  }
-  // Ensure that no expected matches are missing.
-  for (; i < 3u; ++i) {
-    EXPECT_EQ(std::string(), expected_matches[i]) <<
-        "Case #" << i << ": " << error_description;
-  }
 }
 
 void SearchProviderTest::CheckMatches(const std::string& description,
@@ -806,54 +768,6 @@ TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
   EXPECT_GT(wyt_match.relevance, term_match.relevance);
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
   EXPECT_TRUE(term_match.allowed_to_be_default_match);
-}
-
-TEST_F(SearchProviderTest, DontGiveNavsuggestionsInForcedQueryMode) {
-  const std::string kEmptyMatch;
-  struct {
-    const std::string json;
-    const std::string matches_in_default_mode[3];
-    const std::string matches_in_forced_query_mode[3];
-  } cases[] = {
-    // Without suggested relevance scores.
-    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"]}]",
-      { "a", "a1.com", "a2" },
-      { "a", "a2", kEmptyMatch } },
-
-    // With suggested relevance scores in a situation where navsuggest would
-    // go second.
-    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"],"
-        "\"google:suggestrelevance\":[1250, 1200]}]",
-      { "a", "a1.com", "a2" },
-      { "a", "a2", kEmptyMatch } },
-
-    // With suggested relevance scores in a situation where navsuggest
-    // would go first.
-    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"],"
-        "\"google:suggestrelevance\":[1350, 1250]}]",
-      { "a1.com", "a", "a2" },
-      { "a", "a2", kEmptyMatch } },
-
-    // With suggested relevance scores in a situation where navsuggest
-    // would go first only because verbatim has been demoted.
-    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
-       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"],"
-        "\"google:suggestrelevance\":[1450, 1400],"
-        "\"google:verbatimrelevance\":1350}]",
-      { "a1.com", "a2", "a" },
-      { "a2", "a", kEmptyMatch } },
-  };
-
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    ForcedQueryTestHelper("a", cases[i].json, cases[i].matches_in_default_mode,
-                           "regular input with json=" + cases[i].json);
-    ForcedQueryTestHelper("?a", cases[i].json,
-                          cases[i].matches_in_forced_query_mode,
-                          "forced query input with json=" + cases[i].json);
-  }
 }
 
 // A multiword search with one visit should not autocomplete until multiple
@@ -2733,15 +2647,6 @@ TEST_F(SearchProviderTest, NavigationInline) {
                      "https://abc.com/path/file.htm?q=x#foo",
                                "c.com/path/file.htm?q=x#foo",     true, false },
 
-    // Forced query input should inline and retain the "?" prefix.
-    { "?http://www.ab",  "http://www.abc.com",
-                        "?http://www.abc.com", "c.com",       true, false },
-    { "?www.ab",         "http://www.abc.com",
-                               "?www.abc.com", "c.com",       true, false },
-    { "?ab",             "http://www.abc.com",
-                               "?www.abc.com", "c.com",       true, false },
-    { "?abc.com",        "http://www.abc.com",
-                               "?www.abc.com", std::string(), true, true },
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {

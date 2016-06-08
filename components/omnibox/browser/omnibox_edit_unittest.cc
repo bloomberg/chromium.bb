@@ -51,7 +51,7 @@ class TestingOmniboxView : public OmniboxView {
                                 bool notify_text_changed) override {
     text_ = text;
   }
-  void SetForcedQuery() override {}
+  void EnterKeywordModeForDefaultSearchProvider() override {}
   bool IsSelectAll() const override { return false; }
   bool DeleteAtEndPressed() override { return false; }
   void GetSelectionBounds(size_t* start, size_t* end) const override {}
@@ -344,8 +344,11 @@ TEST_F(OmniboxEditTest, InlineAutocompleteText) {
   EXPECT_EQ(UTF8ToUTF16("hello"), view.GetText());
   EXPECT_EQ(UTF8ToUTF16("llo"), view.inline_autocomplete_text());
 
-  model.OnAfterPossibleChange(UTF8ToUTF16("he"), UTF8ToUTF16("hel"), 3, 3,
-                              false, true, false, true);
+  base::string16 text_before = UTF8ToUTF16("he");
+  base::string16 text_after = UTF8ToUTF16("hel");
+  OmniboxView::StateChanges state_changes{
+      &text_before, &text_after, 3, 3, false, true, false, false};
+  model.OnAfterPossibleChange(state_changes, true);
   EXPECT_EQ(base::string16(), view.inline_autocomplete_text());
   model.OnPopupDataChanged(UTF8ToUTF16("lo"), NULL, base::string16(), false);
   EXPECT_EQ(UTF8ToUTF16("hello"), view.GetText());

@@ -48,8 +48,7 @@ class LocationBar {
   // Focuses the location bar.  Optionally also selects its contents.
   virtual void FocusLocation(bool select_all) = 0;
 
-  // Clears the location bar, inserts an annoying little "?" turd and sets
-  // focus to it.
+  // Puts the user into keyword mode with their default search provider.
   virtual void FocusSearch() = 0;
 
   // Updates the state of the images showing the content settings status.

@@ -48,9 +48,8 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   if (disabled_ || input.from_omnibox_focus())
     return;
 
-  // Don't bother with INVALID and FORCED_QUERY.
-  if ((input.type() == metrics::OmniboxInputType::INVALID) ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+  // Don't bother with INVALID.
+  if ((input.type() == metrics::OmniboxInputType::INVALID))
     return;
 
   autocomplete_input_ = input;

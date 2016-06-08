@@ -25,11 +25,11 @@ TEST(AutocompleteInputTest, InputType) {
     const metrics::OmniboxInputType::Type type;
   } input_cases[] = {
     { base::string16(), metrics::OmniboxInputType::INVALID },
-    { ASCIIToUTF16("?"), metrics::OmniboxInputType::FORCED_QUERY },
-    { ASCIIToUTF16("?foo"), metrics::OmniboxInputType::FORCED_QUERY },
-    { ASCIIToUTF16("?foo bar"), metrics::OmniboxInputType::FORCED_QUERY },
+    { ASCIIToUTF16("?"), metrics::OmniboxInputType::QUERY },
+    { ASCIIToUTF16("?foo"), metrics::OmniboxInputType::QUERY },
+    { ASCIIToUTF16("?foo bar"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("?http://foo.com/bar"),
-      metrics::OmniboxInputType::FORCED_QUERY },
+      metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("foo"), metrics::OmniboxInputType::UNKNOWN },
     { ASCIIToUTF16("localhost"), metrics::OmniboxInputType::URL },
     { ASCIIToUTF16("foo._"), metrics::OmniboxInputType::QUERY },
@@ -286,19 +286,22 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     { ASCIIToUTF16("foo bar"), base::string16::npos,
       ASCIIToUTF16("foo bar"), base::string16::npos },
 
-    // regular case, no changes.
+    // Regular case, no changes.
     { ASCIIToUTF16("foo bar"), 3, ASCIIToUTF16("foo bar"), 3 },
 
-    // extra leading space.
+    // Extra leading space.
     { ASCIIToUTF16("  foo bar"), 3, ASCIIToUTF16("foo bar"), 1 },
     { ASCIIToUTF16("      foo bar"), 3, ASCIIToUTF16("foo bar"), 0 },
     { ASCIIToUTF16("      foo bar   "), 2, ASCIIToUTF16("foo bar   "), 0 },
 
-    // forced query.
-    { ASCIIToUTF16("?foo bar"), 2, ASCIIToUTF16("foo bar"), 1 },
-    { ASCIIToUTF16("  ?foo bar"), 4, ASCIIToUTF16("foo bar"), 1 },
-    { ASCIIToUTF16("?  foo bar"), 4, ASCIIToUTF16("foo bar"), 1 },
-    { ASCIIToUTF16("  ?  foo bar"), 6, ASCIIToUTF16("foo bar"), 1 },
+    // A leading '?' used to be a magic character indicating the following
+    // input should be treated as a "forced query", but now if such a string
+    // reaches the AutocompleteInput parser the '?' should just be treated like
+    // a normal character.
+    { ASCIIToUTF16("?foo bar"), 2, ASCIIToUTF16("?foo bar"), 2 },
+    { ASCIIToUTF16("  ?foo bar"), 4, ASCIIToUTF16("?foo bar"), 2 },
+    { ASCIIToUTF16("?  foo bar"), 4, ASCIIToUTF16("?  foo bar"), 4 },
+    { ASCIIToUTF16("  ?  foo bar"), 6, ASCIIToUTF16("?  foo bar"), 4 },
   };
 
   for (size_t i = 0; i < arraysize(input_cases); ++i) {

@@ -454,9 +454,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
   base::string16 suggestion;
   std::string type;
   int relevance = default_result_relevance;
-  // Prohibit navsuggest in FORCED_QUERY mode.  Users wants queries, not URLs.
-  const bool allow_navsuggest =
-      input.type() != metrics::OmniboxInputType::FORCED_QUERY;
   const base::string16& trimmed_input =
       base::CollapseWhitespace(input.text(), false);
   for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
@@ -484,7 +481,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       // Do not blindly trust the URL coming from the server to be valid.
       GURL url(url_formatter::FixupURL(base::UTF16ToUTF8(suggestion),
                                        std::string()));
-      if (url.is_valid() && allow_navsuggest) {
+      if (url.is_valid()) {
         base::string16 title;
         if (descriptions != NULL)
           descriptions->GetString(index, &title);

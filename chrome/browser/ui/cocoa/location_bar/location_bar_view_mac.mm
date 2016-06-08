@@ -335,7 +335,7 @@ void LocationBarViewMac::FocusLocation(bool select_all) {
 }
 
 void LocationBarViewMac::FocusSearch() {
-  omnibox_view_->SetForcedQuery();
+  omnibox_view_->EnterKeywordModeForDefaultSearchProvider();
 }
 
 void LocationBarViewMac::UpdateContentSettingsIcons() {

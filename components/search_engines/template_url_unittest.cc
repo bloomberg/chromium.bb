@@ -641,10 +641,6 @@ TEST_F(TemplateURLTest, ReplaceInputType) {
       metrics::OmniboxInputType::URL,
       "{google:baseURL}?{searchTerms}&{google:inputType}",
       "http://www.google.com/?foo&oit=3&" },
-    { ASCIIToUTF16("foo"),
-      metrics::OmniboxInputType::FORCED_QUERY,
-      "{google:baseURL}?{searchTerms}&{google:inputType}",
-      "http://www.google.com/?foo&oit=5&" },
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");

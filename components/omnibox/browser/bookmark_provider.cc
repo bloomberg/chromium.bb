@@ -66,8 +66,7 @@ void BookmarkProvider::Start(const AutocompleteInput& input,
     return;
   matches_.clear();
 
-  if (input.from_omnibox_focus() || input.text().empty() ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+  if (input.from_omnibox_focus() || input.text().empty())
     return;
 
   DoAutocomplete(input);

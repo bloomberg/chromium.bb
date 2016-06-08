@@ -869,6 +869,28 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   EXPECT_EQ(old_text.size(), end);
 }
 
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordByTypingQuestionMark) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+
+  base::string16 search_keyword(ASCIIToUTF16(kSearchKeyword));
+
+  // If the user gets into keyword mode by typing '?', they should be put into
+  // keyword mode for their default search provider.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN));
+  ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+  ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());
+  ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
+  ASSERT_EQ(base::string16(), omnibox_view->GetText());
+
+  // If the user press backspace, they should be left with '?' in the omnibox.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("?"), omnibox_view->GetText());
+  EXPECT_EQ(base::string16(), omnibox_view->model()->keyword());
+  EXPECT_FALSE(omnibox_view->model()->is_keyword_hint());
+  EXPECT_FALSE(omnibox_view->model()->is_keyword_selected());
+}
+
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordBySpace) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));

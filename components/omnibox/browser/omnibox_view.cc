@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/toolbar/toolbar_model.h"
 #include "grit/components_scaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -164,6 +165,47 @@ bool OmniboxView::IsIndicatingQueryRefinement() const {
 }
 
 void OmniboxView::OnMatchOpened(AutocompleteMatch::Type match_type) {
+}
+
+void OmniboxView::GetState(State* state) {
+  state->text = GetText();
+  state->keyword = model()->keyword();
+  state->is_keyword_selected = model()->is_keyword_selected();
+  GetSelectionBounds(&state->sel_start, &state->sel_end);
+}
+
+OmniboxView::StateChanges OmniboxView::GetStateChanges(const State& before,
+                                                     const State& after) {
+  OmniboxView::StateChanges state_changes;
+  state_changes.old_text = &before.text;
+  state_changes.new_text = &after.text;
+  state_changes.new_sel_start = after.sel_start;
+  state_changes.new_sel_end = after.sel_end;
+  const bool old_sel_empty = before.sel_start == before.sel_end;
+  const bool new_sel_empty = after.sel_start == after.sel_end;
+  const bool sel_same_ignoring_direction =
+      std::min(before.sel_start, before.sel_end) ==
+          std::min(after.sel_start, after.sel_end) &&
+      std::max(before.sel_start, before.sel_end) ==
+          std::max(after.sel_start, after.sel_end);
+  state_changes.selection_differs =
+      (!old_sel_empty || !new_sel_empty) && !sel_same_ignoring_direction;
+  state_changes.text_differs = before.text != after.text;
+  state_changes.keyword_differs =
+      (after.is_keyword_selected != before.is_keyword_selected) ||
+      (after.is_keyword_selected && before.is_keyword_selected &&
+       after.keyword != before.keyword);
+
+  // When the user has deleted text, we don't allow inline autocomplete.  Make
+  // sure to not flag cases like selecting part of the text and then pasting
+  // (or typing) the prefix of that selection.  (We detect these by making
+  // sure the caret, which should be after any insertion, hasn't moved
+  // forward of the old selection start.)
+  state_changes.just_deleted_text =
+      (before.text.length() > after.text.length()) &&
+      (after.sel_start <= std::min(before.sel_start, before.sel_end));
+
+  return state_changes;
 }
 
 OmniboxView::OmniboxView(OmniboxEditController* controller,

@@ -1086,7 +1086,7 @@ void LocationBarView::AcceptInput() {
 
 void LocationBarView::FocusSearch() {
   omnibox_view_->SetFocus();
-  omnibox_view_->SetForcedQuery();
+  omnibox_view_->EnterKeywordModeForDefaultSearchProvider();
 }
 
 void LocationBarView::UpdateContentSettingsIcons() {

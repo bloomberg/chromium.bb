@@ -34,6 +34,6 @@ enum Type {
   // Input autodetected as a query
   QUERY = 4;
 
-  // Input forced to be a query by an initial '?'
-  FORCED_QUERY = 5;
+  // DEPRECATED. Input forced to be a query by an initial '?'
+  DEPRECATED_FORCED_QUERY = 5;
 }

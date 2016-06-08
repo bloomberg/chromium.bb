@@ -279,13 +279,12 @@ void OmniboxViewViews::SetUserText(const base::string16& text,
   OmniboxView::SetUserText(text, update_popup);
 }
 
-void OmniboxViewViews::SetForcedQuery() {
-  const base::string16 current_text(text());
-  const size_t start = current_text.find_first_not_of(base::kWhitespaceUTF16);
-  if (start == base::string16::npos || (current_text[start] != '?'))
-    OmniboxView::SetUserText(base::ASCIIToUTF16("?"));
-  else
-    SelectRange(gfx::Range(current_text.size(), start + 1));
+void OmniboxViewViews::EnterKeywordModeForDefaultSearchProvider() {
+  // Transition the user into keyword mode using their default search provider.
+  // Select their query if they typed one.
+  model()->EnterKeywordModeForDefaultSearchProvider(
+      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+  SelectRange(gfx::Range(text().size(), 0));
 }
 
 void OmniboxViewViews::GetSelectionBounds(
@@ -408,7 +407,7 @@ void OmniboxViewViews::OnPaste() {
     model()->OnPaste();
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted.
-    text_before_change_.clear();
+    state_before_change_.text.clear();
     InsertOrReplaceText(text);
     OnAfterPossibleChange(true);
   }
@@ -421,7 +420,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     return false;
 
   if (model()->is_keyword_hint() && !event.IsShiftDown())
-    return model()->AcceptKeyword(ENTERED_KEYWORD_MODE_VIA_TAB);
+    return model()->AcceptKeyword(KeywordModeEntryMethod::TAB);
 
   if (!model()->popup_model()->IsOpen())
     return false;
@@ -526,42 +525,32 @@ void OmniboxViewViews::OnRevertTemporaryText() {
 
 void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
-  text_before_change_ = text();
-  sel_before_change_ = GetSelectedRange();
+  GetState(&state_before_change_);
   ime_composing_before_change_ = IsIMEComposing();
 }
 
 bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   // See if the text or selection have changed since OnBeforePossibleChange().
-  const base::string16 new_text = text();
-  const gfx::Range new_sel = GetSelectedRange();
-  const bool text_changed = (new_text != text_before_change_) ||
-      (ime_composing_before_change_ != IsIMEComposing());
-  const bool selection_differs =
-      !((sel_before_change_.is_empty() && new_sel.is_empty()) ||
-        sel_before_change_.EqualsIgnoringDirection(new_sel));
+  State new_state;
+  GetState(&new_state);
+  OmniboxView::StateChanges state_changes =
+      GetStateChanges(state_before_change_, new_state);
 
-  // When the user has deleted text, we don't allow inline autocomplete.  Make
-  // sure to not flag cases like selecting part of the text and then pasting
-  // (or typing) the prefix of that selection.  (We detect these by making
-  // sure the caret, which should be after any insertion, hasn't moved
-  // forward of the old selection start.)
-  const bool just_deleted_text =
-      (text_before_change_.length() > new_text.length()) &&
-      (new_sel.start() <= sel_before_change_.GetMin());
+  state_changes.text_differs =
+      state_changes.text_differs ||
+      (ime_composing_before_change_ != IsIMEComposing());
 
   const bool something_changed = model()->OnAfterPossibleChange(
-      text_before_change_, new_text, new_sel.start(), new_sel.end(),
-      selection_differs, text_changed, just_deleted_text,
-      allow_keyword_ui_change && !IsIMEComposing());
+      state_changes, allow_keyword_ui_change && !IsIMEComposing());
 
   // If only selection was changed, we don't need to call model()'s
   // OnChanged() method, which is called in TextChanged().
   // But we still need to call EmphasizeURLComponents() to make sure the text
   // attributes are updated correctly.
-  if (something_changed && text_changed)
+  if (something_changed &&
+      (state_changes.text_differs || state_changes.keyword_differs))
     TextChanged();
-  else if (selection_differs)
+  else if (state_changes.selection_differs)
     EmphasizeURLComponents();
   else if (delete_at_end_pressed_)
     model()->OnChanged();

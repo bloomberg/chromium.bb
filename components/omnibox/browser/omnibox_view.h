@@ -21,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -30,6 +29,7 @@ class OmniboxClient;
 class OmniboxEditController;
 class OmniboxViewMacTest;
 class ToolbarModel;
+class OmniboxEditModel;
 
 namespace gfx {
 enum class VectorIconId;
@@ -37,6 +37,21 @@ enum class VectorIconId;
 
 class OmniboxView {
  public:
+  // Represents the changes between two State objects.  This is used by the
+  // model to determine how its internal state should be updated after the view
+  // state changes.  See OmniboxEditModel::OnAfterPossibleChange().
+  struct StateChanges {
+    // |old_text| and |new_text| are not owned.
+    const base::string16* old_text;
+    const base::string16* new_text;
+    size_t new_sel_start;
+    size_t new_sel_end;
+    bool selection_differs;
+    bool text_differs;
+    bool keyword_differs;
+    bool just_deleted_text;
+  };
+
   virtual ~OmniboxView();
 
   // Used by the automation system for getting at the model from the view.
@@ -95,14 +110,9 @@ class OmniboxView {
                                         bool update_popup,
                                         bool notify_text_changed) = 0;
 
-  // Sets the edit to forced query mode.  Practically speaking, this means that
-  // if the edit is not in forced query mode, its text is set to "?" with the
-  // cursor at the end, and if the edit is in forced query mode (its first
-  // non-whitespace character is '?'), the text after the '?' is selected.
-  //
-  // In the future we should display the search engine UI for the default engine
-  // rather than '?'.
-  virtual void SetForcedQuery() = 0;
+  // Transitions the user into keyword mode with their default search provider,
+  // preserving and selecting the user's text if they already typed in a query.
+  virtual void EnterKeywordModeForDefaultSearchProvider() = 0;
 
   // Returns true if all text is selected or there is no text at all.
   virtual bool IsSelectAll() const = 0;
@@ -239,8 +249,25 @@ class OmniboxView {
   static base::string16 SanitizeTextForPaste(const base::string16& text);
 
  protected:
+  // Tracks important state that may change between OnBeforePossibleChange() and
+  // OnAfterPossibleChange().
+  struct State {
+    base::string16 text;
+    base::string16 keyword;
+    bool is_keyword_selected;
+    size_t sel_start;
+    size_t sel_end;
+  };
+
   OmniboxView(OmniboxEditController* controller,
               std::unique_ptr<OmniboxClient> client);
+
+  // Fills |state| with the current text state.
+  void GetState(State* state);
+
+  // Returns the delta between |before| and |after|.
+  StateChanges GetStateChanges(const State& before,
+                                          const State& after);
 
   // Internally invoked whenever the text changes in some way.
   virtual void TextChanged();

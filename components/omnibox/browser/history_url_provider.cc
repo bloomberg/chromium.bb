@@ -471,8 +471,7 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   if (input.from_omnibox_focus() ||
-      (input.type() == metrics::OmniboxInputType::INVALID) ||
-      (input.type() == metrics::OmniboxInputType::FORCED_QUERY))
+      (input.type() == metrics::OmniboxInputType::INVALID))
     return;
 
   // Do some fixup on the user input before matching against it, so we provide

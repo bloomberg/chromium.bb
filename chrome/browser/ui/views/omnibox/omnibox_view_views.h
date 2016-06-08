@@ -89,7 +89,7 @@ class OmniboxViewViews
   base::string16 GetText() const override;
   void SetUserText(const base::string16& text,
                    bool update_popup) override;
-  void SetForcedQuery() override;
+  void EnterKeywordModeForDefaultSearchProvider() override;
   void GetSelectionBounds(base::string16::size_type* start,
                           base::string16::size_type* end) const override;
   void SelectAll(bool reversed) override;
@@ -222,8 +222,7 @@ class OmniboxViewViews
   gfx::Range saved_selection_for_focus_change_;
 
   // Tracking state before and after a possible change.
-  base::string16 text_before_change_;
-  gfx::Range sel_before_change_;
+  State state_before_change_;
   bool ime_composing_before_change_;
 
   // Was the delete key pressed with an empty selection at the end of the edit?
