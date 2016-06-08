@@ -804,6 +804,27 @@ if (use_v8_in_net && !is_android) {
 }
 
 if (!is_ios && !is_android) {
+  executable("cert_verify_tool") {
+    testonly = true
+    sources = [
+      "tools/cert_verify_tool/cert_verify_tool.cc",
+      "tools/cert_verify_tool/cert_verify_tool_util.cc",
+      "tools/cert_verify_tool/cert_verify_tool_util.h",
+      "tools/cert_verify_tool/verify_using_cert_verify_proc.cc",
+      "tools/cert_verify_tool/verify_using_cert_verify_proc.h",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    deps = [
+      ":net",
+      ":test_support",
+      "//base",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
+    ]
+  }
+
   executable("crash_cache") {
     testonly = true
     sources = [

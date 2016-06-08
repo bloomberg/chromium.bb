@@ -992,6 +992,24 @@
         # iOS doesn't have the concept of simple executables, these targets
         # can't be compiled on the platform.
         {
+          'target_name': 'cert_verify_tool',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+            'net_test_support',
+          ],
+          'sources': [
+            'tools/cert_verify_tool/cert_verify_tool.cc',
+            'tools/cert_verify_tool/cert_verify_tool_util.cc',
+            'tools/cert_verify_tool/cert_verify_tool_util.h',
+            'tools/cert_verify_tool/verify_using_cert_verify_proc.cc',
+            'tools/cert_verify_tool/verify_using_cert_verify_proc.h',
+          ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        },
+        {
           'target_name': 'crash_cache',
           'type': 'executable',
           'dependencies': [
