@@ -764,8 +764,8 @@ crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ Failure ]
 
-crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
-crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
+crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ NeedsRebaseline ]
+crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ NeedsRebaseline ]
 
 # Started failing after r162705.
 crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
