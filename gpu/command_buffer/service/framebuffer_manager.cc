@@ -571,6 +571,38 @@ GLenum Framebuffer::GetReadBufferTextureType() const {
   return attachment->texture_type();
 }
 
+GLsizei Framebuffer::GetSamples() const {
+  // Assume the framebuffer is complete, so return any attachment's samples.
+  auto iter = attachments_.begin();
+  if (iter == attachments_.end())
+    return -1;
+  Attachment* attachment = iter->second.get();
+  DCHECK(attachment);
+  return attachment->samples();
+}
+
+GLenum Framebuffer::GetDepthFormat() const {
+  auto iter = attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT);
+  if (iter == attachments_.end())
+    iter = attachments_.find(GL_DEPTH_ATTACHMENT);
+  if (iter == attachments_.end())
+    return 0;
+  Attachment* attachment = iter->second.get();
+  DCHECK(attachment);
+  return attachment->internal_format();
+}
+
+GLenum Framebuffer::GetStencilFormat() const {
+  auto iter = attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT);
+  if (iter == attachments_.end())
+    iter = attachments_.find(GL_STENCIL_ATTACHMENT);
+  if (iter == attachments_.end())
+    return 0;
+  Attachment* attachment = iter->second.get();
+  DCHECK(attachment);
+  return attachment->internal_format();
+}
+
 GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
   if (attachments_.empty()) {
     return GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;

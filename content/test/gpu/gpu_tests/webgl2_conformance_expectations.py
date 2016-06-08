@@ -41,7 +41,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
-    self.Skip('deqp/functional/gles3/negativebufferapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/occlusionquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderoperator.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
@@ -392,6 +391,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac', ('nvidia', 0xfe9)], bug=616562)
+    self.Fail('deqp/functional/gles3/negativebufferapi.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_2d_00.html',
@@ -548,6 +549,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
         ['linux', 'nvidia'], bug=606498)
+    self.Fail('deqp/functional/gles3/negativebufferapi.html',
+        ['linux', 'nvidia'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('deqp/functional/gles3/buffercopy.html',

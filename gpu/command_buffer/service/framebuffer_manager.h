@@ -129,6 +129,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   const Attachment* GetReadBufferAttachment() const;
 
+  GLsizei GetSamples() const;
+
   bool IsDeleted() const {
     return deleted_;
   }
@@ -143,6 +145,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
+  GLenum GetDepthFormat() const;
+  GLenum GetStencilFormat() const;
   GLenum GetDrawBufferInternalFormat() const;
   GLenum GetReadBufferInternalFormat() const;
   // If the color attachment is a texture, returns its type; otherwise,

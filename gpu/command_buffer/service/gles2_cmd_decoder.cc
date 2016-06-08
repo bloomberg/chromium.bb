@@ -876,6 +876,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // setting for that image is GL_NONE, return 0.
   GLenum GetBoundColorDrawBufferInternalFormat(GLint drawbuffer_i);
 
+  GLsizei GetBoundFrameBufferSamples(GLenum target);
+
+  // Return 0 if no depth attachment.
+  GLenum GetBoundFrameBufferDepthFormat(GLenum target);
+  // Return 0 if no stencil attachment.
+  GLenum GetBoundFrameBufferStencilFormat(GLenum target);
+
   void MarkDrawBufferAsCleared(GLenum buffer, GLint drawbuffer_i);
 
   // Wrapper for CompressedTexImage2D commands.
@@ -4049,6 +4056,54 @@ GLenum GLES2DecoderImpl::GetBoundColorDrawBufferInternalFormat(
   return buffer->internal_format();
 }
 
+GLsizei GLES2DecoderImpl::GetBoundFrameBufferSamples(GLenum target) {
+  DCHECK(target == GL_DRAW_FRAMEBUFFER || target == GL_READ_FRAMEBUFFER ||
+         target == GL_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  if (framebuffer) {
+    return framebuffer->GetSamples();
+  } else {  // Back buffer.
+    if (offscreen_target_frame_buffer_.get()) {
+      return offscreen_target_samples_;
+    }
+    return 0;
+  }
+}
+
+GLenum GLES2DecoderImpl::GetBoundFrameBufferDepthFormat(
+    GLenum target) {
+  DCHECK(target == GL_DRAW_FRAMEBUFFER || target == GL_READ_FRAMEBUFFER ||
+         target == GL_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  if (framebuffer) {
+    return framebuffer->GetDepthFormat();
+  } else {  // Back buffer.
+    if (offscreen_target_frame_buffer_.get()) {
+      return offscreen_target_depth_format_;
+    }
+    if (back_buffer_has_depth_)
+      return GL_DEPTH;
+    return 0;
+  }
+}
+
+GLenum GLES2DecoderImpl::GetBoundFrameBufferStencilFormat(
+    GLenum target) {
+  DCHECK(target == GL_DRAW_FRAMEBUFFER || target == GL_READ_FRAMEBUFFER ||
+         target == GL_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  if (framebuffer) {
+    return framebuffer->GetStencilFormat();
+  } else {  // Back buffer.
+    if (offscreen_target_frame_buffer_.get()) {
+      return offscreen_target_stencil_format_;
+    }
+    if (back_buffer_has_stencil_)
+      return GL_STENCIL;
+    return 0;
+  }
+}
+
 void GLES2DecoderImpl::MarkDrawBufferAsCleared(
     GLenum buffer, GLint drawbuffer_i) {
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
@@ -7060,12 +7115,72 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
+  const char* func_name = "glBlitFramebufferCHROMIUM";
   DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
 
-  if (!CheckBoundDrawFramebufferValid(true, "glBlitFramebufferCHROMIUM") ||
-      !CheckBoundReadFramebufferValid("glBlitFramebufferCHROMIUM",
+  if (!CheckBoundDrawFramebufferValid(true, func_name) ||
+      !CheckBoundReadFramebufferValid(func_name,
                                       GL_INVALID_FRAMEBUFFER_OPERATION)) {
     return;
+  }
+
+  if (GetBoundFrameBufferSamples(GL_DRAW_FRAMEBUFFER) > 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                       "destination framebuffer is multisampled");
+    return;
+  }
+  if (GetBoundFrameBufferSamples(GL_READ_FRAMEBUFFER) > 0 &&
+      (srcX0 != dstX0 || srcY0 != dstY0 || srcX1 != dstX1 || srcY1 != dstY1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "src framebuffer is multisampled, but src/dst regions are different");
+    return;
+  }
+
+  GLenum src_format = GetBoundReadFrameBufferInternalFormat();
+
+  if ((mask & GL_COLOR_BUFFER_BIT) != 0) {
+    bool is_src_signed_int = GLES2Util::IsSignedIntegerFormat(src_format);
+    bool is_src_unsigned_int = GLES2Util::IsUnsignedIntegerFormat(src_format);
+    DCHECK(!is_src_signed_int || !is_src_unsigned_int);
+
+    if ((is_src_signed_int || is_src_unsigned_int) && filter == GL_LINEAR) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "invalid filter for integer format");
+      return;
+    }
+
+    for (uint32_t ii = 0; ii < group_->max_draw_buffers(); ++ii) {
+      GLenum dst_format = GetBoundColorDrawBufferInternalFormat(
+          static_cast<GLint>(ii));
+      if (dst_format == 0)
+        continue;
+      bool is_dst_signed_int = GLES2Util::IsSignedIntegerFormat(dst_format);
+      bool is_dst_unsigned_int = GLES2Util::IsUnsignedIntegerFormat(dst_format);
+      DCHECK(!is_dst_signed_int || !is_dst_unsigned_int);
+      if (is_src_signed_int != is_dst_signed_int ||
+          is_src_unsigned_int != is_dst_unsigned_int) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                           "incompatible src/dst color formats");
+        return;
+      }
+    }
+  }
+
+  if ((mask & (GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)) != 0) {
+    if (filter != GL_NEAREST) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "invalid filter for depth/stencil");
+      return;
+    }
+
+    if ((GetBoundFrameBufferDepthFormat(GL_READ_FRAMEBUFFER) !=
+         GetBoundFrameBufferDepthFormat(GL_DRAW_FRAMEBUFFER)) ||
+        (GetBoundFrameBufferStencilFormat(GL_READ_FRAMEBUFFER) !=
+         GetBoundFrameBufferStencilFormat(GL_DRAW_FRAMEBUFFER))) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "src and dst formats differ for depth/stencil");
+      return;
+    }
   }
 
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
@@ -7094,11 +7209,12 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
     GLsizei height) {
   // TODO(sievers): This could be resolved at the GL binding level, but the
   // binding process is currently a bit too 'brute force'.
-  if (feature_info->gl_version_info().is_angle) {
-    glRenderbufferStorageMultisampleANGLE(
-        target, samples, internal_format, width, height);
-  } else if (feature_info->feature_flags().use_core_framebuffer_multisample) {
+  if (feature_info->feature_flags().use_core_framebuffer_multisample) {
     glRenderbufferStorageMultisample(
+        target, samples, internal_format, width, height);
+  } else if (feature_info->gl_version_info().is_angle) {
+    // This is ES2 only.
+    glRenderbufferStorageMultisampleANGLE(
         target, samples, internal_format, width, height);
   } else {
     glRenderbufferStorageMultisampleEXT(
@@ -7118,11 +7234,12 @@ void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
                                              GLenum filter) {
   // TODO(sievers): This could be resolved at the GL binding level, but the
   // binding process is currently a bit too 'brute force'.
-  if (feature_info_->gl_version_info().is_angle) {
-    glBlitFramebufferANGLE(
-        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-  } else if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
+  if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
     glBlitFramebuffer(
+        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  } else if (feature_info_->gl_version_info().is_angle) {
+    // This is ES2 only.
+    glBlitFramebufferANGLE(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   } else {
     glBlitFramebufferEXT(
