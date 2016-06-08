@@ -300,7 +300,7 @@ template("test") {
 
       # Provide sensible defaults in case invoker did not define any of those
       # required variables.
-      if (!defined(info_plist)) {
+      if (!defined(info_plist) && !defined(info_plist_target)) {
         info_plist = "//testing/gtest_ios/unittest-Info.plist"
       }
       if (!defined(entitlements_path)) {
