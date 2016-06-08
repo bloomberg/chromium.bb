@@ -46,13 +46,8 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   bool SendEscapeToFullscreenController();
   bool IsFullscreenForBrowser();
   bool IsWindowFullscreenForTabOrPending();
-  bool IsMouseLockPermissionRequested();
-  bool IsFullscreenPermissionRequested();
   ExclusiveAccessBubbleType GetExclusiveAccessBubbleType();
   bool IsFullscreenBubbleDisplayed();
-  bool IsFullscreenBubbleDisplayingButtons();
-  void AcceptCurrentFullscreenOrMouseLockRequest();
-  void DenyCurrentFullscreenOrMouseLockRequest();
   void GoBack();
   void Reload();
   void SetPrivilegedFullscreen(bool is_privileged);

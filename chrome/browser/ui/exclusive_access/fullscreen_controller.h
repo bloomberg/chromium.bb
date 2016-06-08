@@ -88,8 +88,8 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // Returns true if controller has entered fullscreen mode.
   bool IsControllerInitiatedFullscreen() const;
 
-  // Returns true if the user has accepted fullscreen.
-  bool IsUserAcceptedFullscreen() const;
+  // Returns true if the site has entered fullscreen.
+  bool IsTabFullscreen() const;
 
   // Returns true if the tab is/will be in fullscreen mode. Note: This does NOT
   // indicate whether the browser window is/will be fullscreened as well. See
@@ -123,8 +123,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   bool HandleUserPressedEscape() override;
 
   void ExitExclusiveAccessToPreviousState() override;
-  bool OnAcceptExclusiveAccessPermission() override;
-  bool OnDenyExclusiveAccessPermission() override;
   GURL GetURLForExclusiveAccessBubble() const override;
   void ExitExclusiveAccessIfNecessary() override;
   // Callbacks /////////////////////////////////////////////////////////////////
@@ -157,8 +155,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   void ExitFullscreenModeInternal();
   void SetFullscreenedTab(content::WebContents* tab, const GURL& origin);
 
-  ContentSetting GetFullscreenSetting() const;
-
   void SetPrivilegedFullscreenForTesting(bool is_privileged);
   // Returns true if |web_contents| was toggled into/out of fullscreen mode as a
   // screen-captured tab. See 'FullscreenWithinTab Note'.
@@ -190,9 +186,8 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // The state before entering tab fullscreen mode via webkitRequestFullScreen.
   // When not in tab fullscreen, it is STATE_INVALID.
   PriorFullscreenState state_prior_to_tab_fullscreen_;
-  // True if tab fullscreen has been allowed, either by settings or by user
-  // clicking the allow button on the fullscreen infobar.
-  bool tab_fullscreen_accepted_;
+  // True if the site has entered into fullscreen.
+  bool tab_fullscreen_;
 
   // True if this controller has toggled into tab OR browser fullscreen.
   bool toggled_into_fullscreen_;

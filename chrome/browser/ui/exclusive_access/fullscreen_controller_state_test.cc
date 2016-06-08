@@ -45,8 +45,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TO_TAB_FULLSCREEN,                // Event TAB_FULLSCREEN_TRUE
       STATE_NORMAL,                           // Event TAB_FULLSCREEN_FALSE
       STATE_NORMAL,                           // Event BUBBLE_EXIT_LINK
-      STATE_NORMAL,                           // Event BUBBLE_ALLOW
-      STATE_NORMAL,                           // Event BUBBLE_DENY
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
     { // STATE_BROWSER_FULLSCREEN_NO_CHROME:
@@ -55,8 +53,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_ALLOW
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_DENY
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
     },
     { // STATE_BROWSER_FULLSCREEN_WITH_CHROME:
@@ -65,8 +61,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event TAB_FULLSCREEN_TRUE
       STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event BUBBLE_ALLOW
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event BUBBLE_DENY
       STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event WINDOW_CHANGE
     },
     { // STATE_TAB_FULLSCREEN:
@@ -75,8 +69,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_FULLSCREEN,                   // Event TAB_FULLSCREEN_TRUE
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_TAB_FULLSCREEN,                   // Event BUBBLE_ALLOW
-      STATE_TO_NORMAL,                        // Event BUBBLE_DENY
       STATE_TAB_FULLSCREEN,                   // Event WINDOW_CHANGE
     },
     { // STATE_TAB_BROWSER_FULLSCREEN:
@@ -85,8 +77,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TAB_FULLSCREEN_FALSE
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_EXIT_LINK
-      STATE_TAB_BROWSER_FULLSCREEN,           // Event BUBBLE_ALLOW
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event BUBBLE_DENY
       STATE_TAB_BROWSER_FULLSCREEN,           // Event WINDOW_CHANGE
     },
     { // STATE_TAB_BROWSER_FULLSCREEN_CHROME:
@@ -95,8 +85,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event TAB_FULLSCREEN_TRUE
       STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event TAB_FULLSCREEN_FALSE
       STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event BUBBLE_EXIT_LINK
-      STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event BUBBLE_ALLOW
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event BUBBLE_DENY
       STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event WINDOW_CHANGE
     },
     { // STATE_TO_NORMAL:
@@ -106,8 +94,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_TRUE
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_TO_NORMAL,                        // Event BUBBLE_ALLOW
-      STATE_TO_NORMAL,                        // Event BUBBLE_DENY
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
     { // STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
@@ -122,8 +108,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
 #else
       STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_EXIT_LINK
 #endif
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_ALLOW
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event BUBBLE_DENY
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
     },
     { // STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
@@ -133,8 +117,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
       STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TAB_FULLSCREEN_FALSE
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event BUBBLE_ALLOW
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event BUBBLE_DENY
       STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event WINDOW_CHANGE
     },
     { // STATE_TO_TAB_FULLSCREEN:
@@ -154,13 +136,6 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TO_NORMAL,                        // Event BUBBLE_EXIT_LINK
 #else
       STATE_TO_TAB_FULLSCREEN,                // Event BUBBLE_EXIT_LINK
-#endif
-      STATE_TO_TAB_FULLSCREEN,                // Event BUBBLE_ALLOW
-#if defined(OS_MACOSX)
-      // Mac window reports fullscreen immediately and an exit triggers exit.
-      STATE_TO_NORMAL,                        // Event BUBBLE_DENY
-#else
-      STATE_TO_TAB_FULLSCREEN,                // Event BUBBLE_DENY
 #endif
       STATE_TAB_FULLSCREEN,                   // Event WINDOW_CHANGE
     },
@@ -224,8 +199,6 @@ const char* FullscreenControllerStateTest::GetEventString(Event event) {
     ENUM_TO_STRING(TAB_FULLSCREEN_TRUE);
     ENUM_TO_STRING(TAB_FULLSCREEN_FALSE);
     ENUM_TO_STRING(BUBBLE_EXIT_LINK);
-    ENUM_TO_STRING(BUBBLE_ALLOW);
-    ENUM_TO_STRING(BUBBLE_DENY);
     ENUM_TO_STRING(WINDOW_CHANGE);
     ENUM_TO_STRING(EVENT_INVALID);
     default:
@@ -366,18 +339,6 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
 
     case BUBBLE_EXIT_LINK:
       GetFullscreenController()->ExitExclusiveAccessToPreviousState();
-      break;
-
-    case BUBBLE_ALLOW:
-      GetBrowser()
-          ->exclusive_access_manager()
-          ->OnAcceptExclusiveAccessPermission();
-      break;
-
-    case BUBBLE_DENY:
-      GetBrowser()
-          ->exclusive_access_manager()
-          ->OnDenyExclusiveAccessPermission();
       break;
 
     case WINDOW_CHANGE:

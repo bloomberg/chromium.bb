@@ -157,14 +157,6 @@ void ExclusiveAccessBubble::ExitExclusiveAccess() {
   manager_->ExitExclusiveAccess();
 }
 
-void ExclusiveAccessBubble::Accept() {
-  manager_->OnAcceptExclusiveAccessPermission();
-}
-
-void ExclusiveAccessBubble::Cancel() {
-  manager_->OnDenyExclusiveAccessPermission();
-}
-
 base::string16 ExclusiveAccessBubble::GetCurrentMessageText() const {
   return exclusive_access_bubble::GetLabelTextForType(
       bubble_type_, url_,

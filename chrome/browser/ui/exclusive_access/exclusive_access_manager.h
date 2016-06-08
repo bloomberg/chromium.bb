@@ -69,8 +69,6 @@ class ExclusiveAccessManager {
   void OnUserInput();
 
   // Called by platform ExclusiveAccessExitBubble.
-  void OnAcceptExclusiveAccessPermission();
-  void OnDenyExclusiveAccessPermission();
   void ExitExclusiveAccess();
   void RecordBubbleReshownUMA(ExclusiveAccessBubbleType type);
 

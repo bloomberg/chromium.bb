@@ -86,10 +86,6 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   void CheckMousePosition();
 
   void ExitExclusiveAccess();
-  // Accepts the request. Can cause FullscreenExitBubble to be deleted.
-  void Accept();
-  // Denys the request. Can cause FullscreenExitBubble to be deleted.
-  void Cancel();
 
   // The following strings may change according to the content type and URL.
   base::string16 GetCurrentMessageText() const;

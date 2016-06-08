@@ -19,8 +19,6 @@
   TEST_EVENT(state, TAB_FULLSCREEN_TRUE)      \
   TEST_EVENT(state, TAB_FULLSCREEN_FALSE)     \
   TEST_EVENT(state, BUBBLE_EXIT_LINK)         \
-  TEST_EVENT(state, BUBBLE_ALLOW)             \
-  TEST_EVENT(state, BUBBLE_DENY)              \
   TEST_EVENT(state, WINDOW_CHANGE)
 
 TEST_ALL_EVENTS(STATE_NORMAL);

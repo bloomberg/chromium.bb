@@ -37,8 +37,6 @@ class FullscreenControllerStateTest {
     TAB_FULLSCREEN_TRUE,       // ToggleFullscreenModeForTab(, true)
     TAB_FULLSCREEN_FALSE,      // ToggleFullscreenModeForTab(, false)
     BUBBLE_EXIT_LINK,          // ExitTabOrBrowserFullscreenToPreviousState()
-    BUBBLE_ALLOW,              // OnAcceptFullscreenPermission()
-    BUBBLE_DENY,               // OnDenyFullscreenPermission()
     WINDOW_CHANGE,             // ChangeWindowFullscreenState()
     NUM_EVENTS,
     EVENT_INVALID,

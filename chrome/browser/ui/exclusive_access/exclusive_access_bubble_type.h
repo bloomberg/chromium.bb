@@ -22,9 +22,6 @@ enum ExclusiveAccessBubbleType {
   // For tab fullscreen mode.
   // More comments about tab and browser fullscreen mode can be found in
   // chrome/browser/ui/exclusive_access/fullscreen_controller.h.
-  EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS,
-  EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS,
-  EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS,
   EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION,
   EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION,
   EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION,
@@ -53,10 +50,6 @@ base::string16 GetAllowButtonTextForType(ExclusiveAccessBubbleType type,
 // |accelerator| is the name of the key to exit fullscreen mode.
 base::string16 GetInstructionTextForType(ExclusiveAccessBubbleType type,
                                          const base::string16& accelerator);
-bool ShowButtonsForType(ExclusiveAccessBubbleType type);
-void PermissionRequestedByType(ExclusiveAccessBubbleType type,
-                               bool* tab_fullscreen,
-                               bool* mouse_lock);
 
 }  // namespace exclusive_access_bubble
 

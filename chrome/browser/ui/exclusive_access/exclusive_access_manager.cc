@@ -47,16 +47,14 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
   app_mode = chrome::IsRunningInAppMode();
 #endif
 
-  if (mouse_lock_controller_.IsMouseLockSilentlyAccepted() &&
+  if (mouse_lock_controller_.IsMouseLockedSilently() &&
       (!fullscreen_controller_.IsWindowFullscreenForTabOrPending() ||
-       fullscreen_controller_.IsUserAcceptedFullscreen()))
+       fullscreen_controller_.IsTabFullscreen()))
     return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 
   if (!fullscreen_controller_.IsWindowFullscreenForTabOrPending()) {
     if (mouse_lock_controller_.IsMouseLocked())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
-    if (mouse_lock_controller_.IsMouseLockRequested())
-      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS;
     if (fullscreen_controller_.IsExtensionFullscreenOrPending())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
     if (fullscreen_controller_.IsControllerInitiatedFullscreen() && !app_mode)
@@ -64,31 +62,22 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
     return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
   }
 
-  if (fullscreen_controller_.IsUserAcceptedFullscreen()) {
+  if (fullscreen_controller_.IsTabFullscreen()) {
     if (fullscreen_controller_.IsPrivilegedFullscreenForTab())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
     if (IsExperimentalKeyboardLockUIEnabled())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION;
     if (mouse_lock_controller_.IsMouseLocked())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
-    if (mouse_lock_controller_.IsMouseLockRequested())
-      return EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS;
     return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
   }
 
-  if (mouse_lock_controller_.IsMouseLockRequested())
-    return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
-  return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS;
+  return EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
 }
 
 void ExclusiveAccessManager::UpdateExclusiveAccessExitBubbleContent() {
   GURL url = GetExclusiveAccessBubbleURL();
   ExclusiveAccessBubbleType bubble_type = GetExclusiveAccessExitBubbleType();
-
-  // If bubble displays buttons, unlock mouse to allow pressing them.
-  if (exclusive_access_bubble::ShowButtonsForType(bubble_type) &&
-      mouse_lock_controller_.IsMouseLocked())
-    mouse_lock_controller_.UnlockMouse();
 
   exclusive_access_context_->UpdateExclusiveAccessExitBubbleContent(
       url, bubble_type);
@@ -170,21 +159,6 @@ void ExclusiveAccessManager::OnUserInput() {
   exclusive_access_context_->OnExclusiveAccessUserInput();
 }
 
-void ExclusiveAccessManager::OnAcceptExclusiveAccessPermission() {
-  bool updateBubble =
-      mouse_lock_controller_.OnAcceptExclusiveAccessPermission();
-  updateBubble |= fullscreen_controller_.OnAcceptExclusiveAccessPermission();
-  if (updateBubble)
-    UpdateExclusiveAccessExitBubbleContent();
-}
-
-void ExclusiveAccessManager::OnDenyExclusiveAccessPermission() {
-  bool updateBubble = mouse_lock_controller_.OnDenyExclusiveAccessPermission();
-  updateBubble |= fullscreen_controller_.OnDenyExclusiveAccessPermission();
-  if (updateBubble)
-    UpdateExclusiveAccessExitBubbleContent();
-}
-
 void ExclusiveAccessManager::ExitExclusiveAccess() {
   fullscreen_controller_.ExitExclusiveAccessToPreviousState();
   mouse_lock_controller_.LostMouseLock();
@@ -197,10 +171,8 @@ void ExclusiveAccessManager::RecordBubbleReshownUMA(
   bool mouselock = false;
   switch (type) {
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
       // None in effect.
       break;
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
@@ -212,7 +184,6 @@ void ExclusiveAccessManager::RecordBubbleReshownUMA(
       // Only mouselock in effect.
       mouselock = true;
       break;
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
       // Both in effect.
       fullscreen = true;

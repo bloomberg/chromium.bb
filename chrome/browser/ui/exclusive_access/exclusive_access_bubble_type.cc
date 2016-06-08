@@ -33,15 +33,9 @@ base::string16 GetLabelTextForType(ExclusiveAccessBubbleType type,
   }
   if (host.empty()) {
     switch (type) {
-      case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
       case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
       case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
         return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ENTERED_FULLSCREEN);
-      case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
-        return l10n_util::GetStringUTF16(
-            IDS_FULLSCREEN_REQUEST_FULLSCREEN_MOUSELOCK);
-      case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
-        return l10n_util::GetStringUTF16(IDS_FULLSCREEN_REQUEST_MOUSELOCK);
       case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
         return l10n_util::GetStringUTF16(
             IDS_FULLSCREEN_ENTERED_FULLSCREEN_MOUSELOCK);
@@ -61,15 +55,6 @@ base::string16 GetLabelTextForType(ExclusiveAccessBubbleType type,
     return base::string16();
   }
   switch (type) {
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
-      return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN,
-                                        host);
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
-      return l10n_util::GetStringFUTF16(
-          IDS_FULLSCREEN_SITE_REQUEST_FULLSCREEN_MOUSELOCK, host);
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
-      return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_SITE_REQUEST_MOUSELOCK,
-                                        host);
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
       return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN,
@@ -95,12 +80,6 @@ base::string16 GetLabelTextForType(ExclusiveAccessBubbleType type,
 
 base::string16 GetDenyButtonTextForType(ExclusiveAccessBubbleType type) {
   switch (type) {
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
-      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_EXIT_FULLSCREEN);
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
-      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_EXIT);
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
-      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_DENY);
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
@@ -118,17 +97,6 @@ base::string16 GetDenyButtonTextForType(ExclusiveAccessBubbleType type) {
 base::string16 GetAllowButtonTextForType(ExclusiveAccessBubbleType type,
                                          const GURL& url) {
   switch (type) {
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
-      // Show a Dismiss button instead of Allow for file:// URLs; on
-      // file:// URLs, the preference is not saved for the origin, so
-      // the user is opting to just Dismiss the dialog rather than Allow
-      // future fullscreen attempts.
-      if (url.SchemeIsFile())
-        return l10n_util::GetStringUTF16(IDS_FULLSCREEN_DISMISS);
-      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
-      return l10n_util::GetStringUTF16(IDS_FULLSCREEN_ALLOW);
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
@@ -146,11 +114,6 @@ base::string16 GetAllowButtonTextForType(ExclusiveAccessBubbleType type,
 base::string16 GetInstructionTextForType(ExclusiveAccessBubbleType type,
                                          const base::string16& accelerator) {
   switch (type) {
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
-      NOTREACHED();  // No exit instruction if there are buttons.
-      return base::string16();
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
@@ -172,27 +135,6 @@ base::string16 GetInstructionTextForType(ExclusiveAccessBubbleType type,
   }
   NOTREACHED();
   return base::string16();
-}
-
-bool ShowButtonsForType(ExclusiveAccessBubbleType type) {
-  return type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS ||
-         type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
-         type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS;
-}
-
-void PermissionRequestedByType(ExclusiveAccessBubbleType type,
-                               bool* tab_fullscreen,
-                               bool* mouse_lock) {
-  if (tab_fullscreen) {
-    *tab_fullscreen =
-        type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS ||
-        type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
-  }
-  if (mouse_lock) {
-    *mouse_lock =
-        type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS ||
-        type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS;
-  }
 }
 
 }  // namespace exclusive_access_bubble

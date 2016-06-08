@@ -51,7 +51,7 @@ const char kBubbleReshowsHistogramName[] =
 FullscreenController::FullscreenController(ExclusiveAccessManager* manager)
     : ExclusiveAccessControllerBase(manager),
       state_prior_to_tab_fullscreen_(STATE_INVALID),
-      tab_fullscreen_accepted_(false),
+      tab_fullscreen_(false),
       toggled_into_fullscreen_(false),
       reentrant_window_state_change_call_check_(false),
       is_privileged_fullscreen_for_testing_(false),
@@ -95,8 +95,8 @@ bool FullscreenController::IsControllerInitiatedFullscreen() const {
   return toggled_into_fullscreen_;
 }
 
-bool FullscreenController::IsUserAcceptedFullscreen() const {
-  return tab_fullscreen_accepted_;
+bool FullscreenController::IsTabFullscreen() const {
+  return tab_fullscreen_;
 }
 
 bool FullscreenController::IsFullscreenForTabOrPending(
@@ -155,9 +155,7 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
 
   // We need to update the fullscreen exit bubble, e.g., going from browser
   // fullscreen to tab fullscreen will need to show different content.
-  if (!tab_fullscreen_accepted_) {
-    tab_fullscreen_accepted_ = GetFullscreenSetting() == CONTENT_SETTING_ALLOW;
-  }
+  tab_fullscreen_ = true;
   exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
 
   // This is only a change between Browser and Tab fullscreen. We generate
@@ -292,58 +290,6 @@ void FullscreenController::ExitExclusiveAccessToPreviousState() {
     ExitFullscreenModeInternal();
 }
 
-bool FullscreenController::OnAcceptExclusiveAccessPermission() {
-  ExclusiveAccessBubbleType bubble_type =
-      exclusive_access_manager()->GetExclusiveAccessExitBubbleType();
-  bool fullscreen = false;
-  exclusive_access_bubble::PermissionRequestedByType(bubble_type, &fullscreen,
-                                                     nullptr);
-  DCHECK(!(fullscreen && tab_fullscreen_accepted_));
-
-  if (fullscreen && !tab_fullscreen_accepted_) {
-    DCHECK(exclusive_access_tab());
-    // Origins can enter fullscreen even when embedded in other origins.
-    // Permission is tracked based on the combinations of requester and
-    // embedder. Thus, even if a requesting origin has been previously approved
-    // for embedder A, it will not be approved when embedded in a different
-    // origin B.
-    //
-    // However, an exception is made when a requester and an embedder are the
-    // same origin. In other words, if the requester is the top-level frame. If
-    // that combination is ALLOWED, then future requests from that origin will
-    // succeed no matter what the embedder is. For example, if youtube.com
-    // is visited and user selects ALLOW. Later user visits example.com which
-    // embeds youtube.com in an iframe, which is then ALLOWED to go fullscreen.
-    GURL requester = GetRequestingOrigin();
-    GURL embedder = GetEmbeddingOrigin();
-
-    // Do not store preference on file:// URLs, they don't have a clean
-    // origin policy.
-    // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-    if (!requester.SchemeIsFile() && !embedder.SchemeIsFile()) {
-      HostContentSettingsMap* settings_map =
-          HostContentSettingsMapFactory::GetForProfile(
-              exclusive_access_manager()->context()->GetProfile());
-      settings_map->SetContentSettingDefaultScope(
-          requester, embedder, CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string(),
-          CONTENT_SETTING_ALLOW);
-    }
-    tab_fullscreen_accepted_ = true;
-    return true;
-  }
-
-  return false;
-}
-
-bool FullscreenController::OnDenyExclusiveAccessPermission() {
-  if (IsWindowFullscreenForTabOrPending()) {
-    ExitExclusiveAccessIfNecessary();
-    return true;
-  }
-
-  return false;
-}
-
 GURL FullscreenController::GetURLForExclusiveAccessBubble() const {
   if (exclusive_access_tab())
     return GetRequestingOrigin();
@@ -378,7 +324,7 @@ void FullscreenController::NotifyTabExclusiveAccessLost() {
     fullscreened_origin_ = GURL();
     bool will_cause_resize = IsFullscreenCausedByTab();
     state_prior_to_tab_fullscreen_ = STATE_INVALID;
-    tab_fullscreen_accepted_ = false;
+    tab_fullscreen_ = false;
     web_contents->ExitFullscreen(will_cause_resize);
     exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
   }
@@ -438,7 +384,7 @@ void FullscreenController::EnterFullscreenModeInternal(
   GURL url;
   if (option == TAB) {
     url = GetRequestingOrigin();
-    tab_fullscreen_accepted_ = GetFullscreenSetting() == CONTENT_SETTING_ALLOW;
+    tab_fullscreen_ = true;
   } else {
     if (!extension_caused_fullscreen_.is_empty())
       url = extension_caused_fullscreen_;
@@ -474,13 +420,6 @@ void FullscreenController::ExitFullscreenModeInternal() {
   extension_caused_fullscreen_ = GURL();
 
   exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
-}
-
-ContentSetting FullscreenController::GetFullscreenSetting() const {
-  // The new policy is to always allow (even if the flag is disabled).
-  // TODO(mgiuca): Remove this function and clean up callers
-  // (https://crbug.com/610900).
-  return CONTENT_SETTING_ALLOW;
 }
 
 bool FullscreenController::IsPrivilegedFullscreenForTab() const {

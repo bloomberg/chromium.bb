@@ -31,19 +31,19 @@ const char kBubbleReshowsHistogramName[] =
 
 MouseLockController::MouseLockController(ExclusiveAccessManager* manager)
     : ExclusiveAccessControllerBase(manager),
-      mouse_lock_state_(MOUSELOCK_NOT_REQUESTED),
+      mouse_lock_state_(MOUSELOCK_UNLOCKED),
       fake_mouse_lock_for_test_(false) {}
 
 MouseLockController::~MouseLockController() {
 }
 
 bool MouseLockController::IsMouseLocked() const {
-  return mouse_lock_state_ == MOUSELOCK_ACCEPTED ||
-         mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY;
+  return mouse_lock_state_ == MOUSELOCK_LOCKED ||
+         mouse_lock_state_ == MOUSELOCK_LOCKED_SILENTLY;
 }
 
-bool MouseLockController::IsMouseLockSilentlyAccepted() const {
-  return mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY;
+bool MouseLockController::IsMouseLockedSilently() const {
+  return mouse_lock_state_ == MOUSELOCK_LOCKED_SILENTLY;
 }
 
 void MouseLockController::RequestToLockMouse(WebContents* web_contents,
@@ -64,43 +64,18 @@ void MouseLockController::RequestToLockMouse(WebContents* web_contents,
     return;
   }
   SetTabWithExclusiveAccess(web_contents);
-  ExclusiveAccessBubbleType bubble_type =
-      exclusive_access_manager()->GetExclusiveAccessExitBubbleType();
 
-  switch (GetMouseLockSetting(web_contents->GetURL())) {
-    case CONTENT_SETTING_ALLOW:
-      // If bubble already displaying buttons we must not lock the mouse yet,
-      // or it would prevent pressing those buttons. Instead, merge the request.
-      if (!exclusive_access_manager()
-               ->fullscreen_controller()
-               ->IsPrivilegedFullscreenForTab() &&
-          exclusive_access_bubble::ShowButtonsForType(bubble_type)) {
-        mouse_lock_state_ = MOUSELOCK_REQUESTED;
-      } else {
-        // Lock mouse.
-        if (fake_mouse_lock_for_test_ ||
-            web_contents->GotResponseToLockMouseRequest(true)) {
-          if (last_unlocked_by_target) {
-            mouse_lock_state_ = MOUSELOCK_ACCEPTED_SILENTLY;
-          } else {
-            mouse_lock_state_ = MOUSELOCK_ACCEPTED;
-          }
-        } else {
-          SetTabWithExclusiveAccess(nullptr);
-          mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
-        }
-      }
-      break;
-    case CONTENT_SETTING_BLOCK:
-      web_contents->GotResponseToLockMouseRequest(false);
-      SetTabWithExclusiveAccess(nullptr);
-      mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
-      break;
-    case CONTENT_SETTING_ASK:
-      mouse_lock_state_ = MOUSELOCK_REQUESTED;
-      break;
-    default:
-      NOTREACHED();
+  // Lock mouse.
+  if (fake_mouse_lock_for_test_ ||
+      web_contents->GotResponseToLockMouseRequest(true)) {
+    if (last_unlocked_by_target) {
+      mouse_lock_state_ = MOUSELOCK_LOCKED_SILENTLY;
+    } else {
+      mouse_lock_state_ = MOUSELOCK_LOCKED;
+    }
+  } else {
+    SetTabWithExclusiveAccess(nullptr);
+    mouse_lock_state_ = MOUSELOCK_UNLOCKED;
   }
   exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
 }
@@ -112,14 +87,9 @@ void MouseLockController::ExitExclusiveAccessIfNecessary() {
 void MouseLockController::NotifyTabExclusiveAccessLost() {
   WebContents* tab = exclusive_access_tab();
   if (tab) {
-    if (IsMouseLockRequested()) {
-      tab->GotResponseToLockMouseRequest(false);
-      NotifyMouseLockChange();
-    } else {
-      UnlockMouse();
-    }
+    UnlockMouse();
     SetTabWithExclusiveAccess(nullptr);
-    mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
+    mouse_lock_state_ = MOUSELOCK_UNLOCKED;
     exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
   }
 }
@@ -130,7 +100,7 @@ void MouseLockController::RecordBubbleReshowsHistogram(
 }
 
 bool MouseLockController::HandleUserPressedEscape() {
-  if (IsMouseLocked() || IsMouseLockRequested()) {
+  if (IsMouseLocked()) {
     ExitExclusiveAccessIfNecessary();
     return true;
   }
@@ -142,72 +112,12 @@ void MouseLockController::ExitExclusiveAccessToPreviousState() {
   // Nothing to do for mouse lock.
 }
 
-bool MouseLockController::OnAcceptExclusiveAccessPermission() {
-  ExclusiveAccessBubbleType bubble_type =
-      exclusive_access_manager()->GetExclusiveAccessExitBubbleType();
-  bool mouse_lock = false;
-  exclusive_access_bubble::PermissionRequestedByType(bubble_type, nullptr,
-                                                     &mouse_lock);
-  DCHECK(!(mouse_lock && IsMouseLocked()));
-
-  if (mouse_lock && !IsMouseLocked()) {
-    DCHECK(IsMouseLockRequested());
-
-    HostContentSettingsMap* settings_map =
-        HostContentSettingsMapFactory::GetForProfile(
-            exclusive_access_manager()->context()->GetProfile());
-
-    GURL url = GetExclusiveAccessBubbleURL();
-
-    // TODO(markusheintz): We should allow patterns for all possible URLs here.
-    //
-    // Do not store preference on file:// URLs, they don't have a clean
-    // origin policy.
-    // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-    if (!url.SchemeIsFile()) {
-      settings_map->SetContentSettingDefaultScope(
-          url, GURL(), CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
-          CONTENT_SETTING_ALLOW);
-    }
-
-    WebContents* tab = exclusive_access_tab();
-    if (tab && tab->GotResponseToLockMouseRequest(true)) {
-      mouse_lock_state_ = MOUSELOCK_ACCEPTED;
-    } else {
-      mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
-      SetTabWithExclusiveAccess(nullptr);
-    }
-    NotifyMouseLockChange();
-    return true;
-  }
-
-  return false;
-}
-
-bool MouseLockController::OnDenyExclusiveAccessPermission() {
-  WebContents* tab = exclusive_access_tab();
-
-  if (tab && IsMouseLockRequested()) {
-    mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
-    tab->GotResponseToLockMouseRequest(false);
-    SetTabWithExclusiveAccess(nullptr);
-    NotifyMouseLockChange();
-    return true;
-  }
-
-  return false;
-}
-
 void MouseLockController::LostMouseLock() {
   RecordExitingUMA();
-  mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
+  mouse_lock_state_ = MOUSELOCK_UNLOCKED;
   SetTabWithExclusiveAccess(nullptr);
   NotifyMouseLockChange();
   exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
-}
-
-bool MouseLockController::IsMouseLockRequested() const {
-  return mouse_lock_state_ == MOUSELOCK_REQUESTED;
 }
 
 void MouseLockController::NotifyMouseLockChange() {
@@ -240,14 +150,4 @@ void MouseLockController::UnlockMouse() {
 
   if (mouse_lock_view)
     mouse_lock_view->UnlockMouse();
-}
-
-ContentSetting MouseLockController::GetMouseLockSetting(const GURL& url) const {
-  // The new policy is to always allow (even if the flag is disabled). We no
-  // longer give users control over this at the settings level (since it is very
-  // easy to escape mouse lock when it happens). Even if the user has blocked
-  // access to this site in the past, we now ignore that setting.
-  // TODO(mgiuca): Remove this function and clean up callers
-  // (https://crbug.com/610900).
-  return CONTENT_SETTING_ALLOW;
 }

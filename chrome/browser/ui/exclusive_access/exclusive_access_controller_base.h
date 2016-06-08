@@ -42,16 +42,6 @@ class ExclusiveAccessControllerBase : public content::NotificationObserver {
   // Called by Browser in response to call from ExclusiveAccessBubble.
   virtual void ExitExclusiveAccessToPreviousState() = 0;
 
-  // Called to indicate that the permission for this exclusive access has been
-  // granted if requested. Returns true if the exit bubble content should be
-  // updated.
-  virtual bool OnAcceptExclusiveAccessPermission() = 0;
-
-  // Called to indicate that the permission for the exclusive access has been
-  // denied if requested. Returns true if the exit bubble content should be
-  // updated.
-  virtual bool OnDenyExclusiveAccessPermission() = 0;
-
   // Called by ExclusiveAccessManager in response to calls from Browser.
   virtual void OnTabDeactivated(content::WebContents* web_contents);
   virtual void OnTabDetachedFromView(content::WebContents* web_contents);
