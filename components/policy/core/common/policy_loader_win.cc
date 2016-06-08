@@ -375,8 +375,12 @@ PolicyLoaderWin::PolicyLoaderWin(
       is_initialized_(false),
       chrome_policy_key_(chrome_policy_key),
       gpo_provider_(gpo_provider),
-      user_policy_changed_event_(false, false),
-      machine_policy_changed_event_(false, false),
+      user_policy_changed_event_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
+      machine_policy_changed_event_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
       user_policy_watcher_failed_(false),
       machine_policy_watcher_failed_(false) {
   if (!::RegisterGPNotification(user_policy_changed_event_.handle(), false)) {

@@ -147,7 +147,8 @@ class PasswordStoreWinTest : public testing::Test {
     wdbs_->ShutdownDatabase();
     wds_ = nullptr;
     wdbs_ = nullptr;
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
@@ -210,7 +211,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
 
   // The WDS schedules tasks to run on the DB thread so we schedule yet another
   // task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
+  WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
@@ -307,7 +309,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
 
   // The WDS schedules tasks to run on the DB thread so we schedule yet another
   // task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
+  WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();

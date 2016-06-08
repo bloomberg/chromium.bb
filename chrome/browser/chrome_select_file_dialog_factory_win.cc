@@ -68,8 +68,9 @@ class GetOpenFileNameClient : public content::UtilityProcessHostClient {
   DISALLOW_COPY_AND_ASSIGN(GetOpenFileNameClient);
 };
 
-GetOpenFileNameClient::GetOpenFileNameClient() : event_(true, false) {
-}
+GetOpenFileNameClient::GetOpenFileNameClient()
+    : event_(base::WaitableEvent::ResetPolicy::MANUAL,
+             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 void GetOpenFileNameClient::WaitForCompletion() {
   event_.Wait();
@@ -198,8 +199,9 @@ class GetSaveFileNameClient : public content::UtilityProcessHostClient {
 };
 
 GetSaveFileNameClient::GetSaveFileNameClient()
-    : one_based_filter_index_(0), event_(true, false) {
-}
+    : one_based_filter_index_(0),
+      event_(base::WaitableEvent::ResetPolicy::MANUAL,
+             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 void GetSaveFileNameClient::WaitForCompletion() {
   event_.Wait();

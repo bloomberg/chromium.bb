@@ -67,8 +67,9 @@ class MockDhcpProxyScriptAdapterFetcher
    public:
     explicit DelayingDhcpQuery()
         : DhcpQuery(),
-          test_finished_event_(true, false) {
-    }
+          test_finished_event_(
+              base::WaitableEvent::ResetPolicy::MANUAL,
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
     std::string ImplGetPacURLFromDhcp(
         const std::string& adapter_name) override {

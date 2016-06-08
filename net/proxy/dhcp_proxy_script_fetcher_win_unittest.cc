@@ -286,7 +286,9 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
   MockDhcpProxyScriptFetcherWin(URLRequestContext* context)
       : DhcpProxyScriptFetcherWin(context),
         num_fetchers_created_(0),
-        worker_finished_event_(true, false) {
+        worker_finished_event_(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {
     ResetTestState();
   }
 
