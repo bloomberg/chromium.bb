@@ -55539,6 +55539,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.InvalidationSessionsAndroid" enum="BooleanHit">
+  <obsolete>
+    Deprecated as of 5/2016.
+  </obsolete>
   <owner>pkotwicz@chromium.org</owner>
   <summary>
     Count of the number of session sync invalidations. The goal of the metric is

@@ -18,14 +18,11 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.PendingInvalidation;
-import org.chromium.sync.ModelType;
-import org.chromium.sync.ModelTypeHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.concurrent.Semaphore;
@@ -143,12 +140,5 @@ public class ChromeBrowserSyncAdapter extends AbstractThreadedSyncAdapter {
             int objectSource, String objectId, long version, String payload) {
         InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
                 .notifyInvalidationToNativeChrome(objectSource, objectId, version, payload);
-
-        // Count the number of sessions sync invalidations to evaluate effectiveness of
-        // AndroidSessionNotifications field trial. The histogram is recorded here because
-        // RecordHistogram requires the native library to be loaded.
-        if (ModelTypeHelper.toNotificationType(ModelType.SESSIONS).equals(objectId)) {
-            RecordHistogram.recordBooleanHistogram("Sync.InvalidationSessionsAndroid", true);
-        }
     }
 }
