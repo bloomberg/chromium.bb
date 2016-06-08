@@ -56,6 +56,11 @@ public class DisableIfSkipCheck extends SkipCheck {
         return v.hardware_is().isEmpty() || Build.HARDWARE.equals(v.hardware_is());
     }
 
+    private boolean product(DisableIf.Build v) {
+        return v.product_name_includes().isEmpty()
+                || Build.PRODUCT.contains(v.product_name_includes());
+    }
+
     private boolean sdk(DisableIf.Build v) {
         return Build.VERSION.SDK_INT > v.sdk_is_greater_than()
                 && Build.VERSION.SDK_INT < v.sdk_is_less_than();

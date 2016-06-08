@@ -10,7 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.webview_shell.WebViewLayoutTestActivity;
 
@@ -244,10 +244,10 @@ public class WebViewLayoutTest
     }
 
     /*
-    @MediumTest
     currently failing on aosp bots, see crbug.com/607350
     */
-    @DisabledTest
+    @MediumTest
+    @DisableIf.Build(product_name_includes = "aosp")
     public void testEMEPermission() throws Exception {
         mTestActivity.setGrantPermission(true);
         runWebViewLayoutTest("blink-apis/eme/eme.html", "blink-apis/eme/eme-expected.txt");

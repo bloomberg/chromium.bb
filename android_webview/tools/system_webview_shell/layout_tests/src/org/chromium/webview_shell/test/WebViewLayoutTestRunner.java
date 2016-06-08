@@ -5,15 +5,13 @@
 package org.chromium.webview_shell.test;
 
 import android.os.Bundle;
-import android.test.AndroidTestRunner;
-import android.test.InstrumentationTestRunner;
 
-import org.chromium.test.reporter.TestStatusListener;
+import org.chromium.base.test.BaseInstrumentationTestRunner;
 
 /**
  * Customized test runner for running instrumentation tests in WebViewBrowserTests.
  */
-public class WebViewLayoutTestRunner extends InstrumentationTestRunner {
+public class WebViewLayoutTestRunner extends BaseInstrumentationTestRunner {
     private String mModeArgument;
     private static final String MODE_REBASELINE = "rebaseline";
 
@@ -27,12 +25,5 @@ public class WebViewLayoutTestRunner extends InstrumentationTestRunner {
 
     public boolean isRebaseline() {
         return mModeArgument != null ? mModeArgument.equals(MODE_REBASELINE) : false;
-    }
-
-    @Override
-    protected AndroidTestRunner getAndroidTestRunner() {
-        AndroidTestRunner runner = super.getAndroidTestRunner();
-        runner.addTestListener(new TestStatusListener(getContext()));
-        return runner;
     }
 }

@@ -31,6 +31,8 @@ public class DisableIf {
         String supported_abis_includes() default "";
 
         String hardware_is() default "";
+
+        String product_name_includes() default "";
     }
 
     /* Objects of this type should not be created. */
