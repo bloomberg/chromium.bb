@@ -45,7 +45,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Skip('deqp/functional/gles3/negativebufferapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/negativetextureapi.html', bug=483282)
-    self.Skip('deqp/functional/gles3/negativevertexarrayapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/occlusionquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadercommonfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderderivate.html', bug=483282)
@@ -62,7 +61,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
-    self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
     self.Fail('conformance2/rendering/draw-buffers.html', bug=617410)
 
@@ -380,6 +378,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderswitch.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac', ('nvidia', 0xfe9)], bug=616562)
