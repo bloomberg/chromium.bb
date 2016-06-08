@@ -93,9 +93,35 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
     features.mozScoreAllSqrt,
     features.mozScoreAllLinear
   );
-  bool distillable = detector->Classify(derived);
-  bool long_article = long_page->Classify(derived);
+  double score = detector->Score(derived) - detector->GetThreshold();
+  double long_score = long_page->Score(derived) - long_page->GetThreshold();
+  bool distillable = score > 0;
+  bool long_article = long_score > 0;
   bool blacklisted = IsBlacklisted(parsed_url);
+
+  if (!features.isMobileFriendly) {
+    int score_int = std::round(score * 100);
+    if (score > 0) {
+      UMA_HISTOGRAM_COUNTS_1000("DomDistiller.DistillabilityScoreNMF.Positive",
+          score_int);
+    } else {
+      UMA_HISTOGRAM_COUNTS_1000("DomDistiller.DistillabilityScoreNMF.Negative",
+          -score_int);
+    }
+    if (distillable) {
+      // The long-article model is trained with pages that are
+      // non-mobile-friendly, and distillable (deemed by the first model), so
+      // only record on that type of pages.
+      int long_score_int = std::round(long_score * 100);
+      if (long_score > 0) {
+        UMA_HISTOGRAM_COUNTS_1000("DomDistiller.LongArticleScoreNMF.Positive",
+            long_score_int);
+      } else {
+        UMA_HISTOGRAM_COUNTS_1000("DomDistiller.LongArticleScoreNMF.Negative",
+            -long_score_int);
+      }
+    }
+  }
 
   int bucket = static_cast<unsigned>(features.isMobileFriendly) |
       (static_cast<unsigned>(distillable) << 1);

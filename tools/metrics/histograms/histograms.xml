@@ -9941,10 +9941,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.DistillabilityScoreNMF.Negative" units="score">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Score of distillability from AdaBoost model, non-mobile-friendly only. The
+    score shown here is multiplied by 100.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.DistillabilityScoreNMF.Positive" units="score">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Score of distillability from AdaBoost model, non-mobile-friendly only. The
+    score shown here is multiplied by 100.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.DistillationQuality" enum="BooleanSuccess">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Whether the perceived quality of the distillation of a web page was good.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.LongArticleScoreNMF.Negative" units="score">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Score of long article from AdaBoost model, distillable and
+    non-mobile-friendly only. The score shown here is multiplied by 100.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.LongArticleScoreNMF.Positive" units="score">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Score of long article from AdaBoost model, distillable and
+    non-mobile-friendly only. The score shown here is multiplied by 100.
   </summary>
 </histogram>
 
