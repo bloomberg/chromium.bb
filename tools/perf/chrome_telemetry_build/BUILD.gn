@@ -18,7 +18,7 @@ if (is_win) {
     ]
     args = [
       rebase_path("$root_out_dir/cdb", root_out_dir),
-      target_cpu,
+      current_cpu,
     ]
   }
 }
