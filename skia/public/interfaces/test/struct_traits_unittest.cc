@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "ui/gfx/skia_util.h"
 
 namespace skia {
@@ -30,6 +31,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
                   const EchoBitmapCallback& callback) override {
     callback.Run(b);
   }
+
   void EchoImageFilter(const sk_sp<SkImageFilter>& i,
                        const EchoImageFilterCallback& callback) override {
     callback.Run(i);
@@ -71,6 +73,21 @@ TEST_F(StructTraitsTest, Bitmap) {
 
 TEST_F(StructTraitsTest, ImageFilter) {
   sk_sp<SkImageFilter> input(make_scale(0.5f, nullptr));
+  SkString input_str;
+  input->toString(&input_str);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  sk_sp<SkImageFilter> output;
+  proxy->EchoImageFilter(input, &output);
+  SkString output_str;
+  output->toString(&output_str);
+  EXPECT_EQ(input_str, output_str);
+}
+
+TEST_F(StructTraitsTest, DropShadowImageFilter) {
+  sk_sp<SkImageFilter> input(SkDropShadowImageFilter::Make(
+      SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4), SkIntToScalar(9),
+      SK_ColorBLACK,
+      SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, nullptr));
   SkString input_str;
   input->toString(&input_str);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

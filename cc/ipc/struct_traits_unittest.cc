@@ -8,6 +8,8 @@
 #include "cc/quads/render_pass_id.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkString.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
 namespace cc {
 
@@ -33,6 +35,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
       const CompositorFrameMetadata& c,
       const EchoCompositorFrameMetadataCallback& callback) override {
     callback.Run(c);
+  }
+
+  void EchoFilterOperation(
+      const FilterOperation& f,
+      const EchoFilterOperationCallback& callback) override {
+    callback.Run(f);
   }
 
   void EchoRenderPassId(const RenderPassId& r,
@@ -182,6 +190,61 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
   for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
     EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);
+}
+
+TEST_F(StructTraitsTest, FilterOperation) {
+  const FilterOperation inputs[] = {
+      FilterOperation::CreateBlurFilter(20),
+      FilterOperation::CreateDropShadowFilter(gfx::Point(4, 4), 4.0f,
+                                              SkColorSetARGB(255, 40, 0, 0)),
+      FilterOperation::CreateReferenceFilter(SkDropShadowImageFilter::Make(
+          SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
+          SkIntToScalar(9), SK_ColorBLACK,
+          SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
+          nullptr))};
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  for (const auto& input : inputs) {
+    FilterOperation output;
+    proxy->EchoFilterOperation(input, &output);
+    EXPECT_EQ(input.type(), output.type());
+    switch (input.type()) {
+      case FilterOperation::GRAYSCALE:
+      case FilterOperation::SEPIA:
+      case FilterOperation::SATURATE:
+      case FilterOperation::HUE_ROTATE:
+      case FilterOperation::INVERT:
+      case FilterOperation::BRIGHTNESS:
+      case FilterOperation::SATURATING_BRIGHTNESS:
+      case FilterOperation::CONTRAST:
+      case FilterOperation::OPACITY:
+      case FilterOperation::BLUR:
+        EXPECT_EQ(input.amount(), output.amount());
+        break;
+      case FilterOperation::DROP_SHADOW:
+        EXPECT_EQ(input.amount(), output.amount());
+        EXPECT_EQ(input.drop_shadow_offset(), output.drop_shadow_offset());
+        EXPECT_EQ(input.drop_shadow_color(), output.drop_shadow_color());
+        break;
+      case FilterOperation::COLOR_MATRIX:
+        EXPECT_EQ(0, memcmp(input.matrix(), output.matrix(), 20));
+        break;
+      case FilterOperation::ZOOM:
+        EXPECT_EQ(input.amount(), output.amount());
+        EXPECT_EQ(input.zoom_inset(), output.zoom_inset());
+        break;
+      case FilterOperation::REFERENCE: {
+        SkString input_str;
+        input.image_filter()->toString(&input_str);
+        SkString output_str;
+        output.image_filter()->toString(&output_str);
+        EXPECT_EQ(input_str, output_str);
+        break;
+      }
+      case FilterOperation::ALPHA_THRESHOLD:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 TEST_F(StructTraitsTest, RenderPassId) {

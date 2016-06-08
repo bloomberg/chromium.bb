@@ -27,8 +27,9 @@ bool FilterOperation::operator==(const FilterOperation& other) const {
            drop_shadow_offset_ == other.drop_shadow_offset_ &&
            drop_shadow_color_ == other.drop_shadow_color_;
   }
-  if (type_ == REFERENCE)
+  if (type_ == REFERENCE) {
     return image_filter_.get() == other.image_filter_.get();
+  }
   if (type_ == ALPHA_THRESHOLD) {
     return region_ == other.region_ &&
         amount_ == other.amount_ &&
@@ -36,6 +37,8 @@ bool FilterOperation::operator==(const FilterOperation& other) const {
   }
   return amount_ == other.amount_;
 }
+
+FilterOperation::FilterOperation() : FilterOperation(GRAYSCALE, 0.f) {}
 
 FilterOperation::FilterOperation(FilterType type, float amount)
     : type_(type),

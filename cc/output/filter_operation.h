@@ -49,6 +49,8 @@ class CC_EXPORT FilterOperation {
     FILTER_TYPE_LAST = ALPHA_THRESHOLD
   };
 
+  FilterOperation();
+
   FilterOperation(const FilterOperation& other);
 
   ~FilterOperation();

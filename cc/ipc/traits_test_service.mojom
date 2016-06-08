@@ -6,6 +6,7 @@ module cc.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
 import "cc/ipc/compositor_frame_metadata.mojom";
+import "cc/ipc/filter_operation.mojom";
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/selection.mojom";
@@ -23,6 +24,9 @@ interface TraitsTestService {
   [Sync]
   EchoCompositorFrameMetadata(CompositorFrameMetadata c) =>
       (CompositorFrameMetadata pass);
+
+  [Sync]
+  EchoFilterOperation(FilterOperation f) => (FilterOperation pass);
 
   [Sync]
   EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
