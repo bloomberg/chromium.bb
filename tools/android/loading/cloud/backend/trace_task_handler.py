@@ -7,6 +7,7 @@ import re
 import sys
 import traceback
 
+import clovis_constants
 import common.clovis_paths
 from common.clovis_task import ClovisTask
 from common.loading_trace_database import LoadingTraceDatabase
@@ -63,7 +64,8 @@ def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
       with chrome_ctl.Open() as connection:
         connection.ClearCache()
         trace = loading_trace.LoadingTrace.RecordUrlNavigation(
-            url, connection, chrome_ctl.ChromeMetadata())
+            url, connection, chrome_ctl.ChromeMetadata(),
+            clovis_constants.DEFAULT_CATEGORIES)
         trace_metadata['succeeded'] = True
         trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
         sys.stdout.write('Trace generation success.\n')
