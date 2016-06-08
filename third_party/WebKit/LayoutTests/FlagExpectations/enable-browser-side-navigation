@@ -1,5 +1,8 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
+# before-unload issues
+  fast/loader/recursive-before-unload-crash.html [ Failure ]
+  virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
 
 # https://crbug.com/608372: PlzNavigate: support POST navigations
   fast/forms/state-restore-skip-stateless.html [ Crash ]
