@@ -138,7 +138,6 @@ class CONTENT_EXPORT CacheStorage {
                                  const CacheAndErrorCallback& callback,
                                  scoped_refptr<CacheStorageCache> cache);
   void CreateCacheDidWriteIndex(const CacheAndErrorCallback& callback,
-                                scoped_refptr<CacheStorageCache> cache,
                                 bool success);
 
   // The HasCache callbacks are below.
@@ -152,7 +151,6 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCacheDidClose(const std::string& cache_name,
                            const BoolAndErrorCallback& callback,
                            const StringVector& ordered_cache_names,
-                           scoped_refptr<CacheStorageCache> cache,
                            int64_t cache_size);
   void DeleteCacheDidWriteIndex(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback,
@@ -168,8 +166,7 @@ class CONTENT_EXPORT CacheStorage {
   void MatchCacheImpl(const std::string& cache_name,
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
-  void MatchCacheDidMatch(scoped_refptr<CacheStorageCache> cache,
-                          const CacheStorageCache::ResponseCallback& callback,
+  void MatchCacheDidMatch(const CacheStorageCache::ResponseCallback& callback,
                           CacheStorageError error,
                           std::unique_ptr<ServiceWorkerResponse> response,
                           std::unique_ptr<storage::BlobDataHandle> handle);
@@ -178,7 +175,6 @@ class CONTENT_EXPORT CacheStorage {
   void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
                           const CacheStorageCache::ResponseCallback& callback);
   void MatchAllCachesDidMatch(
-      scoped_refptr<CacheStorageCache> cache,
       CacheMatchResponse* out_match_response,
       const base::Closure& barrier_closure,
       CacheStorageError error,
@@ -191,6 +187,8 @@ class CONTENT_EXPORT CacheStorage {
   void GetSizeThenCloseAllCachesImpl(const SizeCallback& callback);
 
   void SizeImpl(const SizeCallback& callback);
+  void SizeRetrievedFromAllCaches(std::unique_ptr<int64_t> accumulator,
+                                  const CacheStorage::SizeCallback& callback);
 
   void PendingClosure(const base::Closure& callback);
   void PendingBoolAndErrorCallback(const BoolAndErrorCallback& callback,
@@ -242,6 +240,10 @@ class CONTENT_EXPORT CacheStorage {
 
   // The origin that this CacheStorage is associated with.
   GURL origin_;
+
+  // Used to keep caches alive during async operations.
+  scoped_refptr<CacheStorageCache> callback_cache_;
+  std::vector<scoped_refptr<CacheStorageCache>> callback_caches_;
 
   base::WeakPtrFactory<CacheStorage> weak_factory_;
 

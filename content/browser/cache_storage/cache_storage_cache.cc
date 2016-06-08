@@ -381,12 +381,12 @@ void CacheStorageCache::BatchOperation(
   std::unique_ptr<ErrorCallback> callback_copy(new ErrorCallback(callback));
   ErrorCallback* callback_ptr = callback_copy.get();
   base::Closure barrier_closure = base::BarrierClosure(
-      operations.size(),
-      base::Bind(&CacheStorageCache::BatchDidAllOperations, this,
-                 base::Passed(std::move(callback_copy))));
+      operations.size(), base::Bind(&CacheStorageCache::BatchDidAllOperations,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    base::Passed(std::move(callback_copy))));
   ErrorCallback completion_callback =
-      base::Bind(&CacheStorageCache::BatchDidOneOperation, this,
-                 barrier_closure, callback_ptr);
+      base::Bind(&CacheStorageCache::BatchDidOneOperation,
+                 weak_ptr_factory_.GetWeakPtr(), barrier_closure, callback_ptr);
 
   for (const auto& operation : operations) {
     switch (operation.operation_type) {
