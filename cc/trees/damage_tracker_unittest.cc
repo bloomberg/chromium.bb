@@ -83,7 +83,7 @@ class DamageTrackerTest : public testing::Test {
                    &task_graph_runner_) {}
 
   LayerImpl* CreateTestTreeWithOneSurface() {
-    host_impl_.active_tree()->ClearLayers();
+    host_impl_.active_tree()->DetachLayers();
     std::unique_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_.active_tree(), 1);
     std::unique_ptr<LayerImpl> child =
@@ -108,7 +108,7 @@ class DamageTrackerTest : public testing::Test {
     // child1. Additionally, the root has a second child layer, and child1 has
     // two children of its own.
 
-    host_impl_.active_tree()->ClearLayers();
+    host_impl_.active_tree()->DetachLayers();
     std::unique_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_.active_tree(), 1);
     std::unique_ptr<LayerImpl> child1 =

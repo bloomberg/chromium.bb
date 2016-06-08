@@ -4208,7 +4208,7 @@ TEST_F(PictureLayerImplTest, PendingOrActiveTwinLayer) {
 
   // Make an empty pending tree.
   host_impl()->CreatePendingTree();
-  host_impl()->pending_tree()->ClearLayers();
+  host_impl()->pending_tree()->DetachLayers();
   EXPECT_FALSE(active_layer()->GetPendingOrActiveTwinLayer());
 }
 

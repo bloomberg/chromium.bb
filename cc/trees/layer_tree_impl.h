@@ -137,7 +137,6 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayer(std::unique_ptr<LayerImpl>);
   bool IsRootLayer(const LayerImpl* layer) const;
   std::unique_ptr<OwnedLayerImplList> DetachLayers();
-  void ClearLayers();
 
   void SetPropertyTrees(PropertyTrees* property_trees);
   PropertyTrees* property_trees() { return &property_trees_; }
