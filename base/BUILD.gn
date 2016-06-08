@@ -1184,7 +1184,10 @@ component("base") {
       "sha1_win.cc",
     ]
 
-    deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
+    deps += [
+      "//base/trace_event/etw_manifest:chrome_events_win",
+      "//base/win:base_win_features",
+    ]
 
     if (is_component_build) {
       # Copy the VS runtime DLLs into the isolate so that they don't have to be
@@ -1638,6 +1641,7 @@ if (is_win) {
     ]
     deps = [
       ":base",
+      "//base/win:base_win_features",
     ]
   }
 
