@@ -1631,13 +1631,6 @@
       }],
       ['OS=="win"', {
         'windows_driver_kit_path%': '$(WDK_DIR)',
-        'conditions': [
-          ['component!="shared_library"', {
-            'single_module_mode_handle_verifier%': 0,
-          }, {
-            'single_module_mode_handle_verifier%': 1,
-          }],
-        ],
       }],
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
         'conditions': [
