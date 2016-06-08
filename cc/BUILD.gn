@@ -531,7 +531,7 @@ component("cc") {
     "trees/tree_synchronizer.h",
   ]
 
-  if (target_cpu == "x86" || target_cpu == "x64") {
+  if (current_cpu == "x86" || current_cpu == "x64") {
     sources += [
       "raster/texture_compressor_etc1_sse.cc",
       "raster/texture_compressor_etc1_sse.h",
