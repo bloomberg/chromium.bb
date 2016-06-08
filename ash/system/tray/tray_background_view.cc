@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_background_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -42,10 +43,6 @@
 #include "ui/wm/core/window_animations.h"
 
 namespace {
-
-const int kTrayBackgroundAlpha = 100;
-const int kTrayBackgroundHoverAlpha = 150;
-const SkColor kTrayBackgroundPressedColor = SkColorSetRGB(66, 129, 244);
 
 const int kAnimationDurationForPopupMs = 200;
 
@@ -102,22 +99,39 @@ class TrayBackground : public views::Background {
 
   explicit TrayBackground(TrayBackgroundView* tray_background_view) :
       tray_background_view_(tray_background_view) {
-    set_alpha(kTrayBackgroundAlpha);
   }
 
   ~TrayBackground() override {}
-
-  SkColor color() { return color_; }
-  void set_color(SkColor color) { color_ = color; }
-  void set_alpha(int alpha) { color_ = SkColorSetARGB(alpha, 0, 0, 0); }
 
  private:
   ShelfWidget* GetShelfWidget() const {
     return tray_background_view_->GetShelfLayoutManager()->shelf_widget();
   }
 
-  // Overridden from views::Background.
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+  void PaintMaterial(gfx::Canvas* canvas, views::View* view) const {
+    SkColor color = SK_ColorTRANSPARENT;
+    ShelfWidget* shelf_widget = GetShelfWidget();
+    if (tray_background_view_->draw_background_as_active()) {
+      // TODO(bruthig|mohsen): Use of this color is temporary. Draw the active
+      // state using the material design ripple animation.
+      color = SK_ColorBLUE;
+    } else if (shelf_widget &&
+               shelf_widget->GetBackgroundType() ==
+                   ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+      color = SkColorSetA(kShelfBaseColor,
+                          GetShelfConstant(SHELF_BACKGROUND_ALPHA));
+    }
+
+    // TODO(bruthig|tdanderson): The background should be changed using a
+    // fade in/out animation.
+    const int kCornerRadius = 2;
+    SkPaint paint;
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(color);
+    canvas->DrawRoundRect(view->GetLocalBounds(), kCornerRadius, paint);
+  }
+
+  void PaintNonMaterial(gfx::Canvas* canvas, views::View* view) const {
     const int kGridSizeForPainter = 9;
     const int kImages[kNumOrientations][kNumStates][kGridSizeForPainter] = {
       { // Horizontal
@@ -135,8 +149,9 @@ class TrayBackground : public views::Background {
     int orientation = kImageHorizontal;
     ShelfWidget* shelf_widget = GetShelfWidget();
     if (shelf_widget &&
-        !shelf_widget->shelf_layout_manager()->IsHorizontalAlignment())
+        !shelf_widget->shelf_layout_manager()->IsHorizontalAlignment()) {
       orientation = kImageVertical;
+    }
 
     int state = kImageTypeDefault;
     if (tray_background_view_->draw_background_as_active())
@@ -150,7 +165,14 @@ class TrayBackground : public views::Background {
         ->Paint(canvas, view->GetLocalBounds());
   }
 
-  SkColor color_;
+  // Overridden from views::Background.
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    if (MaterialDesignController::IsShelfMaterial())
+      PaintMaterial(canvas, view);
+    else
+      PaintNonMaterial(canvas, view);
+  }
+
   // Reference to the TrayBackgroundView for which this is a background.
   TrayBackgroundView* tray_background_view_;
 
@@ -227,21 +249,9 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
-      hide_background_animator_(this, 0, kTrayBackgroundAlpha),
-      hover_background_animator_(
-          this,
-          0,
-          kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
-      hovered_(false),
       draw_background_as_active_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   set_notify_enter_exit_on_child(true);
-
-  // Initially we want to paint the background, but without the hover effect.
-  hide_background_animator_.SetPaintsBackground(
-      true, BACKGROUND_CHANGE_IMMEDIATE);
-  hover_background_animator_.SetPaintsBackground(
-      false, BACKGROUND_CHANGE_IMMEDIATE);
 
   tray_container_ = new TrayContainer(shelf_alignment_);
   SetContents(tray_container_);
@@ -329,14 +339,6 @@ const char* TrayBackgroundView::GetClassName() const {
   return kViewClassName;
 }
 
-void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
-  hovered_ = true;
-}
-
-void TrayBackgroundView::OnMouseExited(const ui::MouseEvent& event) {
-  hovered_ = false;
-}
-
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
@@ -380,8 +382,6 @@ void TrayBackgroundView::UpdateBackground(int alpha) {
   // The animator should never fire when the alternate shelf layout is used.
   if (!background_ || draw_background_as_active_)
     return;
-  background_->set_alpha(hide_background_animator_.alpha() +
-                         hover_background_animator_.alpha());
   SchedulePaint();
 }
 
@@ -389,12 +389,6 @@ void TrayBackgroundView::SetContents(views::View* contents) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(contents);
 }
-
-void TrayBackgroundView::SetPaintsBackground(
-    bool value, BackgroundAnimatorChangeType change_type) {
-  hide_background_animator_.SetPaintsBackground(value, change_type);
-}
-
 void TrayBackgroundView::SetContentsBackground() {
   background_ = new TrayBackground(this);
   tray_container_->set_background(background_);
@@ -571,14 +565,6 @@ void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
   draw_background_as_active_ = visible;
   if (!background_)
     return;
-
-  // Do not change gradually, changing color between grey and blue is weird.
-  if (draw_background_as_active_)
-    background_->set_color(kTrayBackgroundPressedColor);
-  else if (hovered_)
-    background_->set_alpha(kTrayBackgroundHoverAlpha);
-  else
-    background_->set_alpha(kTrayBackgroundAlpha);
   SchedulePaint();
 }
 

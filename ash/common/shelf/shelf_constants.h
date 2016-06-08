@@ -6,11 +6,14 @@
 #define ASH_COMMON_SHELF_SHELF_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
 
-// Max alpha of the shelf background.
-ASH_EXPORT extern const int kShelfBackgroundAlpha;
+enum ShelfConstant {
+  // The alpha value for the shelf background when a window is overlapping.
+  SHELF_BACKGROUND_ALPHA
+};
 
 // Invalid image resource id used for ShelfItemDetails.
 extern const int kInvalidImageResourceID;
@@ -29,8 +32,14 @@ ASH_EXPORT extern const int kShelfButtonSize;
 // Animation duration for switching black shelf and dock background on and off.
 ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 
+// The base color of the shelf to which different alpha values are applied
+// based on the desired shelf opacity level.
+ASH_EXPORT extern const SkColor kShelfBaseColor;
+
 // The direction of the focus cycling.
 enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };
+
+ASH_EXPORT int GetShelfConstant(ShelfConstant shelf_constant);
 
 }  // namespace ash
 

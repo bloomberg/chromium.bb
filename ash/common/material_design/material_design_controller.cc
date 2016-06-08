@@ -44,13 +44,18 @@ void MaterialDesignController::Initialize() {
 
 // static
 bool MaterialDesignController::IsMaterial() {
-  return IsMaterialExperimental() || mode_ == Mode::MATERIAL_NORMAL;
+  return IsMaterialExperimental() || GetMode() == Mode::MATERIAL_NORMAL;
 }
 
 // static
 bool MaterialDesignController::IsMaterialExperimental() {
+  return GetMode() == Mode::MATERIAL_EXPERIMENTAL;
+}
+
+// static
+MaterialDesignController::Mode MaterialDesignController::GetMode() {
   DCHECK_NE(mode_, Mode::UNINITIALIZED);
-  return mode_ == Mode::MATERIAL_EXPERIMENTAL;
+  return mode_;
 }
 
 // static

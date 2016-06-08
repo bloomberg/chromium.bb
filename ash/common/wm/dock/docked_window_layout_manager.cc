@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
@@ -52,7 +53,7 @@ class DockedBackgroundWidget : public views::Widget,
   explicit DockedBackgroundWidget(DockedWindowLayoutManager* manager)
       : manager_(manager),
         alignment_(DOCKED_ALIGNMENT_NONE),
-        background_animator_(this, 0, kShelfBackgroundAlpha),
+        background_animator_(this, 0, GetShelfConstant(SHELF_BACKGROUND_ALPHA)),
         alpha_(0),
         opaque_background_(ui::LAYER_SOLID_COLOR),
         visible_background_type_(manager_->shelf()->GetBackgroundType()),
@@ -82,26 +83,34 @@ class DockedBackgroundWidget : public views::Widget,
   void OnNativeWidgetPaint(const ui::PaintContext& context) override {
     gfx::Rect local_window_bounds(GetWindowBoundsInScreen().size());
     ui::PaintRecorder recorder(context, local_window_bounds.size());
-    const gfx::ImageSkia& shelf_background(alignment_ == DOCKED_ALIGNMENT_LEFT
-                                               ? shelf_background_left_
-                                               : shelf_background_right_);
-    SkPaint paint;
-    paint.setAlpha(alpha_);
-    recorder.canvas()->DrawImageInt(
-        shelf_background, 0, 0, shelf_background.width(),
-        shelf_background.height(),
-        alignment_ == DOCKED_ALIGNMENT_LEFT
-            ? local_window_bounds.width() - shelf_background.width()
-            : 0,
-        0, shelf_background.width(), local_window_bounds.height(), false,
-        paint);
-    recorder.canvas()->DrawImageInt(
-        shelf_background,
-        alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width() - 1,
-        0, 1, shelf_background.height(),
-        alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(), 0,
-        local_window_bounds.width() - shelf_background.width(),
-        local_window_bounds.height(), false, paint);
+
+    if (MaterialDesignController::IsShelfMaterial()) {
+      recorder.canvas()->FillRect(
+          local_window_bounds, SkColorSetA(kShelfBaseColor, alpha_));
+    } else {
+      const gfx::ImageSkia& shelf_background(alignment_ == DOCKED_ALIGNMENT_LEFT
+                                                 ? shelf_background_left_
+                                                 : shelf_background_right_);
+      SkPaint paint;
+      paint.setAlpha(alpha_);
+      recorder.canvas()->DrawImageInt(
+          shelf_background, 0, 0, shelf_background.width(),
+          shelf_background.height(),
+          alignment_ == DOCKED_ALIGNMENT_LEFT
+              ? local_window_bounds.width() - shelf_background.width()
+              : 0,
+          0, shelf_background.width(), local_window_bounds.height(), false,
+          paint);
+      recorder.canvas()->DrawImageInt(
+          shelf_background,
+          alignment_ == DOCKED_ALIGNMENT_LEFT
+              ? 0
+              : shelf_background.width() - 1,
+          0, 1, shelf_background.height(),
+          alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(), 0,
+          local_window_bounds.width() - shelf_background.width(),
+          local_window_bounds.height(), false, paint);
+    }
   }
 
   // BackgroundAnimatorDelegate:
@@ -141,13 +150,15 @@ class DockedBackgroundWidget : public views::Widget,
     opaque_background_.SetOpacity(0.0f);
     wm_window->GetLayer()->Add(&opaque_background_);
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia shelf_background =
-        *rb.GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-    shelf_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, SkBitmapOperations::ROTATION_90_CW);
-    shelf_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, SkBitmapOperations::ROTATION_270_CW);
+    if (!MaterialDesignController::IsShelfMaterial()) {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      gfx::ImageSkia shelf_background =
+          *rb.GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
+      shelf_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+          shelf_background, SkBitmapOperations::ROTATION_90_CW);
+      shelf_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+          shelf_background, SkBitmapOperations::ROTATION_270_CW);
+    }
 
     // This background should be explicitly stacked below any windows already in
     // the dock, otherwise the z-order is set by the order in which windows were
@@ -199,6 +210,8 @@ class DockedBackgroundWidget : public views::Widget,
   ui::Layer opaque_background_;
 
   // Backgrounds created from shelf background by 90 or 270 degree rotation.
+  // TODO(tdanderson): These members can be removed once the material design
+  // shelf is enabled by default. See crbug.com/614453.
   gfx::ImageSkia shelf_background_left_;
   gfx::ImageSkia shelf_background_right_;
 

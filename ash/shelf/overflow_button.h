@@ -24,10 +24,24 @@ class OverflowButton : public views::CustomButton {
   void OnShelfAlignmentChanged();
 
  private:
-  void PaintBackground(gfx::Canvas* canvas, int alpha);
-
-  // views::View overrides:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+
+  // Helper functions to paint the background and foreground of the button
+  // at |bounds|.
+  void PaintBackground(gfx::Canvas* canvas, const gfx::Rect& bounds);
+  void PaintForeground(gfx::Canvas* canvas, const gfx::Rect& bounds);
+
+  // Returns the id of the asset to use for the button backgound based on the
+  // current shelf state.
+  // TODO(tdanderson): Remove this once the material design shelf is enabled
+  // by default. See crbug.com/614453.
+  int NonMaterialBackgroundImageId();
+
+  // Calculates the bounds of the overflow button based on the shelf alignment.
+  // TODO(tdanderson): The button size and bounds need to be adjusted to
+  // conform to the material design spec. See crbug.com/617295.
+  gfx::Rect CalculateButtonBounds();
 
   // Left and right images are rotations of bottom_image and are
   // owned by the overflow button.

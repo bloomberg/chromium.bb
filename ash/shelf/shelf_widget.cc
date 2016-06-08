@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_model.h"
@@ -448,55 +449,63 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 }
 
 void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia shelf_background =
-      *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-  const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
-  if (!horizontal) {
-    shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
-                              ? SkBitmapOperations::ROTATION_90_CW
-                              : SkBitmapOperations::ROTATION_270_CW);
-  }
-  const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
-  SkPaint paint;
-  paint.setAlpha(alpha_);
-  canvas->DrawImageInt(
-      shelf_background, 0, 0, shelf_background.width(),
-      shelf_background.height(),
-      (horizontal && dock_bounds.x() == 0 && dock_bounds.width() > 0)
-          ? dock_bounds.width()
-          : 0,
-      0, horizontal ? width() - dock_bounds.width() : width(), height(), false,
-      paint);
-  if (horizontal && dock_bounds.width() > 0) {
-    // The part of the shelf background that is in the corner below the docked
-    // windows close to the work area is an arched gradient that blends
-    // vertically oriented docked background and horizontal shelf.
-    gfx::ImageSkia shelf_corner = *rb->GetImageSkiaNamed(IDR_ASH_SHELF_CORNER);
-    if (dock_bounds.x() == 0) {
-      shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
-          shelf_corner, SkBitmapOperations::ROTATION_90_CW);
+  if (MaterialDesignController::IsShelfMaterial()) {
+    canvas->FillRect(bounds(), SkColorSetA(kShelfBaseColor, alpha_));
+  } else {
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    gfx::ImageSkia shelf_background =
+        *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
+    const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
+    if (!horizontal) {
+      shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
+          shelf_background, shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
+                                ? SkBitmapOperations::ROTATION_90_CW
+                                : SkBitmapOperations::ROTATION_270_CW);
     }
+    const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
+    SkPaint paint;
+    paint.setAlpha(alpha_);
     canvas->DrawImageInt(
-        shelf_corner, 0, 0, shelf_corner.width(), shelf_corner.height(),
-        dock_bounds.x() > 0 ? dock_bounds.x() : dock_bounds.width() - height(),
-        0, height(), height(), false, paint);
-    // The part of the shelf background that is just below the docked windows
-    // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
-    // This avoids showing the border 3D shadow between the shelf and the dock.
-    canvas->DrawImageInt(shelf_background, 0, shelf_background.height() - 1,
-                         shelf_background.width(), 1,
-                         dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
-                         0, dock_bounds.width() - height(), height(), false,
-                         paint);
+        shelf_background, 0, 0, shelf_background.width(),
+        shelf_background.height(),
+        (horizontal && dock_bounds.x() == 0 && dock_bounds.width() > 0)
+            ? dock_bounds.width()
+            : 0,
+        0, horizontal ? width() - dock_bounds.width() : width(), height(),
+        false, paint);
+    if (horizontal && dock_bounds.width() > 0) {
+      // The part of the shelf background that is in the corner below the docked
+      // windows close to the work area is an arched gradient that blends
+      // vertically oriented docked background and horizontal shelf.
+      gfx::ImageSkia shelf_corner =
+          *rb->GetImageSkiaNamed(IDR_ASH_SHELF_CORNER);
+      if (dock_bounds.x() == 0) {
+        shelf_corner = gfx::ImageSkiaOperations::CreateRotatedImage(
+            shelf_corner, SkBitmapOperations::ROTATION_90_CW);
+      }
+      canvas->DrawImageInt(
+          shelf_corner, 0, 0, shelf_corner.width(), shelf_corner.height(),
+          dock_bounds.x() > 0
+              ? dock_bounds.x()
+              : dock_bounds.width() - height(),
+          0, height(), height(), false, paint);
+      // The part of the shelf background that is just below the docked windows
+      // is drawn using the last (lowest) 1-pixel tall strip of the image asset.
+      // This avoids showing the border 3D shadow between the shelf and the
+      // dock.
+      canvas->DrawImageInt(shelf_background, 0, shelf_background.height() - 1,
+                           shelf_background.width(), 1,
+                           dock_bounds.x() > 0 ? dock_bounds.x() + height() : 0,
+                           0, dock_bounds.width() - height(), height(), false,
+                           paint);
+    }
+    gfx::Rect black_rect =
+        shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
+            gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
+            gfx::Rect(0, 0, kNumBlackPixels, height()),
+            gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
+    canvas->FillRect(black_rect, SK_ColorBLACK);
   }
-  gfx::Rect black_rect =
-      shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
-          gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
-          gfx::Rect(0, 0, kNumBlackPixels, height()),
-          gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
-  canvas->FillRect(black_rect, SK_ColorBLACK);
 }
 
 bool ShelfWidget::DelegateView::CanActivate() const {
@@ -559,7 +568,8 @@ ShelfWidget::ShelfWidget(WmWindow* wm_shelf_container,
                          WmWindow* wm_status_container,
                          WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
-      background_animator_(delegate_view_, 0, kShelfBackgroundAlpha),
+      background_animator_(
+          delegate_view_, 0, GetShelfConstant(SHELF_BACKGROUND_ALPHA)),
       activating_as_fallback_(false) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);

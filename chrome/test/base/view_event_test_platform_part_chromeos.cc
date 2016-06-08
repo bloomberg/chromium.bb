@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_helper.h"
@@ -57,6 +58,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
           chromeos::DBusClientBundle::BLUETOOTH));
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
+  ash::MaterialDesignController::Initialize();
 
   env_ = aura::Env::CreateInstance();
   ash::test::TestShellDelegate* shell_delegate =

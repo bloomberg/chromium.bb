@@ -74,8 +74,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // views::View:
   void SetVisible(bool visible) override;
   const char* GetClassName() const override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void GetAccessibleState(ui::AXViewState* state) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
@@ -113,11 +111,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Creates and sets contents background to |background_|.
   void SetContentsBackground();
-
-  // Sets whether the tray paints a background. Default is true, but is set to
-  // false if a window overlaps the shelf.
-  void SetPaintsBackground(bool value,
-                           BackgroundAnimatorChangeType change_type);
 
   // Returns the window hosting the bubble.
   aura::Window* GetBubbleWindowContainer() const;
@@ -178,13 +171,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Owned by the view passed to SetContents().
   TrayBackground* background_;
-
-  // Animators for the background. They are only used for the old shelf layout.
-  BackgroundAnimator hide_background_animator_;
-  BackgroundAnimator hover_background_animator_;
-
-  // True if the background gets hovered.
-  bool hovered_;
 
   // This variable stores the activation override which will tint the background
   // differently if set to true.
