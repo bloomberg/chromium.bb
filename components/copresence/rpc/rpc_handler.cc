@@ -348,15 +348,14 @@ void RpcHandler::RegisterDevice(const bool authenticated) {
 }
 
 void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
-  // Track requests that are not in this auth state.
-  ScopedVector<PendingRequest> still_pending_requests;
-
   // If there is no device ID for this auth state, registration failed.
   bool registration_failed = delegate_->GetDeviceId(authenticated).empty();
 
   // We momentarily take ownership of all the pointers in the queue.
   // They are either deleted here or passed on to a new queue.
-  for (PendingRequest* request : pending_requests_queue_) {
+  ScopedVector<PendingRequest> requests_being_processed;
+  std::swap(requests_being_processed, pending_requests_queue_);
+  for (PendingRequest* request : requests_being_processed) {
     if (request->authenticated == authenticated) {
       if (registration_failed) {
         request->callback.Run(FAIL);
@@ -370,14 +369,13 @@ void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
       delete request;
     } else {
       // The request is in a different auth state.
-      still_pending_requests.push_back(request);
+      pending_requests_queue_.push_back(request);
     }
   }
 
   // Only keep the requests that weren't processed.
   // All the pointers in the queue are now spoken for.
-  pending_requests_queue_.weak_clear();
-  pending_requests_queue_ = std::move(still_pending_requests);
+  requests_being_processed.weak_clear();
 }
 
 void RpcHandler::ReportOnAllDevices(std::unique_ptr<ReportRequest> request) {
