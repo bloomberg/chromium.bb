@@ -146,10 +146,9 @@ ContentSecurityPolicy::ContentSecurityPolicy()
     , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_sandboxMask(0)
-    , m_enforceStrictMixedContentChecking(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_treatAsPublicAddress(false)
-    , m_insecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade)
+    , m_insecureRequestPolicy(kLeaveInsecureRequestsAlone)
 {
 }
 
@@ -184,16 +183,16 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             UseCounter::count(document, UseCounter::SandboxViaCSP);
             document->enforceSandboxFlags(m_sandboxMask);
         }
-        if (m_enforceStrictMixedContentChecking)
-            document->enforceStrictMixedContentChecking();
         if (m_treatAsPublicAddress)
             document->setAddressSpace(WebAddressSpacePublic);
-        if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
+        if (m_insecureRequestPolicy & kUpgradeInsecureRequests) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
-            document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
+            document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
             if (!securityOrigin->host().isNull())
                 document->addInsecureNavigationUpgrade(securityOrigin->host().impl()->hash());
         }
+        if (m_insecureRequestPolicy & kBlockAllMixedContent)
+            document->enforceStrictMixedContentChecking();
 
         for (const auto& consoleMessage : m_consoleMessages)
             m_executionContext->addConsoleMessage(consoleMessage);
@@ -743,11 +742,6 @@ void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask)
     m_sandboxMask |= mask;
 }
 
-void ContentSecurityPolicy::enforceStrictMixedContentChecking()
-{
-    m_enforceStrictMixedContentChecking = true;
-}
-
 void ContentSecurityPolicy::treatAsPublicAddress()
 {
     if (!RuntimeEnabledFeatures::corsRFC1918Enabled())
@@ -755,10 +749,14 @@ void ContentSecurityPolicy::treatAsPublicAddress()
     m_treatAsPublicAddress = true;
 }
 
-void ContentSecurityPolicy::setInsecureRequestsPolicy(SecurityContext::InsecureRequestsPolicy policy)
+void ContentSecurityPolicy::enforceStrictMixedContentChecking()
 {
-    if (policy > m_insecureRequestsPolicy)
-        m_insecureRequestsPolicy = policy;
+    m_insecureRequestPolicy |= kBlockAllMixedContent;
+}
+
+void ContentSecurityPolicy::upgradeInsecureRequests()
+{
+    m_insecureRequestPolicy |= kUpgradeInsecureRequests;
 }
 
 static String stripURLForUseInReport(Document* document, const KURL& url, RedirectStatus redirectStatus)

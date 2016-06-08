@@ -14,6 +14,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -40,24 +41,51 @@ protected:
     Persistent<Document> document;
 };
 
-TEST_F(ContentSecurityPolicyTest, ParseUpgradeInsecureRequestsEnabled)
+TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy)
 {
-    csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureRequestsUpgrade, csp->getInsecureRequestsPolicy());
+    struct TestCase {
+        const char* header;
+        WebInsecureRequestPolicy expectedPolicy;
+        SecurityContext::InsecureRequestsPolicy expectedDocumentPolicy;
+        bool expectedStrictMode;
+    } cases[] = {
+        { "default-src 'none'", 0, SecurityContext::InsecureRequestsDoNotUpgrade, false },
+        { "upgrade-insecure-requests", kUpgradeInsecureRequests, SecurityContext::InsecureRequestsUpgrade, false },
+        { "block-all-mixed-content", kBlockAllMixedContent, SecurityContext::InsecureRequestsDoNotUpgrade, true },
+        { "upgrade-insecure-requests; block-all-mixed-content", kUpgradeInsecureRequests | kBlockAllMixedContent, SecurityContext::InsecureRequestsUpgrade, true },
+        { "upgrade-insecure-requests, block-all-mixed-content", kUpgradeInsecureRequests | kBlockAllMixedContent, SecurityContext::InsecureRequestsUpgrade, true }
+    };
 
-    csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureRequestsUpgrade, document->getInsecureRequestsPolicy());
-    EXPECT_TRUE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
-}
+    // Enforced
+    for (const auto& test : cases) {
+        SCOPED_TRACE(testing::Message() << "[Enforce] Header: `" << test.header << "`");
+        csp = ContentSecurityPolicy::create();
+        csp->didReceiveHeader(test.header, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+        EXPECT_EQ(test.expectedPolicy, csp->getInsecureRequestPolicy());
 
-TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
-{
-    csp->didReceiveHeader("upgrade-insecure-requests", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, csp->getInsecureRequestsPolicy());
+        document = Document::create();
+        document->setSecurityOrigin(secureOrigin);
+        csp->bindToExecutionContext(document.get());
+        EXPECT_EQ(test.expectedDocumentPolicy, document->getInsecureRequestsPolicy());
+        EXPECT_EQ(test.expectedStrictMode, document->shouldEnforceStrictMixedContentChecking());
+        EXPECT_EQ(test.expectedDocumentPolicy == SecurityContext::InsecureRequestsUpgrade,
+            document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
+    }
 
-    csp->bindToExecutionContext(document.get());
-    EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->getInsecureRequestsPolicy());
-    EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
+    // Report-Only
+    for (const auto& test : cases) {
+        SCOPED_TRACE(testing::Message() << "[Report-Only] Header: `" << test.header << "`");
+        csp = ContentSecurityPolicy::create();
+        csp->didReceiveHeader(test.header, ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+        EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->getInsecureRequestPolicy());
+
+        document = Document::create();
+        document->setSecurityOrigin(secureOrigin);
+        csp->bindToExecutionContext(document.get());
+        EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->getInsecureRequestsPolicy());
+        EXPECT_FALSE(document->shouldEnforceStrictMixedContentChecking());
+        EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
+    }
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled)

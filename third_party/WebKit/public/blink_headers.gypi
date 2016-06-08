@@ -109,6 +109,7 @@
       "platform/WebInbandTextTrack.h",
       "platform/WebInbandTextTrackClient.h",
       "platform/WebInputEventResult.h",
+      "platform/WebInsecureRequestPolicy.h",
       "platform/WebLayer.h",
       "platform/WebLayerPositionConstraint.h",
       "platform/WebLayerScrollClient.h",

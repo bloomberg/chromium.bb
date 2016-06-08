@@ -37,6 +37,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -253,12 +254,13 @@ public:
 
     const KURL url() const;
     void enforceSandboxFlags(SandboxFlags);
-    void enforceStrictMixedContentChecking();
     void treatAsPublicAddress();
     String evalDisabledErrorMessage() const;
 
-    void setInsecureRequestsPolicy(SecurityContext::InsecureRequestsPolicy);
-    SecurityContext::InsecureRequestsPolicy getInsecureRequestsPolicy() const { return m_insecureRequestsPolicy; }
+    // Upgrade-Insecure-Requests and Block-All-Mixed-Content are represented in |m_insecureRequestPolicy|
+    void enforceStrictMixedContentChecking();
+    void upgradeInsecureRequests();
+    WebInsecureRequestPolicy getInsecureRequestPolicy() const { return m_insecureRequestPolicy; }
 
     bool urlMatchesSelf(const KURL&) const;
     bool protocolMatchesSelf(const KURL&) const;
@@ -307,11 +309,10 @@ private:
 
     // State flags used to configure the environment after parsing a policy.
     SandboxFlags m_sandboxMask;
-    bool m_enforceStrictMixedContentChecking;
     ReferrerPolicy m_referrerPolicy;
     bool m_treatAsPublicAddress;
     String m_disableEvalErrorMessage;
-    SecurityContext::InsecureRequestsPolicy m_insecureRequestsPolicy;
+    WebInsecureRequestPolicy m_insecureRequestPolicy;
 
     Member<CSPSource> m_selfSource;
     String m_selfProtocol;

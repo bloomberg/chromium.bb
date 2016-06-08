@@ -670,7 +670,7 @@ void CSPDirectiveList::enableInsecureRequestsUpgrade(const String& name, const S
     }
     m_upgradeInsecureRequests = true;
 
-    m_policy->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
+    m_policy->upgradeInsecureRequests();
     if (!value.isEmpty())
         m_policy->reportValueForEmptyDirective(name, value);
 }
