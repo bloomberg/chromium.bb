@@ -17,7 +17,9 @@ scoped_refptr<VideoLayer> VideoLayer::Create(
 VideoLayer::VideoLayer(VideoFrameProvider* provider,
                        media::VideoRotation video_rotation)
     : provider_(provider), video_rotation_(video_rotation) {
-  DCHECK(provider_);
+  // TODO(dalecurtis): Turn this back to a DCHECK after tracking down the source
+  // of http://crbug.com/595980
+  CHECK(provider_);
 }
 
 VideoLayer::~VideoLayer() {}
