@@ -400,21 +400,23 @@ bool MediaRouterUI::SetRouteParameters(
 
   DVLOG(1) << "DoCreateRoute: origin: " << *origin;
 
-  // There are 3 cases. In all cases the MediaRouterUI will need to be notified.
+  // There are 3 cases. In cases (1) and (3) the MediaRouterUI will need to be
+  // notified. In case (2) the dialog will be closed.
   // (1) Non-presentation route request (e.g., mirroring). No additional
   // notification necessary.
   // (2) Presentation route request for a Presentation API startSession call.
   // The startSession (CreatePresentationConnectionRequest) will need to be
-  // answered with the
-  // route response.
+  // answered with the route response.
   // (3) Browser-initiated presentation route request. If successful,
   // PresentationServiceDelegateImpl will have to be notified. Note that we
   // treat subsequent route requests from a Presentation API-initiated dialogs
   // as browser-initiated.
-  route_response_callbacks->push_back(base::Bind(
-      &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
-      current_route_request_id_, sink_id, cast_mode,
-      base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
+  if (!for_default_source || !create_session_request_) {
+    route_response_callbacks->push_back(base::Bind(
+        &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
+        current_route_request_id_, sink_id, cast_mode,
+        base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
+  }
   if (for_default_source) {
     if (create_session_request_) {
       // |create_session_request_| will be nullptr after this call, as the
@@ -422,6 +424,9 @@ bool MediaRouterUI::SetRouteParameters(
       route_response_callbacks->push_back(
           base::Bind(&CreatePresentationConnectionRequest::HandleRouteResponse,
                      base::Passed(&create_session_request_)));
+      route_response_callbacks->push_back(
+          base::Bind(&MediaRouterUI::HandleCreateSessionRequestRouteResponse,
+                     weak_factory_.GetWeakPtr()));
     } else if (presentation_service_delegate_) {
       route_response_callbacks->push_back(
           base::Bind(&PresentationServiceDelegateImpl::OnRouteResponse,
@@ -541,6 +546,11 @@ void MediaRouterUI::OnRouteResponseReceived(
 
   if (result.result_code() == RouteRequestResult::TIMED_OUT)
     SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
+}
+
+void MediaRouterUI::HandleCreateSessionRequestRouteResponse(
+    const RouteRequestResult&) {
+  Close();
 }
 
 void MediaRouterUI::OnSearchSinkResponseReceived(

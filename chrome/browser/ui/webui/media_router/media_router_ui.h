@@ -216,6 +216,11 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
       const base::string16& presentation_request_source_name,
       const RouteRequestResult& result);
 
+  // Closes the dialog after receiving a route response when using
+  // |create_session_request_|. This prevents the dialog from trying to use the
+  // same presentation request again.
+  void HandleCreateSessionRequestRouteResponse(const RouteRequestResult&);
+
   // Callback passed to MediaRouter to receive the sink ID of the sink found by
   // SearchSinksAndCreateRoute().
   void OnSearchSinkResponseReceived(MediaCastMode cast_mode,
