@@ -73,10 +73,41 @@ which target\_arch is requested; the values are constant across all
 toolchains. You can do similar things for the `host_cpu` and `host_os`
 variables, but should generally never need to.
 
+For the default toolchain, `target_cpu` and `current_cpu` are the same. For a
+secondary toolchain, `current_cpu` is set based on the toolchain definition
+and `target_cpu` remains the same. When writing rules, **`current_cpu` should
+be used rather than `target_cpu` most of the time**.
+
 By default, dependencies listed in the `deps` variable of a rule use the
 same (currently active) toolchain. You may specify a different toolchain
 using the `foo(bar)` label notation as described in
 [GNLanguage#Labels](language.md#Labels).
+
+Here's an example of when to use `target_cpu` vs `current_cpu`:
+
+```
+declare_args() {
+  # Applies only to toolchains targeting target_cpu.
+  sysroot = ""
+}
+
+config("my_config") {
+  # Uses current_cpu because compile flags are toolchain-dependent.
+  if (current_cpu == "arm") {
+    defines = [ "CPU_IS_32_BIT" ]
+  } else {
+    defines = [ "CPU_IS_64_BIT" ]
+  }
+  # Compares current_cpu with target_cpu to see whether current_toolchain
+  # has the same architecture as target_toolchain.
+  if (sysroot != "" && current_cpu == target_cpu) {
+    cflags = [
+      "-isysroot",
+      sysroot,
+    ]
+  }
+}
+```
 
 ## As a //build/config or //build/toolchain author
 
