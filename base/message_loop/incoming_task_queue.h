@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/pending_task.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/read_write_lock.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -75,8 +76,13 @@ class BASE_EXPORT IncomingTaskQueue
   // so that ReloadWorkQueue() completes in constant time.
   int high_res_task_count_;
 
-  // The lock that protects access to the members of this class.
+  // The lock that protects access to the members of this class, except
+  // |message_loop_|.
   base::Lock incoming_queue_lock_;
+
+  // Lock that protects |message_loop_| to prevent it from being deleted while a
+  // task is being posted.
+  base::subtle::ReadWriteLock message_loop_lock_;
 
   // An incoming queue of tasks that are acquired under a mutex for processing
   // on this instance's thread. These tasks have not yet been been pushed to
