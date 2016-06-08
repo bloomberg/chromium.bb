@@ -114,7 +114,6 @@ def _FilterOutDataAndIncompleteRequests(requests):
     # originated requests that have not received any responses yet.
     if request.protocol is None:
       assert not request.HasReceivedResponse()
-      assert request.initiator['type'] == 'script'
       continue
     if request.protocol not in {'http/0.9', 'http/1.0', 'http/1.1'}:
       raise RuntimeError('Unknown request protocol {}'.format(request.protocol))
