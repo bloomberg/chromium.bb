@@ -91,12 +91,12 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
                              bool failed) = 0;
   };
 
+  // Note: having interleaved delegates is not supported.
   static void SetDelegateForTests(TestDelegate* delegate);
+
   static void SetObserverForTests(TestObserver* observer);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ContentVerifyJob);
-
   virtual ~ContentVerifyJob();
   friend class base::RefCountedThreadSafe<ContentVerifyJob>;
 
@@ -146,6 +146,8 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
   // For ensuring methods on called on the right thread.
   base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentVerifyJob);
 };
 
 }  // namespace extensions

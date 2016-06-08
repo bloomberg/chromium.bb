@@ -162,6 +162,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
@@ -892,6 +893,7 @@ class PolicyTest : public InProcessBrowserTest {
 
   MockConfigurationPolicyProvider provider_;
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
+  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
 #if defined(OS_CHROMEOS)
   QuitMessageLoopAfterScreenshot observer_;
 #endif

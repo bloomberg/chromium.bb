@@ -194,6 +194,9 @@ void ContentVerifyJob::OnHashesReady(bool success) {
 
 // static
 void ContentVerifyJob::SetDelegateForTests(TestDelegate* delegate) {
+  DCHECK(delegate == nullptr || g_test_delegate == nullptr)
+      << "SetDelegateForTests does not support interleaving. Delegates should "
+      << "be set and then cleared one at a time.";
   g_test_delegate = delegate;
 }
 

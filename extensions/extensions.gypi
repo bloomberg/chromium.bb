@@ -1103,6 +1103,8 @@
       'browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h',
       'browser/mock_extension_system.cc',
       'browser/mock_extension_system.h',
+      'browser/scoped_ignore_content_verifier_for_test.cc',
+      'browser/scoped_ignore_content_verifier_for_test.h',
       'browser/test_extension_registry_observer.cc',
       'browser/test_extension_registry_observer.h',
       'browser/test_extensions_browser_client.cc',

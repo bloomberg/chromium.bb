@@ -4,6 +4,11 @@
 
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 
+#include <algorithm>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -44,7 +49,7 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
 
   Mode experiment_value;
 #if defined(GOOGLE_CHROME_BUILD)
-  experiment_value = ContentVerifierDelegate::ENFORCE;
+  experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
 #else
   experiment_value = ContentVerifierDelegate::NONE;
 #endif
@@ -172,6 +177,11 @@ void ChromeContentVerifierDelegate::VerifyFailed(
       LogFailureForPolicyForceInstall(extension_id);
       return;
     }
+    DLOG(WARNING) << "Disabling extension " << extension_id << " ('"
+                  << extension->name()
+                  << "') due to content verification failure. In tests you "
+                  << "might want to use a ScopedIgnoreContentVerifierForTest "
+                  << "instance to prevent this.";
     system->extension_service()->DisableExtension(extension_id,
                                                   Extension::DISABLE_CORRUPTED);
     ExtensionPrefs::Get(context_)->IncrementCorruptedDisableCount();
