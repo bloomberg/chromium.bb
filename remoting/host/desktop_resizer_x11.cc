@@ -14,13 +14,12 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/linux/x11_util.h"
 
-// On Linux, we use the xrandr extension to change the desktop resolution. For
-// now, we only support resize-to-client for Xvfb-based servers that can match
-// the client resolution exactly. To support best-resolution matching, it would
-// be necessary to implement |GetSupportedResolutions|, but it's not considered
-// a priority now.
+// On Linux, we use the xrandr extension to change the desktop resolution. In
+// curtain mode, we do exact resize where supported (currently only using a
+// patched Xvfb server). Otherwise, we try to pick the best resolution from the
+// existing modes.
 //
-// Xrandr has a number of restrictions that make this code more complex:
+// Xrandr has a number of restrictions that make exact resize more complex:
 //
 //   1. It's not possible to change the resolution of an existing mode. Instead,
 //      the mode must be deleted and recreated.
@@ -136,6 +135,13 @@ class DesktopResizerX11 : public DesktopResizer {
   void RestoreResolution(const ScreenResolution& original) override;
 
  private:
+  // Add a mode matching the specified resolution and switch to it.
+  void SetResolutionNewMode(const ScreenResolution& resolution);
+
+  // Attempt to switch to an existing mode matching the specified resolution
+  // using RandR, if such a resolution exists. Otherwise, do nothing.
+  void SetResolutionExistingMode(const ScreenResolution& resolution);
+
   // Create a mode, and attach it to the primary output. If the mode already
   // exists, it is left unchanged.
   void CreateMode(const char* name, int width, int height);
@@ -154,6 +160,7 @@ class DesktopResizerX11 : public DesktopResizer {
   Window root_;
   ScreenResources resources_;
   bool exact_resize_;
+  bool has_randr_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopResizerX11);
 };
@@ -164,6 +171,11 @@ DesktopResizerX11::DesktopResizerX11()
       root_(RootWindow(display_, screen_)),
       exact_resize_(base::CommandLine::ForCurrentProcess()->
                     HasSwitch("server-supports-exact-resize")) {
+  int rr_event_base;
+  int rr_error_base;
+
+  has_randr_ = XRRQueryExtension(display_, &rr_event_base, &rr_error_base);
+
   XRRSelectInput(display_, root_, RRScreenChangeNotifyMask);
 }
 
@@ -172,31 +184,27 @@ DesktopResizerX11::~DesktopResizerX11() {
 }
 
 ScreenResolution DesktopResizerX11::GetCurrentResolution() {
-  if (!exact_resize_) {
-    // TODO(jamiewalch): Remove this early return if we decide to support
-    // non-Xvfb servers.
-    return ScreenResolution();
-  }
-
-  // TODO(lambroslambrou): Xrandr requires that we process RRScreenChangeNotify
-  // events, otherwise DisplayWidth and DisplayHeight do not return the current
-  // values. Normally, this would be done via a central X event loop, but we
-  // don't have one, hence this horrible hack.
+  // Xrandr requires that we process RRScreenChangeNotify events, otherwise
+  // DisplayWidth and DisplayHeight do not return the current values. Normally,
+  // this would be done via a central X event loop, but we don't have one, hence
+  // this horrible hack.
   //
   // Note that the WatchFileDescriptor approach taken in XServerClipboard
   // doesn't work here because resize events have already been read from the
   // X server socket by the time the resize function returns, hence the
   // file descriptor is never seen as readable.
-  while (XEventsQueued(display_, QueuedAlready)) {
-    XEvent event;
-    XNextEvent(display_, &event);
-    XRRUpdateConfiguration(&event);
+  if (has_randr_) {
+    while (XEventsQueued(display_, QueuedAlready)) {
+      XEvent event;
+      XNextEvent(display_, &event);
+      XRRUpdateConfiguration(&event);
+    }
   }
 
   ScreenResolution result(
       webrtc::DesktopSize(
-          DisplayWidth(display_, DefaultScreen(display_)),
-          DisplayHeight(display_, DefaultScreen(display_))),
+          DisplayWidth(display_, screen_),
+          DisplayHeight(display_, screen_)),
       webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
   return result;
 }
@@ -220,17 +228,27 @@ std::list<ScreenResolution> DesktopResizerX11::GetSupportedResolutions(
         webrtc::DesktopSize(std::max(640, width), std::max(480, height)),
         webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
     result.push_back(actual);
-  } else {
-    // TODO(jamiewalch): Return the list of supported resolutions if we can't
-    // support exact-size matching.
+  } else if (has_randr_) {
+    // Retrieve supported resolutions with RandR
+    XRRScreenConfiguration *config = XRRGetScreenInfo(display_, root_);
+    if (config) {
+      int num_sizes = 0;
+      XRRScreenSize *sizes = XRRConfigSizes(config, &num_sizes);
+
+      for (int i = 0; i < num_sizes; ++i) {
+        result.push_back(ScreenResolution(
+            webrtc::DesktopSize(sizes[i].width, sizes[i].height),
+            webrtc::DesktopVector(kDefaultDPI, kDefaultDPI)));
+      }
+
+      XRRFreeScreenConfigInfo(config);
+    }
   }
   return result;
 }
 
 void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
-  if (!exact_resize_) {
-    // TODO(jamiewalch): Remove this early return if we decide to support
-    // non-Xvfb servers.
+  if (!has_randr_) {
     return;
   }
 
@@ -244,6 +262,19 @@ void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
   // that the display configuration doesn't change under our feet.
   ScopedXGrabServer grabber(display_);
 
+  if (exact_resize_) {
+    SetResolutionNewMode(resolution);
+  } else {
+    SetResolutionExistingMode(resolution);
+  }
+}
+
+void DesktopResizerX11::RestoreResolution(const ScreenResolution& original) {
+  SetResolution(original);
+}
+
+void DesktopResizerX11::SetResolutionNewMode(
+    const ScreenResolution& resolution) {
   // The name of the mode representing the current client view resolution and
   // the temporary mode used for the reasons described at the top of this file.
   // The former should be localized if it's user-visible; the latter only
@@ -276,11 +307,26 @@ void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
   DeleteMode(kTempModeName);
 }
 
-void DesktopResizerX11::RestoreResolution(const ScreenResolution& original) {
-  // Since the desktop is only visible via a remote connection, the original
-  // resolution of the desktop will never been seen and there's no point
-  // restoring it; if we did, we'd just risk messing up the user's window
-  // layout.
+void DesktopResizerX11::SetResolutionExistingMode(
+    const ScreenResolution& resolution) {
+  XRRScreenConfiguration *config = XRRGetScreenInfo(display_, root_);
+  if (config) {
+    int num_sizes = 0;
+    XRRScreenSize *sizes = XRRConfigSizes(config, &num_sizes);
+    Rotation current_rotation = 0;
+    XRRConfigCurrentConfiguration(config, &current_rotation);
+
+    for (int i = 0; i < num_sizes; ++i) {
+      if (sizes[i].width == resolution.dimensions().width()
+          && sizes[i].height == resolution.dimensions().height()) {
+        XRRSetScreenConfig(display_, config, root_, i, current_rotation,
+                           CurrentTime);
+        break;
+      }
+    }
+
+    XRRFreeScreenConfigInfo(config);
+  }
 }
 
 void DesktopResizerX11::CreateMode(const char* name, int width, int height) {
