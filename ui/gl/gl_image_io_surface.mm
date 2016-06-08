@@ -9,9 +9,11 @@
 #include "base/callback_helpers.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_api.h"
@@ -231,6 +233,8 @@ unsigned GLImageIOSurface::GetInternalFormat() {
 
 bool GLImageIOSurface::BindTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("gpu", "GLImageIOSurface::BindTexImage");
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   // YUV_420_BIPLANAR is not supported by BindTexImage.
   // CopyTexImage is supported by this format as that performs conversion to RGB
@@ -259,6 +263,8 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
     return false;
   }
 
+  UMA_HISTOGRAM_TIMES("GPU.IOSurface.TexImageTime",
+                      base::TimeTicks::Now() - start_time);
   return true;
 }
 

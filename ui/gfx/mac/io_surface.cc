@@ -12,6 +12,8 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace gfx {
@@ -116,6 +118,9 @@ void IOSurfaceMachPortTraits::Release(mach_port_t port) {
 }  // namespace internal
 
 IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
+  TRACE_EVENT0("ui", "CreateIOSurface");
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
@@ -189,6 +194,8 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
     IOSurfaceSetValue(surface, CFSTR("IOSurfaceColorSpace"), color_space_icc);
   }
 
+  UMA_HISTOGRAM_TIMES("GPU.IOSurface.CreateTime",
+                      base::TimeTicks::Now() - start_time);
   return surface;
 }
 
