@@ -70,7 +70,8 @@ TEST(ServerTest, Dispatch) {
 
   // Post a task that connects server on the created thread.
   bool connected_to_server = false;
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   client.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ConnectToServer, socket_name, &connected_to_server, &event));

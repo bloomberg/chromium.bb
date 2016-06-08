@@ -518,8 +518,9 @@ const char kRandomPagePath[] = "/non_google_page";
 // merge session tests.
 class FakeGoogle {
  public:
-  FakeGoogle() : start_event_(true, false) {
-  }
+  FakeGoogle()
+      : start_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   ~FakeGoogle() {}
 
@@ -583,9 +584,10 @@ class FakeGoogle {
 class DelayedFakeGaia : public FakeGaia {
  public:
   DelayedFakeGaia()
-     : blocking_event_(true, false),
-       start_event_(true, false) {
-  }
+      : blocking_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        start_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void UnblockMergeSession() {
     blocking_event_.Signal();

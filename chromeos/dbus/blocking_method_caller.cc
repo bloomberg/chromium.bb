@@ -31,9 +31,9 @@ BlockingMethodCaller::BlockingMethodCaller(dbus::Bus* bus,
                                            dbus::ObjectProxy* proxy)
     : bus_(bus),
       proxy_(proxy),
-      on_blocking_method_call_(false /* manual_reset */,
-                               false /* initially_signaled */) {
-}
+      on_blocking_method_call_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 BlockingMethodCaller::~BlockingMethodCaller() {
 }

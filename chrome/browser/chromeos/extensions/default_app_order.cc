@@ -121,7 +121,8 @@ void GetDefault(std::vector<std::string>* app_ids) {
 const size_t kDefaultAppOrderCount = arraysize(kDefaultAppOrder);
 
 ExternalLoader::ExternalLoader(bool async)
-    : loaded_(true /* manual_rest */, false /* initially_signaled */) {
+    : loaded_(base::WaitableEvent::ResetPolicy::MANUAL,
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DCHECK(!loader_instance);
   loader_instance = this;
 
