@@ -959,7 +959,8 @@ void ShellSurface::UpdateWidgetBounds() {
   // should not result in a configure request.
   DCHECK(!ignore_window_bounds_changes_);
   ignore_window_bounds_changes_ = true;
-  widget_->SetBounds(new_widget_bounds);
+  if (widget_->GetNativeWindow()->bounds() != new_widget_bounds)
+    widget_->SetBounds(new_widget_bounds);
   ignore_window_bounds_changes_ = false;
 
   // A change to the widget size requires surface bounds to be re-adjusted.
