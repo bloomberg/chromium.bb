@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"

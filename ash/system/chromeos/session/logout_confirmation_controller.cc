@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_dialog.h"
 #include "base/location.h"

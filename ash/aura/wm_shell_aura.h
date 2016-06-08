@@ -38,8 +38,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   std::vector<WmWindow*> GetMruWindowList() override;
   std::vector<WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;
-  bool IsUserSessionBlocked() override;
-  bool IsScreenLocked() override;
   bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
@@ -50,6 +48,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
       wm::WindowState* window_state) override;
   bool IsOverviewModeSelecting() override;
   bool IsOverviewModeRestoringMinimizedWindows() override;
+  SessionStateDelegate* GetSessionStateDelegate() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;

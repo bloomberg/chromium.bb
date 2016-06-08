@@ -6,8 +6,8 @@
 
 #include <cmath>
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/dim_window.h"
 #include "ash/wm/window_util.h"

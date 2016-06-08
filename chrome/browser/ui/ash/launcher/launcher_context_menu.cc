@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "build/build_config.h"

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
@@ -296,7 +297,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   // This would happen if the launcher was auto hidden before the login screen
   // was shown and then gets shown when the login screen gets presented.
   if (event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED &&
-      shell_->IsScreenLocked())
+      shell_->GetSessionStateDelegate()->IsScreenLocked())
     return;
 
   // If a user plugs an external display into a laptop running Aura the

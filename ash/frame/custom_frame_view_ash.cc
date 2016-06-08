@@ -9,6 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
@@ -17,7 +18,6 @@
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/immersive_fullscreen_controller.h"

@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_SESSION_STATE_DELEGATE_H_
-#define ASH_SESSION_SESSION_STATE_DELEGATE_H_
-
-#include <string>
+#ifndef ASH_COMMON_SESSION_SESSION_STATE_DELEGATE_H_
+#define ASH_COMMON_SESSION_SESSION_STATE_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_types.h"
+#include "ash/common/session/session_types.h"
 
 class AccountId;
 
@@ -131,4 +129,4 @@ class ASH_EXPORT SessionStateDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SESSION_SESSION_STATE_DELEGATE_H_
+#endif  // ASH_COMMON_SESSION_SESSION_STATE_DELEGATE_H_

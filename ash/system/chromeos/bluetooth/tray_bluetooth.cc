@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/bluetooth/tray_bluetooth.h"
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"

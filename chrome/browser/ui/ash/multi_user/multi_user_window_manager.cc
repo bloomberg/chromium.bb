@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/logging.h"

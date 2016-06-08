@@ -5,7 +5,7 @@
 #ifndef ASH_MEDIA_DELEGATE_H_
 #define ASH_MEDIA_DELEGATE_H_
 
-#include "ash/session/session_types.h"
+#include "ash/common/session/session_types.h"
 
 namespace content {
 class BrowserContext;

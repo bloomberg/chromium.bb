@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/session_util.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

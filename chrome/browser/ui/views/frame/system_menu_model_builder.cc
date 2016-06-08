@@ -19,7 +19,7 @@
 #include "ui/base/models/simple_menu_model.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"

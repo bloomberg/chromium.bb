@@ -18,6 +18,7 @@ class Rect;
 
 namespace ash {
 
+class SessionStateDelegate;
 class WindowResizer;
 class WmActivationObserver;
 class WmDisplayObserver;
@@ -69,9 +70,6 @@ class ASH_EXPORT WmShell {
   // the window size.
   virtual bool IsForceMaximizeOnFirstRun() = 0;
 
-  virtual bool IsUserSessionBlocked() = 0;
-  virtual bool IsScreenLocked() = 0;
-
   // Returns true if |window| can be shown for the current user. This is
   // intended to check if the current user matches the user associated with
   // |window|.
@@ -96,6 +94,8 @@ class ASH_EXPORT WmShell {
   // onto their own local class.
   virtual bool IsOverviewModeSelecting() = 0;
   virtual bool IsOverviewModeRestoringMinimizedWindows() = 0;
+
+  virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
   virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
   virtual void RemoveActivationObserver(WmActivationObserver* observer) = 0;

@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/container_finder.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/root_window_finder.h"
@@ -35,7 +36,7 @@ WmWindow* GetSystemModalContainer(WmWindow* root, WmWindow* window) {
   // all modal windows are placed into the normal modal container.
   // In case of missing transient parent (it could happen for alerts from
   // background pages) assume that the window belongs to user session.
-  if (!window->GetShell()->IsUserSessionBlocked() ||
+  if (!window->GetShell()->GetSessionStateDelegate()->IsUserSessionBlocked() ||
       !window->GetTransientParent()) {
     return root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
   }

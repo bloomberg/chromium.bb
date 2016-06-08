@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_SESSION_STATE_OBSERVER_H_
-#define ASH_SESSION_SESSION_STATE_OBSERVER_H_
-
-#include <string>
+#ifndef ASH_COMMON_SESSION_SESSION_STATE_OBSERVER_H_
+#define ASH_COMMON_SESSION_SESSION_STATE_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "base/macros.h"
 
 class AccountId;
@@ -30,11 +28,10 @@ class ASH_EXPORT SessionStateObserver {
   virtual ~SessionStateObserver() {}
 };
 
-// A class to attach / detach an object as a session state observer with a
-// scoped pointer.
+// A class to attach / detach an object as a session state observer.
 class ASH_EXPORT ScopedSessionStateObserver {
  public:
-  explicit ScopedSessionStateObserver(ash::SessionStateObserver* observer);
+  explicit ScopedSessionStateObserver(SessionStateObserver* observer);
   virtual ~ScopedSessionStateObserver();
 
  private:
@@ -45,4 +42,4 @@ class ASH_EXPORT ScopedSessionStateObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SESSION_SESSION_STATE_OBSERVER_H_
+#endif  // ASH_COMMON_SESSION_SESSION_STATE_OBSERVER_H_

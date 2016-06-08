@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 
 namespace ash {
 
 bool SessionStateDelegate::IsInSecondaryLoginScreen() const {
-  return GetSessionState() ==
-      ash::SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY;
+  return GetSessionState() == SESSION_STATE_LOGIN_SECONDARY;
 }
 
 bool SessionStateDelegate::CanAddUserToMultiProfile(
@@ -26,4 +25,4 @@ bool SessionStateDelegate::CanAddUserToMultiProfile(
   return true;
 }
 
-} // namespace ash
+}  // namespace ash

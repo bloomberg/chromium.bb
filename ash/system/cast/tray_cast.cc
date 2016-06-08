@@ -4,9 +4,9 @@
 
 #include "ash/system/cast/tray_cast.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"

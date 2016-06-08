@@ -76,6 +76,10 @@ source_set("lib") {
     "window_manager_application.h",
   ]
 
+  deps = [
+    "//components/user_manager",
+  ]
+
   public_deps = [
     "//ash",
     "//ash/mus/resources",

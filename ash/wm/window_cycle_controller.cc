@@ -4,9 +4,9 @@
 
 #include "ash/wm/window_cycle_controller.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_list.h"
 #include "base/metrics/histogram.h"

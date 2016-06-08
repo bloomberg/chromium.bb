@@ -5,8 +5,8 @@
 #include "ash/system/tray_accessibility.h"
 
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"

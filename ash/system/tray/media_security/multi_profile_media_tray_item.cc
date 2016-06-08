@@ -5,8 +5,8 @@
 #include "ash/system/tray/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/ash_view_ids.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/media_delegate.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/media_security/media_capture_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"

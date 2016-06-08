@@ -5,12 +5,12 @@
 #include "ash/aura/wm_shell_aura.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_overview_mode_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
@@ -87,14 +87,6 @@ bool WmShellAura::IsForceMaximizeOnFirstRun() {
   return Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
 }
 
-bool WmShellAura::IsUserSessionBlocked() {
-  return Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked();
-}
-
-bool WmShellAura::IsScreenLocked() {
-  return Shell::GetInstance()->session_state_delegate()->IsScreenLocked();
-}
-
 bool WmShellAura::CanShowWindowForUser(WmWindow* window) {
   return Shell::GetInstance()->delegate()->CanShowWindowForUser(
       WmWindowAura::GetAuraWindow(window));
@@ -139,6 +131,10 @@ bool WmShellAura::IsOverviewModeRestoringMinimizedWindows() {
       Shell::GetInstance()->window_selector_controller();
   return window_selector_controller &&
          window_selector_controller->IsRestoringMinimizedWindows();
+}
+
+SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {
+  return Shell::GetInstance()->session_state_delegate();
 }
 
 void WmShellAura::AddActivationObserver(WmActivationObserver* observer) {

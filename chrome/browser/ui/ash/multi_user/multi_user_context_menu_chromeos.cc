@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"

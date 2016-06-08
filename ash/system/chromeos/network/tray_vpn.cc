@@ -4,8 +4,8 @@
 
 #include "ash/system/chromeos/network/tray_vpn.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/chromeos/network/vpn_delegate.h"

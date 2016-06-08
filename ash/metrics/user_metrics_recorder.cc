@@ -4,13 +4,13 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_view.h"

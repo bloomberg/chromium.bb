@@ -6,12 +6,12 @@
 
 #include "ash/ash_switches.h"
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 #include "ash/wm/maximize_mode/workspace_backdrop_delegate.h"

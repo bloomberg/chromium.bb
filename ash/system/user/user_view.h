@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_types.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"

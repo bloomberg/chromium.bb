@@ -5,8 +5,8 @@
 #include "ash/wm/power_button_controller.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"

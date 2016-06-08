@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/location.h"

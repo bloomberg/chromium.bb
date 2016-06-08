@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/session/session_state_observer.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/chromeos/bluetooth/bluetooth_observer.h"

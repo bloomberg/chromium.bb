@@ -32,7 +32,7 @@
 #include "ui/views/widget/native_widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #endif

@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_lock_state_controller_delegate.h"

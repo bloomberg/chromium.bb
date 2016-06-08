@@ -5,8 +5,8 @@
 #include "ash/system/user/tray_user.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell_delegate.h"

@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/settings/tray_settings.h"
 
-#include "ash/session/session_state_delegate.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/power_status_view.h"

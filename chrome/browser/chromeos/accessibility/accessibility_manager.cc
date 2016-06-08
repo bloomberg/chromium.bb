@@ -12,10 +12,10 @@
 
 #include "ash/audio/sounds.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
