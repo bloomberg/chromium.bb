@@ -50,6 +50,9 @@ class SquareInkDropRippleTestApi;
 //
 class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
  public:
+  // The shape to use for the ACTIVATED/DEACTIVATED states.
+  enum ActivatedShape { CIRCLE, ROUNDED_RECT };
+
   SquareInkDropRipple(const gfx::Size& large_size,
                       int large_corner_radius,
                       const gfx::Size& small_size,
@@ -57,6 +60,8 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
                       const gfx::Point& center_point,
                       SkColor color);
   ~SquareInkDropRipple() override;
+
+  void set_activated_shape(ActivatedShape shape) { activated_shape_ = shape; }
 
   // InkDropRipple:
   void SnapToActivated() override;
@@ -143,8 +148,15 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
   // Transforms for the ACTIVATED animation.
   void GetActivatedTargetTransforms(InkDropTransforms* transforms_out) const;
 
+  // Updates all of the Transforms in |transforms_out| with the target
+  // Transforms for the DEACTIVATED animation.
+  void GetDeactivatedTargetTransforms(InkDropTransforms* transforms_out) const;
+
   // Adds and configures a new |painted_shape| layer to |painted_layers_|.
   void AddPaintLayer(PaintedShape painted_shape);
+
+  // The shape used for the ACTIVATED/DEACTIVATED states.
+  ActivatedShape activated_shape_;
 
   // Maximum size that an ink drop will be drawn to for any InkDropState whose
   // final frame should be large.

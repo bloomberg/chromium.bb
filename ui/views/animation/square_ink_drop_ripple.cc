@@ -169,7 +169,8 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
                                          int small_corner_radius,
                                          const gfx::Point& center_point,
                                          SkColor color)
-    : large_size_(large_size),
+    : activated_shape_(ROUNDED_RECT),
+      large_size_(large_size),
       large_corner_radius_(large_corner_radius),
       small_size_(small_size),
       small_corner_radius_(small_corner_radius),
@@ -364,12 +365,11 @@ void SquareInkDropRipple::AnimateStateChange(
       AnimateToOpacity(kVisibleOpacity, visible_duration,
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
-      CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
       AnimateToOpacity(kHiddenOpacity,
                        GetAnimationDuration(DEACTIVATED_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
-      CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
+      GetDeactivatedTargetTransforms(&transforms);
       AnimateToTransforms(transforms,
                           GetAnimationDuration(DEACTIVATED_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
@@ -517,7 +517,28 @@ void SquareInkDropRipple::GetCurrentTransforms(
 
 void SquareInkDropRipple::GetActivatedTargetTransforms(
     InkDropTransforms* transforms_out) const {
-  CalculateRectTransforms(small_size_, small_corner_radius_, transforms_out);
+  switch (activated_shape_) {
+    case CIRCLE:
+      CalculateCircleTransforms(small_size_, transforms_out);
+      break;
+    case ROUNDED_RECT:
+      CalculateRectTransforms(small_size_, small_corner_radius_,
+                              transforms_out);
+      break;
+  }
+}
+
+void SquareInkDropRipple::GetDeactivatedTargetTransforms(
+    InkDropTransforms* transforms_out) const {
+  switch (activated_shape_) {
+    case CIRCLE:
+      CalculateCircleTransforms(large_size_, transforms_out);
+      break;
+    case ROUNDED_RECT:
+      CalculateRectTransforms(large_size_, small_corner_radius_,
+                              transforms_out);
+      break;
+  }
 }
 
 void SquareInkDropRipple::AddPaintLayer(PaintedShape painted_shape) {
