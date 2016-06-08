@@ -3521,17 +3521,16 @@ subsurface_set_position(struct wl_client *client,
 }
 
 static struct weston_subsurface *
-subsurface_from_surface(struct weston_surface *surface)
+subsurface_find_sibling(struct weston_subsurface *sub,
+		       struct weston_surface *surface)
 {
-	struct weston_subsurface *sub;
+	struct weston_surface *parent = sub->parent;
+	struct weston_subsurface *sibling;
 
-	sub = weston_surface_to_subsurface(surface);
-	if (sub)
-		return sub;
-
-	wl_list_for_each(sub, &surface->subsurface_list, parent_link)
-		if (sub->surface == surface)
-			return sub;
+	wl_list_for_each(sibling, &parent->subsurface_list, parent_link) {
+		if (sibling->surface == surface && sibling != sub)
+			return sibling;
+	}
 
 	return NULL;
 }
@@ -3543,8 +3542,7 @@ subsurface_sibling_check(struct weston_subsurface *sub,
 {
 	struct weston_subsurface *sibling;
 
-	sibling = subsurface_from_surface(surface);
-
+	sibling = subsurface_find_sibling(sub, surface);
 	if (!sibling) {
 		wl_resource_post_error(sub->resource,
 			WL_SUBSURFACE_ERROR_BAD_SURFACE,
@@ -3553,13 +3551,7 @@ subsurface_sibling_check(struct weston_subsurface *sub,
 		return NULL;
 	}
 
-	if (sibling->parent != sub->parent) {
-		wl_resource_post_error(sub->resource,
-			WL_SUBSURFACE_ERROR_BAD_SURFACE,
-			"%s: wl_surface@%d has a different parent",
-			request, wl_resource_get_id(surface->resource));
-		return NULL;
-	}
+	assert(sibling->parent == sub->parent);
 
 	return sibling;
 }

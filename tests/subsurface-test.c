@@ -250,6 +250,50 @@ TEST(test_subsurface_loop_paradox)
 			      WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE);
 }
 
+TEST(test_subsurface_place_above_nested_parent)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_surface *grandchild;
+	struct wl_subcompositor *subco;
+	struct wl_subsurface *sub;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	sub = wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	wl_subsurface_place_above(sub, com.child[0]);
+
+	client_roundtrip(client);
+}
+
+TEST(test_subsurface_place_below_nested_parent)
+{
+	struct client *client;
+	struct compound_surface com;
+	struct wl_subcompositor *subco;
+	struct wl_surface *grandchild;
+	struct wl_subsurface *sub;
+
+	client = create_client_and_test_surface(100, 50, 123, 77);
+	assert(client);
+
+	populate_compound_surface(&com, client);
+
+	subco = get_subcompositor(client);
+	grandchild = wl_compositor_create_surface(client->wl_compositor);
+	sub = wl_subcompositor_get_subsurface(subco, grandchild, com.child[0]);
+
+	wl_subsurface_place_below(sub, com.child[0]);
+
+	client_roundtrip(client);
+}
+
 TEST(test_subsurface_place_above_stranger)
 {
 	struct client *client;
