@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
+<iframe id="iframe" srcdoc="<div id='target'><div style='width:1000px;height:1000px'></div></div>"></iframe>
+<script>
+description("Ensure that change.boundingClientRect matches change.target.getBoundingClientRect() for a clipped element with overflow inside an iframe.");
+
+var iframe = document.getElementById("iframe");
+var entries = [];
+var target;
+
+iframe.onload = function() {
+  target = iframe.contentDocument.getElementById("target");
+  new IntersectionObserver((changes) => {
+    entries.push(...changes);
+  }).observe(target);
+  waitForNotification(step0);
+};
+
+function step0() {
+  shouldBeEqualToNumber("entries.length", 1);
+  if (entries.length > 0) {
+    shouldBe("entries[0].boundingClientRect.top", "target.getBoundingClientRect().top");
+    shouldBe("entries[0].boundingClientRect.left", "target.getBoundingClientRect().left");
+    shouldBe("entries[0].boundingClientRect.width", "target.getBoundingClientRect().width");
+    shouldBe("entries[0].boundingClientRect.height", "target.getBoundingClientRect().height");
+  }
+  finishJSTest();
+}
+</script>

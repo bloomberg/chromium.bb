@@ -41,7 +41,7 @@ void IntersectionObservation::initializeTargetRect(LayoutRect& rect) const
     DCHECK(m_target);
     LayoutObject* targetLayoutObject = target()->layoutObject();
     DCHECK(targetLayoutObject && targetLayoutObject->isBoxModelObject());
-    rect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
+    rect = LayoutRect(toLayoutBoxModelObject(targetLayoutObject)->borderBoundingBox());
 }
 
 void IntersectionObservation::initializeRootRect(LayoutRect& rect) const

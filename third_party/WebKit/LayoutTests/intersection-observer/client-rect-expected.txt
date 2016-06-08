@@ -1,0 +1,14 @@
+Ensure that change.boundingClientRect matches change.target.getBoundingClientRect() for a clipped element with overflow inside an iframe.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS entries.length is 1
+PASS entries[0].boundingClientRect.top is target.getBoundingClientRect().top
+PASS entries[0].boundingClientRect.left is target.getBoundingClientRect().left
+PASS entries[0].boundingClientRect.width is target.getBoundingClientRect().width
+PASS entries[0].boundingClientRect.height is target.getBoundingClientRect().height
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
