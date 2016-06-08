@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
+#include "ui/gfx/skia_util.h"
 
 namespace skia {
 
@@ -25,6 +26,10 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
+  void EchoBitmap(const SkBitmap& b,
+                  const EchoBitmapCallback& callback) override {
+    callback.Run(b);
+  }
   void EchoImageFilter(const sk_sp<SkImageFilter>& i,
                        const EchoImageFilterCallback& callback) override {
     callback.Run(i);
@@ -47,6 +52,22 @@ static sk_sp<SkImageFilter> make_scale(float amount,
 }
 
 }  // namespace
+
+TEST_F(StructTraitsTest, Bitmap) {
+  SkBitmap input;
+  input.allocN32Pixels(10, 5);
+  input.eraseColor(SK_ColorYELLOW);
+  input.erase(SK_ColorTRANSPARENT, SkIRect::MakeXYWH(0, 1, 2, 3));
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SkBitmap output;
+  proxy->EchoBitmap(input, &output);
+  EXPECT_EQ(input.colorType(), output.colorType());
+  EXPECT_EQ(input.alphaType(), output.alphaType());
+  EXPECT_EQ(input.profileType(), output.profileType());
+  EXPECT_EQ(input.width(), output.width());
+  EXPECT_EQ(input.height(), output.height());
+  EXPECT_TRUE(gfx::BitmapsAreEqual(input, output));
+}
 
 TEST_F(StructTraitsTest, ImageFilter) {
   sk_sp<SkImageFilter> input(make_scale(0.5f, nullptr));
