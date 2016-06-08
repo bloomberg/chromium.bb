@@ -23,6 +23,7 @@ const char kSetChannel[] = "SetChannel";
 const char kGetChannel[] = "GetChannel";
 const char kAttemptRollback[] = "AttemptRollback";
 const char kCanRollback[] = "CanRollback";
+const char kGetEolStatus[] = "GetEolStatus";
 
 // Signals.
 const char kStatusUpdate[] = "StatusUpdate";
@@ -31,6 +32,13 @@ const char kStatusUpdate[] = "StatusUpdate";
 typedef enum {
   kAttemptUpdateFlagNonInteractive = (1 << 0)
 } AttemptUpdateFlags;
+
+// End of Life status used in the GetEolStatus() D-Bus method.
+typedef enum {
+   kSupported = 0,
+   kSecurityOnly = 1,
+   kEol = 2,
+} EndOfLifeStatus;
 
 // Operations contained in StatusUpdate signals.
 const char kUpdateStatusIdle[] = "UPDATE_STATUS_IDLE";
