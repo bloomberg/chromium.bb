@@ -34699,6 +34699,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.DifferenceRTTActualAndEstimated" units="ms">
+  <obsolete>
+    Replaced in June 2016 by NQE.Accuracy.HttpRTT.* metrics.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -34709,6 +34712,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.DifferenceRTTEstimatedAndActual" units="ms">
+  <obsolete>
+    Replaced in June 2016 by NQE.Accuracy.HttpRTT.* metrics.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -34810,6 +34816,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.RatioEstimatedToActualRTT" units="100 times">
+  <obsolete>
+    Replaced in June 2016 by NQE.Accuracy.HttpRTT.* metrics.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -34833,6 +34842,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.RTTObservations" units="ms">
+  <obsolete>
+    Replaced in May 2016 by NQE.MainFrame.RTT.* metrics.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -95561,20 +95573,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="4G" label="On 4G network"/>
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
-  <affected-histogram name="NQE.DifferenceRTTActualAndEstimated"/>
-  <affected-histogram name="NQE.DifferenceRTTEstimatedAndActual"/>
   <affected-histogram name="NQE.FastestRTT"/>
   <affected-histogram name="NQE.MainFrame.Kbps.Percentile50"/>
   <affected-histogram name="NQE.MainFrame.RTT.Percentile50"/>
   <affected-histogram name="NQE.MainFrame.TransportRTT.Percentile50"/>
   <affected-histogram name="NQE.PeakKbps"/>
-  <affected-histogram name="NQE.RatioEstimatedToActualRTT"/>
   <affected-histogram name="NQE.RTT.Percentile0"/>
   <affected-histogram name="NQE.RTT.Percentile10"/>
   <affected-histogram name="NQE.RTT.Percentile100"/>
   <affected-histogram name="NQE.RTT.Percentile50"/>
   <affected-histogram name="NQE.RTT.Percentile90"/>
-  <affected-histogram name="NQE.RTTObservations"/>
   <affected-histogram name="NQE.TransportRTT.Percentile0"/>
   <affected-histogram name="NQE.TransportRTT.Percentile10"/>
   <affected-histogram name="NQE.TransportRTT.Percentile100"/>

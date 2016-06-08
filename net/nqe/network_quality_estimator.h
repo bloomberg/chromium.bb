@@ -427,10 +427,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   void NotifyObserversOfThroughput(const ThroughputObservation& observation);
 
-  // Records the UMA related to the RTT at the HTTP layer.
-  void RecordHttpRTTUMA(int32_t estimated_value_msec,
-                        int32_t actual_value_msec) const;
-
   // Returns true only if the |request| can be used for RTT estimation.
   bool RequestProvidesRTTObservation(const URLRequest& request) const;
 

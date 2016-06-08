@@ -473,14 +473,6 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
       observed_http_rtt, now, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
   rtt_observations_.AddObservation(http_rtt_observation);
   NotifyObserversOfRTT(http_rtt_observation);
-
-  // Compare the RTT observation with the estimated value and record it.
-  if (estimated_quality_at_last_main_frame_.http_rtt() !=
-      nqe::internal::InvalidRTT()) {
-    RecordHttpRTTUMA(
-        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds(),
-        observed_http_rtt.InMilliseconds());
-  }
 }
 
 void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
@@ -595,42 +587,6 @@ NetworkQualityEstimator::GetSocketPerformanceWatcherFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return watcher_factory_.get();
-}
-
-void NetworkQualityEstimator::RecordHttpRTTUMA(
-    int32_t estimated_value_msec,
-    int32_t actual_value_msec) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Record the difference between the actual and the estimated value.
-  if (estimated_value_msec >= actual_value_msec) {
-    base::HistogramBase* difference_rtt =
-        GetHistogram("DifferenceRTTEstimatedAndActual.",
-                     current_network_id_.type, 10 * 1000);  // 10 seconds
-    difference_rtt->Add(estimated_value_msec - actual_value_msec);
-  } else {
-    base::HistogramBase* difference_rtt =
-        GetHistogram("DifferenceRTTActualAndEstimated.",
-                     current_network_id_.type, 10 * 1000);  // 10 seconds
-    difference_rtt->Add(actual_value_msec - estimated_value_msec);
-  }
-
-  // Record all the RTT observations.
-  base::HistogramBase* rtt_observations =
-      GetHistogram("RTTObservations.", current_network_id_.type,
-                   10 * 1000);  // 10 seconds upper bound
-  rtt_observations->Add(actual_value_msec);
-
-  if (actual_value_msec == 0)
-    return;
-
-  int32_t ratio = (estimated_value_msec * 100) / actual_value_msec;
-
-  // Record the accuracy of estimation by recording the ratio of estimated
-  // value to the actual value.
-  base::HistogramBase* ratio_median_rtt = GetHistogram(
-      "RatioEstimatedToActualRTT.", current_network_id_.type, 1000);
-  ratio_median_rtt->Add(ratio);
 }
 
 bool NetworkQualityEstimator::RequestProvidesRTTObservation(

@@ -385,15 +385,12 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 0);
 
-  histogram_tester.ExpectTotalCount("NQE.RatioEstimatedToActualRTT.Unknown", 0);
-
   std::unique_ptr<URLRequest> request2(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
   request2->SetLoadFlags(request2->load_flags() | LOAD_MAIN_FRAME);
   request2->Start();
   base::RunLoop().Run();
 
-  histogram_tester.ExpectTotalCount("NQE.RTTObservations.Unknown", 1);
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
