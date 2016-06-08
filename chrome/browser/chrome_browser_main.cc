@@ -1052,8 +1052,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 #endif  // defined(OS_MACOSX)
 
-// Android does first run in Java instead of native.
-// Chrome OS has its own out-of-box-experience code.
+  // Android does first run in Java instead of native.
+  // Chrome OS has its own out-of-box-experience code.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle

@@ -586,9 +586,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
         StartupBrowserCreator::WasRestarted()));
   }
 
-  // Only activate the session restore logic if it is not the first run. It
-  // makes really no sense to "restore" missing session.
-  if (pref.type == SessionStartupPref::LAST && !is_first_run_) {
+  if (pref.type == SessionStartupPref::LAST) {
     if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
         !command_line_.HasSwitch(switches::kRestoreLastSession)) {
       // The last session crashed. It's possible automatically loading the
