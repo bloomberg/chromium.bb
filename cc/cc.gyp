@@ -699,6 +699,7 @@
         'surfaces/surface_manager.h',
         'surfaces/surface_resource_holder.cc',
         'surfaces/surface_resource_holder.h',
+        'surfaces/surface_sequence.h',
         'surfaces/surfaces_export.h',
       ],
       'includes': [

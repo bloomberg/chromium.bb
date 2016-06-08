@@ -11,6 +11,7 @@ import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/selection.mojom";
 import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
+import "cc/ipc/surface_sequence.mojom";
 import "cc/ipc/transferable_resource.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
@@ -37,6 +38,9 @@ interface TraitsTestService {
 
   [Sync]
   EchoSurfaceId(SurfaceId s) => (SurfaceId pass);
+
+  [Sync]
+  EchoSurfaceSequence(SurfaceSequence s) => (SurfaceSequence pass);
 
   [Sync]
   EchoTransferableResource(TransferableResource t) =>

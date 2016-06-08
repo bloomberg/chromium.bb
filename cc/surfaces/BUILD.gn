@@ -5,6 +5,7 @@
 source_set("surface_id") {
   sources = [
     "surface_id.h",
+    "surface_sequence.h",
   ]
 
   deps = [
@@ -40,6 +41,7 @@ component("surfaces") {
     "surface_manager.h",
     "surface_resource_holder.cc",
     "surface_resource_holder.h",
+    "surface_sequence.h",
     "surfaces_export.h",
   ]
 

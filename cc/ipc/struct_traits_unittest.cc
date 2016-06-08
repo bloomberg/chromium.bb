@@ -62,6 +62,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(s);
   }
 
+  void EchoSurfaceSequence(
+      const SurfaceSequence& s,
+      const EchoSurfaceSequenceCallback& callback) override {
+    callback.Run(s);
+  }
+
   void EchoTransferableResource(
       const TransferableResource& t,
       const EchoTransferableResourceCallback& callback) override {
@@ -251,6 +257,17 @@ TEST_F(StructTraitsTest, SurfaceId) {
   EXPECT_EQ(id_namespace, output.id_namespace());
   EXPECT_EQ(local_id, output.local_id());
   EXPECT_EQ(nonce, output.nonce());
+}
+
+TEST_F(StructTraitsTest, SurfaceSequence) {
+  const uint32_t id_namespace = 2016;
+  const uint32_t sequence = 0xfbadbeef;
+  SurfaceSequence input(id_namespace, sequence);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SurfaceSequence output;
+  proxy->EchoSurfaceSequence(input, &output);
+  EXPECT_EQ(id_namespace, output.id_namespace);
+  EXPECT_EQ(sequence, output.sequence);
 }
 
 TEST_F(StructTraitsTest, SharedQuadState) {

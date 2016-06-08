@@ -34,5 +34,43 @@
         'cc_param_traits_macros.h',
       ],
     },
+    {
+      # GN version: //cc/ipc:interfaces
+      # TODO: Add begin_frame_args, render_pass_id, returned_resources and
+      # transferable_resource .mojom and .typemap files here so that this target
+      # is consistent with that in GN build.
+      'target_name': 'interfaces',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'surface_id.mojom',
+          'surface_sequence.mojom',
+        ],
+        'mojom_typemaps': [
+          'surface_id.typemap',
+          'surface_sequence.typemap',
+        ],
+      },
+      'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      # GN version: //cc/ipc:interfaces
+      # Same target as above except that this is used in Blink
+      'target_name': 'interfaces_blink',
+      'type': 'none',
+      'variables': {
+        'for_blink': 'true',
+        'mojom_files': [
+          'surface_id.mojom',
+          'surface_sequence.mojom',
+        ],
+        'mojom_typemaps': [
+          'surface_id.typemap',
+          'surface_sequence.typemap',
+        ],
+      },
+      'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+
   ],
 }
