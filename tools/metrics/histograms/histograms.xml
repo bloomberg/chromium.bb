@@ -34644,6 +34644,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records the difference between the estimated HTTP RTT and the observed HTTP
+    RTT. HTTP RTT estimated by the network quality estimator at the time of
+    navigation start is compared with the HTTP RTT observed during the specified
+    time interval following the start of the navigation.
+  </summary>
+</histogram>
+
+<histogram name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records the difference between the estimated transport RTT and the observed
+    transport RTT. Transport RTT estimated by the network quality estimator at
+    the time of navigation start is compared with the transport RTT observed
+    during the specified time interval following the start of the navigation.
+  </summary>
+</histogram>
+
 <histogram name="NQE.DifferenceRTTActualAndEstimated" units="ms">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
@@ -95384,6 +95406,77 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Tabs.StateTransfer.Time_Active"/>
   <affected-histogram name="Tabs.StateTransfer.Time_Detached"/>
   <affected-histogram name="Tabs.StateTransfer.Time_Inactive"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NQE.Accuracy.RTT.Accuracy.DiffPositiveOrNegative"
+    separator=".">
+  <suffix name="Negative" label="Estimated RTT was lower than observed RTT"/>
+  <suffix name="Positive" label="Estimated RTT was higher than observed RTT"/>
+  <affected-histogram name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff"/>
+  <affected-histogram name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NQE.Accuracy.RTT.AccuracyRecordingIntervals"
+    separator=".">
+  <suffix name="15"
+      label="Recorded approximately 15 seconds after navigation start"/>
+  <suffix name="30"
+      label="Recorded approximately 30 seconds after navigation start"/>
+  <suffix name="60"
+      label="Recorded approximately 60 seconds after navigation start"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Negative"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Positive"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Negative"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NQE.Accuracy.RTT.ObservedRTTIntervals" separator=".">
+  <suffix name="0_20"
+      label="Observed RTT was between 0 and 20 (inclusive) msec"/>
+  <suffix name="20_60"
+      label="Observed RTT was between 20 and 60 (inclusive) msec"/>
+  <suffix name="60_140"
+      label="Observed RTT was between 60 and 140 (inclusive) msec"/>
+  <suffix name="140_300"
+      label="Observed RTT was between 140 and 300 (inclusive) msec"/>
+  <suffix name="300_620"
+      label="Observed RTT was between 300 and 620 (inclusive) msec"/>
+  <suffix name="620_1260"
+      label="Observed RTT was between 620 and 1260 (inclusive) msec"/>
+  <suffix name="1260_2540"
+      label="Observed RTT was between 1260 and 2540 (inclusive) msec"/>
+  <suffix name="2540_5100"
+      label="Observed RTT was between 2540 and 51000 (inclusive) msec"/>
+  <suffix name="5100_Infinity"
+      label="Observed RTT was greater than 5100 (inclusive) msec"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Negative.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Negative.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Negative.60"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Positive.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Positive.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.HttpRTT.EstimatedObservedDiff.Positive.60"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Negative.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Negative.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Negative.60"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive.15"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive.30"/>
+  <affected-histogram
+      name="NQE.Accuracy.TransportRTT.EstimatedObservedDiff.Positive.60"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NQE.DifferentPercentiles" separator=".">

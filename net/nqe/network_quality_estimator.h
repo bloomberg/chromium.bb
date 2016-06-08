@@ -189,8 +189,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       WARN_UNUSED_RESULT;
 
   // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
-  // the transport layer. |rtt| should not be null.
-  bool GetTransportRTTEstimate(base::TimeDelta* rtt) const WARN_UNUSED_RESULT;
+  // the transport layer. |rtt| should not be null. Virtualized for testing.
+  virtual bool GetTransportRTTEstimate(base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
 
   // Returns true if downlink throughput is available and sets |kbps| to
   // estimated downlink throughput (in kilobits per second).
@@ -224,15 +225,15 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Returns true if the median RTT at the transport layer is available and sets
   // |rtt| to the median of transport layer RTT observations since
-  // |start_time|. |rtt| should not be null.
-  bool GetRecentTransportRTTMedian(const base::TimeTicks& start_time,
-                                   base::TimeDelta* rtt) const
+  // |start_time|. |rtt| should not be null. Virtualized for testing.
+  virtual bool GetRecentTransportRTTMedian(const base::TimeTicks& start_time,
+                                           base::TimeDelta* rtt) const
       WARN_UNUSED_RESULT;
 
   // Returns true if median downstream throughput is available and sets |kbps|
   // to the median of downstream throughput (in kilobits per second)
   // observations since |start_time|. Virtualized for testing. |kbps|
-  // should not be null.
+  // should not be null. Virtualized for testing.
   virtual bool GetRecentMedianDownlinkThroughputKbps(
       const base::TimeTicks& start_time,
       int32_t* kbps) const WARN_UNUSED_RESULT;
@@ -308,6 +309,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Return a string equivalent to |type|.
   const char* GetNameForEffectiveConnectionType(
       EffectiveConnectionType type) const;
+
+  // Returns the list of intervals at which the accuracy of network quality
+  // prediction should be recorded. Virtualized for testing.
+  virtual const std::vector<base::TimeDelta>& GetAccuracyRecordingIntervals()
+      const;
 
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
@@ -435,6 +441,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Notify observers of a change in effective connection type.
   void NotifyObserversOfEffectiveConnectionTypeChanged();
 
+  // Records NQE accuracy metrics. |measuring_duration| should belong to the
+  // vector returned by AccuracyRecordingIntervals().
+  // RecordAccuracyAfterMainFrame should be called |measuring_duration| after a
+  // main frame request is observed.
+  void RecordAccuracyAfterMainFrame(base::TimeDelta measuring_duration) const;
+
   // Values of external estimate provider status. This enum must remain
   // synchronized with the enum of the same name in
   // metrics/histograms/histograms.xml.
@@ -475,6 +487,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Time when the effective connection type was last computed.
   base::TimeTicks last_effective_connection_type_computation_;
 
+  // Intervals after the main frame request arrives at which accuracy of network
+  // quality prediction is recorded.
+  std::vector<base::TimeDelta> accuracy_recording_intervals_;
+
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;
 
@@ -512,8 +528,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   nqe::internal::NetworkQuality
       connection_thresholds_[EFFECTIVE_CONNECTION_TYPE_LAST];
 
-  // Estimated network quality. Updated on mainframe requests.
-  nqe::internal::NetworkQuality estimated_median_network_quality_;
+  // Latest time when the headers for a main frame request were received.
+  base::TimeTicks last_main_frame_request_;
+
+  // Estimated network quality when the response headers for the last mainframe
+  // request were received.
+  nqe::internal::NetworkQuality estimated_quality_at_last_main_frame_;
 
   // ExternalEstimateProvider that provides network quality using operating
   // system APIs. May be NULL.

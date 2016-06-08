@@ -156,6 +156,25 @@ bool RequestSchemeIsHTTPOrHTTPS(const net::URLRequest& request) {
   return request.url().is_valid() && request.url().SchemeIsHTTPOrHTTPS();
 }
 
+// Returns the suffix of the histogram that should be used for recording the
+// accuracy when the observed RTT is |observed_rtt|. The width of the intervals
+// are in exponentially increasing order.
+std::string GetHistogramSuffixObservedRTT(const base::TimeDelta& observed_rtt) {
+  const float rtt_milliseconds = observed_rtt.InMillisecondsF();
+  DCHECK_GE(rtt_milliseconds, 0);
+
+  // The values here should remain synchronized with the suffixes specified in
+  // histograms.xml.
+  static const char* const kSuffixes[] = {
+      "0_20",     "20_60",     "60_140",    "140_300",      "300_620",
+      "620_1260", "1260_2540", "2540_5100", "5100_Infinity"};
+  for (size_t i = 0; i < arraysize(kSuffixes) - 1; ++i) {
+    if (rtt_milliseconds <= static_cast<float>((20 * (2 << i) - 20)))
+      return kSuffixes[i];
+  }
+  return kSuffixes[arraysize(kSuffixes) - 1];
+}
+
 }  // namespace
 
 namespace net {
@@ -222,6 +241,13 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnUpdatedRTTAvailable,
                  base::Unretained(this))));
+
+  // Record accuracy at 3 different intervals. The values used here must remain
+  // in sync with the suffixes specified in
+  // tools/metrics/histograms/histograms.xml.
+  accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(15));
+  accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(30));
+  accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(60));
 }
 
 void NetworkQualityEstimator::ObtainOperatingParams(
@@ -357,6 +383,12 @@ NetworkQualityEstimator::~NetworkQualityEstimator() {
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
+const std::vector<base::TimeDelta>&
+NetworkQualityEstimator::GetAccuracyRecordingIntervals() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return accuracy_recording_intervals_;
+}
+
 void NetworkQualityEstimator::NotifyStartTransaction(
     const URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -377,24 +409,45 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
     return;
   }
 
-  // Update |estimated_median_network_quality_| if this is a main frame request.
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  // Update |estimated_quality_at_last_main_frame_| if this is a main frame
+  // request.
   if (request.load_flags() & LOAD_MAIN_FRAME) {
+    last_main_frame_request_ = now;
     base::TimeDelta estimated_http_rtt;
     if (!GetHttpRTTEstimate(&estimated_http_rtt))
       estimated_http_rtt = nqe::internal::InvalidRTT();
+
+    base::TimeDelta estimated_transport_rtt;
+    if (!GetTransportRTTEstimate(&estimated_transport_rtt))
+      estimated_transport_rtt = nqe::internal::InvalidRTT();
 
     int32_t downstream_throughput_kbps;
     if (!GetDownlinkThroughputKbpsEstimate(&downstream_throughput_kbps))
       downstream_throughput_kbps = nqe::internal::kInvalidThroughput;
 
-    estimated_median_network_quality_ = nqe::internal::NetworkQuality(
-        estimated_http_rtt, nqe::internal::InvalidRTT(),
+    estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality(
+        estimated_http_rtt, estimated_transport_rtt,
         downstream_throughput_kbps);
 
     RecordMetricsOnMainFrameRequest();
+
+    // Post the tasks which will run in the future and record the estimation
+    // accuracy based on the observations received between now and the time of
+    // task execution. Posting the task at different intervals makes it
+    // possible to measure the accuracy by comparing the estimate with the
+    // observations received over intervals of varying durations.
+    for (const base::TimeDelta& measuring_delay :
+         GetAccuracyRecordingIntervals()) {
+      base::MessageLoop::current()->task_runner()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&NetworkQualityEstimator::RecordAccuracyAfterMainFrame,
+                     weak_ptr_factory_.GetWeakPtr(), measuring_delay),
+          measuring_delay);
+    }
   }
 
-  const base::TimeTicks now = tick_clock_->NowTicks();
   LoadTimingInfo load_timing_info;
   request.GetLoadTimingInfo(&load_timing_info);
 
@@ -422,12 +475,78 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   NotifyObserversOfRTT(http_rtt_observation);
 
   // Compare the RTT observation with the estimated value and record it.
-  if (estimated_median_network_quality_.http_rtt() !=
+  if (estimated_quality_at_last_main_frame_.http_rtt() !=
       nqe::internal::InvalidRTT()) {
     RecordHttpRTTUMA(
-        estimated_median_network_quality_.http_rtt().InMilliseconds(),
+        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds(),
         observed_http_rtt.InMilliseconds());
   }
+}
+
+void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
+    base::TimeDelta measuring_duration) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(0, measuring_duration.InMilliseconds() % 1000);
+  DCHECK(ContainsValue(GetAccuracyRecordingIntervals(), measuring_duration));
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  // Return if the time since |last_main_frame_request_| is less than
+  // |measuring_duration|. This may happen if another main frame request started
+  // during last |measuring_duration|. Returning here ensures that we do not
+  // take inaccurate readings.
+  if (now - last_main_frame_request_ < measuring_duration)
+    return;
+
+  // Return if the time since |last_main_frame_request_| is off by a factor of
+  // 2. This can happen if the task is executed much later than its scheduled
+  // time. Returning here ensures that we do not take inaccurate readings.
+  if (now - last_main_frame_request_ > 2 * measuring_duration)
+    return;
+
+  base::TimeDelta recent_http_rtt;
+  if (estimated_quality_at_last_main_frame_.http_rtt() !=
+          nqe::internal::InvalidRTT() &&
+      GetRecentHttpRTTMedian(last_main_frame_request_, &recent_http_rtt)) {
+    const int estimated_observed_diff_milliseconds =
+        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds() -
+        recent_http_rtt.InMilliseconds();
+
+    const std::string sign_suffix =
+        estimated_observed_diff_milliseconds >= 0 ? "Positive." : "Negative.";
+
+    base::HistogramBase* histogram = base::Histogram::FactoryGet(
+        "NQE.Accuracy.HttpRTT.EstimatedObservedDiff." + sign_suffix +
+            base::IntToString(measuring_duration.InSeconds()) + "." +
+            GetHistogramSuffixObservedRTT(recent_http_rtt),
+        1, 10 * 1000 /* 10 seconds */, 50 /* Number of buckets */,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->Add(std::abs(estimated_observed_diff_milliseconds));
+  }
+
+  base::TimeDelta recent_transport_rtt;
+  if (estimated_quality_at_last_main_frame_.transport_rtt() !=
+          nqe::internal::InvalidRTT() &&
+      GetRecentTransportRTTMedian(last_main_frame_request_,
+                                  &recent_transport_rtt)) {
+    const int estimated_observed_diff_milliseconds =
+        estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds() -
+        recent_transport_rtt.InMilliseconds();
+
+    const std::string sign_suffix =
+        estimated_observed_diff_milliseconds >= 0 ? "Positive." : "Negative.";
+
+    base::HistogramBase* histogram = base::Histogram::FactoryGet(
+        "NQE.Accuracy.TransportRTT.EstimatedObservedDiff." + sign_suffix +
+            base::IntToString(measuring_duration.InSeconds()) + "." +
+            GetHistogramSuffixObservedRTT(recent_transport_rtt),
+        1, 10 * 1000 /* 10 seconds */, 50 /* Number of buckets */,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->Add(std::abs(estimated_observed_diff_milliseconds));
+  }
+
+  // TODO(tbansal): Add histogram for downstream throughput and effective
+  // connection type.
 }
 
 void NetworkQualityEstimator::NotifyRequestCompleted(
@@ -565,7 +684,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   // unavailable, add the default estimates.
   if (!ReadCachedNetworkQualityEstimate())
     AddDefaultEstimates();
-  estimated_median_network_quality_ = nqe::internal::NetworkQuality();
+  estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
   throughput_analyzer_->OnConnectionTypeChanged();
   MaybeRecomputeEffectiveConnectionType();
 }
@@ -935,7 +1054,7 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
         EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE);
     UMA_HISTOGRAM_TIMES("NQE.ExternalEstimateProvider.RTT", rtt);
     rtt_observations_.AddObservation(
-        RttObservation(rtt, base::TimeTicks::Now(),
+        RttObservation(rtt, tick_clock_->NowTicks(),
                        NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE));
   }
 
@@ -946,7 +1065,7 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
                          downstream_throughput_kbps);
     downstream_throughput_kbps_observations_.AddObservation(
         ThroughputObservation(
-            downstream_throughput_kbps, base::TimeTicks::Now(),
+            downstream_throughput_kbps, tick_clock_->NowTicks(),
             NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE));
   }
 }
