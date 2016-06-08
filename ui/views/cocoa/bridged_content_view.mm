@@ -88,7 +88,8 @@ bool IsTextRTL(const ui::TextInputClient* client) {
   base::string16 text;
   return client && client->GetTextRange(&text_range) &&
          client->GetTextFromRange(text_range, &text) &&
-         base::i18n::GetStringDirection(text) == base::i18n::RIGHT_TO_LEFT;
+         base::i18n::GetFirstStrongCharacterDirection(text) ==
+             base::i18n::RIGHT_TO_LEFT;
 }
 
 // Returns the boundary rectangle for composition characters in the

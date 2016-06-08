@@ -515,21 +515,25 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     }
   }
 
-  // Sends a platform-specific move (and select) to start of line.
+  // Sends a platform-specific move (and select) to the logical start of line.
+  // Eg. this should move (and select) to the right end of line for RTL text.
   void SendHomeEvent(bool shift) {
     if (TestingNativeMac()) {
-      // Use Cmd+Left on native Mac. An RTL-agnostic "end" doesn't have a
-      // default key-binding on Mac.
-      SendKeyEvent(ui::VKEY_LEFT, shift /* shift */, true /* command */);
+      // [NSResponder moveToBeginningOfLine:] is the correct way to do this on
+      // Mac, but that doesn't have a default key binding. Since
+      // views::Textfield doesn't currently support multiple lines, the same
+      // effect can be achieved by Cmd+Up which maps to
+      // [NSResponder moveToBeginningOfDocument:].
+      SendKeyEvent(ui::VKEY_UP, shift /* shift */, true /* command */);
       return;
     }
     SendKeyEvent(ui::VKEY_HOME, shift /* shift */, false /* control */);
   }
 
-  // Sends a platform-specific move (and select) to end of line.
+  // Sends a platform-specific move (and select) to the logical end of line.
   void SendEndEvent(bool shift) {
     if (TestingNativeMac()) {
-      SendKeyEvent(ui::VKEY_RIGHT, shift, true);  // Cmd+Right.
+      SendKeyEvent(ui::VKEY_DOWN, shift, true);  // Cmd+Down.
       return;
     }
     SendKeyEvent(ui::VKEY_END, shift, false);
