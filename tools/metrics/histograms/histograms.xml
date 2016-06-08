@@ -91746,6 +91746,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="LoadStateInternalTime"/>
   <suffix name="LoadStateTime"/>
   <suffix name="ReadSavedStateTime"/>
+  <suffix name="RestoreTabPrefetchTime"/>
   <suffix name="RestoreTabTime"/>
   <suffix name="SaveStateTime"/>
   <affected-histogram name="Android.StrictMode.TabPersistentStore"/>

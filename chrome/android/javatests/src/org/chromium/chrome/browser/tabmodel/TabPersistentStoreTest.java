@@ -5,17 +5,24 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.SparseArray;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
+import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
+import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -224,13 +231,20 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
     /** Class for mocking out the directory containing all of the TabState files. */
     private TestTabModelDirectory mMockDirectory;
+    private AdvancedMockContext mAppContext;
+    private SharedPreferences mPreferences;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         loadNativeLibraryAndInitBrowserProcess();
-        mMockDirectory = new TestTabModelDirectory(getInstrumentation().getTargetContext(),
-                "TabPersistentStoreTest", Integer.toString(SELECTOR_INDEX));
+        // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
+        mAppContext = new AdvancedMockContext(
+                getInstrumentation().getTargetContext().getApplicationContext());
+        ContextUtils.initApplicationContextForTests(mAppContext);
+        mPreferences = ContextUtils.getAppSharedPreferences();
+        mMockDirectory = new TestTabModelDirectory(
+                mAppContext, "TabPersistentStoreTest", Integer.toString(SELECTOR_INDEX));
         TabPersistentStore.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
     }
 
@@ -248,13 +262,15 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         mMockDirectory.writeTabModelFiles(info, true);
 
         // Set up the TabPersistentStore.
-        Context context = getInstrumentation().getTargetContext();
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabCreator regularCreator = mockManager.getTabCreator(false);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
         TabPersistentStore store =
-                new TabPersistentStore(mockSelector, 0, context, mockManager, mockObserver);
+                new TabPersistentStore(mockSelector, 0, mAppContext, mockManager, mockObserver);
+
+        // Should not prefetch with no prior active tab preference stored.
+        assertNull(store.mPrefetchActiveTabTask);
 
         // Make sure the metadata file loads properly and in order.
         store.loadState();
@@ -275,8 +291,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         // Restore the TabStates.  The first Tab added should be the most recently selected tab.
         store.restoreTabs(true);
         regularCreator.callback.waitForCallback(0, 1);
-        assertEquals(TestTabModelDirectory.TAB_MODEL_METADATA_V4.selectedTabId,
-                regularCreator.idOfFirstCreatedTab);
+        assertEquals(info.selectedTabId, regularCreator.idOfFirstCreatedTab);
 
         // Confirm that all the TabStates were read from storage (i.e. non-null).
         mockObserver.stateLoadedCallback.waitForCallback(0, 1);
@@ -295,12 +310,11 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
         // Load up one TabPersistentStore, but don't load up the TabState files.  This prevents the
         // Tabs from being added to the TabModel.
-        Context context = getInstrumentation().getTargetContext();
         MockTabModelSelector firstSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager firstManager = new MockTabCreatorManager(firstSelector);
         MockTabPersistentStoreObserver firstObserver = new MockTabPersistentStoreObserver();
         final TabPersistentStore firstStore = new TabPersistentStore(
-                firstSelector, 0, context, firstManager, firstObserver);
+                firstSelector, 0, mAppContext, firstManager, firstObserver);
         firstStore.loadState();
         firstObserver.initializedCallback.waitForCallback(0, 1);
         assertEquals(numExpectedTabs, firstObserver.mTabCountAtStartup);
@@ -319,7 +333,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabCreator secondCreator = secondManager.getTabCreator(false);
         MockTabPersistentStoreObserver secondObserver = new MockTabPersistentStoreObserver();
         TabPersistentStore secondStore = new TabPersistentStore(
-                secondSelector, 0, context, secondManager, secondObserver);
+                secondSelector, 0, mAppContext, secondManager, secondObserver);
 
         // The second TabPersistentStore reads the file written by the first TabPersistentStore.
         // Make sure that all of the Tabs appear in the new one -- even though the new file was
@@ -372,12 +386,11 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         }
 
         // Initialize the classes.
-        Context context = getInstrumentation().getTargetContext();
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
         TabPersistentStore store =
-                new TabPersistentStore(mockSelector, 0, context, mockManager, mockObserver);
+                new TabPersistentStore(mockSelector, 0, mAppContext, mockManager, mockObserver);
 
         // Make sure the metadata file loads properly and in order.
         store.loadState();
@@ -418,8 +431,8 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
-        TabPersistentStore store = new TabPersistentStore(mockSelector, 0,
-                getInstrumentation().getTargetContext(), mockManager, mockObserver);
+        TabPersistentStore store =
+                new TabPersistentStore(mockSelector, 0, mAppContext, mockManager, mockObserver);
 
         // Load the TabModel metadata.
         store.loadState();
@@ -436,6 +449,43 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         mockObserver.stateLoadedCallback.waitForCallback(0, 1);
         assertEquals(info.numRegularTabs, mockSelector.getModel(false).getCount());
         assertEquals(0, mockSelector.getModel(true).getCount());
+    }
+
+    @SmallTest
+    public void testPrefetchActiveTab() throws Exception {
+        final TabModelMetaDataInfo info = TestTabModelDirectory.TAB_MODEL_METADATA_V5_NO_M18;
+        mMockDirectory.writeTabModelFiles(info, true);
+
+        // Set to pre-fetch
+        mPreferences.edit().putInt(
+                TabPersistentStore.PREF_ACTIVE_TAB_ID, info.selectedTabId).apply();
+
+        // Initialize the classes.
+        MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
+        MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
+        MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
+        final TabPersistentStore store =
+                new TabPersistentStore(mockSelector, 0, mAppContext, mockManager, mockObserver);
+
+        assertNotNull(store.mPrefetchActiveTabTask);
+
+        store.loadState();
+        store.restoreTabs(true);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Confirm that the pre-fetched active tab state was used, must be done here on the
+                // UI thread as the message to finish the task is posted here.
+                assertEquals(AsyncTask.Status.FINISHED, store.mPrefetchActiveTabTask.getStatus());
+
+                // Confirm that the correct active tab ID is updated when saving state.
+                mPreferences.edit().putInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1);
+                store.saveState();
+                assertEquals(info.selectedTabId,
+                        mPreferences.getInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1));
+            }
+        });
     }
 
     /**
@@ -506,8 +556,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
     private TestTabModelSelector createAndRestoreRealTabModelImpls(TabModelMetaDataInfo info)
             throws Exception {
-        Context context = getInstrumentation().getTargetContext();
-        TestTabModelSelector selector = new TestTabModelSelector(context);
+        TestTabModelSelector selector = new TestTabModelSelector(mAppContext);
 
         TabPersistentStore store = selector.mTabPersistentStore;
         MockTabPersistentStoreObserver mockObserver = selector.mTabPersistentStoreObserver;

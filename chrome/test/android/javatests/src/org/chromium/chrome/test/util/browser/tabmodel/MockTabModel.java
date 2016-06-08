@@ -51,6 +51,9 @@ public class MockTabModel extends EmptyTabModel {
             mTabs.add(tab);
         } else {
             mTabs.add(index, tab);
+            if (index <= mIndex) {
+                mIndex++;
+            }
         }
     }
 

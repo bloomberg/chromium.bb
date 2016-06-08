@@ -100,6 +100,10 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         TabPersistentStore store = new TabPersistentStore(selector, 0, mAppContext, null, null);
         store.waitForMigrationToFinish();
 
+        // Make sure we don't hit the migration path again.
+        assertTrue(ContextUtils.getAppSharedPreferences().getBoolean(
+                TabPersistentStore.PREF_HAS_RUN_FILE_MIGRATION, false));
+
         // Check that the files were moved.
         File newDir = TabPersistentStore.getOrCreateSelectorStateDirectory(0);
         File newStateFile = new File(newDir, TabPersistentStore.SAVED_STATE_FILE);

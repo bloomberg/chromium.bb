@@ -64,11 +64,16 @@ public class TabPersistentStore extends TabPersister {
     @VisibleForTesting
     public static final String SAVED_STATE_FILE = "tab_state";
 
+    @VisibleForTesting
+    static final String PREF_ACTIVE_TAB_ID =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.ACTIVE_TAB_ID";
+
+    @VisibleForTesting
+    static final String PREF_HAS_RUN_FILE_MIGRATION =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_RUN_FILE_MIGRATION";
+
     private static final String PREF_HAS_COMPUTED_MAX_ID =
             "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_COMPUTED_MAX_ID";
-
-    private static final String PREF_HAS_RUN_FILE_MIGRATION =
-            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_RUN_FILE_MIGRATION";
 
     /** Prevents two copies of the Migration task from being created. */
     private static final Object MIGRATION_LOCK = new Object();
@@ -172,7 +177,10 @@ public class TabPersistentStore extends TabPersister {
     private SparseIntArray mIncognitoTabsRestored;
 
     private SharedPreferences mPreferences;
-    private AsyncTask<Void, Void, DataInputStream> mPrefetchSaveStateTask;
+    private AsyncTask<Void, Void, DataInputStream> mPrefetchTabListTask;
+
+    @VisibleForTesting
+    AsyncTask<Void, Void, TabState> mPrefetchActiveTabTask;
 
 
     /**
@@ -195,7 +203,8 @@ public class TabPersistentStore extends TabPersister {
         mObserver = observer;
         mPreferences = ContextUtils.getAppSharedPreferences();
         startMigrationTaskIfNecessary();
-        startPrefetchTask();
+        startPrefetchTabListTask();
+        startPrefetchActiveTabTask();
     }
 
     @Override
@@ -346,7 +355,7 @@ public class TabPersistentStore extends TabPersister {
             assert mTabModelSelector.getModel(false).getCount() == 0;
             checkAndUpdateMaxTabId();
             long timeWaitingForPrefetch = SystemClock.elapsedRealtime();
-            DataInputStream stream = mPrefetchSaveStateTask.get();
+            DataInputStream stream = mPrefetchTabListTask.get();
             logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
             readSavedStateFile(stream,
                     createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected()));
@@ -426,13 +435,22 @@ public class TabPersistentStore extends TabPersister {
 
     private void restoreTab(TabRestoreDetails tabToRestore, boolean setAsActive) {
         // As we do this in startup, and restoring the active tab's state is critical, we permit
-        // this read.
-        // TODO(joth): An improved solution would be to pre-read the files on a background and
-        // block here waiting for that task to complete only if needed. See http://b/5518170
+        // this read in the event that the prefetch task is not available. Either:
+        // 1. The user just upgraded, has not yet set the new active tab id pref yet. Or
+        // 2. restoreTab is used to preempt async queue and restore immediately on the UI thread.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             long time = SystemClock.elapsedRealtime();
-            TabState state = TabState.restoreTabState(getStateDirectory(), tabToRestore.id);
+            TabState state;
+            int restoredTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
+            if (restoredTabId == tabToRestore.id && mPrefetchActiveTabTask != null) {
+                long timeWaitingForPrefetch = SystemClock.elapsedRealtime();
+                state = mPrefetchActiveTabTask.get();
+                logExecutionTime("RestoreTabPrefetchTime", timeWaitingForPrefetch);
+            } else {
+                // Necessary to do on the UI thread as a last resort.
+                state = TabState.restoreTabState(getStateDirectory(), tabToRestore.id);
+            }
             logExecutionTime("RestoreTabTime", time);
             restoreTab(tabToRestore, state, setAsActive);
         } catch (Exception e) {
@@ -623,6 +641,16 @@ public class TabPersistentStore extends TabPersister {
             normalInfo.ids.add(normalModel.getTabAt(i).getId());
             normalInfo.urls.add(normalModel.getTabAt(i).getUrl());
         }
+
+        // Cache the active tab id to be pre-loaded next launch.
+        int activeTabId = Tab.INVALID_TAB_ID;
+        int activeIndex = normalModel.index();
+        if (activeIndex != TabList.INVALID_TAB_INDEX) {
+            activeTabId = normalModel.getTabAt(activeIndex).getId();
+        }
+        // Always override the existing value in case there is no active tab.
+        ContextUtils.getAppSharedPreferences().edit().putInt(
+                PREF_ACTIVE_TAB_ID, activeTabId).apply();
 
         return serializeMetadata(normalInfo, incognitoInfo, tabsBeingRestored);
     }
@@ -1096,8 +1124,8 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    private void startPrefetchTask() {
-        mPrefetchSaveStateTask = new AsyncTask<Void, Void, DataInputStream>() {
+    private void startPrefetchTabListTask() {
+        mPrefetchTabListTask = new AsyncTask<Void, Void, DataInputStream>() {
             @Override
             protected DataInputStream doInBackground(Void... params) {
                 // This getStateDirectory should be the first call and will cache the result.
@@ -1115,6 +1143,17 @@ public class TabPersistentStore extends TabPersister {
                     StreamUtil.closeQuietly(stream);
                 }
                 return new DataInputStream(new ByteArrayInputStream(data));
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void startPrefetchActiveTabTask() {
+        final int activeTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
+        if (activeTabId == Tab.INVALID_TAB_ID) return;
+        mPrefetchActiveTabTask = new AsyncTask<Void, Void, TabState>() {
+            @Override
+            protected TabState doInBackground(Void... params) {
+                return TabState.restoreTabState(getStateDirectory(), activeTabId);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
