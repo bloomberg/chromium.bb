@@ -202,7 +202,7 @@ template("mac_toolchain") {
       depend_output = tocname
 
       if (enable_dsyms) {
-        outputs += [ dylib + ".dSYM/" ]
+        outputs += [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/" ]
       }
     }
 
@@ -233,7 +233,7 @@ template("mac_toolchain") {
       ]
 
       if (enable_dsyms) {
-        outputs += [ sofile + ".dSYM/" ]
+        outputs += [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/" ]
       }
     }
 
@@ -257,7 +257,7 @@ template("mac_toolchain") {
       ]
 
       if (enable_dsyms) {
-        outputs += [ outfile + ".dSYM/" ]
+        outputs += [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM/" ]
       }
 
       default_output_dir = "{{root_out_dir}}"
