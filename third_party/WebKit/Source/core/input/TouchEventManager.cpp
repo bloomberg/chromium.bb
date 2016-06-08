@@ -193,7 +193,7 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
             if (touchStartOrFirstTouchMove && touchInfos.size() == 1 && event.cancelable() && m_frame->isMainFrame()) {
 
                 // Record the disposition and latency of touch starts and first touch moves before and after the page is fully loaded respectively.
-                int64_t latencyInMicros = static_cast<int64_t>((currentTime() - event.timestamp()) * 1000000.0);
+                int64_t latencyInMicros = static_cast<int64_t>((monotonicallyIncreasingTime() - event.timestamp()) * 1000000.0);
                 if (m_frame->document()->isLoadCompleted()) {
                     DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsAfterPageLoadHistogram, ("Event.Touch.TouchDispositionsAfterPageLoad", TouchEventDispatchResultTypeMax));
                     touchDispositionsAfterPageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
