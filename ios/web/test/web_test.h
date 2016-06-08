@@ -86,6 +86,7 @@ class WebTestWithWebController : public WebTest,
 
   // Returns web state for this web controller.
   web::WebState* web_state();
+  const web::WebState* web_state() const;
 
   // The web controller for testing.
   base::WeakNSObject<CRWWebController> webController_;
