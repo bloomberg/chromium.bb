@@ -224,7 +224,7 @@ testcase.hideGoogleDocs = function() {
     },
     // Open the gear meny by a shortcut (Alt-E).
     function() {
-      remoteCall.fakeKeyDown(appId, 'body', 'U+0045', false, false, true)
+      remoteCall.fakeKeyDown(appId, 'body', 'e', 'U+0045', false, false, true)
           .then(this.next);
     },
     // Wait for menu to appear.

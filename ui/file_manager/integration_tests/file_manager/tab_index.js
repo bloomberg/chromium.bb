@@ -23,7 +23,7 @@ testcase.searchBoxFocus = function() {
     function(element) {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['body', 'U+0046', true, false, false],
+          ['body', 'f', 'U+0046', true, false, false],
           this.next);
     },
     // Check that the search box has the focus.
@@ -35,7 +35,7 @@ testcase.searchBoxFocus = function() {
     function(element) {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#search-box input', 'U+001B', false, false, false],
+          ['#search-box input', 'Escape', 'U+001B', false, false, false],
           this.next);
     },
     // Check that the file list has the focus.
@@ -270,7 +270,8 @@ function tabindexFocus(dialogParams, volumeName, expectedSet, initialize,
     promise = promise.then(function() {
       // Closes the window by pressing Enter.
       return remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['#file-list', 'Enter', false, false, false]);
+          'fakeKeyDown', appId, ['#file-list', 'Enter', 'Enter', false, false,
+                                 false]);
     });
 
     return promise;

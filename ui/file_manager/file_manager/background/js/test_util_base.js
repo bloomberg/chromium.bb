@@ -336,6 +336,7 @@ test.util.sync.fakeEvent = function(contentWindow,
  * @param {Window} contentWindow Window to be tested.
  * @param {?string} targetQuery Query to specify the element. If this value is
  *     null, key event is dispatched to active element of the document.
+ * @param {string} key DOM UI Events key value.
  * @param {string} keyIdentifier Identifier of the emulated key.
  * @param {boolean} ctrl Whether CTRL should be pressed, or not.
  * @param {boolean} shift whether SHIFT should be pressed, or not.
@@ -344,11 +345,12 @@ test.util.sync.fakeEvent = function(contentWindow,
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.fakeKeyDown = function(
-    contentWindow, targetQuery, keyIdentifier, ctrl, shift, alt,
+    contentWindow, targetQuery, key, keyIdentifier, ctrl, shift, alt,
     opt_iframeQuery) {
   var event = new KeyboardEvent('keydown',
       {
         bubbles: true,
+        key: key,
         keyIdentifier: keyIdentifier,
         ctrlKey: ctrl,
         shiftKey: shift,

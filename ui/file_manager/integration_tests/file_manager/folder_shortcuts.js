@@ -299,7 +299,7 @@ testcase.traverseFolderShortcuts = function() {
     // Shortcut to C should be selected.
     function() {
       remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#file-list', 'U+0034', true, false, false], this.next);
+          ['#file-list', '4', 'U+0034', true, false, false], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -311,7 +311,7 @@ testcase.traverseFolderShortcuts = function() {
     // Shortcut to C should be selected.
     function() {
       remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#directory-tree', 'Up', false, false, false], this.next);
+          ['#directory-tree', 'ArrowUp', 'Up', false, false, false], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -322,7 +322,8 @@ testcase.traverseFolderShortcuts = function() {
     // Current directory should be C.
     function() {
       remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#directory-tree', 'Enter', false, false, false], this.next);
+          ['#directory-tree', 'Enter', 'Enter', false, false, false],
+           this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);

@@ -94,7 +94,7 @@ function cropImage(testVolumeName, volumeType) {
         }).
         then(function() {
           return gallery.fakeKeyDown(
-              appId, 'body', 'Enter', false, false, false);
+              appId, 'body', 'Enter', 'Enter', false, false, false);
         }).
         then(function(ret) {
           chrome.test.assertTrue(ret);
@@ -159,7 +159,8 @@ function exposureImage(testVolumeName, volumeType) {
       origMetadata = metadata;
 
       // Push the Enter key.
-      return gallery.fakeKeyDown(appId, 'body', 'Enter', false, false, false);
+      return gallery.fakeKeyDown(appId, 'body', 'Enter', 'Enter', false, false,
+                                 false);
     }).then(function() {
       // Wait until the image is updated.
       return repeatUntil(function() {

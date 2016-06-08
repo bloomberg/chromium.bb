@@ -145,7 +145,7 @@ function navigateToDestinationDirectoryAndTestPaste(windowId) {
   }).then(function() {
     // Paste
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-        ['body', 'U+0056' /* v */, true /* ctrl */, false, false]);
+        ['body', 'v', 'U+0056' /* v */, true /* ctrl */, false, false]);
   }).then(function() {
     // Confirm the photos directory is pasted correctly.
     return remoteCall.waitForFiles(windowId, ITEMS_IN_DEST_DIR_AFTER_PASTE,
@@ -160,7 +160,7 @@ function renamePhotosDirectoryTo(windowId, newName, useKeyboardShortcut) {
   return (useKeyboardShortcut ?
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', windowId,
-          ['body', 'Enter', true /* ctrl */, false, false]) :
+          ['body', 'Enter', 'Enter', true /* ctrl */, false, false]) :
       clickDirectoryTreeContextMenuItem(windowId, '/photos', 'rename')
       ).then(function() {
     return remoteCall.waitForElement(windowId, '.tree-row > input');
@@ -170,7 +170,7 @@ function renamePhotosDirectoryTo(windowId, newName, useKeyboardShortcut) {
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
         'fakeKeyDown', windowId,
-        ['.tree-row > input', 'Enter', false, false, false]);
+        ['.tree-row > input', 'Enter', 'Enter', false, false, false]);
   });
 }
 
@@ -224,7 +224,7 @@ function createDirectoryFromDirectoryTree(
   }).then(function() {
     if (useKeyboardShortcut) {
       return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['body', 'U+0045' /* e */, true /* ctrl */, false, false]);
+          ['body', 'e', 'U+0045' /* e */, true /* ctrl */, false, false]);
     } else {
       return clickDirectoryTreeContextMenuItem(
           windowId, '/photos', 'new-folder');
@@ -237,7 +237,7 @@ function createDirectoryFromDirectoryTree(
   }).then(function() {
     return remoteCall.callRemoteTestUtil(
         'fakeKeyDown', windowId,
-        ['.tree-row > input', 'Enter', false, false, false]);
+        ['.tree-row > input', 'Enter', 'Enter', false, false, false]);
   }).then(function() {
     // Confirm that new directory is added to the directory tree.
     return remoteCall.waitForElement(
@@ -279,7 +279,7 @@ testcase.copyFromDirectoryTreeWithKeyboardShortcut = function() {
   }).then(function() {
     // Press Ctrl+C.
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-        ['body', 'U+0043' /* c */, true /* ctrl */, false, false]);
+        ['body', 'c', 'U+0043' /* c */, true /* ctrl */, false, false]);
   }).then(function() {
     return navigateToDestinationDirectoryAndTestPaste(windowId);
   }));
@@ -332,7 +332,7 @@ testcase.cutFromDirectoryTreeWithKeyboardShortcut = function() {
   }).then(function() {
     // Press Ctrl+X.
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-        ['body', 'U+0058' /* x */, true /* ctrl */, false, false]);
+        ['body', 'x', 'U+0058' /* x */, true /* ctrl */, false, false]);
   }).then(function() {
     return navigateToDestinationDirectoryAndTestPaste(windowId);
   }).then(function() {
@@ -372,7 +372,7 @@ testcase.pasteIntoFolderFromDirectoryTreeWithContextMenu = function() {
     return navigateWithDirectoryTree(windowId, '/photos');
   }).then(function() {
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-        ['body', 'U+0043' /* c */, true /* ctrl */, false, false]);
+        ['body', 'c', 'U+0043' /* c */, true /* ctrl */, false, false]);
   }).then(function() {
     return navigateWithDirectoryTree(windowId, '/destination');
   }).then(function() {

@@ -209,7 +209,7 @@ testcase.clickFirstSearchResult = function() {
       appId = id;
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#autocomplete-list', 'Down', false, false, false],
+          ['#autocomplete-list', 'ArrowDown', 'Down', false, false, false],
           this.next);
     },
     function(result) {
@@ -260,7 +260,7 @@ testcase.pressEnterToSearch = function() {
     function(result) {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#search-box input', 'Enter', false, false, false],
+          ['#search-box input', 'Enter', 'Enter', false, false, false],
           this.next);
     },
     function(result) {

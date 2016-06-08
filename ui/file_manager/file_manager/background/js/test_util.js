@@ -68,13 +68,13 @@ test.util.sync.getFileList = function(contentWindow) {
 test.util.sync.selectFile = function(contentWindow, filename) {
   var rows = contentWindow.document.querySelectorAll('#detail-table li');
   test.util.sync.fakeKeyDown(
-      contentWindow, '#file-list', 'Home', false, false, false);
+      contentWindow, '#file-list', 'Home', 'Home', false, false, false);
   for (var index = 0; index < rows.length; ++index) {
     var selection = test.util.sync.getSelectedFiles(contentWindow);
     if (selection.length === 1 && selection[0] === filename)
       return true;
     test.util.sync.fakeKeyDown(
-        contentWindow, '#file-list', 'Down', false, false, false);
+        contentWindow, '#file-list', 'ArrowDown', 'Down', false, false, false);
   }
   console.error('Failed to select file "' + filename + '"');
   return false;
@@ -187,9 +187,9 @@ test.util.sync.copyFile = function(contentWindow, filename) {
     return false;
   // Ctrl+C and Ctrl+V
   test.util.sync.fakeKeyDown(
-      contentWindow, '#file-list', 'U+0043', true, false, false);
+      contentWindow, '#file-list', 'w', 'U+0043', true, false, false);
   test.util.sync.fakeKeyDown(
-      contentWindow, '#file-list', 'U+0056', true, false, false);
+      contentWindow, '#file-list', 'v', 'U+0056', true, false, false);
   return true;
 };
 
@@ -206,7 +206,7 @@ test.util.sync.deleteFile = function(contentWindow, filename) {
     return false;
   // Delete
   test.util.sync.fakeKeyDown(
-      contentWindow, '#file-list', 'U+007F', false, false, false);
+      contentWindow, '#file-list', 'Delete', 'U+007F', false, false, false);
   return true;
 };
 

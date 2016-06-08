@@ -53,7 +53,7 @@ function openFileDialog(volumeName, expectedSet) {
             return remoteCall.callRemoteTestUtil(
                 'fakeKeyDown',
                 windowId,
-                ['#file-list', 'U+001B', false, false, false]);
+                ['#file-list', 'Escape', 'U+001B', false, false, false]);
           });
         });
   }).then(function(result) {
