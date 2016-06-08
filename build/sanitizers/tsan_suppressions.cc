@@ -105,10 +105,6 @@ char kTSanDefaultSuppressions[] =
 "race:base::trace_event::"
     "TraceEventTestFixture_TraceSamplingScope_Test::TestBody\n"
 
-// http://crbug.com/258479
-"race:SamplingStateScope\n"
-"race:g_trace_state\n"
-
 // http://crbug.com/258499
 "race:third_party/skia/include/core/SkRefCnt.h\n"
 
