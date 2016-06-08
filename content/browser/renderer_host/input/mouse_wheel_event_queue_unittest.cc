@@ -145,7 +145,7 @@ class MouseWheelEventQueueTest : public testing::Test,
   MouseWheelEventQueueTest()
       : acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
-    SetUpForGestureTesting(false);
+    queue_.reset(new MouseWheelEventQueue(this, kScrollEndTimeoutMs));
   }
 
   ~MouseWheelEventQueueTest() override {}
@@ -176,11 +176,6 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
  protected:
-  void SetUpForGestureTesting(bool send_gestures) {
-    queue_.reset(
-        new MouseWheelEventQueue(this, send_gestures, kScrollEndTimeoutMs));
-  }
-
   size_t queued_event_count() const { return queue_->queued_size(); }
 
   bool event_in_flight() const { return queue_->event_in_flight(); }
@@ -435,28 +430,23 @@ TEST_F(MouseWheelEventQueueTest, Basic) {
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureSending) {
-  SetUpForGestureTesting(true);
   GestureSendingTest(false);
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureSendingPrecisePixels) {
-  SetUpForGestureTesting(true);
   GestureSendingTest(false);
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureSendingWithPhaseInformation) {
-  SetUpForGestureTesting(true);
   PhaseGestureSendingTest(false);
 }
 
 TEST_F(MouseWheelEventQueueTest,
        GestureSendingWithPhaseInformationPrecisePixels) {
-  SetUpForGestureTesting(true);
   PhaseGestureSendingTest(true);
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
-  SetUpForGestureTesting(true);
   const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::Pixels;
 
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
@@ -519,7 +509,6 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
 }
 
 TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
-  SetUpForGestureTesting(true);
   const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::Pixels;
 
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,

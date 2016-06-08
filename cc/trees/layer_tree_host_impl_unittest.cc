@@ -763,39 +763,16 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   DrawFrame();
 
-  // With registered event handlers, wheel scrolls don't necessarily
-  // have to go to the main thread.
+  // Wheel handlers determine whether mouse events block scroll.
   host_impl_->active_tree()->set_event_listener_properties(
       EventListenerClass::kMouseWheel, EventListenerProperties::kBlocking);
+  EXPECT_EQ(
+      EventListenerProperties::kBlocking,
+      host_impl_->GetEventListenerProperties(EventListenerClass::kMouseWheel));
+
+  // But they don't influence the actual handling of the scroll gestures.
   InputHandler::ScrollStatus status =
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                                   InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
-            status.main_thread_scrolling_reasons);
-
-  host_impl_->active_tree()->set_event_listener_properties(
-      EventListenerClass::kMouseWheel,
-      EventListenerProperties::kBlockingAndPassive);
-  status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                                   InputHandler::WHEEL);
-  EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
-            status.main_thread_scrolling_reasons);
-
-  // But gesture scrolls can still be handled.
-  status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                                   InputHandler::TOUCHSCREEN);
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
-            status.main_thread_scrolling_reasons);
-  host_impl_->ScrollEnd(EndState().get());
-
-  // And if the handlers go away, wheel scrolls can again be processed
-  // on impl.
-  host_impl_->active_tree()->set_event_listener_properties(
-      EventListenerClass::kMouseWheel, EventListenerProperties::kNone);
-  status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                    InputHandler::WHEEL);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,

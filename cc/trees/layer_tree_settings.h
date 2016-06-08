@@ -94,7 +94,6 @@ class CC_EXPORT LayerTreeSettings {
   bool image_decode_tasks_enabled = false;
   bool wait_for_beginframe_interval = true;
   bool abort_commit_before_output_surface_creation = true;
-  bool use_mouse_wheel_gestures = false;
   bool use_layer_lists = false;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
   ManagedMemoryPolicy memory_policy_;

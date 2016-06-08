@@ -385,10 +385,6 @@ class InputHandlerProxyTest
     input_handler_->smooth_scroll_enabled_ = value;
   }
 
-  void SetMouseWheelGesturesOn(bool value) {
-    input_handler_->set_use_gesture_events_for_mouse_wheel(value);
-  }
-
   base::HistogramTester& histogram_tester() {
     return histogram_tester_;
   }
@@ -407,28 +403,6 @@ class InputHandlerProxyTest
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   cc::InputHandlerScrollResult scroll_result_did_not_scroll_;
 };
-
-TEST_P(InputHandlerProxyTest, MouseWheelByPageMainThread) {
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  SetMouseWheelGesturesOn(false);
-  WebMouseWheelEvent wheel;
-  wheel.type = WebInputEvent::MouseWheel;
-  wheel.scrollByPage = true;
-
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-  VERIFY_AND_RESET_MOCKS();
-}
-
-TEST_P(InputHandlerProxyTest, MouseWheelWithCtrlNotScroll) {
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
-  SetMouseWheelGesturesOn(false);
-  WebMouseWheelEvent wheel;
-  wheel.type = WebInputEvent::MouseWheel;
-  wheel.modifiers = WebInputEvent::ControlKey;
-  wheel.canScroll = false;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-  VERIFY_AND_RESET_MOCKS();
-}
 
 TEST_P(InputHandlerProxyTest, MouseWheelNoListener) {
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
@@ -465,59 +439,6 @@ TEST_P(InputHandlerProxyTest, MouseWheelBlockingListener) {
   WebMouseWheelEvent wheel;
   wheel.type = WebInputEvent::MouseWheel;
   wheel.modifiers = WebInputEvent::ControlKey;
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-  VERIFY_AND_RESET_MOCKS();
-}
-
-// Mac does not smooth scroll wheel events (crbug.com/574283).
-#if !defined(OS_MACOSX)
-TEST_P(InputHandlerProxyTest, MouseWheelWithPreciseScrollingDeltas) {
-#else
-TEST_P(InputHandlerProxyTest, DISABLED_MouseWheelWithPreciseScrollingDeltas) {
-#endif
-  SetSmoothScrollEnabled(true);
-  SetMouseWheelGesturesOn(false);
-  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
-  WebMouseWheelEvent wheel;
-  wheel.type = WebInputEvent::MouseWheel;
-
-  VERIFY_AND_RESET_MOCKS();
-
-  // Smooth scroll because hasPreciseScrollingDeltas is set to false.
-  wheel.hasPreciseScrollingDeltas = false;
-  EXPECT_CALL(mock_input_handler_, ScrollAnimated(::testing::_, ::testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-
-  VERIFY_AND_RESET_MOCKS();
-
-  // No smooth scroll because hasPreciseScrollingDeltas is set to true.
-  wheel.hasPreciseScrollingDeltas = true;
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, ScrollBy(::testing::_))
-      .WillOnce(testing::Return(scroll_result_did_scroll_));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
-
-  VERIFY_AND_RESET_MOCKS();
-}
-
-// Mac does not smooth scroll wheel events (crbug.com/574283).
-#if !defined(OS_MACOSX)
-TEST_P(InputHandlerProxyTest, MouseWheelScrollIgnored) {
-#else
-TEST_P(InputHandlerProxyTest, DISABLED_MouseWheelScrollIgnored) {
-#endif
-  SetSmoothScrollEnabled(true);
-  SetMouseWheelGesturesOn(false);
-  expected_disposition_ = InputHandlerProxy::DROP_EVENT;
-  WebMouseWheelEvent wheel;
-  wheel.type = WebInputEvent::MouseWheel;
-
-  EXPECT_CALL(mock_input_handler_, ScrollAnimated(testing::_, testing::_))
-      .WillOnce(testing::Return(kScrollIgnoredScrollState));
-
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
   VERIFY_AND_RESET_MOCKS();
 }

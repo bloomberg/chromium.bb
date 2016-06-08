@@ -50,7 +50,6 @@
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -2009,8 +2008,7 @@ void RenderViewImpl::initializeLayerTreeView() {
     if (input_handler_manager) {
       input_handler_manager->AddInputHandler(
           GetRoutingID(), rwc->GetInputHandler(), AsWeakPtr(),
-          webkit_preferences_.enable_scroll_animator,
-          UseGestureBasedWheelScrolling());
+          webkit_preferences_.enable_scroll_animator);
     }
   }
 }

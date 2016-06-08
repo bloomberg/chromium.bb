@@ -329,8 +329,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool LockMouse() override;
   void UnlockMouse() override;
-  void WheelEventAck(const blink::WebMouseWheelEvent& event,
-                     InputEventAckState ack_result) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 

@@ -60,10 +60,6 @@ class EventSender {
 
   void DoDragDrop(const blink::WebDragData&, blink::WebDragOperationsMask);
 
-  void set_send_wheel_gestures(bool send_wheel_gestures) {
-    send_wheel_gestures_ = send_wheel_gestures;
-  }
-
  private:
   friend class EventSenderBindings;
 
@@ -255,7 +251,6 @@ class EventSender {
   const blink::WebView* view() const;
   blink::WebView* view();
 
-  bool send_wheel_gestures_;
   bool force_layout_on_events_;
 
   // When set to true (the default value), we batch mouse move and mouse up

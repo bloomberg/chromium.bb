@@ -266,19 +266,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::TearDown();
   }
 
-  void SetupForWheelGestures(bool enable_wheel_gestures) {
-    CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableWheelGestures));
-    CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableWheelGestures));
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        enable_wheel_gestures ? switches::kEnableWheelGestures
-                              : switches::kDisableWheelGestures);
-    // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
-    rwhv_mac_ = new RenderWidgetHostViewMac(rvh()->GetWidget(), false);
-    rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
-  }
-
   void RecycleAndWait() {
     pool_.Recycle();
     base::MessageLoop::current()->RunUntilIdle();
@@ -933,66 +920,8 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   host->ShutdownAndDestroyWidget(true);
 }
 
-TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
-  SetupForWheelGestures(false);
-
-  // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
-  // the MockRenderProcessHost that is set up by the test harness which mocks
-  // out |OnMessageReceived()|.
-  TestBrowserContext browser_context;
-  MockRenderProcessHost* process_host =
-      new MockRenderProcessHost(&browser_context);
-  process_host->Init();
-  MockRenderWidgetHostDelegate delegate;
-  int32_t routing_id = process_host->GetNextRoutingID();
-  MockRenderWidgetHostImpl* host =
-      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
-  process_host->sink().ClearMessages();
-
-  // Add a delegate to the view.
-  base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
-      [[MockRenderWidgetHostViewMacDelegate alloc] init]);
-  view->SetDelegate(view_delegate.get());
-
-  // Send an initial wheel event for scrolling by 3 lines.
-  NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 3);
-  [view->cocoa_view() scrollWheel:event1];
-  ASSERT_EQ(1U, process_host->sink().message_count());
-  process_host->sink().ClearMessages();
-
-  // Indicate that the wheel event was unhandled.
-  InputEventAck unhandled_ack(blink::WebInputEvent::MouseWheel,
-                              INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  std::unique_ptr<IPC::Message> response1(
-      new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
-  host->OnMessageReceived(*response1);
-
-  // Check that the view delegate got an unhandled wheel event.
-  ASSERT_EQ(YES, view_delegate.get().unhandledWheelEventReceived);
-  view_delegate.get().unhandledWheelEventReceived = NO;
-
-  // Send another wheel event, this time for scrolling by 0 lines (empty event).
-  NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseChanged), 0);
-  [view->cocoa_view() scrollWheel:event2];
-  ASSERT_EQ(1U, process_host->sink().message_count());
-
-  // Indicate that the wheel event was also unhandled.
-  std::unique_ptr<IPC::Message> response2(
-      new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
-  host->OnMessageReceived(*response2);
-
-  // Check that the view delegate ignored the empty unhandled wheel event.
-  ASSERT_EQ(NO, view_delegate.get().unhandledWheelEventReceived);
-
-  // Clean up.
-  host->ShutdownAndDestroyWidget(true);
-}
-
 TEST_F(RenderWidgetHostViewMacTest,
        IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
-  SetupForWheelGestures(true);
-
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.

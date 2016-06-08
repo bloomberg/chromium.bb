@@ -239,7 +239,6 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       has_fling_animation_started_(false),
       smooth_scroll_enabled_(false),
       uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
-      use_gesture_events_for_mouse_wheel_(true),
       touch_start_result_(kEventDispositionUndefined) {
   DCHECK(client);
   input_handler_->BindToClient(this);
@@ -450,7 +449,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
   if (!wheel_event.hasPreciseScrollingDeltas && fling_curve_)
     CancelCurrentFling();
 
-  if (use_gesture_events_for_mouse_wheel_) {
     cc::EventListenerProperties properties =
         input_handler_->GetEventListenerProperties(
             cc::EventListenerClass::kMouseWheel);
@@ -466,8 +464,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
         NOTREACHED();
         return DROP_EVENT;
     }
-  }
-  return ScrollByMouseWheel(wheel_event);
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
