@@ -100,6 +100,7 @@ class CC_EXPORT LayerTreeSettings {
   ManagedMemoryPolicy memory_policy_;
   size_t gpu_decoded_image_budget_bytes = 96 * 1024 * 1024;
   size_t software_decoded_image_budget_bytes = 128 * 1024 * 1024;
+  int max_preraster_distance_in_screen_pixels = 1000;
 
   // If set to true, the display item list will internally cache a SkPicture for
   // raster rather than directly using the display items.

@@ -307,7 +307,8 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
 TileManager::TileManager(TileManagerClient* client,
                          base::SequencedTaskRunner* task_runner,
                          size_t scheduled_raster_task_limit,
-                         bool use_partial_raster)
+                         bool use_partial_raster,
+                         int max_preraster_distance_in_screen_pixels)
     : client_(client),
       task_runner_(task_runner),
       resource_pool_(nullptr),
@@ -328,6 +329,8 @@ TileManager::TileManager(TileManagerClient* client,
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
       next_tile_id_(0u),
+      max_preraster_distance_in_screen_pixels_(
+          max_preraster_distance_in_screen_pixels),
       task_set_finished_weak_ptr_factory_(this) {}
 
 TileManager::~TileManager() {
@@ -358,6 +361,10 @@ void TileManager::FinishTasksAndCleanUp() {
   more_tiles_need_prepare_check_notifier_.Cancel();
   signals_check_notifier_.Cancel();
   task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
+
+  for (auto& draw_image_pair : locked_images_)
+    image_decode_controller_->UnrefImage(draw_image_pair.first);
+  locked_images_.clear();
 }
 
 void TileManager::SetResources(ResourcePool* resource_pool,
@@ -468,17 +475,16 @@ bool TileManager::PrepareTiles(
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
 
-  std::vector<PrioritizedTile> tiles_that_need_to_be_rasterized =
-      AssignGpuMemoryToTiles();
+  PrioritizedWorkToSchedule prioritized_work = AssignGpuMemoryToTiles();
 
   // Inform the client that will likely require a draw if the highest priority
   // tile that will be rasterized is required for draw.
   client_->SetIsLikelyToRequireADraw(
-      !tiles_that_need_to_be_rasterized.empty() &&
-      tiles_that_need_to_be_rasterized.front().tile()->required_for_draw());
+      !prioritized_work.tiles_to_raster.empty() &&
+      prioritized_work.tiles_to_raster.front().tile()->required_for_draw());
 
   // Schedule tile tasks.
-  ScheduleTasks(tiles_that_need_to_be_rasterized);
+  ScheduleTasks(prioritized_work);
 
   TRACE_EVENT_INSTANT1("cc", "DidPrepareTiles", TRACE_EVENT_SCOPE_THREAD,
                        "state", BasicStateAsValue());
@@ -582,7 +588,7 @@ bool TileManager::TilePriorityViolatesMemoryPolicy(
   return true;
 }
 
-std::vector<PrioritizedTile> TileManager::AssignGpuMemoryToTiles() {
+TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
   TRACE_EVENT_BEGIN0("cc", "TileManager::AssignGpuMemoryToTiles");
 
   DCHECK(resource_pool_);
@@ -611,7 +617,7 @@ std::vector<PrioritizedTile> TileManager::AssignGpuMemoryToTiles() {
       client_->BuildRasterQueue(global_state_.tree_priority,
                                 RasterTilePriorityQueue::Type::ALL));
   std::unique_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
-  std::vector<PrioritizedTile> tiles_that_need_to_be_rasterized;
+  PrioritizedWorkToSchedule work_to_schedule;
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
     const PrioritizedTile& prioritized_tile = raster_priority_queue->Top();
     Tile* tile = prioritized_tile.tile();
@@ -644,8 +650,16 @@ std::vector<PrioritizedTile> TileManager::AssignGpuMemoryToTiles() {
       }
     }
 
+    // Prepaint tiles that are far away are only processed for images.
+    if (!tile->required_for_activation() && !tile->required_for_draw() &&
+        priority.distance_to_visible >
+            max_preraster_distance_in_screen_pixels_) {
+      work_to_schedule.tiles_to_process_for_images.push_back(prioritized_tile);
+      continue;
+    }
+
     // We won't be able to schedule this tile, so break out early.
-    if (tiles_that_need_to_be_rasterized.size() >=
+    if (work_to_schedule.tiles_to_raster.size() >=
         scheduled_raster_task_limit_) {
       all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
       break;
@@ -690,7 +704,7 @@ std::vector<PrioritizedTile> TileManager::AssignGpuMemoryToTiles() {
     }
 
     memory_usage += memory_required_by_tile_to_be_scheduled;
-    tiles_that_need_to_be_rasterized.push_back(prioritized_tile);
+    work_to_schedule.tiles_to_raster.push_back(prioritized_tile);
 
     // Since we scheduled the tile, set whether it was a prepaint or not
     // assuming that the tile will successfully finish running. We don't have
@@ -722,7 +736,7 @@ std::vector<PrioritizedTile> TileManager::AssignGpuMemoryToTiles() {
                    all_tiles_that_need_to_be_rasterized_are_scheduled_,
                    "had_enough_memory_to_schedule_tiles_needed_now",
                    had_enough_memory_to_schedule_tiles_needed_now);
-  return tiles_that_need_to_be_rasterized;
+  return work_to_schedule;
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
@@ -742,7 +756,9 @@ void TileManager::FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(
 }
 
 void TileManager::ScheduleTasks(
-    const std::vector<PrioritizedTile>& tiles_that_need_to_be_rasterized) {
+    const PrioritizedWorkToSchedule& work_to_schedule) {
+  const std::vector<PrioritizedTile>& tiles_that_need_to_be_rasterized =
+      work_to_schedule.tiles_to_raster;
   TRACE_EVENT1("cc", "TileManager::ScheduleTasks", "count",
                tiles_that_need_to_be_rasterized.size());
 
@@ -815,6 +831,52 @@ void TileManager::ScheduleTasks(
     InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++,
                              use_foreground_category);
   }
+
+  const std::vector<PrioritizedTile>& tiles_to_process_for_images =
+      work_to_schedule.tiles_to_process_for_images;
+  std::vector<std::pair<DrawImage, scoped_refptr<TileTask>>> new_locked_images;
+  for (const PrioritizedTile& prioritized_tile : tiles_to_process_for_images) {
+    Tile* tile = prioritized_tile.tile();
+
+    std::vector<DrawImage> images;
+    prioritized_tile.raster_source()->GetDiscardableImagesInRect(
+        tile->enclosing_layer_rect(), tile->contents_scale(), &images);
+    ImageDecodeController::TracingInfo tracing_info(
+        prepare_tiles_count_, prioritized_tile.priority().priority_bin);
+    for (DrawImage& draw_image : images) {
+      scoped_refptr<TileTask> task;
+      bool need_to_unref_when_finished =
+          image_decode_controller_->GetTaskForImageAndRef(draw_image,
+                                                          tracing_info, &task);
+      // We only care about images that need to be locked (ie they need to be
+      // unreffed later).
+      if (!need_to_unref_when_finished)
+        continue;
+      new_locked_images.emplace_back(draw_image, task);
+
+      // If there's no actual task associated with this image, then we're done.
+      if (!task)
+        continue;
+
+      auto decode_it = std::find_if(graph_.nodes.begin(), graph_.nodes.end(),
+                                    [&task](const TaskGraph::Node& node) {
+                                      return node.task == task.get();
+                                    });
+      // If this task is already in the graph, then we don't have to insert it.
+      if (decode_it != graph_.nodes.end())
+        continue;
+
+      InsertNodeForDecodeTask(&graph_, task.get(), false, priority++);
+      all_count++;
+      graph_.edges.push_back(TaskGraph::Edge(task.get(), all_done_task.get()));
+    }
+  }
+
+  for (auto& draw_image_pair : locked_images_)
+    image_decode_controller_->UnrefImage(draw_image_pair.first);
+  // The old locked images have to stay around until past the ScheduleTasks call
+  // below, so we do a swap instead of a move.
+  locked_images_.swap(new_locked_images);
 
   // Insert nodes for our task completion tasks. We enqueue these using
   // NONCONCURRENT_FOREGROUND category this is the highest prioirty category and
@@ -1069,20 +1131,27 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
 
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
-  std::vector<PrioritizedTile> tiles_that_need_to_be_rasterized =
-      AssignGpuMemoryToTiles();
+  PrioritizedWorkToSchedule work_to_schedule = AssignGpuMemoryToTiles();
 
   // Inform the client that will likely require a draw if the highest priority
   // tile that will be rasterized is required for draw.
   client_->SetIsLikelyToRequireADraw(
-      !tiles_that_need_to_be_rasterized.empty() &&
-      tiles_that_need_to_be_rasterized.front().tile()->required_for_draw());
+      !work_to_schedule.tiles_to_raster.empty() &&
+      work_to_schedule.tiles_to_raster.front().tile()->required_for_draw());
 
   // |tiles_that_need_to_be_rasterized| will be empty when we reach a
   // steady memory state. Keep scheduling tasks until we reach this state.
-  if (!tiles_that_need_to_be_rasterized.empty()) {
-    ScheduleTasks(tiles_that_need_to_be_rasterized);
+  if (!work_to_schedule.tiles_to_raster.empty()) {
+    ScheduleTasks(work_to_schedule);
     return;
+  }
+
+  // If we're not in SMOOTHNESS_TAKES_PRIORITY  mode, we should unlock all
+  // images since we're technically going idle here at least for this frame.
+  if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY) {
+    for (auto& draw_image_pair : locked_images_)
+      image_decode_controller_->UnrefImage(draw_image_pair.first);
+    locked_images_.clear();
   }
 
   FreeResourcesForReleasedTiles();
@@ -1252,5 +1321,10 @@ void TileManager::Signals::reset() {
   all_tile_tasks_completed = false;
   did_notify_all_tile_tasks_completed = false;
 }
+
+TileManager::PrioritizedWorkToSchedule::PrioritizedWorkToSchedule() = default;
+TileManager::PrioritizedWorkToSchedule::PrioritizedWorkToSchedule(
+    PrioritizedWorkToSchedule&& other) = default;
+TileManager::PrioritizedWorkToSchedule::~PrioritizedWorkToSchedule() = default;
 
 }  // namespace cc

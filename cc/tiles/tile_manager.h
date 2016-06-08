@@ -98,7 +98,8 @@ class CC_EXPORT TileManager {
   TileManager(TileManagerClient* client,
               base::SequencedTaskRunner* task_runner,
               size_t scheduled_raster_task_limit,
-              bool use_partial_raster);
+              bool use_partial_raster,
+              int max_preraster_distance_in_screen_pixels);
   virtual ~TileManager();
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
@@ -208,10 +209,6 @@ class CC_EXPORT TileManager {
   virtual void Release(Tile* tile);
   Tile::Id GetUniqueTileId() { return ++next_tile_id_; }
 
-  // Virtual for test
-  virtual void ScheduleTasks(
-      const std::vector<PrioritizedTile>& tiles_that_need_to_be_rasterized);
-
  private:
   class MemoryUsage {
    public:
@@ -231,6 +228,28 @@ class CC_EXPORT TileManager {
    private:
     int64_t memory_bytes_;
     int resource_count_;
+  };
+
+  struct Signals {
+    Signals();
+
+    void reset();
+
+    bool ready_to_activate;
+    bool did_notify_ready_to_activate;
+    bool ready_to_draw;
+    bool did_notify_ready_to_draw;
+    bool all_tile_tasks_completed;
+    bool did_notify_all_tile_tasks_completed;
+  };
+
+  struct PrioritizedWorkToSchedule {
+    PrioritizedWorkToSchedule();
+    PrioritizedWorkToSchedule(PrioritizedWorkToSchedule&& other);
+    ~PrioritizedWorkToSchedule();
+
+    std::vector<PrioritizedTile> tiles_to_raster;
+    std::vector<PrioritizedTile> tiles_to_process_for_images;
   };
 
   void FreeResourcesForTile(Tile* tile);
@@ -265,7 +284,8 @@ class CC_EXPORT TileManager {
 
   scoped_refptr<TileTask> CreateTaskSetFinishedTask(
       void (TileManager::*callback)());
-  std::vector<PrioritizedTile> AssignGpuMemoryToTiles();
+  PrioritizedWorkToSchedule AssignGpuMemoryToTiles();
+  void ScheduleTasks(const PrioritizedWorkToSchedule& work_to_schedule);
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ScheduledTasksStateAsValue() const;
@@ -302,18 +322,7 @@ class CC_EXPORT TileManager {
 
   UniqueNotifier more_tiles_need_prepare_check_notifier_;
 
-  struct Signals {
-    Signals();
-
-    void reset();
-
-    bool ready_to_activate;
-    bool did_notify_ready_to_activate;
-    bool ready_to_draw;
-    bool did_notify_ready_to_draw;
-    bool all_tile_tasks_completed;
-    bool did_notify_all_tile_tasks_completed;
-  } signals_;
+  Signals signals_;
 
   UniqueNotifier signals_check_notifier_;
 
@@ -323,6 +332,8 @@ class CC_EXPORT TileManager {
   uint64_t next_tile_id_;
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
+  const int max_preraster_distance_in_screen_pixels_;
+  std::vector<std::pair<DrawImage, scoped_refptr<TileTask>>> locked_images_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
 
