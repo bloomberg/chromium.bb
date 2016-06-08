@@ -402,6 +402,12 @@ void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(const String& sch
     firstPartyWhenTopLevelSchemes().add(scheme);
 }
 
+void SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel(const String& scheme)
+{
+    MutexLocker locker(mutex());
+    firstPartyWhenTopLevelSchemes().remove(scheme);
+}
+
 bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(const String& scheme)
 {
     if (scheme.isEmpty())

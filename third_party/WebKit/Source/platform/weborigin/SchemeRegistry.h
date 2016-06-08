@@ -101,6 +101,7 @@ public:
 
     // Schemes which override the first-/third-party checks on a Document.
     static void registerURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
+    static void removeURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
     static bool shouldTreatURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
 
     // Schemes that can be used in a referrer.

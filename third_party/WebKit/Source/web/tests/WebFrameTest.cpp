@@ -8101,6 +8101,28 @@ TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
     view->close();
 }
 
+TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesFromChildWithRemoteMainFrame)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->setMainFrame(remoteClient.frame());
+    WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
+    root->setReplicatedOrigin(SecurityOrigin::create(toKURL(m_notBaseURL)));
+
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root);
+
+    registerMockedHttpURLLoad("foo.html");
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "foo.html");
+    EXPECT_EQ(WebURL(SecurityOrigin::urlWithUniqueSecurityOrigin()), localFrame->document().firstPartyForCookies());
+
+    SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel("http");
+    EXPECT_EQ(WebURL(toKURL(m_notBaseURL)), localFrame->document().firstPartyForCookies());
+    SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel("http");
+
+    view->close();
+}
+
 // See https://crbug.com/525285.
 TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFrame)
 {
