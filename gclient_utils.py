@@ -784,6 +784,7 @@ class WorkItem(object):
     self._name = name
     self.outbuf = cStringIO.StringIO()
     self.start = self.finish = None
+    self.resources = []  # List of resources this work item requires.
 
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
@@ -869,6 +870,15 @@ class ExecutionQueue(object):
 ----------------------------------------""" % (
     task.name, comment, elapsed, task.outbuf.getvalue().strip())
 
+  def _is_conflict(self, job):
+    """Checks to see if a job will conflict with another running job."""
+    for running_job in self.running:
+      for used_resource in running_job.item.resources:
+        logging.debug('Checking resource %s' % used_resource)
+        if used_resource in job.resources:
+          return True
+    return False
+
   def flush(self, *args, **kwargs):
     """Runs all enqueued items until all are executed."""
     kwargs['work_queue'] = self
@@ -892,9 +902,10 @@ class ExecutionQueue(object):
             # Verify its requirements.
             if (self.ignore_requirements or
                 not (set(self.queued[i].requirements) - set(self.ran))):
-              # Start one work item: all its requirements are satisfied.
-              self._run_one_task(self.queued.pop(i), args, kwargs)
-              break
+              if not self._is_conflict(self.queued[i]):
+                # Start one work item: all its requirements are satisfied.
+                self._run_one_task(self.queued.pop(i), args, kwargs)
+                break
           else:
             # Couldn't find an item that could run. Break out the outher loop.
             break

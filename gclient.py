@@ -375,6 +375,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # It will be a dictionary of {deps_name: {"deps_file": depfile_name}} or
     # None.
     self.recursedeps = None
+    # This is inherited from WorkItem.  We want the URL to be a resource.
+    if url and isinstance(url, basestring):
+      # The url is usually given to gclient either as https://blah@123
+      # or just https://blah.  The @123 portion is irrelevent.
+      self.resources.append(url.split('@')[0])
 
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
