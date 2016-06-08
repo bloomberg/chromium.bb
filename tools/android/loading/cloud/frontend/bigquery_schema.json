@@ -251,5 +251,21 @@
     {
         "name": "transfer_size",
         "type": "INTEGER"
+    },
+    {
+      "name": "total_queuing_blocked_msec",
+      "type": "FLOAT"
+    },
+    {
+      "name": "total_queuing_load_msec",
+      "type": "FLOAT"
+    },
+    {
+      "name": "average_blocking_request_count",
+      "type": "FLOAT"
+    },
+    {
+      "name": "median_blocking_request_count",
+      "type": "FLOAT"
     }
 ]

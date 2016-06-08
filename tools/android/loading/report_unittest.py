@@ -6,6 +6,7 @@ import unittest
 
 import metrics
 import report
+from queuing_lens import QueuingLens
 import test_utils
 import user_satisfied_lens_unittest
 
@@ -90,6 +91,46 @@ class LoadingReportTestCase(unittest.TestCase):
         self.requests, self.trace_events, self._MAIN_FRAME_ID)
     return trace
 
+  def _AddQueuingEvents(self, source_id, url, start_msec, ready_msec, end_msec):
+    self.trace_events.extend([
+        {'args': {
+            'data': {
+                'request_url': url,
+                'source_id': source_id
+            }
+          },
+         'cat': QueuingLens.QUEUING_CATEGORY,
+         'id': source_id,
+         'pid': 1, 'tid': 10,
+         'name': QueuingLens.ASYNC_NAME,
+         'ph': 'b',
+         'ts': start_msec * self.MILLI_TO_MICRO
+        },
+        {'args': {
+            'data': {
+                'source_id': source_id
+            }
+          },
+         'cat': QueuingLens.QUEUING_CATEGORY,
+         'id': source_id,
+         'pid': 1, 'tid': 10,
+         'name': QueuingLens.READY_NAME,
+         'ph': 'n',
+         'ts': ready_msec * self.MILLI_TO_MICRO
+        },
+        {'args': {
+            'data': {
+                'source_id': source_id
+            }
+          },
+         'cat': QueuingLens.QUEUING_CATEGORY,
+         'id': source_id,
+         'pid': 1, 'tid': 10,
+         'name': QueuingLens.ASYNC_NAME,
+         'ph': 'e',
+         'ts': end_msec * self.MILLI_TO_MICRO
+        }])
+
   def testGenerateReport(self):
     trace = self._MakeTrace()
     loading_report = report.LoadingReport(trace).GenerateReport()
@@ -139,6 +180,10 @@ class LoadingReportTestCase(unittest.TestCase):
         self._FIRST_REQUEST_DATA_LENGTH + self._SECOND_REQUEST_DATA_LENGTH
         + metrics.HTTP_OK_LENGTH * 2,
         loading_report['transfer_size'])
+    self.assertEqual(0, loading_report['total_queuing_blocked_msec'])
+    self.assertEqual(0, loading_report['total_queuing_load_msec'])
+    self.assertEqual(0, loading_report['average_blocking_request_count'])
+    self.assertEqual(0, loading_report['median_blocking_request_count'])
 
   def testInversion(self):
     self.requests[0].timing.loading_finished = 4 * (
@@ -225,6 +270,27 @@ class LoadingReportTestCase(unittest.TestCase):
         self._MakeTrace(), [self.ad_domain]).GenerateReport()
     self.assertAlmostEqual(.5, loading_report['ad_or_tracking_script_frac'], 2)
     self.assertAlmostEqual(0., loading_report['ad_or_tracking_parsing_frac'])
+
+  def testQueueStats(self):
+    # We use three requests, A, B and C. A is not blocked, B is blocked by A,
+    # and C blocked by A and B.
+    BASE_MSEC = self._FIRST_REQUEST_TIME + 4 * self._DURATION
+    self.requests = []
+    request_A = self.trace_creator.RequestAt(BASE_MSEC, 5)
+    request_B = self.trace_creator.RequestAt(BASE_MSEC + 6, 5)
+    request_C = self.trace_creator.RequestAt(BASE_MSEC + 12, 10)
+    self.requests.extend([request_A, request_B, request_C])
+    self._AddQueuingEvents(10, request_A.url,
+                           BASE_MSEC, BASE_MSEC, BASE_MSEC + 5)
+    self._AddQueuingEvents(20, request_B.url,
+                           BASE_MSEC + 1, BASE_MSEC + 6, BASE_MSEC + 11)
+    self._AddQueuingEvents(30, request_C.url,
+                           BASE_MSEC + 2, BASE_MSEC + 12, BASE_MSEC + 22)
+    loading_report = report.LoadingReport(self._MakeTrace()).GenerateReport()
+    self.assertEqual(15, loading_report['total_queuing_blocked_msec'])
+    self.assertEqual(35, loading_report['total_queuing_load_msec'])
+    self.assertAlmostEqual(1, loading_report['average_blocking_request_count'])
+    self.assertEqual(1, loading_report['median_blocking_request_count'])
 
 
 if __name__ == '__main__':
