@@ -90,8 +90,6 @@
       'Android Tests (trial)(dbg)': 'none',
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
-      'Blimp Linux (dbg)':
-        '//build/args/bots/chromium.fyi/blimp_linux_dbg.gn',
       'Browser Side Navigation Linux': 'gn_release_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_static',
       'CFI Linux ToT': 'gn_cfi_clang_tot_release_static',
@@ -303,6 +301,8 @@
         'android_clang_asan_findbugs_gn_debug_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gn_debug_static_bot',
       'Android Tests': 'swarming_android_gn_release_bot_minimal_symbols',
+      'Blimp Linux (dbg)':
+        '//build/args/bots/chromium.linux/blimp_linux_dbg.gn',
       'Cast Android (dbg)': 'android_cast_gn_debug_static_bot',
       'Cast Linux': 'cast_gn_release_bot',
       'Linux Builder (dbg)': 'swarming_gn_debug_bot',
