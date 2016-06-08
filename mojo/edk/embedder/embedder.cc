@@ -15,6 +15,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/system/core.h"
@@ -68,6 +69,10 @@ void SetParentPipeHandleFromCommandLine() {
 }
 
 void Init() {
+  MojoSystemThunks thunks = MakeSystemThunks();
+  size_t expected_size = MojoEmbedderSetSystemThunks(&thunks);
+  DCHECK_EQ(expected_size, sizeof(thunks));
+
   internal::g_core = new Core();
 }
 
