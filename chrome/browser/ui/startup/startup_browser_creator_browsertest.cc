@@ -1575,4 +1575,46 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
 
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/314819
+#define MAYBE_FirstRunTabsWithRestoreSession \
+    DISABLED_FirstRunTabsWithRestoreSession
+#else
+#define MAYBE_FirstRunTabsWithRestoreSession FirstRunTabsWithRestoreSession
+#endif
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
+                       MAYBE_FirstRunTabsWithRestoreSession) {
+  // Simulate the following master_preferences:
+  // {
+  //  "first_run_tabs" : [
+  //    "/title1.html"
+  //  ],
+  //  "session" : {
+  //    "restore_on_startup" : 1
+  //   }
+  // }
+  ASSERT_TRUE(embedded_test_server()->Start());
+  StartupBrowserCreator browser_creator;
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title1.html"));
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kRestoreOnStartup, 1);
+
+  // Do a process-startup browser launch.
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
+  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
+                                   chrome::startup::IS_FIRST_RUN);
+  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), true));
+
+  // This should have created a new browser window.
+  Browser* new_browser = FindOneOtherBrowser(browser());
+  ASSERT_TRUE(new_browser);
+
+  // Verify that the first-run tab is shown and no other pages are present.
+  TabStripModel* tab_strip = new_browser->tab_strip_model();
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ("title1.html",
+            tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
+}
+
 #endif  // !defined(OS_CHROMEOS)
