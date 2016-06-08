@@ -126,6 +126,10 @@ bool WmShellAura::IsOverviewModeRestoringMinimizedWindows() {
          window_selector_controller->IsRestoringMinimizedWindows();
 }
 
+AccessibilityDelegate* WmShellAura::GetAccessibilityDelegate() {
+  return Shell::GetInstance()->accessibility_delegate();
+}
+
 SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {
   return Shell::GetInstance()->session_state_delegate();
 }

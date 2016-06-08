@@ -48,6 +48,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
       wm::WindowState* window_state) override;
   bool IsOverviewModeSelecting() override;
   bool IsOverviewModeRestoringMinimizedWindows() override;
+  AccessibilityDelegate* GetAccessibilityDelegate() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;

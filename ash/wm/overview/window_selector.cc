@@ -23,7 +23,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shell.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -306,7 +305,7 @@ void WindowSelector::Init(const WindowList& windows) {
   display::Screen::GetScreen()->AddObserver(this);
   shell->RecordUserMetricsAction(wm::WmUserMetricsAction::WINDOW_OVERVIEW);
   // Send an a11y alert.
-  Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
+  WmShell::Get()->GetAccessibilityDelegate()->TriggerAccessibilityAlert(
       ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();

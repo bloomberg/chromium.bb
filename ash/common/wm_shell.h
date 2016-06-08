@@ -18,6 +18,7 @@ class Rect;
 
 namespace ash {
 
+class AccessibilityDelegate;
 class MruWindowTracker;
 class SessionStateDelegate;
 class WindowResizer;
@@ -89,6 +90,8 @@ class ASH_EXPORT WmShell {
   // onto their own local class.
   virtual bool IsOverviewModeSelecting() = 0;
   virtual bool IsOverviewModeRestoringMinimizedWindows() = 0;
+
+  virtual AccessibilityDelegate* GetAccessibilityDelegate() = 0;
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 

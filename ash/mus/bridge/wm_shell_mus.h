@@ -63,6 +63,7 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
       wm::WindowState* window_state) override;
   bool IsOverviewModeSelecting() override;
   bool IsOverviewModeRestoringMinimizedWindows() override;
+  AccessibilityDelegate* GetAccessibilityDelegate() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;
@@ -89,6 +90,8 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
+
+  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
 
   base::ObserverList<WmActivationObserver> activation_observers_;
 

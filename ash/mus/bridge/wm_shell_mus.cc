@@ -4,6 +4,7 @@
 
 #include "ash/mus/bridge/wm_shell_mus.h"
 
+#include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -94,6 +95,8 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
 
   wm_shell_common_.reset(new WmShellCommon);
   wm_shell_common_->CreateMruWindowTracker();
+
+  accessibility_delegate_.reset(new DefaultAccessibilityDelegate);
 }
 
 WmShellMus::~WmShellMus() {
@@ -214,6 +217,10 @@ bool WmShellMus::IsOverviewModeSelecting() {
 bool WmShellMus::IsOverviewModeRestoringMinimizedWindows() {
   NOTIMPLEMENTED();
   return false;
+}
+
+AccessibilityDelegate* WmShellMus::GetAccessibilityDelegate() {
+  return accessibility_delegate_.get();
 }
 
 SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
