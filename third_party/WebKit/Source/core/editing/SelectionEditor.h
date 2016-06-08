@@ -55,8 +55,10 @@ public:
     void setVisibleSelection(const VisibleSelection&, FrameSelection::SetSelectionOptions);
     void setVisibleSelection(const VisibleSelectionInFlatTree&, FrameSelection::SetSelectionOptions);
 
-    void setIsDirectional(bool);
     void setWithoutValidation(const Position& base, const Position& extent);
+
+    void documentAttached(Document*);
+    void documentDetached(const Document&);
 
     // If this FrameSelection has a logical range which is still valid, this
     // function return its clone. Otherwise, the return value from underlying
@@ -76,8 +78,13 @@ public:
 private:
     explicit SelectionEditor(FrameSelection&);
 
+    const Document& document() const;
     LocalFrame* frame() const;
 
+    void clearVisibleSelection();
+    bool shouldAlwaysUseDirectionalSelection() const;
+
+    Member<Document> m_document;
     Member<FrameSelection> m_frameSelection;
 
     VisibleSelection m_selection;

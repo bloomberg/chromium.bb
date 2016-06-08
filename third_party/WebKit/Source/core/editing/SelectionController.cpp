@@ -273,7 +273,11 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node
     if (dispatchSelectStart(targetNode) != DispatchEventResult::NotCanceled)
         return false;
 
-    if (!selection.isValidFor(*m_frame->document()))
+    // |dispatchSelectStart()| can change document hosted by |m_frame|.
+    if (!this->selection().isAvailable())
+        return false;
+
+    if (!selection.isValidFor(this->selection().document()))
         return false;
 
     if (selection.isRange()) {
@@ -394,6 +398,9 @@ bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithH
 {
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventDoubleClick");
 
+    if (!selection().isAvailable())
+        return false;
+
     if (!m_mouseDownAllowsMultiClick)
         return handleMousePressEventSingleClick(event);
 
@@ -416,6 +423,11 @@ bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithH
 bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithHitTestResults& event)
 {
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventTripleClick");
+
+    if (!selection().isAvailable()) {
+        // editing/shadow/doubleclick-on-meter-in-shadow-crash.html reach here.
+        return false;
+    }
 
     if (!m_mouseDownAllowsMultiClick)
         return handleMousePressEventSingleClick(event);
@@ -444,6 +456,12 @@ void SelectionController::handleMousePressEvent(const MouseEventWithHitTestResul
     m_mouseDownMayStartSelect = (canMouseDownStartSelect(event.innerNode()) || isLinkSelection(event))
         && !event.scrollbar();
     m_mouseDownWasSingleClickInSelection = false;
+    if (!selection().isAvailable()) {
+        // "gesture-tap-frame-removed.html" reaches here.
+        m_mouseDownAllowsMultiClick = !event.event().fromTouch();
+        return;
+    }
+
     // Avoid double-tap touch gesture confusion by restricting multi-click side
     // effects, e.g., word selection, to editable regions.
     m_mouseDownAllowsMultiClick = !event.event().fromTouch() || selection().hasEditableStyle();
@@ -451,6 +469,8 @@ void SelectionController::handleMousePressEvent(const MouseEventWithHitTestResul
 
 void SelectionController::handleMouseDraggedEvent(const MouseEventWithHitTestResults& event, const IntPoint& mouseDownPos, const LayoutPoint& dragStartPos, Node* mousePressNode, const IntPoint& lastKnownMousePosition)
 {
+    if (!selection().isAvailable())
+        return;
     if (m_selectionState != SelectionState::ExtendedSelection) {
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
         HitTestResult result(request, mouseDownPos);
@@ -478,6 +498,9 @@ void SelectionController::updateSelectionForMouseDrag(Node* mousePressNode, cons
 
 bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event, const LayoutPoint& dragStartPos)
 {
+    if (!selection().isAvailable())
+        return false;
+
     bool handled = false;
     m_mouseDownMayStartSelect = false;
     // Clear the selection if the mouse didn't move after the last mouse
@@ -546,6 +569,8 @@ bool SelectionController::handlePasteGlobalSelection(const PlatformMouseEvent& m
 
 bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& gestureEvent, const HitTestResult& hitTestResult)
 {
+    if (!selection().isAvailable())
+        return false;
     if (hitTestResult.isLiveLink())
         return false;
 
@@ -555,11 +580,18 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
         return false;
 
     selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend, SelectInputEventType::GestureLongPress);
+    if (!selection().isAvailable()) {
+        // "editing/selection/longpress-selection-in-iframe-removed-crash.html"
+        // reach here.
+        return false;
+    }
     return selection().isRange();
 }
 
 void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResults& mev, const LayoutPoint& position)
 {
+    if (!selection().isAvailable())
+        return;
     if (selection().contains(position)
         || mev.scrollbar()
         // FIXME: In the editable case, word selection sometimes selects content that isn't underneath the mouse.

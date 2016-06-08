@@ -62,7 +62,7 @@ public:
     void dataWillChange(const CharacterData&);
     void nodeWillBeRemoved(Node&);
 
-    void prepareForDestruction();
+    void documentDetached();
 
     // For unittests
     bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }

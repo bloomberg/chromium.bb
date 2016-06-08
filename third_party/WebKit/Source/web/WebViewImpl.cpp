@@ -2424,6 +2424,10 @@ WebTextInputInfo WebViewImpl::textInputInfo()
         return info;
 
     FrameSelection& selection = focused->selection();
+    if (!selection.isAvailable()) {
+        // plugins/mouse-capture-inside-shadow.html reaches here.
+        return info;
+    }
     Element* element = selection.selection().rootEditableElement();
     if (!element)
         return info;
@@ -2472,9 +2476,14 @@ WebTextInputType WebViewImpl::textInputType()
     if (!focusedFrame)
         return WebTextInputTypeNone;
 
+    if (!focusedFrame->selection().isAvailable()) {
+        // "mouse-capture-inside-shadow.html" reaches here.
+        return WebTextInputTypeNone;
+    }
+
     // It's important to preserve the equivalence of textInputInfo().type and textInputType(),
     // so perform the same rootEditableElement() existence check here for consistency.
-    if (!focusedFrame || !focusedFrame->selection().selection().rootEditableElement())
+    if (!focusedFrame->selection().selection().rootEditableElement())
         return WebTextInputTypeNone;
 
     Document* document = focusedFrame->document();
@@ -2623,6 +2632,10 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     if (!localFrame)
         return false;
     FrameSelection& selection = localFrame->selection();
+    if (!selection.isAvailable()) {
+        // plugins/mouse-capture-inside-shadow.html reaches here.
+        return false;
+    }
 
     if (selection.isCaret()) {
         anchor = focus = selection.absoluteCaretBounds();
@@ -2655,7 +2668,11 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
     const Frame* frame = focusedCoreFrame();
     if (!frame || frame->isRemoteFrame())
         return false;
-    FrameSelection& selection = toLocalFrame(frame)->selection();
+    const FrameSelection& selection = toLocalFrame(frame)->selection();
+    if (!selection.isAvailable()) {
+        // plugins/mouse-capture-inside-shadow.html reaches here.
+        return false;
+    }
     if (selection.selection().toNormalizedEphemeralRange().isNull())
         return false;
     start = toWebTextDirection(primaryDirectionOf(*selection.start().anchorNode()));
@@ -2668,7 +2685,12 @@ bool WebViewImpl::isSelectionAnchorFirst() const
     const Frame* frame = focusedCoreFrame();
     if (!frame || frame->isRemoteFrame())
         return false;
-    return toLocalFrame(frame)->selection().selection().isBaseFirst();
+    FrameSelection& selection = toLocalFrame(frame)->selection();
+    if (!selection.isAvailable()) {
+        // plugins/mouse-capture-inside-shadow.html reaches here.
+        return false;
+    }
+    return selection.selection().isBaseFirst();
 }
 
 WebColor WebViewImpl::backgroundColor() const

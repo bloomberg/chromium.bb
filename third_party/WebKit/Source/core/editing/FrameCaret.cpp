@@ -232,7 +232,7 @@ void FrameCaret::nodeWillBeRemoved(Node& node)
     m_previousCaretVisibility = CaretVisibility::Hidden;
 }
 
-void FrameCaret::prepareForDestruction()
+void FrameCaret::documentDetached()
 {
     m_caretPosition = PositionWithAffinity();
     m_caretBlinkTimer.stop();

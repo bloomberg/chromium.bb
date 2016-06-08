@@ -491,6 +491,13 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
     VisibleSelection dragCaret(m_page->dragCaretController().caretPosition());
     m_page->dragCaretController().clear();
+    // |innerFrame| can be removed by event handler called by
+    // |dispatchTextInputEventFor()|.
+    if (!innerFrame->selection().isAvailable()) {
+        // "editing/pasteboard/drop-text-events-sideeffect-crash.html" reaches
+        // here.
+        return false;
+    }
     Range* range = createRange(dragCaret.toNormalizedEphemeralRange());
     Element* rootEditableElement = innerFrame->selection().rootEditableElement();
 

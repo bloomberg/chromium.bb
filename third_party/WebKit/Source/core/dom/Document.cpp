@@ -2111,6 +2111,7 @@ void Document::attach(const AttachContext& context)
     if (TextAutosizer* autosizer = textAutosizer())
         autosizer->updatePageInfo();
 
+    m_frame->selection().documentAttached(this);
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
 }
 
@@ -2203,6 +2204,7 @@ void Document::detach(const AttachContext& context)
 
     frameHost()->eventHandlerRegistry().documentDetached(*this);
 
+    m_frame->selection().documentDetached(*this);
     m_frame->inputMethodController().documentDetached();
 
     // If this Document is associated with a live DocumentLoader, the

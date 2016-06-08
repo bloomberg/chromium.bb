@@ -564,8 +564,17 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
 {
     TRACE_EVENT0("blink", "SpellChecker::markAndReplaceFor");
     DCHECK(request);
+    if (!frame().selection().isAvailable()) {
+        // "editing/spelling/spellcheck-async-remove-frame.html" reaches here.
+        return;
+    }
     if (!request->isValid())
         return;
+    if (request->rootEditableElement()->document() != frame().selection().document()) {
+        // we ignore |request| made for another document.
+        // "editing/spelling/spellcheck-sequencenum.html" and others reach here.
+        return;
+    }
 
     TextCheckingTypeMask textCheckingOptions = request->data().mask();
     TextCheckingParagraph paragraph(request->checkingRange(), request->paragraphRange());

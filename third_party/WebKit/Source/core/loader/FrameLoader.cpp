@@ -304,7 +304,6 @@ void FrameLoader::clear()
 
     m_frame->editor().clear();
     m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
-    m_frame->selection().prepareForDestruction();
     m_frame->eventHandler().clear();
     if (m_frame->view())
         m_frame->view()->clear();

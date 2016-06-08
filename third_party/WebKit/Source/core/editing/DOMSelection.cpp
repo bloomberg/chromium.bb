@@ -81,7 +81,7 @@ void DOMSelection::clearTreeScope()
 
 bool DOMSelection::isAvailable() const
 {
-    return m_frame;
+    return m_frame && m_frame->selection().isAvailable();
 }
 
 const VisibleSelection& DOMSelection::visibleSelection() const
@@ -423,6 +423,11 @@ void DOMSelection::addRange(Range* newRange)
     }
 
     FrameSelection& selection = m_frame->selection();
+
+    if (newRange->ownerDocument() != selection.document()) {
+        // "editing/selection/selection-in-iframe-removed-crash.html" goes here.
+        return;
+    }
 
     if (selection.isNone()) {
         selection.setSelectedRange(newRange, VP_DEFAULT_AFFINITY);

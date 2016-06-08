@@ -69,25 +69,6 @@ TEST_F(FrameSelectionTest, SetValidSelection)
     EXPECT_FALSE(selection().isNone());
 }
 
-TEST_F(FrameSelectionTest, SetInvalidSelection)
-{
-    // Create a new document without frame by using DOMImplementation.
-    DocumentInit dummy;
-    Document* documentWithoutFrame = Document::create();
-    Element* body = HTMLBodyElement::create(*documentWithoutFrame);
-    documentWithoutFrame->appendChild(body);
-    Text* anotherText = documentWithoutFrame->createTextNode("Hello, another world");
-    body->appendChild(anotherText);
-
-    // Create a new VisibleSelection for the new document without frame and
-    // update FrameSelection with the selection.
-    VisibleSelection invalidSelection;
-    invalidSelection.setWithoutValidation(Position(anotherText, 0), Position(anotherText, 5));
-    setSelection(invalidSelection);
-
-    EXPECT_TRUE(selection().isNone());
-}
-
 TEST_F(FrameSelectionTest, InvalidateCaretRect)
 {
     Text* text = appendTextNode("Hello, World!");
