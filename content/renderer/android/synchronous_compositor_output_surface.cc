@@ -108,6 +108,8 @@ void SynchronousCompositorOutputSurface::SetSyncClient(
     SynchronousCompositorOutputSurfaceClient* compositor) {
   DCHECK(CalledOnValidThread());
   sync_client_ = compositor;
+  if (sync_client_)
+    Send(new SyncCompositorHostMsg_OutputSurfaceCreated(routing_id_));
 }
 
 bool SynchronousCompositorOutputSurface::OnMessageReceived(
@@ -133,7 +135,6 @@ bool SynchronousCompositorOutputSurface::BindToClient(
                  base::Unretained(this)));
   registry_->RegisterOutputSurface(routing_id_, this);
   registered_ = true;
-  Send(new SyncCompositorHostMsg_OutputSurfaceCreated(routing_id_));
   return true;
 }
 
