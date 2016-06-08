@@ -48,7 +48,7 @@ if (is_win) {
       "-o",
       rebase_path("$root_out_dir", root_build_dir),
       "-a",
-      target_cpu,
+      current_cpu,
     ]
     deps = [
       ":chrome_initial",
