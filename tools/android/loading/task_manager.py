@@ -261,11 +261,12 @@ def ListResumingTasksToFreeze(scenario, final_tasks, skipped_tasks):
     skipped_tasks: Set of Tasks in the scenario that were skipped.
 
   Returns:
-    set(Task)
+    [Task]
   """
   scenario_tasks = set(scenario)
   assert skipped_tasks.issubset(scenario_tasks)
-  frozen_tasks = set()
+  frozen_tasks = []
+  frozen_task_set = set()
   walked_tasks = set()
 
   def InternalWalk(task):
@@ -273,7 +274,9 @@ def ListResumingTasksToFreeze(scenario, final_tasks, skipped_tasks):
       return
     walked_tasks.add(task)
     if task not in scenario_tasks or task not in skipped_tasks:
-      frozen_tasks.add(task)
+      if task not in frozen_task_set:
+        frozen_task_set.add(task)
+        frozen_tasks.append(task)
     else:
       for dependency in task._dependencies:
         InternalWalk(dependency)

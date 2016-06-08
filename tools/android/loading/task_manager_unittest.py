@@ -356,17 +356,17 @@ class GenerateScenarioTest(TaskManagerTestCase):
           task_manager.GenerateScenario(final_tasks, resume_frozen_tasks)
       self.assertEqual(skipped_tasks, set(new_scenario))
 
-    RunSubTest([TaskA], set([]), set([TaskA]), set([]))
-    RunSubTest([TaskD], set([]), set([TaskA, TaskD]), set([]))
-    RunSubTest([TaskD], set([]), set([TaskD]), set([TaskA]))
+    RunSubTest([TaskA], set([]), set([TaskA]), [])
+    RunSubTest([TaskD], set([]), set([TaskA, TaskD]), [])
+    RunSubTest([TaskD], set([]), set([TaskD]), [TaskA])
     RunSubTest([TaskE, TaskF], set([TaskA]), set([TaskB, TaskC, TaskE, TaskF]),
-               set([TaskA]))
+               [TaskA])
     RunSubTest([TaskE, TaskF], set([TaskA]), set([TaskC, TaskE, TaskF]),
-               set([TaskA, TaskB]))
-    RunSubTest([TaskE, TaskF], set([TaskA]), set([TaskE, TaskF]), set([TaskC]))
-    RunSubTest([TaskE, TaskF], set([TaskA]), set([TaskF]), set([TaskC, TaskE]))
+               [TaskA, TaskB])
+    RunSubTest([TaskE, TaskF], set([TaskA]), set([TaskE, TaskF]), [TaskC])
+    RunSubTest([TaskE, TaskF], set([TaskA]), set([TaskF]), [TaskE, TaskC])
     RunSubTest([TaskD, TaskE, TaskF], set([]), set([TaskD, TaskF]),
-               set([TaskA, TaskE, TaskC]))
+               [TaskA, TaskE, TaskC])
 
 
 class CommandLineControlledExecutionTest(TaskManagerTestCase):
