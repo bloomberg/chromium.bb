@@ -17,8 +17,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/mutable_properties.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/base/synced_property.h"

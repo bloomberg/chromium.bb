@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/animation/timing_function.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -48,19 +47,17 @@ std::unique_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     const gfx::Vector2dF& start_scroll_offset,
     float start_page_scale_factor,
     const gfx::SizeF& viewport_size,
-    const gfx::SizeF& root_layer_size,
-    std::unique_ptr<TimingFunction> timing_function) {
-  return base::WrapUnique(new PageScaleAnimation(
-      start_scroll_offset, start_page_scale_factor, viewport_size,
-      root_layer_size, std::move(timing_function)));
+    const gfx::SizeF& root_layer_size) {
+  return base::WrapUnique(
+      new PageScaleAnimation(start_scroll_offset, start_page_scale_factor,
+                             viewport_size, root_layer_size));
 }
 
 PageScaleAnimation::PageScaleAnimation(
     const gfx::Vector2dF& start_scroll_offset,
     float start_page_scale_factor,
     const gfx::SizeF& viewport_size,
-    const gfx::SizeF& root_layer_size,
-    std::unique_ptr<TimingFunction> timing_function)
+    const gfx::SizeF& root_layer_size)
     : start_page_scale_factor_(start_page_scale_factor),
       target_page_scale_factor_(0.f),
       start_scroll_offset_(start_scroll_offset),
@@ -68,7 +65,8 @@ PageScaleAnimation::PageScaleAnimation(
       target_anchor_(),
       viewport_size_(viewport_size),
       root_layer_size_(root_layer_size),
-      timing_function_(std::move(timing_function)) {}
+      // Easing constants experimentally determined.
+      timing_function_(.8, 0, .3, .9) {}
 
 PageScaleAnimation::~PageScaleAnimation() {}
 
@@ -194,7 +192,8 @@ float PageScaleAnimation::InterpAtTime(base::TimeTicks monotonic_time) const {
     return 1.f;
   const double normalized_time =
       (monotonic_time - start_time_).InSecondsF() / duration_.InSecondsF();
-  return timing_function_->GetValue(normalized_time);
+
+  return static_cast<float>(timing_function_.Solve(normalized_time));
 }
 
 gfx::Vector2dF PageScaleAnimation::ScrollOffsetAt(float interp) const {

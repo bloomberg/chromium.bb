@@ -10,13 +10,12 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
+#include "ui/gfx/geometry/cubic_bezier.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
-
-class TimingFunction;
 
 // Used in the CC to pass around a scale animation that hasn't yet been
 // initialized.
@@ -51,8 +50,7 @@ class CC_EXPORT PageScaleAnimation {
       const gfx::Vector2dF& start_scroll_offset,
       float start_page_scale_factor,
       const gfx::SizeF& viewport_size,
-      const gfx::SizeF& root_layer_size,
-      std::unique_ptr<TimingFunction> timing_function);
+      const gfx::SizeF& root_layer_size);
 
   ~PageScaleAnimation();
 
@@ -95,8 +93,7 @@ class CC_EXPORT PageScaleAnimation {
   PageScaleAnimation(const gfx::Vector2dF& start_scroll_offset,
                      float start_page_scale_factor,
                      const gfx::SizeF& viewport_size,
-                     const gfx::SizeF& root_layer_size,
-                     std::unique_ptr<TimingFunction> timing_function);
+                     const gfx::SizeF& root_layer_size);
 
  private:
   void ClampTargetScrollOffset();
@@ -126,7 +123,7 @@ class CC_EXPORT PageScaleAnimation {
   base::TimeTicks start_time_;
   base::TimeDelta duration_;
 
-  std::unique_ptr<TimingFunction> timing_function_;
+  const gfx::CubicBezier timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(PageScaleAnimation);
 };

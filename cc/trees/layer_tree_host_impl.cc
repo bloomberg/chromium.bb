@@ -26,9 +26,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_id_provider.h"
-#include "cc/animation/scroll_offset_animation_curve.h"
-#include "cc/animation/timing_function.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -519,15 +516,11 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   gfx::SizeF viewport_size =
       gfx::SizeF(active_tree_->InnerViewportContainerLayer()->bounds());
 
-  // Easing constants experimentally determined.
-  std::unique_ptr<TimingFunction> timing_function =
-      CubicBezierTimingFunction::Create(.8, 0, .3, .9);
-
   // TODO(miletus) : Pass in ScrollOffset.
-  page_scale_animation_ = PageScaleAnimation::Create(
-      ScrollOffsetToVector2dF(scroll_total),
-      active_tree_->current_page_scale_factor(), viewport_size,
-      scaled_scrollable_size, std::move(timing_function));
+  page_scale_animation_ =
+      PageScaleAnimation::Create(ScrollOffsetToVector2dF(scroll_total),
+                                 active_tree_->current_page_scale_factor(),
+                                 viewport_size, scaled_scrollable_size);
 
   if (anchor_point) {
     gfx::Vector2dF anchor(target_offset);
