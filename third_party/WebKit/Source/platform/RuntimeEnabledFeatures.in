@@ -47,7 +47,7 @@ CSS3TextDecorations status=experimental
 CSSApplyAtRules status=experimental, depends_on=CSSVariables
 CSSAdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 CSSBackdropFilter status=experimental
-CSSBoxReflectFilter
+CSSBoxReflectFilter status=stable
 CSSContainment status=stable
 CSSFontDisplay status=experimental
 CSSFontSizeAdjust status=experimental
