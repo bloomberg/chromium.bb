@@ -293,6 +293,8 @@ surface_destroyed(struct wl_listener *listener, void *data)
 					       surface_destroyed);
 	fsout->surface = NULL;
 	fsout->view = NULL;
+	wl_list_remove(&fsout->transform.link);
+	wl_list_init(&fsout->transform.link);
 }
 
 static void
