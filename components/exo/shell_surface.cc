@@ -411,14 +411,7 @@ void ShellSurface::OnSurfaceCommit() {
   resize_component_ = pending_resize_component_;
 
   if (widget_) {
-    // Apply new window geometry. Widget origin needs to be adjusted to avoid
-    // having changes to geometry origin cause a change of the surface position
-    // on screen.
-    if (pending_geometry_.origin() != geometry_.origin()) {
-      gfx::Rect new_widget_bounds = widget_->GetNativeWindow()->bounds();
-      new_widget_bounds.Offset(pending_geometry_.origin() - geometry_.origin());
-      widget_->SetBounds(new_widget_bounds);
-    }
+    // Apply new window geometry.
     geometry_ = pending_geometry_;
 
     UpdateWidgetBounds();
@@ -943,8 +936,12 @@ void ShellSurface::UpdateWidgetBounds() {
     return;
 
   gfx::Rect visible_bounds = GetVisibleBounds();
-  gfx::Rect new_widget_bounds(widget_->GetNativeWindow()->bounds().origin(),
-                              visible_bounds.size());
+  gfx::Rect new_widget_bounds = visible_bounds;
+
+  // Avoid changing widget origin unless initial bounds were specificed and
+  // widget origin is always relative to it.
+  if (initial_bounds_.IsEmpty())
+    new_widget_bounds.set_origin(widget_->GetNativeWindow()->bounds().origin());
 
   // Update widget origin using the surface origin if the current location of
   // surface is being anchored to one side of the widget as a result of a
