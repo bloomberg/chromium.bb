@@ -165,6 +165,10 @@ def CalculateHash(root, expected_hash):
     digest.update(path_without_hash.lower())
     with open(path, 'rb') as f:
       digest.update(f.read())
+
+  # Save the timestamp file if the calculated hash is the expected one.
+  if digest.hexdigest() == expected_hash:
+    SaveTimestampsAndHash(root, digest.hexdigest())
   return digest.hexdigest()
 
 
