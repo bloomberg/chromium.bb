@@ -19,7 +19,7 @@ const BufferFormat kBufferFormats[] = {
     BufferFormat::RGBX_8888, BufferFormat::RGBA_8888,
     BufferFormat::BGRX_8888, BufferFormat::BGRA_8888,
     BufferFormat::UYVY_422,  BufferFormat::YUV_420_BIPLANAR,
-    BufferFormat::YUV_420};
+    BufferFormat::YVU_420};
 
 static_assert(arraysize(kBufferFormats) ==
                   (static_cast<int>(BufferFormat::LAST) + 1),
@@ -65,7 +65,7 @@ bool RowSizeForBufferFormatChecked(
         return false;
       *size_in_bytes = checked_size.ValueOrDie();
       return true;
-    case BufferFormat::YUV_420:
+    case BufferFormat::YVU_420:
       DCHECK_EQ(0u, width % 2);
       *size_in_bytes = width / SubsamplingFactorForBufferFormat(format, plane);
       return true;
@@ -103,7 +103,7 @@ size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
       return 1;
     case BufferFormat::YUV_420_BIPLANAR:
       return 2;
-    case BufferFormat::YUV_420:
+    case BufferFormat::YVU_420:
       return 3;
   }
   NOTREACHED();
@@ -126,7 +126,7 @@ size_t SubsamplingFactorForBufferFormat(BufferFormat format, size_t plane) {
     case BufferFormat::BGRA_8888:
     case BufferFormat::UYVY_422:
       return 1;
-    case BufferFormat::YUV_420: {
+    case BufferFormat::YVU_420: {
       static size_t factor[] = {1, 2, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
@@ -196,7 +196,7 @@ size_t BufferOffsetForBufferFormat(const Size& size,
     case BufferFormat::BGRA_8888:
     case BufferFormat::UYVY_422:
       return 0;
-    case BufferFormat::YUV_420: {
+    case BufferFormat::YVU_420: {
       static size_t offset_in_2x2_sub_sampling_sizes[] = {0, 4, 5};
       DCHECK_LT(plane, arraysize(offset_in_2x2_sub_sampling_sizes));
       return offset_in_2x2_sub_sampling_sizes[plane] *

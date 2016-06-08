@@ -204,7 +204,7 @@ INSTANTIATE_TEST_CASE_P(
                                          gfx::BufferFormat::RGBA_4444,
                                          gfx::BufferFormat::RGBA_8888,
                                          gfx::BufferFormat::BGRA_8888,
-                                         gfx::BufferFormat::YUV_420)));
+                                         gfx::BufferFormat::YVU_420)));
 
 }  // namespace
 }  // namespace content

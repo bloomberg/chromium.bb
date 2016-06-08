@@ -51,7 +51,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       return false;
@@ -81,7 +81,7 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
@@ -216,7 +216,7 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormatForTesting(
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();

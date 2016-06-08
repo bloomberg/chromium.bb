@@ -138,7 +138,7 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::UYVY_422:
-    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YVU_420:
       NOTREACHED();
       return;
   }

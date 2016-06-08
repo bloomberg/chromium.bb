@@ -470,7 +470,7 @@ static const GLenum valid_hint_target_table_es3[] = {
 
 static const GLenum valid_image_internal_format_table[] = {
     GL_RGB,
-    GL_RGB_YUV_420_CHROMIUM,
+    GL_RGB_YCRCB_420_CHROMIUM,
     GL_RGB_YCBCR_422_CHROMIUM,
     GL_RGB_YCBCR_420V_CHROMIUM,
     GL_RGBA,
@@ -1226,7 +1226,7 @@ static const GLenum
         GL_RGBA4,
         GL_RGB10_A2,
         GL_RGBA16F,
-        GL_RGB_YUV_420_CHROMIUM,
+        GL_RGB_YCRCB_420_CHROMIUM,
         GL_RGB_YCBCR_422_CHROMIUM,
         GL_RGB_YCBCR_420V_CHROMIUM,
 };

@@ -135,8 +135,8 @@
 // GL_CHROMIUM_gpu_memory_buffer_image
 #define GL_READ_WRITE_CHROMIUM                           0x78F2
 
-// GL_CHROMIUM_yuv_420_image
-#define GL_RGB_YUV_420_CHROMIUM                          0x78FA
+// GL_CHROMIUM_ycrcb_420_image
+#define GL_RGB_YCRCB_420_CHROMIUM                        0x78FA
 
 // GL_CHROMIUM_ycbcr_422_image
 #define GL_RGB_YCBCR_422_CHROMIUM                        0x78FB
