@@ -433,8 +433,18 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
   InitNavigateParams(&params, 0, entry_id, true, kRewrittenURL,
                      ui::PAGE_TRANSITION_TYPED);
   contents()->GetMainFrame()->PrepareForCommit();
+  contents()->GetMainFrame()->OnMessageReceived(
+      FrameHostMsg_DidStartProvisionalLoad(1, kRewrittenURL,
+                                           base::TimeTicks::Now()));
   contents()->GetMainFrame()->SendNavigateWithParams(&params);
-  EXPECT_EQ(base::ASCIIToUTF16("chrome://blah"), contents()->GetTitle());
+
+  // This is the virtual URL.
+  EXPECT_EQ(base::ASCIIToUTF16("view-source:chrome://blah"),
+            contents()->GetTitle());
+
+  // The actual URL navigated to.
+  EXPECT_EQ(kRewrittenURL,
+            contents()->GetController().GetLastCommittedEntry()->GetURL());
 }
 
 // Test to ensure UpdateMaxPageID is working properly.
