@@ -94,8 +94,9 @@ LayerTreeImpl::~LayerTreeImpl() {
 }
 
 void LayerTreeImpl::Shutdown() {
-  DetachLayers();
-  DCHECK(!root_layer_);
+  if (root_layer_)
+    RemoveLayer(root_layer_->id());
+  root_layer_ = nullptr;
 }
 
 void LayerTreeImpl::ReleaseResources() {
@@ -312,6 +313,11 @@ std::unique_ptr<OwnedLayerImplList> LayerTreeImpl::DetachLayers() {
   std::unique_ptr<OwnedLayerImplList> ret = std::move(layers_);
   layers_.reset(new OwnedLayerImplList);
   return ret;
+}
+
+void LayerTreeImpl::ClearLayers() {
+  SetRootLayer(nullptr);
+  DCHECK(layers_->empty());
 }
 
 static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,

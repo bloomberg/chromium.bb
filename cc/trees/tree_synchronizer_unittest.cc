@@ -226,7 +226,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeReusingLayers) {
   ASSERT_EQ(1u, layer_impl_destruction_list.size());
   EXPECT_EQ(second_layer_impl_id, layer_impl_destruction_list[0]);
 
-  host_->active_tree()->DetachLayers();
+  host_->active_tree()->ClearLayers();
 }
 
 // Constructs a very simple tree and checks that a stacking-order change is
@@ -272,7 +272,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
   EXPECT_FALSE(layer_impl_tree_root->LayerPropertyChanged());
   EXPECT_FALSE(layer_impl_tree_root->children()[0]->LayerPropertyChanged());
   EXPECT_TRUE(layer_impl_tree_root->children()[1]->LayerPropertyChanged());
-  host_->active_tree()->DetachLayers();
+  host_->active_tree()->ClearLayers();
 }
 
 TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
@@ -371,7 +371,7 @@ TEST_F(TreeSynchronizerTest, ReuseLayerImplsAfterStructuralChange) {
 
   EXPECT_EQ(0u, layer_impl_destruction_list.size());
 
-  host_->active_tree()->DetachLayers();
+  host_->active_tree()->ClearLayers();
 }
 
 // Constructs a very simple tree, synchronizes it, then synchronizes to a
@@ -486,7 +486,7 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
-  host_->active_tree()->DetachLayers();
+  host_->active_tree()->ClearLayers();
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {

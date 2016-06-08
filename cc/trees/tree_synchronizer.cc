@@ -43,7 +43,7 @@ void SynchronizeTreesInternal(LayerType* layer_root, LayerTreeImpl* tree_impl) {
 void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
                                         LayerTreeImpl* tree_impl) {
   if (!layer_root)
-    tree_impl->DetachLayers();
+    tree_impl->ClearLayers();
   else
     SynchronizeTreesInternal(layer_root, tree_impl);
 }
@@ -51,7 +51,7 @@ void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
 void TreeSynchronizer::SynchronizeTrees(LayerImpl* layer_root,
                                         LayerTreeImpl* tree_impl) {
   if (!layer_root)
-    tree_impl->DetachLayers();
+    tree_impl->ClearLayers();
   else
     SynchronizeTreesInternal(layer_root, tree_impl);
 }

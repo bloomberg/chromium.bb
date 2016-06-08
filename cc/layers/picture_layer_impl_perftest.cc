@@ -61,7 +61,7 @@ class PictureLayerImplPerfTest : public testing::Test {
         FakeRasterSource::CreateFilled(layer_bounds);
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-    pending_tree->DetachLayers();
+    pending_tree->ClearLayers();
 
     std::unique_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7,

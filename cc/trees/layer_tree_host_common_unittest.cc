@@ -7752,7 +7752,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
   EXPECT_EQ(expected, actual);
 
-  child_raw->TakeReplicaLayerForTesting();
+  child_raw->TakeReplicaLayer();
 
   // With nothing drawing, we should have no layers.
   grand_child2_raw->SetDrawsContent(false);
