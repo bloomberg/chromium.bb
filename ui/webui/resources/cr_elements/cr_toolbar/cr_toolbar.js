@@ -6,6 +6,19 @@ Polymer({
   is: 'cr-toolbar',
 
   properties: {
+    // Name to display in the toolbar, in titlecase.
+    pageName: String,
+
+    // Prompt text to display in the search field.
+    searchPrompt: String,
+
+    // Tooltip to display on the clear search button.
+    clearLabel: String,
+
+    // Value is proxied through to cr-toolbar-search-field. When true,
+    // the search field will show a processing spinner.
+    spinnerActive: Boolean,
+
     /** @private */
     narrow_: {
       type: Boolean,
@@ -17,15 +30,6 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
     },
-
-    // Name to display in the toolbar, in titlecase.
-    pageName: String,
-
-    // Prompt text to display in the search field.
-    searchPrompt: String,
-
-    // Tooltip to display on the clear search button.
-    clearLabel: String,
   },
 
   /** @return {!CrToolbarSearchFieldElement} */

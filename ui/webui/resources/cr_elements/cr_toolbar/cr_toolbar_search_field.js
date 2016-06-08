@@ -19,6 +19,13 @@ Polymer({
 
     // Tooltip to display on the clear search button.
     clearLabel: String,
+
+    // When true, show a loading spinner to indicate that the backend is
+    // processing the search. Will only show if the search field is open.
+    spinnerActive: {
+      type: Boolean,
+      reflectToAttribute: true
+    },
   },
 
   listeners: {
@@ -32,6 +39,16 @@ Polymer({
    */
   computeIconTabIndex_: function(narrow) {
     return narrow ? 0 : -1;
+  },
+
+  /**
+   * @param {boolean} spinnerActive
+   * @param {boolean} showingSearch
+   * @return {boolean}
+   * @private
+   */
+  isSpinnerShown_: function(spinnerActive, showingSearch) {
+    return spinnerActive && showingSearch;
   },
 
   /** @private */

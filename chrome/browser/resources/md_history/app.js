@@ -7,6 +7,7 @@
  *            searchTerm: string,
  *            results: ?Array<!HistoryEntry>,
  *            info: ?HistoryQuery,
+ *            incremental: boolean,
  *            range: HistoryRange,
  *            groupedOffset: number,
  *            sessionList: ?Array<!ForeignSession>}}
@@ -40,6 +41,8 @@ Polymer({
           querying: true,
           searchTerm: '',
           results: null,
+          // Whether the most recent query was incremental.
+          incremental: false,
           info: null,
           range: HistoryRange.ALL_TIME,
           // TODO(calamity): Make history toolbar buttons change the offset.
@@ -64,6 +67,7 @@ Polymer({
     'load-more-history': 'loadMoreHistory_',
   },
 
+  /** @override */
   ready: function() {
     this.grouped_ = loadTimeData.getBoolean('groupByDomain');
   },
@@ -175,6 +179,7 @@ Polymer({
       return;
 
     this.set('queryState_.querying', true);
+    this.set('queryState_.incremental', incremental);
 
     var queryState = this.queryState_;
 
@@ -204,6 +209,11 @@ Polymer({
     this.set('queryState_.sessionList', sessionList);
   },
 
+  /**
+   * @param {string} selectedPage
+   * @param {HistoryRange} range
+   * @return {string}
+   */
   getSelectedPage: function(selectedPage, range) {
     if (selectedPage == 'history-list' && range != HistoryRange.ALL_TIME)
       return 'history-grouped-list';
@@ -211,7 +221,24 @@ Polymer({
     return selectedPage;
   },
 
-  syncedTabsSelected_(selectedPage) {
+  /**
+   * @param {string} selectedPage
+   * @return {boolean}
+   * @private
+   */
+  syncedTabsSelected_: function(selectedPage) {
     return selectedPage == 'history-synced-device-manager';
+  },
+
+  /**
+   * @param {boolean} querying
+   * @param {boolean} incremental
+   * @param {string} searchTerm
+   * @return {boolean} Whether a loading spinner should be shown (implies the
+   *     backend is querying a new search term).
+   * @private
+   */
+  shouldShowSpinner_: function(querying, incremental, searchTerm) {
+    return querying && !incremental && searchTerm != '';
   }
 });

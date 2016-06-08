@@ -42,7 +42,10 @@
         overflow: hidden;
       }
     </style>
-    <history-toolbar id="toolbar" searching="[[queryState_.querying]]"
+    <history-toolbar id="toolbar"
+        spinner-active="[[shouldShowSpinner_(queryState_.querying,
+                                             queryState_.incremental,
+                                             queryState_.searchTerm)]]"
         is-grouped-mode="{{grouped_}}"
         grouped-range="{{queryState_.range}}"
         search-term="{{queryState_.searchTerm}}"

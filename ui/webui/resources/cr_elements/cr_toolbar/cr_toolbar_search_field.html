@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
@@ -30,10 +31,20 @@
 
       #icon {
         --paper-icon-button-ink-color: white;
+        transition: opacity 150ms;
       }
 
       #prompt {
         visibility: hidden;
+      }
+
+      paper-spinner-lite {
+        --paper-spinner-color: white;
+        height: 20px;
+        margin: 0 6px;
+        padding: 6px;
+        position: absolute;
+        width: 20px;
       }
 
       paper-input-container {
@@ -70,6 +81,9 @@
       :host(:not([narrow]):not([showing-search])) #icon,
       :host(:not([narrow]):not([showing-search])) #prompt {
         opacity: 0.6;
+      }
+
+      :host(:not([narrow]):not([showing-search])) #prompt {
         visibility: visible;
       }
 
@@ -78,10 +92,17 @@
         width: 100%;
       }
 
+      :host([showing-search][spinner-active]) #icon {
+        opacity: 0;
+      }
+
       :host([narrow][showing-search]) #icon {
         -webkit-margin-start: 18px;
       }
     </style>
+    <paper-spinner-lite
+        active="[[isSpinnerShown_(spinnerActive, showingSearch)]]">
+    </paper-spinner-lite>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]"
         tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>

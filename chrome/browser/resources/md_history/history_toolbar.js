@@ -43,8 +43,9 @@ Polymer({
       notify: true,
     },
 
-    // True if waiting on the search backend.
-    searching: {
+    // True if the backend is processing and a spinner should be shown in the
+    // toolbar.
+    spinnerActive: {
       type: Boolean,
       value: false
     },
