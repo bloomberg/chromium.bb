@@ -290,10 +290,18 @@ void av1_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
 
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 
+#if CONFIG_EXT_INTERP
+static const aom_prob default_switchable_interp_prob
+    [SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS - 1] = {
+      { 235, 192, 128, 128 }, { 36, 243, 208, 128 }, { 34, 16, 128, 128 },
+      { 36, 243, 48, 128 },   { 34, 16, 128, 128 },  { 149, 160, 128, 128 },
+    };
+#else   // CONFIG_EXT_INTERP
 static const aom_prob default_switchable_interp_prob
     [SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS - 1] = {
       { 235, 162 }, { 36, 255 }, { 34, 3 }, { 149, 144 },
     };
+#endif  // CONFIG_EXT_INTERP
 
 #if CONFIG_MISC_FIXES
 // FIXME(someone) need real defaults here
@@ -343,8 +351,22 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->inter_ext_tx_prob, default_inter_ext_tx_prob);
 }
 
+#if CONFIG_EXT_INTERP
+const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =
+    {
+      -EIGHTTAP,
+      2,
+      4,
+      6,
+      -EIGHTTAP_SMOOTH,
+      -EIGHTTAP_SMOOTH2,
+      -MULTITAP_SHARP,
+      -MULTITAP_SHARP2,
+    };
+#else   // CONFIG_EXT_INTERP
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =
     { -EIGHTTAP, 2, -EIGHTTAP_SMOOTH, -EIGHTTAP_SHARP };
+#endif  // CONFIG_EXT_INTERP
 
 void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   int i, j;
