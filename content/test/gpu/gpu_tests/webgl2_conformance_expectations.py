@@ -481,11 +481,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_teximage2d_cube.html',
         ['linux'], bug=483282)
 
+    # Temporary supression due to timeout from perf regression
+    self.Fail('deqp/functional/gles3/vertexarrays.html', ['linux'], bug=618139)
+
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
         ['linux', 'nvidia'], bug=606498)
-    self.Fail('deqp/functional/gles3/vertexarrays.html',
-        ['linux', 'nvidia', 'debug'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('deqp/functional/gles3/buffercopy.html',
@@ -519,8 +520,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/internalformatquery.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturestatequery.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/buffercopy.html',
         ['linux', 'amd'], bug=483282)
