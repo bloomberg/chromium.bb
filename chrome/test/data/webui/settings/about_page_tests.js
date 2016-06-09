@@ -171,40 +171,47 @@ cr.define('settings_about_page', function() {
       }
 
       /**
-       * Test that the status icon updates according to incoming
-       * 'update-status-changed' events.
+       * Test that the status icon and status message update according to
+       * incoming 'update-status-changed' events.
        */
-      test('IconUpdates', function() {
+      test('IconAndMessageUpdates', function() {
         var icon = page.$$('iron-icon');
         assertTrue(!!icon);
+        var statusMessageEl = page.$.updateStatusMessage;
+        var previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.CHECKING);
         assertEquals(SPINNER_ICON, icon.src);
         assertEquals(null, icon.getAttribute('icon'));
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.UPDATING);
         assertEquals(SPINNER_ICON, icon.src);
         assertEquals(null, icon.getAttribute('icon'));
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
         assertEquals(null, icon.src);
         assertEquals('settings:check-circle', icon.icon);
-
-        fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
-        assertEquals(null, icon.src);
-        assertEquals('settings:check-circle', icon.icon);
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
         assertEquals(null, icon.src);
         assertEquals('cr:domain', icon.icon);
+        assertEquals(0, statusMessageEl.textContent.trim().length);
 
         fireStatusChanged(UpdateStatus.FAILED);
         assertEquals(null, icon.src);
         assertEquals('settings:error', icon.icon);
+        assertEquals(0, statusMessageEl.textContent.trim().length);
 
         fireStatusChanged(UpdateStatus.DISABLED);
         assertEquals(null, icon.src);
         assertEquals(null, icon.getAttribute('icon'));
+        assertEquals(0, statusMessageEl.textContent.trim().length);
       });
 
       /**

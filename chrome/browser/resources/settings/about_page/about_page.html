@@ -78,8 +78,13 @@
                 <div id="updateStatusMessage"
                     hidden="[[!shouldShowUpdateStatusMessage_(
                         currentUpdateStatusEvent_)]]">
+<if expr="not chromeos">
+                  [[getUpdateStatusMessage_(currentUpdateStatusEvent_)]]
+</if>
+<if expr="chromeos">
                   [[getUpdateStatusMessage_(
-                      currentUpdateStatusEvent_,targetChannel)]]
+                      currentUpdateStatusEvent_, targetChannel_)]]
+</if>
                 </div>
                 <span id="deprecationWarning"
                     hidden="[[!obsoleteSystemInfo_.obsolete]]">
