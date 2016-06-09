@@ -179,8 +179,9 @@ class ToughAdCasesPageSet(story.StorySet):
     self.AddStory(AdPage('file://tough_ad_cases/'
         'swiffy_webgl_collection.html',
         self, make_javascript_deterministic=False, scroll=scroll))
-    self.AddStory(AdPage('http://www.latimes.com', self, scroll=scroll,
-        wait_for_interactive_or_better=True))
+    # crbug.com/618708
+    # self.AddStory(AdPage('http://www.latimes.com', self, scroll=scroll,
+    #     wait_for_interactive_or_better=True))
     self.AddStory(ForbesAdPage('http://www.forbes.com/sites/parmyolson/'
         '2015/07/29/jana-mobile-data-facebook-internet-org/',
         self, scroll=scroll))
