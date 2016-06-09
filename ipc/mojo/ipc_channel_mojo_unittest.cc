@@ -383,12 +383,13 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override {
     base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedPipe(message, &iter);
-    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
 
-  void OnChannelError() override { NOTREACHED(); }
+  void OnChannelError() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
 
@@ -460,12 +461,14 @@ class ListenerThatExpectsMessagePipeUsingParamTrait : public IPC::Listener {
       MojoClose(handle.value());
     }
 
-    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
 
-  void OnChannelError() override { NOTREACHED(); }
+  void OnChannelError() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
 
  private:
@@ -592,12 +595,13 @@ class ListenerThatExpectsFile : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override {
     base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedFile(message, &iter);
-    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
 
-  void OnChannelError() override { NOTREACHED(); }
+  void OnChannelError() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
 
@@ -645,12 +649,13 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
     base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedFile(message, &iter);
     HandleSendingHelper::ReadReceivedPipe(message, &iter);
-    base::MessageLoop::current()->QuitWhenIdle();
     ListenerThatExpectsOK::SendOK(sender_);
     return true;
   }
 
-  void OnChannelError() override { NOTREACHED(); }
+  void OnChannelError() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
 
