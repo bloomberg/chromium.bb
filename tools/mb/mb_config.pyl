@@ -342,10 +342,10 @@
       'UBSan Release': 'gyp_ubsan_release_bot',
       'UBSan vptr Release': 'gyp_ubsan_vptr_edge_release_bot',
       'Win ASan Release Coverage':
-        'gyp_asan_edge_fuzzer_v8_heap_release_static_x86',
+        'gyp_asan_edge_fuzzer_v8_heap_release_bot_x86',
       'Win ASan Release Media':
-        'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_static_x86',
-      'Win ASan Release': 'gyp_asan_fuzzer_v8_heap_release_static_x86',
+        'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
+      'Win ASan Release': 'gyp_asan_fuzzer_v8_heap_release_bot_x86',
       'Win SyzyASAN LKGR': 'gyp_syzyasan_no_pch_win_z7_x86',
     },
 
@@ -1224,8 +1224,8 @@
       'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
     ],
 
-    'gyp_asan_edge_fuzzer_v8_heap_release_static_x86': [
-      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release', 'static', 'x86',
+    'gyp_asan_edge_fuzzer_v8_heap_release_bot_x86': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
     'gyp_asan_edge_fuzzer_v8_heap_symbolized_release_bot_hybrid': [
@@ -1237,9 +1237,9 @@
       'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
     ],
 
-    'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_static_x86': [
+    'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86': [
       'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs',
-      'release', 'static', 'x86',
+      'release_bot', 'x86',
     ],
 
     'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot': [
@@ -1250,8 +1250,8 @@
       'gyp', 'asan', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
-    'gyp_asan_fuzzer_v8_heap_release_static_x86': [
-      'gyp', 'asan', 'fuzzer', 'v8_heap', 'release', 'static', 'x86',
+    'gyp_asan_fuzzer_v8_heap_release_bot_x86': [
+      'gyp', 'asan', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
     'gyp_asan_lsan_edge_debug_bot': [
