@@ -22,6 +22,7 @@
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -216,7 +217,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
   [shadow setShadowBlurRadius:0];
 
   NSColor* foregroundColor;
-  if (browser_->profile()->IsGuestSession()) {
+  if (browser_->profile()->IsGuestSession() &&
+      !ui::MaterialDesignController::IsModeMaterial()) {
     foregroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.9];
     [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.4]];
   } else if (!isThemedWindow_) {
