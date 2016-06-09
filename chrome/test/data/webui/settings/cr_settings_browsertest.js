@@ -556,3 +556,21 @@ CrSettingsLanguagesPageTest.prototype = {
 TEST_F('CrSettingsLanguagesPageTest', 'LanguagesPage', function() {
   mocha.run();
 });
+
+function CrSettingsRadioGroupTest() {}
+
+CrSettingsRadioGroupTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/controls/settings_radio_group.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'radio_group_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsRadioGroupTest', 'All', function() {
+  mocha.run();
+});
