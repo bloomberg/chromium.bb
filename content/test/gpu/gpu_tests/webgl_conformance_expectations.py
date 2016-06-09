@@ -190,22 +190,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgb-rgb-unsigned_byte.html',
-              ['android', 'android-content-shell',
+              ['android', 'android-content-shell', 'android-chromium',
                ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-              ['android', 'android-content-shell',
+              ['android', 'android-content-shell', 'android-chromium',
                ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html',
-              ['android', 'android-content-shell',
+              ['android', 'android-content-shell', 'android-chromium',
                ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-              ['android', 'android-content-shell',
+              ['android', 'android-content-shell', 'android-chromium',
                ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-              ['android', 'android-content-shell',
+              ['android', 'android-content-shell', 'android-chromium',
                ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/webgl_canvas/' +
               'tex-2d-rgb-rgb-unsigned_byte.html',
@@ -623,23 +623,23 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=598262)
     self.Fail('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['android', 'android-content-shell',
+        ['android', 'android-content-shell', 'android-chromium',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_byte.html',
-        ['android', 'android-content-shell',
+        ['android', 'android-content-shell', 'android-chromium',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['android', 'android-content-shell',
+        ['android', 'android-content-shell', 'android-chromium',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['android', 'android-content-shell',
+        ['android', 'android-content-shell', 'android-chromium',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['android', 'android-content-shell',
+        ['android', 'android-content-shell', 'android-chromium',
          ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     # bindBufferBadArgs is causing the GPU thread to crash, taking
     # down the WebView shell, causing the next test to fail and
