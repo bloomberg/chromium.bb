@@ -341,6 +341,9 @@
         '<(DEPTH)/components/components.gyp:omnibox_common',
         '<(DEPTH)/components/components.gyp:policy',
         '<(DEPTH)/components/components.gyp:policy_component_common',
+        # TODO(fdoray): Remove this once the PreRead field trial has expired.
+        # crbug.com/577698
+        '<(DEPTH)/components/components.gyp:startup_metric_utils_common',
         '<(DEPTH)/components/components.gyp:translate_core_common',
         '<(DEPTH)/components/components.gyp:variations',
         '<(DEPTH)/components/components.gyp:version_info',
@@ -504,9 +507,6 @@
           ],
           'dependencies': [
             '<(DEPTH)/components/components.gyp:dom_distiller_core',  # Needed by chrome_content_client.cc.
-            # TODO(fdoray): Remove this once the PreRead field trial has
-            # expired. crbug.com/577698
-            '<(DEPTH)/components/components.gyp:startup_metric_utils_win',
           ],
           'all_dependent_settings': {
             'msvs_settings': {

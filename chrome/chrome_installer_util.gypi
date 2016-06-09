@@ -125,7 +125,7 @@
             '<(DEPTH)/components/components.gyp:metrics',
             # TODO(fdoray): Remove this once the PreRead field trial has
             # expired. crbug.com/577698
-            '<(DEPTH)/components/components.gyp:startup_metric_utils_win',
+            '<(DEPTH)/components/components.gyp:startup_metric_utils_common',
             '<(DEPTH)/components/components.gyp:variations',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/crypto/crypto.gyp:crypto',

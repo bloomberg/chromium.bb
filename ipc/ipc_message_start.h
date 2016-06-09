@@ -125,6 +125,7 @@ enum IPCMessageStart {
   ArcInstanceMsgStart,
   ArcInstanceHostMsgStart,
   DistillerMsgStart,
+  StartupMetricMsgStart,
   ArcCameraMsgStart,
   DWriteFontProxyMsgStart,
   MediaPlayerDelegateMsgStart,

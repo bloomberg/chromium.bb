@@ -75,14 +75,13 @@
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/startup_metric_utils/common/startup_metric.mojom.h"
+#include "components/startup_metric_utils/common/startup_metric_messages.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
@@ -328,12 +327,8 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
-  {
-    startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    thread->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&startup_metric_host));
-    startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
-  }
+  thread->Send(new StartupMetricHostMsg_RecordRendererMainEntryTime(
+      main_entry_time_));
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
   web_cache_impl_.reset(new web_cache::WebCacheImpl());
