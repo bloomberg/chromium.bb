@@ -358,7 +358,7 @@ def StartFromJsonString(http_body_str):
     return Render('Time estimation failed.', memory_logs)
 
   # Compute the number of required instances if not specified.
-  if not task.BackendParams().get('instance_count'):
+  if task.BackendParams().get('instance_count') is None:
     target_parallel_duration_s = 1800.0 # 30 minutes.
     task.BackendParams()['instance_count'] = math.ceil(
         sequential_duration_s / target_parallel_duration_s)
