@@ -1440,7 +1440,8 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
 
   if (dismiss) {
     DVLOGF(2) << "Scheduling picture dismissal";
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     child_task_runner_->PostTask(
         FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DismissPictures,
                               weak_this_, picture_buffers_to_dismiss, &done));

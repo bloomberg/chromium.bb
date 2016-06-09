@@ -49,7 +49,8 @@ class BindToTaskRunnerTest : public ::testing::Test {
 
 TEST_F(BindToTaskRunnerTest, Closure) {
   // Test the closure is run inside the loop, not outside it.
-  base::WaitableEvent waiter(false, false);
+  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::Closure cb = BindToCurrentThread(
       base::Bind(&base::WaitableEvent::Signal, Unretained(&waiter)));
   cb.Run();

@@ -20,7 +20,9 @@ namespace chromecast {
 namespace media {
 
 void RunUntilIdle(base::TaskRunner* task_runner) {
-  base::WaitableEvent completion_event(false, false);
+  base::WaitableEvent completion_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner->PostTask(FROM_HERE,
                         base::Bind(&base::WaitableEvent::Signal,
                                    base::Unretained(&completion_event)));

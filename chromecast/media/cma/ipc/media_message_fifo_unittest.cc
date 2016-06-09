@@ -54,7 +54,7 @@ void MsgProducer(std::unique_ptr<MediaMessageFifo> fifo,
       if (msg1)
         break;
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-    } while(true);
+    } while (true);
   }
 
   fifo.reset();
@@ -78,7 +78,7 @@ void MsgConsumer(std::unique_ptr<MediaMessageFifo> fifo,
         break;
       }
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-    } while(true);
+    } while (true);
   }
 
   fifo.reset();
@@ -133,7 +133,8 @@ TEST(MediaMessageFifoTest, AlternateWriteRead) {
                                new FifoMemoryChunk(&buffer[0], buffer_size)),
                            false));
 
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread->task_runner()->PostTask(
       FROM_HERE, base::Bind(&MsgProducerConsumer, base::Passed(&producer_fifo),
                             base::Passed(&consumer_fifo), &event));
@@ -163,8 +164,12 @@ TEST(MediaMessageFifoTest, MultiThreaded) {
                                new FifoMemoryChunk(&buffer[0], buffer_size)),
                            false));
 
-  base::WaitableEvent producer_event_done(false, false);
-  base::WaitableEvent consumer_event_done(false, false);
+  base::WaitableEvent producer_event_done(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent consumer_event_done(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   const int msg_count = 2048;
   producer_thread->task_runner()->PostTask(

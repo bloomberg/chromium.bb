@@ -102,7 +102,8 @@ class CrasInputStreamTest : public testing::Test {
     // samples can be provided when doing non-integer SRC.  For example
     // converting from 192k to 44.1k is a ratio of 4.35 to 1.
     MockAudioInputCallback mock_callback;
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     EXPECT_CALL(mock_callback, OnData(test_stream, _, _, _))
         .WillOnce(InvokeWithoutArgs(&event, &base::WaitableEvent::Signal));

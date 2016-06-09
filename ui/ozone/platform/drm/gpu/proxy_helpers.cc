@@ -21,7 +21,8 @@ void OnRunPostedTaskAndSignal(const base::Closure& callback,
 void PostSyncTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::Closure& callback) {
-  base::WaitableEvent wait(false, false);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool success = task_runner->PostTask(
       FROM_HERE, base::Bind(OnRunPostedTaskAndSignal, callback, &wait));
   if (success)

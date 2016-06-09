@@ -19,7 +19,9 @@ class RunOnUIThreadBlocking {
   template <typename Signature>
   static void Run(base::Callback<Signature> runnable) {
     DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    base::WaitableEvent finished(false, false);
+    base::WaitableEvent finished(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
           base::Bind(&RunOnUIThreadBlocking::RunOnUIThread<Signature>,
                      runnable, &finished));

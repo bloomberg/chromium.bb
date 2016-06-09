@@ -139,7 +139,8 @@ TEST_F(CrasUnifiedStreamTest, RenderFrames) {
 
   ASSERT_TRUE(test_stream->Open());
 
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   EXPECT_CALL(mock_callback, OnMoreData(_, _, 0))
       .WillRepeatedly(
