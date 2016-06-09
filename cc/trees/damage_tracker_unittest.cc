@@ -879,6 +879,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
     root->AddChild(std::move(child2));
+    root->layer_tree_impl()->BuildLayerListForTesting();
     host_impl_.active_tree()->ResetAllChangeTracking();
     LayerImpl* child2_ptr = host_impl_.active_tree()->LayerById(3);
     // Sanity check the initial conditions of the test, if these asserts

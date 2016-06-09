@@ -784,6 +784,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   std::unique_ptr<FakePictureLayerImpl> pending_child =
       FakePictureLayerImpl::CreateWithRasterSource(host_impl()->pending_tree(),
                                                    2, pending_raster_source);
+  int child_id = pending_child->id();
   pending_layer()->AddChild(std::move(pending_child));
 
   FakePictureLayerImpl* pending_child_layer =
@@ -799,8 +800,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   ActivateTree();
   SetupPendingTree(pending_raster_source);
 
-  FakePictureLayerImpl* active_child_layer =
-      static_cast<FakePictureLayerImpl*>(active_layer()->children()[0]);
+  FakePictureLayerImpl* active_child_layer = static_cast<FakePictureLayerImpl*>(
+      host_impl()->active_tree()->LayerById(child_id));
 
   std::set<Tile*> all_tiles;
   size_t tile_count = 0;

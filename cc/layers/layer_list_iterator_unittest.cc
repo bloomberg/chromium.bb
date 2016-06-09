@@ -240,6 +240,7 @@ TEST(LayerListIteratorTest, VerifyTraversalOrderImpl) {
   layer1->AddChild(std::move(layer5));
 
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 1;
   for (auto* layer : *host_impl.active_tree()) {
@@ -263,6 +264,7 @@ TEST(LayerListIteratorTest, VerifySingleLayerImpl) {
   std::unique_ptr<LayerImpl> layer1 =
       LayerImpl::Create(host_impl.active_tree(), 1);
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 1;
   for (auto* layer : *host_impl.active_tree()) {
@@ -328,6 +330,7 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrderImpl) {
   layer1->AddChild(std::move(layer5));
 
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 7;
 
@@ -353,6 +356,7 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayerImpl) {
   std::unique_ptr<LayerImpl> layer1 =
       LayerImpl::Create(host_impl.active_tree(), 1);
   host_impl.active_tree()->SetRootLayer(std::move(layer1));
+  host_impl.active_tree()->BuildLayerListForTesting();
 
   int i = 1;
   for (auto* layer : base::Reversed(*host_impl.active_tree())) {

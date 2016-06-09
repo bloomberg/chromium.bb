@@ -1289,6 +1289,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   root->test_properties()->force_render_surface = true;
 
   root->AddChild(LayerImpl::Create(host_impl_->pending_tree(), 2));
+  host_impl_->pending_tree()->BuildLayerListForTesting();
   LayerImpl* child = root->children()[0];
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
@@ -10215,6 +10216,7 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
       FakePictureLayerImpl::Create(pending_tree, 10);
   FakePictureLayerImpl* raw_pending_layer = pending_layer.get();
   pending_tree->SetRootLayer(std::move(pending_layer));
+  pending_tree->BuildLayerListForTesting();
   ASSERT_EQ(raw_pending_layer, pending_tree->root_layer());
 
   EXPECT_EQ(0u, raw_pending_layer->did_become_active_call_count());

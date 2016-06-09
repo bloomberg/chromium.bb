@@ -54,7 +54,8 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
       root_layer->layer_tree_impl()->InnerViewportScrollLayer();
   inputs.outer_viewport_scroll_layer =
       root_layer->layer_tree_impl()->OuterViewportScrollLayer();
-  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  EXPECT_FALSE(root_layer->layer_tree_impl()->property_trees()->needs_rebuild);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
 class LayerPositionConstraintTest : public testing::Test {

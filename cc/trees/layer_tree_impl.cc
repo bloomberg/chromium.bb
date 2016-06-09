@@ -261,11 +261,24 @@ void LayerTreeImpl::SetRootLayer(std::unique_ptr<LayerImpl> layer) {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
-void LayerTreeImpl::BuildLayerListForTesting() {
+void LayerTreeImpl::SetRootLayerFromLayerList() {
+  root_layer_ = layer_list_.empty() ? nullptr : layer_list_[0];
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
+}
+
+void LayerTreeImpl::AddToLayerList(LayerImpl* layer) {
+  layer_list_.push_back(layer);
+}
+
+void LayerTreeImpl::ClearLayerList() {
   layer_list_.clear();
+}
+
+void LayerTreeImpl::BuildLayerListForTesting() {
+  ClearLayerList();
   LayerListIterator<LayerImpl> it(root_layer_);
   for (; it != LayerListIterator<LayerImpl>(nullptr); ++it) {
-    layer_list_.push_back(*it);
+    AddToLayerList(*it);
   }
 }
 
@@ -307,6 +320,7 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
 
 std::unique_ptr<OwnedLayerImplList> LayerTreeImpl::DetachLayers() {
   root_layer_ = nullptr;
+  layer_list_.clear();
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
   std::unique_ptr<OwnedLayerImplList> ret = std::move(layers_);
@@ -444,20 +458,20 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
   }
 }
 
-LayerListIterator<LayerImpl> LayerTreeImpl::begin() const {
-  return LayerListIterator<LayerImpl>(root_layer_);
+LayerImplList::const_iterator LayerTreeImpl::begin() const {
+  return layer_list_.cbegin();
 }
 
-LayerListIterator<LayerImpl> LayerTreeImpl::end() const {
-  return LayerListIterator<LayerImpl>(nullptr);
+LayerImplList::const_iterator LayerTreeImpl::end() const {
+  return layer_list_.cend();
 }
 
-LayerListReverseIterator<LayerImpl> LayerTreeImpl::rbegin() {
-  return LayerListReverseIterator<LayerImpl>(root_layer_);
+LayerImplList::reverse_iterator LayerTreeImpl::rbegin() {
+  return layer_list_.rbegin();
 }
 
-LayerListReverseIterator<LayerImpl> LayerTreeImpl::rend() {
-  return LayerListReverseIterator<LayerImpl>(nullptr);
+LayerImplList::reverse_iterator LayerTreeImpl::rend() {
+  return layer_list_.rend();
 }
 
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
@@ -1507,7 +1521,7 @@ void LayerTreeImpl::AddSurfaceLayer(LayerImpl* layer) {
 }
 
 void LayerTreeImpl::RemoveSurfaceLayer(LayerImpl* layer) {
-  std::vector<LayerImpl*>::iterator it =
+  LayerImplList::iterator it =
       std::find(surface_layers_.begin(), surface_layers_.end(), layer);
   DCHECK(it != surface_layers_.end());
   surface_layers_.erase(it);

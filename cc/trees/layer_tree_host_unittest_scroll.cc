@@ -1147,55 +1147,57 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     PostSetNeedsCommitToMainThread();
   }
 
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
-    scroll_layer->SetScrollClipLayer(outer_viewport_container_layer_id_);
+  void UpdateLayerTreeHost() override {
+    Layer* root = layer_tree_host()->root_layer();
+    Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
+    switch (layer_tree_host()->source_frame_number()) {
+      case 0:
+        scroll_layer->SetScrollClipLayerId(outer_viewport_container_layer_id_);
+        // Set max_scroll_offset = (100, 100).
+        scroll_layer->SetBounds(gfx::Size(root->bounds().width() + 100,
+                                          root->bounds().height() + 100));
+        break;
+      case 1:
+        // Set max_scroll_offset = (0, 0).
+        scroll_layer->SetBounds(root->bounds());
+        break;
+      case 2:
+        // Set max_scroll_offset = (-100, -100).
+        scroll_layer->SetBounds(gfx::Size());
+        break;
+    }
+  }
 
-    // Set max_scroll_offset = (100, 100).
-    scroll_layer->SetBounds(
-        gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
-    impl->active_tree()->property_trees()->needs_rebuild = true;
-    impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
 
     ScrollTree& scroll_tree =
         impl->active_tree()->property_trees()->scroll_tree;
     ScrollNode* scroll_node =
         scroll_tree.Node(scroll_layer->scroll_tree_index());
-
     InputHandler::ScrollStatus status =
         impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::TOUCHSCREEN,
                         scroll_tree, scroll_node);
-
-    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
-              status.main_thread_scrolling_reasons);
-
-    // Set max_scroll_offset = (0, 0).
-    scroll_layer->SetBounds(root->bounds());
-    impl->active_tree()->property_trees()->needs_rebuild = true;
-    impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
-    scroll_tree = impl->active_tree()->property_trees()->scroll_tree;
-    scroll_node = scroll_tree.Node(scroll_layer->scroll_tree_index());
-    status = impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::TOUCHSCREEN,
-                             scroll_tree, scroll_node);
-    EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
-              status.main_thread_scrolling_reasons);
-
-    // Set max_scroll_offset = (-100, -100).
-    scroll_layer->SetBounds(gfx::Size());
-    impl->active_tree()->property_trees()->needs_rebuild = true;
-    impl->active_tree()->BuildLayerListAndPropertyTreesForTesting();
-    scroll_tree = impl->active_tree()->property_trees()->scroll_tree;
-    scroll_node = scroll_tree.Node(scroll_layer->scroll_tree_index());
-    status = impl->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::TOUCHSCREEN,
-                             scroll_tree, scroll_node);
-    EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
-              status.main_thread_scrolling_reasons);
-
-    EndTest();
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+        EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+                  status.main_thread_scrolling_reasons);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+        EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
+                  status.main_thread_scrolling_reasons);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+        EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
+                  status.main_thread_scrolling_reasons);
+        EndTest();
+        break;
+    }
   }
 
   void AfterTest() override {}

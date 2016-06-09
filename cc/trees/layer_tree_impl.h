@@ -135,6 +135,7 @@ class CC_EXPORT LayerTreeImpl {
   // ---------------------------------------------------------------------------
   LayerImpl* root_layer() const { return root_layer_; }
   void SetRootLayer(std::unique_ptr<LayerImpl>);
+  void SetRootLayerFromLayerList();
   bool IsRootLayer(const LayerImpl* layer) const;
   std::unique_ptr<OwnedLayerImplList> DetachLayers();
 
@@ -147,10 +148,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void MoveChangeTrackingToLayers();
 
-  LayerListIterator<LayerImpl> begin() const;
-  LayerListIterator<LayerImpl> end() const;
-  LayerListReverseIterator<LayerImpl> rbegin();
-  LayerListReverseIterator<LayerImpl> rend();
+  LayerImplList::const_iterator begin() const;
+  LayerImplList::const_iterator end() const;
+  LayerImplList::reverse_iterator rbegin();
+  LayerImplList::reverse_iterator rend();
 
   struct CC_EXPORT ElementLayers {
     // Transform and opacity mutations apply to this layer.
@@ -389,9 +390,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void AddSurfaceLayer(LayerImpl* layer);
   void RemoveSurfaceLayer(LayerImpl* layer);
-  const std::vector<LayerImpl*>& SurfaceLayers() const {
-    return surface_layers_;
-  }
+  const LayerImplList& SurfaceLayers() const { return surface_layers_; }
 
   LayerImpl* FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
       const gfx::PointF& screen_space_point);
@@ -474,6 +473,12 @@ class CC_EXPORT LayerTreeImpl {
 
   void ResetAllChangeTracking();
 
+  void AddToLayerList(LayerImpl* layer);
+
+  void ClearLayerList();
+
+  void BuildLayerListForTesting();
+
  protected:
   explicit LayerTreeImpl(
       LayerTreeHostImpl* layer_tree_host_impl,
@@ -518,7 +523,7 @@ class CC_EXPORT LayerTreeImpl {
 
   std::unique_ptr<OwnedLayerImplList> layers_;
   LayerImplMap layer_id_map_;
-  std::vector<LayerImpl*> layer_list_;
+  LayerImplList layer_list_;
   // Set of layers that need to push properties.
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
@@ -539,7 +544,7 @@ class CC_EXPORT LayerTreeImpl {
   std::multimap<int, int> scrollbar_map_;
 
   std::vector<PictureLayerImpl*> picture_layers_;
-  std::vector<LayerImpl*> surface_layers_;
+  LayerImplList surface_layers_;
 
   // List of visible layers for the most recently prepared frame.
   LayerImplList render_surface_layer_list_;
@@ -579,7 +584,6 @@ class CC_EXPORT LayerTreeImpl {
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
  private:
-  void BuildLayerListForTesting();
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };
 

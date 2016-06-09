@@ -676,6 +676,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
     CalcDrawPropsImplInputsForTesting* inputs) {
+  inputs->root_layer->layer_tree_impl()->BuildLayerListForTesting();
   PropertyTreeBuilder::PreCalculateMetaInformationForTesting(
       inputs->root_layer);
   CalculateDrawPropertiesInternal(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
