@@ -9,6 +9,7 @@
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 
 namespace offline_pages {
 
@@ -52,7 +53,13 @@ void PrerenderingOffliner::OnLoadPageDone(
     DCHECK(web_contents);
     std::unique_ptr<OfflinePageArchiver> archiver(
         new OfflinePageMHTMLArchiver(web_contents));
-    SavePage(request.url(), request.client_id(), std::move(archiver),
+    // Pass in the URL from the WebContents in case it is redirected from
+    // the requested URL. This is to work around a check in the
+    // OfflinePageModel implementation that ensures URL passed in here is
+    // same as LastCommittedURL from the snapshot.
+    // TODO(dougarnett): Raise issue of how to better deal with redirects.
+    SavePage(web_contents->GetLastCommittedURL(), request.client_id(),
+             std::move(archiver),
              base::Bind(&PrerenderingOffliner::OnSavePageDone,
                         weak_ptr_factory_.GetWeakPtr(), request,
                         completion_callback));
