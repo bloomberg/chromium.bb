@@ -108,11 +108,39 @@ void ListValueRewriter::AppendStringCallback::run(
   AppendCallback::run(result);
 }
 
+ListValueRewriter::AppendReleasedUniquePtrCallback::
+    AppendReleasedUniquePtrCallback(Replacements* replacements)
+    : replacements_(replacements) {}
+
+void ListValueRewriter::AppendReleasedUniquePtrCallback::run(
+    const MatchFinder::MatchResult& result) {
+  auto* object_expr = result.Nodes.getNodeAs<clang::Expr>("objectExpr");
+  bool arg_is_rvalue = object_expr->Classify(*result.Context).isRValue();
+
+  // Remove .release()
+  auto* member_call =
+      result.Nodes.getNodeAs<clang::CXXMemberCallExpr>("memberCall");
+  auto* member_expr = result.Nodes.getNodeAs<clang::MemberExpr>("memberExpr");
+  clang::CharSourceRange release_range = clang::CharSourceRange::getTokenRange(
+      member_expr->getOperatorLoc(), member_call->getLocEnd());
+  replacements_->emplace(*result.SourceManager, release_range,
+                         arg_is_rvalue ? "" : ")");
+
+  if (arg_is_rvalue)
+    return;
+
+  // Insert `std::move(' for non-rvalue expressions.
+  clang::CharSourceRange insertion_range = clang::CharSourceRange::getCharRange(
+      object_expr->getLocStart(), object_expr->getLocStart());
+  replacements_->emplace(*result.SourceManager, insertion_range, "std::move(");
+}
+
 ListValueRewriter::ListValueRewriter(Replacements* replacements)
     : append_boolean_callback_(replacements),
       append_integer_callback_(replacements),
       append_double_callback_(replacements),
-      append_string_callback_(replacements) {}
+      append_string_callback_(replacements),
+      append_released_unique_ptr_callback_(replacements) {}
 
 void ListValueRewriter::RegisterMatchers(MatchFinder* match_finder) {
   auto is_list_append =
@@ -191,4 +219,26 @@ void ListValueRewriter::RegisterMatchers(MatchFinder* match_finder) {
                             argumentCountIs(1),
                             hasArgument(0, id("argExpr", expr())))))))))),
       &append_string_callback_);
+
+  auto is_unique_ptr_release =
+      allOf(callee(cxxMethodDecl(
+                hasName("release"),
+                ofClass(cxxRecordDecl(hasName("::std::unique_ptr"))))),
+            argumentCountIs(0));
+
+  // base::ListValue::Append(ReturnsUniquePtr().release())
+  //     => base::ListValue::Append(ReturnsUniquePtr())
+  //   or
+  // base::ListValue::Append(unique_ptr_var.release())
+  //     => base::ListValue::Append(std::move(unique_ptr_var))
+  match_finder->addMatcher(
+      cxxMemberCallExpr(
+          is_list_append,
+          hasArgument(
+              0, ignoringParenImpCasts(
+                     id("memberCall",
+                        cxxMemberCallExpr(has(id("memberExpr", memberExpr())),
+                                          is_unique_ptr_release,
+                                          on(id("objectExpr", expr()))))))),
+      &append_released_unique_ptr_callback_);
 }

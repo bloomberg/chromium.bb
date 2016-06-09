@@ -2,15 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Performs simple cleanups of base::ListValue API:
-// - base::ListValue::Append(new base::FundamentalValue(bool))
-//       => base::ListValue::AppendBoolean(...)
-// - base::ListValue::Append(new base::FundamentalValue(int))
-//       => base::ListValue::AppendInteger(...)
-// - base::ListValue::Append(new base::FundamentalValue(double))
-//       => base::ListValue::AppendDouble(...)
-// - base::ListValue::Append(new base::StringValue(...))
-//       => base::ListValue::AppendString(...)
+// Handles various rewrites for base::ListValue::Append().
 
 #ifndef TOOLS_CLANG_VALUE_CLEANUP_LIST_VALUE_REWRITER_H_
 #define TOOLS_CLANG_VALUE_CLEANUP_LIST_VALUE_REWRITER_H_
@@ -71,10 +63,24 @@ class ListValueRewriter {
         const clang::ast_matchers::MatchFinder::MatchResult& result) override;
   };
 
+  class AppendReleasedUniquePtrCallback
+      : public clang::ast_matchers::MatchFinder::MatchCallback {
+   public:
+    explicit AppendReleasedUniquePtrCallback(
+        clang::tooling::Replacements* replacements);
+
+    void run(
+        const clang::ast_matchers::MatchFinder::MatchResult& result) override;
+
+   protected:
+    clang::tooling::Replacements* const replacements_;
+  };
+
   AppendBooleanCallback append_boolean_callback_;
   AppendIntegerCallback append_integer_callback_;
   AppendDoubleCallback append_double_callback_;
   AppendStringCallback append_string_callback_;
+  AppendReleasedUniquePtrCallback append_released_unique_ptr_callback_;
 };
 
 #endif  // TOOLS_CLANG_VALUE_CLEANUP_LIST_VALUE_REWRITER_H_
