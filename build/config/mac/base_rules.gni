@@ -312,12 +312,11 @@ template("framework_bundle") {
         visibility += [ ":$_target_name+link" ]
       }
 
-      script = "$root_out_dir/gyp-mac-tool"
+      script = "//build/config/mac/package_framework.py"
       outputs = [
         "$root_out_dir/$_framework_name/Versions/Current",
       ]
       args = [
-        "package-framework",
         "$_framework_name",
         "$_framework_version",
       ]
