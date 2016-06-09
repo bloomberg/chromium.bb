@@ -46,6 +46,8 @@ using extensions::DevicePermissionsPrompt;
   [promptField_
       setStringValue:base::SysUTF16ToNSString(prompt_->GetPromptMessage())];
   [tableView_ setAllowsMultipleSelection:prompt_->multiple()];
+  [tableView_ setDelegate:self];
+  [tableView_ setDataSource:self];
   [[deviceNameColumn_ headerCell]
       setStringValue:l10n_util::GetNSString(
                          IDS_DEVICE_PERMISSIONS_DIALOG_DEVICE_NAME_COLUMN)];
@@ -54,6 +56,7 @@ using extensions::DevicePermissionsPrompt;
                          IDS_DEVICE_PERMISSIONS_DIALOG_SERIAL_NUMBER_COLUMN)];
   [okButton_
       setTitle:l10n_util::GetNSString(IDS_DEVICE_PERMISSIONS_DIALOG_SELECT)];
+  [okButton_ setEnabled:NO];
   [cancelButton_ setTitle:l10n_util::GetNSString(IDS_CANCEL)];
 }
 
@@ -73,6 +76,10 @@ using extensions::DevicePermissionsPrompt;
     NOTREACHED();
     return @"";
   }
+}
+
+- (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
+  [okButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
 }
 
 @end
