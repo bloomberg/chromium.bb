@@ -5,14 +5,10 @@
 #include "core/paint/SVGFilterPainter.h"
 
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
-#include "core/paint/TransformRecorder.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
-#include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
@@ -90,33 +86,19 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
         return nullptr;
     }
 
+    const FloatRect referenceBox = object.objectBoundingBox();
+    SVGFilterGraphNodeMap* nodeMap = SVGFilterGraphNodeMap::create();
+    Filter* filter = FilterEffectBuilder::buildReferenceFilter(toSVGFilterElement(*m_filter.element()), referenceBox, nullptr, nullptr, nullptr, 1, nodeMap);
+    if (!filter || !filter->lastEffect())
+        return nullptr;
+
+    IntRect sourceRegion = enclosingIntRect(intersection(filter->filterRegion(), object.strokeBoundingBox()));
+    filter->getSourceGraphic()->setSourceRect(sourceRegion);
+    filter->lastEffect()->determineFilterPrimitiveSubregion(ClipToFilterRegion);
+
     FilterData* filterData = FilterData::create();
-    FloatRect referenceBox = object.objectBoundingBox();
-
-    SVGFilterElement* filterElement = toSVGFilterElement(m_filter.element());
-    FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(filterElement, filterElement->filterUnits()->currentValue()->enumValue(), referenceBox);
-    if (filterRegion.isEmpty())
-        return nullptr;
-
-    // Create the SVGFilter object.
-    bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
-    filterData->filter = Filter::create(referenceBox, filterRegion, 1, unitScaling);
-    filterData->nodeMap = SVGFilterGraphNodeMap::create();
-
-    IntRect sourceRegion = enclosingIntRect(intersection(filterRegion, object.strokeBoundingBox()));
-    filterData->filter->getSourceGraphic()->setSourceRect(sourceRegion);
-
-    // Create all relevant filter primitives.
-    SVGFilterBuilder builder(filterData->filter->getSourceGraphic(), filterData->nodeMap.get());
-    builder.buildGraph(filterData->filter.get(), *filterElement, referenceBox);
-
-    FilterEffect* lastEffect = builder.lastEffect();
-    if (!lastEffect)
-        return nullptr;
-
-    lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
-    filterData->filter->setLastEffect(lastEffect);
+    filterData->filter = filter;
+    filterData->nodeMap = nodeMap;
 
     // TODO(pdr): Can this be moved out of painter?
     m_filter.setFilterDataForLayoutObject(const_cast<LayoutObject*>(&object), filterData);

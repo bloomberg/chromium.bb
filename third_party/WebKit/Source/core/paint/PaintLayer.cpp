@@ -66,7 +66,6 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/BoxReflectionUtils.h"
@@ -2655,11 +2654,10 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the Filter if it didn't change.
-            Filter* referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingNode), nullptr, referenceOperation);
+            Filter* referenceFilter = FilterEffectBuilder::buildReferenceFilter(referenceOperation, nullptr, nullptr, nullptr, *toElement(enclosingNode), nullptr, effectiveZoom);
             referenceOperation.setFilter(referenceFilter);
         }
     }
-
     return filters;
 }
 
@@ -2735,8 +2733,8 @@ FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
 
     filterInfo->setBuilder(FilterEffectBuilder::create());
 
-    float zoom = layoutObject()->style() ? layoutObject()->style()->effectiveZoom() : 1.0f;
-    if (!filterInfo->builder()->build(toElement(enclosingNode()), computeFilterOperations(layoutObject()->styleRef()), zoom))
+    const ComputedStyle& style = layoutObject()->styleRef();
+    if (!filterInfo->builder()->build(toElement(enclosingNode()), computeFilterOperations(style), style.effectiveZoom()))
         filterInfo->setBuilder(nullptr);
 
     return filterInfo->builder();

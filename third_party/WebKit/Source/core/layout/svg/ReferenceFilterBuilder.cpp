@@ -29,13 +29,9 @@
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/layout/LayoutObject.h"
-#include "core/paint/PaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterElement.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SourceGraphic.h"
+#include "platform/graphics/filters/FilterOperation.h"
 
 namespace blink {
 
@@ -62,16 +58,14 @@ void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation*
     documentResourceReferences().add(filterOperation, documentResourceReference);
 }
 
-Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
+SVGFilterElement* ReferenceFilterBuilder::resolveFilterReference(const ReferenceFilterOperation& filterOperation, Element& element)
 {
-    TreeScope* treeScope = &element->treeScope();
+    TreeScope* treeScope = &element.treeScope();
 
     if (DocumentResourceReference* documentResourceRef = documentResourceReference(&filterOperation)) {
-        DocumentResource* cachedSVGDocument = documentResourceRef->document();
-
         // If we have an SVG document, this is an external reference. Otherwise
         // we look up the referenced node in the current document.
-        if (cachedSVGDocument)
+        if (DocumentResource* cachedSVGDocument = documentResourceRef->document())
             treeScope = cachedSVGDocument->document();
     }
 
@@ -83,35 +77,14 @@ Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect
     if (!filter) {
         // Although we did not find the referenced filter, it might exist later
         // in the document.
-        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation.fragment(), element);
+        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation.fragment(), &element);
         return nullptr;
     }
 
     if (!isSVGFilterElement(*filter))
         return nullptr;
 
-    SVGFilterElement& filterElement = toSVGFilterElement(*filter);
-
-    FloatRect referenceBox;
-    if (referenceBoxSize) {
-        referenceBox = FloatRect(FloatPoint(), *referenceBoxSize);
-    } else if (element->inShadowIncludingDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
-        FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
-        referenceBox = FloatRect(FloatPoint(), size);
-    }
-    referenceBox.scale(1.0f / zoom);
-    FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
-    bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
-    Filter* result = Filter::create(referenceBox, filterRegion, zoom, unitScaling);
-    if (!previousEffect)
-        previousEffect = result->getSourceGraphic();
-
-    SVGFilterBuilder builder(previousEffect, nullptr, fillPaint, strokePaint);
-    builder.buildGraph(result, filterElement, referenceBox);
-
-    result->setLastEffect(builder.lastEffect());
-    return result;
+    return toSVGFilterElement(filter);
 }
 
 } // namespace blink

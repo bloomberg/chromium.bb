@@ -33,26 +33,21 @@
 
 #include "core/fetch/DocumentResourceReference.h"
 #include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-
-class SkPaint;
 
 namespace blink {
 
 class Element;
-class Filter;
-class FilterEffect;
 class FilterOperation;
-class FloatSize;
 class ReferenceFilterOperation;
+class SVGFilterElement;
 
 class ReferenceFilterBuilder {
     STATIC_ONLY(ReferenceFilterBuilder);
 public:
     static DocumentResourceReference* documentResourceReference(const FilterOperation*);
     static void setDocumentResourceReference(const FilterOperation*, DocumentResourceReference*);
-    static Filter* build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&, const FloatSize* referenceBoxSize = nullptr, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
+
+    static SVGFilterElement* resolveFilterReference(const ReferenceFilterOperation&, Element&);
 };
 
 } // namespace blink
