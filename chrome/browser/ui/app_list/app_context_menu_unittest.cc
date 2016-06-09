@@ -368,7 +368,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   ui::MenuModel* menu = item.GetContextMenuModel();
   ASSERT_NE(nullptr, menu);
 
-  ASSERT_EQ(3, menu->GetItemCount());
+  ASSERT_EQ(4, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
   EXPECT_TRUE(menu->IsEnabledAt(0));
   EXPECT_FALSE(menu->IsItemCheckedAt(0));
@@ -376,6 +376,9 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
   EXPECT_TRUE(menu->IsEnabledAt(2));
   EXPECT_FALSE(menu->IsItemCheckedAt(2));
+  EXPECT_EQ(app_list::AppContextMenu::SHOW_APP_INFO, menu->GetCommandIdAt(3));
+  EXPECT_TRUE(menu->IsEnabledAt(3));
+  EXPECT_FALSE(menu->IsItemCheckedAt(3));
 
   // Test activate request.
   EXPECT_EQ(0u, arc_test.app_instance()->launch_requests().size());
@@ -392,10 +395,13 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   // It is not expected that menu model is unchanged on GetContextMenuModel. Arc
   // app menu requires model to be recalculated.
   menu = item.GetContextMenuModel();
-  ASSERT_EQ(1, menu->GetItemCount());
+  ASSERT_EQ(2, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(0));
   EXPECT_TRUE(menu->IsEnabledAt(0));
   EXPECT_FALSE(menu->IsItemCheckedAt(0));
+  EXPECT_EQ(app_list::AppContextMenu::SHOW_APP_INFO, menu->GetCommandIdAt(1));
+  EXPECT_TRUE(menu->IsEnabledAt(1));
+  EXPECT_FALSE(menu->IsItemCheckedAt(1));
 
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(
@@ -403,7 +409,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   controller()->SetAppOpen(app_id, false);
 
   menu = item.GetContextMenuModel();
-  ASSERT_EQ(3, menu->GetItemCount());
+  ASSERT_EQ(4, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
   EXPECT_TRUE(menu->IsEnabledAt(0));
   EXPECT_FALSE(menu->IsItemCheckedAt(0));
@@ -411,6 +417,9 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
   EXPECT_TRUE(menu->IsEnabledAt(2));
   EXPECT_FALSE(menu->IsItemCheckedAt(2));
+  EXPECT_EQ(app_list::AppContextMenu::SHOW_APP_INFO, menu->GetCommandIdAt(3));
+  EXPECT_TRUE(menu->IsEnabledAt(3));
+  EXPECT_FALSE(menu->IsItemCheckedAt(3));
 }
 
 TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
@@ -430,7 +439,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     ui::MenuModel* menu = item.GetContextMenuModel();
     ASSERT_NE(nullptr, menu);
 
-    ASSERT_EQ(3, menu->GetItemCount());
+    ASSERT_EQ(4, menu->GetItemCount());
     EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
     EXPECT_TRUE(menu->IsEnabledAt(0));
     EXPECT_FALSE(menu->IsItemCheckedAt(0));
@@ -438,6 +447,10 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
     EXPECT_TRUE(menu->IsEnabledAt(2));
     EXPECT_FALSE(menu->IsItemCheckedAt(2));
+    EXPECT_EQ(app_list::AppContextMenu::SHOW_APP_INFO, menu->GetCommandIdAt(3));
+    EXPECT_TRUE(menu->IsEnabledAt(3));
+    EXPECT_FALSE(menu->IsItemCheckedAt(3));
+
     // No "uninstall" entry.
   }
 
@@ -451,7 +464,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     ui::MenuModel* menu = item.GetContextMenuModel();
     ASSERT_NE(nullptr, menu);
 
-    ASSERT_EQ(5, menu->GetItemCount());
+    ASSERT_EQ(6, menu->GetItemCount());
     EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
     EXPECT_TRUE(menu->IsEnabledAt(0));
     EXPECT_FALSE(menu->IsItemCheckedAt(0));
@@ -463,6 +476,9 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     EXPECT_EQ(app_list::AppContextMenu::UNINSTALL, menu->GetCommandIdAt(4));
     EXPECT_TRUE(menu->IsEnabledAt(4));
     EXPECT_FALSE(menu->IsItemCheckedAt(4));
+    EXPECT_EQ(app_list::AppContextMenu::SHOW_APP_INFO, menu->GetCommandIdAt(5));
+    EXPECT_TRUE(menu->IsEnabledAt(5));
+    EXPECT_FALSE(menu->IsItemCheckedAt(5));
   }
 }
 #endif

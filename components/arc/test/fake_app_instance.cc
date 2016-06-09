@@ -38,7 +38,7 @@ void FakeAppInstance::RefreshAppList() {
 
 void FakeAppInstance::LaunchApp(const mojo::String& package_name,
                                 const mojo::String& activity,
-                                mojom::ScreenRectPtr dimension) {
+                                const gfx::Rect& dimension) {
   launch_requests_.push_back(new Request(package_name, activity));
 }
 
@@ -145,7 +145,7 @@ void FakeAppInstance::WaitForOnAppInstanceReady() {
 void FakeAppInstance::CanHandleResolution(
     const mojo::String& package_name,
     const mojo::String& activity,
-    mojom::ScreenRectPtr dimension,
+    const gfx::Rect& dimension,
     const CanHandleResolutionCallback& callback) {
   callback.Run(true);
 }
@@ -166,6 +166,10 @@ void FakeAppInstance::SetTaskActive(int32_t task_id) {
 }
 
 void FakeAppInstance::CloseTask(int32_t task_id) {
+}
+
+void FakeAppInstance::ShowPackageInfo(const mojo::String& package_name,
+                                      const gfx::Rect& dimension_on_screen) {
 }
 
 }  // namespace arc
