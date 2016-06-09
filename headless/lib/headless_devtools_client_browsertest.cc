@@ -10,60 +10,17 @@
 #include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
-#include "headless/public/headless_devtools_target.h"
-#include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace headless {
 
-#define DEVTOOLS_CLIENT_TEST_F(TEST_FIXTURE_NAME)                        \
-  IN_PROC_BROWSER_TEST_F(TEST_FIXTURE_NAME, RunAsyncTest) { RunTest(); } \
-  class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
-
-// A test fixture which attaches a devtools client before starting the test.
-// TODO(eseckler): Use the reusable HeadlessAsyncDevTooledTest and macro from
-// headless_browser_test.h instead of this class.
-class HeadlessDevToolsClientTest : public HeadlessBrowserTest,
-                                   public HeadlessWebContents::Observer {
+class HeadlessDevToolsClientNavigationTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      page::ExperimentalObserver {
  public:
-  HeadlessDevToolsClientTest()
-      : devtools_client_(HeadlessDevToolsClient::Create()) {}
-  ~HeadlessDevToolsClientTest() override {}
-
-  // HeadlessWebContentsObserver implementation:
-  void DevToolsTargetReady() override {
-    EXPECT_TRUE(web_contents_->GetDevToolsTarget());
-    web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
-    RunDevToolsClientTest();
-  }
-
-  virtual void RunDevToolsClientTest() = 0;
-
- protected:
-  void RunTest() {
-    web_contents_ =
-        browser()->CreateWebContents(GURL("about:blank"), gfx::Size(800, 600));
-    web_contents_->AddObserver(this);
-
-    RunAsynchronousTest();
-
-    web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
-    web_contents_->RemoveObserver(this);
-    web_contents_->Close();
-    web_contents_ = nullptr;
-  }
-
-  HeadlessWebContents* web_contents_;
-  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
-};
-
-class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest,
-                                             page::ExperimentalObserver {
- public:
-  void RunDevToolsClientTest() override {
+  void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
     std::unique_ptr<page::NavigateParams> params =
         page::NavigateParams::Builder()
@@ -83,11 +40,12 @@ class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest,
   void OnFrameResized(const page::FrameResizedParams& params) override {}
 };
 
-DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientNavigationTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientNavigationTest);
 
-class HeadlessDevToolsClientEvalTest : public HeadlessDevToolsClientTest {
+class HeadlessDevToolsClientEvalTest
+    : public HeadlessAsyncDevTooledBrowserTest {
  public:
-  void RunDevToolsClientTest() override {
+  void RunDevTooledTest() override {
     std::unique_ptr<runtime::EvaluateParams> params =
         runtime::EvaluateParams::Builder().SetExpression("1 + 2").Build();
     devtools_client_->GetRuntime()->Evaluate(
@@ -117,13 +75,14 @@ class HeadlessDevToolsClientEvalTest : public HeadlessDevToolsClientTest {
   }
 };
 
-DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientEvalTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientEvalTest);
 
-class HeadlessDevToolsClientCallbackTest : public HeadlessDevToolsClientTest {
+class HeadlessDevToolsClientCallbackTest
+    : public HeadlessAsyncDevTooledBrowserTest {
  public:
   HeadlessDevToolsClientCallbackTest() : first_result_received_(false) {}
 
-  void RunDevToolsClientTest() override {
+  void RunDevTooledTest() override {
     // Null callback without parameters.
     devtools_client_->GetPage()->Enable();
     // Null callback with parameters.
@@ -152,12 +111,13 @@ class HeadlessDevToolsClientCallbackTest : public HeadlessDevToolsClientTest {
   bool first_result_received_;
 };
 
-DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientCallbackTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientCallbackTest);
 
-class HeadlessDevToolsClientObserverTest : public HeadlessDevToolsClientTest,
-                                           network::Observer {
+class HeadlessDevToolsClientObserverTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      network::Observer {
  public:
-  void RunDevToolsClientTest() override {
+  void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
     devtools_client_->GetNetwork()->AddObserver(this);
     devtools_client_->GetNetwork()->Enable();
@@ -186,13 +146,13 @@ class HeadlessDevToolsClientObserverTest : public HeadlessDevToolsClientTest,
   }
 };
 
-DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientObserverTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientObserverTest);
 
 class HeadlessDevToolsClientExperimentalTest
-    : public HeadlessDevToolsClientTest,
+    : public HeadlessAsyncDevTooledBrowserTest,
       page::ExperimentalObserver {
  public:
-  void RunDevToolsClientTest() override {
+  void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
     // Check that experimental commands require parameter objects.
     devtools_client_->GetRuntime()->GetExperimental()->Run(
@@ -210,6 +170,6 @@ class HeadlessDevToolsClientExperimentalTest
   }
 };
 
-DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientExperimentalTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientExperimentalTest);
 
 }  // namespace headless
