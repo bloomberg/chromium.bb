@@ -233,7 +233,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
     LayoutObject* decorationLayoutObject = findLayoutObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
     const ComputedStyle& decorationStyle = decorationLayoutObject->styleRef();
 
-    if (decorationStyle.visibility() == HIDDEN)
+    if (decorationStyle.visibility() != VISIBLE)
         return;
 
     float scalingFactor = 1;
