@@ -233,11 +233,12 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
         &match.description_class, 0, ACMatchClassification::NONE);
   }
 
+  const base::string16 input_lower = base::i18n::ToLower(input.text());
   // suggestion.match_contents() should have already been collapsed.
   match.allowed_to_be_default_match =
       (!in_keyword_mode || suggestion.from_keyword_provider()) &&
-      (base::CollapseWhitespace(input.text(), false) ==
-       suggestion.match_contents());
+      (base::CollapseWhitespace(input_lower, false) ==
+       base::i18n::ToLower(suggestion.match_contents()));
 
   if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
@@ -247,8 +248,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       !suggestion.received_after_last_keystroke() &&
       (!in_keyword_mode || suggestion.from_keyword_provider()) &&
       base::StartsWith(
-          base::i18n::ToLower(suggestion.suggestion()),
-          base::i18n::ToLower(input.text()), base::CompareCase::SENSITIVE)) {
+          base::i18n::ToLower(suggestion.suggestion()), input_lower,
+          base::CompareCase::SENSITIVE)) {
     match.inline_autocompletion =
         suggestion.suggestion().substr(input.text().length());
     match.allowed_to_be_default_match = true;

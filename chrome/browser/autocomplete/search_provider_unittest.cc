@@ -2124,6 +2124,21 @@ TEST_F(SearchProviderTest, DontInlineAutocompleteAsynchronously) {
       { { "ab", true }, { "ab1", true }, { "ab2", false },
         kEmptyExpectedMatch } },
 
+    // If a suggestion is equivalent to the verbatim suggestion, it should be
+    // collapsed into one.  Furthermore, it should be allowed to be the default
+    // match even if it was not previously displayed inlined.  This test is
+    // mainly for checking the first_async_matches.
+    { "[\"a\",[\"A\"],[],[],"
+       "{\"google:verbatimrelevance\":9000, "
+        "\"google:suggestrelevance\":[9001]}]",
+      { { "A", true }, kEmptyExpectedMatch, kEmptyExpectedMatch,
+        kEmptyExpectedMatch },
+      { { "ab", true }, { "A", false }, kEmptyExpectedMatch,
+        kEmptyExpectedMatch },
+      std::string(),
+      { { "ab", true }, { "A", false }, kEmptyExpectedMatch,
+        kEmptyExpectedMatch } },
+
     // Note: it's possible that the suggest server returns a suggestion with
     // an inline autocompletion (that as usual we delay in allowing it to
     // be displayed as an inline autocompletion until the next keystroke),
