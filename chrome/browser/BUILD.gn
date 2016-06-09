@@ -575,8 +575,13 @@ source_set("browser") {
     sources += [
       "metrics/leak_detector/leak_detector_controller.cc",
       "metrics/leak_detector/leak_detector_controller.h",
+      "metrics/leak_detector/leak_detector_remote_controller.cc",
+      "metrics/leak_detector/leak_detector_remote_controller.h",
     ]
-    public_deps += [ "//components/metrics:leak_detector" ]
+    public_deps += [
+      "//components/metrics:interfaces",
+      "//components/metrics:leak_detector",
+    ]
   }
 
   if (use_cups) {

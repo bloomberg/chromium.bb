@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #include "components/metrics/leak_detector/leak_detector.h"
 #include "components/metrics/proto/memory_leak_report.pb.h"
 
@@ -16,7 +17,9 @@ namespace metrics {
 
 // This class initializes the LeakDetector on the browser process and registers
 // itself to be notified of leak reports.
-class LeakDetectorController : public LeakDetector::Observer {
+class LeakDetectorController
+    : public LeakDetector::Observer,
+      public LeakDetectorRemoteController::LocalController {
  public:
   LeakDetectorController();
   ~LeakDetectorController() override;
@@ -28,6 +31,11 @@ class LeakDetectorController : public LeakDetector::Observer {
  protected:
   // LeakDetector::Observer:
   void OnLeaksFound(const std::vector<MemoryLeakReportProto>& reports) override;
+
+  // LeakDetectorRemoteController::LocalController
+  MemoryLeakReportProto::Params GetParams() const override;
+  void SendLeakReports(
+      const std::vector<MemoryLeakReportProto>& reports) override;
 
  private:
   // All leak reports received through OnLeakFound() are stored in protobuf
