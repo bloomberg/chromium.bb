@@ -32,6 +32,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #endif
 
@@ -191,6 +192,9 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
     const std::vector<std::string> app_ids = arc_prefs->GetAppIds();
     for (const auto& app_id : app_ids) {
+      if (!arc::ShouldShowInLauncher(app_id))
+        continue;
+
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
           arc_prefs->GetApp(app_id);
       if (!app_info) {
