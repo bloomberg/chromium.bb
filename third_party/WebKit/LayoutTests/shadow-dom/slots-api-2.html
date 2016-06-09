@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id="d1">
+  <template data-mode="open">
+    <div id="d1_1">
+      <template data-mode="open">
+        <div id="d1_1_1"></div>
+        <slot id="d1_1_s1" name="d1_1_s1"></slot>
+        <slot id="d1_1_s2" name="d1_1_s2"></slot>
+        <div id="d1_1_2"></div>
+      </template>
+      <div id="d1_2"></div>
+      <slot id="d1_s0"></slot>
+      <slot id="d1_s1" name="d1_s1" slot="d1_1_s1"></slot>
+      <slot id="d1_s2" name="d1_s2"></slot>
+      <div id="d1_3"></div>
+      <div id="d1_4" slot="d1_1_s1"></div>
+    </div>
+  </template>
+  <div id="d2" slot="d1_s1"></div>
+  <div id="d3" slot="d1_s2"></div>
+  <div id="d4" slot="non_existent"></div>
+  <div id="d5"></div>
+</div>
+<script>
+'use strict';
+
+let n = createTestTree(d1);
+removeWhiteSpaceOnlyTextNodes(n.d1);
+
+test(() => {
+  assert_equals(n.d1.assignedSlot, null);
+  assert_equals(n.d2.assignedSlot, n.d1_s1);
+  assert_equals(n.d3.assignedSlot, n.d1_s2);
+  assert_equals(n.d4.assignedSlot, null);
+  assert_equals(n.d5.assignedSlot, n.d1_s0);
+
+  assert_equals(n.d1_2.assignedSlot, null);
+  assert_equals(n.d1_s0.assignedSlot, null);
+  assert_equals(n.d1_s1.assignedSlot, n.d1_1_s1);
+  assert_equals(n.d1_s2.assignedSlot, null);
+  assert_equals(n.d1_3.assignedSlot, null);
+  assert_equals(n.d1_4.assignedSlot, n.d1_1_s1);
+}, "assignedSlot");
+
+test(() => {
+  assert_array_equals(n.d1_s0.assignedNodes(), [n.d5]);
+  assert_array_equals(n.d1_s1.assignedNodes(), [n.d2]);
+  assert_array_equals(n.d1_s2.assignedNodes(), [n.d3]);
+
+  assert_array_equals(n.d1_1_s1.assignedNodes(), [n.d1_s1, n.d1_4]);
+  assert_array_equals(n.d1_1_s2.assignedNodes(), []);
+}, "assignedNodes");
+
+test(() => {
+  assert_array_equals(n.d1_1_s1.assignedNodes({flatten: false}), [n.d1_s1, n.d1_4],
+                      "{flatten: false} should not have any effect");
+}, "assignedNodes({flatten: false})");
+
+test(() => {
+  assert_array_equals(n.d1_s0.assignedNodes({flatten: true}), [n.d5]);
+  assert_array_equals(n.d1_s1.assignedNodes({flatten: true}), [n.d2]);
+  assert_array_equals(n.d1_s2.assignedNodes({flatten: true}), [n.d3]);
+
+  assert_array_equals(n.d1_1_s1.assignedNodes({flatten: true}), [n.d2, n.d1_4]);
+  assert_array_equals(n.d1_1_s1.assignedNodes({flatten: true}), [n.d2, n.d1_4]);
+  assert_array_equals(n.d1_1_s2.assignedNodes({flatten: true}), []);
+}, "assignedNodes({flatten: true})");
+</script>

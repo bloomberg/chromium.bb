@@ -117,8 +117,8 @@ function dispatchEventWithLog(nodes, target, event) {
       attachedNodes.push(node);
       node.addEventListener(event.type, (e) => {
         log.push([id,
-                  event.relatedTarget ? labelFor(event.relatedTarget) : null,
-                  event.composedPath().map((n) => {
+                  e.relatedTarget ? labelFor(e.relatedTarget) : null,
+                  e.composedPath().map((n) => {
                     return labelFor(n);
                   })]);
       });
@@ -147,8 +147,8 @@ function dispatchUAEventWithLog(nodes, target, eventType, callback) {
       attachedNodes.push(node);
       node.addEventListener(eventType, (e) => {
         log.push([id,
-                  event.relatedTarget ? labelFor(event.relatedTarget) : null,
-                  event.composedPath().map((n) => {
+                  e.relatedTarget ? labelFor(e.relatedTarget) : null,
+                  e.composedPath().map((n) => {
                     return labelFor(n);
                   })]);
       });

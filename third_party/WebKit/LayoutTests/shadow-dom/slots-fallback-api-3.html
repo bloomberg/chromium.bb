@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id="host">
+  <template data-mode="open">
+    <div id="host2">
+      <template data-mode="open">
+        <slot id="slot_a" name="slot_a">
+          <slot id="slot_b" name="slot_b"></slot>
+          <div id="fallback_a"></div>
+        </slot>
+      </template>
+      <slot id="slot1" name="slot1" slot="slot_b">
+        <div id="fallback1"></div>
+        <slot id="slot2" name="slot2">
+          <div id="fallback2"></div>
+        </slot>
+      </slot>
+      <slot id="slot3" name="slot3">
+        <slot id="slot4" name="slot4">
+          <div id="fallback3"></div>
+        </slot>
+      </slot>
+    </div>
+  </template>
+  <div id="child1" slot="slot2"></div>
+</div>
+<script>
+'use strict';
+
+let n = createTestTree(host);
+removeWhiteSpaceOnlyTextNodes(n.host);
+
+test(() => {
+  assert_equals(n.child1.assignedSlot, n.slot2);
+  assert_equals(n.fallback1.assignedSlot, null);
+  assert_equals(n.fallback2.assignedSlot, null);
+  assert_equals(n.fallback3.assignedSlot, null);
+
+  assert_equals(n.slot1.assignedSlot, n.slot_b);
+  assert_equals(n.slot2.assignedSlot, null);
+  assert_equals(n.slot3.assignedSlot, null);
+  assert_equals(n.slot4.assignedSlot, null);
+
+  assert_equals(n.slot_a.assignedSlot, null);
+  assert_equals(n.slot_b.assignedSlot, null);
+  assert_equals(n.fallback_a.assignedSlot, null);
+}, 'assignedSlot');
+
+test(() => {
+  assert_array_equals(n.slot1.assignedNodes(), []);
+  assert_array_equals(n.slot2.assignedNodes(), [n.child1]);
+  assert_array_equals(n.slot3.assignedNodes(), []);
+  assert_array_equals(n.slot4.assignedNodes(), []);
+
+  assert_array_equals(n.slot_a.assignedNodes(), []);
+  assert_array_equals(n.slot_b.assignedNodes(), [n.slot1]);
+}, 'assignedNodes');
+
+test(() => {
+  assert_array_equals(n.slot1.assignedNodes({ flatten: true }), [n.fallback1, n.child1]);
+  assert_array_equals(n.slot2.assignedNodes({ flatten: true }), [n.child1]);
+  assert_array_equals(n.slot3.assignedNodes({ flatten: true }), [n.fallback3]);
+  assert_array_equals(n.slot4.assignedNodes({ flatten: true }), [n.fallback3]);
+
+  assert_array_equals(n.slot_a.assignedNodes({ flatten: true }), [n.fallback1, n.child1, n.fallback_a]);
+  assert_array_equals(n.slot_b.assignedNodes({ flatten: true }), [n.fallback1, n.child1]);
+}, 'assignedNodes({ flatten: true })');
+</script>

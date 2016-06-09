@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id="host">
+  <template data-mode="open">
+    <slot id="slot1" name="slot1">
+      <div id="fallback1"></div>
+    </slot>
+    <slot id="slot2" name="slot2">
+      <div id="fallback2"></div>
+    </slot>
+  </template>
+  <div id="child1" slot="slot1"></div>
+</div>
+<script>
+'use strict';
+
+let n = createTestTree(host);
+removeWhiteSpaceOnlyTextNodes(n.host);
+
+test(() => {
+  assert_equals(n.child1.assignedSlot, n.slot1);
+}, "assignedSlot");
+
+test(() => {
+  assert_array_equals(n.slot1.assignedNodes(), [n.child1]);
+  assert_array_equals(n.slot2.assignedNodes(), []);
+}, "assignedNodes");
+
+test(() => {
+  assert_array_equals(n.slot1.assignedNodes({ flatten: true }), [n.child1]);
+  assert_array_equals(n.slot2.assignedNodes({ flatten: true }), [n.fallback2]);
+}, "assignedNodes({ flatten: true }))");
+</script>
