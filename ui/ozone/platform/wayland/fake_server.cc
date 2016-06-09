@@ -311,8 +311,10 @@ void DisplayDeleter::operator()(wl_display* display) {
 
 FakeServer::FakeServer()
     : Thread("fake_wayland_server"),
-      pause_event_(false, false),
-      resume_event_(false, false) {}
+      pause_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                   base::WaitableEvent::InitialState::NOT_SIGNALED),
+      resume_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 FakeServer::~FakeServer() {
   Resume();

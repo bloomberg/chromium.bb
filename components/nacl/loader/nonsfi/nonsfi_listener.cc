@@ -28,9 +28,11 @@
 namespace nacl {
 namespace nonsfi {
 
-NonSfiListener::NonSfiListener() : io_thread_("NaCl_IOThread"),
-                                   shutdown_event_(true, false),
-                                   key_fd_map_(new std::map<std::string, int>) {
+NonSfiListener::NonSfiListener()
+    : io_thread_("NaCl_IOThread"),
+      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+      key_fd_map_(new std::map<std::string, int>) {
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }

@@ -49,9 +49,9 @@ void InitializeMojoIPCChannel() {
 
 ReplayProcess::ReplayProcess()
     : io_thread_("Chrome_ChildIOThread"),
-      shutdown_event_(true, false),
-      message_index_(0) {
-}
+      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+      message_index_(0) {}
 
 ReplayProcess::~ReplayProcess() {
   channel_.reset();

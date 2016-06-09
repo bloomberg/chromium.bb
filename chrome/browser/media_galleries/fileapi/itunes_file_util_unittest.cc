@@ -166,7 +166,8 @@ class ItunesFileUtilTest : public testing::Test {
         FROM_HERE,
         base::Bind(&ItunesFileUtilTest::SetUpDataProvider,
                    base::Unretained(this)));
-    base::WaitableEvent event(true, false /* initially_signalled */);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));

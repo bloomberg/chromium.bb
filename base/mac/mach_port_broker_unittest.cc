@@ -23,7 +23,8 @@ class MachPortBrokerTest : public testing::Test,
  public:
   MachPortBrokerTest()
       : broker_(kBootstrapPortName),
-        event_(true, false),
+        event_(base::WaitableEvent::ResetPolicy::MANUAL,
+               base::WaitableEvent::InitialState::NOT_SIGNALED),
         received_process_(kNullProcessHandle) {
     broker_.AddObserver(this);
   }
