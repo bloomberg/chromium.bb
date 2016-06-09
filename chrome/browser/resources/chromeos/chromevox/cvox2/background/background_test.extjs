@@ -857,3 +857,16 @@ TEST_F('BackgroundTest', 'DisappearingObject', function() {
     mockFeedback.replay();
   });
 });
+
+TEST_F('BackgroundTest', 'ButtonNameValueDescription', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <input type="submit" aria-label="foo" value="foo"></input>
+  */}, function(root) {
+    var btn = root.find({role: RoleType.button});
+    mockFeedback.call(btn.focus.bind(btn))
+        .expectSpeech('foo')
+        .expectSpeech('Button')
+        .replay();
+  });
+});

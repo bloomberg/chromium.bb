@@ -995,6 +995,8 @@ Output.prototype = {
       if (prefix == '$') {
         if (token == 'value') {
           var text = node.value;
+          if (!node.state.editable && node.name == text)
+            return;
           if (text !== undefined) {
             if (node.textSelStart !== undefined) {
               options.annotation.push(new Output.SelectionSpan(
@@ -1023,6 +1025,11 @@ Output.prototype = {
             this.append_(buff, node.name, options);
           else
             this.format_(node, '$descendants', buff);
+        } else if (token == 'description') {
+          if (node.name == node.description || node.value == node.description)
+            return;
+          options.annotation.push(token);
+          this.append_(buff, node.description, options);
         } else if (token == 'indexInParent') {
           options.annotation.push(token);
           this.append_(buff, String(node.indexInParent + 1));
@@ -1434,8 +1441,13 @@ Output.prototype = {
   append_: function(buff, value, opt_options) {
     opt_options = opt_options || {isUnique: false, annotation: []};
 
-    // Reject empty values without annotations.
-    if ((!value || value.length == 0) && opt_options.annotation.length == 0)
+    // Reject empty values without meaningful annotations.
+    if ((!value || value.length == 0) && opt_options.annotation.every(
+        function(a) {
+          return !(a instanceof Output.Action) &&
+              !(a instanceof Output.SelectionSpan);
+
+        }))
       return;
 
     var spannableToAdd = new Spannable(value);
