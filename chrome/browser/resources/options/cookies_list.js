@@ -415,7 +415,11 @@ cr.define('options', function() {
     /**
      * Remove a cookie tree node from the given index.
      * Both CookiesList and CookieTreeNode implement this API.
-     * @param {number} index The index of the tree node to remove.
+     *
+     * TODO(dbeam): this method now conflicts with HTMLElement#remove(), which
+     * is why the param is optional. Rename.
+     *
+     * @param {number=} index The index of the tree node to remove.
      */
     remove: function(index) {
       if (index < this.children.length) {
@@ -849,7 +853,11 @@ cr.define('options', function() {
     /**
      * Remove a cookie tree node from the given index.
      * Both CookiesList and CookieTreeNode implement this API.
-     * @param {number} index The index of the tree node to remove.
+     *
+     * TODO(dbeam): this method now conflicts with HTMLElement#remove(), which
+     * is why the param is optional. Rename.
+     *
+     * @param {number=} index The index of the tree node to remove.
      */
     remove: function(index) {
       if (index < this.dataModel.length)

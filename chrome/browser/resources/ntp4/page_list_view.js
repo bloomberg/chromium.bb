@@ -263,7 +263,7 @@ cr.define('ntp', function() {
     appMoved: function(appData) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var app = $(appData.id);
+      var app = /** @type {ntp.App} */($(appData.id));
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
 
@@ -282,7 +282,7 @@ cr.define('ntp', function() {
     appRemoved: function(appData, isUninstall, fromPage) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var app = $(appData.id);
+      var app = /** @type {ntp.App} */($(appData.id));
       assert(app, 'trying to remove an app that doesn\'t exist');
 
       if (!isUninstall)

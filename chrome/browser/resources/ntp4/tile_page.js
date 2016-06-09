@@ -513,6 +513,8 @@ cr.define('ntp', function() {
 
     /**
      * Removes the tilePage from the DOM and cleans up event handlers.
+     *
+     * TODO(dbeam): this method now conflicts with HTMLElement#remove(). Rename.
      */
     remove: function() {
       // This checks arguments.length as most remove functions have a boolean

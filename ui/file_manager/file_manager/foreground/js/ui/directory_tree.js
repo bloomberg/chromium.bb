@@ -243,11 +243,11 @@ DirectoryItem.prototype.scrollIntoViewIfNeeded = function(opt_unused) {
  * unintended changing of directories. Removing is done externally, and other
  * code will navigate to another directory.
  *
- * @param {!cr.ui.TreeItem} child The tree item child to remove.
+ * @param {!cr.ui.TreeItem=} child The tree item child to remove.
  * @override
  */
 DirectoryItem.prototype.remove = function(child) {
-  this.lastElementChild.removeChild(child);
+  this.lastElementChild.removeChild(/** @type {!cr.ui.TreeItem} */(child));
   if (this.items.length == 0)
     this.hasChildren = false;
 };

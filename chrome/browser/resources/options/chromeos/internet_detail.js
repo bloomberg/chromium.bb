@@ -934,7 +934,7 @@ cr.define('options.internet', function() {
       this.userApnIndex_ = -1;
 
       var onc = this.onc_;
-      var apnSelector = $('select-apn');
+      var apnSelector = /** @type {HTMLSelectElement} */($('select-apn'));
 
       // Clear APN lists, keep only last element, 'other'.
       while (apnSelector.length != 1)
@@ -947,7 +947,8 @@ cr.define('options.internet', function() {
       } else {
         // Create a single 'default' entry.
         var otherOption = apnSelector[0];
-        var defaultOption = document.createElement('option');
+        var defaultOption = /** @type {HTMLElement} */(
+            document.createElement('option'));
         defaultOption.textContent =
             loadTimeData.getString('cellularApnUseDefault');
         defaultOption.value = -1;
@@ -989,7 +990,7 @@ cr.define('options.internet', function() {
      * @private
      */
     setDefaultApn_: function() {
-      var apnSelector = $('select-apn');
+      var apnSelector = /** @type {HTMLSelectElement} */($('select-apn'));
 
       // Remove the 'user' entry if it exists.
       if (this.userApnIndex_ != -1) {
@@ -1018,7 +1019,7 @@ cr.define('options.internet', function() {
       if (apnValue == '')
         return;
 
-      var apnSelector = $('select-apn');
+      var apnSelector = /** @type {HTMLSelectElement} */($('select-apn'));
 
       var activeApn = {};
       activeApn['AccessPointName'] = stringFromValue(apnValue);

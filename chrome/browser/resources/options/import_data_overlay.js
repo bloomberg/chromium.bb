@@ -148,7 +148,8 @@ cr.define('options', function() {
      */
     updateSupportedBrowsers_: function(browsers) {
       this.browserProfiles = browsers;
-      var browserSelect = $('import-browsers');
+      var browserSelect = /** @type {HTMLSelectElement} */(
+          $('import-browsers'));
       browserSelect.remove(0);  // Remove the 'Loading...' option.
       browserSelect.textContent = '';
       var browserCount = browsers.length;

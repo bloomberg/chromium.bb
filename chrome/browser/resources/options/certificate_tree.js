@@ -123,7 +123,10 @@ cr.define('options', function() {
         this.treeLookup_[child.data.id] = child;
     },
 
-    /** @override */
+    /**
+     * @param {!cr.ui.TreeItem=} child
+     * @override
+     */
     remove: function(child) {
       Tree.prototype.remove.call(this, child);
       if (child.data && child.data.id)

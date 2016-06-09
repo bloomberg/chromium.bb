@@ -128,7 +128,7 @@ cr.define('ntp', function() {
 
     /**
      * Does all the necessary setup to show the menu for the given app.
-     * @param {App} app The App object that will be showing a context menu.
+     * @param {ntp.App} app The App object that will be showing a context menu.
      */
     setupForApp: function(app) {
       this.app_ = app;
@@ -309,6 +309,11 @@ cr.define('ntp', function() {
     /**
      * Removes the app tile from the page. Should be called after the app has
      * been uninstalled.
+     *
+     * TODO(dbeam): this method now conflicts with HTMLElement#remove(), which
+     * is why the param is optional. Rename.
+     *
+     * @param {boolean=} opt_animate Whether the removal should be animated.
      */
     remove: function(opt_animate) {
       // Unset the ID immediately, because the app is already gone. But leave
@@ -768,6 +773,7 @@ cr.define('ntp', function() {
 
   return {
     APP_LAUNCH: APP_LAUNCH,
+    App: App,
     AppsPage: AppsPage,
     launchAppAfterEnable: launchAppAfterEnable,
   };

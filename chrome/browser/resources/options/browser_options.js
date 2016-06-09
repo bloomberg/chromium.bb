@@ -1901,7 +1901,7 @@ cr.define('options', function() {
      * @private
      */
     setFontSize_: function(pref) {
-      var selectCtl = $('defaultFontSize');
+      var selectCtl = /** @type {HTMLSelectElement} */($('defaultFontSize'));
       selectCtl.disabled = pref.disabled;
       // Create a synthetic pref change event decorated as
       // CoreOptionsHandler::CreateValueForPref() does.

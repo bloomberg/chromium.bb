@@ -86,10 +86,14 @@ cr.define('cr.ui', function() {
 
     /**
      * Removes a tree item child.
-     * @param {!cr.ui.TreeItem} treeItem The tree item to remove.
+     *
+     * TODO(dbeam): this method now conflicts with HTMLElement#remove(), which
+     * is why the @param is optional. Rename.
+     *
+     * @param {!cr.ui.TreeItem=} treeItem The tree item to remove.
      */
     remove: function(treeItem) {
-      this.removeChild(treeItem);
+      this.removeChild(/** @type {!cr.ui.TreeItem} */(treeItem));
     },
 
     /**
@@ -335,7 +339,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Removes a child.
-     * @param {!cr.ui.TreeItem} child The tree item child to remove.
+     * @param {!cr.ui.TreeItem=} child The tree item child to remove.
+     * @override
      */
     remove: function(child) {
       // If we removed the selected item we should become selected.
@@ -344,7 +349,7 @@ cr.define('cr.ui', function() {
       if (selectedItem && child.contains(selectedItem))
         this.selected = true;
 
-      this.lastElementChild.removeChild(child);
+      this.lastElementChild.removeChild(/** @type {!cr.ui.TreeItem} */(child));
       if (this.items.length == 0)
         this.hasChildren = false;
     },
