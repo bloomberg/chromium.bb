@@ -333,7 +333,11 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
 }
 
 void ManagePasswordsUIController::NavigateToChromeSignIn() {
-  // TODO(http://crbug.com/615825): do the job.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+      signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
 }
 
 void ManagePasswordsUIController::OnDialogHidden() {

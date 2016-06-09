@@ -137,6 +137,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_SIGNIN_PROMO,
   ACCESS_POINT_RECENT_TABS,
   ACCESS_POINT_UNKNOWN,  // This should never have been used to get signin URL.
+  ACCESS_POINT_PASSWORD_BUBBLE,
   ACCESS_POINT_MAX,      // This must be last.
 };
 

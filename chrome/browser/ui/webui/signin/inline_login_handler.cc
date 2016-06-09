@@ -169,6 +169,10 @@ void InlineLoginHandler::RecordSigninUserActionForAccessPoint(
       content::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromUnknownAccessPoint"));
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromPasswordBubble"));
+      break;
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
