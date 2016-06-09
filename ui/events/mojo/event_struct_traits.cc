@@ -14,31 +14,21 @@ namespace {
 
 mus::mojom::EventType UIEventTypeToMojo(ui::EventType type) {
   switch (type) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_TOUCH_PRESSED:
     case ui::ET_POINTER_DOWN:
       return mus::mojom::EventType::POINTER_DOWN;
 
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_TOUCH_MOVED:
     case ui::ET_POINTER_MOVED:
       return mus::mojom::EventType::POINTER_MOVE;
 
-    case ui::ET_MOUSE_EXITED:
     case ui::ET_POINTER_EXITED:
       return mus::mojom::EventType::MOUSE_EXIT;
 
     case ui::ET_MOUSEWHEEL:
       return mus::mojom::EventType::WHEEL;
 
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_TOUCH_RELEASED:
     case ui::ET_POINTER_UP:
       return mus::mojom::EventType::POINTER_UP;
 
-    case ui::ET_TOUCH_CANCELLED:
     case ui::ET_POINTER_CANCELLED:
       return mus::mojom::EventType::POINTER_CANCEL;
 
@@ -143,11 +133,6 @@ int64_t StructTraits<mus::mojom::Event, EventUniquePtr>::time_stamp(
   return event->time_stamp().ToInternalValue();
 }
 
-bool StructTraits<mus::mojom::Event, EventUniquePtr>::has_key_data(
-    const EventUniquePtr& event) {
-  return event->IsKeyEvent();
-}
-
 mus::mojom::KeyDataPtr
 StructTraits<mus::mojom::Event, EventUniquePtr>::key_data(
     const EventUniquePtr& event) {
@@ -169,15 +154,10 @@ StructTraits<mus::mojom::Event, EventUniquePtr>::key_data(
   return key_data;
 }
 
-bool StructTraits<mus::mojom::Event, EventUniquePtr>::has_pointer_data(
-    const EventUniquePtr& event) {
-  return event->IsPointerEvent() || event->IsMouseWheelEvent();
-}
-
 mus::mojom::PointerDataPtr
 StructTraits<mus::mojom::Event, EventUniquePtr>::pointer_data(
     const EventUniquePtr& event) {
-  if (!has_pointer_data(event))
+  if (!event->IsPointerEvent() && !event->IsMouseWheelEvent())
     return nullptr;
 
   mus::mojom::PointerDataPtr pointer_data(mus::mojom::PointerData::New());
