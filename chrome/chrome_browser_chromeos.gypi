@@ -369,6 +369,8 @@
         'browser/chromeos/first_run/steps/tray_step.cc',
         'browser/chromeos/first_run/steps/tray_step.h',
         'browser/chromeos/genius_app/app_id.h',
+        'browser/chromeos/hats/hats_dialog.cc',
+        'browser/chromeos/hats/hats_dialog.h',
         'browser/chromeos/hats/hats_notification_controller.cc',
         'browser/chromeos/hats/hats_notification_controller.h',
         'browser/chromeos/idle_detector.cc',

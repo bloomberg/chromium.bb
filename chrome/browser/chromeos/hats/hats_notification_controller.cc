@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/hats/hats_dialog.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -105,6 +106,14 @@ std::string HatsNotificationController::id() const {
 // message_center::NotificationDelegate override:
 void HatsNotificationController::ButtonClick(int button_index) {
   UpdateLastInteractionTime();
+
+  // The dialog deletes itslef on close.
+  HatsDialog* hats_dialog = new HatsDialog();
+  hats_dialog->Show();
+
+  // Remove the notification.
+  g_browser_process->notification_ui_manager()->CancelById(
+      id(), NotificationUIManager::GetProfileID(profile_));
 }
 
 // message_center::NotificationDelegate override:
