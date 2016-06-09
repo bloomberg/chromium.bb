@@ -505,6 +505,8 @@
         'tiles/gpu_image_decode_controller.cc',
         'tiles/gpu_image_decode_controller.h',
         'tiles/image_decode_controller.h',
+	'tiles/mipmap_util.cc',
+	'tiles/mipmap_util.h',
         'tiles/picture_layer_tiling.cc',
         'tiles/picture_layer_tiling.h',
         'tiles/picture_layer_tiling_set.cc',

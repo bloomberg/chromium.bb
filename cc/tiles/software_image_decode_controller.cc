@@ -20,6 +20,7 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/raster/tile_task.h"
 #include "cc/resources/resource_format_utils.h"
+#include "cc/tiles/mipmap_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -92,55 +93,14 @@ class ImageDecodeTaskImpl : public TileTask {
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
 
-// Most images are scaled from the source image's size to the target size.
-// But in the case of mipmaps, we are scaling from the mip level which is
-// larger than we need.
-// This function gets the scale of the mip level which will be used.
-SkSize GetMipMapScaleAdjustment(const gfx::Size& src_size,
-                                const gfx::Size& target_size) {
-  int src_height = src_size.height();
-  int src_width = src_size.width();
-  int target_height = target_size.height();
-  int target_width = target_size.width();
-  if (target_height == 0 || target_width == 0)
-    return SkSize::Make(-1.f, -1.f);
-
-  int next_mip_height = src_height;
-  int next_mip_width = src_width;
-  for (int current_mip_level = 0;; current_mip_level++) {
-    int mip_height = next_mip_height;
-    int mip_width = next_mip_width;
-
-    next_mip_height = std::max(1, src_height / (1 << (current_mip_level + 1)));
-    next_mip_width = std::max(1, src_width / (1 << (current_mip_level + 1)));
-
-    // Check if an axis on the next mip level would be smaller than the target.
-    // If so, use the current mip level.
-    // This effectively always uses the larger image and always scales down.
-    if (next_mip_height < target_height || next_mip_width < target_width) {
-      SkScalar y_scale = static_cast<float>(mip_height) / src_height;
-      SkScalar x_scale = static_cast<float>(mip_width) / src_width;
-
-      return SkSize::Make(x_scale, y_scale);
-    }
-
-    if (mip_height == 1 && mip_width == 1) {
-      // We have reached the final mip level
-      SkScalar y_scale = static_cast<float>(mip_height) / src_height;
-      SkScalar x_scale = static_cast<float>(mip_width) / src_width;
-
-      return SkSize::Make(x_scale, y_scale);
-    }
-  }
-}
-
 SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
   // If the requested filter quality did not require scale, then the adjustment
   // is identity.
   if (key.can_use_original_decode()) {
     return SkSize::Make(1.f, 1.f);
   } else if (key.filter_quality() == kMedium_SkFilterQuality) {
-    return GetMipMapScaleAdjustment(key.src_rect().size(), key.target_size());
+    return MipMapUtil::GetScaleAdjustmentForSize(key.src_rect().size(),
+                                                 key.target_size());
   } else {
     float x_scale =
         key.target_size().width() / static_cast<float>(key.src_rect().width());
@@ -856,7 +816,7 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
 
   if (quality == kMedium_SkFilterQuality && !target_size.IsEmpty()) {
     SkSize mip_target_size =
-        GetMipMapScaleAdjustment(src_rect.size(), target_size);
+        MipMapUtil::GetScaleAdjustmentForSize(src_rect.size(), target_size);
     DCHECK(mip_target_size.width() != -1.f && mip_target_size.height() != -1.f);
     target_size.set_width(src_rect.width() * mip_target_size.width());
     target_size.set_height(src_rect.height() * mip_target_size.height());
