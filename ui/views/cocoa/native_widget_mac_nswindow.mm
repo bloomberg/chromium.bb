@@ -45,6 +45,12 @@
   return self;
 }
 
+// This override doesn't do anything, but keeping it helps diagnose lifetime
+// issues in crash stacktraces by inserting a symbol on NativeWidgetMacNSWindow.
+- (void)dealloc {
+  [super dealloc];
+}
+
 // Public methods.
 
 - (void)setCommandDispatcherDelegate:(id<CommandDispatcherDelegate>)delegate {

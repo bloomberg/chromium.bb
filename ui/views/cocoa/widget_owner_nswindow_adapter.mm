@@ -62,8 +62,22 @@ WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
 }
 
 void WidgetOwnerNSWindowAdapter::OnWindowWillClose() {
-  [child_->ns_window() close];
+  // Retain the child window before closing it. If the last reference to the
+  // NSWindow goes away inside -[NSWindow close], then bad stuff can happen.
+  // See e.g. http://crbug.com/616701.
+  base::scoped_nsobject<NSWindow> child_window(child_->ns_window(),
+                                               base::scoped_policy::RETAIN);
+
+  // AppKit child window relationships break when the windows are not visible,
+  // so if the child is not visible, it won't currently be a child.
+  DCHECK(![child_window isVisible] || [child_window parentWindow]);
+  DCHECK([child_window delegate]);
+
+  [child_window close];
   // Note: |this| will be deleted here.
+
+  DCHECK(![child_window parentWindow]);
+  DCHECK(![child_window delegate]);
 }
 
 NSWindow* WidgetOwnerNSWindowAdapter::GetNSWindow() {

@@ -8,6 +8,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -55,8 +56,10 @@
 @interface NativeWidgetMacTestWindow : NativeWidgetMacNSWindow {
  @private
   int invalidateShadowCount_;
+  bool* deallocFlag_;
 }
 @property(readonly, nonatomic) int invalidateShadowCount;
+@property(assign, nonatomic) bool* deallocFlag;
 @end
 
 // Used to mock BridgedContentView so that calls to drawRect: can be
@@ -75,6 +78,10 @@
 @end
 
 @interface FocusableTestNSView : NSView
+@end
+
+@interface TestNativeParentWindow : NSWindow
+@property(assign, nonatomic) bool* deallocFlag;
 @end
 
 namespace views {
@@ -138,8 +145,8 @@ class NativeWidgetMacTest : public WidgetTest {
   NSRect ParentRect() const { return NSMakeRect(100, 100, 300, 200); }
 
   // Make a native NSWindow with the given |style_mask| to use as a parent.
-  NSWindow* MakeNativeParentWithStyle(int style_mask) {
-    native_parent_.reset([[NSWindow alloc]
+  TestNativeParentWindow* MakeNativeParentWithStyle(int style_mask) {
+    native_parent_.reset([[TestNativeParentWindow alloc]
         initWithContentRect:ParentRect()
                   styleMask:style_mask
                     backing:NSBackingStoreBuffered
@@ -150,7 +157,7 @@ class NativeWidgetMacTest : public WidgetTest {
   }
 
   // Make a borderless, native NSWindow to use as a parent.
-  NSWindow* MakeNativeParent() {
+  TestNativeParentWindow* MakeNativeParent() {
     return MakeNativeParentWithStyle(NSBorderlessWindowMask);
   }
 
@@ -167,9 +174,10 @@ class NativeWidgetMacTest : public WidgetTest {
     return widget;
   }
 
- private:
-  base::scoped_nsobject<NSWindow> native_parent_;
+ protected:
+  base::scoped_nsobject<TestNativeParentWindow> native_parent_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacTest);
 };
 
@@ -644,6 +652,37 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_TRUE(child_observer.widget_closed());
 
   EXPECT_EQ(0u, [[native_parent childWindows] count]);
+}
+
+// Tests closing the last remaining NSWindow reference via -windowWillClose:.
+// This is a regression test for http://crbug.com/616701.
+TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
+  bool child_dealloced = false;
+  bool native_parent_dealloced = false;
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    TestNativeParentWindow* native_parent = MakeNativeParent();
+    [native_parent setDeallocFlag:&native_parent_dealloced];
+
+    NativeWidgetMacTestWindow* window;
+    Widget::InitParams init_params =
+        CreateParams(Widget::InitParams::TYPE_POPUP);
+    init_params.parent = [native_parent_ contentView];
+    init_params.bounds = gfx::Rect(0, 0, 100, 200);
+    CreateWidgetWithTestWindow(init_params, &window);
+    [window setDeallocFlag:&child_dealloced];
+  }
+  {
+    // On 10.11, closing a weak reference on the parent window works, but older
+    // versions of AppKit get upset if things are released inside -[NSWindow
+    // close]. This test tries to establish a situation where the last reference
+    // to the child window is released inside WidgetOwnerNSWindowAdapter::
+    // OnWindowWillClose().
+    base::mac::ScopedNSAutoreleasePool pool;
+    [native_parent_.autorelease() close];
+    EXPECT_TRUE(child_dealloced);
+  }
+  EXPECT_TRUE(native_parent_dealloced);
 }
 
 // Use Native APIs to query the tooltip text that would be shown once the
@@ -1567,6 +1606,15 @@ TEST_F(NativeWidgetMacViewsOrderTest, UnassociatedViewsIsAbove) {
 @implementation NativeWidgetMacTestWindow
 
 @synthesize invalidateShadowCount = invalidateShadowCount_;
+@synthesize deallocFlag = deallocFlag_;
+
+- (void)dealloc {
+  if (deallocFlag_) {
+    DCHECK(!*deallocFlag_);
+    *deallocFlag_ = true;
+  }
+  [super dealloc];
+}
 
 - (void)invalidateShadow {
   ++invalidateShadowCount_;
@@ -1591,4 +1639,20 @@ TEST_F(NativeWidgetMacViewsOrderTest, UnassociatedViewsIsAbove) {
 - (BOOL)acceptsFirstResponder {
   return YES;
 }
+@end
+
+@implementation TestNativeParentWindow {
+  bool* deallocFlag_;
+}
+
+@synthesize deallocFlag = deallocFlag_;
+
+- (void)dealloc {
+  if (deallocFlag_) {
+    DCHECK(!*deallocFlag_);
+    *deallocFlag_ = true;
+  }
+  [super dealloc];
+}
+
 @end
