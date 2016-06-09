@@ -33,7 +33,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
       const std::vector<ContentSettingsType>& types);
   ~GroupedPermissionInfoBarDelegate() override;
 
-  // Message text that displays at the top of the infobar.
   base::string16 GetMessageText() const override;
 
   int GetPermissionCount() const;
@@ -42,15 +41,22 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Message text to display for an individual permission at |index|.
   base::string16 GetMessageTextFragment(int index) const;
 
+  void ToggleAccept(int position, bool new_value);
+
+ protected:
+  bool GetAcceptState(int position);
+
  private:
   // ConfirmInfoBarDelegate:
   base::string16 GetButtonLabel(InfoBarButton button) const override;
+  int GetButtons() const override;
 
   // InfoBarDelegate:
   Type GetInfoBarType() const override;
 
   const GURL requesting_origin_;
   const std::vector<ContentSettingsType> types_;
+  std::vector<bool> accept_states_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);
 };

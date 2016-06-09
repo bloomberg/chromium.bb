@@ -11,7 +11,9 @@
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     const GURL& requesting_origin,
     const std::vector<ContentSettingsType>& types)
-    : requesting_origin_(requesting_origin), types_(types) {}
+    : requesting_origin_(requesting_origin),
+      types_(types),
+      accept_states_(types_.size(), true) {}
 
 GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {}
 
@@ -20,10 +22,21 @@ GroupedPermissionInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
+int GroupedPermissionInfoBarDelegate::GetButtons() const {
+  if (GetPermissionCount() >= 2)
+    return ConfirmInfoBarDelegate::InfoBarButton::BUTTON_OK;
+  else
+    return ConfirmInfoBarDelegate::GetButtons();
+}
+
 base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK) ? IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
+  if (GetPermissionCount() >= 2) {
+    return ConfirmInfoBarDelegate::GetButtonLabel(button);
+  } else {
+    return l10n_util::GetStringUTF16(
+        (button == BUTTON_OK) ? IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
+  }
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
@@ -67,4 +80,15 @@ base::string16 GroupedPermissionInfoBarDelegate::GetMessageTextFragment(
     return base::string16();
   }
   return l10n_util::GetStringUTF16(message_id);
+}
+
+void GroupedPermissionInfoBarDelegate::ToggleAccept(int position,
+                                                    bool new_value) {
+  DCHECK(position >= 0 && position < static_cast<int>(types_.size()));
+  accept_states_[position] = new_value;
+}
+
+bool GroupedPermissionInfoBarDelegate::GetAcceptState(int position) {
+  DCHECK(position >= 0 && position < static_cast<int>(types_.size()));
+  return accept_states_[position];
 }

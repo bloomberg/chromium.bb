@@ -22,6 +22,18 @@ bool GroupedPermissionInfoBar::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+void GroupedPermissionInfoBar::SetPermissionState(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jbooleanArray>& permissions) {
+
+  for (int i = 0; i < GetDelegate()->GetPermissionCount(); i++) {
+      jboolean value;
+      env->GetBooleanArrayRegion(permissions.obj(), i, 1, &value);
+      GetDelegate()->ToggleAccept(i, value);
+  }
+}
+
 base::android::ScopedJavaLocalRef<jobject>
 GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   GroupedPermissionInfoBarDelegate* delegate = GetDelegate();
@@ -53,6 +65,14 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ToJavaArrayOfStrings(env, permission_strings).obj(),
       GetWindowAndroid().obj(),
       base::android::ToJavaIntArray(env, content_settings_types).obj());
+}
+
+void GroupedPermissionInfoBar::SetJavaInfoBar(
+    const base::android::JavaRef<jobject>& java_info_bar) {
+  InfoBarAndroid::SetJavaInfoBar(java_info_bar);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_GroupedPermissionInfoBar_setNativePtr(env, java_info_bar.obj(),
+                                             reinterpret_cast<intptr_t>(this));
 }
 
 GroupedPermissionInfoBarDelegate* GroupedPermissionInfoBar::GetDelegate() {

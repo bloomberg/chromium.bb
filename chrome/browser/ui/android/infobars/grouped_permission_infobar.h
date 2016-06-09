@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_GROUPED_PERMISSION_INFOBAR_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_GROUPED_PERMISSION_INFOBAR_H_
 
+#include <jni.h>
+
+#include "base/android/scoped_java_ref.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
 class GroupedPermissionInfoBarDelegate;
@@ -15,12 +18,19 @@ class GroupedPermissionInfoBar : public ConfirmInfoBar {
       std::unique_ptr<GroupedPermissionInfoBarDelegate> delegate);
   ~GroupedPermissionInfoBar() override;
 
+  void SetPermissionState(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jbooleanArray>& permissions);
+
   static bool Register(JNIEnv* env);
 
  private:
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
+  void SetJavaInfoBar(
+      const base::android::JavaRef<jobject>& java_info_bar) override;
 
   GroupedPermissionInfoBarDelegate* GetDelegate();
 

@@ -50,6 +50,13 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   // on the permissions if they are in the ASK state.
   void ForcePermissionDeniedTemporarily();
 
+  // Answers a permission request with (possibly) different values for
+  // |audio_accepted| and |video_accepted|. Intended for use from
+  // MediaStreamInfobarDelegateAndroid.
+  // TODO(tsergeant): Remove this by refactoring Android to use
+  // PermissionBubbleRequest instead of a custom infobar delegate.
+  void GroupedRequestFinished(bool audio_accepted, bool video_accepted);
+
   // PermissionBubbleRequest:
   int GetIconId() const override;
   base::string16 GetMessageTextFragment() const override;

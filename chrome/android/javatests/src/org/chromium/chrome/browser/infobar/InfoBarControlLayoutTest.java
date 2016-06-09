@@ -45,7 +45,7 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
         InfoBarControlLayout layout = new InfoBarControlLayout(mContext);
         layout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        View smallSwitch = layout.addSwitch(0, "A", SWITCH_ID_1, false);
+        View smallSwitch = layout.addSwitch(0, 0, "A", SWITCH_ID_1, false);
 
         // Trigger the measurement algorithm.
         int parentWidthSpec =
@@ -84,11 +84,11 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
         layout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        View switch1 = layout.addSwitch(0, "A", SWITCH_ID_1, false);
-        View switch2 = layout.addSwitch(0, "B", SWITCH_ID_2, false);
-        View switch3 = layout.addSwitch(0, "C", SWITCH_ID_3, false);
-        View switch4 = layout.addSwitch(0, "D", SWITCH_ID_4, false);
-        View switch5 = layout.addSwitch(0, "E", SWITCH_ID_4, false);
+        View switch1 = layout.addSwitch(0, 0, "A", SWITCH_ID_1, false);
+        View switch2 = layout.addSwitch(0, 0, "B", SWITCH_ID_2, false);
+        View switch3 = layout.addSwitch(0, 0, "C", SWITCH_ID_3, false);
+        View switch4 = layout.addSwitch(0, 0, "D", SWITCH_ID_4, false);
+        View switch5 = layout.addSwitch(0, 0, "E", SWITCH_ID_4, false);
 
         // Make the second control require the full layout width.
         switch2.setMinimumWidth(INFOBAR_WIDTH);
@@ -150,7 +150,7 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         View view1 = layout.addMainMessage("A");
-        View view2 = layout.addSwitch(0, "B", SWITCH_ID_2, false);
+        View view2 = layout.addSwitch(0, 0, "B", SWITCH_ID_2, false);
 
         // Trigger the measurement algorithm.
         int parentWidthSpec =

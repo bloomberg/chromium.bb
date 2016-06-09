@@ -25,6 +25,12 @@
 
 namespace {
 
+const int kGroupedInfobarAudioPosition = 0;
+const int kGroupedInfobarVideoPosition = 1;
+
+// Get a list of content types being requested. Note that the order of the
+// resulting array corresponds to the kGroupedInfobarAudio/VideoPermission
+// constants.
 std::vector<ContentSettingsType> GetContentSettingsTypes(
     MediaStreamDevicesController* controller) {
   std::vector<ContentSettingsType> types;
@@ -94,7 +100,14 @@ MediaStreamInfoBarDelegateAndroid::AsMediaStreamInfoBarDelegateAndroid() {
 }
 
 bool MediaStreamInfoBarDelegateAndroid::Accept() {
-  controller_->PermissionGranted();
+  if (GetPermissionCount() == 2) {
+    controller_->GroupedRequestFinished(
+        GetAcceptState(kGroupedInfobarAudioPosition),
+        GetAcceptState(kGroupedInfobarVideoPosition));
+  } else {
+    DCHECK_EQ(1, GetPermissionCount());
+    controller_->PermissionGranted();
+  }
   return true;
 }
 

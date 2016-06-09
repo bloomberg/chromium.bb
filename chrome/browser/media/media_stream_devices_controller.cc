@@ -74,17 +74,21 @@ bool ContentTypeIsRequested(content::PermissionType type,
 using PermissionActionCallback =
     base::Callback<void(content::PermissionType, const GURL&)>;
 
+void RecordSinglePermissionAction(const content::MediaStreamRequest& request,
+                                  content::PermissionType permission_type,
+                                  PermissionActionCallback callback) {
+  if (ContentTypeIsRequested(permission_type, request)) {
+    callback.Run(permission_type, request.security_origin);
+  }
+}
+
 // Calls |action_function| for each permission requested by |request|.
 void RecordPermissionAction(const content::MediaStreamRequest& request,
                             PermissionActionCallback callback) {
-  if (ContentTypeIsRequested(content::PermissionType::VIDEO_CAPTURE, request)) {
-    callback.Run(content::PermissionType::VIDEO_CAPTURE,
-                 request.security_origin);
-  }
-  if (ContentTypeIsRequested(content::PermissionType::AUDIO_CAPTURE, request)) {
-    callback.Run(content::PermissionType::AUDIO_CAPTURE,
-                 request.security_origin);
-  }
+  RecordSinglePermissionAction(request, content::PermissionType::AUDIO_CAPTURE,
+                               callback);
+  RecordSinglePermissionAction(request, content::PermissionType::VIDEO_CAPTURE,
+                               callback);
 }
 
 // This helper class helps to measure the number of media stream requests that
@@ -292,6 +296,28 @@ void MediaStreamDevicesController::PermissionDenied() {
                             old_audio_setting_, CONTENT_SETTING_BLOCK),
               GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                             old_video_setting_, CONTENT_SETTING_BLOCK),
+              content::MEDIA_DEVICE_PERMISSION_DENIED);
+}
+
+void MediaStreamDevicesController::GroupedRequestFinished(bool audio_accepted,
+                                                          bool video_accepted) {
+  RecordSinglePermissionAction(
+      request_, content::PermissionType::AUDIO_CAPTURE,
+      base::Bind(audio_accepted ? PermissionUmaUtil::PermissionGranted
+                                : PermissionUmaUtil::PermissionDenied));
+  RecordSinglePermissionAction(
+      request_, content::PermissionType::VIDEO_CAPTURE,
+      base::Bind(video_accepted ? PermissionUmaUtil::PermissionGranted
+                                : PermissionUmaUtil::PermissionDenied));
+
+  ContentSetting audio_setting =
+      audio_accepted ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  ContentSetting video_setting =
+      video_accepted ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                            old_audio_setting_, audio_setting),
+              GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                            old_video_setting_, video_setting),
               content::MEDIA_DEVICE_PERMISSION_DENIED);
 }
 
