@@ -63,6 +63,7 @@
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutTextControl.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
@@ -221,12 +222,12 @@ SkMatrix44 AXLayoutObject::transformFromLocalParentFrame() const
 {
     if (!m_layoutObject)
         return SkMatrix44();
-    LayoutView* layoutView = documentFrameView()->layoutView();
+    LayoutView* layoutView = toLayoutView(LayoutAPIShim::layoutObjectFrom(documentFrameView()->layoutViewItem()));
 
     FrameView* parentFrameView = documentFrameView()->parentFrameView();
     if (!parentFrameView)
         return SkMatrix44();
-    LayoutView* parentLayoutView = parentFrameView->layoutView();
+    LayoutView* parentLayoutView = toLayoutView(LayoutAPIShim::layoutObjectFrom(parentFrameView->layoutViewItem()));
 
     TransformationMatrix accumulatedTransform = layoutView->localToAncestorTransform(parentLayoutView, TraverseDocumentBoundaries);
     IntPoint scrollPosition = documentFrameView()->scrollPosition();
