@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.StrictMode;
 import android.os.TransactionTooLargeException;
 import android.provider.Browser;
 import android.provider.Telephony;
@@ -216,8 +217,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent) {
-        return mApplicationContext.getPackageManager().queryIntentActivities(intent,
-                PackageManager.GET_RESOLVED_FILTER);
+        // White-list for Samsung. See http://crbug.com/613977 for more context.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return mApplicationContext.getPackageManager().queryIntentActivities(intent,
+                    PackageManager.GET_RESOLVED_FILTER);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     @Override
@@ -312,6 +319,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean startActivityIfNeeded(Intent intent) {
+        // Only reads disk on Kitkat. See http://crbug.com/617725 for more context.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             forcePdfViewerAsIntentHandlerIfNeeded(mApplicationContext, intent);
             Context context = getAvailableContext();
@@ -323,6 +332,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
             return false;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
