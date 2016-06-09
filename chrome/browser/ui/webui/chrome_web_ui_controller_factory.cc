@@ -498,7 +498,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<OfflineInternalsUI>;
   if (url.host() == chrome::kChromeUIPopularSitesInternalsHost)
     return &NewWebUI<PopularSitesInternalsUI>;
-  if (url.host() == chrome::kChromeUISnippetsInternalsHost)
+  if (url.host() == chrome::kChromeUISnippetsInternalsHost &&
+      !profile->IsOffTheRecord())
     return &NewWebUI<SnippetsInternalsUI>;
 #else
   if (url.host() == chrome::kChromeUICopresenceHost)
