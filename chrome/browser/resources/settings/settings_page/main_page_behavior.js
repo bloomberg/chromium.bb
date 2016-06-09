@@ -360,7 +360,10 @@ var RoutableBehaviorImpl = {
         return;
       }
 
-      element.scrollIntoView();
+      // TODO(michaelpg): due to the workaround for crbug.com/617827 in
+      // settings_page_css.html, we have to use element.offsetTop instead of
+      // relying on element.scrollIntoView() so the margin is included.
+      host.scroller.scrollTop = element.offsetTop;
     }.bind(this));
   },
 
