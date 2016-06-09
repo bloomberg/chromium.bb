@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 #define ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 
-#include "ash/system/tray/default_system_tray_delegate.h"
+#include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 

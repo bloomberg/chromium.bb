@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 
-#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "base/logging.h"
 #include "chrome/browser/upgrade_detector.h"
 

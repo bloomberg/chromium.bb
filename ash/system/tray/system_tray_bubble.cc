@@ -4,9 +4,9 @@
 
 #include "ash/system/tray/system_tray_bubble.h"
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"

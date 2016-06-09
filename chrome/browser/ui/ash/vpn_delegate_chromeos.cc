@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

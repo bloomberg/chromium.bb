@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
-#define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
+#define ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/system/user/login_status.h"
-#include "ash/volume_control_delegate.h"
+#include "ash/common/login_status.h"
+#include "ash/common/system/volume_control_delegate.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
@@ -339,4 +339,4 @@ class ASH_EXPORT SystemTrayDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_

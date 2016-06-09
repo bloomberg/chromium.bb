@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/volume_control_delegate.h"
+#include "ash/common/system/volume_control_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"

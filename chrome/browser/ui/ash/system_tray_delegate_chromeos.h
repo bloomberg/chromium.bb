@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "ash/common/session/session_state_observer.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"

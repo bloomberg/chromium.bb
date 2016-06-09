@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
-#define ASH_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
+#ifndef ASH_COMMON_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
+#define ASH_COMMON_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/system/tray/system_tray_delegate.h"
-#include "base/compiler_specific.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -46,4 +45,4 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_
+#endif  // ASH_COMMON_SYSTEM_TRAY_DEFAULT_SYSTEM_TRAY_DELEGATE_H_

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_system_tray_delegate.h"

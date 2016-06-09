@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/default_system_tray_delegate.h"
+#include "ash/common/system/tray/default_system_tray_delegate.h"
 
 #include <string>
 #include <utility>
 
-#include "ash/networking_config_delegate.h"
-#include "ash/shell.h"
-#include "ash/volume_control_delegate.h"
+#include "ash/common/system/networking_config_delegate.h"
+#include "ash/common/system/volume_control_delegate.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 

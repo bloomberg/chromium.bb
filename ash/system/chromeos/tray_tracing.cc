@@ -4,11 +4,11 @@
 
 #include "ash/system/chromeos/tray_tracing.h"
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "grit/ash_resources.h"

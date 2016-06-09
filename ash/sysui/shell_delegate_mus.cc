@@ -6,9 +6,9 @@
 
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
-#include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/sysui/app_list_presenter_mus.h"
 #include "ash/sysui/container_delegate_mus.h"
 #include "ash/sysui/context_menu_mus.h"

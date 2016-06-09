@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_UPDATE_H_
 #define ASH_SYSTEM_TRAY_UPDATE_H_
 
+#include "ash/common/system/update/update_observer.h"
 #include "ash/system/tray/tray_image_item.h"
-#include "ash/system/user/update_observer.h"
 #include "base/macros.h"
 
 namespace views {

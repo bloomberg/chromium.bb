@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/system/update/update_observer.h"
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/locale/locale_observer.h"
 #include "ash/system/tray_accessibility.h"
-#include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

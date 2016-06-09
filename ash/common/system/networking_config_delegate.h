@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_NETWORKING_CONFIG_DELEGATE_H_
-#define ASH_NETWORKING_CONFIG_DELEGATE_H_
+#ifndef ASH_COMMON_SYSTEM_NETWORKING_CONFIG_DELEGATE_H_
+#define ASH_COMMON_SYSTEM_NETWORKING_CONFIG_DELEGATE_H_
 
 #include <memory>
 #include <string>
@@ -42,4 +42,4 @@ class NetworkingConfigDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_NETWORKING_CONFIG_DELEGATE_H_
+#endif  // ASH_COMMON_SYSTEM_NETWORKING_CONFIG_DELEGATE_H_

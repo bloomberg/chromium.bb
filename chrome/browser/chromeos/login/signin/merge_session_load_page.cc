@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/login/signin/merge_session_load_page.h"
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"

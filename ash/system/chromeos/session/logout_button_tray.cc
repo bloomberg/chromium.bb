@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"

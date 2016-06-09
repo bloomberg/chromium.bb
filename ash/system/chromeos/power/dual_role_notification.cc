@@ -6,10 +6,10 @@
 
 #include <set>
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/system_notifier.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

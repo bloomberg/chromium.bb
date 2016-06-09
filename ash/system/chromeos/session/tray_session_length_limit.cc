@@ -8,11 +8,11 @@
 #include <memory>
 #include <utility>
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

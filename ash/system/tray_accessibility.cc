@@ -6,11 +6,11 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"

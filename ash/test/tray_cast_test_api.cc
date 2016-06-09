@@ -5,9 +5,9 @@
 #include "ash/test/tray_cast_test_api.h"
 
 #include "ash/cast_config_delegate.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ui/views/view.h"
 
 namespace ash {
