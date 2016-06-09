@@ -142,8 +142,9 @@ class LoadingReport(object):
         trace, content_lens, has_ad_rules, has_tracking_rules)
     self._ads_cost = self._AdsAndTrackingCpuCost(
         self._navigation_start_msec,
-        self._user_lens_reports['plt'].GenerateReport()['ms'], content_lens,
-        activity, has_tracking_rules or has_ad_rules)
+        (self._navigation_start_msec
+         + self._user_lens_reports['plt'].GenerateReport()['ms']),
+        content_lens, activity, has_tracking_rules or has_ad_rules)
 
     self._queue_stats = self._ComputeQueueStats(QueuingLens(trace))
 
