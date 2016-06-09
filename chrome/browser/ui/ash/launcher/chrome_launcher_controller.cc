@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -746,20 +745,6 @@ void ChromeLauncherController::OnSetShelfItemDelegate(
     return;
   LOG(ERROR) << "Unexpected change of shelf item id: " << id;
   id_to_item_controller_map_.erase(iter);
-}
-
-bool ChromeLauncherController::IsLoggedInAsGuest() {
-  return profile_->IsGuestSession();
-}
-
-void ChromeLauncherController::CreateNewWindow() {
-  // Use the currently active user.
-  chrome::NewEmptyWindow(profile_);
-}
-
-void ChromeLauncherController::CreateNewIncognitoWindow() {
-  // Use the currently active user.
-  chrome::NewEmptyWindow(profile_->GetOffTheRecordProfile());
 }
 
 void ChromeLauncherController::PersistPinnedState() {

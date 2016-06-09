@@ -199,18 +199,6 @@ class ChromeLauncherController
   // Updates the launch type of the app for the specified id to |launch_type|.
   void SetLaunchType(ash::ShelfID id, extensions::LaunchType launch_type);
 
-  // Returns true if the user is currently logged in as a guest.
-  // Makes virtual for unittest in LauncherContextMenuTest.
-  virtual bool IsLoggedInAsGuest();
-
-  // Invoked when user clicks on button in the shelf and there is no last
-  // used window (or CTRL is held with the click).
-  void CreateNewWindow();
-
-  // Invoked when the user clicks on button in the shelf to create a new
-  // incognito window.
-  void CreateNewIncognitoWindow();
-
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
   // id of the app.

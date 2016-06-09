@@ -6,7 +6,9 @@
 
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shell.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
@@ -84,9 +86,9 @@ void AppListControllerDelegateAsh::DoCreateShortcutsFlow(
 void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,
                                                    bool incognito) {
   if (incognito)
-    ChromeLauncherController::instance()->CreateNewIncognitoWindow();
+    chrome::NewEmptyWindow(profile->GetOffTheRecordProfile());
   else
-    ChromeLauncherController::instance()->CreateNewWindow();
+    chrome::NewEmptyWindow(profile);
 }
 
 void AppListControllerDelegateAsh::OpenURL(Profile* profile,

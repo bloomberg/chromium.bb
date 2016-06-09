@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
@@ -76,7 +77,7 @@ void ExtensionLauncherContextMenu::Init() {
     }
   } else if (item().type == ash::TYPE_BROWSER_SHORTCUT) {
     AddItemWithStringId(MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW);
-    if (!controller()->IsLoggedInAsGuest()) {
+    if (!controller()->profile()->IsGuestSession()) {
       AddItemWithStringId(MENU_NEW_INCOGNITO_WINDOW,
                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
@@ -213,10 +214,10 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
                                   extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case MENU_NEW_WINDOW:
-      controller()->CreateNewWindow();
+      chrome::NewEmptyWindow(controller()->profile());
       break;
     case MENU_NEW_INCOGNITO_WINDOW:
-      controller()->CreateNewIncognitoWindow();
+      chrome::NewEmptyWindow(controller()->profile()->GetOffTheRecordProfile());
       break;
     default:
       if (extension_items_) {

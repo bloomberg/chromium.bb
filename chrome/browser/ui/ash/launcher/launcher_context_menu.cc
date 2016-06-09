@@ -192,7 +192,7 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &shelf_alignment_menu_);
   }
-  if (!controller_->IsLoggedInAsGuest())
+  if (!controller_->profile()->IsGuestSession())
     AddItemWithStringId(MENU_CHANGE_WALLPAPER, IDS_AURA_SET_DESKTOP_WALLPAPER);
 }
 

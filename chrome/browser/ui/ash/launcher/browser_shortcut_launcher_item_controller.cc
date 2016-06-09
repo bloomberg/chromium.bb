@@ -162,7 +162,7 @@ BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
       chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
 
   if (!last_browser) {
-    launcher_controller()->CreateNewWindow();
+    chrome::NewEmptyWindow(launcher_controller()->profile());
     return kNewWindowCreated;
   }
 
@@ -219,7 +219,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
 ash::ShelfItemDelegate::PerformedAction
 BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   if (event.flags() & ui::EF_CONTROL_DOWN) {
-    launcher_controller()->CreateNewWindow();
+    chrome::NewEmptyWindow(launcher_controller()->profile());
     return kNewWindowCreated;
   }
 
@@ -294,7 +294,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   }
   // If there are no suitable browsers we create a new one.
   if (items.empty()) {
-    launcher_controller()->CreateNewWindow();
+    chrome::NewEmptyWindow(launcher_controller()->profile());
     return kNewWindowCreated;
   }
   Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
