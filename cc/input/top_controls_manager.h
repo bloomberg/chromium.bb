@@ -9,18 +9,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace base {
-class TimeTicks;
-}
-
 namespace cc {
 
-class KeyframedFloatAnimationCurve;
 class LayerTreeImpl;
 class TopControlsManagerClient;
 
@@ -45,7 +41,7 @@ class CC_EXPORT TopControlsManager
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
 
-  bool has_animation() const { return !!top_controls_animation_; }
+  bool has_animation() const { return animation_direction_ != NO_ANIMATION; }
   AnimationDirection animation_direction() { return animation_direction_; }
 
   void UpdateTopControlsState(TopControlsState constraints,
@@ -80,8 +76,12 @@ class CC_EXPORT TopControlsManager
   TopControlsManagerClient* client_;  // The client manages the lifecycle of
                                       // this.
 
-  std::unique_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
+  base::TimeTicks animation_start_time_;
+  float animation_start_value_;
+  base::TimeTicks animation_stop_time_;
+  float animation_stop_value_;
   AnimationDirection animation_direction_;
+
   TopControlsState permitted_state_;
 
   // Accumulated scroll delta since last baseline reset

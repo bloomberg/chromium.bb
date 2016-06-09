@@ -10,11 +10,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/timing_function.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
 
@@ -38,6 +37,8 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
                                        float top_controls_show_threshold,
                                        float top_controls_hide_threshold)
     : client_(client),
+      animation_start_value_(0.f),
+      animation_stop_value_(0.f),
       animation_direction_(NO_ANIMATION),
       permitted_state_(BOTH),
       accumulated_scroll_delta_(0.f),
@@ -159,13 +160,13 @@ void TopControlsManager::MainThreadHasStoppedFlinging() {
 }
 
 gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
-  if (!top_controls_animation_ || !client_->HaveRootScrollLayer())
+  if (!has_animation() || !client_->HaveRootScrollLayer())
     return gfx::Vector2dF();
 
-  base::TimeDelta time = monotonic_time - base::TimeTicks();
-
   float old_offset = ContentTopOffset();
-  float new_ratio = top_controls_animation_->GetValue(time);
+  float new_ratio = gfx::Tween::ClampedFloatValueBetween(
+      monotonic_time, animation_start_time_, animation_start_value_,
+      animation_stop_time_, animation_stop_value_);
   client_->SetCurrentTopControlsShownRatio(new_ratio);
 
   if (IsAnimationComplete(new_ratio))
@@ -176,7 +177,11 @@ gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
 }
 
 void TopControlsManager::ResetAnimations() {
-  top_controls_animation_ = nullptr;
+  animation_start_time_ = base::TimeTicks();
+  animation_start_value_ = 0.f;
+  animation_stop_time_ = base::TimeTicks();
+  animation_stop_value_ = 0.f;
+
   animation_direction_ = NO_ANIMATION;
 }
 
@@ -185,7 +190,7 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   DCHECK(direction != HIDING_CONTROLS || TopControlsShownRatio() > 0.f);
   DCHECK(direction != SHOWING_CONTROLS || TopControlsShownRatio() < 1.f);
 
-  if (top_controls_animation_ && animation_direction_ == direction)
+  if (has_animation() && animation_direction_ == direction)
     return;
 
   if (!TopControlsHeight()) {
@@ -194,16 +199,15 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
     return;
   }
 
-  top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
-  base::TimeDelta start_time = base::TimeTicks::Now() - base::TimeTicks();
-  top_controls_animation_->AddKeyframe(
-      FloatKeyframe::Create(start_time, TopControlsShownRatio(), nullptr));
-  float max_ending_ratio = (direction == SHOWING_CONTROLS ? 1 : -1);
-  top_controls_animation_->AddKeyframe(FloatKeyframe::Create(
-      start_time + base::TimeDelta::FromMilliseconds(kShowHideMaxDurationMs),
-      TopControlsShownRatio() + max_ending_ratio,
-      CubicBezierTimingFunction::CreatePreset(
-          CubicBezierTimingFunction::EaseType::EASE)));
+  animation_start_time_ = base::TimeTicks::Now();
+  animation_start_value_ = TopControlsShownRatio();
+
+  const float max_ending_ratio = (direction == SHOWING_CONTROLS ? 1 : -1);
+  animation_stop_time_ =
+      animation_start_time_ +
+      base::TimeDelta::FromMilliseconds(kShowHideMaxDurationMs);
+  animation_stop_value_ = animation_start_value_ + max_ending_ratio;
+
   animation_direction_ = direction;
   client_->DidChangeTopControlsPosition();
 }

@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -72,6 +73,7 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 }
 
 namespace {
+
 uint8_t FloatToColorByte(float f) {
   return base::saturated_cast<uint8_t>(ToRoundedInt(f * 255.f));
 }
@@ -87,6 +89,11 @@ uint8_t BlendColorComponents(uint8_t start,
   float blended_premultiplied = Tween::FloatValueBetween(
       progress, start / 255.f * start_alpha, target / 255.f * target_alpha);
   return FloatToColorByte(blended_premultiplied / blended_alpha);
+}
+
+double TimeDeltaDivide(base::TimeDelta dividend, base::TimeDelta divisor) {
+  return static_cast<double>(dividend.ToInternalValue()) /
+         static_cast<double>(divisor.ToInternalValue());
 }
 
 }  // namespace
@@ -122,6 +129,22 @@ double Tween::DoubleValueBetween(double value, double start, double target) {
 // static
 float Tween::FloatValueBetween(double value, float start, float target) {
   return static_cast<float>(start + (target - start) * value);
+}
+
+// static
+float Tween::ClampedFloatValueBetween(const base::TimeTicks& time,
+                                      const base::TimeTicks& start_time,
+                                      float start,
+                                      const base::TimeTicks& target_time,
+                                      float target) {
+  if (time <= start_time)
+    return start;
+  if (time >= target_time)
+    return target;
+
+  double progress =
+      TimeDeltaDivide(time - start_time, target_time - start_time);
+  return FloatValueBetween(progress, start, target);
 }
 
 // static
