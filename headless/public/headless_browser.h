@@ -13,7 +13,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
+#include "headless/public/headless_web_contents.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -28,7 +30,6 @@ class Size;
 }
 
 namespace headless {
-class HeadlessWebContents;
 
 // This class represents the global headless browser instance. To get a pointer
 // to one, call |HeadlessBrowserMain| to initiate the browser main loop. An
@@ -38,11 +39,11 @@ class HEADLESS_EXPORT HeadlessBrowser {
  public:
   struct Options;
 
-  // Create a new browser tab which navigates to |initial_url|. |size| is in
-  // physical pixels.
-  // We require the user to pass an initial URL to ensure that the renderer
-  // gets initialized and eventually becomes ready to be inspected. See
-  // HeadlessWebContents::Observer::DevToolsTargetReady.
+  // Open a new tab. Returns a builder object which can be used to set
+  // properties for the new tab.
+  virtual HeadlessWebContents::Builder CreateWebContentsBuilder() = 0;
+
+  // Deprecated. Use CreateWebContentsBuilder() instead.
   virtual HeadlessWebContents* CreateWebContents(const GURL& initial_url,
                                                  const gfx::Size& size) = 0;
 
@@ -59,6 +60,10 @@ class HEADLESS_EXPORT HeadlessBrowser {
   // Requests browser to stop as soon as possible. |Run| will return as soon as
   // browser stops.
   virtual void Shutdown() = 0;
+
+  // Create a new browser context, which can be used to isolate
+  // HeadlessWebContents from one another.
+  virtual HeadlessBrowserContext::Builder CreateBrowserContextBuilder() = 0;
 
  protected:
   HeadlessBrowser() {}

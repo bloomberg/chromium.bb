@@ -7,8 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test.h"
+#include "headless/public/domains/page.h"
+#include "headless/public/domains/runtime.h"
 #include "headless/public/domains/types.h"
 #include "headless/public/headless_browser.h"
+#include "headless/public/headless_browser_context.h"
+#include "headless/public/headless_devtools_client.h"
+#include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
 #include "net/base/io_buffer.h"
@@ -95,7 +100,7 @@ net::URLRequestJob* TestProtocolHandler::MaybeCreateJob(
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateAndDestroyWebContents) {
   HeadlessWebContents* web_contents =
-      browser()->CreateWebContents(GURL("about:blank"), gfx::Size(800, 600));
+      browser()->CreateWebContentsBuilder().Build();
   EXPECT_TRUE(web_contents);
 
   EXPECT_EQ(static_cast<size_t>(1), browser()->GetAllWebContents().size());
@@ -109,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateAndDestroyWebContents) {
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateWithBadURL) {
   GURL bad_url("not_valid");
   HeadlessWebContents* web_contents =
-      browser()->CreateWebContents(bad_url, gfx::Size(800, 600));
+      browser()->CreateWebContentsBuilder().SetInitialURL(bad_url).Build();
   EXPECT_FALSE(web_contents);
   EXPECT_TRUE(browser()->GetAllWebContents().empty());
 }
@@ -148,8 +153,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
   //
   // TODO(altimin): Currently this construction does not serve hello.html
   // from headless/test/data as expected. We should fix this.
-  HeadlessWebContents* web_contents = browser()->CreateWebContents(
-      GURL("http://not-an-actual-domain.tld/hello.html"), gfx::Size(800, 600));
+  HeadlessWebContents* web_contents =
+      browser()
+          ->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
+          .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
   EXPECT_EQ(static_cast<size_t>(1), browser()->GetAllWebContents().size());
   EXPECT_EQ(web_contents, browser()->GetAllWebContents()[0]);
@@ -167,8 +175,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetHostResolverRules) {
 
   // Load a page which doesn't actually exist, but which is turned into a valid
   // address by our host resolver rules.
-  HeadlessWebContents* web_contents = browser()->CreateWebContents(
-      GURL("http://not-an-actual-domain.tld/hello.html"), gfx::Size(800, 600));
+  HeadlessWebContents* web_contents =
+      browser()
+          ->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
+          .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
@@ -184,8 +195,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpProtocolHandler) {
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.
-  HeadlessWebContents* web_contents = browser()->CreateWebContents(
-      GURL("http://not-an-actual-domain.tld/hello.html"), gfx::Size(800, 600));
+  HeadlessWebContents* web_contents =
+      browser()
+          ->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
+          .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
   std::string inner_html;
@@ -208,8 +222,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.
-  HeadlessWebContents* web_contents = browser()->CreateWebContents(
-      GURL("https://not-an-actual-domain.tld/hello.html"), gfx::Size(800, 600));
+  HeadlessWebContents* web_contents =
+      browser()
+          ->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("https://not-an-actual-domain.tld/hello.html"))
+          .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
   std::string inner_html;
@@ -219,5 +236,138 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
                   ->GetAsString(&inner_html));
   EXPECT_EQ(kResponseBody, inner_html);
 }
+
+namespace {
+const char kMainPageCookie[] = "mood=quizzical";
+const char kIsolatedPageCookie[] = "mood=quixotic";
+}  // namespace
+
+// This test creates two tabs pointing to the same security origin in two
+// different browser contexts and checks that they are isolated by creating two
+// cookies with the same name in both tabs. The steps are:
+//
+// 1. Wait for tab #1 to become ready for DevTools.
+// 2. Create tab #2 and wait for it to become ready for DevTools.
+// 3. Navigate tab #1 to the test page and wait for it to finish loading.
+// 4. Navigate tab #2 to the test page and wait for it to finish loading.
+// 5. Set a cookie in tab #1.
+// 6. Set the same cookie in tab #2 to a different value.
+// 7. Read the cookie in tab #1 and check that it has the first value.
+// 8. Read the cookie in tab #2 and check that it has the second value.
+//
+// If the tabs aren't properly isolated, step 7 will fail.
+class HeadlessBrowserContextIsolationTest
+    : public HeadlessAsyncDevTooledBrowserTest {
+ public:
+  HeadlessBrowserContextIsolationTest()
+      : web_contents2_(nullptr),
+        devtools_client2_(HeadlessDevToolsClient::Create()) {
+    EXPECT_TRUE(embedded_test_server()->Start());
+  }
+
+  // HeadlessWebContentsObserver implementation:
+  void DevToolsTargetReady() override {
+    if (!web_contents2_) {
+      browser_context_ = browser()->CreateBrowserContextBuilder().Build();
+      web_contents2_ = browser()
+                           ->CreateWebContentsBuilder()
+                           .SetBrowserContext(browser_context_.get())
+                           .Build();
+      web_contents2_->AddObserver(this);
+      return;
+    }
+
+    web_contents2_->GetDevToolsTarget()->AttachClient(devtools_client2_.get());
+    HeadlessAsyncDevTooledBrowserTest::DevToolsTargetReady();
+  }
+
+  void RunDevTooledTest() override {
+    load_observer_.reset(new LoadObserver(
+        devtools_client_.get(),
+        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstLoadComplete,
+                   base::Unretained(this))));
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnFirstLoadComplete() {
+    EXPECT_TRUE(load_observer_->navigation_succeeded());
+    load_observer_.reset(new LoadObserver(
+        devtools_client2_.get(),
+        base::Bind(&HeadlessBrowserContextIsolationTest::OnSecondLoadComplete,
+                   base::Unretained(this))));
+    devtools_client2_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnSecondLoadComplete() {
+    EXPECT_TRUE(load_observer_->navigation_succeeded());
+    load_observer_.reset();
+
+    devtools_client_->GetRuntime()->Evaluate(
+        base::StringPrintf("document.cookie = '%s'", kMainPageCookie),
+        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstSetCookieResult,
+                   base::Unretained(this)));
+  }
+
+  void OnFirstSetCookieResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string cookie;
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
+    EXPECT_EQ(kMainPageCookie, cookie);
+
+    devtools_client2_->GetRuntime()->Evaluate(
+        base::StringPrintf("document.cookie = '%s'", kIsolatedPageCookie),
+        base::Bind(
+            &HeadlessBrowserContextIsolationTest::OnSecondSetCookieResult,
+            base::Unretained(this)));
+  }
+
+  void OnSecondSetCookieResult(
+      std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string cookie;
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
+    EXPECT_EQ(kIsolatedPageCookie, cookie);
+
+    devtools_client_->GetRuntime()->Evaluate(
+        "document.cookie",
+        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstGetCookieResult,
+                   base::Unretained(this)));
+  }
+
+  void OnFirstGetCookieResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string cookie;
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
+    EXPECT_EQ(kMainPageCookie, cookie);
+
+    devtools_client2_->GetRuntime()->Evaluate(
+        "document.cookie",
+        base::Bind(
+            &HeadlessBrowserContextIsolationTest::OnSecondGetCookieResult,
+            base::Unretained(this)));
+  }
+
+  void OnSecondGetCookieResult(
+      std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string cookie;
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
+    EXPECT_EQ(kIsolatedPageCookie, cookie);
+    FinishTest();
+  }
+
+  void FinishTest() {
+    web_contents2_->RemoveObserver(this);
+    web_contents2_->Close();
+    browser_context_.reset();
+    FinishAsynchronousTest();
+  }
+
+ private:
+  std::unique_ptr<HeadlessBrowserContext> browser_context_;
+  HeadlessWebContents* web_contents2_;
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client2_;
+  std::unique_ptr<LoadObserver> load_observer_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessBrowserContextIsolationTest);
 
 }  // namespace headless

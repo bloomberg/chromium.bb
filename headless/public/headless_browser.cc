@@ -4,7 +4,6 @@
 
 #include "content/public/common/user_agent.h"
 #include "headless/public/headless_browser.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using Options = headless::HeadlessBrowser::Options;
 using Builder = headless::HeadlessBrowser::Options::Builder;

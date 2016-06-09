@@ -8,11 +8,10 @@
 #include "base/memory/ptr_util.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "headless/grit/headless_lib_resources.h"
-#include "headless/lib/browser/headless_browser_context.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -91,7 +90,7 @@ HeadlessDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
 }  // namespace
 
 std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
-    HeadlessBrowserContext* browser_context) {
+    HeadlessBrowserContextImpl* browser_context) {
   const net::IPEndPoint& endpoint =
       browser_context->options()->devtools_endpoint;
   std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(

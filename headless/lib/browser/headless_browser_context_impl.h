@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_H_
-#define HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_H_
+#ifndef HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_IMPL_H_
+#define HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_IMPL_H_
 
 #include <memory>
 
@@ -13,14 +13,19 @@
 #include "content/public/browser/resource_context.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
 #include "headless/public/headless_browser.h"
+#include "headless/public/headless_browser_context.h"
 
 namespace headless {
 class HeadlessResourceContext;
 
-class HeadlessBrowserContext : public content::BrowserContext {
+class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
+                                   public content::BrowserContext {
  public:
-  explicit HeadlessBrowserContext(HeadlessBrowser::Options* options);
-  ~HeadlessBrowserContext() override;
+  explicit HeadlessBrowserContextImpl(HeadlessBrowser::Options* options);
+  ~HeadlessBrowserContextImpl() override;
+
+  static HeadlessBrowserContextImpl* From(
+      HeadlessBrowserContext* browser_context);
 
   // BrowserContext implementation:
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -52,7 +57,7 @@ class HeadlessBrowserContext : public content::BrowserContext {
   void SetOptionsForTesting(HeadlessBrowser::Options* options);
 
  private:
-  // Performs initialization of the HeadlessBrowserContext while IO is still
+  // Performs initialization of the HeadlessBrowserContextImpl while IO is still
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
@@ -60,9 +65,9 @@ class HeadlessBrowserContext : public content::BrowserContext {
   std::unique_ptr<HeadlessResourceContext> resource_context_;
   HeadlessBrowser::Options* options_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContext);
+  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };
 
 }  // namespace headless
 
-#endif  // HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_H_
+#endif  // HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_IMPL_H_

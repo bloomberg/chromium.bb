@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "headless/lib/browser/headless_browser_context.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
 
@@ -64,78 +66,85 @@ net::URLRequestContext* HeadlessResourceContext::GetRequestContext() {
   return url_request_context_getter_->GetURLRequestContext();
 }
 
-HeadlessBrowserContext::HeadlessBrowserContext(
+HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
     HeadlessBrowser::Options* options)
     : resource_context_(new HeadlessResourceContext), options_(options) {
   InitWhileIOAllowed();
 }
 
-HeadlessBrowserContext::~HeadlessBrowserContext() {
+HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   if (resource_context_) {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        resource_context_.release());
   }
 }
 
-void HeadlessBrowserContext::InitWhileIOAllowed() {
+// static
+HeadlessBrowserContextImpl* HeadlessBrowserContextImpl::From(
+    HeadlessBrowserContext* browser_context) {
+  return reinterpret_cast<HeadlessBrowserContextImpl*>(browser_context);
+}
+
+void HeadlessBrowserContextImpl::InitWhileIOAllowed() {
   // TODO(skyostil): Allow the embedder to override this.
   PathService::Get(base::DIR_EXE, &path_);
   BrowserContext::Initialize(this, path_);
 }
 
 std::unique_ptr<content::ZoomLevelDelegate>
-HeadlessBrowserContext::CreateZoomLevelDelegate(
+HeadlessBrowserContextImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return std::unique_ptr<content::ZoomLevelDelegate>();
 }
 
-base::FilePath HeadlessBrowserContext::GetPath() const {
+base::FilePath HeadlessBrowserContextImpl::GetPath() const {
   return path_;
 }
 
-bool HeadlessBrowserContext::IsOffTheRecord() const {
+bool HeadlessBrowserContextImpl::IsOffTheRecord() const {
   return false;
 }
 
-content::ResourceContext* HeadlessBrowserContext::GetResourceContext() {
+content::ResourceContext* HeadlessBrowserContextImpl::GetResourceContext() {
   return resource_context_.get();
 }
 
 content::DownloadManagerDelegate*
-HeadlessBrowserContext::GetDownloadManagerDelegate() {
+HeadlessBrowserContextImpl::GetDownloadManagerDelegate() {
   return nullptr;
 }
 
-content::BrowserPluginGuestManager* HeadlessBrowserContext::GetGuestManager() {
+content::BrowserPluginGuestManager*
+HeadlessBrowserContextImpl::GetGuestManager() {
   // TODO(altimin): Should be non-null? (is null in content/shell).
   return nullptr;
 }
 
 storage::SpecialStoragePolicy*
-HeadlessBrowserContext::GetSpecialStoragePolicy() {
+HeadlessBrowserContextImpl::GetSpecialStoragePolicy() {
   return nullptr;
 }
 
 content::PushMessagingService*
-HeadlessBrowserContext::GetPushMessagingService() {
+HeadlessBrowserContextImpl::GetPushMessagingService() {
   return nullptr;
 }
 
 content::SSLHostStateDelegate*
-HeadlessBrowserContext::GetSSLHostStateDelegate() {
+HeadlessBrowserContextImpl::GetSSLHostStateDelegate() {
   return nullptr;
 }
 
-content::PermissionManager* HeadlessBrowserContext::GetPermissionManager() {
+content::PermissionManager* HeadlessBrowserContextImpl::GetPermissionManager() {
   return nullptr;
 }
 
 content::BackgroundSyncController*
-HeadlessBrowserContext::GetBackgroundSyncController() {
+HeadlessBrowserContextImpl::GetBackgroundSyncController() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* HeadlessBrowserContext::CreateRequestContext(
+net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   scoped_refptr<HeadlessURLRequestContextGetter> url_request_context_getter(
@@ -150,7 +159,7 @@ net::URLRequestContextGetter* HeadlessBrowserContext::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-HeadlessBrowserContext::CreateRequestContextForStoragePartition(
+HeadlessBrowserContextImpl::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
@@ -159,20 +168,32 @@ HeadlessBrowserContext::CreateRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter*
-HeadlessBrowserContext::CreateMediaRequestContext() {
+HeadlessBrowserContextImpl::CreateMediaRequestContext() {
   return resource_context_->url_request_context_getter();
 }
 
 net::URLRequestContextGetter*
-HeadlessBrowserContext::CreateMediaRequestContextForStoragePartition(
+HeadlessBrowserContextImpl::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
   return nullptr;
 }
 
-void HeadlessBrowserContext::SetOptionsForTesting(
+void HeadlessBrowserContextImpl::SetOptionsForTesting(
     HeadlessBrowser::Options* options) {
   options_ = options;
+}
+
+HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
+    : browser_(browser) {}
+
+HeadlessBrowserContext::Builder::~Builder() = default;
+
+HeadlessBrowserContext::Builder::Builder(Builder&&) = default;
+
+std::unique_ptr<HeadlessBrowserContext>
+HeadlessBrowserContext::Builder::Build() {
+  return base::WrapUnique(new HeadlessBrowserContextImpl(browser_->options()));
 }
 
 }  // namespace headless

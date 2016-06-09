@@ -9,6 +9,8 @@
 #include <string>
 
 #include "content/public/test/browser_test_base.h"
+#include "headless/public/domains/network.h"
+#include "headless/public/domains/page.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
 
@@ -21,6 +23,30 @@ namespace runtime {
 class EvaluateResult;
 }
 class HeadlessDevToolsClient;
+
+// A utility class for asynchronously observing load events.
+class LoadObserver : public page::Observer, public network::Observer {
+ public:
+  LoadObserver(HeadlessDevToolsClient* devtools_client, base::Closure callback);
+  ~LoadObserver() override;
+
+  // page::Observer implementation:
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
+
+  // network::Observer implementation:
+  void OnResponseReceived(
+      const network::ResponseReceivedParams& params) override;
+
+  bool navigation_succeeded() const { return navigation_succeeded_; }
+
+ private:
+  base::Closure callback_;
+  HeadlessDevToolsClient* devtools_client_;  // Not owned.
+
+  bool navigation_succeeded_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoadObserver);
+};
 
 // Base class for tests which require a full instance of the headless browser.
 class HeadlessBrowserTest : public content::BrowserTestBase {

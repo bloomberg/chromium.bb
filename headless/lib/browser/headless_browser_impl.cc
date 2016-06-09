@@ -11,7 +11,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "headless/lib/browser/headless_browser_context.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/browser/headless_window_tree_client.h"
@@ -33,18 +33,35 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
 
 HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
 
+HeadlessWebContents::Builder HeadlessBrowserImpl::CreateWebContentsBuilder() {
+  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  return HeadlessWebContents::Builder(this);
+}
+
+HeadlessBrowserContext::Builder
+HeadlessBrowserImpl::CreateBrowserContextBuilder() {
+  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  return HeadlessBrowserContext::Builder(this);
+}
+
+HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
+    HeadlessWebContents::Builder* builder) {
+  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
+  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
+      HeadlessWebContentsImpl::Create(builder, window_tree_host_->window(),
+                                      this);
+  if (!headless_web_contents)
+    return nullptr;
+  return RegisterWebContents(std::move(headless_web_contents));
+}
+
 HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
     const GURL& initial_url,
     const gfx::Size& size) {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
-      HeadlessWebContentsImpl::Create(browser_context(),
-                                      window_tree_host_->window(), size, this);
-
-  if (!headless_web_contents->OpenURL(initial_url))
-    return nullptr;
-
-  return RegisterWebContents(std::move(headless_web_contents));
+  return CreateWebContentsBuilder()
+      .SetInitialURL(initial_url)
+      .SetWindowSize(size)
+      .Build();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -76,12 +93,6 @@ std::vector<HeadlessWebContents*> HeadlessBrowserImpl::GetAllWebContents() {
   return result;
 }
 
-HeadlessBrowserContext* HeadlessBrowserImpl::browser_context() const {
-  DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  DCHECK(browser_main_parts());
-  return browser_main_parts()->browser_context();
-}
-
 HeadlessBrowserMainParts* HeadlessBrowserImpl::browser_main_parts() const {
   DCHECK(BrowserMainThread()->BelongsToCurrentThread());
   return browser_main_parts_;
@@ -110,6 +121,7 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
 
 HeadlessWebContentsImpl* HeadlessBrowserImpl::RegisterWebContents(
     std::unique_ptr<HeadlessWebContentsImpl> web_contents) {
+  DCHECK(web_contents);
   HeadlessWebContentsImpl* unowned_web_contents = web_contents.get();
   web_contents_[unowned_web_contents] = std::move(web_contents);
   return unowned_web_contents;
@@ -125,7 +137,8 @@ void HeadlessBrowserImpl::DestroyWebContents(
 void HeadlessBrowserImpl::SetOptionsForTesting(
     HeadlessBrowser::Options options) {
   options_ = std::move(options);
-  browser_context()->SetOptionsForTesting(&options_);
+  browser_main_parts()->default_browser_context()->SetOptionsForTesting(
+      &options_);
 }
 
 int HeadlessBrowserMain(

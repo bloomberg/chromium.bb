@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/synchronization/lock.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
 namespace aura {
@@ -35,6 +34,8 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   ~HeadlessBrowserImpl() override;
 
   // HeadlessBrowser implementation:
+  HeadlessWebContents::Builder CreateWebContentsBuilder() override;
+  HeadlessBrowserContext::Builder CreateBrowserContextBuilder() override;
   HeadlessWebContents* CreateWebContents(const GURL& initial_url,
                                          const gfx::Size& size) override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
@@ -49,12 +50,11 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   void set_browser_main_parts(HeadlessBrowserMainParts* browser_main_parts);
   HeadlessBrowserMainParts* browser_main_parts() const;
 
-  HeadlessBrowserContext* browser_context() const;
-
   void RunOnStartCallback();
 
   HeadlessBrowser::Options* options() { return &options_; }
 
+  HeadlessWebContents* CreateWebContents(HeadlessWebContents::Builder* builder);
   HeadlessWebContentsImpl* RegisterWebContents(
       std::unique_ptr<HeadlessWebContentsImpl> web_contents);
 

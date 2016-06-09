@@ -36,9 +36,8 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
   ~HeadlessWebContentsImpl() override;
 
   static std::unique_ptr<HeadlessWebContentsImpl> Create(
-      content::BrowserContext* context,
+      HeadlessWebContents::Builder* builder,
       aura::Window* parent_window,
-      const gfx::Size& initial_size,
       HeadlessBrowserImpl* browser);
 
   // Takes ownership of |web_contents|.

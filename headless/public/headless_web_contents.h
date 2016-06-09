@@ -8,15 +8,20 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "headless/public/headless_export.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace headless {
+class HeadlessBrowserContext;
+class HeadlessBrowserImpl;
 class HeadlessDevToolsTarget;
 
 // Class representing contents of a browser tab. Should be accessed from browser
 // main thread.
 class HEADLESS_EXPORT HeadlessWebContents {
  public:
+  class Builder;
+
   virtual ~HeadlessWebContents() {}
 
   class Observer {
@@ -55,6 +60,44 @@ class HEADLESS_EXPORT HeadlessWebContents {
   HeadlessWebContents() {}
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWebContents);
+};
+
+class HEADLESS_EXPORT HeadlessWebContents::Builder {
+ public:
+  ~Builder();
+  Builder(Builder&&);
+
+  // Set an initial URL to ensure that the renderer gets initialized and
+  // eventually becomes ready to be inspected. See
+  // HeadlessWebContents::Observer::DevToolsTargetReady. The default URL is
+  // about:blank.
+  Builder& SetInitialURL(const GURL& initial_url);
+
+  // Specify the initial window size (default is 800x600).
+  Builder& SetWindowSize(const gfx::Size& size);
+
+  // Set a browser context for storing session data (e.g., cookies, cache, local
+  // storage) for the tab. Several tabs can share the same browser context. If
+  // unset, the default browser context will be used. The browser context must
+  // outlive this HeadlessWebContents.
+  Builder& SetBrowserContext(HeadlessBrowserContext* browser_context);
+
+  // The returned object is owned by HeadlessBrowser. Call
+  // HeadlessWebContents::Close() to dispose it.
+  HeadlessWebContents* Build();
+
+ private:
+  friend class HeadlessBrowserImpl;
+  friend class HeadlessWebContentsImpl;
+
+  explicit Builder(HeadlessBrowserImpl* browser);
+
+  HeadlessBrowserImpl* browser_;
+  GURL initial_url_ = GURL("about:blank");
+  gfx::Size window_size_ = gfx::Size(800, 600);
+  HeadlessBrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(Builder);
 };
 
 }  // namespace headless

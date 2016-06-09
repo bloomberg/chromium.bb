@@ -12,12 +12,12 @@ class DevToolsHttpHandler;
 }
 
 namespace headless {
-class HeadlessBrowserContext;
+class HeadlessBrowserContextImpl;
 
 // Starts a DevTools HTTP handler on the loopback interface on the port
 // configured by HeadlessBrowser::Options.
 std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
-CreateLocalDevToolsHttpHandler(HeadlessBrowserContext* browser_context);
+CreateLocalDevToolsHttpHandler(HeadlessBrowserContextImpl* browser_context);
 
 }  // namespace content
 

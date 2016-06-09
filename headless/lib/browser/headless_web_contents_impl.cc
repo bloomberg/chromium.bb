@@ -20,7 +20,9 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_client_impl.h"
 #include "ui/aura/window.h"
 
@@ -65,19 +67,21 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
 
 // static
 std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
-    content::BrowserContext* context,
+    HeadlessWebContents::Builder* builder,
     aura::Window* parent_window,
-    const gfx::Size& initial_size,
     HeadlessBrowserImpl* browser) {
+  content::BrowserContext* context =
+      HeadlessBrowserContextImpl::From(builder->browser_context_);
   content::WebContents::CreateParams create_params(context, nullptr);
-  create_params.initial_size = initial_size;
+  create_params.initial_size = builder->window_size_;
 
   std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
       base::WrapUnique(new HeadlessWebContentsImpl(
           content::WebContents::Create(create_params), browser));
 
-  headless_web_contents->InitializeScreen(parent_window, initial_size);
-
+  headless_web_contents->InitializeScreen(parent_window, builder->window_size_);
+  if (!headless_web_contents->OpenURL(builder->initial_url_))
+    return nullptr;
   return headless_web_contents;
 }
 
@@ -163,6 +167,37 @@ void HeadlessWebContentsImpl::DetachClient(HeadlessDevToolsClient* client) {
 
 content::WebContents* HeadlessWebContentsImpl::web_contents() const {
   return web_contents_.get();
+}
+
+HeadlessWebContents::Builder::Builder(HeadlessBrowserImpl* browser)
+    : browser_(browser),
+      browser_context_(
+          browser->browser_main_parts()->default_browser_context()) {}
+
+HeadlessWebContents::Builder::~Builder() = default;
+
+HeadlessWebContents::Builder::Builder(Builder&&) = default;
+
+HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetInitialURL(
+    const GURL& initial_url) {
+  initial_url_ = initial_url;
+  return *this;
+}
+
+HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetWindowSize(
+    const gfx::Size& size) {
+  window_size_ = size;
+  return *this;
+}
+
+HeadlessWebContents::Builder& HeadlessWebContents::Builder::SetBrowserContext(
+    HeadlessBrowserContext* browser_context) {
+  browser_context_ = browser_context;
+  return *this;
+}
+
+HeadlessWebContents* HeadlessWebContents::Builder::Build() {
+  return browser_->CreateWebContents(this);
 }
 
 }  // namespace headless

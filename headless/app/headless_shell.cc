@@ -56,17 +56,14 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   void OnStart(HeadlessBrowser* browser) {
     browser_ = browser;
 
+    HeadlessWebContents::Builder builder(browser_->CreateWebContentsBuilder());
     base::CommandLine::StringVector args =
         base::CommandLine::ForCurrentProcess()->GetArgs();
 
-    const char kDefaultUrl[] = "about:blank";
-    if (args.empty() || args[0].empty()) {
-      url_ = GURL(kDefaultUrl);
-    } else {
-      url_ = GURL(args[0]);
-    }
+    if (!args.empty() && !args[0].empty())
+      builder.SetInitialURL(GURL(args[0]));
 
-    web_contents_ = browser->CreateWebContents(url_, gfx::Size(800, 600));
+    web_contents_ = builder.Build();
     if (!web_contents_) {
       LOG(ERROR) << "Navigation failed";
       browser_->Shutdown();
