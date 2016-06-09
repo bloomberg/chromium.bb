@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_database_task_manager.h"
@@ -115,8 +116,8 @@ class ClearAllServiceWorkersHelper
         context->GetLiveVersions();
     for (const auto& version_itr : live_versions_copy) {
       ServiceWorkerVersion* version(version_itr.second);
-      if (version->running_status() == ServiceWorkerVersion::STARTING ||
-          version->running_status() == ServiceWorkerVersion::RUNNING) {
+      if (version->running_status() == EmbeddedWorkerStatus::STARTING ||
+          version->running_status() == EmbeddedWorkerStatus::RUNNING) {
         version->StopWorker(
             base::Bind(&ClearAllServiceWorkersHelper::OnResult, this));
       }

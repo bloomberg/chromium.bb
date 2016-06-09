@@ -16,6 +16,8 @@
 
 namespace content {
 
+enum class EmbeddedWorkerStatus;
+
 struct CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:
   struct CONTENT_EXPORT ClientInfo {
@@ -29,7 +31,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   };
 
   ServiceWorkerVersionInfo();
-  ServiceWorkerVersionInfo(ServiceWorkerVersion::RunningStatus running_status,
+  ServiceWorkerVersionInfo(EmbeddedWorkerStatus running_status,
                            ServiceWorkerVersion::Status status,
                            const GURL& script_url,
                            int64_t registration_id,
@@ -40,7 +42,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   ServiceWorkerVersionInfo(const ServiceWorkerVersionInfo& other);
   ~ServiceWorkerVersionInfo();
 
-  ServiceWorkerVersion::RunningStatus running_status;
+  EmbeddedWorkerStatus running_status;
   ServiceWorkerVersion::Status status;
   GURL script_url;
   int64_t registration_id;

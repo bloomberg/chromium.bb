@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
@@ -66,13 +67,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       public EmbeddedWorkerInstance::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
-
-  enum RunningStatus {
-    STOPPED = EmbeddedWorkerInstance::STOPPED,
-    STARTING = EmbeddedWorkerInstance::STARTING,
-    RUNNING = EmbeddedWorkerInstance::RUNNING,
-    STOPPING = EmbeddedWorkerInstance::STOPPING,
-  };
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
@@ -132,8 +126,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   int64_t registration_id() const { return registration_id_; }
   const GURL& script_url() const { return script_url_; }
   const GURL& scope() const { return scope_; }
-  RunningStatus running_status() const {
-    return static_cast<RunningStatus>(embedded_worker_->status());
+  EmbeddedWorkerStatus running_status() const {
+    return embedded_worker_->status();
   }
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
@@ -294,6 +288,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   bool skip_waiting() const { return skip_waiting_; }
   void set_skip_waiting(bool skip_waiting) { skip_waiting_ = skip_waiting; }
+
+  bool skip_recording_startup_time() const {
+    return skip_recording_startup_time_;
+  }
 
   bool force_bypass_cache_for_scripts() const {
     return force_bypass_cache_for_scripts_;
@@ -478,8 +476,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnStarting() override;
   void OnStarted() override;
   void OnStopping() override;
-  void OnStopped(EmbeddedWorkerInstance::Status old_status) override;
-  void OnDetached(EmbeddedWorkerInstance::Status old_status) override;
+  void OnStopped(EmbeddedWorkerStatus old_status) override;
+  void OnDetached(EmbeddedWorkerStatus old_status) override;
   void OnScriptLoaded() override;
   void OnScriptLoadFailed() override;
   void OnReportException(const base::string16& error_message,
@@ -593,7 +591,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
-  void OnStoppedInternal(EmbeddedWorkerInstance::Status old_status);
+  void OnStoppedInternal(EmbeddedWorkerStatus old_status);
 
   // Called when the remote side of a connection to a mojo service is lost.
   void OnMojoConnectionError(const char* service_name);
@@ -687,7 +685,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 template <typename Interface>
 base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
     int request_id) {
-  DCHECK_EQ(RUNNING, running_status());
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
   PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
   DCHECK(!request->mojo_service)
@@ -714,7 +712,7 @@ template <typename ResponseMessage, typename ResponseCallbackType>
 void ServiceWorkerVersion::DispatchEvent(int request_id,
                                          const IPC::Message& message,
                                          const ResponseCallbackType& callback) {
-  DCHECK_EQ(RUNNING, running_status());
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
   PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
   DCHECK(!request->listener) << "Request already dispatched an IPC event";

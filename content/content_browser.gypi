@@ -1423,6 +1423,7 @@
       'browser/service_worker/embedded_worker_instance.h',
       'browser/service_worker/embedded_worker_registry.cc',
       'browser/service_worker/embedded_worker_registry.h',
+      'browser/service_worker/embedded_worker_status.h',
       'browser/service_worker/foreign_fetch_request_handler.cc',
       'browser/service_worker/foreign_fetch_request_handler.h',
       'browser/service_worker/link_header_support.cc',

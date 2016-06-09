@@ -29,6 +29,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -979,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
 
   // The script has loaded but start has not completed yet.
   ASSERT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
-  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
 
   // Simulate execution timeout. Use a delay to prevent killing the worker
   // before it's started execution.

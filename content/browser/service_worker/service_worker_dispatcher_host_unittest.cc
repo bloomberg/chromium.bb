@@ -16,6 +16,7 @@
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -632,14 +633,14 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
   EXPECT_TRUE(context()->GetProviderHost(process_id, provider_id));
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   // Simulate the render process crashing.
   dispatcher_host_->OnFilterRemoved();
 
   // The dispatcher host should clean up the state from the process.
   EXPECT_FALSE(context()->GetProviderHost(process_id, provider_id));
-  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 
   // We should be able to hook up a new dispatcher host although the old object
   // is not yet destroyed. This is what the browser does when reusing a crashed

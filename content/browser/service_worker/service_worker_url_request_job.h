@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/streams/stream_read_observer.h"
 #include "content/browser/streams/stream_register_observer.h"
@@ -179,7 +180,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void CreateRequestBodyBlob(std::string* blob_uuid, uint64_t* blob_size);
 
   // For FORWARD_TO_SERVICE_WORKER case.
-  void DidPrepareFetchEvent();
+  void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version);
   void DidDispatchFetchEvent(
       ServiceWorkerStatusCode status,
       ServiceWorkerFetchEventResult fetch_result,
@@ -279,6 +280,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   ServiceWorkerHeaderList cors_exposed_header_names_;
 
   std::unique_ptr<BlobConstructionWaiter> blob_construction_waiter_;
+
+  bool worker_already_activated_ = false;
+  EmbeddedWorkerStatus initial_worker_status_ = EmbeddedWorkerStatus::STOPPED;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
@@ -632,9 +633,42 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   *blob_size = total_size;
 }
 
-void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
+void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
+    scoped_refptr<ServiceWorkerVersion> version) {
   worker_ready_time_ = base::TimeTicks::Now();
   load_timing_info_.send_start = worker_ready_time_;
+
+  // Record the time taken for the browser to find and possibly start an active
+  // worker to which to dispatch a FetchEvent for a main frame resource request.
+  // For context, a FetchEvent can only be dispatched to an ACTIVATED worker
+  // that is running (it has been successfully started). The measurements starts
+  // when the browser process receives the request. The browser then finds the
+  // worker appropriate for this request (if there is none, this metric is not
+  // recorded). If that worker is already started, the browser process can send
+  // the request to it, so the measurement ends quickly. Otherwise the browser
+  // process has to start the worker and the measurement ends when the worker is
+  // successfully started.
+  // The metric is not recorded in the following situations:
+  // 1) The worker was in state INSTALLED or ACTIVATING, and the browser had to
+  //    wait for it to become ACTIVATED. This is to avoid including the time to
+  //    execute the activate event handlers in the worker's script.
+  // 2) The worker was started for the fetch AND DevTools was attached during
+  //    startup. This is intended to avoid including the time for debugging.
+  // 3) The request is for New Tab Page. This is because it tends to dominate
+  //    the stats and makes the results largely skewed.
+  if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME)
+    return;
+  if (!worker_already_activated_)
+    return;
+  if (version->skip_recording_startup_time() &&
+      initial_worker_status_ != EmbeddedWorkerStatus::RUNNING) {
+    return;
+  }
+  if (ServiceWorkerMetrics::ShouldExcludeURLFromHistogram(request()->url()))
+    return;
+  ServiceWorkerMetrics::RecordActivatedWorkerPreparationTimeForMainFrame(
+      worker_ready_time_ - request()->creation_time(), initial_worker_status_,
+      version->embedded_worker()->start_situation());
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
@@ -962,11 +996,15 @@ void ServiceWorkerURLRequestJob::RequestBodyBlobsCompleted(bool success) {
     return;
   }
 
+  worker_already_activated_ =
+      active_worker->status() == ServiceWorkerVersion::ACTIVATED;
+  initial_worker_status_ = active_worker->running_status();
+
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
       CreateFetchRequest(), active_worker, resource_type_,
       base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
-                 weak_factory_.GetWeakPtr()),
+                 weak_factory_.GetWeakPtr(), active_worker),
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();

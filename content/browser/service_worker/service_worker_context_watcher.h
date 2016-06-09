@@ -17,6 +17,7 @@
 namespace content {
 
 class ServiceWorkerContextWrapper;
+enum class EmbeddedWorkerStatus;
 
 // Used to monitor the status change of the ServiceWorker registrations and
 // versions in the ServiceWorkerContext from UI thread.
@@ -72,7 +73,7 @@ class ServiceWorkerContextWatcher
                         const GURL& script_url) override;
   void OnRunningStateChanged(
       int64_t version_id,
-      content::ServiceWorkerVersion::RunningStatus running_status) override;
+      content::EmbeddedWorkerStatus running_status) override;
   void OnVersionStateChanged(
       int64_t version_id,
       content::ServiceWorkerVersion::Status status) override;

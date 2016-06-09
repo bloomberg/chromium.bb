@@ -15,6 +15,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -328,7 +329,7 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
   EmbeddedWorkerInstance* worker =
       registry()->GetWorker(params.embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
-  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker,

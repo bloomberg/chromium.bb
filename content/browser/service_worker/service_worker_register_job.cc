@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -423,7 +424,7 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
 void ServiceWorkerRegisterJob::DispatchInstallEvent() {
   DCHECK_EQ(ServiceWorkerVersion::INSTALLING, new_version()->status())
       << new_version()->status();
-  DCHECK_EQ(ServiceWorkerVersion::RUNNING, new_version()->running_status())
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, new_version()->running_status())
       << "Worker stopped too soon after it was started.";
   int request_id = new_version()->StartRequest(
       ServiceWorkerMetrics::EventType::INSTALL,

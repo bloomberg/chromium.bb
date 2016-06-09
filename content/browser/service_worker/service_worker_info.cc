@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_info.h"
 
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
@@ -25,7 +26,7 @@ ServiceWorkerVersionInfo::ClientInfo::~ClientInfo() {
 }
 
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
-    : running_status(ServiceWorkerVersion::STOPPED),
+    : running_status(EmbeddedWorkerStatus::STOPPED),
       status(ServiceWorkerVersion::NEW),
       registration_id(kInvalidServiceWorkerRegistrationId),
       version_id(kInvalidServiceWorkerVersionId),
@@ -34,7 +35,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
       devtools_agent_route_id(MSG_ROUTING_NONE) {}
 
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
-    ServiceWorkerVersion::RunningStatus running_status,
+    EmbeddedWorkerStatus running_status,
     ServiceWorkerVersion::Status status,
     const GURL& script_url,
     int64_t registration_id,

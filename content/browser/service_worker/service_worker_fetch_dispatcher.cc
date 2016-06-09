@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
@@ -87,7 +88,7 @@ void ServiceWorkerFetchDispatcher::DidFailActivation() {
 }
 
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
-  DCHECK_EQ(ServiceWorkerVersion::RUNNING, version_->running_status())
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
 
   DCHECK(!prepare_callback_.is_null());

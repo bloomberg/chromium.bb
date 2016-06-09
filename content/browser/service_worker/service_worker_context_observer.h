@@ -14,6 +14,8 @@
 
 namespace content {
 
+enum class EmbeddedWorkerStatus;
+
 class ServiceWorkerContextObserver {
  public:
   struct ErrorInfo {
@@ -52,9 +54,8 @@ class ServiceWorkerContextObserver {
   virtual void OnNewLiveVersion(int64_t version_id,
                                 int64_t registration_id,
                                 const GURL& script_url) {}
-  virtual void OnRunningStateChanged(
-      int64_t version_id,
-      ServiceWorkerVersion::RunningStatus running_status) {}
+  virtual void OnRunningStateChanged(int64_t version_id,
+                                     EmbeddedWorkerStatus running_status) {}
   virtual void OnVersionStateChanged(int64_t version_id,
                                      ServiceWorkerVersion::Status status) {}
   virtual void OnMainScriptHttpResponseInfoSet(

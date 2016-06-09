@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "content/browser/message_port_message_filter.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
@@ -192,7 +193,7 @@ bool ServiceWorkerProviderHost::SetHostedVersion(
   if (active_version())
     return false;  // Unexpected bad message.
 
-  DCHECK_EQ(ServiceWorkerVersion::STARTING, version->running_status());
+  DCHECK_EQ(EmbeddedWorkerStatus::STARTING, version->running_status());
   if (version->embedded_worker()->process_id() != render_process_id_) {
     // If we aren't trying to start this version in our process
     // something is amiss.

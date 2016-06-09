@@ -17,6 +17,7 @@
 #include "content/browser/background_sync/background_sync_metrics.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_registration_options.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
@@ -755,7 +756,7 @@ void BackgroundSyncManager::DispatchSyncEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(active_version);
 
-  if (active_version->running_status() != ServiceWorkerVersion::RUNNING) {
+  if (active_version->running_status() != EmbeddedWorkerStatus::RUNNING) {
     active_version->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::SYNC,
         base::Bind(&BackgroundSyncManager::DispatchSyncEvent,

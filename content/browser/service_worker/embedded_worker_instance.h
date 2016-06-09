@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -51,12 +52,6 @@ class ServiceWorkerContextCore;
 class CONTENT_EXPORT EmbeddedWorkerInstance {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
-  enum Status {
-    STOPPED,
-    STARTING,
-    RUNNING,
-    STOPPING,
-  };
 
   // This enum is used in UMA histograms. Append-only.
   enum StartingPhase {
@@ -88,9 +83,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
     virtual void OnStopping() {}
     // Received ACK from renderer that the worker context terminated.
-    virtual void OnStopped(Status old_status) {}
+    virtual void OnStopped(EmbeddedWorkerStatus old_status) {}
     // The browser-side IPC endpoint for communication with the worker died.
-    virtual void OnDetached(Status old_status) {}
+    virtual void OnDetached(EmbeddedWorkerStatus old_status) {}
     virtual void OnScriptLoaded() {}
     virtual void OnScriptLoadFailed() {}
     virtual void OnReportException(const base::string16& error_message,
@@ -140,9 +135,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   ServiceRegistry* GetServiceRegistry();
 
   int embedded_worker_id() const { return embedded_worker_id_; }
-  Status status() const { return status_; }
+  EmbeddedWorkerStatus status() const { return status_; }
   StartingPhase starting_phase() const {
-    DCHECK_EQ(STARTING, status());
+    DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status());
     return starting_phase_;
   }
   int process_id() const;
@@ -161,6 +156,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   bool network_accessed_for_script() const {
     return network_accessed_for_script_;
+  }
+
+  ServiceWorkerMetrics::StartSituation start_situation() const {
+    DCHECK(status() == EmbeddedWorkerStatus::STARTING ||
+           status() == EmbeddedWorkerStatus::RUNNING);
+    return start_situation_;
   }
 
   // Called when the main script load accessed the network.
@@ -185,7 +186,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message);
 
-  static std::string StatusToString(Status status);
+  static std::string StatusToString(EmbeddedWorkerStatus status);
   static std::string StartingPhaseToString(StartingPhase phase);
 
   void Detach();
@@ -208,7 +209,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                          int embedded_worker_id);
 
   // Called back from StartTask after a process is allocated on the UI thread.
-  void OnProcessAllocated(std::unique_ptr<WorkerProcessHandle> handle);
+  void OnProcessAllocated(std::unique_ptr<WorkerProcessHandle> handle,
+                          ServiceWorkerMetrics::StartSituation start_situation);
 
   // Called back from StartTask after the worker is registered to
   // WorkerDevToolsManager.
@@ -289,7 +291,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<EmbeddedWorkerRegistry> registry_;
   const int embedded_worker_id_;
-  Status status_;
+  EmbeddedWorkerStatus status_;
   StartingPhase starting_phase_;
 
   // Current running information.
@@ -308,6 +310,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   std::unique_ptr<DevToolsProxy> devtools_proxy_;
 
   std::unique_ptr<StartTask> inflight_start_task_;
+
+  // This is valid only after a process is allocated for the worker.
+  ServiceWorkerMetrics::StartSituation start_situation_ =
+      ServiceWorkerMetrics::StartSituation::UNKNOWN;
 
   // Used for UMA. The start time of the current start sequence step.
   base::TimeTicks step_time_;

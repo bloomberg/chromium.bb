@@ -16,6 +16,8 @@ class GURL;
 
 namespace content {
 
+enum class EmbeddedWorkerStatus;
+
 class ServiceWorkerMetrics {
  public:
   // Used for UMA. Append-only.
@@ -160,6 +162,13 @@ class ServiceWorkerMetrics {
                                     bool is_installed,
                                     StartSituation start_situation,
                                     EventType purpose);
+
+  // Records the time taken to prepare an activated Service Worker for a main
+  // frame fetch.
+  static void RecordActivatedWorkerPreparationTimeForMainFrame(
+      base::TimeDelta time,
+      EmbeddedWorkerStatus initial_worker_status,
+      StartSituation start_situation);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);

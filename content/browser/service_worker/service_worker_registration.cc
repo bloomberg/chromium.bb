@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -380,7 +381,7 @@ void ServiceWorkerRegistration::DispatchActivateEvent(
   }
 
   DCHECK_EQ(ServiceWorkerVersion::ACTIVATING, activating_version->status());
-  DCHECK_EQ(ServiceWorkerVersion::RUNNING, activating_version->running_status())
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, activating_version->running_status())
       << "Worker stopped too soon after it was started.";
   int request_id = activating_version->StartRequest(
       ServiceWorkerMetrics::EventType::ACTIVATE,

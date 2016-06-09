@@ -17,6 +17,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -831,7 +832,7 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
   // We might not be STARTING if the stop sequence was entered (STOPPING) or
   // ended up being detached (STOPPED).
   ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
-  if (!version || version->running_status() != ServiceWorkerVersion::STARTING)
+  if (!version || version->running_status() != EmbeddedWorkerStatus::STARTING)
     return;
 
   if (!provider_host->SetHostedVersion(version)) {

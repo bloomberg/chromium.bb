@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -113,16 +114,16 @@ base::ProcessId GetRealProcessId(int process_host_id) {
 void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
                        DictionaryValue* info) {
   switch (version.running_status) {
-    case ServiceWorkerVersion::STOPPED:
+    case EmbeddedWorkerStatus::STOPPED:
       info->SetString("running_status", "STOPPED");
       break;
-    case ServiceWorkerVersion::STARTING:
+    case EmbeddedWorkerStatus::STARTING:
       info->SetString("running_status", "STARTING");
       break;
-    case ServiceWorkerVersion::RUNNING:
+    case EmbeddedWorkerStatus::RUNNING:
       info->SetString("running_status", "RUNNING");
       break;
-    case ServiceWorkerVersion::STOPPING:
+    case EmbeddedWorkerStatus::STOPPING:
       info->SetString("running_status", "STOPPING");
       break;
   }
@@ -253,7 +254,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
   ~PartitionObserver() override {}
   // ServiceWorkerContextObserver overrides:
   void OnRunningStateChanged(int64_t version_id,
-                             ServiceWorkerVersion::RunningStatus) override {
+                             EmbeddedWorkerStatus) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),

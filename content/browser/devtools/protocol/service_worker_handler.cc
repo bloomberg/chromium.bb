@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -62,15 +63,15 @@ void PushDeliveryNoOp(PushDeliveryStatus status) {
 }
 
 const std::string GetVersionRunningStatusString(
-    content::ServiceWorkerVersion::RunningStatus running_status) {
+    EmbeddedWorkerStatus running_status) {
   switch (running_status) {
-    case content::ServiceWorkerVersion::STOPPED:
+    case EmbeddedWorkerStatus::STOPPED:
       return kServiceWorkerVersionRunningStatusStopped;
-    case content::ServiceWorkerVersion::STARTING:
+    case EmbeddedWorkerStatus::STARTING:
       return kServiceWorkerVersionRunningStatusStarting;
-    case content::ServiceWorkerVersion::RUNNING:
+    case EmbeddedWorkerStatus::RUNNING:
       return kServiceWorkerVersionRunningStatusRunning;
-    case content::ServiceWorkerVersion::STOPPING:
+    case EmbeddedWorkerStatus::STOPPING:
       return kServiceWorkerVersionRunningStatusStopping;
   }
   return std::string();

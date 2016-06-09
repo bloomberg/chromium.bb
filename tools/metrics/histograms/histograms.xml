@@ -49682,6 +49682,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time"
+    units="ms">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time taken for the browser to find and possibly start an active worker
+    to dispatch a FetchEvent for a main frame resource request. For context, a
+    FetchEvent can only be dispatched to an ACTIVATED worker that is running (it
+    has been successfully started). The measurements starts when the browser
+    process receives the request. The browser then finds the worker appropriate
+    for this request (if there is none, this metric is not recorded). If that
+    worker is already started, the browser process can send the request to it,
+    so the measurement ends quickly. Otherwise the browser process has to start
+    the worker and the measurement ends when the worker is successfully started
+    (we do not include in the time it takes for the worker to become ACTIVATED).
+    The metric is not recorded in the following situations: 1) The worker was in
+    state INSTALLED or ACTIVATING, and the browser had to wait for it to become
+    ACTIVATED. This is to avoid including the time to execute the activate event
+    handlers in the worker's script. 2) The worker was started for the fetch AND
+    DevTools was attached during startup. This is intended to avoid including
+    the time for debugging. 3) The request is for New Tab Page. This is because
+    it tends to dominate the stats and makes the results largely skewed.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.ActivateEvent.Time" units="ms">
   <owner>shimazu@chromium.org</owner>
   <summary>
@@ -97503,6 +97527,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ExistingProcess"
       label="An existing process was used for the worker."/>
   <affected-histogram name="ServiceWorker.StartWorker.Time"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorker.WorkerPreparationMode">
+  <suffix name="StartWorkerDuringStartup"
+      label="Started a worker during browser startup."/>
+  <suffix name="StartWorkerNewProcess"
+      label="Started a worker in a new process."/>
+  <suffix name="StartWorkerExistingProcess"
+      label="Started a worker in an existing process."/>
+  <suffix name="StartingWorker"
+      label="The activated worker was already starting up."/>
+  <suffix name="RunningWorker"
+      label="The activated worker was already running."/>
+  <suffix name="StoppingWorker" label="The activated worker was stopping."/>
+  <affected-histogram
+      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorkerCache.Cache" separator=".">

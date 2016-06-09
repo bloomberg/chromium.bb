@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -20,8 +21,7 @@ namespace content {
 namespace {
 
 bool IsStoppedAndRedundant(const ServiceWorkerVersionInfo& version_info) {
-  return version_info.running_status ==
-             content::ServiceWorkerVersion::STOPPED &&
+  return version_info.running_status == EmbeddedWorkerStatus::STOPPED &&
          version_info.status == content::ServiceWorkerVersion::REDUNDANT;
 }
 
@@ -186,7 +186,7 @@ void ServiceWorkerContextWatcher::OnNewLiveVersion(int64_t version_id,
 
 void ServiceWorkerContextWatcher::OnRunningStateChanged(
     int64_t version_id,
-    content::ServiceWorkerVersion::RunningStatus running_status) {
+    content::EmbeddedWorkerStatus running_status) {
   ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
   DCHECK(version);
   if (version->running_status == running_status)
