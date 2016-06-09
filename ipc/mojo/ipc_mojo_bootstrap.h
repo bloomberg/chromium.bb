@@ -15,7 +15,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/mojo/ipc.mojom.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {

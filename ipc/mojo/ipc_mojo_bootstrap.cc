@@ -14,8 +14,6 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace IPC {

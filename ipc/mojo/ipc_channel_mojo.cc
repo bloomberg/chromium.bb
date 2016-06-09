@@ -24,8 +24,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_platform_file_attachment_posix.h"
@@ -70,19 +70,38 @@ mojom::SerializedHandlePtr CreateSerializedHandle(
   return serialized_handle;
 }
 
-MojoResult WrapPlatformHandle(mojo::edk::ScopedPlatformHandle handle,
+MojoResult WrapPlatformHandle(base::PlatformFile handle,
                               mojom::SerializedHandle::Type type,
                               mojom::SerializedHandlePtr* serialized) {
-  MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
-      std::move(handle), &wrapped_handle);
-  if (wrap_result != MOJO_RESULT_OK)
-    return wrap_result;
+  mojo::ScopedHandle wrapped_handle = mojo::WrapPlatformFile(handle);
+  if (!wrapped_handle.is_valid())
+    return MOJO_RESULT_UNKNOWN;
 
-  *serialized = CreateSerializedHandle(
-      mojo::MakeScopedHandle(mojo::Handle(wrapped_handle)), type);
+  *serialized = CreateSerializedHandle(std::move(wrapped_handle), type);
   return MOJO_RESULT_OK;
 }
+
+#if defined(OS_MACOSX)
+
+MojoResult WrapMachPort(mach_port_t mach_port,
+                        mojom::SerializedHandlePtr* serialized) {
+  MojoPlatformHandle platform_handle = {
+    sizeof(MojoPlatformHandle), MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT,
+    static_cast<uint64_t>(mach_port)
+  };
+
+  MojoHandle wrapped_handle;
+  MojoResult result = MojoWrapPlatformHandle(&platform_handle, &wrapped_handle);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  *serialized = CreateSerializedHandle(
+      mojo::MakeScopedHandle(mojo::Handle(wrapped_handle)),
+      mojom::SerializedHandle::Type::MACH_PORT);
+  return MOJO_RESULT_OK;
+}
+
+#endif
 
 #if defined(OS_POSIX)
 
@@ -113,8 +132,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
       return MOJO_RESULT_UNKNOWN;
     }
 
-    return WrapPlatformHandle(mojo::edk::ScopedPlatformHandle(
-                                  mojo::edk::PlatformHandle(file.release())),
+    return WrapPlatformHandle(file.release(),
                               mojom::SerializedHandle::Type::PLATFORM_FILE,
                               serialized);
   }
@@ -126,10 +144,8 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
             BrokerableAttachment::MACH_PORT);
   internal::MachPortAttachmentMac& mach_port_attachment =
       static_cast<internal::MachPortAttachmentMac&>(*attachment);
-  MojoResult result = WrapPlatformHandle(
-      mojo::edk::ScopedPlatformHandle(
-          mojo::edk::PlatformHandle(mach_port_attachment.get_mach_port())),
-      mojom::SerializedHandle::Type::MACH_PORT, serialized);
+  MojoResult result = WrapMachPort(mach_port_attachment.get_mach_port(),
+                                   serialized);
   mach_port_attachment.reset_mach_port_ownership();
   return result;
 #elif defined(OS_WIN)
@@ -140,8 +156,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
   internal::HandleAttachmentWin& handle_attachment =
       static_cast<internal::HandleAttachmentWin&>(*attachment);
   MojoResult result = WrapPlatformHandle(
-      mojo::edk::ScopedPlatformHandle(
-          mojo::edk::PlatformHandle(handle_attachment.get_handle())),
+      handle_attachment.get_handle(),
       mojom::SerializedHandle::Type::WIN_HANDLE, serialized);
   handle_attachment.reset_handle_ownership();
   return result;
@@ -170,33 +185,37 @@ MojoResult UnwrapAttachment(mojom::SerializedHandlePtr handle,
         new IPC::internal::MojoHandleAttachment(std::move(handle->the_handle));
     return MOJO_RESULT_OK;
   }
-  mojo::edk::ScopedPlatformHandle platform_handle;
-  MojoResult unwrap_result = mojo::edk::PassWrappedPlatformHandle(
+  MojoPlatformHandle platform_handle = { sizeof(MojoPlatformHandle), 0, 0 };
+  MojoResult unwrap_result = MojoUnwrapPlatformHandle(
           handle->the_handle.release().value(), &platform_handle);
   if (unwrap_result != MOJO_RESULT_OK)
     return unwrap_result;
 #if defined(OS_POSIX)
-  if (handle->type == mojom::SerializedHandle::Type::PLATFORM_FILE &&
-      platform_handle.get().type == mojo::edk::PlatformHandle::Type::POSIX) {
-    *attachment = new internal::PlatformFileAttachment(
-        platform_handle.release().handle);
+  if (handle->type == mojom::SerializedHandle::Type::PLATFORM_FILE) {
+    base::PlatformFile file = base::kInvalidPlatformFile;
+    if (platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR)
+      file = static_cast<base::PlatformFile>(platform_handle.value);
+    *attachment = new internal::PlatformFileAttachment(file);
     return MOJO_RESULT_OK;
   }
 #endif  // defined(OS_POSIX)
 #if defined(OS_MACOSX)
-  if (handle->type == mojom::SerializedHandle::Type::MACH_PORT &&
-      platform_handle.get().type == mojo::edk::PlatformHandle::Type::MACH) {
+  if (handle->type == mojom::SerializedHandle::Type::MACH_PORT) {
+    mach_port_t mach_port = MACH_PORT_NULL;
+    if (platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT)
+      mach_port = static_cast<mach_port_t>(platform_handle.value);
     *attachment = new internal::MachPortAttachmentMac(
-        platform_handle.release().port,
-        internal::MachPortAttachmentMac::FROM_WIRE);
+        mach_port, internal::MachPortAttachmentMac::FROM_WIRE);
     return MOJO_RESULT_OK;
   }
 #endif  // defined(OS_MACOSX)
 #if defined(OS_WIN)
   if (handle->type == mojom::SerializedHandle::Type::WIN_HANDLE) {
+    base::PlatformFile handle = base::kInvalidPlatformFile;
+    if (platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE)
+      handle = reinterpret_cast<base::PlatformFile>(platform_handle.value);
     *attachment = new internal::HandleAttachmentWin(
-        platform_handle.release().handle,
-        internal::HandleAttachmentWin::FROM_WIRE);
+        handle, internal::HandleAttachmentWin::FROM_WIRE);
     return MOJO_RESULT_OK;
   }
 #endif  // defined(OS_WIN)
