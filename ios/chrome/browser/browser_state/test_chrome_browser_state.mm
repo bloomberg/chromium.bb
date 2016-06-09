@@ -8,12 +8,14 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
@@ -221,7 +223,7 @@ base::FilePath TestChromeBrowserState::GetStatePath() const {
 
 scoped_refptr<base::SequencedTaskRunner>
 TestChromeBrowserState::GetIOTaskRunner() {
-  return base::MessageLoop::current()->task_runner();
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 ios::ChromeBrowserState*
