@@ -6,8 +6,10 @@ import("//build/config/features.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
-source_set("capture") {
+component("capture") {
+  defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
+    "capture_export.h",
     "content/animated_content_sampler.cc",
     "content/animated_content_sampler.h",
     "content/capture_resolution_chooser.cc",
@@ -25,10 +27,6 @@ source_set("capture") {
     "device_monitor_mac.mm",
     "system_message_window_win.cc",
     "system_message_window_win.h",
-    "video/android/video_capture_device_android.cc",
-    "video/android/video_capture_device_android.h",
-    "video/android/video_capture_device_factory_android.cc",
-    "video/android/video_capture_device_factory_android.h",
     "video/fake_video_capture_device.cc",
     "video/fake_video_capture_device.h",
     "video/fake_video_capture_device_factory.cc",
@@ -81,12 +79,18 @@ source_set("capture") {
   public_deps = []
   deps = [
     "//base",
-    "//media/base",
+    "//base:i18n",
+    "//media",
     "//skia",
     "//ui/display",
+    "//ui/gfx",
   ]
 
   configs += [
+    # TODO(mcasas): media/base should be a component and not a source_set, but
+    # it depends on parts of media/filters, media/ffmpeg etc. Until then, we
+    # pretend to be inside media.dll and duplicate the few symbols needed, see
+    # https://crbug.com/590017.
     "//media:media_implementation",
 
     # TODO(mcasas): Fix size_t to int truncation warning-treated-as-errors.
@@ -94,7 +98,10 @@ source_set("capture") {
   ]
 
   if (is_android) {
-    public_deps += [ "video/android" ]
+    public_deps += [
+      "video/android",
+      "video/android:capture_java",
+    ]
     deps += [ "video/android:capture_jni_headers" ]
   }
 
@@ -116,14 +123,16 @@ source_set("capture") {
   }
 
   if (is_win) {
-    public_deps += [ "//media/base/win" ]
+    deps += [
+      "//media/base",  # For media_switches.
+      "//media/base/win",
+    ]
     libs = [
       "mf.lib",
       "mfplat.lib",
       "mfreadwrite.lib",
       "mfuuid.lib",
     ]
-
     ldflags = [
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
@@ -132,6 +141,7 @@ source_set("capture") {
   }
 }
 
+# TODO(mcasas): Make this a test target, https://crbug.com/618718.
 source_set("unittests") {
   testonly = true
 
@@ -148,7 +158,7 @@ source_set("unittests") {
   ]
 
   deps = [
-    "//media/base:unittests",
+    ":capture",
     "//testing/gmock",
     "//testing/gtest",
   ]

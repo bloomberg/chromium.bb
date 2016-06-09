@@ -11,7 +11,7 @@
 namespace media {
 
 // A convenience wrap of a device's name and associated supported formats.
-struct MEDIA_EXPORT VideoCaptureDeviceInfo {
+struct CAPTURE_EXPORT VideoCaptureDeviceInfo {
   VideoCaptureDeviceInfo();
   VideoCaptureDeviceInfo(const VideoCaptureDevice::Name& name,
                          const VideoCaptureFormats& supported_formats);

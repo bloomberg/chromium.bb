@@ -14,7 +14,7 @@ namespace media {
 
 // Extension of VideoCaptureDeviceFactory to create and manipulate Windows
 // devices, via either DirectShow or MediaFoundation APIs.
-class MEDIA_EXPORT VideoCaptureDeviceFactoryWin
+class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
     : public VideoCaptureDeviceFactory {
  public:
   static bool PlatformSupportsMediaFoundation();
