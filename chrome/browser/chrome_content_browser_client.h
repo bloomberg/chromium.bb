@@ -272,6 +272,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& mime_type) const override;
   bool ShouldUseWindowsPrefetchArgument() const override;
 #endif
+  void RegisterRenderProcessMojoServices(
+      content::ServiceRegistry* registry) override;
   void RegisterFrameMojoShellServices(
       content::ServiceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;

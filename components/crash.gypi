@@ -228,7 +228,7 @@
               'dependencies': [
                 # TODO(fdoray): Remove this once the PreRead field trial has
                 # expired. crbug.com/577698
-                '<(DEPTH)/components/components.gyp:startup_metric_utils_common',
+                '<(DEPTH)/components/components.gyp:startup_metric_utils_win',
               ],
             }],
             ['OS=="mac" or OS=="win"', {

@@ -143,7 +143,7 @@
               'dependencies': [
                 # TODO(fdoray): Remove this once the PreRead field trial has
                 # expired. crbug.com/577698
-                '../components/components.gyp:startup_metric_utils_common',
+                '../components/components.gyp:startup_metric_utils_win',
               ]
             }],
           ],

@@ -2,18 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 source_set("common") {
   sources = [
     "pre_read_field_trial_utils_win.cc",
     "pre_read_field_trial_utils_win.h",
-    "startup_metric_message_generator.cc",
-    "startup_metric_message_generator.h",
-    "startup_metric_messages.h",
   ]
 
   deps = [
     "//base",
     "//components/variations",
     "//ipc",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "startup_metric.mojom",
+  ]
+  deps = [
+    "//mojo/common:common_custom_types",
   ]
 }

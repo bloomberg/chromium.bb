@@ -409,7 +409,7 @@
             '../components/components.gyp:crash_core_common',
             '../components/components.gyp:flags_ui_switches',
             '../components/components.gyp:policy',
-            '../components/components.gyp:startup_metric_utils_common',
+            '../components/components.gyp:startup_metric_utils_win',
             '../crypto/crypto.gyp:crypto',
             '../sandbox/sandbox.gyp:sandbox',
             '../ui/gfx/gfx.gyp:gfx',
@@ -503,7 +503,7 @@
           ],
           'dependencies': [
              '../base/base.gyp:base',
-             '../components/components.gyp:startup_metric_utils_common',
+             '../components/components.gyp:startup_metric_utils_win',
           ],
         },
       ],
