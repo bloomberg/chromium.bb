@@ -321,13 +321,14 @@ void DefaultComponentInstaller::FinishRegistration(
 
   if (installer_traits_->CanAutoUpdate()) {
     CrxComponent crx;
-    crx.name = installer_traits_->GetName();
-    crx.requires_network_encryption =
-        installer_traits_->RequiresNetworkEncryption();
+    installer_traits_->GetHash(&crx.pk_hash);
     crx.installer = this;
     crx.version = current_version_;
     crx.fingerprint = current_fingerprint_;
-    installer_traits_->GetHash(&crx.pk_hash);
+    crx.name = installer_traits_->GetName();
+    crx.ap = installer_traits_->GetAp();
+    crx.requires_network_encryption =
+        installer_traits_->RequiresNetworkEncryption();
     if (!cus->RegisterComponent(crx)) {
       LOG(ERROR) << "Component registration failed for "
                  << installer_traits_->GetName();
