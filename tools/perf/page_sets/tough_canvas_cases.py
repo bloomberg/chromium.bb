@@ -70,19 +70,22 @@ class ToughCanvasCasesPageSet(story.StorySet):
       'http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html',
       'http://www.smashcat.org/av/canvas_test/',
       # pylint: disable=line-too-long
-      'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=canvas_sprite&back=canvas',
-      # pylint: disable=line-too-long
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image',
-      # pylint: disable=line-too-long
-      'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=filled_path&back=gradient',
       # pylint: disable=line-too-long
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15',
       'file://tough_canvas_cases/canvas-font-cycler.html',
       'file://tough_canvas_cases/canvas-animation-no-clear.html',
       'file://tough_canvas_cases/canvas_toBlob.html',
-      'file://../../../chrome/test/data/perf/canvas_bench/single_image.html',
       'file://../../../chrome/test/data/perf/canvas_bench/many_images.html',
-      'file://tough_canvas_cases/rendering_throughput/canvas_arcs.html'
+      'file://tough_canvas_cases/rendering_throughput/canvas_arcs.html',
+      'file://tough_canvas_cases/rendering_throughput/canvas_lines.html',
+      'file://tough_canvas_cases/rendering_throughput/put_get_image_data.html',
+      'file://tough_canvas_cases/rendering_throughput/fill_shapes.html',
+      'file://tough_canvas_cases/rendering_throughput/stroke_shapes.html',
+      'file://tough_canvas_cases/rendering_throughput/bouncing_clipped_rectangles.html',
+      'file://tough_canvas_cases/rendering_throughput/bouncing_gradient_circles.html',
+      'file://tough_canvas_cases/rendering_throughput/bouncing_svg_images.html',
+      'file://tough_canvas_cases/rendering_throughput/bouncing_png_images.html'
     ]
 
     for url in urls_list:

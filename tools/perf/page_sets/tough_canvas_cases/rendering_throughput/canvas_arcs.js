@@ -44,6 +44,7 @@ function CanvasArc() {
     this.counterclockwise = (Math.floor(Math.random() * 2) == 0);
 
     this.arc_speed = (Math.random() - 0.5) * Math.PI / 10;
+
     this.start_angle = Math.random() * 2 * Math.PI;
     this.end_angle = Math.random() * 2 * Math.PI;
   }
