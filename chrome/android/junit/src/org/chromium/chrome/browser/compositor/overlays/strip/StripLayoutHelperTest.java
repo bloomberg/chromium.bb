@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 
@@ -50,7 +51,7 @@ public class StripLayoutHelperTest {
     private TestTabModel mModel = new TestTabModel();
     private StripLayoutHelper mStripLayoutHelper;
     private boolean mIncognito;
-    private static final String[] TEST_TAB_TITLES = {"Tab 1", "Tab 2", "Tab 3"};
+    private static final String[] TEST_TAB_TITLES = {"Tab 1", "Tab 2", "Tab 3", "", null};
     private static final String CLOSE_TAB = "Close tab test string";
     private static final String NEW_TAB = "New tab test string";
     private static final String NEW_INCOGNITO_TAB = "New incognito tab test string";
@@ -201,7 +202,11 @@ public class StripLayoutHelperTest {
             } else if (isHidden && mIncognito) {
                 suffix = INCOGNITO_IDENTIFIER;
             }
-            expectedAccessibilityDescriptions[i] = TEST_TAB_TITLES[i] + ", " + suffix;
+            String expectedDescription = "";
+            if (!TextUtils.isEmpty(TEST_TAB_TITLES[i])) {
+                expectedDescription += TEST_TAB_TITLES[i] + ", ";
+            }
+            expectedAccessibilityDescriptions[i] = expectedDescription + suffix;
         }
         return expectedAccessibilityDescriptions;
     }

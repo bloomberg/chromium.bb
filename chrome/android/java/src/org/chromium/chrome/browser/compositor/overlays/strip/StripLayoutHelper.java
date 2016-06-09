@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -1749,8 +1750,11 @@ public class StripLayoutHelper {
         // Not for sentence construction and hence not localized.
         final String contentDescriptionSeparator = ", ";
 
-        final StringBuilder builder = new StringBuilder(title);
-        builder.append(contentDescriptionSeparator);
+        final StringBuilder builder = new StringBuilder();
+        if (!TextUtils.isEmpty(title)) {
+            builder.append(title);
+            builder.append(contentDescriptionSeparator);
+        }
 
         int resId = R.string.accessibility_tabstrip_identifier;
         if (!isHidden && !mIncognito) {
