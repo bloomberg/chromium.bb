@@ -2169,14 +2169,3 @@ name=bug_617740
 media.dll!mkvmuxer::Segment::WriteFramesAll
 media.dll!mkvmuxer::Segment::Finalize
 media.dll!media::WebmMuxer::~WebmMuxer
-
-UNADDRESSABLE ACCESS
-name=bug_618265
-...
-cc.dll!cc::ScrollTree::MaxScrollOffset
-cc.dll!cc::LayerImpl::MaxScrollOffset
-cc.dll!cc::LayerTreeImpl::TotalMaxScrollOffset
-cc.dll!cc::LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler
-cc.dll!cc::LayerTreeHostImpl::AnimateInternal
-cc.dll!cc::LayerTreeHostImpl::Animate
-cc.dll!cc::ProxyImpl::WillBeginImplFrame
