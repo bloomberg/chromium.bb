@@ -71,6 +71,10 @@ config("rpath_for_built_shared_libraries") {
 
 # Settings for executables.
 config("executable_ldconfig") {
+  # WARNING! //sandbox/linux:chrome_sandbox will not pick up this
+  # config, because it is a setuid binary that needs special flags.
+  # If you add things to this config, make sure you check to see
+  # if they should be added to that target as well.
   ldflags = []
   if (is_android) {
     ldflags += [
