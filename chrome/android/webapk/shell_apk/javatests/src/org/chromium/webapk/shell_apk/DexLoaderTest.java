@@ -13,11 +13,11 @@ import android.os.FileObserver;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import dalvik.system.DexFile;
 
 import org.chromium.base.FileUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.webapk.shell_apk.test.dex_optimizer.IDexOptimizerService;
 
@@ -122,8 +122,7 @@ public class DexLoaderTest extends InstrumentationTestCase {
      * Test that {@DexLoader#load()} can create a ClassLoader from a dex and optimized dex in
      * another app's data directory.
      */
-    // @MediumTest  crbug.com/617935
-    @DisabledTest
+    @MediumTest
     public void testLoadFromRemoteDataDir() {
         // Extract the dex file into another app's data directory and optimize the dex.
         String remoteDexFilePath = null;
@@ -157,8 +156,7 @@ public class DexLoaderTest extends InstrumentationTestCase {
      * local data directory and creating the ClassLoader from the extracted dex if creating the
      * ClassLoader from the cached data in the remote Context's data directory fails.
      */
-    // @MediumTest  crbug.com/617935
-    @DisabledTest
+    @MediumTest
     public void testLoadFromLocalDataDir() {
         ClassLoader loader = DexLoader.load(
                 mRemoteContext, DEX_ASSET_NAME, CANARY_CLASS_NAME, null, mLocalDexDir);
@@ -182,8 +180,7 @@ public class DexLoaderTest extends InstrumentationTestCase {
      * Test that {@link DexLoader#load()} does not extract the dex file from the APK if the dex file
      * was extracted in a previous call to {@link DexLoader#load()}
      */
-    // @MediumTest  crbug.com/617935
-    @DisabledTest
+    @MediumTest
     public void testPreviouslyLoadedFromLocalDataDir() {
         assertTrue(mLocalDexDir.mkdir());
 
@@ -223,8 +220,7 @@ public class DexLoaderTest extends InstrumentationTestCase {
      * Test that {@link DexLoader#load()} re-extracts the dex file from the APK after a call to
      * {@link DexLoader#deleteCachedDexes()}.
      */
-    // @MediumTest  crbug.com/617935
-    @DisabledTest
+    @MediumTest
     public void testLoadAfterDeleteCachedDexes() {
         assertTrue(mLocalDexDir.mkdir());
 
