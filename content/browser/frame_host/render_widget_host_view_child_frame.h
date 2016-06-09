@@ -40,7 +40,6 @@ class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewChildFrameTest;
 class RenderWidgetHostViewGuestSurfaceTest;
-struct TextInputState;
 
 // RenderWidgetHostViewChildFrame implements the view for a RenderWidgetHost
 // associated with content being rendered in a separate process from
