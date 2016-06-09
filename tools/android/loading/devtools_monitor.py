@@ -5,6 +5,7 @@
 """Library handling DevTools websocket interaction.
 """
 
+import datetime
 import httplib
 import json
 import logging
@@ -109,9 +110,11 @@ class DevToolsConnection(object):
     self._scoped_states = {}
     self._domains_to_enable = set()
     self._tearing_down_tracing = False
-    self._please_stop = False
     self._ws = None
     self._target_descriptor = None
+    self._stop_delay_multiplier = 0
+    self._monitoring_start_timestamp = None
+    self._monitoring_stop_timestamp = None
 
     self._Connect()
     self.RegisterListener('Inspector.targetCrashed', self)
@@ -222,15 +225,19 @@ class DevToolsConnection(object):
     assert res['result'], 'Cache clearing is not supported by this browser.'
     self.SyncRequest('Network.clearBrowserCache')
 
-  def MonitorUrl(self, url, timeout_seconds=DEFAULT_TIMEOUT_SECONDS):
+  def MonitorUrl(self, url, timeout_seconds=DEFAULT_TIMEOUT_SECONDS,
+                 stop_delay_multiplier=0):
     """Navigate to url and dispatch monitoring loop.
 
     Unless you have registered a listener that will call StopMonitoring, this
     will run until timeout from chrome.
 
     Args:
-      url: (str) a URL to navigate to before starting monitoring loop.\
+      url: (str) a URL to navigate to before starting monitoring loop.
       timeout_seconds: timeout in seconds for monitoring loop.
+      stop_delay_multiplier: How long to wait after page load completed before
+        tearing down, relative to the time it took to reach the page load to
+        complete.
     """
     for domain in self._domains_to_enable:
       self._ws.RegisterDomain(domain, self._OnDataReceived)
@@ -245,13 +252,30 @@ class DevToolsConnection(object):
 
     logging.info('Navigate to %s' % url)
     self.SendAndIgnoreResponse('Page.navigate', {'url': url})
-
-    self._Dispatch(timeout=timeout_seconds)
+    self._monitoring_start_timestamp = datetime.datetime.now()
+    self._Dispatch(timeout=timeout_seconds,
+                   stop_delay_multiplier=stop_delay_multiplier)
+    self._monitoring_start_timestamp = None
+    logging.info('Tearing down monitoring.')
     self._TearDownMonitoring()
 
   def StopMonitoring(self):
-    """Stops the monitoring."""
-    self._please_stop = True
+    """Sets the timestamp when to stop monitoring.
+
+    Args:
+      address_delayed_stop: Whether the MonitorUrl()'s stop_delay_multiplier
+        should be addressed or not.
+    """
+    if self._stop_delay_multiplier == 0:
+      self._StopMonitoringImmediately()
+    elif self._monitoring_stop_timestamp is None:
+      assert self._monitoring_start_timestamp is not None
+      current_time = datetime.datetime.now()
+      stop_delay_duration = self._stop_delay_multiplier * (
+          current_time - self._monitoring_start_timestamp)
+      logging.info('Delaying monitoring stop for %ds',
+                   stop_delay_duration.total_seconds())
+      self._monitoring_stop_timestamp = current_time + stop_delay_duration
 
   def ExecuteJavaScript(self, expression):
     """Run JavaScript expression.
@@ -291,15 +315,26 @@ class DevToolsConnection(object):
     assert response == 'Target is closing'
     self._ws = None
 
-  def _Dispatch(self, timeout, kind='Monitoring'):
-    self._please_stop = False
-    while not self._please_stop:
+  def _StopMonitoringImmediately(self):
+    self._monitoring_stop_timestamp = datetime.datetime.now()
+
+  def _Dispatch(self, timeout, kind='Monitoring', stop_delay_multiplier=0):
+    self._monitoring_stop_timestamp = None
+    self._stop_delay_multiplier = stop_delay_multiplier
+    while True:
       try:
         self._ws.DispatchNotifications(timeout=timeout)
       except websocket.WebSocketTimeoutException:
-        break
-    if not self._please_stop:
-      logging.warning('%s stopped on a timeout.' % kind)
+        if self._monitoring_stop_timestamp is None:
+          logging.warning('%s stopped on a timeout.' % kind)
+          break
+      if self._monitoring_stop_timestamp:
+        # After the first timeout reduce the timeout to check when to stop
+        # monitoring more often, because the page at this moment can already be
+        # loaded and not many events would be arriving from it.
+        timeout = 1
+        if datetime.datetime.now() >= self._monitoring_stop_timestamp:
+          break
 
   def Handle(self, method, event):
     del event # unused
@@ -334,7 +369,7 @@ class DevToolsConnection(object):
       stream_handle = msg.get('params', {}).get('stream')
       if not stream_handle:
         self._tearing_down_tracing = False
-        self.StopMonitoring()
+        self._StopMonitoringImmediately()
         # Fall through to regular dispatching.
       else:
         _StreamReader(self._ws, stream_handle).Read(self._TracingStreamDone)
@@ -350,7 +385,7 @@ class DevToolsConnection(object):
       self._domain_listeners[domain].Handle(method, msg)
     if self._tearing_down_tracing and method == self.TRACING_DONE_EVENT:
       self._tearing_down_tracing = False
-      self.StopMonitoring()
+      self._StopMonitoringImmediately()
 
   def _TracingStreamDone(self, data):
     tracing_events = json.loads(data)
@@ -360,7 +395,7 @@ class DevToolsConnection(object):
       if self._please_stop:
         break
     self._tearing_down_tracing = False
-    self.StopMonitoring()
+    self._StopMonitoringImmediately()
 
   def _HttpRequest(self, path):
     assert path[0] == '/'

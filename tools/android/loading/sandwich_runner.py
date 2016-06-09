@@ -76,6 +76,7 @@ class SandwichRunner(object):
   method.
   """
   _ATTEMPT_COUNT = 3
+  _STOP_DELAY_MULTIPLIER = 2
 
   def __init__(self):
     """Configures a sandwich runner out of the box.
@@ -162,6 +163,9 @@ class SandwichRunner(object):
     categories = _TRACING_CATEGORIES
     if self.record_memory_dumps:
       categories += [MEMORY_DUMP_CATEGORY]
+    stop_delay_multiplier = 0
+    if self.wpr_record or self.cache_operation == CacheOperation.SAVE:
+      stop_delay_multiplier = self._STOP_DELAY_MULTIPLIER
     # TODO(gabadie): add a way to avoid recording a trace.
     with self._chrome_ctl.Open() as connection:
       if clear_cache:
@@ -174,7 +178,8 @@ class SandwichRunner(object):
             connection=connection,
             chrome_metadata=self._chrome_ctl.ChromeMetadata(),
             categories=categories,
-            timeout_seconds=_DEVTOOLS_TIMEOUT)
+            timeout_seconds=_DEVTOOLS_TIMEOUT,
+            stop_delay_multiplier=stop_delay_multiplier)
 
       if run_path is not None and self.record_video:
         device = self._chrome_ctl.GetDevice()
