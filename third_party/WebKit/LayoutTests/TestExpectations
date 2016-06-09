@@ -1460,3 +1460,5 @@ crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Fa
 crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
 
 crbug.com/618399 fast/js/regress/to-int32-boolean.html [ Pass Timeout ]
+
+crbug.com/618638 [ Win10 ] svg/custom/relative-sized-image.xhtml [ NeedsRebaseline ]
