@@ -944,7 +944,6 @@ class VersionControlSystem(object):
     raise NotImplementedError(
         "abstract method -- subclass %s must override" % self.__class__)
 
-
   def GetBaseFiles(self, diff):
     """Helper that calls GetBase file for each file in the patch.
 
@@ -962,7 +961,6 @@ class VersionControlSystem(object):
         filename = filename.strip().replace('\\', '/')
         files[filename] = self.GetBaseFile(filename)
     return files
-
 
   def UploadBaseFiles(self, issue, rpc_server, patch_list, patchset, options,
                       files):
@@ -1033,7 +1031,6 @@ class VersionControlSystem(object):
     for t in threads:
       print t.get(timeout=60)
 
-
   def IsImage(self, filename):
     """Returns true if the filename has an image extension."""
     mimetype =  mimetypes.guess_type(filename)[0]
@@ -1047,6 +1044,10 @@ class VersionControlSystem(object):
     # Derived from how Mercurial's heuristic, see
     # http://selenic.com/hg/file/848a6658069e/mercurial/util.py#l229
     return bool(data and "\0" in data)
+
+  def GetMostRecentCommitSummary(self):
+    """Returns a one line summary of the current commit."""
+    return ""
 
 
 class SubversionVCS(VersionControlSystem):
@@ -1510,6 +1511,9 @@ class GitVCS(VersionControlSystem):
       if not is_binary:
         new_content = None
     return (base_content, new_content, is_binary, status)
+
+  def GetMostRecentCommitSummary(self):
+    return RunShell(["git", "log", "-1", "--format=%s"], silent_ok=True).strip()
 
 
 class CVSVCS(VersionControlSystem):
@@ -2435,12 +2439,16 @@ def RealMain(argv, data=None):
     file = open(options.file, 'r')
     message = file.read()
     file.close()
-  if options.issue:
-    prompt = "Title describing this patch set: "
-  else:
-    prompt = "New issue subject: "
-  title = (
-      title or message.split('\n', 1)[0].strip() or raw_input(prompt).strip())
+  title = title or message.split('\n', 1)[0].strip()
+  if not title:
+    if options.issue:
+      prompt = "Title describing this patch set"
+    else:
+      prompt = "New issue subject"
+    title_default = vcs.GetMostRecentCommitSummary()
+    if title_default:
+      prompt += " [%s]" % title_default
+    title = raw_input(prompt + ": ").strip() or title_default
   if not title and not options.issue:
     ErrorExit("A non-empty title is required for a new issue")
   # For existing issues, it's fine to give a patchset an empty name. Rietveld
