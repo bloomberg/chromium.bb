@@ -11,15 +11,7 @@ import datetime
 import glob
 import os
 import re
-try:
-  import sqlalchemy
-  import sqlalchemy.exc
-  import sqlalchemy.interfaces
-  from sqlalchemy import MetaData
-except ImportError:
-  raise AssertionError(
-      'Unable to import sqlalchemy. Please install this package by running '
-      '`sudo apt-get install python-sqlalchemy` or similar.')
+
 
 from chromite.cbuildbot import constants
 from chromite.lib import clactions
@@ -36,6 +28,15 @@ except (ImportError, RuntimeError):
   metrics = None
   interface = None
 
+sqlalchemy_imported = False
+try:
+  import sqlalchemy
+  import sqlalchemy.exc
+  import sqlalchemy.interfaces
+  from sqlalchemy import MetaData
+  sqlalchemy_imported = True
+except ImportError:
+  pass
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
@@ -123,12 +124,6 @@ def minimum_schema(min_version):
   return decorator
 
 
-class StrictModeListener(sqlalchemy.interfaces.PoolListener):
-  """This listener ensures that STRICT_ALL_TABLES for all connections."""
-  def connect(self, dbapi_con, *_args, **_kwargs):
-    cur = dbapi_con.cursor()
-    cur.execute("SET SESSION sql_mode='STRICT_ALL_TABLES'")
-    cur.close()
 
 
 # Tuple to keep arguments that modify SQL query retry behaviour of
@@ -203,6 +198,25 @@ class SchemaVersionedMySQLConnection(object):
       query_retry_args: An optional SqlConnectionRetryArgs tuple to tweak the
                         retry behaviour of SQL queries.
     """
+    if not sqlalchemy_imported:
+      raise AssertionError('Unable to open cidb connections, as sqlalchemy '
+                           'module could not be imported. If you need cidb, '
+                           'please install the missing package by running '
+                           '`sudo apt-get install python-sqlalchemy` or '
+                           'similar.')
+
+    # Note: This is a inner class because it needs to inherit from sqlalchemy,
+    # but we do not know for sure that sqlalchemy has been successfully imported
+    # until we enter this method (i.e. this class cannot be module-level).
+    class StrictModeListener(sqlalchemy.interfaces.PoolListener):
+      """This listener ensures that STRICT_ALL_TABLES for all connections."""
+      def connect(self, dbapi_con, *_args, **_kwargs):
+        cur = dbapi_con.cursor()
+        cur.execute("SET SESSION sql_mode='STRICT_ALL_TABLES'")
+        cur.close()
+
+    self._listener_class = StrictModeListener
+
     # None, or a sqlalchemy.MetaData instance
     self._meta = None
 
@@ -230,7 +244,7 @@ class SchemaVersionedMySQLConnection(object):
     # database name given by |db_name|.
     temp_engine = sqlalchemy.create_engine(connect_url,
                                            connect_args=self._ssl_args,
-                                           listeners=[StrictModeListener()])
+                                           listeners=[self._listener_class()])
     databases = self._ExecuteWithEngine('SHOW DATABASES',
                                         temp_engine).fetchall()
     if (db_name,) not in databases:
@@ -562,7 +576,7 @@ class SchemaVersionedMySQLConnection(object):
     else:
       e = sqlalchemy.create_engine(self._connect_url,
                                    connect_args=self._ssl_args,
-                                   listeners=[StrictModeListener()])
+                                   listeners=[self._listener_class()])
       self._engine = e
       self._engine_pid = pid
       logging.info('Created cidb engine %s@%s for pid %s', e.url.username,
