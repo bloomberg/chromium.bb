@@ -1360,6 +1360,8 @@
             'css/cssom/CSSSkew.h',
             'css/cssom/CSSStyleValue.cpp',
             'css/cssom/CSSStyleValue.h',
+            'css/cssom/CSSUnsupportedStyleValue.cpp',
+            'css/cssom/CSSUnsupportedStyleValue.h',
             'css/cssom/CSSTranslation.cpp',
             'css/cssom/CSSTranslation.h',
             'css/cssom/ComputedStylePropertyMap.cpp',

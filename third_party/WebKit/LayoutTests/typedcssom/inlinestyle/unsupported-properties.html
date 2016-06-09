@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+<div id="secondElement"></div>
+
+<script>
+
+// This set of tests looks at properties that are not yet supported
+// by the typed OM. It will probably need to be updated as we start
+// supporting some of these properties.
+
+test(function() {
+  testElement.style.backgroundImage = 'url("")';
+
+  var result = testElement.styleMap.get('background-image');
+  assert_equals(result.constructor, CSSStyleValue);
+  assert_equals(result.cssString, 'url("")');
+}, 'Unsupported property returns a base StyleValue with the correct cssString.');
+
+test(function() {
+  testElement.style.backgroundImage = 'url("")';
+
+  secondElement.styleMap.set('background-image', testElement.styleMap.get('background-image'));
+
+  var result = secondElement.styleMap.get('background-image');
+  assert_equals(result.constructor, CSSStyleValue);
+  assert_equals(result.cssString, 'url("")');
+}, 'Setting the same property using the result of getting an unknown value works');
+
+test(function() {
+  testElement.style.color = 'green';
+
+  secondElement.styleMap.set('border-left-color', testElement.styleMap.get('color'));
+
+  var result = secondElement.styleMap.get('border-left-color');
+  assert_equals(result.constructor, CSSStyleValue);
+  assert_equals(result.cssString, 'green');
+}, 'Setting a different property using the result of getting an unknown value works');
+
+</script>

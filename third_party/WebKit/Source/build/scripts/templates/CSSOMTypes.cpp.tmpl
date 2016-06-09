@@ -21,6 +21,9 @@ bool CSSOMTypes::propertyCanTake(CSSPropertyID id, const CSSStyleValue& styleVal
     } else if (styleValue.type() == CSSStyleValue::KeywordType) {
         // Keywords are also handled differently.
         return CSSOMKeywords::validKeywordForProperty(id, toCSSKeywordValue(styleValue));
+    } else if (styleValue.type() == CSSStyleValue::Unknown) {
+        // The check happens later in this case.
+        return true;
     }
 
     switch (id) {

@@ -6,6 +6,7 @@
 #define CSSStyleValue_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 
@@ -20,6 +21,7 @@ class CORE_EXPORT CSSStyleValue : public GarbageCollectedFinalized<CSSStyleValue
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum StyleValueType {
+        Unknown,
         AngleType,
         CalcLengthType,
         KeywordType,
@@ -36,6 +38,10 @@ public:
     static ScriptValue parse(ScriptState*, const String& propertyName, const String& value, ExceptionState&);
 
     virtual CSSValue* toCSSValue() const = 0;
+    virtual CSSValue* toCSSValueWithProperty(CSSPropertyID) const
+    {
+        return toCSSValue();
+    }
     virtual String cssString() const
     {
         return toCSSValue()->cssText();

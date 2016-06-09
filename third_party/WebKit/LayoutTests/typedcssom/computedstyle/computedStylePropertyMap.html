@@ -34,6 +34,19 @@ test(function() {
 }, 'Properties retrieved from ComputedStyleMap reflect the same values as from ComputedStyle');
 
 test(function() {
+  testElement.style.border = '1px solid #00ff00';
+  var styleValue = computedStyleMap.get('border');
+  assert_equals(styleValue.constructor, CSSStyleValue);
+  assert_equals(styleValue.cssString, testElement.style.border);
+}, 'Unsupported but serializable property returns a base CSSStyleValue.');
+
+test(function() {
+  testElement.style.border = '';
+  testElement.style.borderBottomColor = 'green';
+  assert_equals(computedStyleMap.get('border'), null);
+}, 'Unsupported and unserializable property returns null.');
+
+test(function() {
   assert_false(computedStyleMap.has('max-zoom'));
 }, 'has() return false for an unsupported property.');
 
@@ -42,8 +55,15 @@ test(function() {
 }, 'has() throws for an invalid property.');
 
 test(function() {
+  testElement.style.border = '1px solid black';
+  assert_true(computedStyleMap.has('border'));
+}, 'has() returns true for an unsupported but serializable shorthand property.');
+
+test(function() {
+  testElement.style.border = '';
+  testElement.style.borderTopColor = 'red';
   assert_false(computedStyleMap.has('border'));
-}, 'has() return false for unsupported shorthand properties.');
+}, 'has() return false for unsupported and unserializable shorthand properties.');
 
 test(function() {
   assert_true(computedStyleMap.has('width'));

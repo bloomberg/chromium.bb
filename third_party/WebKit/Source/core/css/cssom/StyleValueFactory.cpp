@@ -7,6 +7,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/CSSUnsupportedStyleValue.h"
 
 namespace blink {
 
@@ -22,6 +23,7 @@ CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(CSSPropertyID 
         }
     }
     // TODO(meade): Implement the rest.
+    styleValueVector.append(CSSUnsupportedStyleValue::create(value.cssText()));
     return styleValueVector;
 }
 
