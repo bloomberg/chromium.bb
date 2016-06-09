@@ -1,4 +1,4 @@
 function foo() {
 }
 
-console.log("iframe loaded");
+setTimeout(() => console.log("iframe loaded"), 0);
