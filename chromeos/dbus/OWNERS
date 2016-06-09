@@ -1,10 +1,6 @@
 stevenjb@chromium.org
 hashimoto@chromium.org
 
-per-file *bluetooth*=keybuk@chromium.org
-per-file *bluetooth*=armansito@chromium.org
-per-file *nfc*=keybuk@chromium.org
-per-file *nfc*=armansito@chromium.org
 per-file *cryptohome*=dkrahn@chromium.org
 per-file *audio*=rkc@chromium.org
 per-file *audio*=jennyz@chromium.org
