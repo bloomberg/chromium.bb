@@ -29,6 +29,11 @@ class GpuIntegrationTest(
     for test_name, url, args in cls.GenerateGpuTests(options):
       yield test_name, (url, test_name, args)
 
+  def _RestartBrowser(self, reason):
+    logging.warning('Restarting browser due to ' + reason)
+    self.StopBrowser()
+    self.StartBrowser(self._finder_options)
+
   def _RunGpuTest(self, url, test_name, args):
     temp_page = _EmulatedPage(url, test_name)
     expectations = self.__class__.GetExpectations()
@@ -42,6 +47,13 @@ class GpuIntegrationTest(
       self.RunActualGpuTest(url, *args)
     except Exception:
       if expectation == 'pass':
+        # This is not an expected exception or test failure, so print
+        # the detail to the console.
+        exception_formatter.PrintFormattedException()
+        # This failure might have been caused by a browser or renderer
+        # crash, so restart the browser to make sure any state doesn't
+        # propagate to the next test iteration.
+        self._RestartBrowser('unexpected test failure')
         raise
       elif expectation == 'fail':
         msg = 'Expected exception while running %s' % test_name
@@ -62,11 +74,18 @@ class GpuIntegrationTest(
       for ii in xrange(0, num_retries):
         print 'FLAKY TEST FAILURE, retrying: ' + test_name
         try:
+          # For robustness, shut down the browser and restart it
+          # between flaky test failures, to make sure any state
+          # doesn't propagate to the next iteration.
+          self._RestartBrowser('flaky test failure')
           self.RunActualGpuTest(url, *args)
           break
         except Exception:
           # Squelch any exceptions from any but the last retry.
           if ii == num_retries - 1:
+            # Restart the browser after the last failure to make sure
+            # any state doesn't propagate to the next iteration.
+            self._RestartBrowser('excessive flaky test failures')
             raise
     else:
       if expectation == 'fail':
@@ -103,3 +122,6 @@ class GpuIntegrationTest(
     #
     # Do not call this directly. Call GetExpectations where necessary.
     raise NotImplementedError
+
+  def setUp(self):
+    self.tab = self.browser.tabs[0]
