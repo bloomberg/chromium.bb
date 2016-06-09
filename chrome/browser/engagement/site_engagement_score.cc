@@ -224,7 +224,7 @@ void SiteEngagementScore::Commit() {
 
   settings_map_->SetWebsiteSettingDefaultScope(
       origin_, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      score_dict_.release());
+      std::move(score_dict_));
 }
 
 bool SiteEngagementScore::MaxPointsPerDayAdded() const {

@@ -286,9 +286,9 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   std::string event_key(kBannerEventKeys[event]);
   app_dict->SetDouble(event_key, time.ToInternalValue());
 
-  settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
-                                          CONTENT_SETTINGS_TYPE_APP_BANNER,
-                                          std::string(), origin_dict.release());
+  settings->SetWebsiteSettingDefaultScope(
+      origin_url, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+      std::move(origin_dict));
 
   // App banner content settings are lossy, meaning they will not cause the
   // prefs to become dirty. This is fine for most events, as if they are lost it
@@ -378,9 +378,9 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   value->SetDouble(kBannerEngagementKey, engagement);
   could_show_list->Append(std::move(value));
 
-  settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
-                                          CONTENT_SETTINGS_TYPE_APP_BANNER,
-                                          std::string(), origin_dict.release());
+  settings->SetWebsiteSettingDefaultScope(
+      origin_url, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+      std::move(origin_dict));
 }
 
 bool AppBannerSettingsHelper::ShouldShowBanner(

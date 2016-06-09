@@ -133,7 +133,7 @@ void MigrateOldSettings(HostContentSettingsMap* map) {
       if (value) {
         map->SetWebsiteSettingDefaultScope(
             url, GURL(), CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-            std::string(), value.release());
+            std::string(), std::move(value));
       }
     }
   }
@@ -310,7 +310,7 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   // SetWebsiteSettingDefaultScope.
   map->SetWebsiteSettingDefaultScope(url, GURL(),
                                      CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-                                     std::string(), value.release());
+                                     std::string(), std::move(value));
 }
 
 void ChromeSSLHostStateDelegate::Clear() {
@@ -378,7 +378,7 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
 
   map->SetWebsiteSettingDefaultScope(url, GURL(),
                                      CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-                                     std::string(), NULL);
+                                     std::string(), nullptr);
 }
 
 // TODO(jww): This will revoke all of the decisions in the browser context.

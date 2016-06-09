@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -851,7 +852,7 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordDontInheritSetting) {
   test_value.SetString("test", "value");
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, std::string(),
-      test_value.DeepCopy());
+      base::WrapUnique(test_value.DeepCopy()));
 
   // The setting is not inherted by |otr_map|.
   std::unique_ptr<base::Value> stored_value =
@@ -1316,4 +1317,23 @@ TEST_F(HostContentSettingsMapTest, MigrateKeygenSettings) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
+}
+
+TEST_F(HostContentSettingsMapTest, InvalidPattern) {
+  // This is a regression test for crbug.com/618529, which fixed a memory leak
+  // when a website setting was set under a URL that mapped to an invalid
+  // pattern.
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  GURL unsupported_url = GURL("view-source:http://www.google.com");
+  base::DictionaryValue test_value;
+  test_value.SetString("test", "value");
+  host_content_settings_map->SetWebsiteSettingDefaultScope(
+      unsupported_url, unsupported_url, CONTENT_SETTINGS_TYPE_APP_BANNER,
+      std::string(), base::WrapUnique(test_value.DeepCopy()));
+  EXPECT_EQ(nullptr,
+            host_content_settings_map->GetWebsiteSetting(
+                unsupported_url, unsupported_url,
+                CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), nullptr));
 }

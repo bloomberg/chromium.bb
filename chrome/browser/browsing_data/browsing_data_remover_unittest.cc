@@ -2421,16 +2421,16 @@ TEST_F(BrowsingDataRemoverTest, RemoveContentSettingsWithBlacklist) {
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin1, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin2, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin3, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin4, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
 
   // Clear all except for origin1 and origin3.
   RegistrableDomainFilterBuilder filter(
@@ -2516,14 +2516,14 @@ TEST_F(BrowsingDataRemoverTest, ClearWithPredicate) {
   // Add settings.
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       url1, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
   // This setting should override the one above, as it's the same origin.
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       url2, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       url3, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-      new base::DictionaryValue());
+      base::WrapUnique(new base::DictionaryValue()));
   // Verify we only have two.
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(), &host_settings);

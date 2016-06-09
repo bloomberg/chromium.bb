@@ -330,7 +330,7 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
-    base::Value* value) {
+    std::unique_ptr<base::Value> value) {
   const WebsiteSettingsInfo* info =
       content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
           content_type);
@@ -342,7 +342,7 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
     return;
 
   SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
-                               resource_identifier, base::WrapUnique(value));
+                               resource_identifier, std::move(value));
 }
 
 void HostContentSettingsMap::SetWebsiteSettingCustomScope(

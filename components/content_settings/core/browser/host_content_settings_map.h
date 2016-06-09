@@ -182,7 +182,7 @@ class HostContentSettingsMap : public content_settings::Observer,
                                      const GURL& top_level_url,
                                      ContentSettingsType content_type,
                                      const std::string& resource_identifier,
-                                     base::Value* value);
+                                     std::unique_ptr<base::Value> value);
 
   // Sets a rule to apply the |value| for all sites matching |pattern|,
   // |content_type| and |resource_identifier|. Setting the value to null removes
