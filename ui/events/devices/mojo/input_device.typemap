@@ -1,0 +1,13 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//ui/events/devices/mojo/input_devices.mojom"
+public_headers = [ "//ui/events/devices/input_device.h" ]
+traits_headers = [ 
+  "//ui/events/devices/mojo/input_device_struct_traits.h" 
+ ]
+public_deps = [
+  "//ui/events/devices",
+]
+type_mappings = [ "ui.mojom.InputDevice=ui::InputDevice" ]
