@@ -36,3 +36,6 @@ layers like `//content`, `//chrome` or `//third_party/WebKit` must be avoided.
 Note that while it may be possible to build a discrete physical package (DSO)
 for each service, products consuming these services may package them
 differently, e.g. by combining them into a single package.
+
+### High-level Design Doc
+https://docs.google.com/document/d/15I7sQyQo6zsqXVNAlVd520tdGaS8FCicZHrN0yRu-oU/edit#heading=h.p37l9e7o0io5
