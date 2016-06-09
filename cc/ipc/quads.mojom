@@ -15,15 +15,6 @@ struct Color {
   uint32 rgba;
 };
 
-struct CheckerboardQuadState {
-  // Checkerboard color.
-  Color color;
-
-  // The scale factor of checkers. Chromium uses device scale factor for
-  // it.
-  float scale;
-};
-
 struct DebugBorderQuadState {
   // Debug border color.
   Color color;
@@ -144,7 +135,6 @@ struct DrawQuad {
   uint32 shared_quad_state_index;
 
   // Only one of the following will be set, depending on the material.
-  CheckerboardQuadState? checkerboard_quad_state;
   DebugBorderQuadState? debug_border_quad_state;
   IoSurfaceContentQuadState? io_surface_quad_state;
   RenderPassQuadState? render_pass_quad_state;
