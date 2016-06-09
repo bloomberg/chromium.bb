@@ -9,6 +9,8 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
+#include <limits.h>
+
 namespace blink {
 
 V8Regex::V8Regex(V8DebuggerImpl* debugger, const String16& pattern, bool caseSensitive, bool multiline)
