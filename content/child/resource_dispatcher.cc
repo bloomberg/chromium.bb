@@ -802,8 +802,6 @@ std::unique_ptr<ResourceRequest> ResourceDispatcher::CreateRequest(
   request->lofi_state = extra_data->lofi_state();
   request->request_body = request_body;
   request->resource_body_stream_url = request_info.resource_body_stream_url;
-  request->initiated_in_secure_context =
-      extra_data->initiated_in_secure_context();
   if (frame_origin)
     *frame_origin = extra_data->frame_origin();
   return request;
