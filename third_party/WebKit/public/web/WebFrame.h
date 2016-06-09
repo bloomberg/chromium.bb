@@ -38,6 +38,7 @@
 #include "WebURLLoaderOptions.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebCanvas.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebPrivateOwnPtr.h"
 #include "public/platform/WebReferrerPolicy.h"
@@ -170,8 +171,8 @@ public:
     // navigation.
     BLINK_EXPORT void setFrameOwnerSandboxFlags(WebSandboxFlags);
 
-    // Returns true if the frame is enforcing strict mixed content checking.
-    BLINK_EXPORT bool shouldEnforceStrictMixedContentChecking() const;
+    // The frame's insecure request policy.
+    BLINK_EXPORT WebInsecureRequestPolicy getInsecureRequestPolicy() const;
 
     // Updates this frame's FrameOwner properties, such as scrolling, margin,
     // or allowfullscreen.  This is used when this frame's parent is in

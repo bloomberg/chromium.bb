@@ -109,7 +109,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   void DidChangeOpener(int opener_routing_id);
 
-  void DidEnforceStrictMixedContentChecking();
+  void DidEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
 
   // If set, navigations will appear to have cleared the history list in the
   // RenderFrame

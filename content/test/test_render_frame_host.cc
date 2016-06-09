@@ -377,8 +377,9 @@ void TestRenderFrameHost::DidChangeOpener(int opener_routing_id) {
   OnDidChangeOpener(opener_routing_id);
 }
 
-void TestRenderFrameHost::DidEnforceStrictMixedContentChecking() {
-  OnEnforceStrictMixedContentChecking();
+void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
+  OnEnforceInsecureRequestPolicy(policy);
 }
 
 void TestRenderFrameHost::PrepareForCommit() {

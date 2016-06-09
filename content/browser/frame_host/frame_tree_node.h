@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -156,9 +157,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // new document comes with a fresh set of CSP http headers).
   void ResetContentSecurityPolicy();
 
-  // Sets the current enforcement of strict mixed content checking and
-  // notifies proxies about the update.
-  void SetEnforceStrictMixedContentChecking(bool should_enforce);
+  // Sets the current insecure request policy, and notifies proxies about the
+  // update.
+  void SetInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
 
   // Returns the currently active sandbox flags for this frame.  This includes
   // flags inherited from parent frames and the currently active flags from the

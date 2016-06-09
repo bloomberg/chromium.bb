@@ -965,14 +965,14 @@ void RenderFrameHostManager::OnDidResetContentSecurityPolicy() {
   }
 }
 
-void RenderFrameHostManager::OnEnforceStrictMixedContentChecking(
-    bool should_enforce) {
+void RenderFrameHostManager::OnEnforceInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return;
 
   for (const auto& pair : proxy_hosts_) {
-    pair.second->Send(new FrameMsg_EnforceStrictMixedContentChecking(
-        pair.second->GetRoutingID(), should_enforce));
+    pair.second->Send(new FrameMsg_EnforceInsecureRequestPolicy(
+        pair.second->GetRoutingID(), policy));
   }
 }
 

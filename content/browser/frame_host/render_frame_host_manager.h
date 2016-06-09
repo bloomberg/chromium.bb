@@ -436,9 +436,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Resets Content Security Policy in all the proxies.
   void OnDidResetContentSecurityPolicy();
 
-  // Sends updated enforcement of strict mixed content checking to all
-  // frame proxies when the frame changes its setting.
-  void OnEnforceStrictMixedContentChecking(bool should_enforce);
+  // Sends updated enforcement of insecure request policy to all frame proxies
+  // when the frame changes its setting.
+  void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
 
   // Called on a frame to notify it that its out-of-process parent frame
   // changed a property (such as allowFullscreen) on its <iframe> element.

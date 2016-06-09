@@ -40,6 +40,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
@@ -290,9 +291,8 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // Timestamp at which the UI action that triggered the navigation originated.
   IPC_STRUCT_MEMBER(base::TimeTicks, ui_timestamp)
 
-  // True if the document for the load is enforcing strict mixed content
-  // checking.
-  IPC_STRUCT_MEMBER(bool, should_enforce_strict_mixed_content_checking)
+  // The insecure request policy the document for the load is enforcing.
+  IPC_STRUCT_MEMBER(blink::WebInsecureRequestPolicy, insecure_request_policy)
 
   // True if the document for the load is a unique origin that should be
   // considered potentially trustworthy.
@@ -391,7 +391,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(unique_name)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_csp_headers)
   IPC_STRUCT_TRAITS_MEMBER(scope)
-  IPC_STRUCT_TRAITS_MEMBER(should_enforce_strict_mixed_content_checking)
+  IPC_STRUCT_TRAITS_MEMBER(insecure_request_policy)
   IPC_STRUCT_TRAITS_MEMBER(has_potentially_trustworthy_unique_origin)
 IPC_STRUCT_TRAITS_END()
 
@@ -791,11 +791,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicy,
 // Resets ContentSecurityPolicy in a frame proxy / in RemoteSecurityContext.
 IPC_MESSAGE_ROUTED0(FrameMsg_ResetContentSecurityPolicy)
 
-// Update a proxy's replicated enforcement of strict mixed content
-// checking.  Used when the frame's mixed content setting is changed in
-// another process.
-IPC_MESSAGE_ROUTED1(FrameMsg_EnforceStrictMixedContentChecking,
-                    bool /* should enforce */)
+// Update a proxy's replicated enforcement of insecure request policy.
+// Used when the frame's policy is changed in another process.
+IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
+                    blink::WebInsecureRequestPolicy)
 
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.
@@ -1022,12 +1021,12 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeName,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAddContentSecurityPolicy,
                     content::ContentSecurityPolicyHeader)
 
-// Sent when the frame starts enforcing strict mixed content
-// checking. Sending this information in DidCommitProvisionalLoad isn't
-// sufficient; this message is needed because, for example, a document
-// can dynamically insert a <meta> tag that causes strict mixed content
-// checking to be enforced.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_EnforceStrictMixedContentChecking)
+// Sent when the frame starts enforcing an insecure request policy. Sending
+// this information in DidCommitProvisionalLoad isn't sufficient; this
+// message is needed because, for example, a document can dynamically insert
+// a <meta> tag that causes strict mixed content checking to be enforced.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_EnforceInsecureRequestPolicy,
+                    blink::WebInsecureRequestPolicy)
 
 // Sent when the frame is set to a unique origin. TODO(estark): this IPC
 // only exists to support dynamic sandboxing via a CSP delivered in a

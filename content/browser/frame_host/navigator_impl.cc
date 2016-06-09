@@ -529,8 +529,8 @@ void NavigatorImpl::DidNavigate(
   render_frame_host->frame_tree_node()->SetCurrentOrigin(
       params.origin, params.has_potentially_trustworthy_unique_origin);
 
-  render_frame_host->frame_tree_node()->SetEnforceStrictMixedContentChecking(
-      params.should_enforce_strict_mixed_content_checking);
+  render_frame_host->frame_tree_node()->SetInsecureRequestPolicy(
+      params.insecure_request_policy);
 
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP policy to an empty set.

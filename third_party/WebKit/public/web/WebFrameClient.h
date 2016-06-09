@@ -50,6 +50,7 @@
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
@@ -184,8 +185,8 @@ public:
     // This frame's name has changed.
     virtual void didChangeName(const WebString& name, const WebString& uniqueName) { }
 
-    // This frame has been set to enforce strict mixed content checking.
-    virtual void didEnforceStrictMixedContentChecking() {}
+    // This frame has set an insecure request policy.
+    virtual void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
     // This frame has been updated to a unique origin, which should be
     // considered potentially trustworthy if

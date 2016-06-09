@@ -552,8 +552,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeName, OnDidChangeName)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddContentSecurityPolicy,
                         OnDidAddContentSecurityPolicy)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceStrictMixedContentChecking,
-                        OnEnforceStrictMixedContentChecking)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceInsecureRequestPolicy,
+                        OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
                         OnUpdateToUniqueOrigin)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
@@ -1559,8 +1559,9 @@ void RenderFrameHostImpl::OnDidAddContentSecurityPolicy(
   frame_tree_node()->AddContentSecurityPolicy(header);
 }
 
-void RenderFrameHostImpl::OnEnforceStrictMixedContentChecking() {
-  frame_tree_node()->SetEnforceStrictMixedContentChecking(true);
+void RenderFrameHostImpl::OnEnforceInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
+  frame_tree_node()->SetInsecureRequestPolicy(policy);
 }
 
 void RenderFrameHostImpl::OnUpdateToUniqueOrigin(

@@ -11,7 +11,7 @@ namespace content {
 FrameReplicationState::FrameReplicationState()
     : sandbox_flags(blink::WebSandboxFlags::None),
       scope(blink::WebTreeScopeType::Document),
-      should_enforce_strict_mixed_content_checking(false),
+      insecure_request_policy(blink::kLeaveInsecureRequestsAlone),
       has_potentially_trustworthy_unique_origin(false) {}
 
 FrameReplicationState::FrameReplicationState(
@@ -19,15 +19,14 @@ FrameReplicationState::FrameReplicationState(
     const std::string& name,
     const std::string& unique_name,
     blink::WebSandboxFlags sandbox_flags,
-    bool should_enforce_strict_mixed_content_checking,
+    blink::WebInsecureRequestPolicy insecure_request_policy,
     bool has_potentially_trustworthy_unique_origin)
     : origin(),
       sandbox_flags(sandbox_flags),
       name(name),
       unique_name(unique_name),
       scope(scope),
-      should_enforce_strict_mixed_content_checking(
-          should_enforce_strict_mixed_content_checking),
+      insecure_request_policy(insecure_request_policy),
       has_potentially_trustworthy_unique_origin(
           has_potentially_trustworthy_unique_origin) {}
 

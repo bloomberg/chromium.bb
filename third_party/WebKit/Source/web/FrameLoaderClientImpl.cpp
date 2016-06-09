@@ -896,11 +896,11 @@ void FrameLoaderClientImpl::didChangeName(const String& name, const String& uniq
     m_webFrame->client()->didChangeName(name, uniqueName);
 }
 
-void FrameLoaderClientImpl::didEnforceStrictMixedContentChecking()
+void FrameLoaderClientImpl::didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy policy)
 {
     if (!m_webFrame->client())
         return;
-    m_webFrame->client()->didEnforceStrictMixedContentChecking();
+    m_webFrame->client()->didEnforceInsecureRequestPolicy(policy);
 }
 
 void FrameLoaderClientImpl::didUpdateToUniqueOrigin()

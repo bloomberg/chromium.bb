@@ -658,12 +658,10 @@ void WebRemoteFrameImpl::resetReplicatedContentSecurityPolicy() const
     frame()->securityContext()->resetReplicatedContentSecurityPolicy();
 }
 
-void WebRemoteFrameImpl::setReplicatedShouldEnforceStrictMixedContentChecking(bool shouldEnforce) const
+void WebRemoteFrameImpl::setReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy policy) const
 {
     DCHECK(frame());
-    WebInsecureRequestPolicy oldPolicy = frame()->securityContext()->getInsecureRequestPolicy();
-    WebInsecureRequestPolicy newPolicy = shouldEnforce ? oldPolicy | kBlockAllMixedContent : oldPolicy & ~kBlockAllMixedContent;
-    frame()->securityContext()->setInsecureRequestPolicy(newPolicy);
+    frame()->securityContext()->setInsecureRequestPolicy(policy);
 }
 
 void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(bool isUniqueOriginPotentiallyTrustworthy) const

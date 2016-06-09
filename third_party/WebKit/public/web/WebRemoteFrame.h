@@ -5,6 +5,7 @@
 #ifndef WebRemoteFrame_h
 #define WebRemoteFrame_h
 
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSandboxFlags.h"
@@ -47,8 +48,8 @@ public:
     // Resets replicated CSP headers to an empty set.
     virtual void resetReplicatedContentSecurityPolicy() const = 0;
 
-    // Set frame enforcement of strict mixed content checking replicated from another process.
-    virtual void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const = 0;
+    // Set frame enforcement of insecure request policy replicated from another process.
+    virtual void setReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) const = 0;
 
     // Set the frame to a unique origin that is potentially trustworthy,
     // replicated from another process.

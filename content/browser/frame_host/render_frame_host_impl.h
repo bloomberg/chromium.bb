@@ -37,6 +37,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
@@ -659,7 +660,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
   void OnDidAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
-  void OnEnforceStrictMixedContentChecking();
+  void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
   void OnDidAssignPageId(int32_t page_id);
   void OnDidChangeSandboxFlags(int32_t frame_routing_id,

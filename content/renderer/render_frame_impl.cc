@@ -2821,8 +2821,9 @@ void RenderFrameImpl::didChangeName(const blink::WebString& name,
   }
 }
 
-void RenderFrameImpl::didEnforceStrictMixedContentChecking() {
-  Send(new FrameHostMsg_EnforceStrictMixedContentChecking(routing_id_));
+void RenderFrameImpl::didEnforceInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
+  Send(new FrameHostMsg_EnforceInsecureRequestPolicy(routing_id_, policy));
 }
 
 void RenderFrameImpl::didUpdateToUniqueOrigin(
@@ -4470,8 +4471,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // RenderFrameProxies in other processes.
   params.origin = frame->document().getSecurityOrigin();
 
-  params.should_enforce_strict_mixed_content_checking =
-      frame->shouldEnforceStrictMixedContentChecking();
+  params.insecure_request_policy = frame->getInsecureRequestPolicy();
 
   params.has_potentially_trustworthy_unique_origin =
       frame->document().getSecurityOrigin().isUnique() &&

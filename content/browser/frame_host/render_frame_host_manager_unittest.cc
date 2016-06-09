@@ -55,6 +55,7 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "ui/base/page_transition_types.h"
@@ -77,17 +78,17 @@ void VerifyPageFocusMessage(MockRenderProcessHost* rph,
 }
 
 // Helper function for strict mixed content checking tests.
-void CheckMixedContentIPC(TestRenderFrameHost* rfh,
-                          bool expected_param,
-                          int expected_routing_id) {
+void CheckInsecureRequestPolicyIPC(
+    TestRenderFrameHost* rfh,
+    blink::WebInsecureRequestPolicy expected_param,
+    int expected_routing_id) {
   const IPC::Message* message =
       rfh->GetProcess()->sink().GetUniqueMessageMatching(
-          FrameMsg_EnforceStrictMixedContentChecking::ID);
+          FrameMsg_EnforceInsecureRequestPolicy::ID);
   ASSERT_TRUE(message);
   EXPECT_EQ(expected_routing_id, message->routing_id());
-  FrameMsg_EnforceStrictMixedContentChecking::Param params;
-  EXPECT_TRUE(
-      FrameMsg_EnforceStrictMixedContentChecking::Read(message, &params));
+  FrameMsg_EnforceInsecureRequestPolicy::Param params;
+  EXPECT_TRUE(FrameMsg_EnforceInsecureRequestPolicy::Read(message, &params));
   EXPECT_EQ(expected_param, std::get<0>(params));
 }
 
@@ -3016,9 +3017,9 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
 }
 
 // Tests that frame proxies receive updates when a frame's enforcement
-// of strict mixed content checking changes.
+// of insecure request policy changes.
 TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
-       ProxiesReceiveShouldEnforceStrictMixedContentChecking) {
+       ProxiesReceiveInsecureRequestPolicy) {
   const GURL kUrl1("http://www.google.test");
   const GURL kUrl2("http://www.google2.test");
   const GURL kUrl3("http://www.google2.test/foo");
@@ -3050,16 +3051,18 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // Change the parent's enforcement of strict mixed content checking,
   // and check that the correct IPC is sent to the child frame's
   // process.
-  EXPECT_FALSE(root->current_replication_state()
-                   .should_enforce_strict_mixed_content_checking);
-  main_test_rfh()->DidEnforceStrictMixedContentChecking();
+  EXPECT_EQ(blink::kLeaveInsecureRequestsAlone,
+            root->current_replication_state().insecure_request_policy);
+  main_test_rfh()->DidEnforceInsecureRequestPolicy(
+      blink::kBlockAllMixedContent);
   RenderFrameProxyHost* proxy_to_child =
       root->render_manager()->GetRenderFrameProxyHost(
           child_host->GetSiteInstance());
   EXPECT_NO_FATAL_FAILURE(
-      CheckMixedContentIPC(child_host, true, proxy_to_child->GetRoutingID()));
-  EXPECT_TRUE(root->current_replication_state()
-                  .should_enforce_strict_mixed_content_checking);
+      CheckInsecureRequestPolicyIPC(child_host, blink::kBlockAllMixedContent,
+                                    proxy_to_child->GetRoutingID()));
+  EXPECT_EQ(blink::kBlockAllMixedContent,
+            root->current_replication_state().insecure_request_policy);
 
   // Do the same for the child's enforcement. In general, the parent
   // needs to know the status of the child's flag in case a grandchild
@@ -3067,17 +3070,18 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // content checking, and B.com adds an iframe to A.com, then the
   // A.com process needs to know B.com's flag so that the grandchild
   // A.com frame can inherit it.
-  EXPECT_FALSE(root->child_at(0)
-                   ->current_replication_state()
-                   .should_enforce_strict_mixed_content_checking);
-  child_host->DidEnforceStrictMixedContentChecking();
+  EXPECT_EQ(
+      blink::kLeaveInsecureRequestsAlone,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
+  child_host->DidEnforceInsecureRequestPolicy(blink::kBlockAllMixedContent);
   RenderFrameProxyHost* proxy_to_parent =
       child->GetRenderFrameProxyHost(main_test_rfh()->GetSiteInstance());
-  EXPECT_NO_FATAL_FAILURE(CheckMixedContentIPC(
-      main_test_rfh(), true, proxy_to_parent->GetRoutingID()));
-  EXPECT_TRUE(root->child_at(0)
-                  ->current_replication_state()
-                  .should_enforce_strict_mixed_content_checking);
+  EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
+      main_test_rfh(), blink::kBlockAllMixedContent,
+      proxy_to_parent->GetRoutingID()));
+  EXPECT_EQ(
+      blink::kBlockAllMixedContent,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
 
   // Check that the flag for the parent's proxy to the child is reset
   // when the child navigates.
@@ -3093,13 +3097,14 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   commit_params.was_within_same_page = false;
   commit_params.method = "GET";
   commit_params.page_state = PageState::CreateFromURL(kUrl3);
-  commit_params.should_enforce_strict_mixed_content_checking = false;
+  commit_params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
   child_host->SendNavigateWithParams(&commit_params);
-  EXPECT_NO_FATAL_FAILURE(CheckMixedContentIPC(
-      main_test_rfh(), false, proxy_to_parent->GetRoutingID()));
-  EXPECT_FALSE(root->child_at(0)
-                   ->current_replication_state()
-                   .should_enforce_strict_mixed_content_checking);
+  EXPECT_NO_FATAL_FAILURE(CheckInsecureRequestPolicyIPC(
+      main_test_rfh(), blink::kLeaveInsecureRequestsAlone,
+      proxy_to_parent->GetRoutingID()));
+  EXPECT_EQ(
+      blink::kLeaveInsecureRequestsAlone,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
 }
 
 }  // namespace content

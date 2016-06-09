@@ -14,7 +14,6 @@
 #include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebSandboxFlags.h"
@@ -130,9 +129,9 @@ void WebFrame::setFrameOwnerSandboxFlags(WebSandboxFlags flags)
     toRemoteFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
-bool WebFrame::shouldEnforceStrictMixedContentChecking() const
+WebInsecureRequestPolicy WebFrame::getInsecureRequestPolicy() const
 {
-    return toImplBase()->frame()->securityContext()->getInsecureRequestPolicy() & kBlockAllMixedContent;
+    return toImplBase()->frame()->securityContext()->getInsecureRequestPolicy();
 }
 
 void WebFrame::setFrameOwnerProperties(const WebFrameOwnerProperties& properties)

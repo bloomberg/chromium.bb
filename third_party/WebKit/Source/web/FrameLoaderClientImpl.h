@@ -35,6 +35,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -150,7 +151,7 @@ public:
     WebCookieJar* cookieJar() const override;
     void frameFocused() const override;
     void didChangeName(const String& name, const String& uniqueName) override;
-    void didEnforceStrictMixedContentChecking() override;
+    void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;
     void didUpdateToUniqueOrigin() override;
     void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
     void didAddContentSecurityPolicy(const String& headerValue, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource) override;

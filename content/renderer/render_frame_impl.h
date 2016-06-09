@@ -455,7 +455,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void willClose(blink::WebFrame* frame) override;
   void didChangeName(const blink::WebString& name,
                      const blink::WebString& unique_name) override;
-  void didEnforceStrictMixedContentChecking() override;
+  void didEnforceInsecureRequestPolicy(
+      blink::WebInsecureRequestPolicy policy) override;
   void didUpdateToUniqueOrigin(
       bool is_potentially_trustworthy_unique_origin) override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,

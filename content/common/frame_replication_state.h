@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy_header.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ struct CONTENT_EXPORT FrameReplicationState {
                         const std::string& name,
                         const std::string& unique_name,
                         blink::WebSandboxFlags sandbox_flags,
-                        bool should_enforce_strict_mixed_content_checking,
+                        blink::WebInsecureRequestPolicy insecure_request_policy,
                         bool has_potentially_trustworthy_unique_origin);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
@@ -95,10 +96,10 @@ struct CONTENT_EXPORT FrameReplicationState {
   // operator.
   blink::WebTreeScopeType scope;
 
-  // True if a frame's current document should strictly block all mixed
-  // content. Updates are immediately sent to all frame proxies when
-  // frames live in different processes.
-  bool should_enforce_strict_mixed_content_checking;
+  // The insecure request policy that a frame's current document is enforcing.
+  // Updates are immediately sent to all frame proxies when frames live in
+  // different processes.
+  blink::WebInsecureRequestPolicy insecure_request_policy;
 
   // True if a frame's origin is unique and should be considered potentially
   // trustworthy.

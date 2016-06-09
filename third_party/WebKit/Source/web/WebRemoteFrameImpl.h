@@ -7,6 +7,7 @@
 
 #include "core/frame/RemoteFrame.h"
 #include "platform/heap/SelfKeepAlive.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClientImpl.h"
@@ -157,7 +158,7 @@ public:
     void setReplicatedName(const WebString& name, const WebString& uniqueName) const override;
     void addReplicatedContentSecurityPolicyHeader(const WebString& headerValue, WebContentSecurityPolicyType, WebContentSecurityPolicySource) const override;
     void resetReplicatedContentSecurityPolicy() const override;
-    void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const override;
+    void setReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) const override;
     void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const override;
     void DispatchLoadEventForFrameOwner() const override;
 

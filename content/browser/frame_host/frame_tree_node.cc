@@ -250,14 +250,12 @@ void FrameTreeNode::ResetContentSecurityPolicy() {
   render_manager_.OnDidResetContentSecurityPolicy();
 }
 
-void FrameTreeNode::SetEnforceStrictMixedContentChecking(bool should_enforce) {
-  if (should_enforce ==
-      replication_state_.should_enforce_strict_mixed_content_checking) {
+void FrameTreeNode::SetInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
+  if (policy == replication_state_.insecure_request_policy)
     return;
-  }
-  render_manager_.OnEnforceStrictMixedContentChecking(should_enforce);
-  replication_state_.should_enforce_strict_mixed_content_checking =
-      should_enforce;
+  render_manager_.OnEnforceInsecureRequestPolicy(policy);
+  replication_state_.insecure_request_policy = policy;
 }
 
 void FrameTreeNode::SetPendingSandboxFlags(

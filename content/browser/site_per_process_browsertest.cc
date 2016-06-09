@@ -57,6 +57,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "ui/display/display_switches.h"
@@ -6084,28 +6085,67 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_TRUE(root->current_replication_state()
-                  .should_enforce_strict_mixed_content_checking);
-  EXPECT_TRUE(root->child_at(0)
-                  ->current_replication_state()
-                  .should_enforce_strict_mixed_content_checking);
+  EXPECT_EQ(blink::kBlockAllMixedContent,
+            root->current_replication_state().insecure_request_policy);
+  EXPECT_EQ(
+      blink::kBlockAllMixedContent,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
 
   // When the subframe navigates, it should still be marked as enforcing
   // strict mixed content.
   GURL navigate_url(https_server.GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), navigate_url);
-  EXPECT_TRUE(root->current_replication_state()
-                  .should_enforce_strict_mixed_content_checking);
-  EXPECT_TRUE(root->child_at(0)
-                  ->current_replication_state()
-                  .should_enforce_strict_mixed_content_checking);
+  EXPECT_EQ(blink::kBlockAllMixedContent,
+            root->current_replication_state().insecure_request_policy);
+  EXPECT_EQ(
+      blink::kBlockAllMixedContent,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
 
   // When the main frame navigates, it should no longer be marked as
   // enforcing strict mixed content.
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
-  EXPECT_FALSE(root->current_replication_state()
-                   .should_enforce_strict_mixed_content_checking);
+  EXPECT_EQ(blink::kLeaveInsecureRequestsAlone,
+            root->current_replication_state().insecure_request_policy);
+}
+
+// Tests that, when a parent frame is set to upgrade insecure requests
+// via Content Security Policy, child OOPIFs will upgrade as well.
+IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+                       PassiveMixedContentInIframeWithUpgrade) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(https_server.Start());
+  SetupCrossSiteRedirector(&https_server);
+
+  GURL iframe_url_with_upgrade(https_server.GetURL(
+      "/mixed-content/basic-passive-in-iframe-with-upgrade.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_upgrade));
+  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ(blink::kUpgradeInsecureRequests,
+            root->current_replication_state().insecure_request_policy);
+  EXPECT_EQ(
+      blink::kUpgradeInsecureRequests,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
+
+  // When the subframe navigates, it should still be marked as upgrading
+  // insecure requests.
+  GURL navigate_url(https_server.GetURL("/title1.html"));
+  NavigateFrameToURL(root->child_at(0), navigate_url);
+  EXPECT_EQ(blink::kUpgradeInsecureRequests,
+            root->current_replication_state().insecure_request_policy);
+  EXPECT_EQ(
+      blink::kUpgradeInsecureRequests,
+      root->child_at(0)->current_replication_state().insecure_request_policy);
+
+  // When the main frame navigates, it should no longer be marked as
+  // upgrading insecure requests.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
+  EXPECT_EQ(blink::kLeaveInsecureRequestsAlone,
+            root->current_replication_state().insecure_request_policy);
 }
 
 // Tests that active mixed content is blocked in an OOPIF. The test

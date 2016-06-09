@@ -11,6 +11,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
+#include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "url/origin.h"
@@ -168,7 +169,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
   void OnResetContentSecurityPolicy();
-  void OnEnforceStrictMixedContentChecking(bool should_enforce);
+  void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(
       const blink::WebFrameOwnerProperties& properties);
   void OnDidUpdateOrigin(const url::Origin& origin,

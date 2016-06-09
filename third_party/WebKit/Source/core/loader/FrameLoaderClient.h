@@ -44,6 +44,7 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebEffectiveConnectionType.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
@@ -217,7 +218,7 @@ public:
 
     virtual void didChangeName(const String& name, const String& uniqueName) { }
 
-    virtual void didEnforceStrictMixedContentChecking() {}
+    virtual void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
     virtual void didUpdateToUniqueOrigin() {}
 

@@ -212,8 +212,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->setReplicatedSandboxFlags(state.sandbox_flags);
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name),
                                 blink::WebString::fromUTF8(state.unique_name));
-  web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
-      state.should_enforce_strict_mixed_content_checking);
+  web_frame_->setReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
 
@@ -267,8 +266,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnAddContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_ResetContentSecurityPolicy,
                         OnResetContentSecurityPolicy)
-    IPC_MESSAGE_HANDLER(FrameMsg_EnforceStrictMixedContentChecking,
-                        OnEnforceStrictMixedContentChecking)
+    IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
+                        OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
@@ -351,10 +350,9 @@ void RenderFrameProxy::OnResetContentSecurityPolicy() {
   web_frame_->resetReplicatedContentSecurityPolicy();
 }
 
-void RenderFrameProxy::OnEnforceStrictMixedContentChecking(
-    bool should_enforce) {
-  web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
-      should_enforce);
+void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
+    blink::WebInsecureRequestPolicy policy) {
+  web_frame_->setReplicatedInsecureRequestPolicy(policy);
 }
 
 void RenderFrameProxy::OnSetFrameOwnerProperties(

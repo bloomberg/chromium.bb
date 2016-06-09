@@ -5879,9 +5879,8 @@ void Document::enforceInsecureRequestPolicy(WebInsecureRequestPolicy policy)
     // existing policy or the newly enforced policy triggers upgrades or
     // blockage.
     setInsecureRequestPolicy(getInsecureRequestPolicy() | policy);
-
-    if (frame() && policy & kBlockAllMixedContent)
-        frame()->loader().client()->didEnforceStrictMixedContentChecking();
+    if (frame())
+        frame()->loader().client()->didEnforceInsecureRequestPolicy(getInsecureRequestPolicy());
 }
 
 void Document::setShadowCascadeOrder(ShadowCascadeOrder order)
