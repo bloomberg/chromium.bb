@@ -21,8 +21,11 @@ function init()
         }
 
         waitForMultipleEvents("seeked", videos.length, function() {
-            if (window.testRunner)
-                testRunner.notifyDone();
+            if (window.testRunner) {
+                testRunner.layoutAndPaintAsyncThen(function() {
+                    testRunner.notifyDone();
+                });
+            }
         });
     });
 }
