@@ -78,8 +78,8 @@ def up_to_date():
 
     for domain in parsed_json["domains"]:
         name = domain["domain"]
-        h_path = os.path.join(output_dirname, name)
-        cpp_path = os.path.join(output_dirname, name)
+        h_path = os.path.join(output_dirname, name + '.h')
+        cpp_path = os.path.join(output_dirname, name + '.cpp')
         if not os.path.exists(h_path) or not os.path.exists(cpp_path):
             return False
         generated_ts = max(os.path.getmtime(h_path), os.path.getmtime(cpp_path))
