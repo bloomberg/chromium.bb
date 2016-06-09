@@ -323,7 +323,6 @@
     ['OS=="win"', {
       'dependencies': [
         '../media/media.gyp:media',
-        '../media/media.gyp:mf_initializer',
         '../ui/gl/gl.gyp:gl',
         '../ui/gl/init/gl_init.gyp:gl_init',
       ],

@@ -32,7 +32,7 @@ class VideoFileParser;
 // Example MJPEG videos can be found in media/data/test/bear.mjpeg.
 // Restrictions: Y4M videos should have .y4m file extension and MJPEG videos
 // should have .mjpeg file extension.
-class CAPTURE_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
+class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
  public:
   // Reads and parses the header of a |file_path|, returning the collected
   // pixel format in |video_format|. Returns true on file parsed successfully,

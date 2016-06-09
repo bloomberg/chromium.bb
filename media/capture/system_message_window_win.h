@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
-class CAPTURE_EXPORT SystemMessageWindowWin {
+class MEDIA_EXPORT SystemMessageWindowWin {
  public:
   SystemMessageWindowWin();
 

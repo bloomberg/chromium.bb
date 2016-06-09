@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 
 extern "C" {
 struct udev_device;
@@ -26,7 +26,7 @@ class UdevLinux;
 
 namespace media {
 
-class CAPTURE_EXPORT DeviceMonitorLinux
+class MEDIA_EXPORT DeviceMonitorLinux
     : public base::MessageLoop::DestructionObserver {
  public:
   explicit DeviceMonitorLinux(

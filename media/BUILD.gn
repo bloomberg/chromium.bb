@@ -338,6 +338,8 @@ component("media") {
     deps += [
       "//media/base/android",
       "//media/base/android:media_jni_headers",
+      "//media/capture/video/android:capture_java",
+      "//media/capture/video/android:capture_jni_headers",
     ]
 
     # Only 64 bit builds are using android-21 NDK library, check common.gypi
@@ -369,6 +371,12 @@ component("media") {
 
   if (is_win) {
     deps += [ "//media/base/win" ]
+    libs += [
+      "mf.lib",
+      "mfplat.lib",
+      "mfreadwrite.lib",
+      "mfuuid.lib",
+    ]
   }
 
   if (proprietary_codecs) {
@@ -455,6 +463,7 @@ component("media") {
     ":shared_memory_support",
     "//media/audio",
     "//media/base",
+    "//media/capture",
     "//third_party/opus",
   ]
 
@@ -590,8 +599,6 @@ test("media_unittests") {
     "//media/audio:unittests",
     "//media/base:test_support",
     "//media/base:unittests",
-
-    # TODO(mcasas): Remove the capture sources after https://crbug.com/618718.
     "//media/capture:unittests",
     "//media/test:pipeline_integration_tests",
     "//skia",  # Direct dependency required to inherit config.

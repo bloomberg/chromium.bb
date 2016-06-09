@@ -13,7 +13,7 @@
 namespace media {
 
 // Extension of VideoCaptureDeviceFactory to create and manipulate Mac devices.
-class CAPTURE_EXPORT VideoCaptureDeviceFactoryMac
+class MEDIA_EXPORT VideoCaptureDeviceFactoryMac
     : public VideoCaptureDeviceFactory {
  public:
   VideoCaptureDeviceFactoryMac();

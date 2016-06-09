@@ -60,7 +60,6 @@ source_set("renderer") {
     "//jingle:jingle_glue",
     "//media",
     "//media/blink",
-    "//media/capture",
     "//media/gpu",
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",

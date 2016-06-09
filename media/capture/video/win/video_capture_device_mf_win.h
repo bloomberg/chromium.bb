@@ -19,7 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/scoped_comptr.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 #include "media/capture/video/video_capture_device.h"
 
 interface IMFSourceReader;
@@ -35,8 +35,8 @@ class MFReaderCallback;
 const DWORD kFirstVideoStream =
     static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
 
-class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
-                                               public VideoCaptureDevice {
+class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
+                                             public VideoCaptureDevice {
  public:
   static bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format);
 

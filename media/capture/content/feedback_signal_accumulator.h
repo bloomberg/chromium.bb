@@ -6,7 +6,7 @@
 #define MEDIA_CAPTURE_CONTENT_FEEDBACK_SIGNAL_ACCUMULATOR_H_
 
 #include "base/time/time.h"
-#include "media/capture/capture_export.h"
+#include "media/base/media_export.h"
 
 namespace media {
 

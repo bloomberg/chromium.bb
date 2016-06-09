@@ -25,9 +25,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/base/media_export.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
-#include "media/capture/capture_export.h"
 #include "media/capture/video/scoped_result_callback.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -39,7 +39,7 @@ class Location;
 
 namespace media {
 
-class CAPTURE_EXPORT VideoCaptureDevice {
+class MEDIA_EXPORT VideoCaptureDevice {
  public:
   // Represents a capture device name and ID.
   // You should not create an instance of this class directly by e.g. setting
@@ -49,7 +49,7 @@ class CAPTURE_EXPORT VideoCaptureDevice {
   // The reason for this is that a device name might contain platform specific
   // settings that are relevant only to the platform specific implementation of
   // VideoCaptureDevice::Create.
-  class CAPTURE_EXPORT Name {
+  class MEDIA_EXPORT Name {
    public:
     Name();
     Name(const std::string& name, const std::string& id);
@@ -179,10 +179,10 @@ class CAPTURE_EXPORT VideoCaptureDevice {
   // is actually two-in-one: clients may implement OnIncomingCapturedData() or
   // ReserveOutputBuffer() + OnIncomingCapturedVideoFrame(), or all of them.
   // All clients must implement OnError().
-  class CAPTURE_EXPORT Client {
+  class MEDIA_EXPORT Client {
    public:
     // Memory buffer returned by Client::ReserveOutputBuffer().
-    class CAPTURE_EXPORT Buffer {
+    class MEDIA_EXPORT Buffer {
      public:
       virtual ~Buffer() = 0;
       virtual int id() const = 0;

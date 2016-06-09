@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "media/base/media_export.h"
 #include "media/base/video_capture_types.h"
-#include "media/capture/capture_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -31,7 +31,7 @@ namespace media {
 // possibile snapped frame sizes are computed relative to the resolution of the
 // source content: They are the same or smaller in size, and are of the same
 // aspect ratio.
-class CAPTURE_EXPORT CaptureResolutionChooser {
+class MEDIA_EXPORT CaptureResolutionChooser {
  public:
   // media::ResolutionChangePolicy determines whether the variable frame
   // resolutions being computed must adhere to a fixed aspect ratio or not, or
