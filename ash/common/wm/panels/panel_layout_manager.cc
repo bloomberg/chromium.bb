@@ -245,8 +245,7 @@ PanelLayoutManager::PanelLayoutManager(WmWindow* panel_container)
   WmShell* shell = panel_container->GetShell();
   shell->AddActivationObserver(this);
   shell->AddDisplayObserver(this);
-  shell->AddOverviewModeObserver(this);
-  root_window_controller_->AddObserver(this);
+  shell->AddShellObserver(this);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
@@ -277,8 +276,7 @@ void PanelLayoutManager::Shutdown() {
   WmShell* shell = panel_container_->GetShell();
   shell->RemoveActivationObserver(this);
   shell->RemoveDisplayObserver(this);
-  shell->RemoveOverviewModeObserver(this);
-  root_window_controller_->RemoveObserver(this);
+  shell->RemoveShellObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(WmWindow* panel) {
@@ -439,8 +437,9 @@ void PanelLayoutManager::OnOverviewModeEnded() {
   Relayout();
 }
 
-void PanelLayoutManager::OnShelfAlignmentChanged() {
-  Relayout();
+void PanelLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
+  if (root_window_controller_->GetWindow() == root_window)
+    Relayout();
 }
 
 /////////////////////////////////////////////////////////////////////////////

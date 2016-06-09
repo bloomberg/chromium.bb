@@ -6,6 +6,7 @@
 
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/env.h"
@@ -65,11 +66,11 @@ VideoDetector::VideoDetector()
     : observer_manager_(this),
       is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 VideoDetector::~VideoDetector() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 

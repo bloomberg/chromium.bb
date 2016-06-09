@@ -325,8 +325,7 @@ void RootWindowController::SetAnimatingWallpaperController(
 }
 
 void RootWindowController::Shutdown() {
-  Shell* shell = Shell::GetInstance();
-  shell->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 
 #if defined(OS_CHROMEOS)
   if (touch_exploration_manager_) {
@@ -339,6 +338,7 @@ void RootWindowController::Shutdown() {
   wallpaper_controller_.reset();
   animating_wallpaper_controller_.reset();
   aura::Window* root_window = GetRootWindow();
+  Shell* shell = Shell::GetInstance();
   // Change the target root window before closing child windows. If any child
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
@@ -697,7 +697,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
     GetSystemModalLayoutManager(NULL)->CreateModalBackground();
   }
 
-  shell->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 
   root_window_controller_common_->root_window_layout()->OnWindowResized();
   if (root_window_type == PRIMARY) {

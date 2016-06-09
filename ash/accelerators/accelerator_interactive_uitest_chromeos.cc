@@ -6,6 +6,7 @@
 
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -58,7 +59,7 @@ class AcceleratorInteractiveUITest : public AshInteractiveUITestBase,
   void SetUp() override {
     AshInteractiveUITestBase::SetUp();
 
-    Shell::GetInstance()->AddShellObserver(this);
+    WmShell::Get()->AddShellObserver(this);
 
     chromeos::NetworkHandler::Initialize();
   }
@@ -66,7 +67,7 @@ class AcceleratorInteractiveUITest : public AshInteractiveUITestBase,
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
 
-    Shell::GetInstance()->RemoveShellObserver(this);
+    WmShell::Get()->RemoveShellObserver(this);
 
     AshInteractiveUITestBase::TearDown();
   }

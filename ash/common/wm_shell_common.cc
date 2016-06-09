@@ -4,6 +4,7 @@
 
 #include "ash/common/wm_shell_common.h"
 
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/mru_window_tracker.h"
 
 namespace ash {
@@ -18,6 +19,14 @@ void WmShellCommon::CreateMruWindowTracker() {
 
 void WmShellCommon::DeleteMruWindowTracker() {
   mru_window_tracker_.reset();
+}
+
+void WmShellCommon::AddShellObserver(ShellObserver* observer) {
+  shell_observers_.AddObserver(observer);
+}
+
+void WmShellCommon::RemoveShellObserver(ShellObserver* observer) {
+  shell_observers_.RemoveObserver(observer);
 }
 
 }  // namespace ash

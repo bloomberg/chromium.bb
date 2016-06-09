@@ -9,10 +9,12 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 namespace ash {
 
 class MruWindowTracker;
+class ShellObserver;
 
 // Contains code used by both shell implementations.
 class ASH_EXPORT WmShellCommon {
@@ -25,8 +27,17 @@ class ASH_EXPORT WmShellCommon {
   void CreateMruWindowTracker();
   void DeleteMruWindowTracker();
 
+  // ShellObserver related functions:
+  void AddShellObserver(ShellObserver* observer);
+  void RemoveShellObserver(ShellObserver* observer);
+  base::ObserverList<ShellObserver>* shell_observers() {
+    return &shell_observers_;
+  }
+
  private:
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+
+  base::ObserverList<ShellObserver> shell_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShellCommon);
 };

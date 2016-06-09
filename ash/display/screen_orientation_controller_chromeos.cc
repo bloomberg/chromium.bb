@@ -5,6 +5,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
@@ -69,11 +70,11 @@ ScreenOrientationController::ScreenOrientationController()
       rotation_locked_orientation_(blink::WebScreenOrientationLockAny),
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);

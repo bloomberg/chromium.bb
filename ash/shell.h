@@ -142,7 +142,6 @@ class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
-class ShellObserver;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
 class StickyKeysController;
@@ -307,13 +306,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Called when a casting session is started or stopped.
   void OnCastingSessionStartedOrStopped(bool started);
 
-  // Called when the overview mode is about to be started (before the windows
-  // get re-arranged).
-  void OnOverviewModeStarting();
-
-  // Called after overview mode has ended.
-  void OnOverviewModeEnded();
-
   // Called after maximize mode has started, windows might still animate though.
   void OnMaximizeModeStarted();
 
@@ -339,10 +331,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();
-
-  // Adds/removes observer.
-  void AddShellObserver(ShellObserver* observer);
-  void RemoveShellObserver(ShellObserver* observer);
 
   void AddPointerWatcher(views::PointerWatcher* watcher);
   void RemovePointerWatcher(views::PointerWatcher* watcher);
@@ -790,8 +778,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Cursor may be hidden on certain key events in ChromeOS, whereas we never
   // hide the cursor on Windows.
   std::unique_ptr<::wm::CursorManager> cursor_manager_;
-
-  base::ObserverList<ShellObserver> observers_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;

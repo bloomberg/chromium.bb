@@ -13,6 +13,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/container_delegate_aura.h"
 #include "ash/content/gpu_support_impl.h"
 #include "ash/pointer_watcher_delegate_aura.h"
@@ -100,11 +101,11 @@ void InitAfterFirstSessionStart() {
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
   AccessibilityDelegateImpl() {
-    ash::Shell::GetInstance()->AddShellObserver(
+    ash::WmShell::Get()->AddShellObserver(
         chromeos::AccessibilityManager::Get());
   }
   ~AccessibilityDelegateImpl() override {
-    ash::Shell::GetInstance()->RemoveShellObserver(
+    ash::WmShell::Get()->RemoveShellObserver(
         chromeos::AccessibilityManager::Get());
   }
 

@@ -8,6 +8,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_layout_manager.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
@@ -56,12 +57,12 @@ DesktopBackgroundController::DesktopBackgroundController(
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
       blocking_pool_(blocking_pool) {
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
   Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {

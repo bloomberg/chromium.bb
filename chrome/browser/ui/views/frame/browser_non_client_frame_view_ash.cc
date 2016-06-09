@@ -8,11 +8,11 @@
 
 #include "ash/ash_layout_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter_util.h"
-#include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -97,11 +97,11 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
       window_icon_(nullptr),
       frame_border_hit_test_controller_(
           new ash::FrameBorderHitTestController(frame)) {
-  ash::Shell::GetInstance()->AddShellObserver(this);
+  ash::WmShell::Get()->AddShellObserver(this);
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  ash::WmShell::Get()->RemoveShellObserver(this);
 }
 
 void BrowserNonClientFrameViewAsh::Init() {

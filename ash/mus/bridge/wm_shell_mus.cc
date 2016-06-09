@@ -6,6 +6,7 @@
 
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_resizer.h"
@@ -209,6 +210,16 @@ std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
       new DragWindowResizer(std::move(next_window_resizer), window_state));
 }
 
+void WmShellMus::OnOverviewModeStarting() {
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnOverviewModeStarting());
+}
+
+void WmShellMus::OnOverviewModeEnded() {
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnOverviewModeEnded());
+}
+
 bool WmShellMus::IsOverviewModeSelecting() {
   NOTIMPLEMENTED();
   return false;
@@ -243,12 +254,12 @@ void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WmShellMus::AddOverviewModeObserver(WmOverviewModeObserver* observer) {
-  NOTIMPLEMENTED();
+void WmShellMus::AddShellObserver(ShellObserver* observer) {
+  wm_shell_common_->AddShellObserver(observer);
 }
 
-void WmShellMus::RemoveOverviewModeObserver(WmOverviewModeObserver* observer) {
-  NOTIMPLEMENTED();
+void WmShellMus::RemoveShellObserver(ShellObserver* observer) {
+  wm_shell_common_->RemoveShellObserver(observer);
 }
 
 // static

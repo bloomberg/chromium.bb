@@ -7,11 +7,11 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -40,7 +40,7 @@ AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(ShelfLayoutManager* shelf)
 AshPopupAlignmentDelegate::~AshPopupAlignmentDelegate() {
   if (screen_)
     screen_->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   shelf_->RemoveObserver(this);
 }
 
@@ -50,7 +50,7 @@ void AshPopupAlignmentDelegate::StartObserving(
   screen_ = screen;
   work_area_ = display.work_area();
   screen->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
   if (system_tray_height_ > 0)
     UpdateWorkArea();
 }

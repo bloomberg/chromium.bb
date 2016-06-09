@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
@@ -143,13 +144,13 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
 }
 
 DisplayChangeObserver::DisplayChangeObserver() {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 DisplayChangeObserver::~DisplayChangeObserver() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(

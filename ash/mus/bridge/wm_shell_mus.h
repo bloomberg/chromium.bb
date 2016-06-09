@@ -61,6 +61,8 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
   bool IsOverviewModeSelecting() override;
   bool IsOverviewModeRestoringMinimizedWindows() override;
   AccessibilityDelegate* GetAccessibilityDelegate() override;
@@ -69,8 +71,8 @@ class WmShellMus : public WmShell, public ::mus::WindowTreeClientObserver {
   void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
-  void AddOverviewModeObserver(WmOverviewModeObserver* observer) override;
-  void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) override;
+  void AddShellObserver(ShellObserver* observer) override;
+  void RemoveShellObserver(ShellObserver* observer) override;
 
  private:
   // Returns true if |window| is a window that can have active children.

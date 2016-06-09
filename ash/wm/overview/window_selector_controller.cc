@@ -56,7 +56,7 @@ void WindowSelectorController::ToggleOverview() {
     if (windows.empty())
       return;
 
-    Shell::GetInstance()->OnOverviewModeStarting();
+    WmShell::Get()->OnOverviewModeStarting();
     window_selector_.reset(new WindowSelector(this));
     window_selector_->Init(windows);
     OnSelectionStarted();
@@ -78,7 +78,7 @@ void WindowSelectorController::OnSelectionEnded() {
   window_selector_->Shutdown();
   window_selector_.reset();
   last_selection_time_ = base::Time::Now();
-  Shell::GetInstance()->OnOverviewModeEnded();
+  WmShell::Get()->OnOverviewModeEnded();
 }
 
 void WindowSelectorController::OnSelectionStarted() {

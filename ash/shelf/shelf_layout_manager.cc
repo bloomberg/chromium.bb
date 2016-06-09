@@ -21,6 +21,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_root_window_controller_observer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -225,7 +226,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
       update_shelf_observer_(NULL),
       chromevox_panel_height_(0),
       duration_override_in_ms_(0) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 
   if (!Shell::GetInstance()->in_mus()) {
     root_window_controller_observer_.reset(
@@ -245,7 +246,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     WillDeleteShelfLayoutManager());
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
   Shell::GetInstance()->
       session_state_delegate()->RemoveSessionStateObserver(this);

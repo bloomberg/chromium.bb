@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -64,8 +65,8 @@ Preferences::Preferences()
       user_is_primary_(false) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddShellObserver(this);
+  if (ash::WmShell::HasInstance())
+    ash::WmShell::Get()->AddShellObserver(this);
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
@@ -75,8 +76,8 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
       user_is_primary_(false) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->AddShellObserver(this);
+  if (ash::WmShell::HasInstance())
+    ash::WmShell::Get()->AddShellObserver(this);
 }
 
 Preferences::~Preferences() {
@@ -84,8 +85,8 @@ Preferences::~Preferences() {
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   // If shell instance is destoryed before this preferences instance, there is
   // no need to remove this shell observer.
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->RemoveShellObserver(this);
+  if (ash::WmShell::HasInstance())
+    ash::WmShell::Get()->RemoveShellObserver(this);
 }
 
 // static

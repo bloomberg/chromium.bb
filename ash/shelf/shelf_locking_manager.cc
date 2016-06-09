@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_locking_manager.h"
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
@@ -19,14 +20,14 @@ ShelfLockingManager::ShelfLockingManager(Shelf* shelf) : shelf_(shelf) {
       delegate->GetSessionState() != SessionStateDelegate::SESSION_STATE_ACTIVE;
   screen_locked_ = delegate->IsScreenLocked();
   delegate->AddSessionStateObserver(this);
-  shell->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
   Shell* shell = Shell::GetInstance();
   shell->lock_state_controller()->RemoveObserver(this);
   shell->session_state_delegate()->RemoveSessionStateObserver(this);
-  shell->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 void ShelfLockingManager::OnLockStateChanged(bool locked) {

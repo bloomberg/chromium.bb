@@ -14,6 +14,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -66,12 +67,10 @@ class TestShellObserver : public ShellObserver {
  public:
   TestShellObserver() : call_count_(0),
                         is_fullscreen_(false) {
-    Shell::GetInstance()->AddShellObserver(this);
+    WmShell::Get()->AddShellObserver(this);
   }
 
-  ~TestShellObserver() override {
-    Shell::GetInstance()->RemoveShellObserver(this);
-  }
+  ~TestShellObserver() override { WmShell::Get()->RemoveShellObserver(this); }
 
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 WmWindow* root_window) override {

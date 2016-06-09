@@ -7,8 +7,9 @@
 #include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shell.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -23,11 +24,11 @@ AttachedPanelWindowTargeter::AttachedPanelWindowTargeter(
       panel_container_(container),
       panel_layout_manager_(panel_layout_manager),
       default_touch_extend_(default_touch_extend) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 AttachedPanelWindowTargeter::~AttachedPanelWindowTargeter() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 void AttachedPanelWindowTargeter::OnShelfCreatedForRootWindow(

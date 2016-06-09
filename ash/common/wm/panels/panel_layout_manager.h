@@ -10,12 +10,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_layout_manager.h"
-#include "ash/common/wm_overview_mode_observer.h"
-#include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_tracker.h"
 #include "base/compiler_specific.h"
@@ -60,8 +59,7 @@ class ASH_EXPORT PanelLayoutManager
       public wm::WindowStateObserver,
       public WmActivationObserver,
       public WmDisplayObserver,
-      public WmOverviewModeObserver,
-      public WmRootWindowControllerObserver,
+      public ShellObserver,
       public WmWindowObserver,
       public keyboard::KeyboardControllerObserver,
       public WmShelfObserver {
@@ -99,11 +97,9 @@ class ASH_EXPORT PanelLayoutManager
   void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overridden from WmOverviewModeObserver
+  // Overridden from ShellObserver:
   void OnOverviewModeEnded() override;
-
-  // Overridden from WmRootWindowControllerObserver
-  void OnShelfAlignmentChanged() override;
+  void OnShelfAlignmentChanged(WmWindow* root_window) override;
 
   // Overridden from WmWindowObserver
   void OnWindowPropertyChanged(WmWindow* window,

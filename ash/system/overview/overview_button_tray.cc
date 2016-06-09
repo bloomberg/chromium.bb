@@ -7,6 +7,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -44,12 +45,12 @@ OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
 
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
   Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   Shell::GetInstance()->session_state_delegate()->RemoveSessionStateObserver(
       this);
 }

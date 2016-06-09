@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
@@ -104,8 +105,8 @@ MaximizeModeController::MaximizeModeController()
       touchview_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
       lid_is_closed_(false) {
+  WmShell::Get()->AddShellObserver(this);
   Shell* shell = Shell::GetInstance();
-  shell->AddShellObserver(this);
   shell->metrics()->RecordUserMetricsAction(
       ash::UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
@@ -125,7 +126,7 @@ MaximizeModeController::MaximizeModeController()
 }
 
 MaximizeModeController::~MaximizeModeController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchView)) {

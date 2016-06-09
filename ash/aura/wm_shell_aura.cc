@@ -6,10 +6,10 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
-#include "ash/common/wm_overview_mode_observer.h"
 #include "ash/common/wm_shell_common.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
@@ -26,19 +26,18 @@ namespace ash {
 WmShellAura::WmShellAura(WmShellCommon* wm_shell_common)
     : wm_shell_common_(wm_shell_common) {
   WmShell::Set(this);
-  Shell::GetInstance()->AddShellObserver(this);
 }
 
 WmShellAura::~WmShellAura() {
   WmShell::Set(nullptr);
+}
 
+void WmShellAura::PrepareForShutdown() {
   if (added_activation_observer_)
     Shell::GetInstance()->activation_client()->RemoveObserver(this);
 
   if (added_display_observer_)
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-
-  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 MruWindowTracker* WmShellAura::GetMruWindowTracker() {
@@ -112,6 +111,16 @@ std::unique_ptr<WindowResizer> WmShellAura::CreateDragWindowResizer(
       DragWindowResizer::Create(next_window_resizer.release(), window_state));
 }
 
+void WmShellAura::OnOverviewModeStarting() {
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnOverviewModeStarting());
+}
+
+void WmShellAura::OnOverviewModeEnded() {
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnOverviewModeEnded());
+}
+
 bool WmShellAura::IsOverviewModeSelecting() {
   WindowSelectorController* window_selector_controller =
       Shell::GetInstance()->window_selector_controller();
@@ -158,12 +167,12 @@ void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
   display_observers_.RemoveObserver(observer);
 }
 
-void WmShellAura::AddOverviewModeObserver(WmOverviewModeObserver* observer) {
-  overview_mode_observers_.AddObserver(observer);
+void WmShellAura::AddShellObserver(ShellObserver* observer) {
+  wm_shell_common_->AddShellObserver(observer);
 }
 
-void WmShellAura::RemoveOverviewModeObserver(WmOverviewModeObserver* observer) {
-  overview_mode_observers_.RemoveObserver(observer);
+void WmShellAura::RemoveShellObserver(ShellObserver* observer) {
+  wm_shell_common_->RemoveShellObserver(observer);
 }
 
 void WmShellAura::OnWindowActivated(
@@ -191,11 +200,6 @@ void WmShellAura::OnDisplayConfigurationChanging() {
 void WmShellAura::OnDisplayConfigurationChanged() {
   FOR_EACH_OBSERVER(WmDisplayObserver, display_observers_,
                     OnDisplayConfigurationChanged());
-}
-
-void WmShellAura::OnOverviewModeEnded() {
-  FOR_EACH_OBSERVER(WmOverviewModeObserver, overview_mode_observers_,
-                    OnOverviewModeEnded());
 }
 
 }  // namespace ash

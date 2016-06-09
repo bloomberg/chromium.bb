@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
+#include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -47,11 +48,11 @@ RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
   UpdateImage();
   SetVisible(Shell::GetInstance()->maximize_mode_controller()->
                  IsMaximizeModeWindowManagerEnabled());
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 RotationLockDefaultView::~RotationLockDefaultView() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 bool RotationLockDefaultView::PerformAction(const ui::Event& event) {
@@ -98,7 +99,7 @@ TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED),
       observing_rotation_(false),
       observing_shell_(true) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 TrayRotationLock::~TrayRotationLock() {
@@ -167,7 +168,7 @@ void TrayRotationLock::StopObservingRotation() {
 void TrayRotationLock::StopObservingShell() {
   if (!observing_shell_)
     return;
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   observing_shell_ = false;
 }
 

@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/aura/wm_lookup_aura.h"
-#include "ash/common/shell_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
@@ -20,14 +19,16 @@ class WmShellCommon;
 
 class ASH_EXPORT WmShellAura : public WmShell,
                                public aura::client::ActivationChangeObserver,
-                               public WindowTreeHostManager::Observer,
-                               public ShellObserver {
+                               public WindowTreeHostManager::Observer {
  public:
   // |shell_common| is not owned by this class and must outlive this class.
   explicit WmShellAura(WmShellCommon* wm_shell_common);
   ~WmShellAura() override;
 
   static WmShellAura* Get();
+
+  // Called early in shutdown sequence.
+  void PrepareForShutdown();
 
   // WmShell:
   MruWindowTracker* GetMruWindowTracker() override;
@@ -46,6 +47,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
   bool IsOverviewModeSelecting() override;
   bool IsOverviewModeRestoringMinimizedWindows() override;
   AccessibilityDelegate* GetAccessibilityDelegate() override;
@@ -54,8 +57,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
-  void AddOverviewModeObserver(WmOverviewModeObserver* observer) override;
-  void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) override;
+  void AddShellObserver(ShellObserver* observer) override;
+  void RemoveShellObserver(ShellObserver* observer) override;
 
  private:
   // aura::client::ActivationChangeObserver:
@@ -69,9 +72,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
 
-  // ShellObserver:
-  void OnOverviewModeEnded() override;
-
   // Owned by Shell.
   WmShellCommon* wm_shell_common_;
 
@@ -81,8 +81,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   bool added_display_observer_ = false;
   base::ObserverList<WmDisplayObserver> display_observers_;
-
-  base::ObserverList<WmOverviewModeObserver> overview_mode_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShellAura);
 };

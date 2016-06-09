@@ -4,17 +4,18 @@
 
 #include "chrome/browser/ui/webui/chromeos/touch_view_controller_delegate.h"
 
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 namespace chromeos {
 
 TouchViewControllerDelegate::TouchViewControllerDelegate() {
-  ash::Shell::GetInstance()->AddShellObserver(this);
+  ash::WmShell::Get()->AddShellObserver(this);
 }
 
 TouchViewControllerDelegate::~TouchViewControllerDelegate() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  ash::WmShell::Get()->RemoveShellObserver(this);
 }
 
 void TouchViewControllerDelegate::AddObserver(Observer* observer) {

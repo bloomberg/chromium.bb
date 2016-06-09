@@ -173,7 +173,6 @@
       'common/wm_layout_manager.h',
       'common/wm_lookup.cc',
       'common/wm_lookup.h',
-      'common/wm_overview_mode_observer.h',
       'common/wm_root_window_controller.h',
       'common/wm_root_window_controller_observer.h',
       'common/wm_shell.cc',

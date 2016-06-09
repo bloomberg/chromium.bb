@@ -21,10 +21,10 @@ namespace ash {
 class AccessibilityDelegate;
 class MruWindowTracker;
 class SessionStateDelegate;
+class ShellObserver;
 class WindowResizer;
 class WmActivationObserver;
 class WmDisplayObserver;
-class WmOverviewModeObserver;
 class WmWindow;
 
 namespace wm {
@@ -41,6 +41,7 @@ class ASH_EXPORT WmShell {
   // through context.
   static void Set(WmShell* instance);
   static WmShell* Get();
+  static bool HasInstance() { return instance_ != nullptr; }
 
   virtual MruWindowTracker* GetMruWindowTracker() = 0;
 
@@ -86,6 +87,13 @@ class ASH_EXPORT WmShell {
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) = 0;
 
+  // Called when the overview mode is about to be started (before the windows
+  // get re-arranged).
+  virtual void OnOverviewModeStarting() = 0;
+
+  // Called after overview mode has ended.
+  virtual void OnOverviewModeEnded() = 0;
+
   // TODO(sky): if WindowSelectorController can't be moved over, move these
   // onto their own local class.
   virtual bool IsOverviewModeSelecting() = 0;
@@ -101,8 +109,8 @@ class ASH_EXPORT WmShell {
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
   virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
 
-  virtual void AddOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
-  virtual void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
+  virtual void AddShellObserver(ShellObserver* observer) = 0;
+  virtual void RemoveShellObserver(ShellObserver* observer) = 0;
 
  protected:
   virtual ~WmShell() {}

@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_constants.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -115,7 +116,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   AddChildView(slider_);
 
   if (is_default_view_) {
-    Shell::GetInstance()->AddShellObserver(this);
+    WmShell::Get()->AddShellObserver(this);
     SetVisible(Shell::GetInstance()->maximize_mode_controller()->
                IsMaximizeModeWindowManagerEnabled());
   }
@@ -123,7 +124,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
 
 BrightnessView::~BrightnessView() {
   if (is_default_view_)
-    Shell::GetInstance()->RemoveShellObserver(this);
+    WmShell::Get()->RemoveShellObserver(this);
 }
 
 void BrightnessView::SetBrightnessPercent(double percent) {

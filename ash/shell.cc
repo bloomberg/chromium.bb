@@ -377,12 +377,13 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
           contains, insets)) {
     return;
   }
-  FOR_EACH_OBSERVER(ShellObserver, observers_,
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnDisplayWorkAreaInsetsChanged());
 }
 
 void Shell::OnLoginStateChanged(LoginStatus status) {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnLoginStateChanged(status));
 }
 
 void Shell::OnLoginUserProfilePrepared() {
@@ -398,11 +399,13 @@ void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
 }
 
 void Shell::OnAppTerminating() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnAppTerminating());
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnAppTerminating());
 }
 
 void Shell::OnLockStateChanged(bool locked) {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnLockStateChanged(locked));
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnLockStateChanged(locked));
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
   if (!locked) {
@@ -418,29 +421,24 @@ void Shell::OnLockStateChanged(bool locked) {
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
 #if defined(OS_CHROMEOS)
-  FOR_EACH_OBSERVER(ShellObserver, observers_,
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnCastingSessionStartedOrStopped(started));
 #endif
 }
 
-void Shell::OnOverviewModeStarting() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeStarting());
-}
-
-void Shell::OnOverviewModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeEnded());
-}
-
 void Shell::OnMaximizeModeStarted() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnMaximizeModeStarted());
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnMaximizeModeStarted());
 }
 
 void Shell::OnMaximizeModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnMaximizeModeEnded());
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnMaximizeModeEnded());
 }
 
 void Shell::OnRootWindowAdded(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnRootWindowAdded(root_window));
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnRootWindowAdded(root_window));
 }
 
 void Shell::CreateShelf() {
@@ -451,8 +449,7 @@ void Shell::CreateShelf() {
 }
 
 void Shell::OnShelfCreatedForRootWindow(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver,
-                    observers_,
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnShelfCreatedForRootWindow(root_window));
 }
 
@@ -496,14 +493,6 @@ void Shell::ShutdownShelf() {
   }
 }
 
-void Shell::AddShellObserver(ShellObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void Shell::RemoveShellObserver(ShellObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void Shell::AddPointerWatcher(views::PointerWatcher* watcher) {
   pointer_watcher_delegate_->AddPointerWatcher(watcher);
 }
@@ -529,19 +518,19 @@ void Shell::UpdateShelfVisibility() {
 }
 
 void Shell::OnShelfAlignmentChanged(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, observers_,
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnShelfAlignmentChanged(root_window));
 }
 
 void Shell::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, observers_,
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnShelfAutoHideBehaviorChanged(root_window));
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
                                         WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnFullscreenStateChanged(
-      is_fullscreen, root_window));
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnFullscreenStateChanged(is_fullscreen, root_window));
 }
 
 void Shell::CreateModalBackground(aura::Window* window) {
@@ -616,7 +605,7 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
     return;
 
   is_touch_hud_projection_enabled_ = enabled;
-  FOR_EACH_OBSERVER(ShellObserver, observers_,
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
                     OnTouchHudProjectionToggled(enabled));
 }
 
@@ -822,13 +811,7 @@ Shell::~Shell() {
   display_manager_->CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
-  // Needs to happen before |window_tree_host_manager_|. Calls back to Shell, so
-  // also needs to be destroyed before |instance_| reset to null.
-  wm_shell_.reset();
-
-  // Must happen after |wm_shell_| is deleted.
-  wm_shell_common_.reset();
-
+  wm_shell_->PrepareForShutdown();
   // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_->Shutdown();
   window_tree_host_manager_.reset();
@@ -850,7 +833,7 @@ Shell::~Shell() {
     display_configurator_->RemoveObserver(display_error_observer_.get());
   if (projecting_observer_) {
     display_configurator_->RemoveObserver(projecting_observer_.get());
-    RemoveShellObserver(projecting_observer_.get());
+    wm_shell_common_->RemoveShellObserver(projecting_observer_.get());
   }
   display_change_observer_.reset();
 
@@ -859,6 +842,12 @@ Shell::~Shell() {
   // Ensure that DBusThreadManager outlives this Shell.
   DCHECK(chromeos::DBusThreadManager::IsInitialized());
 #endif
+
+  // Needs to happen right before |instance_| is reset.
+  wm_shell_.reset();
+
+  // Must happen after |wm_shell_| is deleted.
+  wm_shell_common_.reset();
 
   DCHECK(instance_ == this);
   instance_ = nullptr;
@@ -919,7 +908,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   projecting_observer_.reset(
       new ProjectingObserver(dbus_thread_manager->GetPowerManagerClient()));
   display_configurator_->AddObserver(projecting_observer_.get());
-  AddShellObserver(projecting_observer_.get());
+  wm_shell_common_->AddShellObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new DisplayChangeObserver);
@@ -1004,7 +993,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   overlay_filter_.reset(new OverlayEventFilter);
   AddPreTargetHandler(overlay_filter_.get());
-  AddShellObserver(overlay_filter_.get());
+  wm_shell_common_->AddShellObserver(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
       std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
@@ -1035,7 +1024,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
 #endif
-  AddShellObserver(lock_state_controller_.get());
+  wm_shell_common_->AddShellObserver(lock_state_controller_.get());
 
   drag_drop_controller_.reset(new DragDropController);
   // |screenshot_controller_| needs to be created (and prepended as a
@@ -1165,7 +1154,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnShellInitialized());
+  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_common_->shell_observers(),
+                    OnShellInitialized());
 
   user_metrics_recorder_->OnShellInitialized();
 }

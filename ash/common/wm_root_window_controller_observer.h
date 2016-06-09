@@ -11,6 +11,7 @@ namespace ash {
 
 class WmWindow;
 
+// TODO(sky): nuke and go back to ShellObserver.
 class ASH_EXPORT WmRootWindowControllerObserver {
  public:
   virtual void OnWorkAreaChanged() {}

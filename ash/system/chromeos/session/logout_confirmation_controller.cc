@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_dialog.h"
 #include "base/location.h"
 #include "base/time/default_tick_clock.h"
@@ -21,13 +21,13 @@ LogoutConfirmationController::LogoutConfirmationController(
       logout_closure_(logout_closure),
       dialog_(NULL),
       logout_timer_(false, false) {
-  if (Shell::HasInstance())
-    Shell::GetInstance()->AddShellObserver(this);
+  if (WmShell::HasInstance())
+    WmShell::Get()->AddShellObserver(this);
 }
 
 LogoutConfirmationController::~LogoutConfirmationController() {
-  if (Shell::HasInstance())
-    Shell::GetInstance()->RemoveShellObserver(this);
+  if (WmShell::HasInstance())
+    WmShell::Get()->RemoveShellObserver(this);
   if (dialog_)
     dialog_->ControllerGone();
 }
@@ -44,7 +44,7 @@ void LogoutConfirmationController::ConfirmLogout(
 
   if (!dialog_) {
     // Show confirmation dialog unless this is a unit test without a Shell.
-    if (Shell::HasInstance())
+    if (WmShell::HasInstance())
       dialog_ = new LogoutConfirmationDialog(this, logout_time_);
   } else {
     dialog_->Update(logout_time_);

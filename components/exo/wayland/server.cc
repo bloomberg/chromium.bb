@@ -25,6 +25,7 @@
 
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -1430,17 +1431,16 @@ class WaylandWorkspaceObserver : public ash::ShellObserver,
                            wl_resource* remote_shell_resource)
       : display_id_(display.id()),
         remote_shell_resource_(remote_shell_resource) {
+    ash::WmShell::Get()->AddShellObserver(this);
     ash::Shell* shell = ash::Shell::GetInstance();
-    shell->AddShellObserver(this);
     shell->activation_client()->AddObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
     SendConfigure();
     SendActivated(shell->activation_client()->GetActiveWindow(), nullptr);
   }
   ~WaylandWorkspaceObserver() override {
-    ash::Shell* shell = ash::Shell::GetInstance();
-    shell->RemoveShellObserver(this);
-    shell->activation_client()->RemoveObserver(this);
+    ash::WmShell::Get()->RemoveShellObserver(this);
+    ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 

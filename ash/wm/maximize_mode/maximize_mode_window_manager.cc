@@ -11,6 +11,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
@@ -49,7 +50,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   CancelOverview();
 
   Shell::GetInstance()->RemovePreTargetHandler(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
@@ -216,7 +217,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
 }
 

@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -20,11 +20,11 @@ VideoActivityNotifier::VideoActivityNotifier(VideoDetector* detector)
     : detector_(detector),
       screen_is_locked_(false) {
   detector_->AddObserver(this);
-  ash::Shell::GetInstance()->AddShellObserver(this);
+  ash::WmShell::Get()->AddShellObserver(this);
 }
 
 VideoActivityNotifier::~VideoActivityNotifier() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
+  ash::WmShell::Get()->RemoveShellObserver(this);
   detector_->RemoveObserver(this);
 }
 

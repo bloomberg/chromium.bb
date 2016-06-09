@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -118,7 +119,7 @@ AppListPresenterDelegate::AppListPresenterDelegate(
     app_list::AppListPresenter* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
     : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 AppListPresenterDelegate::~AppListPresenterDelegate() {
@@ -130,7 +131,7 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
   views::Widget* widget = view_->GetWidget();
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Shelf::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 app_list::AppListViewDelegate* AppListPresenterDelegate::GetViewDelegate() {

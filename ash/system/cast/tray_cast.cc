@@ -7,6 +7,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
@@ -544,11 +545,11 @@ void CastDetailedView::OnViewClicked(views::View* sender) {
 }  // namespace tray
 
 TrayCast::TrayCast(SystemTray* system_tray) : SystemTrayItem(system_tray) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 TrayCast::~TrayCast() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   if (added_observer_)
     GetCastConfigDelegate()->RemoveObserver(this);
 }

@@ -15,11 +15,11 @@
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter.h"
-#include "ash/shell.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
@@ -216,11 +216,11 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
   header_painter_->Init(frame_, this, caption_button_container_);
   UpdateAvatarIcon();
 
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 CustomFrameViewAsh::HeaderView::~HeaderView() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 void CustomFrameViewAsh::HeaderView::SchedulePaintForTitle() {
@@ -248,8 +248,7 @@ int CustomFrameViewAsh::HeaderView::GetMinimumWidth() const {
 }
 
 void CustomFrameViewAsh::HeaderView::UpdateAvatarIcon() {
-  SessionStateDelegate* delegate =
-      Shell::GetInstance()->session_state_delegate();
+  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
   WmWindow* window = WmLookup::Get()->GetWindowForWidget(frame_);
   bool show = delegate->ShouldShowAvatar(window);
   if (!show) {

@@ -33,11 +33,11 @@ WmRootWindowControllerAura::WmRootWindowControllerAura(
     : root_window_controller_(root_window_controller) {
   root_window_controller_->GetRootWindow()->SetProperty(
       kWmRootWindowControllerKey, this);
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
 }
 
 WmRootWindowControllerAura::~WmRootWindowControllerAura() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
 }
 
 // static

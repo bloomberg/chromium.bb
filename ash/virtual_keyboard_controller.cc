@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
@@ -36,13 +37,13 @@ VirtualKeyboardController::VirtualKeyboardController()
       has_internal_keyboard_(false),
       has_touchscreen_(false),
       ignore_external_keyboard_(false) {
-  Shell::GetInstance()->AddShellObserver(this);
+  WmShell::Get()->AddShellObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
   UpdateDevices();
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 }
 
