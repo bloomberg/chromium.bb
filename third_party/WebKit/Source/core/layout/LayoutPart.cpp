@@ -31,6 +31,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 
@@ -357,7 +358,7 @@ void LayoutPart::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&
         // |childFrameView| is in another document, which could be
         // missing its LayoutView. TODO(jchaffraix): Ideally we should
         // not need this code.
-        if (LayoutView* childLayoutView = childFrameView->layoutView()) {
+        if (LayoutView* childLayoutView = toLayoutView(LayoutAPIShim::layoutObjectFrom(childFrameView->layoutViewItem()))) {
             PaintInvalidationState childViewPaintInvalidationState(paintInvalidationState, *childLayoutView);
             childFrameView->invalidateTreeIfNeeded(childViewPaintInvalidationState);
         }
