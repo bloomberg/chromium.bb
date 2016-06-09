@@ -403,3 +403,7 @@ blockedMainThreadEventsWarningThreshold type=double, initial=0
 # when there is greater adoption, interventions to force it on and associated devtools
 # to enable it have been shipped.
 passiveListenerDefault type=PassiveListenerDefault, initial=PassiveListenerDefault::False
+
+# Use default interpolation quality to scale bitmap images if quality is not determined
+# in other ways. This can help us writing reftests containing scaled images.
+useDefaultImageInterpolationQuality initial=false

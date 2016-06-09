@@ -32,6 +32,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 
@@ -165,6 +166,11 @@ bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object,
 
     if (object.style()->imageRendering() == ImageRenderingOptimizeContrast)
         return true;
+
+    if (LocalFrame* frame = object.frame()) {
+        if (frame->settings() && frame->settings()->useDefaultImageInterpolationQuality())
+            return false;
+    }
 
     // Look ourselves up in the hashtables.
     ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(&object);

@@ -8,6 +8,9 @@ window.generateMinimumRepaint = false; // See comments about 'Minimum repaint' b
 if (window.testRunner)
     testRunner.waitUntilDone();
 
+if (window.internals)
+    internals.settings.setUseDefaultImageInterpolationQuality(true);
+
 function runRepaintTest()
 {
     if (!window.testRunner || !window.internals) {
