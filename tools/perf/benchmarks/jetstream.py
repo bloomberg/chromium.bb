@@ -46,7 +46,7 @@ class _JetstreamMeasurement(legacy_page_test.LegacyPageTest):
         """
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    del page, tab  # unused
+    del page  # unused
     get_results_js = """
         (function() {
           for (var i = 0; i < __results.length; i++) {
