@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -11,6 +12,12 @@ use_glx = use_x11
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
+}
+
+if (is_chromeos) {
+  pkg_config("libdrm") {
+    packages = [ "libdrm" ]
+  }
 }
 
 config("gl_config") {
@@ -350,6 +357,9 @@ test("gl_unittests") {
 
   if (use_ozone) {
     sources += [ "gl_image_ozone_native_pixmap_unittest.cc" ]
+    if (is_chromeos && target_cpu != "arm") {
+      sources += [ "gl_image_ozone_native_pixmap_drm_unittest.cc" ]
+    }
   }
 
   if (is_mac) {
@@ -375,6 +385,10 @@ test("gl_unittests") {
     "//ui/gfx/geometry",
     "//ui/gl/init",
   ]
+
+  if (is_chromeos) {
+    configs += [ ":libdrm" ]
+  }
 
   data_deps = [
     "//third_party/mesa:osmesa",
