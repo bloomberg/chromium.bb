@@ -13,7 +13,8 @@ namespace mac {
 
 LibDispatchTaskRunner::LibDispatchTaskRunner(const char* name)
     : queue_(dispatch_queue_create(name, NULL)),
-      queue_finalized_(false, false) {
+      queue_finalized_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED) {
   dispatch_set_context(queue_, this);
   dispatch_set_finalizer_f(queue_, &LibDispatchTaskRunner::Finalizer);
 }
