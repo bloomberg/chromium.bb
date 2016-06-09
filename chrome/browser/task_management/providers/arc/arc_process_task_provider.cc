@@ -92,12 +92,15 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
 void ArcProcessTaskProvider::RequestProcessList() {
   arc::ArcProcessService* arc_process_service =
       arc::ArcProcessService::Get();
+  auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateProcessList,
+                             weak_ptr_factory_.GetWeakPtr());
   if (!arc_process_service ||
-      !arc_process_service->RequestProcessList(
-          base::Bind(&ArcProcessTaskProvider::OnUpdateProcessList,
-                     weak_ptr_factory_.GetWeakPtr()))) {
+      !arc_process_service->RequestProcessList(callback)) {
     VLOG(2) << "ARC process instance is not ready.";
-    ScheduleNextRequest();
+    // Update with the empty ARC process list.
+    // Note that this can happen in the middle of the session if the user has
+    // just opted out from ARC.
+    callback.Run(std::vector<ArcProcess>());
   }
 }
 
