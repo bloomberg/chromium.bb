@@ -4,8 +4,6 @@
 
 package org.chromium.chromoting;
 
-import android.view.MotionEvent;
-
 import org.chromium.chromoting.jni.Client;
 
 /**
@@ -27,23 +25,6 @@ public interface TouchInputHandlerInterface {
      * once after constructor but before other functions.
      */
     void init(Desktop desktop, Client client);
-
-    /**
-     * Processes a touch event. This should be called by the View in its onTouchEvent() handler.
-     */
-    boolean onTouchEvent(MotionEvent event);
-
-    /**
-     * Called whenever the client display area changes size. The caller will handle repainting
-     * after this method returns.
-     */
-    void onClientSizeChanged(int width, int height);
-
-    /**
-     * Called when the host screen size is changed. The caller will handle repainting after this
-     * method returns.
-     */
-    void onHostSizeChanged(int width, int height);
 
     /**
      * Whilst an animation is in progress, this method is called repeatedly until the animation is

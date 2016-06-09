@@ -212,52 +212,8 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
         mCursorAnimationJob = new CursorAnimationJob(context);
         mScrollAnimationJob = new ScrollAnimationJob(context);
-    }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        // Give the underlying input strategy a chance to observe the current motion event before
-        // passing it to the gesture detectors.  This allows the input strategy to react to the
-        // event or save the payload for use in recreating the gesture remotely.
-        mInputStrategy.onMotionEvent(event);
-
-        // Avoid short-circuit logic evaluation - ensure all gesture detectors see all events so
-        // that they generate correct notifications.
-        boolean handled = mScroller.onTouchEvent(event);
-        handled |= mZoomer.onTouchEvent(event);
-        handled |= mTapDetector.onTouchEvent(event);
-        mSwipePinchDetector.onTouchEvent(event);
-
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN:
-                mViewer.setAnimationEnabled(false);
-                mSuppressCursorMovement = false;
-                mSuppressFling = false;
-                mSwipeCompleted = false;
-                mIsDragging = false;
-                break;
-
-            case MotionEvent.ACTION_POINTER_DOWN:
-                mTotalMotionY = 0;
-                break;
-
-            default:
-                break;
-        }
-        return handled;
-    }
-
-    @Override
-    public void onClientSizeChanged(int width, int height) {
-        mPanGestureBounds = new Rect(
-                mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
-        mDesktopCanvas.repositionImageWithZoom(true);
-    }
-
-    @Override
-    public void onHostSizeChanged(int width, int height) {
-        moveViewport((float) width / 2, (float) height / 2);
-        mDesktopCanvas.resizeImageToFitScreen();
+        attachViewEvents(viewer);
     }
 
     @Override
@@ -288,6 +244,27 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
                         handleSoftInputMethodVisibilityChanged(parameter);
                     }
                 });
+    }
+
+    private void attachViewEvents(DesktopViewInterface viewer) {
+        viewer.onTouch().add(new Event.ParameterRunnable<TouchEventParameter>() {
+            @Override
+            public void run(TouchEventParameter parameter) {
+                parameter.handled = handleTouchEvent(parameter.event);
+            }
+        });
+        viewer.onClientSizeChanged().add(new Event.ParameterRunnable<SizeChangedEventParameter>() {
+            @Override
+            public void run(SizeChangedEventParameter parameter) {
+                handleClientSizeChanged(parameter.width, parameter.height);
+            }
+        });
+        viewer.onHostSizeChanged().add(new Event.ParameterRunnable<SizeChangedEventParameter>() {
+            @Override
+            public void run(SizeChangedEventParameter parameter) {
+                handleHostSizeChanged(parameter.width, parameter.height);
+            }
+        });
     }
 
     private void handleInputModeChanged(InputModeChangedEventParameter parameter,
@@ -340,6 +317,49 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         }
 
         mDesktopCanvas.repositionImage(true);
+    }
+
+    private boolean handleTouchEvent(MotionEvent event) {
+        // Give the underlying input strategy a chance to observe the current motion event before
+        // passing it to the gesture detectors.  This allows the input strategy to react to the
+        // event or save the payload for use in recreating the gesture remotely.
+        mInputStrategy.onMotionEvent(event);
+
+        // Avoid short-circuit logic evaluation - ensure all gesture detectors see all events so
+        // that they generate correct notifications.
+        boolean handled = mScroller.onTouchEvent(event);
+        handled |= mZoomer.onTouchEvent(event);
+        handled |= mTapDetector.onTouchEvent(event);
+        mSwipePinchDetector.onTouchEvent(event);
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mViewer.setAnimationEnabled(false);
+                mSuppressCursorMovement = false;
+                mSuppressFling = false;
+                mSwipeCompleted = false;
+                mIsDragging = false;
+                break;
+
+            case MotionEvent.ACTION_POINTER_DOWN:
+                mTotalMotionY = 0;
+                break;
+
+            default:
+                break;
+        }
+        return handled;
+    }
+
+    private void handleClientSizeChanged(int width, int height) {
+        mPanGestureBounds = new Rect(
+                mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
+        mDesktopCanvas.repositionImageWithZoom(true);
+    }
+
+    private void handleHostSizeChanged(int width, int height) {
+        moveViewport((float) width / 2, (float) height / 2);
+        mDesktopCanvas.resizeImageToFitScreen();
     }
 
     private void setInputStrategy(InputStrategyInterface inputStrategy) {

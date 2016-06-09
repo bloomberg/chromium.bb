@@ -38,4 +38,16 @@ public interface DesktopViewInterface {
      * periodically call TouchInputHandler.processAnimation() and repaint itself.
      */
     void setAnimationEnabled(boolean enabled);
+
+    /** An {@link Event} which is triggered when the view is being painted. */
+    Event<PaintEventParameter> onPaint();
+
+    /** An {@link Event} which is triggered when the client size is changed. */
+    Event<SizeChangedEventParameter> onClientSizeChanged();
+
+    /** An {@link Event} which is triggered when the host size is changed. */
+    Event<SizeChangedEventParameter> onHostSizeChanged();
+
+    /** An {@link Event} which is triggered when user touchs the screen. */
+    Event<TouchEventParameter> onTouch();
 }

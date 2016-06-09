@@ -58,6 +58,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     private boolean mSurfaceCreated = false;
 
     private final Event.Raisable<PaintEventParameter> mOnPaint = new Event.Raisable<>();
+    private final Event.Raisable<SizeChangedEventParameter> mOnClientSizeChanged =
+            new Event.Raisable<>();
+    private final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
+            new Event.Raisable<>();
+    private final Event.Raisable<TouchEventParameter> mOnTouch = new Event.Raisable<>();
 
     // Variables to control animation by the TouchInputHandler.
 
@@ -94,6 +99,18 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     public Event<PaintEventParameter> onPaint() {
         return mOnPaint;
+    }
+
+    public Event<SizeChangedEventParameter> onClientSizeChanged() {
+        return mOnClientSizeChanged;
+    }
+
+    public Event<SizeChangedEventParameter> onHostSizeChanged() {
+        return mOnHostSizeChanged;
+    }
+
+    public Event<TouchEventParameter> onTouch() {
+        return mOnTouch;
     }
 
     /** Request repainting of the desktop view. */
@@ -140,7 +157,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             }
         }
         if (sizeChanged) {
-            mInputHandler.onHostSizeChanged(width, height);
+            mOnHostSizeChanged.raise(new SizeChangedEventParameter(width, height));
         }
 
         Canvas canvas;
@@ -223,7 +240,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         }
 
         attachRedrawCallback();
-        mInputHandler.onClientSizeChanged(width, height);
+        mOnClientSizeChanged.raise(new SizeChangedEventParameter(width, height));
         requestRepaint();
     }
 
@@ -276,7 +293,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     /** Called whenever the user attempts to touch the canvas. */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return mInputHandler.onTouchEvent(event);
+        TouchEventParameter parameter = new TouchEventParameter(event);
+        mOnTouch.raise(parameter);
+        return parameter.handled;
     }
 
     @Override
