@@ -748,47 +748,47 @@ ImageEditor.prototype.enterModeByName_ = function(name) {
  * @return {boolean} True if handled.
  */
 ImageEditor.prototype.onKeyDown = function(event) {
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'U+001B': // Escape
+  switch (util.getKeyModifiers(event) + event.key) {
+    case 'Escape':
     case 'Enter':
       if (this.getMode()) {
-        this.leaveModeInternal_(event.keyIdentifier === 'Enter',
+        this.leaveModeInternal_(event.key === 'Enter',
             false /* not to switch mode */);
         return true;
       }
       break;
 
-    case 'Ctrl-U+005A':  // Ctrl+Z
+    case 'Ctrl-z':  // Ctrl+Z
       if (this.commandQueue_.canUndo()) {
         this.undo();
         return true;
       }
       break;
 
-    case 'Ctrl-U+0059':  // Ctrl+Y
+    case 'Ctrl-y':  // Ctrl+Y
       if (this.commandQueue_.canRedo()) {
         this.redo();
         return true;
       }
       break;
 
-    case 'U+0041':  // 'a'
+    case 'a':
       this.enterModeByName_('autofix');
       return true;
 
-    case 'U+0042':  // 'b'
+    case 'b':
       this.enterModeByName_('exposure');
       return true;
 
-    case 'U+0043':  // 'c'
+    case 'c':
       this.enterModeByName_('crop');
       return true;
 
-    case 'U+004C':  // 'l'
+    case 'l':
       this.enterModeByName_('rotate_left');
       return true;
 
-    case 'U+0052':  // 'r'
+    case 'r':
       this.enterModeByName_('rotate_right');
       return true;
   }
@@ -1273,7 +1273,7 @@ ImageEditor.Toolbar.createButton_ = function(
   button.addEventListener('keydown', function(event) {
     // Stop propagation of Enter key event to prevent it from being captured by
     // image editor.
-    if (event.keyIdentifier === 'Enter')
+    if (event.key === 'Enter')
       event.stopPropagation();
   });
 
@@ -1343,7 +1343,7 @@ ImageEditor.Toolbar.prototype.addRange = function(
   // Swallow the left and right keys, so they are not handled by other
   // listeners.
   range.addEventListener('keydown', function(e) {
-    if (e.keyIdentifier === 'Left' || e.keyIdentifier === 'Right')
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
       e.stopPropagation();
   });
 

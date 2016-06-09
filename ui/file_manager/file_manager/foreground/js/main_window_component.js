@@ -276,9 +276,9 @@ MainWindowComponent.prototype.onKeyDown_ = function(event) {
     return;
   }
 
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'U+001B':  // Escape => Cancel dialog.
-    case 'Ctrl-U+0057': // Ctrl+W => Cancel dialog.
+  switch (util.getKeyModifiers(event) + event.key) {
+    case 'Escape':  // Escape => Cancel dialog.
+    case 'Ctrl-w':  // Ctrl+W => Cancel dialog.
       if (this.dialogType_ != DialogType.FULL_PAGE) {
         // If there is nothing else for ESC to do, then cancel the dialog.
         event.preventDefault();
@@ -305,7 +305,7 @@ MainWindowComponent.prototype.onKeyUp_ = function(event) {
  */
 MainWindowComponent.prototype.onDirectoryTreeKeyDown_ = function(event) {
   // Enter => Change directory or perform default action.
-  if (util.getKeyModifiers(event) + event.keyIdentifier === 'Enter') {
+  if (util.getKeyModifiers(event) + event.key === 'Enter') {
     var selectedItem = this.ui_.directoryTree.selectedItem;
     if (!selectedItem)
       return;
@@ -326,8 +326,8 @@ MainWindowComponent.prototype.onDirectoryTreeKeyDown_ = function(event) {
  * @private
  */
 MainWindowComponent.prototype.onListKeyDown_ = function(event) {
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'U+0008':  // Backspace => Up one directory.
+  switch (util.getKeyModifiers(event) + event.key) {
+    case 'Backspace':  // Backspace => Up one directory.
       event.preventDefault();
       // TODO(mtomasz): Use Entry.getParent() instead.
       var currentEntry = this.directoryModel_.getCurrentDirEntry();

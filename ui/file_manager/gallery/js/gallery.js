@@ -741,20 +741,20 @@ Gallery.prototype.onContentChange_ = function(event) {
  * @private
  */
 Gallery.prototype.onKeyDown_ = function(event) {
-  var keyString = util.getKeyModifiers(event) + event.keyIdentifier;
+  var keyString = util.getKeyModifiers(event) + event.key;
 
   // Handle debug shortcut keys.
   switch (keyString) {
-    case 'Ctrl-Shift-U+0049': // Ctrl+Shift+I
+    case 'Ctrl-Shift-I': // Ctrl+Shift+I
       chrome.fileManagerPrivate.openInspector('normal');
       break;
-    case 'Ctrl-Shift-U+004A': // Ctrl+Shift+J
+    case 'Ctrl-Shift-J': // Ctrl+Shift+J
       chrome.fileManagerPrivate.openInspector('console');
       break;
-    case 'Ctrl-Shift-U+0043': // Ctrl+Shift+C
+    case 'Ctrl-Shift-C': // Ctrl+Shift+C
       chrome.fileManagerPrivate.openInspector('element');
       break;
-    case 'Ctrl-Shift-U+0042': // Ctrl+Shift+B
+    case 'Ctrl-Shift-B': // Ctrl+Shift+B
       chrome.fileManagerPrivate.openInspector('background');
       break;
   }
@@ -774,17 +774,17 @@ Gallery.prototype.onKeyDown_ = function(event) {
 
   // Handle application wide shortcut keys.
   switch (keyString) {
-    case 'U+0008': // Backspace.
+    case 'Backspace':
       // The default handler would call history.back and close the Gallery.
       event.preventDefault();
       break;
 
-    case 'U+004D':  // 'm' switches between Slide and Mosaic mode.
+    case 'm':  // 'm' switches between Slide and Mosaic mode.
       if (!this.modeSwitchButton_.disabled)
         this.toggleMode_(undefined, event);
       break;
 
-    case 'U+0056':  // 'v'
+    case 'v':
     case 'MediaPlayPause':
       if (!this.slideshowButton_.disabled) {
         this.slideMode_.startSlideshow(
@@ -792,14 +792,14 @@ Gallery.prototype.onKeyDown_ = function(event) {
       }
       break;
 
-    case 'U+007F':  // Delete
-    case 'Shift-U+0033':  // Shift+'3' (Delete key might be missing).
-    case 'U+0044':  // 'd'
+    case 'Delete':
+    case 'Shift-3':  // Shift+'3' (Delete key might be missing).
+    case 'd':
       if (!this.deleteButton_.disabled)
         this.delete_();
       break;
 
-    case 'U+001B':  // Escape
+    case 'Escape':
       window.close();
       break;
   }

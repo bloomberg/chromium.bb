@@ -83,7 +83,7 @@ ThumbnailMode.prototype.hasActiveTool = function() { return true; };
  * @return {boolean} True when an event is handled.
  */
 ThumbnailMode.prototype.onKeyDown = function(event) {
-  switch (event.keyIdentifier) {
+  switch (event.key) {
     case 'Enter':
       if (event.target.matches('li.thumbnail')) {
         this.changeToSlideModeCallback_();
@@ -352,26 +352,26 @@ ThumbnailView.prototype.onScroll_ = function(event) {
 
 /**
  * Moves selection to specified direction.
- * @param {string} direction Direction. Should be 'Left', 'Right', 'Up', or
- *     'Down'.
+ * @param {string} direction Direction. Should be 'ArrowLeft', 'ArrowRight',
+ *     'ArrowUp', or 'ArrowDown'.
  * @param {boolean} selectRange True to perform range selection.
  * @private
  */
 ThumbnailView.prototype.moveSelection_ = function(direction, selectRange) {
   var step;
-  if ((direction === 'Left' && !isRTL()) ||
-      (direction === 'Right' && isRTL()) ||
-      (direction === 'Up')) {
+  if ((direction === 'ArrowLeft' && !isRTL()) ||
+      (direction === 'ArrowRight' && isRTL()) ||
+      (direction === 'ArrowUp')) {
     step = -1;
-  } else if ((direction === 'Right' && !isRTL()) ||
-             (direction === 'Left' && isRTL()) ||
-             (direction === 'Down')) {
+  } else if ((direction === 'ArrowRight' && !isRTL()) ||
+             (direction === 'ArrowLeft' && isRTL()) ||
+             (direction === 'ArrowDown')) {
     step = 1;
   } else {
     assertNotReached();
   }
 
-  var vertical = direction === 'Up' || direction === 'Down';
+  var vertical = direction === 'ArrowUp' || direction === 'ArrowDown';
   var baseIndex = this.selectionModel_.leadIndex !== -1 ?
       this.selectionModel_.leadIndex :
       this.selectionModel_.selectedIndex;
@@ -623,21 +623,21 @@ ThumbnailView.prototype.onDblClick_ = function(event) {
  * @private
  */
 ThumbnailView.prototype.onKeydown_ = function(event) {
-  var keyString = util.getKeyModifiers(event) + event.keyIdentifier;
+  var keyString = util.getKeyModifiers(event) + event.key;
 
   switch (keyString) {
-    case 'Right':
-    case 'Left':
-    case 'Up':
-    case 'Down':
-    case 'Shift-Right':
-    case 'Shift-Left':
-    case 'Shift-Up':
-    case 'Shift-Down':
-      this.moveSelection_(event.keyIdentifier, event.shiftKey);
+    case 'ArrowRight':
+    case 'ArrowLeft':
+    case 'ArrowUp':
+    case 'ArrowDown':
+    case 'Shift-ArrowRight':
+    case 'Shift-ArrowLeft':
+    case 'Shift-ArrowUp':
+    case 'Shift-ArrowDown':
+      this.moveSelection_(event.key, event.shiftKey);
       event.stopPropagation();
       break;
-    case 'Ctrl-U+0041': // Crtl+A
+    case 'Ctrl-a': // Crtl+A
       this.selectionModel_.selectAll();
       event.stopPropagation();
       break;

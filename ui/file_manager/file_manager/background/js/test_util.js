@@ -187,7 +187,7 @@ test.util.sync.copyFile = function(contentWindow, filename) {
     return false;
   // Ctrl+C and Ctrl+V
   test.util.sync.fakeKeyDown(
-      contentWindow, '#file-list', 'w', 'U+0043', true, false, false);
+      contentWindow, '#file-list', 'c', 'U+0043', true, false, false);
   test.util.sync.fakeKeyDown(
       contentWindow, '#file-list', 'v', 'U+0056', true, false, false);
   return true;

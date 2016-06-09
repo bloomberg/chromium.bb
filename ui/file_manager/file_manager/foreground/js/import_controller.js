@@ -605,8 +605,8 @@ importer.RuntimeCommandWidget = function() {
  * @private
  */
 importer.RuntimeCommandWidget.prototype.onKeyDown_ = function(event) {
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'U+001B':
+  switch (util.getKeyModifiers(event) + event.key) {
+    case 'Escape':
       this.setDetailsVisible(false);
   }
 };

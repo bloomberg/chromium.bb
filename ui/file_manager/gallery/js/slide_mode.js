@@ -924,12 +924,12 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
 
 /**
  * Advance the selection based on the pressed key ID.
- * @param {string} keyID Key identifier.
+ * @param {string} keyID Key of the KeyboardEvent.
  */
 SlideMode.prototype.advanceWithKeyboard = function(keyID) {
-  var prev = (keyID === 'Up' ||
-              keyID === 'Left' ||
-              keyID === 'MediaPreviousTrack');
+  var prev = (keyID === 'ArrowUp' ||
+              keyID === 'ArrowLeft' ||
+              keyID === 'MediaTrackPrevious');
   this.advanceManually(prev ? -1 : 1);
 };
 
@@ -1142,26 +1142,26 @@ SlideMode.prototype.onDocumentClick_ = function(event) {
  * @return {boolean} True if handled.
  */
 SlideMode.prototype.onKeyDown = function(event) {
-  var keyID = util.getKeyModifiers(event) + event.keyIdentifier;
+  var keyID = util.getKeyModifiers(event) + event.key;
 
   if (this.isSlideshowOn_()) {
     switch (keyID) {
-      case 'U+001B':  // Escape
+      case 'Escape':
       case 'MediaStop':
         this.stopSlideshow_(event);
         break;
 
-      case 'U+0020':  // Space pauses/resumes the slideshow.
+      case ' ':  // Space pauses/resumes the slideshow.
       case 'MediaPlayPause':
         this.toggleSlideshowPause_();
         break;
 
-      case 'Up':
-      case 'Down':
-      case 'Left':
-      case 'Right':
-      case 'MediaNextTrack':
-      case 'MediaPreviousTrack':
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+      case 'MediaTrackNex':
+      case 'MediaTrackPrevious':
         this.advanceWithKeyboard(keyID);
         break;
     }
@@ -1170,12 +1170,12 @@ SlideMode.prototype.onKeyDown = function(event) {
 
   // Handles shortcut keys common for both modes (editing and not-editing).
   switch (keyID) {
-    case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
+    case 'Ctrl-p':  // Ctrl+'p' prints the current image.
       if (!this.printButton_.disabled)
         this.print_();
       return true;
 
-    case 'U+0045':  // 'e' toggles the editor.
+    case 'e':  // 'e' toggles the editor.
       if (!this.editButton_.disabled)
         this.toggleEditor(event);
       return true;
@@ -1186,7 +1186,7 @@ SlideMode.prototype.onKeyDown = function(event) {
     if (this.editor_.onKeyDown(event))
       return true;
 
-    if (keyID === 'U+001B') { // Escape
+    if (keyID === 'Escape') { // Escape
       this.toggleEditor(event);
       return true;
     }
@@ -1196,7 +1196,7 @@ SlideMode.prototype.onKeyDown = function(event) {
 
   // Handles shortcut keys for not-editing mode.
   switch (keyID) {
-    case 'U+001B':  // Escape
+    case 'Escape':
       if (this.viewport_.isZoomed()) {
         this.viewport_.resetView();
         this.touchHandlers_.stopOperation();
@@ -1213,10 +1213,10 @@ SlideMode.prototype.onKeyDown = function(event) {
       this.selectLast();
       return true;
 
-    case 'Up':
-    case 'Down':
-    case 'Left':
-    case 'Right':
+    case 'ArrowUp':
+    case 'ArrowDown':
+    case 'ArrowLeft':
+    case 'ArrowRight':
       if (this.viewport_.isZoomed()) {
         var delta = SlideMode.KEY_OFFSET_MAP[keyID];
         this.viewport_.setOffset(
@@ -1231,24 +1231,24 @@ SlideMode.prototype.onKeyDown = function(event) {
       }
       return true;
 
-    case 'MediaNextTrack':
-    case 'MediaPreviousTrack':
+    case 'MediaTrackNext':
+    case 'MediaTrackPrevious':
       this.advanceWithKeyboard(keyID);
       return true;
 
-    case 'Ctrl-U+00BB':  // Ctrl+'=' zoom in.
+    case 'Ctrl-=':  // Ctrl+'=' zoom in.
       this.viewport_.zoomIn();
       this.touchHandlers_.stopOperation();
       this.imageView_.applyViewportChange();
       return true;
 
-    case 'Ctrl-U+00BD':  // Ctrl+'-' zoom out.
+    case 'Ctrl--':  // Ctrl+'-' zoom out.
       this.viewport_.zoomOut();
       this.touchHandlers_.stopOperation();
       this.imageView_.applyViewportChange();
       return true;
 
-    case 'Ctrl-U+0030': // Ctrl+'0' zoom reset.
+    case 'Ctrl-0': // Ctrl+'0' zoom reset.
       this.viewport_.setZoom(1.0);
       this.touchHandlers_.stopOperation();
       this.imageView_.applyViewportChange();

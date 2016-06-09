@@ -152,7 +152,7 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
 
     // Prevent from cropping by Enter key if the button is focused.
     button.addEventListener('keydown', function(event) {
-      var key = util.getKeyModifiers(event) + event.keyIdentifier;
+      var key = util.getKeyModifiers(event) + event.key;
       if (key === 'Enter')
         event.stopPropagation();
     });

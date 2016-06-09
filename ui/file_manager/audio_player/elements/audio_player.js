@@ -428,14 +428,14 @@ Polymer({
    * @param {Event} event The event object.
    */
   onKeyDown_: function(event) {
-    switch (event.keyIdentifier) {
-      case 'MediaNextTrack':
+    switch (event.key) {
+      case 'MediaTrackNext':
         this.onControllerNextClicked();
         break;
       case 'MediaPlayPause':
         this.playing = !this.playing;
         break;
-      case 'MediaPreviousTrack':
+      case 'MediaTrackPrevious':
         this.onControllerPreviousClicked();
         break;
       case 'MediaStop':

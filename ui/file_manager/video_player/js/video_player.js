@@ -30,50 +30,50 @@ function FullWindowVideoControls(
       this.onFullScreenChanged.bind(this, false));
   document.addEventListener('keydown', function(e) {
     this.inactivityWatcher_.kick();
-    switch (util.getKeyModifiers(e) + e.keyIdentifier) {
+    switch (util.getKeyModifiers(e) + e.key) {
       // Handle debug shortcut keys.
-      case 'Ctrl-Shift-U+0049': // Ctrl+Shift+I
+      case 'Ctrl-Shift-I': // Ctrl+Shift+I
         chrome.fileManagerPrivate.openInspector('normal');
         break;
-      case 'Ctrl-Shift-U+004A': // Ctrl+Shift+J
+      case 'Ctrl-Shift-J': // Ctrl+Shift+J
         chrome.fileManagerPrivate.openInspector('console');
         break;
-      case 'Ctrl-Shift-U+0043': // Ctrl+Shift+C
+      case 'Ctrl-Shift-C': // Ctrl+Shift+C
         chrome.fileManagerPrivate.openInspector('element');
         break;
-      case 'Ctrl-Shift-U+0042': // Ctrl+Shift+B
+      case 'Ctrl-Shift-B': // Ctrl+Shift+B
         chrome.fileManagerPrivate.openInspector('background');
         break;
 
-      case 'U+0020': // Space
-      case 'U+004B': // K
+      case ' ': // Space
+      case 'k':
       case 'MediaPlayPause':
         if (!e.target.classList.contains('menu-button'))
           this.togglePlayStateWithFeedback();
         break;
-      case 'U+001B': // Escape
+      case 'Escape':
         util.toggleFullScreen(
             chrome.app.window.current(),
             false);  // Leave the full screen mode.
         break;
-      case 'MediaNextTrack':
+      case 'MediaTrackNext':
         player.advance_(1);
         break;
-      case 'MediaPreviousTrack':
+      case 'MediaTrackPrevious':
         player.advance_(0);
         break;
-      case 'Right':
+      case 'ArrowRight':
         if (!e.target.classList.contains('volume'))
           this.smallSkip(true);
         break;
-      case 'Left':
+      case 'ArrowLeft':
         if (!e.target.classList.contains('volume'))
           this.smallSkip(false);
         break;
-      case 'U+004C': // L
+      case 'l':
         this.bigSkip(true);
         break;
-      case 'U+004A': // J
+      case 'j':
         this.bigSkip(false);
         break;
       case 'MediaStop':

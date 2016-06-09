@@ -293,13 +293,13 @@ ListContainer.prototype.onKeyDown_ = function(event) {
     return;
   }
 
-  switch (event.keyIdentifier) {
+  switch (event.key) {
     case 'Home':
     case 'End':
-    case 'Up':
-    case 'Down':
-    case 'Left':
-    case 'Right':
+    case 'ArrowUp':
+    case 'ArrowDown':
+    case 'ArrowLeft':
+    case 'ArrowRight':
       // When navigating with keyboard we hide the distracting mouse hover
       // highlighting until the user moves the mouse again.
       this.clearHover();

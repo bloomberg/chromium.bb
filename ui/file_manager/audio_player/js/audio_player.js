@@ -350,43 +350,43 @@ AudioPlayer.prototype.onResize_ = function(event) {
  * @private
  */
 AudioPlayer.prototype.onKeyDown_ = function(event) {
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'Ctrl-U+0057': // Ctrl+W => Close the player.
+  switch (util.getKeyModifiers(event) + event.key) {
+    case 'Ctrl-w': // Ctrl+W => Close the player.
       chrome.app.window.current().close();
       break;
 
     // Handle debug shortcut keys.
-    case 'Ctrl-Shift-U+0049': // Ctrl+Shift+I
+    case 'Ctrl-Shift-I': // Ctrl+Shift+I
       chrome.fileManagerPrivate.openInspector('normal');
       break;
-    case 'Ctrl-Shift-U+004A': // Ctrl+Shift+J
+    case 'Ctrl-Shift-J': // Ctrl+Shift+J
       chrome.fileManagerPrivate.openInspector('console');
       break;
-    case 'Ctrl-Shift-U+0043': // Ctrl+Shift+C
+    case 'Ctrl-Shift-C': // Ctrl+Shift+C
       chrome.fileManagerPrivate.openInspector('element');
       break;
-    case 'Ctrl-Shift-U+0042': // Ctrl+Shift+B
+    case 'Ctrl-Shift-B': // Ctrl+Shift+B
       chrome.fileManagerPrivate.openInspector('background');
       break;
 
-    case 'U+0020': // Space
-    case 'U+004B': // K
+    case ' ': // Space
+    case 'k':
       this.player_.dispatchEvent(new Event('toggle-pause-event'));
       break;
-    case 'Up':
-    case 'Right':
+    case 'ArrowUp':
+    case 'ArrowRight':
       if (event.target.id !== 'volumeSlider')
         this.player_.dispatchEvent(new Event('small-forward-skip-event'));
       break;
-    case 'Down':
-    case 'Left':
+    case 'ArrowDown':
+    case 'ArrowLeft':
       if (event.target.id !== 'volumeSlider')
         this.player_.dispatchEvent(new Event('small-backword-skip-event'));
       break;
-    case 'U+004C': // L
+    case 'l':
       this.player_.dispatchEvent(new Event('big-forward-skip-event'));
       break;
-    case 'U+004A': // J
+    case 'j':
       this.player_.dispatchEvent(new Event('big-backword-skip-event'));
       break;
   }

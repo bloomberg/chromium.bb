@@ -229,7 +229,7 @@ SearchBox.prototype.onBlur_ = function() {
 SearchBox.prototype.onKeyDown_ = function(event) {
   event = /** @type {KeyboardEvent} */ (event);
   // Handle only Esc key now.
-  if (event.keyIdentifier != 'U+001B' /* Esc */ || this.inputElement.value)
+  if (event.key != 'Escape' || this.inputElement.value)
     return;
 
   this.inputElement.tabIndex = -1;  // Focus to default element after blur.

@@ -190,8 +190,8 @@ DirectoryTreeNamingController.prototype.detach_ = function() {
 DirectoryTreeNamingController.prototype.onKeyDown_ = function(event) {
   event.stopPropagation();
 
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-    case 'U+001B':  // Escape
+  switch (util.getKeyModifiers(event) + event.key) {
+    case 'Escape':
       this.cancelRename_();
       event.preventDefault();
       break;
