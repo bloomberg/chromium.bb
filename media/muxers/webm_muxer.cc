@@ -218,7 +218,10 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
 
   video_track_index_ =
       segment_.AddVideoTrack(frame_size.width(), frame_size.height(), 0);
-  DCHECK_GT(video_track_index_, 0u);
+  if (video_track_index_ <= 0) {  // See https://crbug.com/616391.
+    NOTREACHED() << "Error adding video track";
+    return;
+  }
 
   mkvmuxer::VideoTrack* const video_track =
       reinterpret_cast<mkvmuxer::VideoTrack*>(
@@ -246,7 +249,10 @@ void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
 
   audio_track_index_ =
       segment_.AddAudioTrack(params.sample_rate(), params.channels(), 0);
-  DCHECK_GT(audio_track_index_, 0u);
+  if (audio_track_index_ <= 0) {  // See https://crbug.com/616391.
+    NOTREACHED() << "Error adding audio track";
+    return;
+  }
 
   mkvmuxer::AudioTrack* const audio_track =
       reinterpret_cast<mkvmuxer::AudioTrack*>(
