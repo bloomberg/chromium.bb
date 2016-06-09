@@ -202,7 +202,7 @@ class _ExeDelegate(object):
       pass
 
     output = device.RunShellCommand(
-        cmd, cwd=cwd, env=env, check_return=True, large_output=True, **kwargs)
+        cmd, cwd=cwd, env=env, check_return=False, large_output=True, **kwargs)
     return output
 
   def PullAppFiles(self, device, files, directory):
