@@ -68,6 +68,7 @@ template("test") {
   if (is_android) {
     import("//build/config/android/config.gni")
     import("//build/config/android/rules.gni")
+    import("//build/config/sanitizers/sanitizers.gni")
 
     _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
                                   invoker.use_raw_android_executable
@@ -110,6 +111,8 @@ template("test") {
         apply_device_filters = true
       }
     }
+
+    assert(_use_raw_android_executable || enable_java_templates)
 
     if (_use_raw_android_executable) {
       _exec_target = "${target_name}__exec"
