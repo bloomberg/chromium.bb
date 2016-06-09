@@ -53,6 +53,13 @@ class NavigationTest : public shell::test::ShellTest,
                    const gfx::Rect&,
                    bool) override {}
   void Close() override {}
+  void NavigationPending(mojom::NavigationEntryPtr entry) override {}
+  void NavigationCommitted(
+      mojom::NavigationCommittedDetailsPtr details,
+      int current_index) override {}
+  void NavigationEntryChanged(mojom::NavigationEntryPtr entry,
+                              int entry_index) override {}
+  void NavigationListPruned(bool from_front, int count) override {}
 
   int load_count_ = 0;
   mojo::Binding<mojom::ViewClient> binding_;

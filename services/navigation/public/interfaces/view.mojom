@@ -8,6 +8,38 @@ import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
+// Copied from //content/public/browser/navigation_entry.h
+struct NavigationEntry {
+  int32 id;
+  url.mojom.Url url;
+  string title;
+  array<url.mojom.Url> redirect_chain;
+};
+
+// Copied from //content/public/browser/navigation_type.h
+enum NavigationType {
+  UNKNOWN,
+  NEW_PAGE,
+  EXISTING_PAGE,
+  SAME_PAGE,
+  NEW_SUBFRAME,
+  AUTO_SUBFRAME,
+  NAV_IGNORE
+};
+
+// Copied from //content/public/browser/navigation_details.h
+struct NavigationCommittedDetails {
+  int32 entry;
+  NavigationType type;
+  int32 previous_entry_index;
+  url.mojom.Url previous_url;
+  bool did_replace_entry;
+  bool is_in_page;
+  bool is_main_frame;
+  // SSLStatus ssl_status;
+  int32 http_status_code;
+};
+
 interface ViewFactory {
   CreateView(ViewClient client, View& view);
 };
@@ -27,6 +59,14 @@ interface ViewClient {
               gfx.mojom.Rect initial_rect,
               bool user_gesture);
   Close();
+
+  // See //content/public/browser/notification_types.h for descriptions of
+  // these events.
+  NavigationPending(NavigationEntry entry);
+  NavigationCommitted(NavigationCommittedDetails details,
+                      int32 current_index);
+  NavigationListPruned(bool from_front, int32 count);
+  NavigationEntryChanged(NavigationEntry entry, int32 entry_index);
 };
 
 interface View {
@@ -35,6 +75,7 @@ interface View {
 
   GoBack();
   GoForward();
+  NavigateToOffset(int32 offset);
   Reload(bool skip_cache);
   Stop();
 

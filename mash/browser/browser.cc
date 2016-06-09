@@ -5,11 +5,13 @@
 #include "mash/browser/browser.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_client.h"
@@ -22,12 +24,15 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "ui/aura/mus/mus_util.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_throbber.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/mus/aura_init.h"
@@ -42,6 +47,175 @@ void EnableButton(views::CustomButton* button, bool enabled) {
   button->SetState(enabled ? views::Button::STATE_NORMAL
                            : views::Button::STATE_DISABLED);
 }
+
+class NavMenuModel : public ui::MenuModel {
+ public:
+  class Delegate {
+   public:
+    virtual void NavigateToOffset(int offset) = 0;
+  };
+
+  struct Entry {
+    Entry(const base::string16& title, int offset)
+        : title(title), offset(offset) {}
+    ~Entry() {}
+
+    // Title of the entry in the menu.
+    base::string16 title;
+    // Offset from the currently visible page to navigate to this item.
+    int offset;
+  };
+
+  NavMenuModel(const std::vector<Entry>& entries, Delegate* delegate)
+      : navigation_delegate_(delegate), entries_(entries) {}
+  ~NavMenuModel() override {}
+
+ private:
+  bool HasIcons() const override { return false; }
+  int GetItemCount() const override {
+    return static_cast<int>(entries_.size());
+  }
+  ui::MenuModel::ItemType GetTypeAt(int index) const override {
+    return ui::MenuModel::TYPE_COMMAND;
+  }
+  ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override {
+    return ui::NORMAL_SEPARATOR;
+  }
+  int GetCommandIdAt(int index) const override {
+    return index;
+  }
+  base::string16 GetLabelAt(int index) const override {
+    return entries_[index].title;
+  }
+  base::string16 GetSublabelAt(int index) const override {
+    return base::string16();
+  }
+  base::string16 GetMinorTextAt(int index) const override {
+    return base::string16();
+  }
+  bool IsItemDynamicAt(int index) const override { return false; }
+  bool GetAcceleratorAt(int index,
+                        ui::Accelerator* accelerator) const override {
+    return false;
+  }
+  bool IsItemCheckedAt(int index) const override { return false; }
+  int GetGroupIdAt(int index) const override { return -1; }
+  bool GetIconAt(int index, gfx::Image* icon) override { return false; }
+  ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
+    return nullptr;
+  }
+  bool IsEnabledAt(int index) const override { return true; }
+  bool IsVisibleAt(int index) const override { return true; }
+  ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
+  void HighlightChangedTo(int index) override {}
+  void ActivatedAt(int index) override {
+    ActivatedAt(index, 0);
+  }
+  void ActivatedAt(int index, int event_flags) override {
+    navigation_delegate_->NavigateToOffset(entries_[index].offset);
+  }
+  void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {
+    delegate_ = delegate;
+  }
+  ui::MenuModelDelegate* GetMenuModelDelegate() const override {
+    return delegate_;
+  }
+
+  ui::MenuModelDelegate* delegate_ = nullptr;
+  Delegate* navigation_delegate_;
+  std::vector<Entry> entries_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavMenuModel);
+};
+
+class NavButton : public views::LabelButton {
+ public:
+  enum class Type {
+    BACK,
+    FORWARD
+  };
+
+  class ModelProvider {
+   public:
+    virtual std::unique_ptr<ui::MenuModel> CreateMenuModel(Type type) = 0;
+  };
+
+  NavButton(Type type,
+            ModelProvider* model_provider,
+            views::ButtonListener* listener,
+            const base::string16& label)
+      : views::LabelButton(listener, label),
+        type_(type),
+        model_provider_(model_provider),
+        show_menu_factory_(this) {}
+  ~NavButton() override {}
+
+ private:
+  // views::LabelButton overrides:
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    if (IsTriggerableEvent(event) && enabled() &&
+        HitTestPoint(event.location())) {
+      y_pos_on_lbuttondown_ = event.y();
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&NavButton::ShowMenu, show_menu_factory_.GetWeakPtr(),
+                     ui::GetMenuSourceTypeForEvent(event)),
+          base::TimeDelta::FromMilliseconds(500));
+    }
+    return LabelButton::OnMousePressed(event);
+  }
+  bool OnMouseDragged(const ui::MouseEvent& event) override {
+    bool result = LabelButton::OnMouseDragged(event);
+    if (show_menu_factory_.HasWeakPtrs()) {
+      if (event.y() > y_pos_on_lbuttondown_ + GetHorizontalDragThreshold()) {
+        show_menu_factory_.InvalidateWeakPtrs();
+        ShowMenu(ui::GetMenuSourceTypeForEvent(event));
+      }
+    }
+    return result;
+  }
+  void OnMouseReleased(const ui::MouseEvent& event) override {
+    if (IsTriggerableEvent(event))
+      show_menu_factory_.InvalidateWeakPtrs();
+    LabelButton::OnMouseReleased(event);
+  }
+
+  void ShowMenu(ui::MenuSourceType source_type) {
+    gfx::Rect local = GetLocalBounds();
+    gfx::Point menu_position(local.origin());
+    menu_position.Offset(0, local.height() - 1);
+    View::ConvertPointToScreen(this, &menu_position);
+
+    model_ = model_provider_->CreateMenuModel(type_);
+    menu_model_adapter_.reset(new views::MenuModelAdapter(
+        model_.get(),
+        base::Bind(&NavButton::OnMenuClosed, base::Unretained(this))));
+    menu_model_adapter_->set_triggerable_event_flags(triggerable_event_flags());
+    menu_runner_.reset(new views::MenuRunner(
+        menu_model_adapter_->CreateMenu(),
+        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+    ignore_result(menu_runner_->RunMenuAt(
+        GetWidget(), nullptr, gfx::Rect(menu_position, gfx::Size(0, 0)),
+        views::MENU_ANCHOR_TOPLEFT, source_type));
+  }
+
+  void OnMenuClosed() {
+    SetMouseHandler(nullptr);
+    model_.reset();
+    menu_runner_.reset();
+    menu_model_adapter_.reset();
+  }
+
+  Type type_;
+  ModelProvider* model_provider_;
+  int y_pos_on_lbuttondown_ = 0;
+  std::unique_ptr<ui::MenuModel> model_;
+  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
+  base::WeakPtrFactory<NavButton> show_menu_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavButton);
+};
 
 class ProgressBar : public views::View {
  public:
@@ -115,7 +289,9 @@ class Throbber : public views::View {
 class UI : public views::WidgetDelegateView,
            public views::ButtonListener,
            public views::TextfieldController,
-           public navigation::mojom::ViewClient {
+           public navigation::mojom::ViewClient,
+           public NavButton::ModelProvider,
+           public NavMenuModel::Delegate {
  public:
   enum class Type { WINDOW, POPUP };
 
@@ -125,9 +301,10 @@ class UI : public views::WidgetDelegateView,
      navigation::mojom::ViewClientRequest request)
       : browser_(browser),
         type_(type),
-        back_button_(new views::LabelButton(this, base::ASCIIToUTF16("Back"))),
-        forward_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Forward"))),
+        back_button_(new NavButton(NavButton::Type::BACK, this, this,
+                                   base::ASCIIToUTF16("Back"))),
+        forward_button_(new NavButton(NavButton::Type::FORWARD, this, this,
+                                      base::ASCIIToUTF16("Forward"))),
         reload_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Reload"))),
         prompt_(new views::Textfield),
@@ -321,6 +498,66 @@ class UI : public views::WidgetDelegateView,
     browser_->AddWindow(window);
   }
   void Close() override { GetWidget()->Close(); }
+  void NavigationPending(navigation::mojom::NavigationEntryPtr entry) override {
+    pending_nav_ = std::move(entry);
+  }
+  void NavigationCommitted(
+      navigation::mojom::NavigationCommittedDetailsPtr details,
+      int current_index) override {
+    switch (details->type) {
+      case navigation::mojom::NavigationType::NEW_PAGE: {
+        navigation_list_.push_back(std::move(pending_nav_));
+        navigation_list_position_ = current_index;
+        break;
+      }
+      case navigation::mojom::NavigationType::EXISTING_PAGE:
+        navigation_list_position_ = current_index;
+        break;
+      default:
+        break;
+    }
+  }
+  void NavigationEntryChanged(navigation::mojom::NavigationEntryPtr entry,
+                              int entry_index) override {
+    navigation_list_[entry_index] = std::move(entry);
+  }
+  void NavigationListPruned(bool from_front, int count) override {
+    DCHECK(count < static_cast<int>(navigation_list_.size()));
+    if (from_front) {
+      auto it = navigation_list_.begin() + count;
+      navigation_list_.erase(navigation_list_.begin(), it);
+    } else {
+      auto it = navigation_list_.end() - count;
+      navigation_list_.erase(it, navigation_list_.end());
+    }
+  }
+
+  // NavButton::ModelProvider:
+  std::unique_ptr<ui::MenuModel> CreateMenuModel(
+      NavButton::Type type) override {
+    std::vector<NavMenuModel::Entry> entries;
+    if (type == NavButton::Type::BACK) {
+      for (int i = navigation_list_position_ - 1, offset = -1;
+           i >= 0; --i, --offset) {
+        std::string title = navigation_list_[i]->title;
+        entries.push_back(
+            NavMenuModel::Entry(base::UTF8ToUTF16(title), offset));
+      }
+    } else {
+      for (int i = navigation_list_position_ + 1, offset = 1;
+           i < static_cast<int>(navigation_list_.size()); ++i, ++offset) {
+        std::string title = navigation_list_[i]->title;
+        entries.push_back(
+            NavMenuModel::Entry(base::UTF8ToUTF16(title), offset));
+      }
+    }
+    return base::WrapUnique(new NavMenuModel(entries, this));
+  }
+
+  // NavMenuModel::Delegate:
+  void NavigateToOffset(int offset) override {
+    view_->NavigateToOffset(offset);
+  }
 
   void ToggleDebugView() {
     showing_debug_view_ = !showing_debug_view_;
@@ -349,6 +586,10 @@ class UI : public views::WidgetDelegateView,
   bool is_loading_ = false;
   base::string16 current_title_;
   GURL current_url_;
+
+  navigation::mojom::NavigationEntryPtr pending_nav_;
+  std::vector<navigation::mojom::NavigationEntryPtr> navigation_list_;
+  int navigation_list_position_ = 0;
 
   bool showing_debug_view_ = false;
 

@@ -9,6 +9,11 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -35,6 +40,19 @@ class InterstitialPageDelegate : public content::InterstitialPageDelegate {
   const std::string html_;
 };
 
+// TODO(beng): Explicitly not writing a TypeConverter for this, and not doing a
+//             typemap just yet since I'm still figuring out what these
+//             interfaces should take as parameters.
+mojom::NavigationEntryPtr EntryPtrFromNavEntry(
+    const content::NavigationEntry& entry) {
+  mojom::NavigationEntryPtr entry_ptr(mojom::NavigationEntry::New());
+  entry_ptr->id = entry.GetUniqueID();
+  entry_ptr->url = entry.GetURL();
+  entry_ptr->title = base::UTF16ToUTF8(entry.GetTitle());
+  entry_ptr->redirect_chain = entry.GetRedirectChain();
+  return entry_ptr;
+}
+
 }  // namespace
 
 ViewImpl::ViewImpl(shell::Connector* connector,
@@ -48,6 +66,16 @@ ViewImpl::ViewImpl(shell::Connector* connector,
       ref_(std::move(ref)),
       web_view_(new views::WebView(browser_context)) {
   web_view_->GetWebContents()->SetDelegate(this);
+  const content::NavigationController* controller =
+      &web_view_->GetWebContents()->GetController();
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+                 content::Source<content::NavigationController>(controller));
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                 content::Source<content::NavigationController>(controller));
+  registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
+                 content::Source<content::NavigationController>(controller));
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_CHANGED,
+                 content::Source<content::NavigationController>(controller));
 }
 ViewImpl::~ViewImpl() {}
 
@@ -62,6 +90,10 @@ void ViewImpl::GoBack() {
 
 void ViewImpl::GoForward() {
   web_view_->GetWebContents()->GetController().GoForward();
+}
+
+void ViewImpl::NavigateToOffset(int offset) {
+  web_view_->GetWebContents()->GetController().GoToOffset(offset);
 }
 
 void ViewImpl::Reload(bool skip_cache) {
@@ -154,6 +186,54 @@ gfx::Rect ViewImpl::GetRootWindowResizerRect() const {
   return gfx::Rect(bounds.right() - resizer_size_.width(),
                    bounds.bottom() - resizer_size_.height(),
                    resizer_size_.width(), resizer_size_.height());
+}
+
+void ViewImpl::Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+  DCHECK(content::Source<content::NavigationController>(source).ptr() ==
+         &web_view_->GetWebContents()->GetController());
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
+      const content::NavigationEntry* entry =
+          content::Details<content::NavigationEntry>(details).ptr();
+      client_->NavigationPending(EntryPtrFromNavEntry(*entry));
+      break;
+    }
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
+      const content::LoadCommittedDetails* lcd =
+          content::Details<content::LoadCommittedDetails>(details).ptr();
+      mojom::NavigationCommittedDetailsPtr details_ptr(
+          mojom::NavigationCommittedDetails::New());
+      details_ptr->entry = lcd->entry->GetUniqueID();
+      details_ptr->type = static_cast<mojom::NavigationType>(lcd->type);
+      details_ptr->previous_entry_index = lcd->previous_entry_index;
+      details_ptr->previous_url = lcd->previous_url;
+      details_ptr->is_in_page = lcd->is_in_page;
+      details_ptr->is_main_frame = lcd->is_main_frame;
+      details_ptr->http_status_code = lcd->http_status_code;
+      client_->NavigationCommitted(
+          std::move(details_ptr),
+          web_view_->GetWebContents()->GetController().GetCurrentEntryIndex());
+      break;
+    }
+    case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
+      const content::EntryChangedDetails* ecd =
+          content::Details<content::EntryChangedDetails>(details).ptr();
+      client_->NavigationEntryChanged(EntryPtrFromNavEntry(*ecd->changed_entry),
+                                      ecd->index);
+      break;
+    }
+    case content::NOTIFICATION_NAV_LIST_PRUNED: {
+      const content::PrunedDetails* pd =
+          content::Details<content::PrunedDetails>(details).ptr();
+      client_->NavigationListPruned(pd->from_front, pd->count);
+      break;
+    }
+  default:
+    NOTREACHED();
+    break;
+  }
 }
 
 void ViewImpl::OnEmbed(mus::Window* root) {

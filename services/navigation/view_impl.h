@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_tree_client_delegate.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -26,6 +28,7 @@ namespace navigation {
 
 class ViewImpl : public mojom::View,
                  public content::WebContentsDelegate,
+                 public content::NotificationObserver,
                  public mus::WindowTreeClientDelegate,
                  public views::WidgetDelegate {
  public:
@@ -41,6 +44,7 @@ class ViewImpl : public mojom::View,
   void NavigateTo(const GURL& url) override;
   void GoBack() override;
   void GoForward() override;
+  void NavigateToOffset(int offset) override;
   void Reload(bool skip_cache) override;
   void Stop() override;
   void GetWindowTreeClient(
@@ -66,6 +70,11 @@ class ViewImpl : public mojom::View,
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   gfx::Rect GetRootWindowResizerRect() const override;
 
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
   void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
@@ -84,6 +93,8 @@ class ViewImpl : public mojom::View,
   views::WebView* web_view_;
 
   std::unique_ptr<content::WebContents> web_contents_;
+
+  content::NotificationRegistrar registrar_;
 
   std::unique_ptr<views::Widget> widget_;
 
