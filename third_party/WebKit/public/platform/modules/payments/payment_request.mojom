@@ -91,21 +91,25 @@ struct PaymentOptions {
   bool request_shipping;
 };
 
+struct PaymentMethodData {
+  array<string> supported_methods;
+  // A JSON string built by the renderer from a JavaScript object that the
+  // merchant website provides. The renderer uses
+  // blink::JSONObject::toJSONString() to generate this string. The browser
+  // parses the string via JSONObject(JsonSanitizer.sanitize(stringified_data))
+  // and passes a part of the JSON object to the payment app, for example
+  // Android Pay. There's no one format for this object, so richer types cannot
+  // be used. A simple example:
+  //
+  // {"gateway": "stripe"}
+  string stringified_data;
+};
+
 interface PaymentRequest {
   SetClient(PaymentRequestClient client);
-  Show(array<string> supported_methods,
+  Show(array<PaymentMethodData> methodData,
        PaymentDetails details,
-       PaymentOptions options,
-       // A JSON string built by the renderer from a JavaScript object that the
-       // merchant website provides. The renderer uses
-       // blink::JSONObject::toJSONString() to generate this string. The browser
-       // parses the string via base::JSONParser and passes a part of the JSON
-       // object to the payment app, for example Android Pay. There's no one
-       // format for this object, so richer types cannot be used. A simple
-       // example:
-       //
-       // {"https://android.com/pay": {"gateway": "stripe"}}
-       string stringified_data);
+       PaymentOptions options);
   UpdateWith(PaymentDetails details);
   Abort();
   Complete(bool success);

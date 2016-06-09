@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentDetailsTestHelper_h
-#define PaymentDetailsTestHelper_h
+#ifndef PaymentTestHelper_h
+#define PaymentTestHelper_h
 
 #include "modules/payments/PaymentDetails.h"
 #include "modules/payments/PaymentItem.h"
+#include "modules/payments/PaymentMethodData.h"
 #include "modules/payments/ShippingOption.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,6 +40,8 @@ ShippingOption buildShippingOptionForTest(PaymentTestDataToChange = PaymentTestD
 
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
+HeapVector<PaymentMethodData> buildPaymentMethodDataForTest();
+
 } // namespace blink
 
-#endif // PaymentDetailsTestHelper_h
+#endif // PaymentTestHelper_h

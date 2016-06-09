@@ -7,7 +7,7 @@
 
 [
     RuntimeEnabled=PaymentRequest,
-    Constructor(sequence<DOMString> supportedMethods, PaymentDetails details, optional PaymentOptions options, optional object data),
+    Constructor(sequence<PaymentMethodData> methodData, PaymentDetails details, optional PaymentOptions options),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
     ActiveScriptWrappable,

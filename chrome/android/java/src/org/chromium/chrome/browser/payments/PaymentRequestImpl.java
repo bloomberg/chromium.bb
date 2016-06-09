@@ -31,6 +31,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojom.payments.PaymentDetails;
 import org.chromium.mojom.payments.PaymentItem;
+import org.chromium.mojom.payments.PaymentMethodData;
 import org.chromium.mojom.payments.PaymentOptions;
 import org.chromium.mojom.payments.PaymentRequest;
 import org.chromium.mojom.payments.PaymentRequestClient;
@@ -43,8 +44,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -72,7 +72,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private Bitmap mFavicon;
     private List<PaymentApp> mApps;
     private PaymentRequestClient mClient;
-    private Set<String> mSupportedMethods;
 
     /**
      * The raw total amount being charged, as it was received from the website. This data is passed
@@ -105,7 +104,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private SectionInformation mUiShippingOptions;
 
-    private JSONObject mData;
+    private HashMap<String, JSONObject> mMethodData;
     private SectionInformation mShippingAddressesSection;
     private List<PaymentApp> mPendingApps;
     private List<PaymentInstrument> mPendingInstruments;
@@ -177,18 +176,18 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Called by the merchant website to show the payment request to the user.
      */
     @Override
-    public void show(String[] supportedMethods, PaymentDetails details, PaymentOptions options,
-            String stringifiedData) {
+    public void show(PaymentMethodData[] methodData, PaymentDetails details,
+            PaymentOptions options) {
         if (mClient == null) return;
 
-        if (mSupportedMethods != null) {
+        if (mMethodData != null) {
             disconnectFromClientWithDebugMessage("PaymentRequest.show() called more than once.");
             return;
         }
 
-        mSupportedMethods = getValidatedSupportedMethods(supportedMethods);
-        if (mSupportedMethods == null) {
-            disconnectFromClientWithDebugMessage("Invalid payment methods");
+        mMethodData = getValidatedMethodData(methodData);
+        if (mMethodData == null) {
+            disconnectFromClientWithDebugMessage("Invalid payment methods or data");
             return;
         }
 
@@ -199,12 +198,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         boolean requestShipping = options != null && options.requestShipping;
         mMerchantNeedsShippingAddress =
                 requestShipping && mUiShippingOptions.getSelectedItem() == null;
-
-        mData = getValidatedData(mSupportedMethods, stringifiedData);
-        if (mData == null) {
-            disconnectFromClientWithDebugMessage("Invalid payment method specific data");
-            return;
-        }
 
         List<AutofillAddress> addresses = new ArrayList<>();
         List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesToSuggest();
@@ -235,7 +228,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (int i = 0; i < mApps.size(); i++) {
             PaymentApp app = mApps.get(i);
             Set<String> appMethods = app.getSupportedMethodNames();
-            appMethods.retainAll(mSupportedMethods);
+            appMethods.retainAll(mMethodData.keySet());
             if (appMethods.isEmpty()) {
                 mPendingApps.remove(app);
             } else {
@@ -253,17 +246,37 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mFavicon = null;
     }
 
-    private HashSet<String> getValidatedSupportedMethods(String[] methods) {
-        // Payment methods are required.
-        if (methods == null || methods.length == 0) return null;
+    private HashMap<String, JSONObject> getValidatedMethodData(PaymentMethodData[] methodData) {
+        // Payment methodData are required.
+        if (methodData == null || methodData.length == 0) return null;
+        HashMap<String, JSONObject> result = new HashMap<>();
+        for (int i = 0; i < methodData.length; i++) {
+            JSONObject data = null;
+            if (!TextUtils.isEmpty(methodData[i].stringifiedData)) {
+                try {
+                    data = new JSONObject(JsonSanitizer.sanitize(methodData[i].stringifiedData));
+                } catch (JSONException | IOException  | IllegalStateException e) {
+                    // Payment method specific data should be a JSON object.
+                    // According to the payment request spec[1], for each method data,
+                    // if the data field is supplied but is not a JSON-serializable object,
+                    // then should throw a TypeError. So, we should return null here even if
+                    // only one is bad.
+                    // [1] https://w3c.github.io/browser-payment-api/specs/paymentrequest.html
+                    return null;
+                }
+            }
 
-        HashSet<String> result = new HashSet<>();
-        for (int i = 0; i < methods.length; i++) {
-            // Payment methods should be non-empty.
-            if (TextUtils.isEmpty(methods[i])) return null;
-            result.add(methods[i]);
+            String[] methods = methodData[i].supportedMethods;
+
+            // Payment methods are required.
+            if (methods == null || methods.length == 0) return null;
+
+            for (int j = 0; j < methods.length; j++) {
+                // Payment methods should be non-empty.
+                if (TextUtils.isEmpty(methods[j])) return null;
+                result.put(methods[j], data);
+            }
         }
-
         return result;
     }
 
@@ -444,29 +457,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 result);
     }
 
-    private JSONObject getValidatedData(Set<String> supportedMethods, String stringifiedData) {
-        if (TextUtils.isEmpty(stringifiedData)) return new JSONObject();
-
-        JSONObject result;
-        try {
-            result = new JSONObject(JsonSanitizer.sanitize(stringifiedData));
-        } catch (JSONException | IOException | IllegalStateException e) {
-            // Payment method specific data should be a valid JSON object.
-            return null;
-        }
-
-        Iterator<String> it = result.keys();
-        while (it.hasNext()) {
-            String name = it.next();
-            // Each key should be one of the supported payment methods.
-            if (!supportedMethods.contains(name)) return null;
-            // Each value should be a JSON object.
-            if (result.optJSONObject(name) == null) return null;
-        }
-
-        return result;
-    }
-
     /**
      * Called to retrieve the data to show in the initial PaymentRequest UI.
      */
@@ -557,7 +547,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         instrument.getDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
-                mData.optJSONObject(instrument.getMethodName()), this);
+                mMethodData.get(instrument.getMethodName()), this);
     }
 
     @Override
@@ -616,7 +606,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (instruments != null) {
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
-                if (mSupportedMethods.contains(instrument.getMethodName())) {
+                if (mMethodData.containsKey(instrument.getMethodName())) {
                     mPendingInstruments.add(instrument);
                 } else {
                     instrument.dismiss();

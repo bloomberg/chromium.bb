@@ -9,7 +9,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/payments/PaymentDetails.h"
-#include "modules/payments/PaymentDetailsTestHelper.h"
+#include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include <ostream> // NOLINT
@@ -137,7 +137,7 @@ private:
 
 TEST_P(PaymentRequestDetailsTest, ValidatesDetails)
 {
-    PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), GetParam().buildDetails(), getExceptionState());
+    PaymentRequest::create(getScriptState(), buildPaymentMethodDataForTest(), GetParam().buildDetails(), getExceptionState());
 
     EXPECT_EQ(GetParam().expectException(), getExceptionState().hadException());
     if (GetParam().expectException())

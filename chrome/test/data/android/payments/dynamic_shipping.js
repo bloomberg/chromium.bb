@@ -19,8 +19,8 @@ function buy() {  // eslint-disable-line no-unused-vars
           [{label: 'Subtotal', amount: {currency: 'USD', value: '5.00'}}]
     };
 
-    var request =
-        new PaymentRequest(['visa'], details, {requestShipping: true});
+    var request = new PaymentRequest(
+        [{supportedMethods: ['visa']}], details, {requestShipping: true});
 
     request.addEventListener('shippingaddresschange', function(evt) {
       evt.updateWith(new Promise(function(resolve) {

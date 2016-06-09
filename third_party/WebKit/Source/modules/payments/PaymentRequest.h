@@ -13,6 +13,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/payments/PaymentCompleter.h"
 #include "modules/payments/PaymentDetails.h"
+#include "modules/payments/PaymentMethodData.h"
 #include "modules/payments/PaymentOptions.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -37,11 +38,17 @@ class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WT
     WTF_MAKE_NONCOPYABLE(PaymentRequest);
 
 public:
-    static PaymentRequest* create(ScriptState*, const Vector<String>& supportedMethods, const PaymentDetails&, ExceptionState&);
-    static PaymentRequest* create(ScriptState*, const Vector<String>& supportedMethods, const PaymentDetails&, const PaymentOptions&, ExceptionState&);
-    static PaymentRequest* create(ScriptState*, const Vector<String>& supportedMethods, const PaymentDetails&, const PaymentOptions&, const ScriptValue& data, ExceptionState&);
+    static PaymentRequest* create(ScriptState*, const HeapVector<PaymentMethodData>&, const PaymentDetails&, ExceptionState&);
+    static PaymentRequest* create(ScriptState*, const HeapVector<PaymentMethodData>&, const PaymentDetails&, const PaymentOptions&, ExceptionState&);
 
     virtual ~PaymentRequest();
+
+    struct MethodData {
+        MethodData(const Vector<String>& methods, const String& data)
+            : supportedMethods(methods), stringifiedData(data) {}
+        Vector<String> supportedMethods;
+        String stringifiedData;
+    };
 
     ScriptPromise show(ScriptState*);
     void abort(ExceptionState&);
@@ -66,7 +73,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    PaymentRequest(ScriptState*, const Vector<String>& supportedMethods, const PaymentDetails&, const PaymentOptions&, const ScriptValue& data, ExceptionState&);
+    PaymentRequest(ScriptState*, const HeapVector<PaymentMethodData>&, const PaymentDetails&, const PaymentOptions&, ExceptionState&);
 
     // LifecycleObserver:
     void contextDestroyed() override;
@@ -84,10 +91,9 @@ private:
     // Clears the promise resolvers and closes the Mojo connection.
     void clearResolversAndCloseMojoConnection();
 
-    Vector<String> m_supportedMethods;
+    Vector<MethodData> m_methodData;
     PaymentDetails m_details;
     PaymentOptions m_options;
-    String m_stringifiedData;
     Member<PaymentAddress> m_shippingAddress;
     String m_shippingOption;
     Member<ScriptPromiseResolver> m_showResolver;

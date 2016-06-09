@@ -23,7 +23,7 @@ promise_test(t => {
     return paymentRequestMock
       .then(m => {
           mock = m;
-          var result = new PaymentRequest(['visa'], details).show();
+          var result = new PaymentRequest([{'supportedMethods': ['visa']}], details).show();
           gc();
           mock.onPaymentResponse(response_data);
           return result;

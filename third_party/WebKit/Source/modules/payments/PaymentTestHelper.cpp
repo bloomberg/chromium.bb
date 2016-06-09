@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentDetailsTestHelper.h"
+#include "modules/payments/PaymentTestHelper.h"
 
 #include "modules/payments/CurrencyAmount.h"
 #include "platform/heap/HeapAllocator.h"
@@ -89,6 +89,13 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
     result.setShippingOptions(HeapVector<ShippingOption>(2, shippingOption));
 
     return result;
+}
+
+HeapVector<PaymentMethodData> buildPaymentMethodDataForTest()
+{
+    HeapVector<PaymentMethodData> methodData(1, PaymentMethodData());
+    methodData[0].setSupportedMethods(Vector<String>(1, "foo"));
+    return methodData;
 }
 
 } // namespace blink

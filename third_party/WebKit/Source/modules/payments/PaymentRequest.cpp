@@ -35,6 +35,8 @@ using blink::mojom::blink::PaymentDetails;
 using blink::mojom::blink::PaymentDetailsPtr;
 using blink::mojom::blink::PaymentItem;
 using blink::mojom::blink::PaymentItemPtr;
+using blink::mojom::blink::PaymentMethodData;
+using blink::mojom::blink::PaymentMethodDataPtr;
 using blink::mojom::blink::PaymentOptions;
 using blink::mojom::blink::PaymentOptionsPtr;
 using blink::mojom::blink::ShippingOption;
@@ -102,6 +104,20 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
     {
         PaymentOptionsPtr output = PaymentOptions::New();
         output->request_shipping = input.requestShipping();
+        return output;
+    }
+};
+
+template <>
+struct TypeConverter<WTFArray<PaymentMethodDataPtr>, WTF::Vector<blink::PaymentRequest::MethodData>> {
+    static WTFArray<PaymentMethodDataPtr> Convert(const WTF::Vector<blink::PaymentRequest::MethodData>& input)
+    {
+        WTFArray<PaymentMethodDataPtr> output(input.size());
+        for (size_t i = 0; i < input.size(); ++i) {
+            output[i] = PaymentMethodData::New();
+            output[i]->supported_methods = WTF::Vector<WTF::String>(input[i].supportedMethods);
+            output[i]->stringified_data = input[i].stringifiedData;
+        }
         return output;
     }
 };
@@ -198,6 +214,38 @@ void validatePaymentDetails(const PaymentDetails& details, ExceptionState& excep
     }
 }
 
+void validateAndConvertPaymentMethodData(const HeapVector<PaymentMethodData>& paymentMethodData, Vector<PaymentRequest::MethodData>* methodData, ExceptionState& exceptionState)
+{
+    if (paymentMethodData.isEmpty()) {
+        exceptionState.throwTypeError("Must specify at least one payment method identifier");
+        return;
+    }
+
+    for (const auto& pmd : paymentMethodData) {
+        if (pmd.supportedMethods().isEmpty()) {
+            exceptionState.throwTypeError("Must specify at least one payment method identifier");
+            return;
+        }
+
+        String stringifiedData = "";
+        if (pmd.hasData() && !pmd.data().isEmpty()) {
+            RefPtr<JSONValue> value = toJSONValue(pmd.data().context(), pmd.data().v8Value());
+            if (!value) {
+                exceptionState.throwTypeError("Unable to parse payment method specific data");
+                return;
+            }
+            if (!value->isNull()) {
+                if (value->getType() != JSONValue::TypeObject) {
+                    exceptionState.throwTypeError("Data should be a JSON-serializable object");
+                    return;
+                }
+                stringifiedData = JSONObject::cast(value)->toJSONString();
+            }
+        }
+        methodData->append(PaymentRequest::MethodData(pmd.supportedMethods(), stringifiedData));
+    }
+}
+
 String getSelectedShippingOption(const PaymentDetails& details)
 {
     String result;
@@ -215,19 +263,14 @@ String getSelectedShippingOption(const PaymentDetails& details)
 
 } // namespace
 
-PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, ExceptionState& exceptionState)
+PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const HeapVector<PaymentMethodData>& methodData, const PaymentDetails& details, ExceptionState& exceptionState)
 {
-    return new PaymentRequest(scriptState, supportedMethods, details, PaymentOptions(), ScriptValue(), exceptionState);
+    return new PaymentRequest(scriptState, methodData, details, PaymentOptions(), exceptionState);
 }
 
-PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, ExceptionState& exceptionState)
+PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const HeapVector<PaymentMethodData>& methodData, const PaymentDetails& details, const PaymentOptions& options, ExceptionState& exceptionState)
 {
-    return new PaymentRequest(scriptState, supportedMethods, details, options, ScriptValue(), exceptionState);
-}
-
-PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, const ScriptValue& data, ExceptionState& exceptionState)
-{
-    return new PaymentRequest(scriptState, supportedMethods, details, options, data, exceptionState);
+    return new PaymentRequest(scriptState, methodData, details, options, exceptionState);
 }
 
 PaymentRequest::~PaymentRequest()
@@ -246,7 +289,7 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
     scriptState->domWindow()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
     m_paymentProvider.set_connection_error_handler(createBaseCallback(bind(&PaymentRequest::OnError, WeakPersistentThisPointer<PaymentRequest>(this))));
     m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
-    m_paymentProvider->Show(std::move(m_supportedMethods), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options), m_stringifiedData.isNull() ? "" : m_stringifiedData);
+    m_paymentProvider->Show(mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(m_methodData), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options));
 
     m_showResolver = ScriptPromiseResolver::create(scriptState);
     return m_showResolver->promise();
@@ -331,12 +374,16 @@ DEFINE_TRACE(PaymentRequest)
     ContextLifecycleObserver::trace(visitor);
 }
 
-PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, const ScriptValue& data, ExceptionState& exceptionState)
+PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<PaymentMethodData>& methodData, const PaymentDetails& details, const PaymentOptions& options, ExceptionState& exceptionState)
     : ContextLifecycleObserver(scriptState->getExecutionContext())
     , ActiveScriptWrappable(this)
     , m_options(options)
     , m_clientBinding(this)
 {
+    validateAndConvertPaymentMethodData(methodData, &m_methodData, exceptionState);
+    if (exceptionState.hadException())
+        return;
+
     if (!scriptState->getExecutionContext()->isSecureContext()) {
         exceptionState.throwSecurityError("Must be in a secure context");
         return;
@@ -347,44 +394,10 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
         return;
     }
 
-    if (supportedMethods.isEmpty()) {
-        exceptionState.throwTypeError("Must specify at least one payment method identifier");
-        return;
-    }
-    m_supportedMethods = supportedMethods;
-
     validatePaymentDetails(details, exceptionState);
     if (exceptionState.hadException())
         return;
     m_details = details;
-
-    if (!data.isEmpty()) {
-        RefPtr<JSONValue> value = toJSONValue(data.context(), data.v8Value());
-        if (!value) {
-            exceptionState.throwTypeError("Unable to parse payment method specific data");
-            return;
-        }
-        if (!value->isNull()) {
-            if (value->getType() != JSONValue::TypeObject) {
-                exceptionState.throwTypeError("Payment method specific data should be a JSON-serializable object");
-                return;
-            }
-
-            RefPtr<JSONObject> jsonData = JSONObject::cast(value);
-            for (const auto& paymentMethodSpecificKeyValue : *jsonData) {
-                if (!supportedMethods.contains(paymentMethodSpecificKeyValue.key)) {
-                    exceptionState.throwTypeError("'" + paymentMethodSpecificKeyValue.key + "' should match one of the payment method identifiers");
-                    return;
-                }
-                if (paymentMethodSpecificKeyValue.value->getType() != JSONValue::TypeObject) {
-                    exceptionState.throwTypeError("Data for '" + paymentMethodSpecificKeyValue.key + "' should be a JSON-serializable object");
-                    return;
-                }
-            }
-
-            m_stringifiedData = jsonData->toJSONString();
-        }
-    }
 
     if (m_options.requestShipping())
         m_shippingOption = getSelectedShippingOption(details);
