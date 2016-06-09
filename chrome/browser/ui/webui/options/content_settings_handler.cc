@@ -506,9 +506,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"mouselockTabLabel", IDS_MOUSE_LOCK_TAB_LABEL},
     {"mouselockHeader", IDS_MOUSE_LOCK_HEADER},
     {"mouselockDeprecated", IDS_EXCLUSIVE_ACCESS_DEPRECATED},
-    {"mouselockAllow", IDS_MOUSE_LOCK_ALLOW_RADIO},
-    {"mouselockAsk", IDS_MOUSE_LOCK_ASK_RADIO},
-    {"mouselockBlock", IDS_MOUSE_LOCK_BLOCK_RADIO},
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
     // Protected Content filter
     {"protectedContentTabLabel", IDS_PROTECTED_CONTENT_TAB_LABEL},
@@ -714,16 +711,6 @@ void ContentSettingsHandler::InitializePage() {
   UpdateAllExceptionsViewsFromModel();
   UpdateAllChooserExceptionsViewsFromModel();
   UpdateProtectedContentExceptionsButton();
-
-  // Fullscreen and mouselock settings are ignored, but still stored. Always
-  // show the per-site settings (to give users the ability to view and delete
-  // exceptions), but hide the global settings.
-  // TODO(mgiuca): Remove this function and the global setting UI
-  // (https://crbug.com/610900). Then, delete all the per-site data and remove
-  // this content setting entirely (https://crbug.com/591896).
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "ContentSettings.setExclusiveAccessVisible", base::FundamentalValue(true),
-      base::FundamentalValue(false));
 }
 
 void ContentSettingsHandler::OnContentSettingChanged(
@@ -1174,10 +1161,13 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
 
   UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
 
-  // TODO(koz): The default for fullscreen is always 'ask'.
-  // http://crbug.com/104683
-  if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
+  // Fullscreen and mouse lock have no global settings to update.
+  // TODO(mgiuca): Delete this after removing these content settings entirely
+  // (https://crbug.com/591896).
+  if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+      type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
     return;
+  }
 
 #if defined(OS_CHROMEOS)
   // Also the default for protected contents is managed in another place.

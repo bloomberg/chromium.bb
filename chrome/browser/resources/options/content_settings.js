@@ -206,19 +206,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Shows/hides parts of the fullscreen and mouselock sections.
-   * @param {boolean} deprecationVisible Whether to show (or hide) the
-   *    deprecation warning labels.
-   * @param {boolean} globalsVisible Whether to show (or hide) global settings.
-   */
-  ContentSettings.setExclusiveAccessVisible = function(
-      deprecationVisible, globalsVisible) {
-    $('fullscreen-deprecated').hidden = !deprecationVisible;
-    $('mouselock-deprecated').hidden = !deprecationVisible;
-    $('mouselock-global-settings').hidden = !globalsVisible;
-  };
-
-  /**
    * Updates the microphone/camera devices menu with the given entries.
    * @param {string} type The device type.
    * @param {Array} devices List of available devices.
