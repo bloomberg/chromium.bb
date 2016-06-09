@@ -34,7 +34,7 @@ void DispatchOnEmbedRequestedEventImpl(
     std::unique_ptr<base::DictionaryValue> app_embedding_request_data,
     content::BrowserContext* context) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(app_embedding_request_data.release());
+  args->Append(std::move(app_embedding_request_data));
   std::unique_ptr<Event> event(
       new Event(events::APP_RUNTIME_ON_EMBED_REQUESTED,
                 app_runtime::OnEmbedRequested::kEventName, std::move(args)));
@@ -64,7 +64,7 @@ void DispatchOnLaunchedEventImpl(
       ExtensionsBrowserClient::Get()->IsLoggedInAsPublicAccount());
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(launch_data.release());
+  args->Append(std::move(launch_data));
   std::unique_ptr<Event> event(new Event(events::APP_RUNTIME_ON_LAUNCHED,
                                          app_runtime::OnLaunched::kEventName,
                                          std::move(args)));
@@ -190,7 +190,7 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
     launch_item->SetString("mimeType", entries[i].mime_type);
     launch_item->SetString("entryId", file_entries[i].id);
     launch_item->SetBoolean("isDirectory", entries[i].is_directory);
-    items->Append(launch_item.release());
+    items->Append(std::move(launch_item));
   }
   launch_data->Set("items", items.release());
   DispatchOnLaunchedEventImpl(extension->id(), source_enum,

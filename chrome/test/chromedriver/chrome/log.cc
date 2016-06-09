@@ -67,7 +67,7 @@ std::unique_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
         list_copy->AppendString("...");
         break;
       }
-      list_copy->Append(SmartDeepCopy(child).release());
+      list_copy->Append(SmartDeepCopy(child));
     }
     return std::move(list_copy);
   } else if (value->GetAsString(&data)) {

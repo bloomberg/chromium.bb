@@ -5,6 +5,7 @@
 #include "chrome/browser/task_profiler/task_profiler_data_serializer.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -126,7 +127,7 @@ void TaskProfilerDataSerializer::ToValue(
   for (const auto& task : process_data_phase.tasks) {
     std::unique_ptr<base::DictionaryValue> snapshot(new base::DictionaryValue);
     TaskSnapshotToValue(task, snapshot.get());
-    tasks_list->Append(snapshot.release());
+    tasks_list->Append(std::move(snapshot));
   }
   dictionary->Set("list", tasks_list.release());
 

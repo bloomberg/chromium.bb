@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -283,7 +285,7 @@ void PasswordManagerHandler::SetPasswordList(
               base::UTF8ToUTF16(saved_password->federation_origin.host())));
     }
 
-    entries.Append(entry.release());
+    entries.Append(std::move(entry));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(
@@ -297,7 +299,7 @@ void PasswordManagerHandler::SetPasswordExceptionList(
   for (const auto& exception : password_exception_list) {
     std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     CopyOriginInfoOfPasswordForm(*exception,  entry.get());
-    entries.Append(entry.release());
+    entries.Append(std::move(entry));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(

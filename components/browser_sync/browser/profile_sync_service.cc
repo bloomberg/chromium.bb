@@ -1893,7 +1893,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
   type_status_header->SetString("value", "Group Type");
   type_status_header->SetString("num_entries", "Total Entries");
   type_status_header->SetString("num_live", "Live Entries");
-  result->Append(type_status_header.release());
+  result->Append(std::move(type_status_header));
 
   std::unique_ptr<base::DictionaryValue> type_status;
   for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
@@ -1950,7 +1950,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
                             detailed_status.num_entries_by_type[type]);
     type_status->SetInteger("num_live", live_count);
 
-    result->Append(type_status.release());
+    result->Append(std::move(type_status));
   }
   return result.release();
 }
@@ -2270,7 +2270,7 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
         new base::DictionaryValue());
     type_dict->SetString("type", ModelTypeToString(type));
     type_dict->Set("nodes", node_list);
-    result_accumulator_->Append(type_dict.release());
+    result_accumulator_->Append(std::move(type_dict));
 
     // Remember that this part of the request is satisfied.
     awaiting_types_.Remove(type);

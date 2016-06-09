@@ -186,7 +186,7 @@ base::ListValue* ConstructFileSystemList(
     file_system_dict_value->SetBooleanWithoutPathExpansion(
         kIsAvailableKey, true);
 
-    list->Append(file_system_dict_value.release());
+    list->Append(std::move(file_system_dict_value));
 
     if (filesystems[i].path.empty())
       continue;

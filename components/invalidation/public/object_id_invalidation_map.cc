@@ -90,7 +90,7 @@ std::unique_ptr<base::ListValue> ObjectIdInvalidationMap::ToValue() const {
        it1 != map_.end(); ++it1) {
     for (SingleObjectInvalidationSet::const_iterator it2 =
          it1->second.begin(); it2 != it1->second.end(); ++it2) {
-      value->Append(it2->ToValue().release());
+      value->Append(it2->ToValue());
     }
   }
   return value;

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -128,7 +129,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
 
     sink_val->SetInteger("castModes", cast_mode_bits);
     sink_val->SetBoolean("isPseudoSink", is_pseudo_sink);
-    sinks_val->Append(sink_val.release());
+    sinks_val->Append(std::move(sink_val));
   }
 
   sink_list_and_identity->Set("sinks", sinks_val.release());
@@ -178,7 +179,7 @@ std::unique_ptr<base::ListValue> CastModesToValue(
     cast_mode_val->SetString(
         "description", MediaCastModeToDescription(cast_mode, source_host));
     cast_mode_val->SetString("host", source_host);
-    value->Append(cast_mode_val.release());
+    value->Append(std::move(cast_mode_val));
   }
 
   return value;
@@ -885,7 +886,7 @@ std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
                                                       current_cast_modes);
     std::unique_ptr<base::DictionaryValue> route_val(RouteToValue(
         route, can_join, extension_id, off_the_record_, current_cast_mode));
-    value->Append(route_val.release());
+    value->Append(std::move(route_val));
   }
 
   return value;

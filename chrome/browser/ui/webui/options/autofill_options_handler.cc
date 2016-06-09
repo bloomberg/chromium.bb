@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -159,7 +160,7 @@ void GetAddressComponents(const std::string& country_code,
         break;
     }
 
-    line->Append(component.release());
+    line->Append(std::move(component));
   }
 }
 
@@ -181,7 +182,7 @@ void SetCountryData(const PersonalDataManager& manager,
     option_details->SetString(
         "value",
         countries[i] ? countries[i]->country_code() : "separator");
-    country_list->Append(option_details.release());
+    country_list->Append(std::move(option_details));
   }
   localized_strings->Set("autofillCountrySelectList", country_list.release());
 
@@ -352,7 +353,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
     value->SetString("sublabel", labels[i].substr(label_parts[0].size()));
     value->SetBoolean("isLocal", profiles[i]->record_type() ==
                                      AutofillProfile::LOCAL_PROFILE);
-    addresses.Append(value.release());
+    addresses.Append(std::move(value));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("AutofillOptions.setAddressList",
@@ -361,7 +362,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
   base::ListValue credit_cards;
   const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
   for (const CreditCard* card : cards) {
-    credit_cards.Append(CreditCardToDictionary(*card).release());
+    credit_cards.Append(CreditCardToDictionary(*card));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("AutofillOptions.setCreditCardList",

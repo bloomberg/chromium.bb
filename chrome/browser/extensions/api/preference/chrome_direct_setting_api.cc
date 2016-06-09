@@ -139,7 +139,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
     result->Set(preference_api_constants::kValue, value->DeepCopy());
     base::ListValue args;
-    args.Append(result.release());
+    args.Append(std::move(result));
 
     for (const scoped_refptr<const extensions::Extension>& extension :
          ExtensionRegistry::Get(profile_)->enabled_extensions()) {

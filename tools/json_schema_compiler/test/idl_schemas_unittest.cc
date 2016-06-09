@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/values.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/idl_basics.h"
 #include "tools/json_schema_compiler/test/idl_object_types.h"
-
-#include "testing/gtest/include/gtest/gtest.h"
 
 using test::api::idl_basics::MyType1;
 using test::api::idl_object_types::BarType;
@@ -157,8 +158,8 @@ TEST(IdlCompiler, ArrayTypes) {
   a.y = std::string("foo");
   b.y = std::string("bar");
   base::ListValue* sublist2 = new base::ListValue;
-  sublist2->Append(a.ToValue().release());
-  sublist2->Append(b.ToValue().release());
+  sublist2->Append(a.ToValue());
+  sublist2->Append(b.ToValue());
   list.Append(sublist2);
   std::unique_ptr<Function11::Params> f11_params =
       Function11::Params::Create(list);
@@ -197,7 +198,7 @@ TEST(IdlCompiler, ObjectTypes) {
   EXPECT_TRUE(ObjectFunction1::Params::Icon::Populate(*(icon_props.get()),
                                                       &icon));
   base::ListValue list;
-  list.Append(icon_props.release());
+  list.Append(std::move(icon_props));
   std::unique_ptr<ObjectFunction1::Params> params =
       ObjectFunction1::Params::Create(list);
   ASSERT_TRUE(params.get() != NULL);

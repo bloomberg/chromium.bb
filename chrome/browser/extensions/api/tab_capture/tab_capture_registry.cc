@@ -278,7 +278,7 @@ void TabCaptureRegistry::GetCapturedTabs(
       continue;
     tab_capture::CaptureInfo info;
     request->GetCaptureInfo(&info);
-    list_of_capture_info->Append(info.ToValue().release());
+    list_of_capture_info->Append(info.ToValue());
   }
 }
 
@@ -425,7 +425,7 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   tab_capture::CaptureInfo info;
   request->GetCaptureInfo(&info);
-  args->Append(info.ToValue().release());
+  args->Append(info.ToValue());
   std::unique_ptr<Event> event(
       new Event(events::TAB_CAPTURE_ON_STATUS_CHANGED,
                 tab_capture::OnStatusChanged::kEventName, std::move(args)));

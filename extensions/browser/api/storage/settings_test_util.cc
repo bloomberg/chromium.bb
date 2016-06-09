@@ -29,7 +29,7 @@ std::unique_ptr<base::Value> CreateKilobyte() {
 std::unique_ptr<base::Value> CreateMegabyte() {
   base::ListValue* megabyte = new base::ListValue();
   for (int i = 0; i < 1000; ++i) {
-    megabyte->Append(CreateKilobyte().release());
+    megabyte->Append(CreateKilobyte());
   }
   return std::unique_ptr<base::Value>(megabyte);
 }

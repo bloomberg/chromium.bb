@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/guid.h"
@@ -1157,7 +1158,7 @@ std::unique_ptr<base::ListValue> Directory::GetNodeDetailsForType(
       node->SetInteger("positionIndex", GetPositionIndex(trans, kernel));
     }
 
-    nodes->Append(node.release());
+    nodes->Append(std::move(node));
   }
 
   return nodes;

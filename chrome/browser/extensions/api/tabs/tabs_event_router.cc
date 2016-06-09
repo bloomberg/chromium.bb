@@ -349,7 +349,7 @@ void TabsEventRouter::TabSelectionChanged(
           ExtensionTabUtil::GetWindowIdOfTabStripModel(tab_strip_model)));
 
   select_info->Set(tabs_constants::kTabIdsKey, all_tabs.release());
-  args->Append(select_info.release());
+  args->Append(std::move(select_info));
 
   // The onHighlighted event replaced onHighlightChanged.
   Profile* profile = tab_strip_model->profile();

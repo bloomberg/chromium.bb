@@ -1103,7 +1103,7 @@ bool DownloadsSearchFunction::RunSync() {
     std::unique_ptr<base::DictionaryValue> json_item(DownloadItemToJSON(
         *it, off_record ? GetProfile()->GetOffTheRecordProfile()
                         : GetProfile()->GetOriginalProfile()));
-    json_results->Append(json_item.release());
+    json_results->Append(std::move(json_item));
   }
   SetResult(std::move(json_results));
   RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);

@@ -1140,7 +1140,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
     exception->SetString(
         site_settings::kSource, site_settings::kPreferencesSource);
     // Append the new entry to the list and map.
-    zoom_levels_exceptions.Append(exception.release());
+    zoom_levels_exceptions.Append(std::move(exception));
   }
 
   base::StringValue type_string(kZoomContentType);

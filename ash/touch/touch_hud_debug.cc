@@ -160,7 +160,7 @@ class TouchTrace {
   std::unique_ptr<base::ListValue> GetAsList() const {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
     for (const_iterator i = log_.begin(); i != log_.end(); ++i)
-      list->Append((*i).GetAsDictionary().release());
+      list->Append((*i).GetAsDictionary());
     return list;
   }
 
@@ -196,7 +196,7 @@ class TouchLog {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
     for (int i = 0; i < kMaxPaths; ++i) {
       if (!traces_[i].log().empty())
-        list->Append(traces_[i].GetAsList().release());
+        list->Append(traces_[i].GetAsList());
     }
     return list;
   }

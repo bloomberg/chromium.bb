@@ -1544,7 +1544,7 @@ base::ListValue* SummarizeCookieModifications(
                            *mod.modification->name);
       }
     }
-    cookie_modifications->Append(summary.release());
+    cookie_modifications->Append(std::move(summary));
   }
   return cookie_modifications.release();
 }

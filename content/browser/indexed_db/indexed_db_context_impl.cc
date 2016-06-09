@@ -266,16 +266,16 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           }
 
           transaction_info->Set("scope", scope.release());
-          transaction_list->Append(transaction_info.release());
+          transaction_list->Append(std::move(transaction_info));
         }
         db_info->Set("transactions", transaction_list.release());
 
-        database_list->Append(db_info.release());
+        database_list->Append(std::move(db_info));
       }
       info->Set("databases", database_list.release());
     }
 
-    list->Append(info.release());
+    list->Append(std::move(info));
   }
   return list.release();
 }

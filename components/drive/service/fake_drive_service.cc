@@ -293,7 +293,7 @@ void FakeDriveService::AddApp(const std::string& app_id,
 
   base::ListValue* item_list;
   CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
-  item_list->Append(value.release());
+  item_list->Append(std::move(value));
 }
 
 void FakeDriveService::RemoveAppByProductId(const std::string& product_id) {

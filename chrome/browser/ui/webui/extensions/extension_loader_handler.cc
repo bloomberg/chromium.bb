@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/extensions/extension_loader_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -198,7 +200,7 @@ void ExtensionLoaderHandler::AddFailure(
                new base::StringValue(prettified_path.LossyDisplayName()));
   failure->Set("error", new base::StringValue(base::UTF8ToUTF16(error)));
   failure->Set("manifest", manifest_value.release());
-  failures_.Append(failure.release());
+  failures_.Append(std::move(failure));
 
   // Only notify the frontend if the frontend UI is ready.
   if (ui_ready_)

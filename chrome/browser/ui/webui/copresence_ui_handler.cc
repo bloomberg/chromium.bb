@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -168,7 +169,7 @@ void CopresenceUIHandler::DirectivesUpdated() {
         ui::TimeFormat::LENGTH_LONG,
         base::TimeDelta::FromMilliseconds(directive.ttl_millis())));
 
-    js_directives.Append(js_directive.release());
+    js_directives.Append(std::move(js_directive));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("refreshDirectives", js_directives);

@@ -129,7 +129,7 @@ bool BluetoothGetDevicesFunction::DoWork(
     bluetooth::Device extension_device;
     bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
 
-    device_list->Append(extension_device.ToValue().release());
+    device_list->Append(extension_device.ToValue());
   }
 
   SetResult(std::move(device_list));

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -388,7 +389,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
           list = new base::ListValue;
           // Ignoring return value, we already verified the entry is there.
           dictionary->RemoveWithoutPathExpansion(*name, &entry_owned);
-          list->Append(entry_owned.release());
+          list->Append(std::move(entry_owned));
           list->AppendString(*value);
           dictionary->SetWithoutPathExpansion(*name, list);
           break;
@@ -422,7 +423,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
     std::unique_ptr<base::DictionaryValue> temp(
         GetDictionaryFromArray(tests[i]));
     ASSERT_TRUE(temp.get());
-    contains_headers.Append(temp.release());
+    contains_headers.Append(std::move(temp));
   }
 
   std::string error;

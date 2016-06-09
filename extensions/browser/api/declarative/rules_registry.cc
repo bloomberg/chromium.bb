@@ -42,7 +42,7 @@ std::unique_ptr<base::Value> RulesToValue(
     const std::vector<linked_ptr<api::events::Rule>>& rules) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < rules.size(); ++i)
-    list->Append(rules[i]->ToValue().release());
+    list->Append(rules[i]->ToValue());
   return std::move(list);
 }
 

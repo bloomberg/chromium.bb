@@ -232,7 +232,7 @@ void PermissionsUpdater::DispatchEvent(
   std::unique_ptr<base::ListValue> value(new base::ListValue());
   std::unique_ptr<api::permissions::Permissions> permissions =
       PackPermissionSet(changed_permissions);
-  value->Append(permissions->ToValue().release());
+  value->Append(permissions->ToValue());
   std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(value)));
   event->restrict_to_browser_context = browser_context_;

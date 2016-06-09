@@ -216,7 +216,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
     std::unique_ptr<base::Value> mapped_value = Map(entry_value);
     if (mapped_value) {
       if (output)
-        output->Append(mapped_value.release());
+        output->Append(std::move(mapped_value));
     } else {
       if (errors) {
         errors->AddError(policy_name(),

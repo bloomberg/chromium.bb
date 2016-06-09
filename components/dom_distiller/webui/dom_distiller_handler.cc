@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/webui/dom_distiller_handler.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -114,7 +115,7 @@ void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {
                             ? article.entry_id()
                             : article.title();
     entry->SetString("title", net::EscapeForHTML(title));
-    entries.Append(entry.release());
+    entries.Append(std::move(entry));
   }
   // TODO(nyquist): Write a test that ensures we sanitize the data we send.
   web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onReceivedEntries",

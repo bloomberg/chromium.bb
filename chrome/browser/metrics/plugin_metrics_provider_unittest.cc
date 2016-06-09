@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -96,7 +97,7 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
   plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors, 4);
   {
     ListPrefUpdate update(prefs(), prefs::kStabilityPluginStats);
-    update.Get()->Append(plugin_dict.release());
+    update.Get()->Append(std::move(plugin_dict));
   }
 
   provider.ProvideStabilityMetrics(&system_profile);

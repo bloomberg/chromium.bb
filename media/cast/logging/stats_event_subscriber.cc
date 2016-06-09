@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -71,7 +72,7 @@ StatsEventSubscriber::SimpleHistogram::GetHistogram() const {
   if (buckets_.front()) {
     bucket->SetInteger(base::StringPrintf("<%" PRId64, min_),
                        buckets_.front());
-    histo->Append(bucket.release());
+    histo->Append(std::move(bucket));
   }
 
   for (size_t i = 1; i < buckets_.size() - 1; i++) {
@@ -83,14 +84,14 @@ StatsEventSubscriber::SimpleHistogram::GetHistogram() const {
     bucket->SetInteger(
         base::StringPrintf("%" PRId64 "-%" PRId64, lower, upper),
         buckets_[i]);
-    histo->Append(bucket.release());
+    histo->Append(std::move(bucket));
   }
 
   if (buckets_.back()) {
     bucket.reset(new base::DictionaryValue);
     bucket->SetInteger(base::StringPrintf(">=%" PRId64, max_),
                        buckets_.back());
-    histo->Append(bucket.release());
+    histo->Append(std::move(bucket));
   }
   return histo;
 }

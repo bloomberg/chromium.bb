@@ -93,7 +93,7 @@ void OnGetSession(const base::WeakPtr<size_t>& session_remaining_count,
   std::unique_ptr<base::DictionaryValue> session(new base::DictionaryValue());
   session->Set("id", new base::StringValue(session_id));
   session->Set("capabilities", value->DeepCopy());
-  session_list->Append(session.release());
+  session_list->Append(std::move(session));
 
   if (!*session_remaining_count) {
     all_get_session_func.Run();

@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/devtools/v8_sampling_profiler.h"
+
 #include <stddef.h>
+
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
@@ -10,7 +14,6 @@
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/test/render_view_test.h"
-#include "content/renderer/devtools/v8_sampling_profiler.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -75,7 +78,7 @@ class V8SamplingProfilerTest : public RenderViewTest {
     while (root_list->GetSize()) {
       std::unique_ptr<Value> item;
       root_list->Remove(0, &item);
-      trace_parsed_.Append(item.release());
+      trace_parsed_.Append(std::move(item));
     }
 
     if (!has_more_events)

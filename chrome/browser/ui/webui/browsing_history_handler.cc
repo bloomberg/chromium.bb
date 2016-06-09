@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -705,7 +706,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
            query_results_.begin(); it != query_results_.end(); ++it) {
     std::unique_ptr<base::Value> value(
         it->ToValue(bookmark_model, supervised_user_service, sync_service));
-    results_value.Append(value.release());
+    results_value.Append(std::move(value));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info_value_,

@@ -237,7 +237,7 @@ void ProximityAuthWebUIHandler::OnWebContentsInitialized(
 void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
   base::ListValue json_logs;
   for (const auto& log : *LogBuffer::GetInstance()->logs()) {
-    json_logs.Append(LogMessageToDictionary(log).release());
+    json_logs.Append(LogMessageToDictionary(log));
   }
   web_ui()->CallJavascriptFunctionUnsafe("LogBufferInterface.onGotLogMessages",
                                          json_logs);

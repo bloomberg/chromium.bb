@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/i18n/time_formatting.h"
@@ -42,7 +44,7 @@ base::ListValue* AddSection(base::ListValue* parent_list,
 
   section->SetString("title", title);
   section->Set("data", section_contents);
-  parent_list->Append(section.release());
+  parent_list->Append(std::move(section));
   return section_contents;
 }
 
@@ -54,7 +56,7 @@ void AddSectionEntry(base::ListValue* section_list,
   entry->SetString("label", field_name);
   entry->SetString("status", field_status);
   entry->SetString("time", field_time);
-  section_list->Append(entry.release());
+  section_list->Append(std::move(entry));
 }
 
 void AddCookieEntry(base::ListValue* accounts_list,
@@ -65,7 +67,7 @@ void AddCookieEntry(base::ListValue* accounts_list,
   entry->SetString("email", field_email);
   entry->SetString("gaia_id", field_gaia_id);
   entry->SetString("valid", field_valid);
-  accounts_list->Append(entry.release());
+  accounts_list->Append(std::move(entry));
 }
 
 std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {

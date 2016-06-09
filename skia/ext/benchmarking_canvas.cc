@@ -109,7 +109,7 @@ WARN_UNUSED_RESULT
 std::unique_ptr<base::Value> AsValue(const SkMatrix& matrix) {
   std::unique_ptr<base::ListValue> val(new base::ListValue());
   for (int i = 0; i < 9; ++i)
-    val->Append(AsValue(matrix[i]).release()); // no scoped_ptr-aware Append() variant
+    val->Append(AsValue(matrix[i]));  // no scoped_ptr-aware Append() variant
 
   return std::move(val);
 }
@@ -170,7 +170,7 @@ std::unique_ptr<base::Value> AsValue(const SkColorFilter& filter) {
   if (filter.asColorMatrix(color_matrix)) {
     std::unique_ptr<base::ListValue> color_matrix_val(new base::ListValue());
     for (unsigned i = 0; i < 20; ++i)
-      color_matrix_val->Append(AsValue(color_matrix[i]).release());
+      color_matrix_val->Append(AsValue(color_matrix[i]));
 
     val->Set("color_matrix", std::move(color_matrix_val));
   }
@@ -380,14 +380,14 @@ std::unique_ptr<base::Value> AsValue(const SkPath& path) {
       std::unique_ptr<base::ListValue> pts_val(new base::ListValue());
 
       for (int i = 0; i < gPtsPerVerb[verb]; ++i)
-        pts_val->Append(AsValue(points[i + gPtOffsetPerVerb[verb]]).release());
+        pts_val->Append(AsValue(points[i + gPtOffsetPerVerb[verb]]));
 
       verb_val->Set(gVerbStrings[verb], std::move(pts_val));
 
       if (SkPath::kConic_Verb == verb)
         verb_val->Set("weight", AsValue(iter.conicWeight()));
 
-      verbs_val->Append(verb_val.release());
+      verbs_val->Append(std::move(verb_val));
   }
   val->Set("verbs", std::move(verbs_val));
 
@@ -400,7 +400,7 @@ WARN_UNUSED_RESULT std::unique_ptr<base::Value> AsListValue(const T array[],
   std::unique_ptr<base::ListValue> val(new base::ListValue());
 
   for (size_t i = 0; i < count; ++i)
-    val->Append(AsValue(array[i]).release());
+    val->Append(AsValue(array[i]));
 
   return std::move(val);
 }
@@ -492,7 +492,7 @@ public:
     std::unique_ptr<base::DictionaryValue> param(new base::DictionaryValue());
     param->Set(name, std::move(value));
 
-    op_params_->Append(param.release());
+    op_params_->Append(std::move(param));
   }
 
   const SkPaint* paint() const { return &filtered_paint_; }

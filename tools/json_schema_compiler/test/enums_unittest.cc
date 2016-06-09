@@ -72,8 +72,8 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
 TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
   {
     base::ListValue params_value;
-    params_value.Append(List(new base::StringValue("one"),
-                             new base::StringValue("two")).release());
+    params_value.Append(
+        List(new base::StringValue("one"), new base::StringValue("two")));
     std::unique_ptr<TakesEnumArrayAsType::Params> params(
         TakesEnumArrayAsType::Params::Create(params_value));
     ASSERT_TRUE(params);
@@ -83,7 +83,7 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(List(new base::StringValue("invalid")).release());
+    params_value.Append(List(new base::StringValue("invalid")));
     std::unique_ptr<TakesEnumArrayAsType::Params> params(
         TakesEnumArrayAsType::Params::Create(params_value));
     EXPECT_FALSE(params);
@@ -163,8 +163,8 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumParamsCreate) {
 TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
   {
     base::ListValue params_value;
-    params_value.Append(List(new base::StringValue("one"),
-                             new base::StringValue("two")).release());
+    params_value.Append(
+        List(new base::StringValue("one"), new base::StringValue("two")));
     std::unique_ptr<TakesEnumArray::Params> params(
         TakesEnumArray::Params::Create(params_value));
     ASSERT_TRUE(params);
@@ -174,7 +174,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(List(new base::StringValue("invalid")).release());
+    params_value.Append(List(new base::StringValue("invalid")));
     std::unique_ptr<TakesEnumArray::Params> params(
         TakesEnumArray::Params::Create(params_value));
     EXPECT_FALSE(params);

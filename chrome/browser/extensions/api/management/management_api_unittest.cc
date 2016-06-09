@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -197,7 +198,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
     // Try again, using showConfirmDialog: false.
     std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue());
     options->SetBoolean("showConfirmDialog", false);
-    uninstall_args.Append(options.release());
+    uninstall_args.Append(std::move(options));
     function = new ManagementUninstallFunction();
     EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
     EXPECT_FALSE(RunFunction(function, uninstall_args));

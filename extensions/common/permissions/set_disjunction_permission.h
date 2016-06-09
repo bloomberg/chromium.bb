@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -147,7 +148,7 @@ class SetDisjunctionPermission : public APIPermission {
     typename std::set<PermissionDataType>::const_iterator i;
     for (i = data_set_.begin(); i != data_set_.end(); ++i) {
       std::unique_ptr<base::Value> item_value(i->ToValue());
-      list->Append(item_value.release());
+      list->Append(std::move(item_value));
     }
     return std::unique_ptr<base::Value>(list);
   }

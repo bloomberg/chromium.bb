@@ -300,7 +300,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
        ++it) {
     api::identity::AccountInfo account_info;
     account_info.id = *it;
-    infos->Append(account_info.ToValue().release());
+    infos->Append(account_info.ToValue());
   }
 
   return RespondNow(OneArgument(std::move(infos)));

@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/hash.h"
@@ -134,7 +135,7 @@ std::unique_ptr<base::ListValue> BuildSuggestionInfo(
           base::Uint64ToString(BuildAnonymousHash(salt, suggestion)));
     }
     misspelling->Set("userSuggestionId", suggestion_list.release());
-    list->Append(misspelling.release());
+    list->Append(std::move(misspelling));
   }
   return list;
 }

@@ -339,7 +339,7 @@ LatencyInfo::CoordinatesAsTraceableData() {
         new base::DictionaryValue());
     coordinate_pair->SetDouble("x", input_coordinates_[i].x());
     coordinate_pair->SetDouble("y", input_coordinates_[i].y());
-    coordinates->Append(coordinate_pair.release());
+    coordinates->Append(std::move(coordinate_pair));
   }
   return LatencyInfoTracedValue::FromValue(std::move(coordinates));
 }

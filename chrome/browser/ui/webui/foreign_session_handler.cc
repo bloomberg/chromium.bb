@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -111,7 +112,7 @@ std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
     if (tab_value.get()) {
       modification_time = std::max(modification_time,
                                    tab->timestamp);
-      tab_values->Append(tab_value.release());
+      tab_values->Append(std::move(tab_value));
     }
   }
   if (tab_values->GetSize() == 0)
@@ -305,7 +306,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
           std::unique_ptr<base::DictionaryValue> window_data(
               SessionWindowToValue(*map_iter.second));
           if (window_data.get())
-            window_list->Append(window_data.release());
+            window_list->Append(std::move(window_data));
         }
       } else {
         // Order tabs by recency. This involves creating a synthetic singleton
@@ -319,19 +320,19 @@ void ForeignSessionHandler::HandleGetForeignSessions(
               SessionTabToValue(*tab));
           if (tab_value.get()) {
             modification_time = std::max(modification_time, tab->timestamp);
-            tab_values->Append(tab_value.release());
+            tab_values->Append(std::move(tab_value));
           }
         }
         if (tab_values->GetSize() != 0) {
           std::unique_ptr<base::DictionaryValue> window_data(
               BuildWindowData(modification_time, 1));
           window_data->Set("tabs", tab_values.release());
-          window_list->Append(window_data.release());
+          window_list->Append(std::move(window_data));
         }
       }
 
       session_data->Set("windows", window_list.release());
-      session_list.Append(session_data.release());
+      session_list.Append(std::move(session_data));
     }
   }
   base::FundamentalValue tab_sync_enabled(IsTabSyncEnabled());

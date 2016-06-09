@@ -5,6 +5,7 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -168,7 +169,7 @@ TEST_F(ManagedBookmarkServiceTest, SwapNodes) {
   std::unique_ptr<base::ListValue> updated(CreateTestTree());
   std::unique_ptr<base::Value> removed;
   ASSERT_TRUE(updated->Remove(0, &removed));
-  updated->Append(removed.release());
+  updated->Append(std::move(removed));
 
   // These two nodes should just be swapped.
   const BookmarkNode* parent = managed_->managed_node();

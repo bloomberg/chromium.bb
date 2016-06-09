@@ -365,7 +365,7 @@ bool NetworkingPrivateGetDeviceStatesFunction::RunSync() {
 
   std::unique_ptr<base::ListValue> device_state_list(new base::ListValue);
   for (const auto& properties : *device_states)
-    device_state_list->Append(properties->ToValue().release());
+    device_state_list->Append(properties->ToValue());
   SetResult(std::move(device_state_list));
   return true;
 }

@@ -160,7 +160,7 @@ void PrintTo(const UnackedInvalidationsMap& map, ::std::ostream* os) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (UnackedInvalidationsMap::const_iterator it = map.begin();
        it != map.end(); ++it) {
-    list->Append(it->second.ToValue().release());
+    list->Append(it->second.ToValue());
   }
 
   std::string output;

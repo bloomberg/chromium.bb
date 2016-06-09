@@ -4,6 +4,8 @@
 
 #include "extensions/browser/event_listener_map.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -54,7 +56,7 @@ class EventListenerMapTest : public testing::Test {
 
     filter_dict->Set("hostSuffix", new StringValue(suffix));
 
-    filter_list->Append(filter_dict.release());
+    filter_list->Append(std::move(filter_dict));
     filter->Set("url", filter_list.release());
     return filter;
   }
@@ -360,8 +362,8 @@ TEST_F(EventListenerMapTest, AddLazyListenersFromPreferences) {
   ListValue* filter_list = new ListValue();
   filtered_listeners.Set(kEvent1Name, filter_list);
 
-  filter_list->Append(filter1.release());
-  filter_list->Append(filter2.release());
+  filter_list->Append(std::move(filter1));
+  filter_list->Append(std::move(filter2));
 
   listeners_->LoadFilteredLazyListeners(kExt1Id, filtered_listeners);
 

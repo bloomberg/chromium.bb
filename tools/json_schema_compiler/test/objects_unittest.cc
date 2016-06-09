@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/json_schema_compiler/test/objects.h"
+
 #include <stddef.h>
+
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "tools/json_schema_compiler/test/objects.h"
 #include "tools/json_schema_compiler/test/objects_movable.h"
 #include "tools/json_schema_compiler/test/objects_movable_json.h"
 
@@ -26,7 +29,7 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     info_value->Set("boolean", new base::FundamentalValue(true));
 
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(info_value.release());
+    params_value->Append(std::move(info_value));
     std::unique_ptr<ObjectParam::Params> params(
         ObjectParam::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
@@ -46,7 +49,7 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     info_value->Set("integer", new base::FundamentalValue(5));
 
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(info_value.release());
+    params_value->Append(std::move(info_value));
     std::unique_ptr<ObjectParam::Params> params(
         ObjectParam::Params::Create(*params_value));
     EXPECT_FALSE(params.get());

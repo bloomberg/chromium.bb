@@ -99,7 +99,7 @@ std::unique_ptr<base::Value> DomainReliabilityContextManager::GetWebUIData()
     const {
   std::unique_ptr<base::ListValue> contexts_value(new base::ListValue());
   for (const auto& context_entry : contexts_)
-    contexts_value->Append(context_entry.second->GetWebUIData().release());
+    contexts_value->Append(context_entry.second->GetWebUIData());
   return std::move(contexts_value);
 }
 

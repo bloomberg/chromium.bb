@@ -83,8 +83,8 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
   decision.time = base::Time::Now().ToJsTime();
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(ui_element_.ToValue().release());
-  args->Append(decision.ToValue().release());
+  args->Append(ui_element_.ToValue());
+  args->Append(decision.ToValue());
   std::unique_ptr<Event> event(
       new Event(events::EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION,
                 api::experience_sampling_private::OnDecision::kEventName,
@@ -100,7 +100,7 @@ void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
   if (browser_context_ && browser_context_->IsOffTheRecord())
     return;
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(ui_element_.ToValue().release());
+  args->Append(ui_element_.ToValue());
   std::unique_ptr<Event> event(
       new Event(events::EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED,
                 api::experience_sampling_private::OnDisplayed::kEventName,

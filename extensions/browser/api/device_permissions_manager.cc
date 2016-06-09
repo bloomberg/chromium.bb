@@ -102,7 +102,7 @@ void SaveDevicePermissionEntry(BrowserContext* context,
 
   std::unique_ptr<base::Value> device_entry(entry->ToValue());
   DCHECK(devices->Find(*device_entry.get()) == devices->end());
-  devices->Append(device_entry.release());
+  devices->Append(std::move(device_entry));
 }
 
 bool MatchesDevicePermissionEntry(const base::DictionaryValue* value,

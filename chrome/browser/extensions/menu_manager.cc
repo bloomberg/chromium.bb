@@ -92,7 +92,7 @@ MenuItem::List MenuItemsFromValue(const std::string& extension_id,
 std::unique_ptr<base::Value> MenuItemsToValue(const MenuItem::List& items) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < items.size(); ++i)
-    list->Append(items[i]->ToValue().release());
+    list->Append(items[i]->ToValue());
   return std::unique_ptr<base::Value>(list.release());
 }
 
@@ -685,8 +685,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
       if (frame_id != ExtensionApiFrameIdMap::kInvalidFrameId)
         properties->SetInteger("frameId", frame_id);
 
-      args->Append(
-          ExtensionTabUtil::CreateTabObject(web_contents)->ToValue().release());
+      args->Append(ExtensionTabUtil::CreateTabObject(web_contents)->ToValue());
     } else {
       args->Append(new base::DictionaryValue());
     }

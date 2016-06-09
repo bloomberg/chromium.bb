@@ -92,7 +92,7 @@ std::unique_ptr<base::ListValue> SingleObjectInvalidationSet::ToValue() const {
   std::unique_ptr<base::ListValue> value(new base::ListValue);
   for (InvalidationsSet::const_iterator it = invalidations_.begin();
        it != invalidations_.end(); ++it) {
-    value->Append(it->ToValue().release());
+    value->Append(it->ToValue());
   }
   return value;
 }

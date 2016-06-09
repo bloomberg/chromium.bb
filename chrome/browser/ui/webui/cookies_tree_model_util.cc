@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/i18n/time_formatting.h"
@@ -328,7 +329,7 @@ void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     const CookieTreeNode* child = parent->GetChild(start + i);
     if (GetCookieTreeNodeDictionary(*child, dict.get()))
-      nodes->Append(dict.release());
+      nodes->Append(std::move(dict));
   }
 }
 

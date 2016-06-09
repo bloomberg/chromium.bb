@@ -5,6 +5,7 @@
 #include "tools/json_schema_compiler/test/crossref.h"
 
 #include <memory>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/simple_api.h"
@@ -50,7 +51,7 @@ TEST(JsonSchemaCompilerCrossrefTest, CrossrefTypePopulateAndToValue) {
 
 TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamCreate) {
   std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-  params_value->Append(CreateTestTypeValue().release());
+  params_value->Append(CreateTestTypeValue());
   std::unique_ptr<crossref::TestTypeOptionalParam::Params> params(
       crossref::TestTypeOptionalParam::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
@@ -64,7 +65,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamFail) {
   std::unique_ptr<base::DictionaryValue> test_type_value =
       CreateTestTypeValue();
   test_type_value->RemoveWithoutPathExpansion("number", NULL);
-  params_value->Append(test_type_value.release());
+  params_value->Append(std::move(test_type_value));
   std::unique_ptr<crossref::TestTypeOptionalParam::Params> params(
       crossref::TestTypeOptionalParam::Params::Create(*params_value));
   EXPECT_FALSE(params.get());
@@ -89,7 +90,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
         new base::DictionaryValue());
     param_object_value->Set("testType", CreateTestTypeValue().release());
     param_object_value->Set("boolean", new base::FundamentalValue(true));
-    params_value->Append(param_object_value.release());
+    params_value->Append(std::move(param_object_value));
     std::unique_ptr<crossref::TestTypeInObject::Params> params(
         crossref::TestTypeInObject::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
@@ -103,7 +104,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
     std::unique_ptr<base::DictionaryValue> param_object_value(
         new base::DictionaryValue());
     param_object_value->Set("boolean", new base::FundamentalValue(true));
-    params_value->Append(param_object_value.release());
+    params_value->Append(std::move(param_object_value));
     std::unique_ptr<crossref::TestTypeInObject::Params> params(
         crossref::TestTypeInObject::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
@@ -116,7 +117,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
         new base::DictionaryValue());
     param_object_value->Set("testType", new base::StringValue("invalid"));
     param_object_value->Set("boolean", new base::FundamentalValue(true));
-    params_value->Append(param_object_value.release());
+    params_value->Append(std::move(param_object_value));
     std::unique_ptr<crossref::TestTypeInObject::Params> params(
         crossref::TestTypeInObject::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
@@ -126,7 +127,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
     std::unique_ptr<base::DictionaryValue> param_object_value(
         new base::DictionaryValue());
     param_object_value->Set("testType", CreateTestTypeValue().release());
-    params_value->Append(param_object_value.release());
+    params_value->Append(std::move(param_object_value));
     std::unique_ptr<crossref::TestTypeInObject::Params> params(
         crossref::TestTypeInObject::Params::Create(*params_value));
     EXPECT_FALSE(params.get());

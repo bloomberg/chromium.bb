@@ -73,8 +73,7 @@ std::string GenerateJWKSet(const uint8_t* key,
                            int key_id_length) {
   // Create the JWK, and wrap it into a JWK Set.
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  list->Append(
-      CreateJSONDictionary(key, key_length, key_id, key_id_length).release());
+  list->Append(CreateJSONDictionary(key, key_length, key_id, key_id_length));
   base::DictionaryValue jwk_set;
   jwk_set.Set(kKeysTag, list.release());
 
@@ -90,11 +89,10 @@ std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (const auto& key_pair : keys) {
     list->Append(CreateJSONDictionary(
-                     reinterpret_cast<const uint8_t*>(key_pair.second.data()),
-                     key_pair.second.length(),
-                     reinterpret_cast<const uint8_t*>(key_pair.first.data()),
-                     key_pair.first.length())
-                     .release());
+        reinterpret_cast<const uint8_t*>(key_pair.second.data()),
+        key_pair.second.length(),
+        reinterpret_cast<const uint8_t*>(key_pair.first.data()),
+        key_pair.first.length()));
   }
 
   base::DictionaryValue jwk_set;

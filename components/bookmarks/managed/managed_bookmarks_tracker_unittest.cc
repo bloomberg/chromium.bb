@@ -239,7 +239,7 @@ TEST_F(ManagedBookmarksTrackerTest, SwapNodes) {
   std::unique_ptr<base::ListValue> updated(CreateTestTree());
   std::unique_ptr<base::Value> removed;
   ASSERT_TRUE(updated->Remove(0, &removed));
-  updated->Append(removed.release());
+  updated->Append(std::move(removed));
 
   // These two nodes should just be swapped.
   const BookmarkNode* parent = managed_node();

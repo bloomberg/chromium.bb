@@ -1629,8 +1629,8 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpFiles(
 
 std::unique_ptr<base::ListValue> MetadataDatabase::DumpDatabase() {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
-  list->Append(DumpTrackers().release());
-  list->Append(DumpMetadata().release());
+  list->Append(DumpTrackers());
+  list->Append(DumpMetadata());
   return list;
 }
 

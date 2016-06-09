@@ -80,13 +80,13 @@ void ReadDevicesList(const CloudPrintPrinterList::DeviceList& devices,
                      base::ListValue* devices_list) {
   for (const auto& i : devices) {
     if (ContainsKey(local_ids, i.id)) {
-      devices_list->Append(CreateDeviceInfo(i).release());
+      devices_list->Append(CreateDeviceInfo(i));
     }
   }
 
   for (const auto& i : devices) {
     if (!ContainsKey(local_ids, i.id)) {
-      devices_list->Append(CreateDeviceInfo(i).release());
+      devices_list->Append(CreateDeviceInfo(i));
     }
   }
 }

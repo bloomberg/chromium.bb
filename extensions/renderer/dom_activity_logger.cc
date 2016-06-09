@@ -36,7 +36,7 @@ void AppendV8Value(const std::string& api_name,
       v8_value, v8::Isolate::GetCurrent()->GetCurrentContext()));
 
   if (value.get())
-    list->Append(value.release());
+    list->Append(std::move(value));
 }
 
 }  // namespace

@@ -357,8 +357,7 @@ std::unique_ptr<base::ListValue> ExtensionTabUtil::CreateTabList(
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_list->Append(
         CreateTabObject(tab_strip->GetWebContentsAt(i), tab_strip, i, extension)
-            ->ToValue()
-            .release());
+            ->ToValue());
   }
 
   return tab_list;

@@ -190,7 +190,7 @@ std::unique_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
     value->SetInteger("next_upload",
         (collector->GetReleaseTime() - now).InSeconds());
     // Using release instead of Pass because Pass can't implicitly upcast.
-    collectors_value->Append(value.release());
+    collectors_value->Append(std::move(value));
   }
   data->Set("collectors", std::move(collectors_value));
 

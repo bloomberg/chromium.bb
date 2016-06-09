@@ -98,7 +98,7 @@ void ExtensionSyncEventObserver::OnFileSynced(
       CreateDictionaryValueForFileSystemEntry(url, file_type));
   if (!entry)
     return;
-  params->Append(entry.release());
+  params->Append(std::move(entry));
 
   // Status, SyncAction and any optional notes to go here.
   api::sync_file_system::FileStatus status_enum =

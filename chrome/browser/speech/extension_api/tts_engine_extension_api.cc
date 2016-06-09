@@ -189,7 +189,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   if (!options->HasKey(constants::kLangKey))
     options->SetString(constants::kLangKey, voice.lang);
 
-  args->Append(options.release());
+  args->Append(std::move(options));
   args->AppendInteger(utterance->id());
 
   std::string json;

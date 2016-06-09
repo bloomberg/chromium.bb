@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/element_util.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -240,7 +242,7 @@ Status FindElement(int interval_ms,
   std::unique_ptr<base::DictionaryValue> locator(new base::DictionaryValue());
   locator->SetString(strategy, target);
   base::ListValue arguments;
-  arguments.Append(locator.release());
+  arguments.Append(std::move(locator));
   if (root_element_id)
     arguments.Append(CreateElement(*root_element_id));
 

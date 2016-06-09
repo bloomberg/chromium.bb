@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/test_util.h"
@@ -77,7 +79,7 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
     object_param->SetWithoutPathExpansion("strings",
                                           new base::FundamentalValue(5));
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(object_param.release());
+    params_value->Append(std::move(object_param));
     std::unique_ptr<ObjectWithChoices::Params> params(
         ObjectWithChoices::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
@@ -90,7 +92,7 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
     object_param->SetWithoutPathExpansion("integers",
                                           new base::StringValue("asdf"));
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(object_param.release());
+    params_value->Append(std::move(object_param));
     std::unique_ptr<ObjectWithChoices::Params> params(
         ObjectWithChoices::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
@@ -101,7 +103,7 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
     object_param->SetWithoutPathExpansion("integers",
                                           new base::FundamentalValue(6));
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(object_param.release());
+    params_value->Append(std::move(object_param));
     std::unique_ptr<ObjectWithChoices::Params> params(
         ObjectWithChoices::Params::Create(*params_value));
     EXPECT_FALSE(params.get());

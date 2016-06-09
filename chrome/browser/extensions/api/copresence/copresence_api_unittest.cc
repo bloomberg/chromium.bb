@@ -131,7 +131,7 @@ class CopresenceApiUnittest : public ExtensionApiUnittest {
 
   bool ExecuteOperation(std::unique_ptr<Operation> operation) {
     ListValue* operation_list = new ListValue;
-    operation_list->Append(operation->ToValue().release());
+    operation_list->Append(operation->ToValue());
     return ExecuteOperations(operation_list);
   }
 
@@ -216,8 +216,8 @@ TEST_F(CopresenceApiUnittest, DefaultStrategies) {
   subscribe_operation->subscribe.reset(CreateSubscribe("sub"));
 
   ListValue* operation_list = new ListValue;
-  operation_list->Append(publish_operation->ToValue().release());
-  operation_list->Append(subscribe_operation->ToValue().release());
+  operation_list->Append(publish_operation->ToValue());
+  operation_list->Append(subscribe_operation->ToValue());
   EXPECT_TRUE(ExecuteOperations(operation_list));
 
   EXPECT_EQ(BROADCAST_ONLY,
@@ -235,7 +235,7 @@ TEST_F(CopresenceApiUnittest, LowPowerStrategy) {
   subscribe_operation->subscribe->strategies->low_power.reset(new bool(true));
 
   ListValue* operation_list = new ListValue;
-  operation_list->Append(subscribe_operation->ToValue().release());
+  operation_list->Append(subscribe_operation->ToValue());
   EXPECT_TRUE(ExecuteOperations(operation_list));
 
   EXPECT_EQ(copresence::BROADCAST_SCAN_CONFIGURATION_UNKNOWN,
@@ -250,8 +250,8 @@ TEST_F(CopresenceApiUnittest, UnPubSub) {
   publish_operation->publish.reset(CreatePublish("pub"));
   subscribe_operation->subscribe.reset(CreateSubscribe("sub"));
   ListValue* operation_list = new ListValue;
-  operation_list->Append(publish_operation->ToValue().release());
-  operation_list->Append(subscribe_operation->ToValue().release());
+  operation_list->Append(publish_operation->ToValue());
+  operation_list->Append(subscribe_operation->ToValue());
   EXPECT_TRUE(ExecuteOperations(operation_list));
 
   std::unique_ptr<Operation> unpublish_operation(new Operation);
@@ -263,8 +263,8 @@ TEST_F(CopresenceApiUnittest, UnPubSub) {
   unsubscribe_operation->unsubscribe->unsubscribe_id = "sub";
 
   operation_list = new ListValue;
-  operation_list->Append(unpublish_operation->ToValue().release());
-  operation_list->Append(unsubscribe_operation->ToValue().release());
+  operation_list->Append(unpublish_operation->ToValue());
+  operation_list->Append(unsubscribe_operation->ToValue());
   EXPECT_TRUE(ExecuteOperations(operation_list));
 
   std::string unpublish_id;

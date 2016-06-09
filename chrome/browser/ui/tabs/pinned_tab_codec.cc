@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,7 +42,7 @@ static bool HasPinnedTabs(Browser* browser) {
 static void EncodeTab(const StartupTab& tab, base::ListValue* values) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetString(kURL, tab.url.spec());
-  values->Append(value.release());
+  values->Append(std::move(value));
 }
 
 // Adds a base::DictionaryValue to |values| representing the pinned tab at the
@@ -54,7 +56,7 @@ static void EncodePinnedTab(TabStripModel* model,
   NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (entry) {
     value->SetString(kURL, entry->GetURL().spec());
-    values->Append(value.release());
+    values->Append(std::move(value));
   }
 }
 

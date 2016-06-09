@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/invalidations_message_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -102,7 +104,7 @@ void InvalidationsMessageHandler::OnUpdateIds(
     dic->SetString("name", (it->first).name());
     dic->SetInteger("source", (it->first).source());
     dic->SetInteger("totalCount", it->second);
-    list_of_objects.Append(dic.release());
+    list_of_objects.Append(std::move(dic));
   }
   web_ui()->CallJavascriptFunctionUnsafe("chrome.invalidations.updateIds",
                                          base::StringValue(handler_name),

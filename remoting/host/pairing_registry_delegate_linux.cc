@@ -4,6 +4,8 @@
 
 #include "remoting/host/pairing_registry_delegate_linux.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -58,7 +60,7 @@ std::unique_ptr<base::ListValue> PairingRegistryDelegateLinux::LoadAll() {
       continue;
     }
 
-    pairings->Append(pairing_json.release());
+    pairings->Append(std::move(pairing_json));
   }
 
   return pairings;

@@ -39,7 +39,7 @@ class EventFilterUnittest : public testing::Test {
   std::unique_ptr<base::ListValue> ValueAsList(
       std::unique_ptr<base::Value> value) {
     std::unique_ptr<base::ListValue> result(new base::ListValue());
-    result->Append(value.release());
+    result->Append(std::move(value));
     return result;
   }
 
@@ -139,8 +139,8 @@ TEST_F(EventFilterUnittest, TestURLMatching) {
 
 TEST_F(EventFilterUnittest, TestMultipleURLFiltersMatchOnAny) {
   std::unique_ptr<base::ListValue> filters(new base::ListValue());
-  filters->Append(HostSuffixDict("google.com").release());
-  filters->Append(HostSuffixDict("yahoo.com").release());
+  filters->Append(HostSuffixDict("google.com"));
+  filters->Append(HostSuffixDict("yahoo.com"));
 
   std::unique_ptr<EventMatcher> matcher(
       MatcherFromURLFilterList(std::move(filters)));

@@ -614,7 +614,7 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   // Request id is not part of the public API and it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
-  internal_args->Append(print_job.ToValue().release());
+  internal_args->Append(print_job.ToValue());
   std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_PRINT_REQUESTED,
                 api::printer_provider::OnPrintRequested::kEventName,

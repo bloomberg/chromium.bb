@@ -146,7 +146,7 @@ std::unique_ptr<base::ListValue> HidDeviceManager::GetApiDevicesFromList(
     hid::HidDeviceInfo device_info;
     device_info.device_id = device_entry->second;
     PopulateHidDeviceInfo(&device_info, device);
-    device_list->Append(device_info.ToValue().release());
+    device_list->Append(device_info.ToValue());
   }
   return device_list;
 }

@@ -212,6 +212,6 @@ bool SupervisedUserBookmarksHandler::AddNodeToTree(
   base::ListValue* parent = FindFolder(root_.get(), parent_id);
   if (!parent)
     return false;
-  parent->Append(node.release());
+  parent->Append(std::move(node));
   return true;
 }

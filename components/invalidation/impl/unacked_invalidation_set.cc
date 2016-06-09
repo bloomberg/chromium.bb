@@ -165,7 +165,7 @@ std::unique_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
   std::unique_ptr<base::ListValue> list_value(new base::ListValue);
   for (InvalidationsSet::const_iterator it = invalidations_.begin();
        it != invalidations_.end(); ++it) {
-    list_value->Append(it->ToValue().release());
+    list_value->Append(it->ToValue());
   }
   value->Set(kInvalidationListKey, list_value.release());
 

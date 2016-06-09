@@ -406,7 +406,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
   base::ListValue unpacked_args;
   std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue());
   options->SetBoolean("failQuietly", true);
-  unpacked_args.Append(options.release());
+  unpacked_args.Append(std::move(options));
   current_ids = registry()->enabled_extensions().GetIDs();
   EXPECT_FALSE(RunFunction(function, unpacked_args));
   EXPECT_EQ(manifest_errors::kManifestUnreadable, function->GetError());
@@ -432,7 +432,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateRequestFileSourceFunction());
   base::ListValue file_source_args;
-  file_source_args.Append(properties.ToValue().release());
+  file_source_args.Append(properties.ToValue());
   EXPECT_TRUE(RunFunction(function, file_source_args)) << function->GetError();
 
   const base::Value* response_value = nullptr;
