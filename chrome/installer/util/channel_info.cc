@@ -25,24 +25,27 @@ const wchar_t kModAppLauncherDeprecated[] = L"-applauncher";
 const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
 const wchar_t kModStage[] = L"-stage:";
+const wchar_t kModStatsDefault[] = L"-statsdef:";
 const wchar_t kSfxFull[] = L"-full";
 const wchar_t kSfxMigrating[] = L"-migrating";
 const wchar_t kSfxMultiFail[] = L"-multifail";
 
 const wchar_t* const kModifiers[] = {
-  kModStage,
-  kModMultiInstall,
-  kModChrome,
-  kModChromeFrame,
-  kModAppHostDeprecated,
-  kModAppLauncherDeprecated,
-  kModReadyMode,
-  kSfxMultiFail,
-  kSfxMigrating,
-  kSfxFull,
+    kModStatsDefault,
+    kModStage,
+    kModMultiInstall,
+    kModChrome,
+    kModChromeFrame,
+    kModAppHostDeprecated,
+    kModAppLauncherDeprecated,
+    kModReadyMode,
+    kSfxMultiFail,
+    kSfxMigrating,
+    kSfxFull,
 };
 
 enum ModifierIndex {
+  MOD_STATS_DEFAULT,
   MOD_STAGE,
   MOD_MULTI_INSTALL,
   MOD_CHROME,
@@ -157,6 +160,24 @@ size_t FindSubstringMatch(const base::string16& str,
       return i;
   }
   return base::string16::npos;
+}
+
+// Returns the value of a modifier - that is for a modifier of the form
+// "-foo:bar", returns "bar". Returns an empty string if the modifier
+// is not present or does not have a value.
+base::string16 GetModifierValue(ModifierIndex modifier_index,
+                                const base::string16& value) {
+  base::string16::size_type position;
+  base::string16::size_type length;
+
+  if (FindModifier(modifier_index, value, &position, &length)) {
+    // Return the portion after the prefix.
+    base::string16::size_type pfx_length =
+        base::string16::traits_type::length(kModifiers[modifier_index]);
+    DCHECK_LE(pfx_length, length);
+    return value.substr(position + pfx_length, length - pfx_length);
+  }
+  return base::string16();
 }
 
 }  // namespace
@@ -301,17 +322,11 @@ bool ChannelInfo::SetStage(const wchar_t* stage) {
 }
 
 base::string16 ChannelInfo::GetStage() const {
-  base::string16::size_type position;
-  base::string16::size_type length;
+  return GetModifierValue(MOD_STAGE, value_);
+}
 
-  if (FindModifier(MOD_STAGE, value_, &position, &length)) {
-    // Return the portion after the prefix.
-    base::string16::size_type pfx_length =
-        base::string16::traits_type::length(kModStage);
-    DCHECK_LE(pfx_length, length);
-    return value_.substr(position + pfx_length, length - pfx_length);
-  }
-  return base::string16();
+base::string16 ChannelInfo::GetStatsDefault() const {
+  return GetModifierValue(MOD_STATS_DEFAULT, value_);
 }
 
 bool ChannelInfo::HasFullSuffix() const {

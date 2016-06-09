@@ -141,6 +141,36 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
   return (key.DeleteValue(name) == ERROR_SUCCESS);
 }
 
+// Initializes |channel_info| based on |system_install| and |dist|. Also
+// returns whether the install is a multi-install via output parameter
+// |is_multi_install|. Returns false on failure.
+bool InitChannelInfo(bool system_install,
+                     BrowserDistribution* dist,
+                     installer::ChannelInfo* channel_info,
+                     bool* is_multi_install) {
+  // Determine whether or not chrome is multi-install. If so, updates are
+  // delivered under the binaries' app guid, so that's where the relevant
+  // channel is found.
+  installer::ProductState state;
+  ignore_result(state.Initialize(system_install, dist));
+  if (!state.is_multi_install()) {
+    // Use the channel info that was just read for this single-install chrome.
+    *channel_info = state.channel();
+  } else {
+    // Read the channel info from the binaries' state key.
+    HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BINARIES);
+    RegKey key(root_key, dist->GetStateKey().c_str(),
+               KEY_READ | KEY_WOW64_32KEY);
+
+    if (!channel_info->Initialize(key))
+      return false;
+  }
+  *is_multi_install = state.is_multi_install();
+  return true;
+}
+
 bool GetChromeChannelInternal(bool system_install,
                               bool add_multi_modifier,
                               base::string16* channel) {
@@ -150,34 +180,19 @@ bool GetChromeChannelInternal(bool system_install,
   if (dist->GetChromeChannel(channel))
     return true;
 
-  // Determine whether or not chrome is multi-install. If so, updates are
-  // delivered under the binaries' app guid, so that's where the relevant
-  // channel is found.
-  installer::ProductState state;
   installer::ChannelInfo channel_info;
-  ignore_result(state.Initialize(system_install, dist));
-  if (!state.is_multi_install()) {
-    // Use the channel info that was just read for this single-install chrome.
-    channel_info = state.channel();
-  } else {
-    // Read the channel info from the binaries' state key.
-    HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES);
-    RegKey key(root_key, dist->GetStateKey().c_str(),
-               KEY_READ | KEY_WOW64_32KEY);
-
-    if (!channel_info.Initialize(key)) {
-      channel->assign(installer::kChromeChannelUnknown);
-      return false;
-    }
+  bool is_multi_install = false;
+  if (!InitChannelInfo(system_install, dist, &channel_info,
+                       &is_multi_install)) {
+    channel->assign(installer::kChromeChannelUnknown);
+    return false;
   }
 
   if (!channel_info.GetChannelName(channel))
     channel->assign(installer::kChromeChannelUnknown);
 
   // Tag the channel name if this is a multi-install.
-  if (add_multi_modifier && state.is_multi_install()) {
+  if (add_multi_modifier && is_multi_install) {
     if (!channel->empty())
       channel->push_back(L'-');
     channel->push_back(L'm');
@@ -279,6 +294,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   return SetCollectStatsConsentAtLevel(IsSystemInstall(), consented);
 }
 
+// static
 bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
                                                          bool consented) {
   // Google Update writes and expects 1 for true, 0 for false.
@@ -309,6 +325,23 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
         << "; result: " << result;
   }
   return (result == ERROR_SUCCESS);
+}
+
+// static
+bool GoogleUpdateSettings::GetCollectStatsConsentDefault(
+    bool* stats_consent_default) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  installer::ChannelInfo channel_info;
+  bool is_multi_install = false;
+  if (InitChannelInfo(IsSystemInstall(), dist, &channel_info,
+                      &is_multi_install)) {
+    base::string16 stats_default = channel_info.GetStatsDefault();
+    if (stats_default == L"0" || stats_default == L"1") {
+      *stats_consent_default = (stats_default == L"1");
+      return true;
+    }
+  }
+  return false;
 }
 
 std::unique_ptr<metrics::ClientInfo>

@@ -88,6 +88,11 @@ class ChannelInfo {
   // -stage: modifier is not present in the value.
   base::string16 GetStage() const;
 
+  // Returns the string identifying the stats default state (i.e., the starting
+  // value of the "send usage stats" checkbox during install), or an empty
+  // string if the -statsdef: modifier is not present in the value.
+  base::string16 GetStatsDefault() const;
+
   // Returns true if the -full suffix is present in the value.
   bool HasFullSuffix() const;
 

@@ -116,6 +116,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/profiler/content/content_tracking_synchronizer_delegate.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
@@ -310,6 +311,13 @@ PrefService* InitializeLocalState(
     if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
       local_state->SetString(prefs::kApplicationLocale,
                              base::UTF16ToASCII(install_lang));
+    }
+    bool stats_default;
+    if (GoogleUpdateSettings::GetCollectStatsConsentDefault(&stats_default)) {
+      // |stats_default| == true means that the default state of consent for the
+      // product at the time of install was to report usage statistics, meaning
+      // "opt-out".
+      metrics::RecordMetricsReportingDefaultOptIn(local_state, !stats_default);
     }
   }
 #endif  // defined(OS_WIN)
