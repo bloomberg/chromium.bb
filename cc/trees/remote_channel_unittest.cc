@@ -206,35 +206,47 @@ class RemoteChannelTestReleaseOutputSurfaceDuringCommit
   void DidInitializeOutputSurface() override {
     ++output_surface_initialized_count_;
 
-    // We should not have any commits at this point. This call runs either after
-    // the first output surface is initialized so no commits should have been
-    // started, or after the output surface was released by the main thread. In
-    // which case, we should have queued the commit and it should only go
-    // through after the new output surface is initialized.
-    EXPECT_EQ(0, commit_count_);
+    switch (output_surface_initialized_count_) {
+      case 1:
+        // No commits can be performed before the first output surface is
+        // initialized. The Scheduler should not send BeginMainFrames.
+        EXPECT_EQ(0, commit_count_);
+        break;
+      case 2:
+        // When the first BeginMainFrame is received on the server, we release
+        // the output surface on the client. The RemoteChannelImpl on the client
+        // will queue the commit received till a new output surface is
+        // initialized, so we shouldn't see any commits till a second output
+        // surface is provided to the LTH.
+        EXPECT_EQ(0, commit_count_);
+        break;
+    }
   }
 
   void ReceivedBeginMainFrame() override {
-    // Release the output surface before we respond to the BeginMainFrame.
-    SetVisibleOnLayerTreeHost(false);
-    ReleaseOutputSurfaceOnLayerTreeHost();
-    SetVisibleOnLayerTreeHost(true);
+    if (commit_count_ == 0) {
+      // Release the output surface before we respond to the BeginMainFrame.
+      // We perform the test only for the first BeginMainFrame request.
+      SetVisibleOnLayerTreeHost(false);
+      ReleaseOutputSurfaceOnLayerTreeHost();
+      SetVisibleOnLayerTreeHost(true);
+    }
   }
 
   void StartCommitOnImpl() override {
-    // The commit should go through only when the second output surface is
-    // initialized.
-    EXPECT_EQ(2, output_surface_initialized_count_);
-    EXPECT_EQ(0, commit_count_);
     ++commit_count_;
-    EndTest();
+    if (commit_count_ == 1) {
+      // If this is the first commit, then the output surface must have been
+      // initialized twice.
+      EXPECT_EQ(2, output_surface_initialized_count_);
+      EndTest();
+    }
   }
 
-  void AfterTest() override {
-    EXPECT_EQ(2, output_surface_initialized_count_);
-    EXPECT_EQ(1, commit_count_);
-  }
+  void AfterTest() override {}
 
+  // Accessed on the main thread and the impl thread, when the main thread is
+  // blocked.
   int output_surface_initialized_count_;
   int commit_count_;
 };
