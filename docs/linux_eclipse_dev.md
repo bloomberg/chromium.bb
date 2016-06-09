@@ -147,7 +147,7 @@ In the Project Explorer on the left side:
     *   Include only
     *   Files, all children (recursive)
     *   Name matches
-        `.*\.(c|cc|cpp|h|mm|inl|idl|js|json|css|html|gyp|gypi|grd|grdp|gn)`
+        `.*\.(c|cc|cpp|h|mm|inl|idl|js|json|css|html|gyp|gypi|grd|grdp|gn|gni|mojom)`
         regular expression
 1.  Add another filter:
     *   Exclude all
