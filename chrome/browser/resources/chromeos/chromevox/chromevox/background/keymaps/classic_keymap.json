@@ -360,6 +360,11 @@
                "keys": {"keyCode": [79, 79]}
               }},
 
+ {"command": "showNextUpdatePage",
+  "sequence": {"cvoxModifier": true,
+               "keys": {"keyCode": [79, 78]}
+              }},
+
  {"command": "help",
   "sequence": {"cvoxModifier": true,
                "keys": {"keyCode": [79, 84]}

@@ -15,6 +15,7 @@ goog.require('AutomationUtil');
 goog.require('ChromeVoxState');
 goog.require('LiveRegions');
 goog.require('NextEarcons');
+goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
@@ -144,8 +145,9 @@ Background = function() {
   if (cvox.ChromeVox.isChromeOS) {
     chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
         this.onAccessibilityGesture_);
-  }
-};
+
+    Notifications.onStartup();
+  }};
 
 /**
  * @const {string}
@@ -669,6 +671,10 @@ Background.prototype = {
       case 'showKbExplorerPage':
         var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
         chrome.tabs.create(explorerPage);
+        break;
+      case 'showNextUpdatePage':
+        var nextUpdatePage = {url: 'cvox2/background/next_update.html'};
+        chrome.tabs.create(nextUpdatePage);
         break;
       case 'decreaseTtsRate':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, false);

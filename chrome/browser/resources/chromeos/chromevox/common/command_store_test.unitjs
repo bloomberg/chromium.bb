@@ -27,9 +27,9 @@ TEST_F('CvoxCommandStoreUnitTest', 'TableData', function() {
   assertEquals(10, categories.length);
   assertEquals('modifier_keys', categories[0]);
   assertEquals('controlling_speech', categories[1]);
-  assertEquals('navigation', categories[2]);
-  assertEquals('information', categories[3]);
-  assertEquals('help_commands', categories[4]);
+  assertEquals('help_commands', categories[2]);
+  assertEquals('navigation', categories[3]);
+  assertEquals('information', categories[4]);
   assertEquals('overview', categories[5]);
   assertEquals('jump_commands', categories[6]);
   assertEquals('tables', categories[7]);

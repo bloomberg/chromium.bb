@@ -2426,6 +2426,12 @@
       <message desc="Title displayed in the panel when there are no menu items." name="IDS_CHROMEVOX_PANEL_MENU_ITEM_NONE">
         No items.
       </message>
+      <message desc="Title of a notification that ChromeVox has been updated." name="IDS_CHROMEVOX_UPDATE_TITLE">
+        ChromeVox Updated
+      </message>
+      <message desc="Message text for a notification that ChromeVox has been updated for a new experience." name="IDS_CHROMEVOX_UPDATE_MESSAGE_NEXT">
+        Press ChromeVox o, n to learn more about the new ChromeVox experience.
+      </message>
     </messages>
   </release>
 </grit>

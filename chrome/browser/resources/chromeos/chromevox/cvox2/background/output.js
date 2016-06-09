@@ -553,8 +553,8 @@ Output.RULES = {
   },
   alert: {
     default: {
-      speak: '!doNotInterrupt ' +
-          '@role_alert $name $earcon(ALERT_NONMODAL) $description $descendants'
+      speak: '!doNotInterrupt @role_alert ' +
+          '$if($name, $name, $descendants) $earcon(ALERT_NONMODAL) $description'
     }
   }
 };

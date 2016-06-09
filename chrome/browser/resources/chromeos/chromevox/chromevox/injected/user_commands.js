@@ -558,8 +558,10 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
       });
       break;
     case 'toggleChromeVoxVersion':
+    case 'showNextUpdatePage':
       cvox.ChromeVox.host.sendToBackgroundPage({
-        'target': 'toggleChromeVoxVersion'
+        'target': 'next',
+        'action': cmd
       });
       break;
     case 'fullyDescribe':

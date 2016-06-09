@@ -103,6 +103,10 @@ void MessageCenterBubble::InitializeContents(
   // |new_bubble_view| actually wants. See crbug.com/169390.
   bubble_view()->Layout();
   UpdateBubbleView();
+  bubble_view()
+      ->GetFocusManager()
+      ->GetNextFocusableView(nullptr, nullptr, false, false)
+      ->RequestFocus();
 }
 
 void MessageCenterBubble::OnBubbleViewDestroyed() {
