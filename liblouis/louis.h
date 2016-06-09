@@ -584,10 +584,6 @@ typedef enum
 /* used by lou_translateString.c and lou_backTranslateString.c ONLY to 
 * allocate memory for internal buffers. */
 
-  void *get_table (const char *name);
-/* Checks tables for errors and compiles shem. returns a pointer to the 
-* table.  */
-
   char ** getEmphClasses(const char* tableList);
   /* Return the emphasis classes declared in tableList. */
 
