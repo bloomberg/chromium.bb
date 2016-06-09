@@ -295,6 +295,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
+    self.Fail('deqp/functional/gles3/shaderderivate.html',
+        ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
