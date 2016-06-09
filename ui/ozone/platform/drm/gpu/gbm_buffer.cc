@@ -58,6 +58,10 @@ bool GbmBuffer::AreFdsValid() const {
   return true;
 }
 
+size_t GbmBuffer::GetFdCount() const {
+  return fds_.size();
+}
+
 int GbmBuffer::GetFd(size_t plane) const {
   DCHECK_LT(plane, fds_.size());
   return fds_[plane].get();
@@ -182,6 +186,10 @@ void* GbmPixmap::GetEGLClientBuffer() const {
 
 bool GbmPixmap::AreDmaBufFdsValid() const {
   return buffer_->AreFdsValid();
+}
+
+size_t GbmPixmap::GetDmaBufFdCount() const {
+  return buffer_->GetFdCount();
 }
 
 int GbmPixmap::GetDmaBufFd(size_t plane) const {

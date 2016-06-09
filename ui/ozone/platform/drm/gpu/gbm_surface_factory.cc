@@ -116,7 +116,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
     const gfx::NativePixmapHandle& handle) {
   size_t planes = gfx::NumberOfPlanesForBufferFormat(format);
   if (handle.strides_and_offsets.size() != planes ||
-      handle.fds.size() != planes) {  // This constraint could be relaxed.
+      (handle.fds.size() != 1 && handle.fds.size() != planes)) {
     return nullptr;
   }
   std::vector<base::ScopedFD> scoped_fds;

@@ -15,6 +15,7 @@
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
+#define DRM_FORMAT_YV12 FOURCC('Y', 'V', '1', '2')
 
 namespace gl {
 namespace {
@@ -25,6 +26,8 @@ bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
       return format == gfx::BufferFormat::BGR_565 ||
              format == gfx::BufferFormat::RGBX_8888 ||
              format == gfx::BufferFormat::BGRX_8888;
+    case GL_RGB_YCRCB_420_CHROMIUM:
+      return format == gfx::BufferFormat::YVU_420;
     case GL_RGBA:
       return format == gfx::BufferFormat::RGBA_8888;
     case GL_BGRA_EXT:
@@ -44,6 +47,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::YVU_420:
       return true;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
@@ -51,7 +55,6 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       return false;
@@ -75,13 +78,14 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_ARGB8888;
     case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
+    case gfx::BufferFormat::YVU_420:
+      return DRM_FORMAT_YV12;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
@@ -137,7 +141,8 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
          plane < gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
          ++plane) {
       attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + plane * 3);
-      attrs.push_back(pixmap->GetDmaBufFd(plane));
+      attrs.push_back(
+          pixmap->GetDmaBufFd(plane < pixmap->GetDmaBufFdCount() ? plane : 0));
       attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
       attrs.push_back(pixmap->GetDmaBufOffset(plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);

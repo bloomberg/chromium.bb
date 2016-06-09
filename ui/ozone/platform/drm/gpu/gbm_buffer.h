@@ -38,6 +38,7 @@ class GbmBuffer : public GbmBufferBase {
   gfx::BufferFormat GetFormat() const { return format_; }
   gfx::BufferUsage GetUsage() const { return usage_; }
   bool AreFdsValid() const;
+  size_t GetFdCount() const;
   int GetFd(size_t plane) const;
   int GetStride(size_t plane) const;
   int GetOffset(size_t plane) const;
@@ -75,6 +76,7 @@ class GbmPixmap : public NativePixmap {
   // NativePixmap:
   void* GetEGLClientBuffer() const override;
   bool AreDmaBufFdsValid() const override;
+  size_t GetDmaBufFdCount() const override;
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;
