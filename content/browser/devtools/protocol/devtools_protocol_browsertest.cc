@@ -315,13 +315,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizePinchGesture) {
 
   int old_width;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(window.innerWidth)", &old_width));
+      shell(), "domAutomationController.send(window.innerWidth)", &old_width));
 
   int old_height;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(window.innerHeight)", &old_height));
+      shell(), "domAutomationController.send(window.innerHeight)",
+      &old_height));
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetInteger("x", old_width / 2);
@@ -331,14 +330,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizePinchGesture) {
 
   int new_width;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(window.innerWidth)", &new_width));
+      shell(), "domAutomationController.send(window.innerWidth)", &new_width));
   ASSERT_DOUBLE_EQ(2.0, static_cast<double>(old_width) / new_width);
 
   int new_height;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(window.innerHeight)", &new_height));
+      shell(), "domAutomationController.send(window.innerHeight)",
+      &new_height));
   ASSERT_DOUBLE_EQ(2.0, static_cast<double>(old_height) / new_height);
 }
 
@@ -349,8 +347,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeScrollGesture) {
 
   int scroll_top;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(document.body.scrollTop)", &scroll_top));
+      shell(), "domAutomationController.send(document.body.scrollTop)",
+      &scroll_top));
   ASSERT_EQ(0, scroll_top);
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
@@ -361,8 +359,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeScrollGesture) {
   SendCommand("Input.synthesizeScrollGesture", std::move(params));
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(document.body.scrollTop)", &scroll_top));
+      shell(), "domAutomationController.send(document.body.scrollTop)",
+      &scroll_top));
   ASSERT_EQ(100, scroll_top);
 }
 
@@ -373,8 +371,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
 
   int scroll_top;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(document.body.scrollTop)", &scroll_top));
+      shell(), "domAutomationController.send(document.body.scrollTop)",
+      &scroll_top));
   ASSERT_EQ(0, scroll_top);
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
@@ -388,8 +386,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
   // of the device that we're testing on, but in any case it should be greater
   // than 0.
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(document.body.scrollTop)", &scroll_top));
+      shell(), "domAutomationController.send(document.body.scrollTop)",
+      &scroll_top));
   ASSERT_GT(scroll_top, 0);
 }
 #endif  // defined(OS_ANDROID)
@@ -469,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
   SendCommand("Debugger.enable", nullptr);
 
   ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents(),
+      shell(),
       "window.onbeforeunload = function() { debugger; return null; }"));
 
   shell()->LoadURL(
@@ -490,8 +488,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url1, 1);
 
   ShellAddedObserver new_shell_observer;
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.open('about:blank','foo');"));
+  EXPECT_TRUE(ExecuteScript(shell(), "window.open('about:blank','foo');"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
@@ -514,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   // should be fixed to support waiting on both WATCH_FOR_PROCESS_EXIT and
   // WATCH_FOR_HOST_DESTRUCTION, and then used here.
   bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(),
                                           "window.domAutomationController.send("
                                           "    !!window.open('', 'foo'));",
                                           &success));
@@ -529,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   // Ensure that the A.com process is still alive by executing a script in the
   // original tab.
   success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(),
                                           "window.domAutomationController.send("
                                           "    !!window.open('', 'foo'));",
                                           &success));

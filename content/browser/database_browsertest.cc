@@ -26,10 +26,7 @@ class DatabaseTest : public ContentBrowserTest {
                                const std::string& script,
                                const std::string& result) {
     std::string data;
-    ASSERT_TRUE(ExecuteScriptAndExtractString(
-        shell->web_contents(),
-        script,
-        &data));
+    ASSERT_TRUE(ExecuteScriptAndExtractString(shell, script, &data));
     ASSERT_EQ(data, result);
   }
 
@@ -63,10 +60,7 @@ class DatabaseTest : public ContentBrowserTest {
 
   bool HasTable(Shell* shell) {
     std::string data;
-    CHECK(ExecuteScriptAndExtractString(
-        shell->web_contents(),
-        "getRecords()",
-        &data));
+    CHECK(ExecuteScriptAndExtractString(shell, "getRecords()", &data));
     return data != "getRecords error: [object SQLError]";
   }
 };

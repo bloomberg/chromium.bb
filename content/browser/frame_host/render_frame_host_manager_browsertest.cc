@@ -178,7 +178,7 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
     // links that initially look same-site.
     std::string script = "setOriginForLinks('http://bar.com:" +
                          embedded_test_server()->base_url().port() + "/');";
-    EXPECT_TRUE(ExecuteScript(shell->web_contents(), script));
+    EXPECT_TRUE(ExecuteScript(shell, script));
   }
 
  protected:
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   // We should have access to the opened window's location.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_TRUE(success);
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   // We should no longer have script access to the opened window's location.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_FALSE(success);
@@ -243,8 +243,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   // We now navigate the window to an about:blank page.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(clickBlankTargetedLink());",
+      shell(), "window.domAutomationController.send(clickBlankTargetedLink());",
       &success));
   EXPECT_TRUE(success);
 
@@ -258,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   // We should have access to the opened window's location.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_TRUE(success);
@@ -281,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -294,8 +293,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Check that `window.opener` is not set.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);", &success));
+      new_shell, "window.domAutomationController.send(window.opener == null);",
+      &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the new tab to finish.
@@ -327,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickNoOpenerTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -340,8 +339,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Check that `window.opener` is not set.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);", &success));
+      new_shell, "window.domAutomationController.send(window.opener == null);",
+      &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the new tab to finish.
@@ -373,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool hasWindowReference = true;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
       "    openWindowWithTargetAndFeatures('/title2.html', '', 'noopener')"
       ");",
@@ -397,8 +396,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Check that `window.opener` is not set.
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);", &success));
+      new_shell, "window.domAutomationController.send(window.opener == null);",
+      &success));
   EXPECT_TRUE(success);
 
   // Should have a new SiteInstance.
@@ -426,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteNoRefTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -440,8 +439,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Check that `window.opener` is not set.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);", &success));
+      new_shell, "window.domAutomationController.send(window.opener == null);",
+      &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the new tab to finish.
@@ -473,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Test clicking a same-site rel=noopener + target=foo link.
   ShellAddedObserver new_shell_observer;
   bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(),
                                           "window.domAutomationController.send("
                                           "clickSameSiteNoOpenerTargetedLink())"
                                           ";",
@@ -489,8 +488,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Check that `window.opener` is not set.
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);", &success));
+      new_shell, "window.domAutomationController.send(window.opener == null);",
+      &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the new tab to finish.
@@ -525,8 +524,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(clickTargetBlankLink());",
+      shell(), "window.domAutomationController.send(clickTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
 
@@ -564,8 +562,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Test clicking a rel=noreferrer link.
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(clickNoRefLink());", &success));
+      shell(), "window.domAutomationController.send(clickNoRefLink());",
+      &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
@@ -601,8 +599,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Test clicking a rel=noreferrer link.
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(clickNoRefLink());",
+      shell(), "window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
 
@@ -641,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -668,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Clicking the original link in the first tab should cause us to swap back.
   TestNavigationObserver navigation_observer(new_shell->web_contents());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -686,8 +683,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             new_shell->web_contents()->GetSiteInstance());
   WebContentsDestroyedWatcher close_watcher(new_shell->web_contents());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(testCloseWindow());",
+      shell(), "window.domAutomationController.send(testCloseWindow());",
       &success));
   EXPECT_TRUE(success);
   close_watcher.Wait();
@@ -716,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -743,8 +739,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
   // Now disown the opener.
-  EXPECT_TRUE(ExecuteScript(new_shell->web_contents(),
-                            "window.opener = null;"));
+  EXPECT_TRUE(ExecuteScript(new_shell, "window.opener = null;"));
   EXPECT_FALSE(new_shell->web_contents()->HasOpener());
 
   // Go back and ensure the opener is still null.
@@ -755,8 +750,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   }
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);",
+      new_shell, "window.domAutomationController.send(window.opener == null);",
       &success));
   EXPECT_TRUE(success);
   EXPECT_FALSE(new_shell->web_contents()->HasOpener());
@@ -765,8 +759,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   NavigateToURL(new_shell, cross_site_url);
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.opener == null);",
+      new_shell, "window.domAutomationController.send(window.opener == null);",
       &success));
   EXPECT_TRUE(success);
   EXPECT_FALSE(new_shell->web_contents()->HasOpener());
@@ -778,8 +771,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
   NavigateToURL(shell(), frame_url);
 
   // Give the frame an opener using window.open.
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.open('about:blank','foo');"));
+  EXPECT_TRUE(ExecuteScript(shell(), "window.open('about:blank','foo');"));
 
   // Check that the browser process updates the subframe's opener.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -788,8 +780,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
   EXPECT_EQ(root, root->child_at(0)->opener());
 
   // Now disown the frame's opener.  Shouldn't crash.
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.frames[0].opener = null;"));
+  EXPECT_TRUE(ExecuteScript(shell(), "window.frames[0].opener = null;"));
 
   // Check that the subframe's opener in the browser process is disowned.
   EXPECT_EQ(nullptr, root->child_at(0)->opener());
@@ -810,15 +801,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Open a popup using window.open with a 'foo' window.name.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_TRUE(new_shell);
 
   // The window.name for the new popup should be "foo".
   std::string name;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.name);", &name));
+      new_shell, "window.domAutomationController.send(window.name);", &name));
   EXPECT_EQ("foo", name);
 
   // Now navigate the new tab to a different site.
@@ -831,13 +820,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // window.name should still be "foo".
   name = "";
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(window.name);", &name));
+      new_shell, "window.domAutomationController.send(window.name);", &name));
   EXPECT_EQ("foo", name);
 
   // Open another popup from the 'foo' popup and navigate it cross-site.
-  Shell* new_shell2 =
-      OpenPopup(new_shell->web_contents(), GURL(url::kAboutBlankURL), "bar");
+  Shell* new_shell2 = OpenPopup(new_shell, GURL(url::kAboutBlankURL), "bar");
   EXPECT_TRUE(new_shell2);
   GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title3.html"));
   EXPECT_TRUE(NavigateToURL(new_shell2, bar_url));
@@ -847,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // be done via window.open, since window.name isn't readable cross-origin.
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell2->web_contents(),
+      new_shell2,
       "window.domAutomationController.send("
       "    window.opener === window.open('','foo'));",
       &success));
@@ -906,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Second, a target=_blank window.
   ShellAddedObserver new_shell_observer2;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -1126,8 +1113,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // The opened tab should be able to navigate the opener back to its process.
   TestNavigationObserver navigation_observer(orig_contents);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell->web_contents(),
-      "window.domAutomationController.send(navigateOpener());",
+      new_shell, "window.domAutomationController.send(navigateOpener());",
       &success));
   EXPECT_TRUE(success);
   navigation_observer.Wait();
@@ -1163,8 +1149,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(frame_url, root->child_at(0)->current_url());
 
   // Register an unload handler that sends a postMessage to the top frame.
-  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
-                            "registerUnload();"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), "registerUnload();"));
 
   // Navigate the top frame cross-site.  This will cause the top frame to be
   // swapped out and run unload handlers, and the original renderer process
@@ -1202,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -1273,8 +1258,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   GURL url = embedded_test_server()->GetURL("/title2.html");
   EXPECT_TRUE(ExecuteScript(
-      shell()->web_contents(),
-      base::StringPrintf("location.href = '%s'", url.spec().c_str())));
+      shell(), base::StringPrintf("location.href = '%s'", url.spec().c_str())));
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Opens in same tab.
@@ -1575,9 +1559,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(openWindow());",
-      &success));
+      shell(), "window.domAutomationController.send(openWindow());", &success));
   EXPECT_TRUE(success);
   Shell* new_shell = new_shell_observer.GetShell();
 
@@ -1816,7 +1798,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   TestNavigationObserver nav_observer(NULL);
   nav_observer.StartWatchingNewWebContents();
   ShellAddedObserver shao;
-  OpenUrlViaClickTarget(shell()->web_contents(), url2);
+  OpenUrlViaClickTarget(shell(), url2);
   nav_observer.Wait();
   Shell* new_shell = shao.GetShell();
   WebContentsImpl* new_web_contents = static_cast<WebContentsImpl*>(
@@ -1967,8 +1949,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "document.getElementById('fileinput').click();"));
+  EXPECT_TRUE(
+      ExecuteScript(shell(), "document.getElementById('fileinput').click();"));
   EXPECT_TRUE(delegate->file_chosen());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id, file));
@@ -2030,7 +2012,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
-  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
                             "document.getElementById('fileinput').click();"));
   EXPECT_TRUE(delegate->file_chosen());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
@@ -2123,8 +2105,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance);
 
   // Open a popup and navigate it cross-site.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_TRUE(new_shell);
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
@@ -2189,15 +2170,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   EXPECT_TRUE(orig_site_instance);
 
   // Open a cross-site popup named "foo" and a same-site popup named "bar".
-  Shell* foo_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* foo_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_TRUE(foo_shell);
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/post_message.html"));
   NavigateToURL(foo_shell, foo_url);
 
   GURL bar_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_post_message_frames.html"));
-  Shell* bar_shell = OpenPopup(shell()->web_contents(), bar_url, "bar");
+  Shell* bar_shell = OpenPopup(shell(), bar_url, "bar");
   EXPECT_TRUE(bar_shell);
 
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
@@ -2223,7 +2203,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   // target frame without navigating it.
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      bar_shell->web_contents(),
+      bar_shell,
       "window.domAutomationController.send(!!window.open('','foo'));",
       &success));
   EXPECT_TRUE(success);
@@ -2239,7 +2219,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   TitleWatcher title_watcher(bar_shell->web_contents(), expected_title);
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      foo_shell->web_contents(),
+      foo_shell,
       "window.domAutomationController.send(postToOpener('opener-msg', '*'));",
       &success));
   EXPECT_TRUE(success);
@@ -2247,8 +2227,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
 
   // Check that a non-null assignment to the opener doesn't change the opener
   // in the browser process.
-  EXPECT_TRUE(
-      ExecuteScript(foo_shell->web_contents(), "window.opener = window;"));
+  EXPECT_TRUE(ExecuteScript(foo_shell, "window.opener = window;"));
   EXPECT_EQ(bar_root, foo_root->opener());
 }
 
@@ -2266,7 +2245,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -2281,8 +2260,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Capture the window reference, so we can check that accessing its location
   // works after navigating cross-process and back.
   GURL expected_url = new_shell->web_contents()->GetLastCommittedURL();
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "saveWindowReference();"));
+  EXPECT_TRUE(ExecuteScript(shell(), "saveWindowReference();"));
 
   // Now navigate the popup to a different site and then go back.
   NavigateToURL(new_shell,
@@ -2294,7 +2272,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Check that the location.href window attribute is accessible and is correct.
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(getLastOpenedWindowLocation());",
       &result));
   EXPECT_EQ(expected_url.spec(), result);
@@ -2314,8 +2292,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   NavigateToURL(shell(), main_url);
 
   // Open a popup to navigate.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
 
@@ -2348,8 +2325,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
 
   // Open a popup to navigate cross-process.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
 
@@ -2396,8 +2372,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
 
   // Open a popup to navigate.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
           ->GetFrameTree()
@@ -2440,12 +2415,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Give an initial page an unload handler that never completes.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
-  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
-                            "window.onunload=function(e){ while(1); };\n"));
+  EXPECT_TRUE(
+      ExecuteScript(root, "window.onunload=function(e){ while(1); };\n"));
 
   // Open a popup in the same process.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
           ->GetFrameTree()
@@ -2521,8 +2495,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Give an initial page an unload handler that never completes.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
-  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
-                            "window.onunload=function(e){ while(1); };\n"));
+  EXPECT_TRUE(
+      ExecuteScript(root, "window.onunload=function(e){ while(1); };\n"));
 
   // Navigate the tab to a different site, and only wait for commit, not load
   // stop.
@@ -2544,8 +2518,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
 
   // Open a popup in the new B process.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
 
@@ -2588,8 +2561,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
 
   // Open a popup and navigate it to b.com to keep the b.com process alive.
-  Shell* new_shell =
-      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "popup");
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "popup");
   NavigateToURL(new_shell,
                 embedded_test_server()->GetURL("b.com", "/title3.html"));
 
@@ -2656,7 +2628,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
         "var frame = document.createElement('iframe');\n"
         "frame.sandbox = 'allow-scripts allow-popups';\n"
         "document.body.appendChild(frame);\n";
-    EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+    EXPECT_TRUE(ExecuteScript(shell(), script));
   }
 
   // Navigate iframe to a page with target=_blank links, and rewrite the links
@@ -2666,7 +2638,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   NavigateFrameToURL(root->child_at(0), frame_url);
   std::string script = "setOriginForLinks('http://b.com:" +
                        embedded_test_server()->base_url().port() + "/');";
-  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), script));
 
   // Helper to click on the 'rel=noreferrer target=_blank' and 'rel=noopener
   // target=_blank' links.  Checks that these links open a popup that ends up
@@ -2677,7 +2649,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     ShellAddedObserver new_shell_observer;
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        root->child_at(0)->current_frame_host(),
+        root->child_at(0),
         "window.domAutomationController.send(" + link_opening_script + ")",
         &success));
     EXPECT_TRUE(success);
@@ -2691,8 +2663,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     // should be unique.
     std::string origin;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_shell->web_contents(),
-        "domAutomationController.send(document.origin)", &origin));
+        new_shell, "domAutomationController.send(document.origin)", &origin));
     EXPECT_EQ("null", origin);
   };
 
@@ -2719,7 +2690,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ShellAddedObserver new_shell_observer;
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send(clickSameSiteTargetedLink());"
       "saveWindowReference();",
       &success));
@@ -2750,7 +2721,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send((function() {\n"
       "  try {\n"
       "    return getLastOpenedWindowLocation();\n"
@@ -2784,9 +2755,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, CtrlClickSubframeLink) {
   // Simulate a ctrl click on the link.  This won't actually create a new Shell
   // because Shell::OpenURLFromTab only supports CURRENT_TAB, but it's enough to
   // trigger the crash from https://crbug.com/605055.
-  EXPECT_TRUE(
-      ExecuteScript(shell()->web_contents(),
-                    "window.domAutomationController.send(ctrlClickLink());"));
+  EXPECT_TRUE(ExecuteScript(
+      shell(), "window.domAutomationController.send(ctrlClickLink());"));
 }
 
 // Ensure that we don't update the wrong NavigationEntry's title after an
@@ -2804,7 +2774,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // meant for a NavigationEntry that will never be created.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title2.html")));
-  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+  EXPECT_TRUE(ExecuteScript(root,
                             "window.onunload=function(e){"
                             "history.pushState({}, 'foo', 'foo');"
                             "document.title='foo'; };\n"));

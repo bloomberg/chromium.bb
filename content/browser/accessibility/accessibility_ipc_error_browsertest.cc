@@ -86,8 +86,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
     AccessibilityNotificationWaiter waiter(
         shell(), AccessibilityModeComplete, ui::AX_EVENT_LIVE_REGION_CHANGED);
     ASSERT_TRUE(ExecuteScript(
-        shell()->web_contents(),
-        "document.getElementById('p1').style.display = 'none';"));
+        shell(), "document.getElementById('p1').style.display = 'none';"));
     waiter.WaitForNotification();
   }
 
@@ -102,9 +101,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   {
     AccessibilityNotificationWaiter waiter(
         shell(), AccessibilityModeComplete, ui::AX_EVENT_FOCUS);
-    ASSERT_TRUE(ExecuteScript(
-        shell()->web_contents(),
-        "document.getElementById('button').focus();"));
+    ASSERT_TRUE(
+        ExecuteScript(shell(), "document.getElementById('button').focus();"));
     waiter.WaitForNotification();
     tree = &waiter.GetAXTree();
   }

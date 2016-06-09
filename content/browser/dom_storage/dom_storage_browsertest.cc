@@ -30,8 +30,7 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ExecuteScriptAndExtractString(
-          the_browser->web_contents(),
-          "window.domAutomationController.send(getLog())",
+          the_browser, "window.domAutomationController.send(getLog())",
           &js_result));
       FAIL() << "Failed: " << js_result;
     }

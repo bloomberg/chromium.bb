@@ -384,9 +384,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   int ExecuteScriptAndExtractInt(const std::string& script) {
     int value = 0;
     EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        shell()->web_contents(),
-        "domAutomationController.send(" + script + ")",
-        &value));
+        shell(), "domAutomationController.send(" + script + ")", &value));
     return value;
   }
 

@@ -252,15 +252,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Navigate to an invalid URL and make sure it doesn't leave a pending entry.
   LoadStopNotificationObserver load_observer1(
       &shell()->web_contents()->GetController());
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.location.href=\"nonexistent:12121\";"));
+  ASSERT_TRUE(
+      ExecuteScript(shell(), "window.location.href=\"nonexistent:12121\";"));
   load_observer1.Wait();
   EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
 
   LoadStopNotificationObserver load_observer2(
       &shell()->web_contents()->GetController());
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "window.location.href=\"#foo\";"));
+  ASSERT_TRUE(ExecuteScript(shell(), "window.location.href=\"#foo\";"));
   load_observer2.Wait();
   EXPECT_EQ(embedded_test_server()->GetURL("/title1.html#foo"),
             shell()->web_contents()->GetVisibleURL());
@@ -402,8 +401,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   NavigateToURL(shell(), kWebUIUrl);
 
-  bool js_executed = content::ExecuteScript(shell()->web_contents(),
-                                            kJSCodeForAppendingFrame);
+  bool js_executed = content::ExecuteScript(shell(), kJSCodeForAppendingFrame);
   EXPECT_TRUE(js_executed);
 }
 
@@ -499,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                 embedded_test_server()->GetURL("/title1.html"));
 
   WebContentsAddedObserver new_web_contents_observer;
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
+  ASSERT_TRUE(ExecuteScript(shell(),
                             "var a = document.createElement('a');"
                             "a.href='./title2.html';"
                             "a.target = '_blank';"
@@ -699,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
 
   NavigateToURL(shell(), GURL("about://blank"));
 
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
+  ASSERT_TRUE(ExecuteScript(shell(),
                             "document.title = "
                             " window.matchMedia('(display-mode:"
                             " minimal-ui)').matches"));
@@ -709,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
   // Simulate widget is entering fullscreen (changing size is enough).
   shell()->web_contents()->GetRenderViewHost()->GetWidget()->WasResized();
 
-  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
+  ASSERT_TRUE(ExecuteScript(shell(),
                             "document.title = "
                             " window.matchMedia('(display-mode:"
                             " fullscreen)').matches"));
@@ -859,8 +857,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
     ShellAddedObserver new_shell_observer;
 
     // Open a new, named window.
-    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                              "window.open('about:blank','new_window');"));
+    EXPECT_TRUE(
+        ExecuteScript(shell(), "window.open('about:blank','new_window');"));
 
     Shell* new_shell = new_shell_observer.GetShell();
     WaitForLoadStop(new_shell->web_contents());
@@ -871,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
 
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        new_shell->web_contents(),
+        new_shell,
         "window.domAutomationController.send(window.name == 'new_window');",
         &success));
     EXPECT_TRUE(success);
@@ -883,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
     // Test clicking a target=foo link.
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send(clickSameSiteTargetedLink());",
         &success));
     EXPECT_TRUE(success);
@@ -933,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // clicking on the link right away would cause the ExecuteScript to never
   // return.
   SetShouldProceedOnBeforeUnload(shell(), false);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "clickLinkSoon()"));
+  EXPECT_TRUE(ExecuteScript(shell(), "clickLinkSoon()"));
   WaitForAppModalDialog(shell());
 
   // Have the cross-site navigation commit. The main RenderFrameHost should

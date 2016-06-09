@@ -78,10 +78,8 @@ IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest, UploadProgress) {
 
   std::string js_result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
-      base::StringPrintf("WaitForAsyncXHR('%s', %" PRIuS ")",
-                         kPostPath,
-                         kPayloadSize),
+      shell(), base::StringPrintf("WaitForAsyncXHR('%s', %" PRIuS ")",
+                                  kPostPath, kPayloadSize),
       &js_result));
   EXPECT_EQ(js_result, "success");
 }
@@ -98,10 +96,8 @@ IN_PROC_BROWSER_TEST_F(AsyncResourceHandlerBrowserTest,
 
   std::string js_result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
-      base::StringPrintf("WaitForAsyncXHR('%s', %" PRIuS ")",
-                         kRedirectPostPath,
-                         kPayloadSize),
+      shell(), base::StringPrintf("WaitForAsyncXHR('%s', %" PRIuS ")",
+                                  kRedirectPostPath, kPayloadSize),
       &js_result));
   EXPECT_EQ(js_result, "success");
 }

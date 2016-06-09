@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -73,6 +74,10 @@ void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed) {
       static_cast<ShellJavaScriptDialogManager*>(
           shell->GetJavaScriptDialogManager(shell->web_contents()));
   manager->set_should_proceed_on_beforeunload(proceed);
+}
+
+RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node) {
+  return frame_tree_node->current_frame_host();
 }
 
 FrameTreeVisualizer::FrameTreeVisualizer() {

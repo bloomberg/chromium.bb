@@ -29,6 +29,7 @@ class Rect;
 namespace content {
 
 class MessageLoopRunner;
+class RenderFrameHost;
 class Shell;
 class WebContents;
 
@@ -79,6 +80,9 @@ void ReloadBypassingCacheBlockUntilNavigationsComplete(
 
 // Wait until an application modal dialog is requested.
 void WaitForAppModalDialog(Shell* window);
+
+// Extends the ToRenderFrameHost mechanism to content::Shells.
+RenderFrameHost* ConvertToRenderFrameHost(Shell* shell);
 
 // Used to wait for a new Shell window to be created. Instantiate this object
 // before the operation that will create the window.

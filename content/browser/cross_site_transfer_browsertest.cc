@@ -188,7 +188,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
     else
       script = base::StringPrintf("location.href = '%s'", url.spec().c_str());
     TestNavigationObserver load_observer(shell()->web_contents(), 1);
-    bool result = ExecuteScript(window->web_contents(), script);
+    bool result = ExecuteScript(window, script);
     EXPECT_TRUE(result);
     if (should_wait_for_navigation)
       load_observer.Wait();

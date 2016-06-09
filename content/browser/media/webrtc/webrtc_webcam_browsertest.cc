@@ -78,9 +78,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
   NavigateToURL(shell(), url);
 
   std::string result;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(shell()->web_contents(),
-                                            "hasVideoInputDeviceOnSystem()",
-                                            &result));
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      shell(), "hasVideoInputDeviceOnSystem()", &result));
   if (result != "has-video-input-device") {
     VLOG(0) << "No video device; skipping test...";
     return;
@@ -88,9 +87,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcWebcamBrowserTest,
 
   // GetUserMedia should acquire VGA by default.
   ASSERT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
-      "getUserMediaAndReturnVideoDimensions({video: true})",
-      &result));
+      shell(), "getUserMediaAndReturnVideoDimensions({video: true})", &result));
 
   if (result == "640x480" || result == "480x640") {
     // Don't care if the device happens to be in landscape or portrait mode

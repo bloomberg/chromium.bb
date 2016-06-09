@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationLockDisabledBrowserTest,
   navigation_observer.Wait();
 
   {
-    ASSERT_TRUE(ExecuteScript(shell()->web_contents(), "run();"));
+    ASSERT_TRUE(ExecuteScript(shell(), "run();"));
 
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     navigation_observer.Wait();

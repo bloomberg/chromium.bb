@@ -19,7 +19,7 @@ IN_PROC_BROWSER_TEST_F(MidiBrowserTest, RequestMIDIAccess) {
   bool result;
   NavigateToURL(shell(), GURL("about:blank"));
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "navigator.requestMIDIAccess()"
       "  .then("
       "    _ => domAutomationController.send(true),"
@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(MidiBrowserTest, SubscribeAll) {
   bool result;
   NavigateToURL(shell(), GURL("about:blank"));
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "navigator.requestMIDIAccess()"
       "  .then("
       "    e => { e.inputs.forEach(i => i.onmidimessage = console.log);"

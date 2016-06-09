@@ -24,8 +24,8 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingBrowserTest,
   GURL url = embedded_test_server()->GetURL(kResourceLoadingNonMobilePage);
   NavigateToURL(shell(), url);
   int data = -1;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(shell()->web_contents(),
-    "getResourceNumber()", &data));
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractInt(shell(), "getResourceNumber()", &data));
   EXPECT_EQ(2, data);
 }
 

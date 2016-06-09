@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
     std::string manifest_url =
         GetTestUrl("manifest", "dummy-manifest.json").spec();
     ASSERT_TRUE(content::ExecuteScript(
-        shell()->web_contents(), "setManifestTo('" + manifest_url + "')"));
+        shell(), "setManifestTo('" + manifest_url + "')"));
 
     GetManifestAndWait();
     EXPECT_FALSE(manifest().IsEmpty());
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
     std::string manifest_url =
         GetTestUrl("manifest", "empty-manifest.json").spec();
     ASSERT_TRUE(content::ExecuteScript(
-        shell()->web_contents(), "setManifestTo('" + manifest_url + "')"));
+        shell(), "setManifestTo('" + manifest_url + "')"));
 
     GetManifestAndWait();
     EXPECT_TRUE(manifest().IsEmpty());
@@ -290,8 +290,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
 
   std::string manifest_url = cors_embedded_test_server()->GetURL(
       "/manifest/dummy-manifest.json").spec();
-  ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
-                                     "setManifestTo('" + manifest_url + "')"));
+  ASSERT_TRUE(
+      content::ExecuteScript(shell(), "setManifestTo('" + manifest_url + "')"));
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
@@ -308,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
   // it is actually fully loaded.
   manifest_url =
       embedded_test_server()->GetURL("/manifest/dummy-manifest.json").spec();
-  ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
-                                     "setManifestTo('" + manifest_url + "')"));
+  ASSERT_TRUE(
+      content::ExecuteScript(shell(), "setManifestTo('" + manifest_url + "')"));
   GetManifestAndWait();
 }
 
@@ -330,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifestWithAcessControls) {
 
   std::string manifest_url = cors_embedded_test_server()->GetURL(
       "/manifest/manifest-cors.json").spec();
-  ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
-                                     "setManifestTo('" + manifest_url + "')"));
+  ASSERT_TRUE(
+      content::ExecuteScript(shell(), "setManifestTo('" + manifest_url + "')"));
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
@@ -360,8 +360,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
 
   std::string manifest_url =
       https_server->GetURL("/manifest/dummy-manifest.json").spec();
-  ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
-                                     "setManifestTo('" + manifest_url + "')"));
+  ASSERT_TRUE(
+      content::ExecuteScript(shell(), "setManifestTo('" + manifest_url + "')"));
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
@@ -441,8 +441,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, PushStateNavigation) {
   {
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     ASSERT_TRUE(content::ExecuteScript(
-        shell()->web_contents(),
-        "history.pushState({foo: \"bar\"}, 'page', 'page.html');"));
+        shell(), "history.pushState({foo: \"bar\"}, 'page', 'page.html');"));
     navigation_observer.Wait();
   }
 
@@ -470,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, AnchorNavigation) {
   {
     TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
     ASSERT_TRUE(content::ExecuteScript(
-        shell()->web_contents(),
+        shell(),
         "var a = document.createElement('a'); a.href='#foo';"
         "document.body.appendChild(a); a.click();"));
     navigation_observer.Wait();

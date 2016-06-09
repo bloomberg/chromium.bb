@@ -233,9 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell2->web_contents(),
-      "call({video: true, audio: true});",
-      &result));
+      shell2, "call({video: true, audio: true});", &result));
   ASSERT_STREQ("OK", result.c_str());
 
   EXPECT_FALSE(base::PathExists(base_file));

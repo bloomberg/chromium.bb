@@ -106,8 +106,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
     GURL url(embedded_test_server()->GetURL("/title2.html"));
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
-        "window.domAutomationController.send(clickSameSiteLink());", &success));
+        shell(), "window.domAutomationController.send(clickSameSiteLink());",
+        &success));
     EXPECT_TRUE(success);
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(url, observer.last_navigation_url());
@@ -145,13 +145,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
     GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
-        base::StringPrintf(kReplacePortNumber, port_number),
+        shell(), base::StringPrintf(kReplacePortNumber, port_number),
         &success));
     success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
-        "window.domAutomationController.send(clickCrossSiteLink());",
+        shell(), "window.domAutomationController.send(clickCrossSiteLink());",
         &success));
     EXPECT_TRUE(success);
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));

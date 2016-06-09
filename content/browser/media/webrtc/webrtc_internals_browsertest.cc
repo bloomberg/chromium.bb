@@ -164,7 +164,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
 
  protected:
   bool ExecuteJavascript(const string& javascript) {
-    return ExecuteScript(shell()->web_contents(), javascript);
+    return ExecuteScript(shell(), javascript);
   }
 
   void ExpectTitle(const std::string& expected_title) const {
@@ -211,7 +211,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   void VerifyElementWithId(const string& id) {
     bool result = false;
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send($('" + id + "') != null);",
         &result));
     EXPECT_TRUE(result);
@@ -221,7 +221,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   void VerifyNoElementWithId(const string& id) {
     bool result = false;
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send($('" + id + "') == null);",
         &result));
     EXPECT_TRUE(result);
@@ -231,11 +231,11 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   void VerifyUserMediaRequest(
       const std::vector<UserMediaRequestEntry>& requests) {
     string json_requests;
-    ASSERT_TRUE(ExecuteScriptAndExtractString(
-        shell()->web_contents(),
-        "window.domAutomationController.send("
-            "JSON.stringify(userMediaRequests));",
-        &json_requests));
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractString(shell(),
+                                      "window.domAutomationController.send("
+                                      "    JSON.stringify(userMediaRequests));",
+                                      &json_requests));
     std::unique_ptr<base::Value> value_requests =
         base::JSONReader::Read(json_requests);
 
@@ -263,19 +263,19 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     }
 
     bool user_media_tab_existed = false;
-    ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
-        "window.domAutomationController.send("
-            "$('user-media-tab-id') != null);",
-        &user_media_tab_existed));
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractBool(shell(),
+                                    "window.domAutomationController.send("
+                                    "    $('user-media-tab-id') != null);",
+                                    &user_media_tab_existed));
     EXPECT_EQ(!requests.empty(), user_media_tab_existed);
 
     if (user_media_tab_existed) {
       int user_media_request_count = -1;
       ASSERT_TRUE(ExecuteScriptAndExtractInt(
-          shell()->web_contents(),
+          shell(),
           "window.domAutomationController.send("
-              "$('user-media-tab-id').childNodes.length);",
+          "    $('user-media-tab-id').childNodes.length);",
           &user_media_request_count));
       ASSERT_EQ(requests.size(), static_cast<size_t>(user_media_request_count));
     }
@@ -295,8 +295,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
       ss << "var row = $('" << log_id << "').rows[" << (i + 1) << "];"
             "var cell = row.lastChild;"
             "window.domAutomationController.send(cell.firstChild.textContent);";
-      ASSERT_TRUE(ExecuteScriptAndExtractString(
-          shell()->web_contents(), ss.str(), &result));
+      ASSERT_TRUE(ExecuteScriptAndExtractString(shell(), ss.str(), &result));
       EXPECT_EQ(pc.events_[i].type + pc.events_[i].value, result);
     }
   }
@@ -358,7 +357,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
 
     string result;
     ASSERT_TRUE(ExecuteScriptAndExtractString(
-        shell()->web_contents(),
+        shell(),
         "var row = $('" + table_id + "-" + name + "');"
         "var name = row.cells[0].textContent;"
         "var value = row.cells[1].textContent;"
@@ -395,7 +394,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                             int index, const string& value) {
     bool result = false;
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send("
            "graphViews['" + pc_id + "-" + graph_id + "'] != null)",
         &result));
@@ -406,8 +405,8 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
           ".getDataSeries('" << graph_id << "').dataPoints_[" << index << "];"
           "window.domAutomationController.send(dp.value.toString())";
     string actual_value;
-    ASSERT_TRUE(ExecuteScriptAndExtractString(
-        shell()->web_contents(), ss.str(), &actual_value));
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractString(shell(), ss.str(), &actual_value));
     EXPECT_EQ(value, actual_value);
   }
 
@@ -415,7 +414,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   string GetSsrcInfo(const string& ssrc_id) {
     string result;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send(JSON.stringify("
            "ssrcInfoManager.streamInfoContainer_['" + ssrc_id + "']))",
         &result));
@@ -425,10 +424,10 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   int GetSsrcInfoBlockCount(Shell* shell) {
     int count = 0;
     EXPECT_TRUE(ExecuteScriptAndExtractInt(
-        shell->web_contents(),
+        shell,
         "window.domAutomationController.send("
-            "document.getElementsByClassName("
-                "ssrcInfoManager.SSRC_INFO_BLOCK_CLASS).length);",
+        "    document.getElementsByClassName("
+        "        ssrcInfoManager.SSRC_INFO_BLOCK_CLASS).length);",
         &count));
     return count;
   }
@@ -622,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, BweCompoundGraph) {
   bool result = false;
   // Verify that the bweCompound graph exists.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send("
         "   graphViews['" + graph_id + "'] != null)",
         &result));
@@ -631,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, BweCompoundGraph) {
   // Verify that the bweCompound graph contains multiple dataSeries.
   int count = 0;
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send("
         "   graphViews['" + graph_id + "'].getDataSeriesCount())",
         &count));
@@ -701,31 +700,31 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
   // Verifies the number of peerconnections.
   int count = 0;
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell2->web_contents(),
+      shell2,
       "window.domAutomationController.send("
-          "$('peer-connections-list').getElementsByTagName('li').length);",
+      "    $('peer-connections-list').getElementsByTagName('li').length);",
       &count));
   EXPECT_EQ(NUMBER_OF_PEER_CONNECTIONS, count);
 
   // Verifies the the event tables.
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell2->web_contents(),
+      shell2,
       "window.domAutomationController.send($('peer-connections-list')"
-          ".getElementsByClassName('update-log-table').length);",
+      "    .getElementsByClassName('update-log-table').length);",
       &count));
   EXPECT_EQ(NUMBER_OF_PEER_CONNECTIONS, count);
 
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell2->web_contents(),
+      shell2,
       "window.domAutomationController.send($('peer-connections-list')"
-          ".getElementsByClassName('update-log-table')[0].rows.length);",
+      "    .getElementsByClassName('update-log-table')[0].rows.length);",
       &count));
   EXPECT_GT(count, 1);
 
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell2->web_contents(),
+      shell2,
       "window.domAutomationController.send($('peer-connections-list')"
-          ".getElementsByClassName('update-log-table')[1].rows.length);",
+      "    .getElementsByClassName('update-log-table')[1].rows.length);",
       &count));
   EXPECT_GT(count, 1);
 
@@ -733,28 +732,28 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
   count = 0;
   while (count != NUMBER_OF_PEER_CONNECTIONS) {
     ASSERT_TRUE(ExecuteScriptAndExtractInt(
-        shell2->web_contents(),
+        shell2,
         "window.domAutomationController.send("
-            "$('peer-connections-list').getElementsByClassName("
-                "'stats-table-container').length);",
+        "    $('peer-connections-list').getElementsByClassName("
+        "        'stats-table-container').length);",
         &count));
   }
 
   // Verifies each stats table having more than one rows.
   bool result = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell2->web_contents(),
+      shell2,
       "var tableContainers = $('peer-connections-list')"
-          ".getElementsByClassName('stats-table-container');"
+      "    .getElementsByClassName('stats-table-container');"
       "var result = true;"
       "for (var i = 0; i < tableContainers.length && result; ++i) {"
-        "var tables = tableContainers[i].getElementsByTagName('table');"
-        "for (var j = 0; j < tables.length && result; ++j) {"
-          "result = (tables[j].rows.length > 1);"
-        "}"
-        "if (!result) {"
-          "console.log(tableContainers[i].innerHTML);"
-        "}"
+      "  var tables = tableContainers[i].getElementsByTagName('table');"
+      "  for (var j = 0; j < tables.length && result; ++j) {"
+      "    result = (tables[j].rows.length > 1);"
+      "  }"
+      "  if (!result) {"
+      "    console.log(tableContainers[i].innerHTML);"
+      "  }"
       "}"
       "window.domAutomationController.send(result);",
       &result));
@@ -782,9 +781,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
   // Verifies the peer connection data store can be created without stats.
   string dump_json;
   ASSERT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
-      "JSON.stringify(peerConnectionDataStore));",
+      "    JSON.stringify(peerConnectionDataStore));",
       &dump_json));
   std::unique_ptr<base::Value> dump = base::JSONReader::Read(dump_json);
   VerifyPageDumpStructure(dump.get(),
@@ -801,9 +800,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
   ExecuteAndVerifyAddStats(pc_0, type, id, stats);
 
   ASSERT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
-      "JSON.stringify(peerConnectionDataStore));",
+      "    JSON.stringify(peerConnectionDataStore));",
       &dump_json));
   dump = base::JSONReader::Read(dump_json);
   VerifyStatsDump(dump.get(), pc_0, type, id, stats);
@@ -858,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
   bool result = false;
   // Verify that the graph exists.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
       "   graphViews['" + graph_id + "'] != null)",
       &result));
@@ -867,13 +866,13 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
   // Verify that the graph contains multiple data points.
   int count = 0;
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
       "   graphViews['" + graph_id + "'].getDataSeriesCount())",
       &count));
   EXPECT_EQ(1, count);
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
       "   peerConnectionDataStore['" + pc.getIdString() + "']" +
       "       .getDataSeries('" + data_series_id + "').getCount())",

@@ -42,6 +42,9 @@ void NavigateFrameToURL(FrameTreeNode* node, const GURL& url);
 // BeforeUnload dialog.
 void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed);
 
+// Extends the ToRenderFrameHost mechanism to FrameTreeNodes.
+RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node);
+
 // Creates compact textual representations of the state of the frame tree that
 // is appropriate for use in assertions.
 //

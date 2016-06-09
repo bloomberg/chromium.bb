@@ -103,8 +103,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
 
     std::string result;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
-        shell()->web_contents(),
-        "window.domAutomationController.send(" + command + ");",
+        shell(), "window.domAutomationController.send(" + command + ");",
         &result));
     return result;
   }

@@ -673,16 +673,16 @@ void SimulateKeyPress(WebContents* web_contents,
   ASSERT_EQ(modifiers, 0);
 }
 
-ToRenderFrameHost::ToRenderFrameHost(WebContents* web_contents)
-    : render_frame_host_(web_contents->GetMainFrame()) {
+RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents) {
+  return web_contents->GetMainFrame();
 }
 
-ToRenderFrameHost::ToRenderFrameHost(RenderViewHost* render_view_host)
-    : render_frame_host_(render_view_host->GetMainFrame()) {
+RenderFrameHost* ConvertToRenderFrameHost(RenderViewHost* render_view_host) {
+  return render_view_host->GetMainFrame();
 }
 
-ToRenderFrameHost::ToRenderFrameHost(RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {
+RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_frame_host) {
+  return render_frame_host;
 }
 
 bool ExecuteScript(const ToRenderFrameHost& adapter,

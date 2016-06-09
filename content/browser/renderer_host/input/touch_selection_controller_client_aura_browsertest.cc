@@ -135,8 +135,8 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
 
   bool GetPointInsideText(gfx::PointF* point) {
     std::string str;
-    if (ExecuteScriptAndExtractString(shell()->web_contents()->GetMainFrame(),
-                                      "get_point_inside_text()", &str)) {
+    if (ExecuteScriptAndExtractString(shell(), "get_point_inside_text()",
+                                      &str)) {
       return JSONToPoint(str, point);
     }
     return false;
@@ -144,17 +144,14 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
 
   bool GetPointInsideTextfield(gfx::PointF* point) {
     std::string str;
-    if (ExecuteScriptAndExtractString(shell()->web_contents()->GetMainFrame(),
-                                      "get_point_inside_textfield()", &str)) {
+    if (ExecuteScriptAndExtractString(shell(), "get_point_inside_textfield()",
+                                      &str)) {
       return JSONToPoint(str, point);
     }
     return false;
   }
 
-  bool EmptyTextfield() {
-    return ExecuteScript(shell()->web_contents()->GetMainFrame(),
-                         "empty_textfield()");
-  }
+  bool EmptyTextfield() { return ExecuteScript(shell(), "empty_textfield()"); }
 
   RenderWidgetHostViewAura* GetRenderWidgetHostViewAura() {
     return static_cast<RenderWidgetHostViewAura*>(

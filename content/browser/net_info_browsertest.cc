@@ -58,15 +58,13 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
 
   std::string RunScriptExtractString(const std::string& script) {
     std::string data;
-    EXPECT_TRUE(
-        ExecuteScriptAndExtractString(shell()->web_contents(), script, &data));
+    EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &data));
     return data;
   }
 
   bool RunScriptExtractBool(const std::string& script) {
     bool data;
-    EXPECT_TRUE(
-        ExecuteScriptAndExtractBool(shell()->web_contents(), script, &data));
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(), script, &data));
     return data;
   }
 
@@ -136,8 +134,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, TwoRenderViewsInOneProcess) {
   EXPECT_FALSE(RunScriptExtractBool("getOnLine()"));
 
   // Open the same page in a new window on the same process.
-  EXPECT_TRUE(
-      ExecuteScript(shell()->web_contents(), "window.open(\"net_info.html\")"));
+  EXPECT_TRUE(ExecuteScript(shell(), "window.open(\"net_info.html\")"));
 
   // The network state should not have reinitialized to what it was when opening
   // the first window (online).

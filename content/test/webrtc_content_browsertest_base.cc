@@ -63,9 +63,8 @@ void WebRtcContentBrowserTest::AppendUseFakeUIForMediaStreamFlag() {
 std::string WebRtcContentBrowserTest::ExecuteJavascriptAndReturnResult(
     const std::string& javascript) {
   std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(), javascript, &result))
-          << "Failed to execute javascript " << javascript << ".";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), javascript, &result))
+      << "Failed to execute javascript " << javascript << ".";
   return result;
 }
 

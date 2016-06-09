@@ -469,26 +469,20 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   int length;
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(history.length)",
-      &length));
+      shell(), "domAutomationController.send(history.length)", &length));
   EXPECT_EQ(1, length);
 
   NavigateToURL(shell(), GetURL("title1.html"));
 
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(history.length)",
-      &length));
+      shell(), "domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 
   // Now test that history.length is updated when the navigation is committed.
   NavigateToURL(shell(), GetURL("record_length.html"));
 
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(history.length)",
-      &length));
+      shell(), "domAutomationController.send(history.length)", &length));
   EXPECT_EQ(3, length);
 
   GoBack();
@@ -498,9 +492,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
   NavigateToURL(shell(), GetURL("title2.html"));
 
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell()->web_contents(),
-      "domAutomationController.send(history.length)",
-      &length));
+      shell(), "domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 }
 
@@ -525,8 +517,8 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, GoBackToCrossSitePostWithRedirect) {
 
   // Submit the form.
   TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "document.getElementById('form').submit();"));
+  EXPECT_TRUE(
+      ExecuteScript(shell(), "document.getElementById('form').submit();"));
   form_post_observer.Wait();
 
   // Verify that we arrived at the expected, redirected location.
@@ -537,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, GoBackToCrossSitePostWithRedirect) {
   // comes from: https://tools.ietf.org/html/rfc7231#section-6.4.7
   std::string body;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
       "document.getElementsByTagName('pre')[0].innerText);",
       &body));
@@ -558,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, GoBackToCrossSitePostWithRedirect) {
   // Again verify that POST body got preserved by 307 redirect.
   std::string body_after_back_navigation;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      shell()->web_contents(),
+      shell(),
       "window.domAutomationController.send("
       "document.getElementsByTagName('pre')[0].innerText);",
       &body_after_back_navigation));

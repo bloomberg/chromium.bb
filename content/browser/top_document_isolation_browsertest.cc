@@ -55,13 +55,13 @@ class TopDocumentIsolationTest : public ContentBrowserTest {
   Shell* OpenPopup(FrameTreeNode* opener, const std::string& url) {
     GURL gurl =
         opener->current_frame_host()->GetLastCommittedURL().Resolve(url);
-    return content::OpenPopup(opener->current_frame_host(), gurl, "_blank");
+    return content::OpenPopup(opener, gurl, "_blank");
   }
 
   void RendererInitiatedNavigateToURL(FrameTreeNode* node, const GURL& url) {
     TestFrameNavigationObserver nav_observer(node);
-    ASSERT_TRUE(ExecuteScript(node->current_frame_host(),
-                              "window.location.href='" + url.spec() + "'"));
+    ASSERT_TRUE(
+        ExecuteScript(node, "window.location.href='" + url.spec() + "'"));
     nav_observer.Wait();
   }
 

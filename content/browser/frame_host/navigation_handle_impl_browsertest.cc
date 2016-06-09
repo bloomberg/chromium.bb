@@ -12,6 +12,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
@@ -450,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     NavigationHandleObserver observer(
         shell()->web_contents(),
         embedded_test_server()->GetURL("a.com", "/bar"));
-    EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+    EXPECT_TRUE(ExecuteScript(root->child_at(0),
                               "window.history.pushState({}, '', 'bar');"));
 
     EXPECT_TRUE(observer.has_committed());
@@ -486,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySynchronous) {
 
   NavigationHandleObserver observer(
       shell()->web_contents(), embedded_test_server()->GetURL("a.com", "/bar"));
-  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
                             "window.history.pushState({}, '', 'bar');"));
 
   EXPECT_TRUE(observer.has_committed());

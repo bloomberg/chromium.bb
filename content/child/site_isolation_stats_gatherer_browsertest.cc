@@ -150,8 +150,8 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
 
     bool was_blocked;
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
-        base::StringPrintf("sendRequest(\"%s\");", resource), &was_blocked));
+        shell(), base::StringPrintf("sendRequest(\"%s\");", resource),
+        &was_blocked));
     ASSERT_FALSE(was_blocked);
 
     InspectHistograms(histograms, true, resource);
@@ -174,8 +174,8 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
 
     bool was_blocked;
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(),
-        base::StringPrintf("sendRequest(\"%s\");", resource), &was_blocked));
+        shell(), base::StringPrintf("sendRequest(\"%s\");", resource),
+        &was_blocked));
     ASSERT_FALSE(was_blocked);
 
     InspectHistograms(histograms, false, resource);

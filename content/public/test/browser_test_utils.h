@@ -166,19 +166,25 @@ void SimulateKeyPress(WebContents* web_contents,
 
 // Allow ExecuteScript* methods to target either a WebContents or a
 // RenderFrameHost.  Targetting a WebContents means executing the script in the
-// RenderFrameHost returned by WebContents::GetMainFrame(), which is the
-// main frame.  Pass a specific RenderFrameHost to target it.
+// RenderFrameHost returned by WebContents::GetMainFrame(), which is the main
+// frame.  Pass a specific RenderFrameHost to target it. Embedders may declare
+// additional ConvertToRenderFrameHost functions for convenience.
 class ToRenderFrameHost {
  public:
-  ToRenderFrameHost(WebContents* web_contents);
-  ToRenderFrameHost(RenderViewHost* render_view_host);
-  ToRenderFrameHost(RenderFrameHost* render_frame_host);
+  template <typename T>
+  ToRenderFrameHost(T* frame_convertible_value)
+      : render_frame_host_(ConvertToRenderFrameHost(frame_convertible_value)) {}
 
+  // Extract the underlying frame.
   RenderFrameHost* render_frame_host() const { return render_frame_host_; }
 
  private:
   RenderFrameHost* render_frame_host_;
 };
+
+RenderFrameHost* ConvertToRenderFrameHost(RenderViewHost* render_view_host);
+RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
+RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 
 // Executes the passed |script| in the specified frame. The |script| should not
 // invoke domAutomationController.send(); otherwise, your test will hang or be

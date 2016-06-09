@@ -23,7 +23,7 @@ class BookmarkletTest : public ContentBrowserTest {
   std::string GetBodyText() {
     std::string body_text;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
-        shell()->web_contents(),
+        shell(),
         "window.domAutomationController.send(document.body.innerText);",
         &body_text));
     return body_text;

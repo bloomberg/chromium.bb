@@ -104,6 +104,10 @@ void WaitForAppModalDialog(Shell* window) {
   runner->Run();
 }
 
+RenderFrameHost* ConvertToRenderFrameHost(Shell* shell) {
+  return shell->web_contents()->GetMainFrame();
+}
+
 ShellAddedObserver::ShellAddedObserver()
     : shell_(NULL) {
   Shell::SetShellCreatedCallback(
