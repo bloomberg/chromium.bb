@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/shelf/shelf_menu_model.h"
+#include "ash/common/shelf/shelf_menu_model.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 
