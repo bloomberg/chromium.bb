@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "chrome/browser/android/offline_pages/prerender_adapter.h"
 #include "components/offline_pages/background/offliner.h"
+#include "components/offline_pages/snapshot_controller.h"
 
 class GURL;
 
@@ -29,7 +30,8 @@ namespace offline_pages {
 // the page loading in the background. It operates on a single thread and
 // needs to run on BrowserThread::UI to work with the PrerenderManager.
 // It supports a single load request at a time.
-class PrerenderingLoader : public PrerenderAdapter::Observer {
+class PrerenderingLoader : public PrerenderAdapter::Observer,
+                           public SnapshotController::Client {
  public:
   // Reports status of a load page request with loaded contents if available.
   typedef base::Callback<void(Offliner::RequestStatus, content::WebContents*)>
@@ -79,6 +81,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer {
   void OnPrerenderDomContentLoaded() override;
   void OnPrerenderStop() override;
 
+  // SnapshotController::Client implementation:
+  void StartSnapshot() override;
+
  private:
   // State of the loader (only one request may be active at a time).
   enum class State {
@@ -103,6 +108,9 @@ class PrerenderingLoader : public PrerenderAdapter::Observer {
 
   // Tracks loading state including whether the Loader is idle.
   State state_;
+
+  // Handles determining when to report page is LOADED.
+  std::unique_ptr<SnapshotController> snapshot_controller_;
 
   // Not owned.
   content::BrowserContext* browser_context_;

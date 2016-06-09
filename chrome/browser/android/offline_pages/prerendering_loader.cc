@@ -16,7 +16,9 @@
 namespace offline_pages {
 
 PrerenderingLoader::PrerenderingLoader(content::BrowserContext* browser_context)
-    : state_(State::IDLE), browser_context_(browser_context) {
+    : state_(State::IDLE),
+      snapshot_controller_(nullptr),
+      browser_context_(browser_context) {
   adapter_.reset(new PrerenderAdapter(this));
 }
 
@@ -49,6 +51,8 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
     return false;
 
   DCHECK(adapter_->IsActive());
+  snapshot_controller_.reset(
+      new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this));
   callback_ = callback;
   state_ = State::PENDING;
   return true;
@@ -88,19 +92,35 @@ void PrerenderingLoader::OnPrerenderStart() {
 
 void PrerenderingLoader::OnPrerenderStopLoading() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(dougarnett): Implement/integrate to delay policy here.
-  HandleLoadEvent();
+  DCHECK(!IsIdle());
+  DCHECK(adapter_->GetWebContents());
+  // Inform SnapshotController of OnLoad event so it can determine
+  // when to consider it really LOADED.
+  snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
 }
 
 void PrerenderingLoader::OnPrerenderDomContentLoaded() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(dougarnett): Implement/integrate to delay policy here.
-  HandleLoadEvent();
+  DCHECK(!IsIdle());
+  if (!adapter_->GetWebContents()) {
+    // Without a WebContents object at this point, we are done.
+    HandleLoadingStopped();
+  } else {
+    // Inform SnapshotController of DomContentContent event so it can
+    // determine when to consider it really LOADED (e.g., some multiple
+    // second delay from this event).
+    snapshot_controller_->DocumentAvailableInMainFrame();
+  }
 }
 
 void PrerenderingLoader::OnPrerenderStop() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   HandleLoadingStopped();
+}
+
+void PrerenderingLoader::StartSnapshot() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  HandleLoadEvent();
 }
 
 void PrerenderingLoader::HandleLoadEvent() {
@@ -148,6 +168,7 @@ void PrerenderingLoader::HandleLoadingStopped() {
                  : Offliner::RequestStatus::FAILED;
   // TODO(dougarnett): For failure, determine from final status if retry-able
   // and report different failure statuses if retry-able or not.
+  snapshot_controller_.reset(nullptr);
   session_contents_.reset(nullptr);
   state_ = State::IDLE;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -158,6 +179,7 @@ void PrerenderingLoader::CancelPrerender() {
   if (adapter_->IsActive()) {
     adapter_->DestroyActive();
   }
+  snapshot_controller_.reset(nullptr);
   session_contents_.reset(nullptr);
   if (!IsLoaded() && !IsIdle()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

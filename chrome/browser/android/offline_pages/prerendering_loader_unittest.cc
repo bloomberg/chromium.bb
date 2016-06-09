@@ -182,6 +182,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromDomContentLoaded) {
       base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
 
   test_adapter()->GetObserver()->OnPrerenderDomContentLoaded();
+  // Skip SnapshotController's wait time and emulate StartSnapshot call.
+  loader()->StartSnapshot();
   PumpLoop();
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_TRUE(loader()->IsLoaded());
