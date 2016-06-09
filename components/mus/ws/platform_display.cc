@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "cc/ipc/quads.mojom.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/delegated_frame_data.h"
@@ -16,7 +17,6 @@
 #include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
-#include "components/mus/public/interfaces/quads.mojom.h"
 #include "components/mus/surfaces/display_compositor.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/platform_display_factory.h"

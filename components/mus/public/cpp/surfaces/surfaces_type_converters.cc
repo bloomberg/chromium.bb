@@ -26,35 +26,35 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/mus/public/cpp/surfaces/custom_surface_converter.h"
 
-using mus::mojom::Color;
-using mus::mojom::ColorPtr;
+using cc::mojom::Color;
+using cc::mojom::ColorPtr;
+using cc::mojom::DebugBorderQuadState;
+using cc::mojom::DebugBorderQuadStatePtr;
+using cc::mojom::DrawQuad;
+using cc::mojom::DrawQuadPtr;
+using cc::mojom::RenderPass;
+using cc::mojom::RenderPassPtr;
+using cc::mojom::RenderPassQuadState;
+using cc::mojom::RenderPassQuadStatePtr;
+using cc::mojom::SolidColorQuadState;
+using cc::mojom::SolidColorQuadStatePtr;
+using cc::mojom::SurfaceQuadState;
+using cc::mojom::SurfaceQuadStatePtr;
+using cc::mojom::TextureQuadState;
+using cc::mojom::TextureQuadStatePtr;
+using cc::mojom::TileQuadState;
+using cc::mojom::TileQuadStatePtr;
+using cc::mojom::YUVColorSpace;
+using cc::mojom::YUVVideoQuadState;
+using cc::mojom::YUVVideoQuadStatePtr;
 using mus::mojom::CompositorFrame;
 using mus::mojom::CompositorFramePtr;
-using mus::mojom::DebugBorderQuadState;
-using mus::mojom::DebugBorderQuadStatePtr;
-using mus::mojom::Pass;
-using mus::mojom::PassPtr;
-using mus::mojom::Quad;
-using mus::mojom::QuadPtr;
-using mus::mojom::RenderPassQuadState;
-using mus::mojom::RenderPassQuadStatePtr;
-using mus::mojom::SolidColorQuadState;
-using mus::mojom::SolidColorQuadStatePtr;
-using mus::mojom::SurfaceQuadState;
-using mus::mojom::SurfaceQuadStatePtr;
-using mus::mojom::TextureQuadState;
-using mus::mojom::TextureQuadStatePtr;
-using mus::mojom::TileQuadState;
-using mus::mojom::TileQuadStatePtr;
-using mus::mojom::YUVColorSpace;
-using mus::mojom::YUVVideoQuadState;
-using mus::mojom::YUVVideoQuadStatePtr;
 
 namespace mojo {
 
 #define ASSERT_ENUM_VALUES_EQUAL(value)                                     \
   static_assert(cc::DrawQuad::value == static_cast<cc::DrawQuad::Material>( \
-                                           mus::mojom::Material::value),    \
+                                           cc::mojom::Material::value),     \
                 #value " enum value must match")
 
 ASSERT_ENUM_VALUES_EQUAL(DEBUG_BORDER);
@@ -69,20 +69,20 @@ ASSERT_ENUM_VALUES_EQUAL(YUV_VIDEO_CONTENT);
 
 static_assert(cc::YUVVideoDrawQuad::REC_601 ==
                   static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
-                      mus::mojom::YUVColorSpace::REC_601),
+                      cc::mojom::YUVColorSpace::REC_601),
               "REC_601 enum value must match");
 // TODO(jamesr): Add REC_709 and JPEG to the YUVColorSpace enum upstream in
 // mojo.
 
 namespace {
 
-bool ConvertDrawQuad(const QuadPtr& input,
+bool ConvertDrawQuad(const DrawQuadPtr& input,
                      const cc::CompositorFrameMetadata& metadata,
                      cc::SharedQuadState* sqs,
                      cc::RenderPass* render_pass,
                      CustomSurfaceConverter* custom_converter) {
   switch (input->material) {
-    case mus::mojom::Material::DEBUG_BORDER: {
+    case cc::mojom::Material::DEBUG_BORDER: {
       cc::DebugBorderDrawQuad* debug_border_quad =
           render_pass->CreateAndAppendDrawQuad<cc::DebugBorderDrawQuad>();
       debug_border_quad->SetAll(
@@ -92,7 +92,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->debug_border_quad_state->width);
       break;
     }
-    case mus::mojom::Material::RENDER_PASS: {
+    case cc::mojom::Material::RENDER_PASS: {
       cc::RenderPassDrawQuad* render_pass_quad =
           render_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
       RenderPassQuadState* render_pass_quad_state =
@@ -108,7 +108,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           render_pass_quad_state->background_filters);
       break;
     }
-    case mus::mojom::Material::SOLID_COLOR: {
+    case cc::mojom::Material::SOLID_COLOR: {
       if (input->solid_color_quad_state.is_null())
         return false;
       cc::SolidColorDrawQuad* color_quad =
@@ -120,7 +120,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->solid_color_quad_state->force_anti_aliasing_off);
       break;
     }
-    case mus::mojom::Material::SURFACE_CONTENT: {
+    case cc::mojom::Material::SURFACE_CONTENT: {
       if (input->surface_quad_state.is_null())
         return false;
 
@@ -135,7 +135,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->needs_blending, input->surface_quad_state->surface);
       break;
     }
-    case mus::mojom::Material::TEXTURE_CONTENT: {
+    case cc::mojom::Material::TEXTURE_CONTENT: {
       TextureQuadStatePtr& texture_quad_state =
           input->texture_quad_state;
       if (texture_quad_state.is_null() ||
@@ -155,7 +155,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           texture_quad_state->secure_output_only);
       break;
     }
-    case mus::mojom::Material::TILED_CONTENT: {
+    case cc::mojom::Material::TILED_CONTENT: {
       TileQuadStatePtr& tile_state = input->tile_quad_state;
       if (tile_state.is_null())
         return false;
@@ -168,7 +168,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
                         tile_state->nearest_neighbor);
       break;
     }
-    case mus::mojom::Material::YUV_VIDEO_CONTENT: {
+    case cc::mojom::Material::YUV_VIDEO_CONTENT: {
       YUVVideoQuadStatePtr& yuv_state = input->yuv_video_quad_state;
       if (yuv_state.is_null())
         return false;
@@ -207,10 +207,10 @@ SkColor TypeConverter<SkColor, ColorPtr>::Convert(const ColorPtr& input) {
 }
 
 // static
-QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
+DrawQuadPtr TypeConverter<DrawQuadPtr, cc::DrawQuad>::Convert(
     const cc::DrawQuad& input) {
-  QuadPtr quad = Quad::New();
-  quad->material = static_cast<mus::mojom::Material>(input.material);
+  DrawQuadPtr quad = DrawQuad::New();
+  quad->material = static_cast<cc::mojom::Material>(input.material);
   quad->rect = input.rect;
   quad->opaque_rect = input.opaque_rect;
   quad->visible_rect = input.visible_rect;
@@ -324,15 +324,15 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
 }
 
 // static
-PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
+RenderPassPtr TypeConverter<RenderPassPtr, cc::RenderPass>::Convert(
     const cc::RenderPass& input) {
-  PassPtr pass = Pass::New();
+  RenderPassPtr pass = RenderPass::New();
   pass->id = input.id;
   pass->output_rect = input.output_rect;
   pass->damage_rect = input.damage_rect;
   pass->transform_to_root_target = input.transform_to_root_target;
   pass->has_transparent_background = input.has_transparent_background;
-  Array<QuadPtr> quads(input.quad_list.size());
+  Array<DrawQuadPtr> quads(input.quad_list.size());
   Array<cc::SharedQuadState> shared_quad_state(
       input.shared_quad_state_list.size());
   const cc::SharedQuadState* last_sqs = nullptr;
@@ -341,7 +341,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
   for (auto iter = input.quad_list.cbegin(); iter != input.quad_list.cend();
        ++iter) {
     const cc::DrawQuad& quad = **iter;
-    quads[iter.index()] = Quad::From(quad);
+    quads[iter.index()] = DrawQuad::From(quad);
     if (quad.shared_quad_state != last_sqs) {
       shared_quad_state[next_sqs_iter.index()] = **next_sqs_iter;
       last_sqs = *next_sqs_iter;
@@ -360,7 +360,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
 
 // static
 std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
-    const PassPtr& input,
+    const RenderPassPtr& input,
     const cc::CompositorFrameMetadata& metadata,
     CustomSurfaceConverter* custom_converter) {
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
@@ -375,7 +375,7 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
   cc::SharedQuadStateList::Iterator sqs_iter =
       pass->shared_quad_state_list.begin();
   for (size_t i = 0; i < input->quads.size(); ++i) {
-    QuadPtr quad = std::move(input->quads[i]);
+    DrawQuadPtr quad = std::move(input->quads[i]);
     while (quad->shared_quad_state_index > sqs_iter.index()) {
       ++sqs_iter;
     }
@@ -388,8 +388,8 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
 
 // static
 std::unique_ptr<cc::RenderPass>
-TypeConverter<std::unique_ptr<cc::RenderPass>, PassPtr>::Convert(
-    const PassPtr& input) {
+TypeConverter<std::unique_ptr<cc::RenderPass>, RenderPassPtr>::Convert(
+    const RenderPassPtr& input) {
   cc::CompositorFrameMetadata metadata;
   return ConvertToRenderPass(input, metadata,
                              nullptr /* CustomSurfaceConverter */);
@@ -406,9 +406,9 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
       mojo::Array<cc::TransferableResource>(frame_data->resource_list);
   frame->metadata = input.metadata;
   const cc::RenderPassList& pass_list = frame_data->render_pass_list;
-  frame->passes = Array<PassPtr>::New(pass_list.size());
+  frame->passes = Array<RenderPassPtr>::New(pass_list.size());
   for (size_t i = 0; i < pass_list.size(); ++i) {
-    frame->passes[i] = Pass::From(*pass_list[i]);
+    frame->passes[i] = RenderPass::From(*pass_list[i]);
   }
   return frame;
 }

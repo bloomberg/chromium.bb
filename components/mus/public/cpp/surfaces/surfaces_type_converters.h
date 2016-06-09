@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "cc/ipc/quads.mojom.h"
 #include "cc/ipc/surface_id.mojom.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
-#include "components/mus/public/interfaces/quads.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -24,7 +24,6 @@ class CompositorFrame;
 class CompositorFrameMetadata;
 class DrawQuad;
 class RenderPass;
-class RenderPassId;
 class SharedQuadState;
 }  // namespace cc
 
@@ -34,34 +33,36 @@ class CustomSurfaceConverter;
 
 // Types from quads.mojom
 template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::ColorPtr, SkColor> {
-  static mus::mojom::ColorPtr Convert(const SkColor& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<cc::mojom::ColorPtr, SkColor> {
+  static cc::mojom::ColorPtr Convert(const SkColor& input);
 };
 template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<SkColor, mus::mojom::ColorPtr> {
-  static SkColor Convert(const mus::mojom::ColorPtr& input);
-};
-
-template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::QuadPtr, cc::DrawQuad> {
-  static mus::mojom::QuadPtr Convert(const cc::DrawQuad& input);
-};
-
-std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
-    const mus::mojom::PassPtr& input,
-    const cc::CompositorFrameMetadata& metadata,
-    CustomSurfaceConverter* custom_converter);
-
-template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::PassPtr, cc::RenderPass> {
-  static mus::mojom::PassPtr Convert(const cc::RenderPass& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<SkColor, cc::mojom::ColorPtr> {
+  static SkColor Convert(const cc::mojom::ColorPtr& input);
 };
 
 template <>
 struct MOJO_SURFACES_EXPORT
-    TypeConverter<std::unique_ptr<cc::RenderPass>, mus::mojom::PassPtr> {
+    TypeConverter<cc::mojom::DrawQuadPtr, cc::DrawQuad> {
+  static cc::mojom::DrawQuadPtr Convert(const cc::DrawQuad& input);
+};
+
+std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
+    const cc::mojom::RenderPassPtr& input,
+    const cc::CompositorFrameMetadata& metadata,
+    CustomSurfaceConverter* custom_converter);
+
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<cc::mojom::RenderPassPtr, cc::RenderPass> {
+  static cc::mojom::RenderPassPtr Convert(const cc::RenderPass& input);
+};
+
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<std::unique_ptr<cc::RenderPass>, cc::mojom::RenderPassPtr> {
   static std::unique_ptr<cc::RenderPass> Convert(
-      const mus::mojom::PassPtr& input);
+      const cc::mojom::RenderPassPtr& input);
 };
 
 // Types from compositor_frame.mojom

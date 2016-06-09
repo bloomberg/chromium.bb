@@ -8,8 +8,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
-using mus::mojom::Pass;
-using mus::mojom::PassPtr;
+using cc::mojom::RenderPass;
+using cc::mojom::RenderPassPtr;
 
 namespace mojo {
 
@@ -25,8 +25,8 @@ cc::SharedQuadState CreateDefaultSQS(const gfx::Size& size) {
   return sqs;
 }
 
-PassPtr CreateDefaultPass(int id, const gfx::Rect& rect) {
-  PassPtr pass = Pass::New();
+RenderPassPtr CreateDefaultPass(int id, const gfx::Rect& rect) {
+  RenderPassPtr pass = RenderPass::New();
   cc::RenderPassId render_pass_id;
   render_pass_id.layer_id = 1;
   render_pass_id.index = id;

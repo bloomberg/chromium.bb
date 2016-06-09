@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_
 
+#include "cc/ipc/quads.mojom.h"
 #include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
-#include "components/mus/public/interfaces/quads.mojom.h"
 
 namespace cc {
 class SharedQuadState;
@@ -25,7 +25,7 @@ MOJO_SURFACES_EXPORT cc::SharedQuadState CreateDefaultSQS(
 // Constructs a pass with the given id, output_rect and damage_rect set to rect,
 // transform_to_root_target set to identity and has_transparent_background set
 // to false.
-MOJO_SURFACES_EXPORT mus::mojom::PassPtr CreateDefaultPass(
+MOJO_SURFACES_EXPORT cc::mojom::RenderPassPtr CreateDefaultPass(
     int id,
     const gfx::Rect& rect);
 

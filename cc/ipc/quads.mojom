@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mus.mojom;
+module cc.mojom;
 
 import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/render_pass_id.mojom";
@@ -120,7 +120,7 @@ enum Material {
   YUV_VIDEO_CONTENT,
 };
 
-struct Quad {
+struct DrawQuad {
   Material material;
 
   // This rect, after applying the quad_transform(), gives the geometry that
@@ -156,12 +156,12 @@ struct Quad {
   YUVVideoQuadState? yuv_video_quad_state;
 };
 
-struct Pass {
+struct RenderPass {
   cc.mojom.RenderPassId id;
   gfx.mojom.Rect output_rect;
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;
   bool has_transparent_background;
-  array<Quad> quads;
+  array<DrawQuad> quads;
   array<cc.mojom.SharedQuadState> shared_quad_states;
 };

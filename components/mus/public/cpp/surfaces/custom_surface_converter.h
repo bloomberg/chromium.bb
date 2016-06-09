@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
 
+#include "cc/ipc/quads.mojom.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
-#include "components/mus/public/interfaces/quads.mojom.h"
 
 namespace cc {
 class CompositorFrameMetadata;
@@ -21,7 +21,7 @@ namespace mojo {
 class CustomSurfaceConverter {
  public:
   virtual bool ConvertSurfaceDrawQuad(
-      const mus::mojom::QuadPtr& input,
+      const cc::mojom::DrawQuadPtr& input,
       const cc::CompositorFrameMetadata& metadata,
       cc::SharedQuadState* sqs,
       cc::RenderPass* render_pass) = 0;

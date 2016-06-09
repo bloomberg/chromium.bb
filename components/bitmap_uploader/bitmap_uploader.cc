@@ -71,7 +71,7 @@ void BitmapUploader::SetBitmap(int width,
 
 void BitmapUploader::Upload() {
   const gfx::Rect bounds(window_->bounds());
-  mus::mojom::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
+  cc::mojom::RenderPassPtr pass = mojo::CreateDefaultPass(1, bounds);
   mus::mojom::CompositorFramePtr frame = mus::mojom::CompositorFrame::New();
 
   // TODO(rjkroege): Support device scale factor in PDF viewer
@@ -112,8 +112,8 @@ void BitmapUploader::Upload() {
     resource.is_software = false;
     resource.is_overlay_candidate = false;
 
-    mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
-    quad->material = mus::mojom::Material::TEXTURE_CONTENT;
+    cc::mojom::DrawQuadPtr quad = cc::mojom::DrawQuad::New();
+    quad->material = cc::mojom::Material::TEXTURE_CONTENT;
 
     gfx::Size rect_size;
     if (width_ <= bounds.width() && height_ <= bounds.height()) {
@@ -136,13 +136,13 @@ void BitmapUploader::Upload() {
     quad->needs_blending = true;
     quad->shared_quad_state_index = 0u;
 
-    mus::mojom::TextureQuadStatePtr texture_state =
-        mus::mojom::TextureQuadState::New();
+    cc::mojom::TextureQuadStatePtr texture_state =
+        cc::mojom::TextureQuadState::New();
     texture_state->resource_id = resource.id;
     texture_state->premultiplied_alpha = true;
     texture_state->uv_top_left.SetPoint(0.f, 0.f);
     texture_state->uv_bottom_right.SetPoint(1.f, 1.f);
-    texture_state->background_color = mus::mojom::Color::New();
+    texture_state->background_color = cc::mojom::Color::New();
     texture_state->background_color->rgba = g_transparent_color;
     for (int i = 0; i < 4; ++i)
       texture_state->vertex_opacity.push_back(1.f);
@@ -154,16 +154,16 @@ void BitmapUploader::Upload() {
   }
 
   if (color_ != g_transparent_color) {
-    mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
-    quad->material = mus::mojom::Material::SOLID_COLOR;
+    cc::mojom::DrawQuadPtr quad = cc::mojom::DrawQuad::New();
+    quad->material = cc::mojom::Material::SOLID_COLOR;
     quad->rect = bounds;
     quad->visible_rect = bounds;
     quad->needs_blending = true;
     quad->shared_quad_state_index = 0u;
 
-    mus::mojom::SolidColorQuadStatePtr color_state =
-        mus::mojom::SolidColorQuadState::New();
-    color_state->color = mus::mojom::Color::New();
+    cc::mojom::SolidColorQuadStatePtr color_state =
+        cc::mojom::SolidColorQuadState::New();
+    color_state->color = cc::mojom::Color::New();
     color_state->color->rgba = color_;
     color_state->force_anti_aliasing_off = false;
 

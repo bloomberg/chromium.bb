@@ -102,7 +102,7 @@ ServerWindowSurface::ConvertCompositorFrame(
 }
 
 bool ServerWindowSurface::ConvertSurfaceDrawQuad(
-    const mojom::QuadPtr& input,
+    const cc::mojom::DrawQuadPtr& input,
     const cc::CompositorFrameMetadata& metadata,
     cc::SharedQuadState* sqs,
     cc::RenderPass* render_pass) {

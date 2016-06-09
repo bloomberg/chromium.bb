@@ -73,7 +73,7 @@ class ServerWindowSurface : public mojom::Surface,
       const mojom::CompositorFramePtr& input);
 
   // Overriden from CustomSurfaceConverter:
-  bool ConvertSurfaceDrawQuad(const mojom::QuadPtr& input,
+  bool ConvertSurfaceDrawQuad(const cc::mojom::DrawQuadPtr& input,
                               const cc::CompositorFrameMetadata& metadata,
                               cc::SharedQuadState* sqs,
                               cc::RenderPass* render_pass) override;

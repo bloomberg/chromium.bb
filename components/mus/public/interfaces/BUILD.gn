@@ -21,7 +21,6 @@ mojom("interfaces") {
     "input_events.mojom",
     "input_key_codes.mojom",
     "mus_constants.mojom",
-    "quads.mojom",
     "user_access_manager.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",

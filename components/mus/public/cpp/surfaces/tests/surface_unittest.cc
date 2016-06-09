@@ -21,29 +21,29 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
-using mus::mojom::Color;
-using mus::mojom::ColorPtr;
+using cc::mojom::Color;
+using cc::mojom::ColorPtr;
+using cc::mojom::DebugBorderQuadState;
+using cc::mojom::DebugBorderQuadStatePtr;
+using cc::mojom::DrawQuad;
+using cc::mojom::DrawQuadPtr;
+using cc::mojom::RenderPass;
+using cc::mojom::RenderPassPtr;
+using cc::mojom::RenderPassQuadState;
+using cc::mojom::RenderPassQuadStatePtr;
+using cc::mojom::SolidColorQuadState;
+using cc::mojom::SolidColorQuadStatePtr;
+using cc::mojom::SurfaceQuadState;
+using cc::mojom::SurfaceQuadStatePtr;
+using cc::mojom::TextureQuadState;
+using cc::mojom::TextureQuadStatePtr;
+using cc::mojom::TileQuadState;
+using cc::mojom::TileQuadStatePtr;
+using cc::mojom::YUVColorSpace;
+using cc::mojom::YUVVideoQuadState;
+using cc::mojom::YUVVideoQuadStatePtr;
 using mus::mojom::CompositorFrame;
 using mus::mojom::CompositorFramePtr;
-using mus::mojom::DebugBorderQuadState;
-using mus::mojom::DebugBorderQuadStatePtr;
-using mus::mojom::Pass;
-using mus::mojom::PassPtr;
-using mus::mojom::Quad;
-using mus::mojom::QuadPtr;
-using mus::mojom::RenderPassQuadState;
-using mus::mojom::RenderPassQuadStatePtr;
-using mus::mojom::SolidColorQuadState;
-using mus::mojom::SolidColorQuadStatePtr;
-using mus::mojom::SurfaceQuadState;
-using mus::mojom::SurfaceQuadStatePtr;
-using mus::mojom::TextureQuadState;
-using mus::mojom::TextureQuadStatePtr;
-using mus::mojom::TileQuadState;
-using mus::mojom::TileQuadStatePtr;
-using mus::mojom::YUVColorSpace;
-using mus::mojom::YUVVideoQuadState;
-using mus::mojom::YUVVideoQuadStatePtr;
 
 namespace mojo {
 namespace {
@@ -88,9 +88,9 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
                      arbitrary_color,
                      force_anti_aliasing_off);
 
-  QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*color_quad);
+  DrawQuadPtr mus_quad = DrawQuad::From<cc::DrawQuad>(*color_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::Material::SOLID_COLOR, mus_quad->material);
+  EXPECT_EQ(cc::mojom::Material::SOLID_COLOR, mus_quad->material);
   EXPECT_EQ(rect, mus_quad->rect);
   EXPECT_EQ(opaque_rect, mus_quad->opaque_rect);
   EXPECT_EQ(visible_rect, mus_quad->visible_rect);
@@ -108,9 +108,9 @@ TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
   surface_quad->SetAll(
       sqs, rect, opaque_rect, visible_rect, needs_blending, arbitrary_id);
 
-  QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*surface_quad);
+  DrawQuadPtr mus_quad = DrawQuad::From<cc::DrawQuad>(*surface_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::Material::SURFACE_CONTENT, mus_quad->material);
+  EXPECT_EQ(cc::mojom::Material::SURFACE_CONTENT, mus_quad->material);
   ASSERT_TRUE(mus_quad->surface_quad_state);
   SurfaceQuadStatePtr& mus_surface_state = mus_quad->surface_quad_state;
   EXPECT_EQ(arbitrary_id, mus_surface_state->surface);
@@ -134,9 +134,9 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
                        vertex_opacity, y_flipped, nearest_neighbor,
                        secure_output_only);
 
-  QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*texture_quad);
+  DrawQuadPtr mus_quad = DrawQuad::From<cc::DrawQuad>(*texture_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::Material::TEXTURE_CONTENT, mus_quad->material);
+  EXPECT_EQ(cc::mojom::Material::TEXTURE_CONTENT, mus_quad->material);
   ASSERT_TRUE(mus_quad->texture_quad_state);
   TextureQuadStatePtr& mus_texture_state = mus_quad->texture_quad_state;
   EXPECT_EQ(resource_id, mus_texture_state->resource_id);
@@ -153,12 +153,12 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
 }
 
 TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
-  QuadPtr mus_texture_quad = Quad::New();
-  mus_texture_quad->material = mus::mojom::Material::TEXTURE_CONTENT;
+  DrawQuadPtr mus_texture_quad = DrawQuad::New();
+  mus_texture_quad->material = cc::mojom::Material::TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
   mus_texture_state->background_color = Color::New();
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
-  PassPtr mus_pass = Pass::New();
+  RenderPassPtr mus_pass = RenderPass::New();
   mus_pass->id.layer_id = 1;
   mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
@@ -171,12 +171,12 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
 }
 
 TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
-  QuadPtr mus_texture_quad = Quad::New();
-  mus_texture_quad->material = mus::mojom::Material::TEXTURE_CONTENT;
+  DrawQuadPtr mus_texture_quad = DrawQuad::New();
+  mus_texture_quad->material = cc::mojom::Material::TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
   mus_texture_state->vertex_opacity = mojo::Array<float>::New(4);
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
-  PassPtr mus_pass = Pass::New();
+  RenderPassPtr mus_pass = RenderPass::New();
   mus_pass->id.layer_id = 1;
   mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
@@ -255,7 +255,7 @@ TEST(SurfaceLibTest, RenderPass) {
                        vertex_opacity, y_flipped, nearest_neighbor,
                        secure_output_only);
 
-  PassPtr mus_pass = Pass::From(*pass);
+  RenderPassPtr mus_pass = RenderPass::From(*pass);
   ASSERT_FALSE(mus_pass.is_null());
   EXPECT_EQ(6u, mus_pass->id.index);
   EXPECT_EQ(output_rect, mus_pass->output_rect);
@@ -341,9 +341,9 @@ TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {
                             arbitrary_color,
                             width);
 
-  QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*debug_border_quad);
+  DrawQuadPtr mus_quad = DrawQuad::From<cc::DrawQuad>(*debug_border_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::Material::DEBUG_BORDER, mus_quad->material);
+  EXPECT_EQ(cc::mojom::Material::DEBUG_BORDER, mus_quad->material);
   EXPECT_EQ(rect, mus_quad->rect);
   EXPECT_EQ(opaque_rect, mus_quad->opaque_rect);
   EXPECT_EQ(visible_rect, mus_quad->visible_rect);
