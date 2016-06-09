@@ -118,21 +118,21 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   void OnCacheMatchCallback(
       int thread_id,
       int request_id,
-      CacheID cache_id,
+      scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
   void OnCacheMatchAllCallbackAdapter(
       int thread_id,
       int request_id,
-      CacheID cache_id,
+      scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle);
   void OnCacheMatchAllCallback(
       int thread_id,
       int request_id,
-      CacheID cache_id,
+      scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
       std::unique_ptr<std::vector<ServiceWorkerResponse>> responses,
       std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles);
@@ -144,16 +144,17 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   void OnCacheKeysCallback(
       int thread_id,
       int request_id,
-      CacheID cache_id,
+      scoped_refptr<CacheStorageCache> cache,
       CacheStorageError error,
       std::unique_ptr<CacheStorageCache::Requests> requests);
   void OnCacheBatchCallback(int thread_id,
                             int request_id,
-                            CacheID cache_id,
+                            scoped_refptr<CacheStorageCache> cache,
                             CacheStorageError error);
 
-  // Hangs onto a scoped_refptr to |cache|. Returns a unique cache_id. Call
-  // DropCacheReference when the reference is no longer needed.
+  // Hangs onto a scoped_refptr for the cache if it isn't already doing so.
+  // Returns a unique cache_id. Call DropCacheReference when the client is done
+  // with this cache.
   CacheID StoreCacheReference(scoped_refptr<CacheStorageCache> cache);
   void DropCacheReference(CacheID cache_id);
 

@@ -142,6 +142,8 @@ void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
   download_manager->DownloadUrl(std::move(parameters));
 }
 
+void NoOpCacheStorageErrorCallback(CacheStorageError error) {}
+
 }  // namespace
 
 RenderMessageFilter::RenderMessageFilter(
@@ -166,7 +168,6 @@ RenderMessageFilter::RenderMessageFilter(
       audio_manager_(audio_manager),
       media_internals_(media_internals),
       cache_storage_context_(cache_storage_context),
-      next_cache_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(request_context_.get());
 
@@ -615,17 +616,8 @@ void RenderMessageFilter::OnCacheStorageOpenCallback(
     CacheStorageError error) {
   if (error != CACHE_STORAGE_OK)
     return;
-
-  CacheID cache_id = next_cache_id_++;
-  cache_references_[cache_id] = cache;
-  cache->WriteSideData(base::Bind(&RenderMessageFilter::DidWriteSideData,
-                                  weak_ptr_factory_.GetWeakPtr(), cache_id),
-                       url, expected_response_time, buf, buf_len);
-}
-
-void RenderMessageFilter::DidWriteSideData(CacheID cache_id,
-                                           CacheStorageError error) {
-  cache_references_.erase(cache_id);
+  cache->WriteSideData(base::Bind(&NoOpCacheStorageErrorCallback), url,
+                       expected_response_time, buf, buf_len);
 }
 
 void RenderMessageFilter::OnKeygen(uint32_t key_size_index,

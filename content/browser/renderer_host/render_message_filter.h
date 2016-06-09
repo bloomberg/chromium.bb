@@ -134,7 +134,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                            const bool use_prompt) const;
 
  private:
-  using CacheID = int32_t;
   friend class BrowserThread;
   friend class base::DeleteHelper<RenderMessageFilter>;
 
@@ -227,7 +226,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                                   int buf_len,
                                   scoped_refptr<CacheStorageCache> cache,
                                   CacheStorageError error);
-  void DidWriteSideData(CacheID cache_id, CacheStorageError error);
   void OnKeygen(uint32_t key_size_index,
                 const std::string& challenge_string,
                 const GURL& url,
@@ -278,9 +276,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
   CacheStorageContextImpl* cache_storage_context_;
-
-  CacheID next_cache_id_;
-  std::map<CacheID, scoped_refptr<CacheStorageCache>> cache_references_;
 
   base::WeakPtrFactory<RenderMessageFilter> weak_ptr_factory_;
 
