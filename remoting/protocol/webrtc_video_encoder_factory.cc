@@ -109,6 +109,8 @@ int WebrtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
   encoded_image.capture_time_ms_ = frame->capture_time_ms();
   encoded_image._timeStamp =
       static_cast<uint32_t>(frame->capture_time_ms() * 90);
+  encoded_image.playout_delay_.min_ms = 0;
+  encoded_image.playout_delay_.max_ms = 0;
 
   webrtc::CodecSpecificInfo codec_specific_info;
   memset(&codec_specific_info, 0, sizeof(codec_specific_info));
