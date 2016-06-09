@@ -24,6 +24,7 @@ content::RenderWidgetHost* GetRenderWidgetHostIfMainFrame(
 PageLoadTracker::PageLoadTracker(content::WebContents* web_contents,
                                  PageLoadTrackerClient* client)
     : client_(client) {
+  DCHECK(web_contents);
   Observe(web_contents);
 }
 
