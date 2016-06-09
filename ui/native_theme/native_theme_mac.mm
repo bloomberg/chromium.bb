@@ -260,24 +260,33 @@ sk_sp<SkShader> NativeThemeMac::GetButtonBackgroundShader(
   gradient_points[0].iset(0, 0);
   gradient_points[1].iset(0, height);
 
-  SkScalar gradient_positions[] = { 0.0, 0.38, 1.0 };
+  SkScalar gradient_positions[] = { 0.0, 1.0 };
+
+  // These hex values are directly from the detailed specs in
+  // https://crbug.com/543683.
+  const SkColor kGrey = SkColorSetRGB(0xf6, 0xf6, 0xf6);
+  const SkColor kBlueStart = SkColorSetRGB(0x6b, 0xb3, 0xfa);
+  const SkColor kBlueEnd = SkColorSetRGB(0x07, 0x7d, 0xff);
+  const SkColor kPressedBlueStart = SkColorSetRGB(0x3e, 0x8b, 0xf6);
+  const SkColor kPressedBlueEnd = SkColorSetRGB(0x03, 0x51, 0xff);
 
   ColorByState start_colors;
-  start_colors[ButtonBackgroundType::DISABLED] = gfx::kMaterialGrey300;
-  start_colors[ButtonBackgroundType::HIGHLIGHTED] = gfx::kMaterialBlue300;
+  start_colors[ButtonBackgroundType::DISABLED] = kGrey;
+  start_colors[ButtonBackgroundType::HIGHLIGHTED] = kBlueStart;
   start_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
-  start_colors[ButtonBackgroundType::PRESSED] = gfx::kMaterialBlue300;
-  ColorByState end_colors;
-  end_colors[ButtonBackgroundType::DISABLED] = gfx::kMaterialGrey300;
-  end_colors[ButtonBackgroundType::HIGHLIGHTED] = gfx::kMaterialBlue700;
-  end_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
-  end_colors[ButtonBackgroundType::PRESSED] = gfx::kMaterialBlue700;
+  start_colors[ButtonBackgroundType::PRESSED] = kPressedBlueStart;
 
-  SkColor gradient_colors[] = {start_colors[type], start_colors[type],
-                               end_colors[type]};
+  ColorByState end_colors;
+  end_colors[ButtonBackgroundType::DISABLED] = kGrey;
+  end_colors[ButtonBackgroundType::HIGHLIGHTED] = kBlueEnd;
+  end_colors[ButtonBackgroundType::NORMAL] = SK_ColorWHITE;
+  end_colors[ButtonBackgroundType::PRESSED] = kPressedBlueEnd;
+
+  SkColor gradient_colors[] = {start_colors[type], end_colors[type]};
 
   return SkGradientShader::MakeLinear(
-      gradient_points, gradient_colors, gradient_positions, 3,
+      gradient_points, gradient_colors, gradient_positions,
+      arraysize(gradient_positions),
       SkShader::kClamp_TileMode);
 }
 

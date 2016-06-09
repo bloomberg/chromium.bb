@@ -574,7 +574,10 @@ action("aggregate_vector_icons") {
   ]
 
   if (is_mac) {
-    sources += [ "vector_icons/combobox_arrow_mac.icon" ]
+    sources += [
+      "vector_icons/combobox_arrow_mac_disabled.icon",
+      "vector_icons/combobox_arrow_mac_enabled.icon",
+    ]
   }
 }
 

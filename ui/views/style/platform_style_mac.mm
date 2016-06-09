@@ -18,6 +18,7 @@
 
 namespace views {
 
+const int PlatformStyle::kComboboxNormalArrowPadding = 0;
 const int PlatformStyle::kMinLabelButtonWidth = 32;
 const int PlatformStyle::kMinLabelButtonHeight = 30;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
@@ -32,10 +33,11 @@ gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     return *rb.GetImageSkiaNamed(IDR_MENU_DROPARROW);
   }
-  const int kComboboxArrowWidth = 13;
-  return gfx::CreateVectorIcon(gfx::VectorIconId::COMBOBOX_ARROW_MAC,
-                               kComboboxArrowWidth,
-                               is_enabled ? SK_ColorWHITE : SK_ColorBLACK);
+  const int kComboboxArrowWidth = 24;
+  return gfx::CreateVectorIcon(
+      is_enabled ? gfx::VectorIconId::COMBOBOX_ARROW_MAC_ENABLED
+                 : gfx::VectorIconId::COMBOBOX_ARROW_MAC_DISABLED,
+      kComboboxArrowWidth, SK_ColorBLACK);
 }
 
 // static

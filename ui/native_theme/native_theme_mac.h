@@ -14,7 +14,7 @@ namespace ui {
 // Mac implementation of native theme support.
 class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
  public:
-  static const int kComboboxCornerRadius = 5;
+  static const int kButtonCornerRadius = 3;
 
   // Type of gradient to use on a button background. Use HIGHLIGHTED for the
   // default button of a window and all combobox controls, but only when the

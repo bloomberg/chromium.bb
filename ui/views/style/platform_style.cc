@@ -34,6 +34,7 @@ const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 
 #if !defined(OS_MACOSX)
 
+const int PlatformStyle::kComboboxNormalArrowPadding = 7;
 const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = true;

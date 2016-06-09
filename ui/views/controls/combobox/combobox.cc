@@ -46,7 +46,7 @@ namespace views {
 
 namespace {
 
-// Action style arrow container padding widths
+// STYLE_ACTION arrow container padding widths.
 const int kActionLeftPadding = 12;
 const int kActionRightPadding = 11;
 
@@ -896,9 +896,8 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 }
 
 int Combobox::GetArrowContainerWidth() const {
-  const int kNormalPadding = 7;
   int padding = style_ == STYLE_NORMAL
-                    ? kNormalPadding * 2
+                    ? PlatformStyle::kComboboxNormalArrowPadding * 2
                     : kActionLeftPadding + kActionRightPadding;
   return ArrowSize().width() + padding;
 }

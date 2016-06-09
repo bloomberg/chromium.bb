@@ -27,7 +27,13 @@ void ComboboxBackgroundMac::Paint(gfx::Canvas* canvas, View* view) const {
   // Inset the left side far enough to draw only the arrow button, and inset the
   // other three sides by half a pixel so the edge of the background doesn't
   // paint outside the border.
-  bounds.Inset(bounds.width() - container_width_, 0.5, 0.5, 0.5);
+  // Disabled comboboxes do not have a separate color for the arrow container;
+  // instead, the entire combobox is drawn with the disabled background shader.
+  if (view->enabled()) {
+    bounds.Inset(bounds.width() - container_width_, 0.5, 0.5, 0.5);
+  } else {
+    bounds.Inset(0.5, 0.5);
+  }
 
   // TODO(tapted): Check whether the Widget is active, and use the NORMAL
   // BackgroundType if it is inactive. Handling this properly also requires the
@@ -45,12 +51,15 @@ void ComboboxBackgroundMac::Paint(gfx::Canvas* canvas, View* view) const {
 
   SkPoint no_curve = SkPoint::Make(0, 0);
   SkPoint curve = SkPoint::Make(
-      ui::NativeThemeMac::kComboboxCornerRadius,
-      ui::NativeThemeMac::kComboboxCornerRadius);
+      ui::NativeThemeMac::kButtonCornerRadius,
+      ui::NativeThemeMac::kButtonCornerRadius);
   SkVector curves[4] = { no_curve, curve, curve, no_curve };
 
   SkRRect fill_rect;
-  fill_rect.setRectRadii(gfx::RectFToSkRect(bounds), curves);
+  if (view->enabled())
+    fill_rect.setRectRadii(gfx::RectFToSkRect(bounds), curves);
+  else
+    fill_rect.setRectXY(gfx::RectFToSkRect(bounds), curve.fX, curve.fY);
 
   SkPath path;
   path.addRRect(fill_rect);

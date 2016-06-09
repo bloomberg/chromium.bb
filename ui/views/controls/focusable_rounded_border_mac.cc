@@ -37,7 +37,7 @@ void FocusableRoundedBorder::Paint(const View& view, gfx::Canvas* canvas) {
   float half_thickness = kThickness / 2.0f;
   gfx::RectF bounds(view.GetLocalBounds());
   bounds.Inset(half_thickness, half_thickness);
-  canvas->DrawRoundRect(bounds, ui::NativeThemeMac::kComboboxCornerRadius,
+  canvas->DrawRoundRect(bounds, ui::NativeThemeMac::kButtonCornerRadius,
                         paint);
 }
 
