@@ -38,5 +38,7 @@ class ToughPathRenderingCasesPageSet(story.StorySet):
     for url in urls_list:
       self.AddStory(ToughPathRenderingCasesPage(url, self))
 
+    # Chalkboard content linked from
+    # http://ie.microsoft.com/testdrive/Performance/Chalkboard/.
     self.AddStory(ChalkboardPage(
-        'http://ie.microsoft.com/testdrive/Performance/Chalkboard/', self))
+        'https://testdrive-archive.azurewebsites.net/performance/chalkboard/', self))
