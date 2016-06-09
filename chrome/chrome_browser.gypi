@@ -3244,10 +3244,7 @@
         '../components/components.gyp:suggestions',
         '../components/components.gyp:signin_core_browser',
         '../components/components.gyp:startup_metric_utils_browser',
-        '../components/components.gyp:startup_metric_utils_browser_message_filter',
-        # TODO(fdoray): Remove this once the PreRead field trial has expired.
-        # crbug.com/577698
-        '../components/components.gyp:startup_metric_utils_common',
+        '../components/components.gyp:startup_metric_utils_browser_host',
         '../components/components.gyp:subresource_filter_content_browser',
         '../components/components.gyp:subresource_filter_core_browser',
         '../components/components.gyp:supervised_user_error_page',
@@ -3893,7 +3890,9 @@
             '../chrome_elf/chrome_elf.gyp:dll_hash',
             '../components/components.gyp:browser_watcher',
             '../components/components.gyp:browser_watcher_client',
-            '../components/components.gyp:startup_metric_utils_common',
+            # TODO(fdoray): Remove this once the PreRead field trial has
+            # expired. crbug.com/577698
+            '../components/components.gyp:startup_metric_utils_win',
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',

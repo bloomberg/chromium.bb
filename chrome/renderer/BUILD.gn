@@ -49,7 +49,7 @@ static_library("renderer") {
     "//components/plugins/renderer",
     "//components/printing/renderer",
     "//components/resources:components_resources",
-    "//components/startup_metric_utils/common",
+    "//components/startup_metric_utils/common:interfaces",
     "//components/subresource_filter/content/renderer",
     "//components/translate/content/renderer",
     "//components/translate/core/common",

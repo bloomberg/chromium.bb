@@ -4,7 +4,7 @@
 
 # We have 2 separate browser targets because //components/html_viewer requires
 # startup_metric_utils_browser, but has symbols that conflict with mojo symbols
-# that startup_metric_utils_browser_message_filter indirectly depends on.
+# that startup_metric_utils_browser_host indirectly depends on.
 
 {
   'targets': [
@@ -28,30 +28,29 @@
       ],
     },
     {
-      # GN version: //components/startup_metric_utils/browser:message_filter_lib
-      'target_name': 'startup_metric_utils_browser_message_filter',
+      # GN version: //components/startup_metric_utils/browser:host
+      'target_name': 'startup_metric_utils_browser_host',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
         'startup_metric_utils_browser',
-        'startup_metric_utils_common',
+        'startup_metric_utils_interfaces'
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
-        'startup_metric_utils/browser/startup_metric_message_filter.cc',
-        'startup_metric_utils/browser/startup_metric_message_filter.h',
+        'startup_metric_utils/browser/startup_metric_host_impl.cc',
+        'startup_metric_utils/browser/startup_metric_host_impl.h',
       ],
     },
     {
       # GN version: //components/startup_metric_utils/common
-      'target_name': 'startup_metric_utils_common',
+      'target_name': 'startup_metric_utils_win',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../ipc/ipc.gyp:ipc',
         'components.gyp:variations',
       ],
       'include_dirs': [
@@ -60,9 +59,25 @@
       'sources': [
         'startup_metric_utils/common/pre_read_field_trial_utils_win.cc',
         'startup_metric_utils/common/pre_read_field_trial_utils_win.h',
-        'startup_metric_utils/common/startup_metric_message_generator.cc',
-        'startup_metric_utils/common/startup_metric_message_generator.h',
-        'startup_metric_utils/common/startup_metric_messages.h',
+      ],
+    },
+    {
+      # GN version: //components/startup_metric_utils/common:interfaces
+      'target_name': 'startup_metric_utils_interfaces',
+      'type': 'static_library',
+      'sources': [
+        'startup_metric_utils/common/startup_metric.mojom',
+      ],
+      'dependencies': [
+        '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
+      ],
+      'variables': {
+        'mojom_typemaps': [
+          '<(DEPTH)/mojo/common/common_custom_types.typemap',
+        ],
+      },
+      'includes': [
+        '../mojo/mojom_bindings_generator.gypi',
       ],
     },
   ],
