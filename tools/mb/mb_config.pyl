@@ -245,14 +245,6 @@
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
-      # TODO(kbr): remove the Android Debug bots once the waterfalls
-      # are restarted. crbug.com/617848
-      'Android Debug (Nexus 5)': 'android_gn_debug_static_trybot',
-      'Android Debug (Nexus 5X)': 'android_gn_debug_static_trybot_arm64',
-      'Android Swarmed Debug (Nexus 5X)':
-        'android_gn_debug_static_trybot_arm64',
-      'Android Debug (Nexus 6)': 'android_gn_debug_static_trybot',
-      'Android Debug (Nexus 9)': 'android_gn_debug_static_trybot_arm64',
       'Android Release (Nexus 5)': 'android_gn_release_trybot',
       'Android Release (Nexus 5X)': 'swarming_android_gn_release_trybot_arm64',
       'Android Release (Nexus 6)': 'android_gn_release_trybot',
@@ -995,14 +987,6 @@
 
     'android_gn_debug_static_minimal_symbols_mipsel': [
       'android', 'gn', 'debug', 'static', 'minimal_symbols', 'mipsel',
-    ],
-
-    'android_gn_debug_static_trybot': [
-      'android', 'gn', 'debug_static_trybot',
-    ],
-
-    'android_gn_debug_static_trybot_arm64': [
-      'android', 'gn', 'debug_static_trybot', 'arm64',
     ],
 
     'android_gn_debug_trybot_java_coverage': [
@@ -2051,11 +2035,6 @@
 
     'debug_static_bot': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
-    },
-
-    'debug_static_trybot': {
-      'mixins': ['debug', 'static', 'dcheck_always_on', 'minimal_symbols',
-                 'goma'],
     },
 
     'debug_trybot': {
