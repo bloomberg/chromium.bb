@@ -53,10 +53,6 @@ class WebClient {
   // Gives the embedder a chance to perform tasks before a web view is created.
   virtual void PreWebViewCreation() const {}
 
-  // Gives the embedder a chance to set up the given web view before presenting
-  // it in the UI.
-  virtual void PostWebViewCreation(UIWebView* web_view) const {}
-
   // Gives the embedder a chance to register its own standard and saveable url
   // schemes early on in the startup sequence.
   virtual void AddAdditionalSchemes(
