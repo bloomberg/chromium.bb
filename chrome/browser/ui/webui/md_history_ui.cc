@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -69,7 +70,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
 
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHistoryEnableGroupByDomain);
+      switches::kHistoryEnableGroupByDomain) || profile->IsSupervised();
   source->AddBoolean("groupByDomain", group_by_domain);
 
   source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
@@ -131,6 +132,16 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 MdHistoryUI::~MdHistoryUI() {}
 
+// static
+bool MdHistoryUI::IsEnabled(Profile* profile) {
+  return base::FeatureList::IsEnabled(
+             features::kMaterialDesignHistoryFeature) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kHistoryEnableGroupByDomain) &&
+         !profile->IsSupervised();
+}
+
+// static
 base::RefCountedMemory* MdHistoryUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(

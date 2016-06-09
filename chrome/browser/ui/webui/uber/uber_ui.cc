@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
+#include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,6 +83,7 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
     content::BrowserContext* browser_context) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIUberFrameHost);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("uber_frame.js", IDR_UBER_FRAME_JS);
@@ -111,14 +113,13 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
   source->AddString("overridesHistory", overrides_history ? "yes" : "no");
   source->AddBoolean(
       "hideHistory",
-      base::FeatureList::IsEnabled(features::kMaterialDesignHistoryFeature)
+      MdHistoryUI::IsEnabled(profile)
       && !overrides_history);
 
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyChildSrc("child-src chrome:;");
 
-  source->AddBoolean("profileIsGuest",
-      Profile::FromBrowserContext(browser_context)->IsGuestSession());
+  source->AddBoolean("profileIsGuest", profile->IsGuestSession());
 
   return source;
 }
