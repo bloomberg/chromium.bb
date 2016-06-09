@@ -192,6 +192,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
         }
 
+        if (params.isAnchor() && !UrlUtilities.isAcceptedScheme(params.getLinkUrl())) {
+            menu.findItem(R.id.contextmenu_open_in_other_window).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_in_new_tab).setVisible(false);
+            menu.findItem(R.id.contextmenu_open_in_incognito_tab).setVisible(false);
+        }
+
         if (MailTo.isMailTo(params.getLinkUrl())) {
             menu.findItem(R.id.contextmenu_copy_link_address).setVisible(false);
         } else {
