@@ -35,7 +35,3 @@
   margin-top: 16px;
   overflow: hidden;
 }
-
-#start-casting-to-route-button {
-  @apply(--layout-flex);
-}
