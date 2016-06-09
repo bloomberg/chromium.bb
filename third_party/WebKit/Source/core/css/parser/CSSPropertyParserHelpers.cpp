@@ -8,8 +8,6 @@
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSValuePair.h"
-// TODO(timloh): Remove this dependency
-#include "core/css/parser/CSSPropertyParser.h"
 
 namespace blink {
 
@@ -447,7 +445,7 @@ static bool parseColorFunction(CSSParserTokenRange& range, RGBA32& result)
 CSSValue* consumeColor(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool acceptQuirkyColors)
 {
     CSSValueID id = range.peek().id();
-    if (CSSPropertyParser::isColorKeyword(id)) {
+    if (StyleColor::isColorKeyword(id)) {
         if (!isValueAllowedInMode(id, cssParserMode))
             return nullptr;
         return consumeIdent(range);

@@ -6,7 +6,6 @@
 
 #include "core/animation/ColorPropertyFunctions.h"
 #include "core/css/CSSColorValue.h"
-#include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/LayoutTheme.h"
 
@@ -61,7 +60,7 @@ PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor
     case CSSValueWebkitFocusRingColor:
         return createInterpolableColor(LayoutTheme::theme().focusRingColor());
     default:
-        ASSERT(CSSPropertyParser::isColorKeyword(keyword));
+        DCHECK(StyleColor::isColorKeyword(keyword));
         return createInterpolableColor(StyleColor::colorFromKeyword(keyword));
     }
 }
@@ -82,7 +81,7 @@ PassOwnPtr<InterpolableValue> CSSColorInterpolationType::maybeCreateInterpolable
     const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
     if (!primitive.isValueID())
         return nullptr;
-    if (!CSSPropertyParser::isColorKeyword(primitive.getValueID()))
+    if (!StyleColor::isColorKeyword(primitive.getValueID()))
         return nullptr;
     return createInterpolableColor(primitive.getValueID());
 }

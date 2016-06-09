@@ -10,6 +10,7 @@
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -443,7 +444,7 @@ CSSValue* CSSParserFastPaths::parseColor(const String& string, CSSParserMode par
 {
     ASSERT(!string.isEmpty());
     CSSValueID valueID = cssValueKeywordID(string);
-    if (CSSPropertyParser::isColorKeyword(valueID)) {
+    if (StyleColor::isColorKeyword(valueID)) {
         if (!isValueAllowedInMode(valueID, parserMode))
             return nullptr;
         return CSSPrimitiveValue::createIdentifier(valueID);

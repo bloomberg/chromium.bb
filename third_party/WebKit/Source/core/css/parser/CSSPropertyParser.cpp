@@ -180,35 +180,6 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     return false;
 }
 
-bool CSSPropertyParser::isColorKeyword(CSSValueID id)
-{
-    // Named colors and color keywords:
-    //
-    // <named-color>
-    //   'aqua', 'black', 'blue', ..., 'yellow' (CSS3: "basic color keywords")
-    //   'aliceblue', ..., 'yellowgreen'        (CSS3: "extended color keywords")
-    //   'transparent'
-    //
-    // 'currentcolor'
-    //
-    // <deprecated-system-color>
-    //   'ActiveBorder', ..., 'WindowText'
-    //
-    // WebKit proprietary/internal:
-    //   '-webkit-link'
-    //   '-webkit-activelink'
-    //   '-internal-active-list-box-selection'
-    //   '-internal-active-list-box-selection-text'
-    //   '-internal-inactive-list-box-selection'
-    //   '-internal-inactive-list-box-selection-text'
-    //   '-webkit-focus-ring-color'
-    //   '-internal-quirk-inherit'
-    //
-    return (id >= CSSValueAqua && id <= CSSValueInternalQuirkInherit)
-        || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen)
-        || id == CSSValueMenu;
-}
-
 bool CSSPropertyParser::isSystemColor(CSSValueID id)
 {
     return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;

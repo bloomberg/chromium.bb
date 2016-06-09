@@ -5,7 +5,6 @@
 #include "core/css/parser/MediaQueryParser.h"
 
 #include "core/MediaTypeNames.h"
-#include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "wtf/Vector.h"
 

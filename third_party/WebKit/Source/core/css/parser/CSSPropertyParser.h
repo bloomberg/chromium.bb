@@ -49,7 +49,6 @@ public:
 
     // TODO(timloh): This doesn't seem like the right place for these
     static bool isSystemColor(CSSValueID);
-    static bool isColorKeyword(CSSValueID);
     static bool isValidNumericValue(double);
 
 private:
