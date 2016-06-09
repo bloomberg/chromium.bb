@@ -222,7 +222,6 @@
             '<(DEPTH)/third_party/webrtc/api/audiotrack.h',
             '<(DEPTH)/third_party/webrtc/api/datachannel.cc',
             '<(DEPTH)/third_party/webrtc/api/datachannel.h',
-            '<(DEPTH)/third_party/webrtc/api/dtlsidentitystore.cc',
             '<(DEPTH)/third_party/webrtc/api/dtlsidentitystore.h',
             '<(DEPTH)/third_party/webrtc/api/dtmfsender.cc',
             '<(DEPTH)/third_party/webrtc/api/dtmfsender.h',
