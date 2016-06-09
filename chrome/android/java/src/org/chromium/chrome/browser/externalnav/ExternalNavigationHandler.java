@@ -347,7 +347,7 @@ public class ExternalNavigationHandler {
         // startActivityIfNeeded or startActivity.
         if (!isExternalProtocol) {
             if (!mDelegate.isSpecializedHandlerAvailable(resolvingInfos)) {
-                if (params.isWebApk()) {
+                if (params.webApkPackageName() != null) {
                     intent.setPackage(mDelegate.getPackageName());
                     mDelegate.startActivity(intent);
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
@@ -410,6 +410,17 @@ public class ExternalNavigationHandler {
                 // gesture here so that it can be used later.
                 if (params.hasUserGesture()) {
                     IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+                }
+
+                if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+                    // If the only specialized intent handler is a WebAPK, set the intent's package
+                    // to launch the WebAPK without showing the intent picker.
+                    String targetWebApkPackageName =
+                            mDelegate.findValidWebApkPackageName(resolvingInfos);
+                    if (targetWebApkPackageName != null
+                            && mDelegate.countSpecializedHandlers(resolvingInfos) == 1) {
+                        intent.setPackage(targetWebApkPackageName);
+                    }
                 }
 
                 if (mDelegate.startActivityIfNeeded(intent)) {

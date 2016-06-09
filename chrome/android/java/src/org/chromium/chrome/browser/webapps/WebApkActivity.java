@@ -65,7 +65,7 @@ public class WebApkActivity extends WebappActivity {
                         ExternalNavigationParams.Builder builder =
                                 super.buildExternalNavigationParams(
                                         navigationParams, tabRedirectHandler, shouldCloseTab);
-                        builder.setIsWebApk(true);
+                        builder.setWebApkPackageName(getWebApkPackageName());
                         return builder;
                     }
                 };
@@ -83,9 +83,15 @@ public class WebApkActivity extends WebappActivity {
 
     public void onStop() {
         super.onStop();
-        String packageName = getWebappInfo().webApkPackageName();
         WebApkServiceConnectionManager.getInstance().disconnect(
-                ContextUtils.getApplicationContext(), packageName);
+                ContextUtils.getApplicationContext(), getWebApkPackageName());
+    }
+
+    /**
+     * Returns the WebAPK's package name.
+     */
+    private String getWebApkPackageName() {
+        return getWebappInfo().webApkPackageName();
     }
 
     @Override

@@ -20,12 +20,14 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -40,9 +42,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     private static final int IGNORE = 0x0;
     private static final int START_INCOGNITO = 0x1;
     private static final int START_CHROME = 0x2;
-    private static final int START_FILE = 0x4;
-    private static final int START_OTHER_ACTIVITY = 0x8;
-    private static final int INTENT_SANITIZATION_EXCEPTION = 0x10;
+    private static final int START_WEBAPK = 0x4;
+    private static final int START_FILE = 0x8;
+    private static final int START_OTHER_ACTIVITY = 0x10;
+    private static final int INTENT_SANITIZATION_EXCEPTION = 0x20;
 
     private static final String SEARCH_RESULT_URL_FOR_TOM_HANKS =
             "https://www.google.com/search?q=tom+hanks";
@@ -72,6 +75,19 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
     private static final String TEXT_APP_1_PACKAGE_NAME = "text_app_1";
     private static final String TEXT_APP_2_PACKAGE_NAME = "text_app_2";
+
+    private static final String WEBAPK_SCOPE = "https://www.template.com";
+    private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.template";
+
+    private static final String WEBAPK_WITH_NATIVE_APP_SCOPE =
+            "https://www.webapk.with.native.com";
+    private static final String WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME =
+            "org.chromium.webapk.with.native";
+    private static final String NATIVE_APP_PACKAGE_NAME = "com.webapk.with.native.android";
+
+    private static final String COUNTERFEIT_WEBAPK_SCOPE = "http://www.counterfeit.webapk.com";
+    private static final String COUNTERFEIT_WEBAPK_PACKAGE_NAME =
+            "org.chromium.webapk.counterfeit";
 
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandler mUrlHandler;
@@ -750,14 +766,87 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Test that tapping on a link which is outside of the referrer Web APK's scope brings the
+     * Test that tapping on a link which is outside of the referrer WebAPK's scope brings the
      * user back to Chrome.
      */
     @SmallTest
     public void testLeaveWebApk_LinkOutOfScope() {
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
-                .withIsWebApk(true)
+                .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_CHROME);
+    }
+
+    /**
+     * Test that tapping a link which falls solely into the scope of a WebAPK does not bypass the
+     * intent picker if WebAPKs are disabled in the command line.
+     */
+    @SmallTest
+    public void testLaunchWebApk_WebApkDisabledCommandLine() {
+        checkUrl(WEBAPK_SCOPE)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    /**
+     * Test that tapping a link which falls solely in the scope of a WebAPK launches a WebAPK
+     * without showing the intent picker if WebAPKs are enabled in the command line.
+     */
+    @SmallTest
+    public void testLaunchWebApk_BypassIntentPicker() {
+        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        checkUrl(WEBAPK_SCOPE)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
+    }
+
+    /**
+     * Test that tapping a link which falls in the scope of multiple intent handlers, one of which
+     * is a WebAPK, shows the intent picker.
+     */
+    @SmallTest
+    public void testLaunchWebApk_ShowIntentPickerMultipleIntentHandlers() {
+        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        checkUrl(WEBAPK_WITH_NATIVE_APP_SCOPE)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    /**
+     * Test that tapping a link which falls solely into the scope of a different WebAPK launches a
+     * WebAPK without showing the intent picker.
+     */
+    @SmallTest
+    public void testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
+        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        checkUrl(WEBAPK_SCOPE)
+                .withReferrer(WEBAPK_WITH_NATIVE_APP_SCOPE)
+                .withWebApkPackageName(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
+    }
+
+    /**
+     * Test that a link which falls into the scope of an invalid WebAPK (e.g. it was incorrectly
+     * signed) does not get any special WebAPK handling. The first time that the user taps on the
+     * link, the intent picker should be shown.
+     */
+    @SmallTest
+    public void testLaunchWebApk_ShowIntentPickerInvalidWebApk() {
+        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        checkUrl(COUNTERFEIT_WEBAPK_SCOPE)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    /**
+     * Test that tapping a link which falls into the scope of the current WebAPK stays within the
+     * WebAPK.
+     */
+    @SmallTest
+    public void testLaunchWebApk_StayInSameWebApk() {
+        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        checkUrl(WEBAPK_SCOPE + "/new.html")
+                .withReferrer(WEBAPK_SCOPE)
+                .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     private static ResolveInfo newResolveInfo(String packageName, String name) {
@@ -788,22 +877,31 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                     return list;
                 }
             }
-            if (intent.getDataString().startsWith("http://")
+            String dataString = intent.getDataString();
+            if (dataString.startsWith("http://")
                     || intent.getDataString().startsWith("https://")) {
                 list.add(newResolveInfo("chrome", "chrome"));
             }
-            if (intent.getDataString().startsWith("http://m.youtube.com")
+            if (dataString.startsWith("http://m.youtube.com")
                     || intent.getDataString().startsWith("http://youtube.com")) {
                 list.add(newResolveInfo("youtube", "youtube"));
-            } else if (intent.getDataString().startsWith(PLUS_STREAM_URL)) {
+            } else if (dataString.startsWith(PLUS_STREAM_URL)) {
                 list.add(newResolveInfo("plus", "plus"));
             } else if (intent.getDataString().startsWith(CALENDAR_URL)) {
                 list.add(newResolveInfo("calendar", "calendar"));
-            } else if (intent.getDataString().startsWith("sms")) {
+            } else if (dataString.startsWith("sms")) {
                 list.add(newResolveInfo(
                         TEXT_APP_1_PACKAGE_NAME, TEXT_APP_1_PACKAGE_NAME + ".cls"));
                 list.add(newResolveInfo(
                         TEXT_APP_2_PACKAGE_NAME, TEXT_APP_2_PACKAGE_NAME + ".cls"));
+            } else if (dataString.startsWith(WEBAPK_SCOPE)) {
+                list.add(newResolveInfo(WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME));
+            } else if (dataString.startsWith(WEBAPK_WITH_NATIVE_APP_SCOPE)) {
+                list.add(newResolveInfo(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME,
+                        WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME));
+                list.add(newResolveInfo(NATIVE_APP_PACKAGE_NAME, NATIVE_APP_PACKAGE_NAME));
+            } else if (dataString.startsWith(COUNTERFEIT_WEBAPK_SCOPE)) {
+                list.add(newResolveInfo(COUNTERFEIT_WEBAPK_PACKAGE_NAME, COUNTERFEIT_WEBAPK_SCOPE));
             } else {
                 list.add(newResolveInfo("foo", "foo"));
             }
@@ -817,13 +915,41 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         @Override
         public boolean isSpecializedHandlerAvailable(List<ResolveInfo> resolveInfos) {
-            for (ResolveInfo resolveInfo : resolveInfos) {
-                String packageName = resolveInfo.activityInfo.packageName;
-                if (packageName.equals("youtube") || packageName.equals("calendar")) {
-                    return true;
+            return countSpecializedHandlers(resolveInfos) > 0;
+        }
+
+        @Override
+        public int countSpecializedHandlers(List<ResolveInfo> infos) {
+            if (infos == null) {
+                return 0;
+            }
+            int count = 0;
+            for (ResolveInfo info : infos) {
+                String packageName = info.activityInfo.packageName;
+                if (packageName.equals("youtube") || packageName.equals("calendar")
+                        || packageName.equals(COUNTERFEIT_WEBAPK_PACKAGE_NAME)
+                        || packageName.equals(NATIVE_APP_PACKAGE_NAME)
+                        || packageName.equals(WEBAPK_PACKAGE_NAME)
+                        || packageName.equals(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)) {
+                    ++count;
                 }
             }
-            return false;
+            return count;
+        }
+
+        @Override
+        public String findValidWebApkPackageName(List<ResolveInfo> infos) {
+            if (infos == null) {
+                return null;
+            }
+            for (ResolveInfo info : infos) {
+                String packageName = info.activityInfo.packageName;
+                if (packageName.equals(WEBAPK_PACKAGE_NAME)
+                        || packageName.equals(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)) {
+                    return packageName;
+                }
+            }
+            return null;
         }
 
         @Override
@@ -950,7 +1076,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         private boolean mIsRedirect;
         private boolean mChromeAppInForegroundRequired = true;
         private boolean mIsBackgroundTabNavigation;
-        private boolean mIsWebApk;
+        private String mWebApkPackageName;
         private boolean mHasUserGesture;
         private TabRedirectHandler mRedirectHandler;
 
@@ -958,8 +1084,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             mUrl = url;
         }
 
-        public ExternalNavigationTestParams withIsWebApk(boolean isWebApk) {
-            mIsWebApk = isWebApk;
+        public ExternalNavigationTestParams withWebApkPackageName(String webApkPackageName) {
+            mWebApkPackageName = webApkPackageName;
             return this;
         }
 
@@ -1009,8 +1135,9 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
             boolean expectStartActivity =
-                    (otherExpectation & (START_CHROME | START_OTHER_ACTIVITY)) != 0;
+                    (otherExpectation & (START_CHROME | START_WEBAPK | START_OTHER_ACTIVITY)) != 0;
             boolean expectStartChrome = (otherExpectation & START_CHROME) != 0;
+            boolean expectStartWebApk = (otherExpectation & START_WEBAPK) != 0;
             boolean expectStartOtherActivity = (otherExpectation & START_OTHER_ACTIVITY) != 0;
             boolean expectStartFile = (otherExpectation & START_FILE) != 0;
             boolean expectSaneIntent = expectStartOtherActivity
@@ -1025,23 +1152,28 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                     .setRedirectHandler(mRedirectHandler)
                     .setIsBackgroundTabNavigation(mIsBackgroundTabNavigation)
                     .setIsMainFrame(true)
-                    .setIsWebApk(mIsWebApk)
+                    .setWebApkPackageName(mWebApkPackageName)
                     .setHasUserGesture(mHasUserGesture)
                     .build();
             OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
             boolean startActivityCalled = false;
             boolean startChromeCalled = false;
+            boolean startWebApkCalled = false;
             if (mDelegate.startActivityIntent != null) {
                 startActivityCalled = true;
                 String packageName = mDelegate.startActivityIntent.getPackage();
-                startChromeCalled =
-                        packageName != null && packageName.equals(mDelegate.getPackageName());
+                if (packageName != null) {
+                    startChromeCalled = packageName.equals(mDelegate.getPackageName());
+                    startWebApkCalled =
+                            packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
+                }
             }
 
             assertEquals(expectedOverrideResult, result);
             assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
             assertEquals(expectStartActivity, startActivityCalled);
             assertEquals(expectStartChrome, startChromeCalled);
+            assertEquals(expectStartWebApk, startWebApkCalled);
             assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
 
             if (startActivityCalled && expectSaneIntent) {

@@ -12,7 +12,6 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -45,6 +44,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.List;
 
@@ -227,31 +227,41 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean isSpecializedHandlerAvailable(List<ResolveInfo> infos) {
-        return isPackageSpecializedHandler(infos, null);
+        return countSpecializedHandlers(infos) > 0;
     }
 
-    static boolean isPackageSpecializedHandler(List<ResolveInfo> handlers,
-            String packageName) {
-        if (handlers == null || handlers.size() == 0) return false;
-        for (ResolveInfo resolveInfo : handlers) {
-            IntentFilter filter = resolveInfo.filter;
+    @Override
+    public int countSpecializedHandlers(List<ResolveInfo> infos) {
+        return countSpecializedHandlersWithFilter(infos, null);
+    }
+
+    static int countSpecializedHandlersWithFilter(
+            List<ResolveInfo> infos, String filterPackageName) {
+        if (infos == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (ResolveInfo info : infos) {
+            IntentFilter filter = info.filter;
             if (filter == null) {
-                // No intent filter matches this intent?
-                // Error on the side of staying in the browser, ignore
+                // Error on the side of classifying ResolveInfo as generic.
                 continue;
             }
             if (filter.countDataAuthorities() == 0 && filter.countDataPaths() == 0) {
-                // Generic handler, skip
+                // Don't count generic handlers.
                 continue;
             }
-            if (TextUtils.isEmpty(packageName)) return true;
-            ActivityInfo activityInfo = resolveInfo.activityInfo;
-            if (activityInfo == null) continue;
-            if (!activityInfo.packageName.equals(packageName)) continue;
-            return true;
-        }
 
-        return false;
+            if (!TextUtils.isEmpty(filterPackageName)
+                    && (info.activityInfo == null
+                               || !info.activityInfo.packageName.equals(filterPackageName))) {
+                continue;
+            }
+
+            ++count;
+        }
+        return count;
     }
 
     /**
@@ -268,11 +278,19 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         try {
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
-            return isPackageSpecializedHandler(handlers, packageName);
+            return countSpecializedHandlersWithFilter(handlers, packageName) > 0;
         } catch (RuntimeException e) {
             logTransactionTooLargeOrRethrow(e, intent);
         }
         return false;
+    }
+
+    @Override
+    public String findValidWebApkPackageName(List<ResolveInfo> infos) {
+        String webApkPackageName = WebApkValidator.findWebApkPackage(infos);
+        return WebApkValidator.isValidWebApk(mApplicationContext, webApkPackageName)
+                ? webApkPackageName
+                : null;
     }
 
     @Override

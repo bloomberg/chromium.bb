@@ -34,8 +34,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
     public void testIsPackageSpecializedHandler_NoResolveInfo() {
         String packageName = "";
         List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
-        assertFalse(ExternalNavigationDelegateImpl
-                .isPackageSpecializedHandler(resolveInfos, packageName));
+        assertEquals(0, ExternalNavigationDelegateImpl.countSpecializedHandlersWithFilter(
+                                resolveInfos, packageName));
     }
 
     @SmallTest
@@ -44,8 +44,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
         ResolveInfo info = new ResolveInfo();
         info.filter = new IntentFilter();
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
-        assertFalse(ExternalNavigationDelegateImpl
-                .isPackageSpecializedHandler(resolveInfos, packageName));
+        assertEquals(0, ExternalNavigationDelegateImpl.countSpecializedHandlersWithFilter(
+                                resolveInfos, packageName));
     }
 
     @SmallTest
@@ -55,8 +55,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
         info.filter = new IntentFilter();
         info.filter.addDataPath("somepath", 2);
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
-        assertTrue(ExternalNavigationDelegateImpl
-                .isPackageSpecializedHandler(resolveInfos, packageName));
+        assertEquals(1, ExternalNavigationDelegateImpl.countSpecializedHandlersWithFilter(
+                                resolveInfos, packageName));
     }
 
     @SmallTest
@@ -66,8 +66,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
         info.filter = new IntentFilter();
         info.filter.addDataAuthority("http://www.google.com", "80");
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
-        assertTrue(ExternalNavigationDelegateImpl
-                .isPackageSpecializedHandler(resolveInfos, packageName));
+        assertEquals(1, ExternalNavigationDelegateImpl.countSpecializedHandlersWithFilter(
+                                resolveInfos, packageName));
     }
 
     @SmallTest
@@ -79,8 +79,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
         info.activityInfo = new ActivityInfo();
         info.activityInfo.packageName = packageName;
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
-        assertTrue(ExternalNavigationDelegateImpl
-                .isPackageSpecializedHandler(resolveInfos, packageName));
+        assertEquals(1, ExternalNavigationDelegateImpl.countSpecializedHandlersWithFilter(
+                                resolveInfos, packageName));
     }
 
     @SmallTest
@@ -92,8 +92,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
         info.activityInfo = new ActivityInfo();
         info.activityInfo.packageName = "com.foo.bar";
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
-        assertFalse(ExternalNavigationDelegateImpl
-                .isPackageSpecializedHandler(resolveInfos, packageName));
+        assertEquals(0, ExternalNavigationDelegateImpl.countSpecializedHandlersWithFilter(
+                                resolveInfos, packageName));
     }
 
     @SmallTest
