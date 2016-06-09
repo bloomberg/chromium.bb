@@ -43,7 +43,7 @@ class RecentTabHelper
   void StartSnapshot() override;
 
   // Test support.
-  // A factory that supplies the instances of an OfflienPageArchiver.
+  // A factory that supplies the instances of an OfflinePageArchiver.
   // This is used for testing, where we want to use a specific mock.
   class TestArchiveFactory {
    public:

@@ -25,7 +25,7 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
       new OfflinePageTestStore(task_runner));
 
   base::FilePath archives_dir =
-      context->GetPath().Append(chrome::kOfflinePageArchviesDirname);
+      context->GetPath().Append(chrome::kOfflinePageArchivesDirname);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelImpl(
       std::move(metadata_store), archives_dir, task_runner));

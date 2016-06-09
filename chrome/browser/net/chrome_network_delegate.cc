@@ -681,7 +681,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   // Pages/archives.
   if (!profile_path_.empty()) {
     const base::FilePath offline_page_archives =
-        profile_path_.Append(chrome::kOfflinePageArchviesDirname);
+        profile_path_.Append(chrome::kOfflinePageArchivesDirname);
     if (offline_page_archives.IsParent(path))
       return true;
   }

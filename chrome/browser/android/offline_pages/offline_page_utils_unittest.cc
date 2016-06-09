@@ -171,7 +171,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   offline_url_missing_ = net::FilePathToFileURL(
       profile()
           ->GetPath()
-          .Append(chrome::kOfflinePageArchviesDirname)
+          .Append(chrome::kOfflinePageArchivesDirname)
           .Append(FILE_PATH_LITERAL("missing_file.mhtml")));
 
   // Create page 4 - expired page.

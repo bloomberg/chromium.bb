@@ -50,11 +50,10 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
       new OfflinePageMetadataStoreSQL(background_task_runner, store_path));
 
   base::FilePath archives_dir =
-      profile->GetPath().Append(chrome::kOfflinePageArchviesDirname);
+      profile->GetPath().Append(chrome::kOfflinePageArchivesDirname);
 
   return new OfflinePageModelImpl(std::move(metadata_store), archives_dir,
                                   background_task_runner);
 }
 
 }  // namespace offline_pages
-
