@@ -199,7 +199,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // will be invoked with an empty state key vector in case of errors.
   virtual void GetServerBackedStateKeys(const StateKeysCallback& callback) = 0;
 
-  // Used for CheckArcAvailability.  Takes a boolean indicating whether the
+  // Used for several ARC methods.  Takes a boolean indicating whether the
   // operation was successful or not.
   typedef base::Callback<void(bool)> ArcCallback;
 
@@ -211,16 +211,20 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // Asynchronously checks if starting the ARC instance is available.
   // The result of the operation is reported through |callback|.
+  // If the operation fails, it is reported as unavailable.
   virtual void CheckArcAvailability(const ArcCallback& callback) = 0;
 
   // Asynchronously starts the ARC instance for the user whose cryptohome is
   // located by |cryptohome_id|.  Upon completion, invokes |callback| with
-  // the result.
+  // the result; true on success, false on failure (either session manager
+  // failed to start an instance or session manager can not be reached).
   virtual void StartArcInstance(const cryptohome::Identification& cryptohome_id,
                                 const ArcCallback& callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
-  // |callback| with the result.
+  // |callback| with the result; true on success, false on failure (either
+  // session manager failed to stop an instance or session manager can not be
+  // reached).
   virtual void StopArcInstance(const ArcCallback& callback) = 0;
 
   // Asynchronously retrieves the timestamp which ARC instance is invoked or
