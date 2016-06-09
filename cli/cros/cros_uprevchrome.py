@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""cros uprevchrome: Uprev chrome to a new valid version
-"""
+"""cros uprevchrome: Uprev chrome to a new valid version."""
 
 from __future__ import print_function
 
@@ -18,6 +17,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.cli import command
+from chromite.cli.cros import cros_cidbcreds
 from chromite.cli.cros import cros_pinchrome
 
 site_config = config_lib.GetConfig()
@@ -86,10 +86,10 @@ class UprevChromeCommand(command.CliCommand):
     super(cls, UprevChromeCommand).AddParser(parser)
     parser.add_argument('--pfq-build', action='store', required=True,
                         metavar='PFQ_BUILD',
-                        help='The build_id of the master chrome pfq build.'
-                        'Note this is from the BuildStart step, not the'
+                        help='The build_id of the master chrome pfq build. '
+                        'Note this is from the BuildStart step, not the '
                         'build number on the waterfall.')
-    parser.add_argument('--cred-dir', action='store', required=True,
+    parser.add_argument('--cred-dir', action='store',
                         metavar='CIDB_CREDENTIALS_DIR',
                         help=('Database credentials directory with '
                               'certificates and other connection '
@@ -307,7 +307,18 @@ class UprevChromeCommand(command.CliCommand):
     # Delay import so sqlalchemy isn't pulled in until we need it.
     from chromite.lib import cidb
 
-    db = cidb.CIDBConnection(self.options.cred_dir)
+    cidb_creds = self.options.cred_dir
+    if cidb_creds is None:
+      try:
+        cidb_creds = cros_cidbcreds.CheckAndGetCIDBCreds()
+      except:
+        logging.error('Failed to download CIDB creds from gs.\n'
+                      'Can try obtaining your credentials at '
+                      'go/cros-cidb-admin and manually passing it in '
+                      'with --cred-dir.')
+        raise
+
+    db = cidb.CIDBConnection(cidb_creds)
 
     if not self.ValidatePFQBuild(self.options.pfq_build, db):
       raise InvalidPFQBuildIdExcpetion('Invalid PFQ version %s.' %
@@ -322,7 +333,7 @@ class UprevChromeCommand(command.CliCommand):
       self.UprevChrome(work_dir, self.options.pfq_build)
     finally:
       if self.options.wipe:
-        osutils.RmDir(work_dir, self.options.pfq_build)
+        osutils.RmDir(work_dir)
         logging.info('Removed work_dir %s', work_dir)
       else:
         logging.info('Leaving working directory at %s', work_dir)
