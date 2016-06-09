@@ -1236,6 +1236,15 @@ void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
   } else {
     display_info_[new_info.id()] = new_info;
     display_info_[new_info.id()].set_native(false);
+    // FHD with 1.25 DSF behaves differently from other configuration.
+    // It uses 1.25 DSF only when UI-Scale is set to 0.8.
+    // For new users, use the UI-scale to 0.8 so that it will use DSF=1.25
+    // internally.
+    if (display::Display::IsInternalDisplayId(new_info.id()) &&
+        new_info.bounds_in_native().height() == 1080 &&
+        new_info.device_scale_factor() == 1.25f) {
+      display_info_[new_info.id()].set_configured_ui_scale(0.8f);
+    }
   }
   display_info_[new_info.id()].UpdateDisplaySize();
   OnDisplayInfoUpdated(display_info_[new_info.id()]);

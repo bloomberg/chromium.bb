@@ -1228,7 +1228,6 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
   // Setup the display modes with UI-scale.
   DisplayInfo native_display_info =
       CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1280, 800));
-  std::vector<DisplayMode> display_modes;
   const DisplayMode base_mode(gfx::Size(1280, 800), 60.0f, false, false);
   std::vector<DisplayMode> mode_list = CreateInternalDisplayModeList(base_mode);
   native_display_info.SetDisplayModes(mode_list);
@@ -1289,8 +1288,8 @@ TEST_F(DisplayManagerTest, UIScaleWithDisplayMode) {
 #endif
 TEST_F(DisplayManagerTest, MAYBE_Use125DSFForUIScaling) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  test::ScopedSetInternalDisplayId set_internal(display_id);
 
+  test::ScopedSetInternalDisplayId set_internal(display_id);
   UpdateDisplay("1920x1080*1.25");
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
   EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
@@ -1311,19 +1310,86 @@ TEST_F(DisplayManagerTest, MAYBE_Use125DSFForUIScaling) {
   EXPECT_EQ("2400x1350", GetDisplayForId(display_id).size().ToString());
 }
 
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_FHD125DefaultsTo08UIScaling DISABLED_FHD125DefaultsTo08UIScaling
+#else
+#define MAYBE_FHD125DefaultsTo08UIScaling FHD125DefaultsTo08UIScaling
+#endif
+TEST_F(DisplayManagerTest, MAYBE_FHD125DefaultsTo08UIScaling) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  display_id++;
+  test::ScopedSetInternalDisplayId set_internal(display_id);
+
+  // Setup the display modes with UI-scale.
+  DisplayInfo native_display_info =
+      CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1920, 1080));
+  native_display_info.set_device_scale_factor(1.25);
+
+  const DisplayMode base_mode(gfx::Size(1920, 1080), 60.0f, false, false);
+  std::vector<DisplayMode> mode_list = CreateInternalDisplayModeList(base_mode);
+  native_display_info.SetDisplayModes(mode_list);
+
+  std::vector<DisplayInfo> display_info_list;
+  display_info_list.push_back(native_display_info);
+
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+}
+
+#if defined(OS_WIN) && !defined(USE_ASH)
+// TODO(msw): Broken on Windows. http://crbug.com/584038
+#define MAYBE_FHD125DefaultsTo08UIScalingNoOverride \
+  DISABLED_FHD125DefaultsTo08UIScalingNoOverride
+#else
+#define MAYBE_FHD125DefaultsTo08UIScalingNoOverride \
+  FHD125DefaultsTo08UIScalingNoOverride
+#endif
+// Don't default to 1.25 DSF if the user already has a prefrence stored for
+// the internal display.
+TEST_F(DisplayManagerTest, MAYBE_FHD125DefaultsTo08UIScalingNoOverride) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  display_id++;
+  test::ScopedSetInternalDisplayId set_internal(display_id);
+  const gfx::Insets dummy_overscan_insets;
+  display_manager()->RegisterDisplayProperty(
+      display_id, display::Display::ROTATE_0, 1.0f, &dummy_overscan_insets,
+      gfx::Size(), 1.0f, ui::ColorCalibrationProfile());
+
+  // Setup the display modes with UI-scale.
+  DisplayInfo native_display_info =
+      CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1920, 1080));
+  native_display_info.set_device_scale_factor(1.25);
+
+  const DisplayMode base_mode(gfx::Size(1920, 1080), 60.0f, false, false);
+  std::vector<DisplayMode> mode_list = CreateInternalDisplayModeList(base_mode);
+  native_display_info.SetDisplayModes(mode_list);
+
+  std::vector<DisplayInfo> display_info_list;
+  display_info_list.push_back(native_display_info);
+
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
+  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
+}
+
 TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   if (!SupportsMultipleDisplays())
     return;
   // Don't check root window destruction in unified mode.
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetUnifiedDesktopEnabled(true);
+  display_manager()->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("200x200, 400x400");
 
   int64_t unified_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  DisplayInfo info = display_manager->GetDisplayInfo(unified_id);
+  DisplayInfo info = display_manager()->GetDisplayInfo(unified_id);
   ASSERT_EQ(2u, info.display_modes().size());
   EXPECT_EQ("400x200", info.display_modes()[0].size.ToString());
   EXPECT_TRUE(info.display_modes()[0].native);
@@ -1333,7 +1399,7 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
       "400x200",
       display::Screen::GetScreen()->GetPrimaryDisplay().size().ToString());
   DisplayMode active_mode =
-      display_manager->GetActiveModeForDisplayId(unified_id);
+      display_manager()->GetActiveModeForDisplayId(unified_id);
   EXPECT_EQ(1.0f, active_mode.ui_scale);
   EXPECT_EQ("400x200", active_mode.size.ToString());
 
@@ -1342,7 +1408,7 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
       "800x400",
       display::Screen::GetScreen()->GetPrimaryDisplay().size().ToString());
 
-  active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
+  active_mode = display_manager()->GetActiveModeForDisplayId(unified_id);
   EXPECT_EQ(1.0f, active_mode.ui_scale);
   EXPECT_EQ("800x400", active_mode.size.ToString());
 
@@ -1351,7 +1417,7 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   EXPECT_EQ(
       "1200x600",
       display::Screen::GetScreen()->GetPrimaryDisplay().size().ToString());
-  active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
+  active_mode = display_manager()->GetActiveModeForDisplayId(unified_id);
   EXPECT_EQ(1.0f, active_mode.ui_scale);
   EXPECT_TRUE(active_mode.native);
   EXPECT_EQ("1200x600", active_mode.size.ToString());
