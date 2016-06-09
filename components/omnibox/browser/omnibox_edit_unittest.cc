@@ -11,12 +11,12 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
-#include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -140,6 +140,10 @@ class TestingOmniboxClient : public OmniboxClient {
   TestingOmniboxClient();
   ~TestingOmniboxClient() override;
 
+  const AutocompleteMatch& alternate_nav_match() const {
+    return alternate_nav_match_;
+  }
+
   // OmniboxClient:
   std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
       override;
@@ -148,6 +152,7 @@ class TestingOmniboxClient : public OmniboxClient {
       const base::string16& text,
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternate_nav_match) override {
+    alternate_nav_match_ = alternate_nav_match;
     return nullptr;
   }
   bool CurrentPageExists() const override { return true; }
@@ -205,6 +210,7 @@ class TestingOmniboxClient : public OmniboxClient {
   SessionID session_id_;
   TestingSchemeClassifier scheme_classifier_;
   AutocompleteClassifier autocomplete_classifier_;
+  AutocompleteMatch alternate_nav_match_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxClient);
 };
@@ -372,4 +378,31 @@ TEST_F(OmniboxEditTest, InlineAutocompleteText) {
   model()->AcceptTemporaryTextAsUserText();
   EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
   EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+}
+
+// This verifies the fix for a bug where calling OpenMatch() with a valid
+// alternate nav URL would fail a DCHECK if the input began with "http://".
+// The failure was due to erroneously trying to strip the scheme from the
+// resulting fill_into_edit.  Alternate nav matches are never shown, so there's
+// no need to ever try and strip this scheme.
+TEST_F(OmniboxEditTest, AlternateNavHasHTTP) {
+  const TestingOmniboxClient* client =
+      static_cast<TestingOmniboxClient*>(model()->client());
+  const AutocompleteMatch match(
+      model()->autocomplete_controller()->search_provider(), 0, false,
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
+  const GURL alternate_nav_url("http://ab%20cd/");
+
+  model()->OnSetFocus(false);  // Avoids DCHECK in OpenMatch().
+  model()->SetUserText(base::ASCIIToUTF16("http://ab cd"));
+  model()->OpenMatch(match, CURRENT_TAB, alternate_nav_url, base::string16(),
+                     0);
+  EXPECT_TRUE(AutocompleteInput::HasHTTPScheme(
+      client->alternate_nav_match().fill_into_edit));
+
+  model()->SetUserText(base::ASCIIToUTF16("ab cd"));
+  model()->OpenMatch(match, CURRENT_TAB, alternate_nav_url, base::string16(),
+                     0);
+  EXPECT_TRUE(AutocompleteInput::HasHTTPScheme(
+      client->alternate_nav_match().fill_into_edit));
 }

@@ -669,8 +669,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       client_->CreateOmniboxNavigationObserver(
           input_text, match,
           autocomplete_controller()->history_url_provider()->SuggestExactInput(
-              alternate_input, alternate_nav_url,
-              AutocompleteInput::HasHTTPScheme(input_text))));
+              alternate_input, alternate_nav_url, false)));
 
   base::TimeDelta elapsed_time_since_last_change_to_default_match(
       now - autocomplete_controller()->last_time_default_match_changed());
@@ -779,9 +778,10 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
 
   // Track whether the destination URL sends us to a search results page
   // using the default search provider.
-  if (client_->GetTemplateURLService()
-          ->IsSearchResultsPageFromDefaultSearchProvider(
-              match.destination_url)) {
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
+  if (template_url_service &&
+      template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
+          match.destination_url)) {
     base::RecordAction(
         base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
   }
