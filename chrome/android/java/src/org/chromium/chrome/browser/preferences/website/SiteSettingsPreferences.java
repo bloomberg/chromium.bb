@@ -158,7 +158,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             // When showing the main menu, only one of these two will be visible, at most.
             if (mProtectedContentMenuAvailable && !mAutoplayMenuAvailable) {
                 websitePrefs.add(PROTECTED_CONTENT_KEY);
-            } else if (mAutoplayMenuAvailable) {
+            } else if (mAutoplayMenuAvailable && !mProtectedContentMenuAvailable) {
                 websitePrefs.add(AUTOPLAY_KEY);
             }
             websitePrefs.add(BACKGROUND_SYNC_KEY);
