@@ -232,6 +232,9 @@ void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, 
         // We should always find the EndSubsequence display item.
         DCHECK(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
         DCHECK(currentIt->hasValidClient());
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        CHECK(currentIt->client().isAlive());
+#endif
         updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()), gpuAnalyzer);
         ++currentIt;
     } while (!endSubsequenceId.matches(updatedList.last()));
