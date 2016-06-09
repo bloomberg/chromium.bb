@@ -186,8 +186,7 @@ DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex, ExceptionSta
         return nullptr;
     }
 
-    DOMFloat32Array* channelData = m_channels[channelIndex].get();
-    return DOMFloat32Array::create(channelData->buffer(), channelData->byteOffset(), channelData->length());
+    return getChannelData(channelIndex);
 }
 
 DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex)
