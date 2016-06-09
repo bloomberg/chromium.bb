@@ -296,8 +296,19 @@ class GPU_EXPORT CommandBufferProxyImpl
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
 
-  // A map from image id to GpuMemoryBuffer id.
-  std::map<int32_t, int32_t> image_gmb_ids_map_;
+  // |gpu_memory_buffer_id| will always contain a valid (not -1) id.
+  // If the GpuMemoryBuffer was created through this class, then
+  // |owned_gpu_memory_buffer| will also be not null.
+  struct ImageInfo {
+    ImageInfo();
+    ~ImageInfo();
+    ImageInfo(ImageInfo&& other);
+    ImageInfo& operator=(ImageInfo&& other);
+    int32_t gpu_memory_buffer_id = -1;
+    std::unique_ptr<gfx::GpuMemoryBuffer> owned_gpu_memory_buffer;
+  };
+  // A map from image id to ImageInfo.
+  std::map<int32_t, ImageInfo> image_gmb_map_;
 
   base::WeakPtr<CommandBufferProxyImpl> weak_this_;
   scoped_refptr<base::SequencedTaskRunner> callback_thread_;

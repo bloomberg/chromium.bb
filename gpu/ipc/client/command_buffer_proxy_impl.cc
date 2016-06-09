@@ -459,8 +459,8 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
       gpu_memory_buffer_manager->GpuMemoryBufferFromClientBuffer(buffer);
   DCHECK(gpu_memory_buffer);
 
-  DCHECK(image_gmb_ids_map_.find(new_id) == image_gmb_ids_map_.end());
-  image_gmb_ids_map_[new_id] = gpu_memory_buffer->GetId().id;
+  DCHECK(image_gmb_map_.find(new_id) == image_gmb_map_.end());
+  image_gmb_map_[new_id].gpu_memory_buffer_id = gpu_memory_buffer->GetId().id;
 
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
@@ -515,9 +515,9 @@ void CommandBufferProxyImpl::DestroyImage(int32_t id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  auto it = image_gmb_ids_map_.find(id);
-  if (it != image_gmb_ids_map_.end())
-    image_gmb_ids_map_.erase(it);
+  auto it = image_gmb_map_.find(id);
+  if (it != image_gmb_map_.end())
+    image_gmb_map_.erase(it);
   Send(new GpuCommandBufferMsg_DestroyImage(route_id_, id));
 }
 
@@ -535,14 +535,18 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
   if (!buffer)
     return -1;
 
-  return CreateImage(buffer->AsClientBuffer(), width, height, internal_format);
+  int32_t result =
+      CreateImage(buffer->AsClientBuffer(), width, height, internal_format);
+  if (result != -1)
+    image_gmb_map_[result].owned_gpu_memory_buffer = std::move(buffer);
+  return result;
 }
 
 int32_t CommandBufferProxyImpl::GetImageGpuMemoryBufferId(unsigned image_id) {
   CheckLock();
-  auto it = image_gmb_ids_map_.find(image_id);
-  if (it != image_gmb_ids_map_.end())
-    return it->second;
+  auto it = image_gmb_map_.find(image_id);
+  if (it != image_gmb_map_.end())
+    return it->second.gpu_memory_buffer_id;
   return -1;
 }
 
@@ -871,5 +875,11 @@ void CommandBufferProxyImpl::DisconnectChannel() {
   if (gpu_control_client_)
     gpu_control_client_->OnGpuControlLostContext();
 }
+
+CommandBufferProxyImpl::ImageInfo::ImageInfo() {}
+CommandBufferProxyImpl::ImageInfo::~ImageInfo() {}
+CommandBufferProxyImpl::ImageInfo::ImageInfo(ImageInfo&& other) = default;
+CommandBufferProxyImpl::ImageInfo& CommandBufferProxyImpl::ImageInfo::operator=(
+    ImageInfo&& other) = default;
 
 }  // namespace gpu
