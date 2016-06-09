@@ -19,7 +19,7 @@
 namespace scheduler {
 namespace {
 const base::Feature kExpensiveTaskBlockingPolicyFeature{
-    "SchedulerExpensiveTaskBlocking", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SchedulerExpensiveTaskBlocking", base::FEATURE_ENABLED_BY_DEFAULT};
 }
 
 RendererScheduler::RendererScheduler() {
