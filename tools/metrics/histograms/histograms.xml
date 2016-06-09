@@ -63574,6 +63574,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Windows.ParentProcessNameHash" enum="ProcessNameHash">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The 32-bit hash of the lower-case parent process basename (e.g.
+    explorer.exe) of the main Chrome executable. Reported once during startup as
+    part of install verification.
+  </summary>
+</histogram>
+
 <histogram name="Windows.Tablet" enum="BooleanTablet">
   <owner>zturner@chromium.org</owner>
   <summary>Count of browser launches from a Windows tablet pc.</summary>
@@ -84977,6 +84986,27 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="PRIVET_NOTIFICATION_CANCELED"/>
   <int value="6" label="PRIVET_NOTIFICATION_CLICKED"/>
   <int value="7" label="PRIVET_DISABLE_NOTIFICATIONS_CLICKED"/>
+</enum>
+
+<enum name="ProcessNameHash" type="int">
+  <summary>
+    The hash of a lower case process name generated using metrics::HashName.
+  </summary>
+  <int value="-1975402871" label="windbg.exe"/>
+  <int value="-1883802758" label="chrome.exe"/>
+  <int value="-1728702815" label="devenv.exe"/>
+  <int value="-642217101" label="new_chrome.exe"/>
+  <int value="-319883659" label="perl.exe"/>
+  <int value="-214303849" label="userinit.exe"/>
+  <int value="-84282901" label="cmd.exe"/>
+  <int value="-46738700" label="svchost.exe"/>
+  <int value="0" label="Unknown"/>
+  <int value="98111354" label="explorer.exe"/>
+  <int value="742620152" label="python.exe"/>
+  <int value="1408608854" label="old_chrome.exe"/>
+  <int value="1590408389" label="services.exe"/>
+  <int value="1614875030" label="taskeng.exe"/>
+  <int value="1914315258" label="cdb.exe"/>
 </enum>
 
 <enum name="ProcessType" type="int">

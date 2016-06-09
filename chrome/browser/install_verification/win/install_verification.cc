@@ -5,15 +5,22 @@
 #include "chrome/browser/install_verification/win/install_verification.h"
 
 #include <stddef.h>
+#include <windows.h>
 
 #include <set>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/process/process.h"
+#include "base/process/process_handle.h"
+#include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/install_verification/win/loaded_module_verification.h"
 #include "chrome/browser/install_verification/win/module_ids.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_verification_common.h"
+#include "components/variations/metrics_util.h"
 
 namespace {
 
@@ -21,9 +28,53 @@ void ReportModuleMatch(size_t module_id) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("InstallVerifier.ModuleMatch", module_id);
 }
 
+base::FilePath GetExeFilePathForProcess(const base::Process& process) {
+  wchar_t exe_name[MAX_PATH];
+  DWORD exe_name_len = arraysize(exe_name);
+  // Note: requesting the Win32 path format.
+  if (::QueryFullProcessImageName(process.Handle(), 0, exe_name,
+                                  &exe_name_len) == 0) {
+    DPLOG(ERROR) << "Failed to get executable name for process";
+    return base::FilePath();
+  }
+
+  // QueryFullProcessImageName's documentation does not specify behavior when
+  // the buffer is too small, but we know that GetModuleFileNameEx succeeds and
+  // truncates the returned name in such a case. Given that paths of arbitrary
+  // length may exist, the conservative approach is to reject names when
+  // the returned length is that of the buffer.
+  if (exe_name_len > 0 && exe_name_len < arraysize(exe_name))
+    return base::FilePath(exe_name);
+
+  return base::FilePath();
+}
+
+void ReportParentProcessName() {
+  base::ProcessId ppid =
+      base::GetParentProcessId(base::GetCurrentProcessHandle());
+
+  base::Process process(
+      base::Process::OpenWithAccess(ppid, PROCESS_QUERY_LIMITED_INFORMATION));
+
+  uint32_t hash = 0U;
+
+  if (process.IsValid()) {
+    base::FilePath path(GetExeFilePathForProcess(process));
+
+    if (!path.empty()) {
+      std::string ascii_path(base::SysWideToUTF8(path.BaseName().value()));
+      DCHECK(base::IsStringASCII(ascii_path));
+      hash = metrics::HashName(base::ToLowerASCII(ascii_path));
+    }
+  }
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Windows.ParentProcessNameHash", hash);
+}
+
 }  // namespace
 
 void VerifyInstallation() {
+  ReportParentProcessName();
   ModuleIDs module_ids;
   LoadModuleIDs(&module_ids);
   std::set<ModuleInfo> loaded_modules;
