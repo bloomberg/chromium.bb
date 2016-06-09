@@ -78,8 +78,6 @@ class RendererImplTest : public ::testing::Test {
   virtual ~RendererImplTest() { Destroy(); }
 
  protected:
-  typedef std::vector<MockDemuxerStream*> MockDemuxerStreamVector;
-
   void Destroy() {
     renderer_impl_.reset();
     base::RunLoop().RunUntilIdle();
@@ -126,7 +124,6 @@ class RendererImplTest : public ::testing::Test {
 
   void CreateAudioStream() {
     audio_stream_ = CreateStream(DemuxerStream::AUDIO);
-    streams_.push_back(audio_stream_.get());
     EXPECT_CALL(*demuxer_, GetStream(DemuxerStream::AUDIO))
         .WillRepeatedly(Return(audio_stream_.get()));
   }
@@ -136,7 +133,6 @@ class RendererImplTest : public ::testing::Test {
     video_stream_->set_video_decoder_config(
         is_encrypted ? TestVideoConfig::NormalEncrypted()
                      : TestVideoConfig::Normal());
-    streams_.push_back(video_stream_.get());
     EXPECT_CALL(*demuxer_, GetStream(DemuxerStream::VIDEO))
         .WillRepeatedly(Return(video_stream_.get()));
   }
@@ -267,7 +263,6 @@ class RendererImplTest : public ::testing::Test {
   StrictMock<MockTimeSource> time_source_;
   std::unique_ptr<StrictMock<MockDemuxerStream>> audio_stream_;
   std::unique_ptr<StrictMock<MockDemuxerStream>> video_stream_;
-  MockDemuxerStreamVector streams_;
   RendererClient* video_renderer_client_;
   RendererClient* audio_renderer_client_;
   VideoDecoderConfig video_decoder_config_;
