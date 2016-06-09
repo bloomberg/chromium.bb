@@ -296,8 +296,7 @@ void AndroidStreamReaderURLRequestJob::DoStart() {
   GetWorkerThreadRunner()->PostTask(
       FROM_HERE,
       base::Bind(
-          &OpenInputStreamOnWorkerThread,
-          base::MessageLoop::current()->task_runner(),
+          &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
           // This is intentional - the job could be deleted while the callback
           // is executing on the background thread.
           // The delegate will be "returned" to the job once the InputStream
