@@ -50,7 +50,8 @@ class FindBadConstructsConsumer
 
   // RecursiveASTVisitor:
   bool TraverseDecl(clang::Decl* decl);
-  bool VisitDecl(clang::Decl* decl);
+  bool VisitTagDecl(clang::TagDecl* tag_decl);
+  bool VisitVarDecl(clang::VarDecl* var_decl);
   bool VisitTemplateSpecializationType(clang::TemplateSpecializationType* spec);
   bool VisitCallExpr(clang::CallExpr* call_expr);
 
@@ -105,6 +106,7 @@ class FindBadConstructsConsumer
 
   void CheckWeakPtrFactoryMembers(clang::SourceLocation record_location,
                                   clang::CXXRecordDecl* record);
+  void CheckVarDecl(clang::VarDecl* decl);
 
   void ParseFunctionTemplates(clang::TranslationUnitDecl* decl);
 
@@ -116,6 +118,7 @@ class FindBadConstructsConsumer
   unsigned diag_protected_non_virtual_dtor_;
   unsigned diag_weak_ptr_factory_order_;
   unsigned diag_bad_enum_last_value_;
+  unsigned diag_auto_deduced_to_a_pointer_type_;
   unsigned diag_note_inheritance_;
   unsigned diag_note_implicit_dtor_;
   unsigned diag_note_public_dtor_;

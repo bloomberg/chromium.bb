@@ -65,6 +65,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.no_realpath = true;
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
+    } else if (args[i] == "check-auto-raw-pointer") {
+      options_.check_auto_raw_pointer = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";

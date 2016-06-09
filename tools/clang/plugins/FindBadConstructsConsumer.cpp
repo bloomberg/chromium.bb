@@ -41,6 +41,9 @@ const char kWeakPtrFactoryOrder[] =
 const char kBadLastEnumValue[] =
     "[chromium-style] _LAST/Last constants of enum types must have the maximal "
     "value for any constant of that type.";
+const char kAutoDeducedToAPointerType[] =
+    "[chromium-style] auto variable type must not deduce to a raw pointer "
+    "type.";
 const char kNoteInheritance[] = "[chromium-style] %0 inherits from %1 here";
 const char kNoteImplicitDtor[] =
     "[chromium-style] No explicit destructor for %0 defined";
@@ -109,6 +112,21 @@ std::set<FunctionDecl*> GetLateParsedFunctionDecls(TranslationUnitDecl* decl) {
   return v.late_parsed_decls;
 }
 
+std::string GetAutoReplacementTypeAsString(QualType type) {
+  QualType non_reference_type = type.getNonReferenceType();
+  if (!non_reference_type->isPointerType())
+    return "auto";
+
+  std::string result =
+      GetAutoReplacementTypeAsString(non_reference_type->getPointeeType());
+  result += "*";
+  if (non_reference_type.isLocalConstQualified())
+    result += " const";
+  if (non_reference_type.isLocalVolatileQualified())
+    result += " volatile";
+  return result;
+}
+
 }  // namespace
 
 FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
@@ -139,6 +157,8 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
       diagnostic().getCustomDiagID(getErrorLevel(), kWeakPtrFactoryOrder);
   diag_bad_enum_last_value_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kBadLastEnumValue);
+  diag_auto_deduced_to_a_pointer_type_ =
+      diagnostic().getCustomDiagID(getErrorLevel(), kAutoDeducedToAPointerType);
 
   // Registers notes to make it easier to interpret warnings.
   diag_note_inheritance_ =
@@ -167,9 +187,8 @@ bool FindBadConstructsConsumer::TraverseDecl(Decl* decl) {
   return result;
 }
 
-bool FindBadConstructsConsumer::VisitDecl(clang::Decl* decl) {
-  clang::TagDecl* tag_decl = dyn_cast<clang::TagDecl>(decl);
-  if (tag_decl && tag_decl->isCompleteDefinition())
+bool FindBadConstructsConsumer::VisitTagDecl(clang::TagDecl* tag_decl) {
+  if (tag_decl->isCompleteDefinition())
     CheckTag(tag_decl);
   return true;
 }
@@ -182,6 +201,11 @@ bool FindBadConstructsConsumer::VisitTemplateSpecializationType(
 
 bool FindBadConstructsConsumer::VisitCallExpr(CallExpr* call_expr) {
   if (ipc_visitor_) ipc_visitor_->VisitCallExpr(call_expr);
+  return true;
+}
+
+bool FindBadConstructsConsumer::VisitVarDecl(clang::VarDecl* var_decl) {
+  CheckVarDecl(var_decl);
   return true;
 }
 
@@ -946,6 +970,54 @@ void FindBadConstructsConsumer::ParseFunctionTemplates(
     // Parse and build AST for yet-uninstantiated template functions.
     clang::LateParsedTemplate* lpt = sema.LateParsedTemplateMap[fd];
     sema.LateTemplateParser(sema.OpaqueParser, *lpt);
+  }
+}
+
+void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
+  if (!options_.check_auto_raw_pointer)
+    return;
+
+  // Check whether auto deduces to a raw pointer.
+  QualType non_reference_type = var_decl->getType().getNonReferenceType();
+  // We might have a case where the type is written as auto*, but the actual
+  // type is deduced to be an int**. For that reason, keep going down the
+  // pointee type until we get an 'auto' or a non-pointer type.
+  for (;;) {
+    const clang::AutoType* auto_type =
+        non_reference_type->getAs<clang::AutoType>();
+    if (auto_type) {
+      if (auto_type->isDeduced()) {
+        QualType deduced_type = auto_type->getDeducedType();
+        if (!deduced_type.isNull() && deduced_type->isPointerType() &&
+            !deduced_type->isFunctionPointerType()) {
+          // Check if we should even be considering this type (note that there
+          // should be fewer auto types than banned namespace/directory types,
+          // so check this last.
+          if (!InBannedNamespace(var_decl) &&
+              !InBannedDirectory(var_decl->getLocStart())) {
+            // The range starts from |var_decl|'s loc start, which is the
+            // beginning of the full expression defining this |var_decl|. It
+            // ends, however, where this |var_decl|'s type loc ends, since
+            // that's the end of the type of |var_decl|.
+            // Note that the beginning source location of type loc omits cv
+            // qualifiers, which is why it's not a good candidate to use for the
+            // start of the range.
+            clang::SourceRange range(
+                var_decl->getLocStart(),
+                var_decl->getTypeSourceInfo()->getTypeLoc().getLocEnd());
+            ReportIfSpellingLocNotIgnored(range.getBegin(),
+                                          diag_auto_deduced_to_a_pointer_type_)
+                << FixItHint::CreateReplacement(
+                       range,
+                       GetAutoReplacementTypeAsString(var_decl->getType()));
+          }
+        }
+      }
+    } else if (non_reference_type->isPointerType()) {
+      non_reference_type = non_reference_type->getPointeeType();
+      continue;
+    }
+    break;
   }
 }
 
