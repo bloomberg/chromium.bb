@@ -20,7 +20,7 @@ from telemetry.web_perf import timeline_based_measurement
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
     cat_filter = tracing_category_filter.TracingCategoryFilter(
-        filter_string='*,blink.console,navigation,blink.user_timing,loading')
+        filter_string='blink.console,navigation,blink.user_timing,loading')
 
     tbm_options = timeline_based_measurement.Options(
         overhead_level=cat_filter)
