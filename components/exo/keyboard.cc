@@ -21,7 +21,8 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
   // Check if IME consumed the event, to avoid it to be doubly processed.
   // First let us see whether IME is active and is in text input mode.
   views::Widget* widget =
-      focus ? views::Widget::GetTopLevelWidgetForNativeView(focus) : nullptr;
+      focus ? views::Widget::GetTopLevelWidgetForNativeView(focus->window())
+            : nullptr;
   ui::InputMethod* ime = widget ? widget->GetInputMethod() : nullptr;
   if (!ime || ime->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
     return false;

@@ -78,7 +78,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
       aura::Window::ConvertPointToTarget(window->parent(), window,
                                          &local_point);
 
-    aura::Window::ConvertPointToTarget(window, surface, &local_point);
+    aura::Window::ConvertPointToTarget(window, surface->window(), &local_point);
     return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
   }
 
@@ -216,7 +216,7 @@ ShellSurface::ShellSurface(Surface* surface,
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
-  surface_->Show();
+  surface_->window()->Show();
   set_owned_by_client();
   if (parent_)
     parent_->AddObserver(this);
@@ -234,7 +234,7 @@ ShellSurface::~ShellSurface() {
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   if (surface_) {
     if (scale_ != 1.0)
-      surface_->SetTransform(gfx::Transform());
+      surface_->window()->SetTransform(gfx::Transform());
     surface_->SetSurfaceDelegate(nullptr);
     surface_->RemoveSurfaceObserver(this);
   }
@@ -473,14 +473,15 @@ void ShellSurface::OnSurfaceCommit() {
     }
 
     // Update surface bounds.
-    surface_->SetBounds(gfx::Rect(surface_origin, surface_->layer()->size()));
+    surface_->window()->SetBounds(
+        gfx::Rect(surface_origin, surface_->window()->layer()->size()));
 
     // Update surface scale.
     if (pending_scale_ != scale_) {
       gfx::Transform transform;
       DCHECK_NE(pending_scale_, 0.0);
       transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
-      surface_->SetTransform(transform);
+      surface_->window()->SetTransform(transform);
       scale_ = pending_scale_;
     }
 
@@ -572,7 +573,7 @@ bool ShellSurface::WidgetHasHitTestMask() const {
 void ShellSurface::GetWidgetHitTestMask(gfx::Path* mask) const {
   DCHECK(WidgetHasHitTestMask());
   surface_->GetHitTestMask(mask);
-  gfx::Point origin = surface_->bounds().origin();
+  gfx::Point origin = surface_->window()->bounds().origin();
   mask->offset(SkIntToScalar(origin.x()), SkIntToScalar(origin.y()));
 }
 
@@ -583,7 +584,7 @@ gfx::Size ShellSurface::GetPreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return surface_ ? surface_->layer()->size() : gfx::Size();
+  return surface_ ? surface_->window()->layer()->size() : gfx::Size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -644,8 +645,8 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
     pending_origin_config_offset_ += origin_offset;
     origin_ -= origin_offset;
 
-    surface_->SetBounds(
-        gfx::Rect(GetSurfaceOrigin(), surface_->layer()->size()));
+    surface_->window()->SetBounds(
+        gfx::Rect(GetSurfaceOrigin(), surface_->window()->layer()->size()));
 
     Configure();
   }
@@ -773,7 +774,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
-  window->AddChild(surface_);
+  window->AddChild(surface_->window());
   window->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   SetApplicationId(window, &application_id_);
   SetMainSurface(window, surface_);
@@ -941,7 +942,8 @@ bool ShellSurface::IsResizing() const {
 
 gfx::Rect ShellSurface::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  return geometry_.IsEmpty() ? gfx::Rect(surface_->layer()->size()) : geometry_;
+  return geometry_.IsEmpty() ? gfx::Rect(surface_->window()->layer()->size())
+                             : geometry_;
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
@@ -1019,7 +1021,8 @@ void ShellSurface::UpdateWidgetBounds() {
   ignore_window_bounds_changes_ = false;
 
   // A change to the widget size requires surface bounds to be re-adjusted.
-  surface_->SetBounds(gfx::Rect(GetSurfaceOrigin(), surface_->layer()->size()));
+  surface_->window()->SetBounds(
+      gfx::Rect(GetSurfaceOrigin(), surface_->window()->layer()->size()));
 }
 
 }  // namespace exo

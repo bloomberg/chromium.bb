@@ -123,7 +123,7 @@ TEST_P(SurfaceTest, SetBufferScale) {
   surface->Commit();
   EXPECT_EQ(
       gfx::ScaleToFlooredSize(buffer_size, 1.0f / kBufferScale).ToString(),
-      surface->bounds().size().ToString());
+      surface->window()->bounds().size().ToString());
 }
 
 TEST_P(SurfaceTest, RecreateLayer) {
@@ -135,14 +135,14 @@ TEST_P(SurfaceTest, RecreateLayer) {
   surface->Attach(buffer.get());
   surface->Commit();
 
-  EXPECT_EQ(buffer_size, surface->bounds().size());
-  EXPECT_EQ(buffer_size, surface->layer()->bounds().size());
+  EXPECT_EQ(buffer_size, surface->window()->bounds().size());
+  EXPECT_EQ(buffer_size, surface->window()->layer()->bounds().size());
   std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
-      ::wm::RecreateLayers(surface.get(), nullptr);
-  EXPECT_EQ(buffer_size, surface->bounds().size());
-  EXPECT_EQ(buffer_size, surface->layer()->bounds().size());
+      ::wm::RecreateLayers(surface->window(), nullptr);
+  EXPECT_EQ(buffer_size, surface->window()->bounds().size());
+  EXPECT_EQ(buffer_size, surface->window()->layer()->bounds().size());
   EXPECT_EQ(buffer_size, old_layer_owner->root()->bounds().size());
-  EXPECT_TRUE(surface->layer()->has_external_content());
+  EXPECT_TRUE(surface->window()->layer()->has_external_content());
   EXPECT_TRUE(old_layer_owner->root()->has_external_content());
 }
 
@@ -158,14 +158,15 @@ TEST_P(SurfaceTest, SetViewport) {
   gfx::Size viewport(256, 256);
   surface->SetViewport(viewport);
   surface->Commit();
-  EXPECT_EQ(viewport.ToString(), surface->bounds().size().ToString());
+  EXPECT_EQ(viewport.ToString(), surface->window()->bounds().size().ToString());
 
   // This will update the bounds of the surface and take the viewport2 into
   // account.
   gfx::Size viewport2(512, 512);
   surface->SetViewport(viewport2);
   surface->Commit();
-  EXPECT_EQ(viewport2.ToString(), surface->bounds().size().ToString());
+  EXPECT_EQ(viewport2.ToString(),
+            surface->window()->bounds().size().ToString());
 }
 
 TEST_P(SurfaceTest, SetCrop) {
@@ -178,7 +179,8 @@ TEST_P(SurfaceTest, SetCrop) {
   gfx::Size crop_size(12, 12);
   surface->SetCrop(gfx::RectF(gfx::PointF(2.0, 2.0), gfx::SizeF(crop_size)));
   surface->Commit();
-  EXPECT_EQ(crop_size.ToString(), surface->bounds().size().ToString());
+  EXPECT_EQ(crop_size.ToString(),
+            surface->window()->bounds().size().ToString());
 }
 
 TEST_P(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
@@ -197,8 +199,8 @@ TEST_P(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
 
   cc::TextureMailbox mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
-  bool rv = surface->layer()->PrepareTextureMailbox(&mailbox, &release_callback,
-                                                    false);
+  bool rv = surface->window()->layer()->PrepareTextureMailbox(
+      &mailbox, &release_callback, false);
   ASSERT_TRUE(rv);
 
   EXPECT_TRUE(mailbox.secure_output_only());
@@ -215,7 +217,7 @@ TEST_P(SurfaceTest, SetBlendMode) {
   surface->SetBlendMode(SkXfermode::kSrc_Mode);
   surface->Commit();
 
-  EXPECT_TRUE(surface->layer()->fills_bounds_opaquely());
+  EXPECT_TRUE(surface->window()->layer()->fills_bounds_opaquely());
 }
 
 TEST_P(SurfaceTest, SetAlpha) {

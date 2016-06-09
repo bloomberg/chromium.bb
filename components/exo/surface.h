@@ -81,8 +81,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public aura::Window,
-                public aura::WindowObserver,
+class Surface : public aura::WindowObserver,
                 public ui::LayerOwnerDelegate,
                 public ui::CompositorObserver {
  public:
@@ -94,6 +93,8 @@ class Surface : public aura::Window,
 
   // Sets whether to put the contents in a SurfaceLayer or a TextureLayer.
   static void SetUseSurfaceLayer(bool use_surface_layer);
+
+  aura::Window* window() { return window_.get(); }
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -242,6 +243,9 @@ class Surface : public aura::Window,
   // This is true if the buffer contents should be put in a SurfaceLayer
   // rather than a TextureLayer.
   static bool use_surface_layer_;
+
+  // This window has the layer which contains the Surface contents.
+  std::unique_ptr<aura::Window> window_;
 
   // This is true when Attach() has been called and new contents should take
   // effect next time Commit() is called.

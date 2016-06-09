@@ -66,7 +66,8 @@ TEST_F(TouchTest, OnTouchDown) {
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(delegate,
               OnTouchDown(top_surface.get(), testing::_, 1, gfx::Point()));
-  generator.set_current_location(top_surface->GetBoundsInScreen().origin());
+  generator.set_current_location(
+      top_surface->window()->GetBoundsInScreen().origin());
   generator.PressTouchId(1);
 
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(bottom_surface.get()))
@@ -74,7 +75,8 @@ TEST_F(TouchTest, OnTouchDown) {
   // Second touch point should be relative to the focus surface.
   EXPECT_CALL(delegate, OnTouchDown(top_surface.get(), testing::_, 2,
                                     gfx::Point(-1, -1)));
-  generator.set_current_location(bottom_surface->GetBoundsInScreen().origin());
+  generator.set_current_location(
+      bottom_surface->window()->GetBoundsInScreen().origin());
   generator.PressTouchId(2);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
@@ -99,7 +101,8 @@ TEST_F(TouchTest, OnTouchUp) {
   EXPECT_CALL(delegate,
               OnTouchDown(surface.get(), testing::_, testing::_, gfx::Point()))
       .Times(2);
-  generator.set_current_location(surface->GetBoundsInScreen().origin());
+  generator.set_current_location(
+      surface->window()->GetBoundsInScreen().origin());
   generator.PressTouchId(1);
   generator.PressTouchId(2);
 
@@ -132,7 +135,8 @@ TEST_F(TouchTest, OnTouchMotion) {
   EXPECT_CALL(delegate,
               OnTouchMotion(testing::_, testing::_, gfx::Point(5, 5)));
   EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
-  generator.set_current_location(surface->GetBoundsInScreen().origin());
+  generator.set_current_location(
+      surface->window()->GetBoundsInScreen().origin());
   generator.PressMoveAndReleaseTouchBy(5, 5);
 
   // Check if touch point motion outside focus surface is reported properly to
@@ -142,7 +146,8 @@ TEST_F(TouchTest, OnTouchMotion) {
   EXPECT_CALL(delegate,
               OnTouchMotion(testing::_, testing::_, gfx::Point(100, 100)));
   EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
-  generator.set_current_location(surface->GetBoundsInScreen().origin());
+  generator.set_current_location(
+      surface->window()->GetBoundsInScreen().origin());
   generator.PressMoveAndReleaseTouchBy(100, 100);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
@@ -167,7 +172,8 @@ TEST_F(TouchTest, OnTouchCancel) {
   EXPECT_CALL(delegate,
               OnTouchDown(surface.get(), testing::_, testing::_, gfx::Point()))
       .Times(2);
-  generator.set_current_location(surface->GetBoundsInScreen().origin());
+  generator.set_current_location(
+      surface->window()->GetBoundsInScreen().origin());
   generator.PressTouchId(1);
   generator.PressTouchId(2);
 

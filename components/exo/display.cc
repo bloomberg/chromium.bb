@@ -121,7 +121,7 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
   TRACE_EVENT2("exo", "Display::CreatePopupShellSurface", "surface",
                surface->AsTracedValue(), "parent", parent->AsTracedValue());
 
-  if (surface->Contains(parent->GetWidget()->GetNativeWindow())) {
+  if (surface->window()->Contains(parent->GetWidget()->GetNativeWindow())) {
     DLOG(ERROR) << "Parent is contained within surface's hierarchy";
     return nullptr;
   }
@@ -136,7 +136,8 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
   // container origin.
   gfx::Rect initial_bounds(position, gfx::Size(1, 1));
   aura::Window::ConvertRectToTarget(
-      ShellSurface::GetMainSurface(parent->GetWidget()->GetNativeWindow()),
+      ShellSurface::GetMainSurface(parent->GetWidget()->GetNativeWindow())
+          ->window(),
       parent->GetWidget()->GetNativeWindow()->parent(), &initial_bounds);
 
   return base::WrapUnique(
@@ -164,7 +165,7 @@ std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
   TRACE_EVENT2("exo", "Display::CreateSubSurface", "surface",
                surface->AsTracedValue(), "parent", parent->AsTracedValue());
 
-  if (surface->Contains(parent)) {
+  if (surface->window()->Contains(parent->window())) {
     DLOG(ERROR) << "Parent is contained within surface's hierarchy";
     return nullptr;
   }

@@ -68,8 +68,8 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
       return;
     }
     if (surface_) {
-      widget_->GetNativeWindow()->RemoveChild(surface_);
-      surface_->Hide();
+      widget_->GetNativeWindow()->RemoveChild(surface_->window());
+      surface_->window()->Hide();
       surface_->SetSurfaceDelegate(nullptr);
       surface_->RemoveSurfaceObserver(this);
     }
@@ -77,17 +77,18 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     if (surface_) {
       surface_->SetSurfaceDelegate(this);
       surface_->AddSurfaceObserver(this);
-      widget_->GetNativeWindow()->AddChild(surface_);
+      widget_->GetNativeWindow()->AddChild(surface_->window());
     }
   }
 
   // Update hotspot and show cursor surface if not already visible.
   hotspot_ = hotspot;
   if (surface_) {
-    surface_->SetBounds(gfx::Rect(gfx::Point() - hotspot_.OffsetFromOrigin(),
-                                  surface_->layer()->size()));
-    if (!surface_->IsVisible())
-      surface_->Show();
+    surface_->window()->SetBounds(
+        gfx::Rect(gfx::Point() - hotspot_.OffsetFromOrigin(),
+                  surface_->window()->layer()->size()));
+    if (!surface_->window()->IsVisible())
+      surface_->window()->Show();
 
     // Show widget now that cursor has been defined.
     if (!widget_->IsVisible())
@@ -101,9 +102,10 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   // Update cursor in case the registration of pointer as cursor provider
   // caused the cursor to change.
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(focus_->GetRootWindow());
+      aura::client::GetCursorClient(focus_->window()->GetRootWindow());
   if (cursor_client)
-    cursor_client->SetCursor(focus_->GetCursor(gfx::ToFlooredPoint(location_)));
+    cursor_client->SetCursor(
+        focus_->window()->GetCursor(gfx::ToFlooredPoint(location_)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,8 +241,9 @@ void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
 
 void Pointer::OnSurfaceCommit() {
   surface_->CommitSurfaceHierarchy();
-  surface_->SetBounds(gfx::Rect(gfx::Point() - hotspot_.OffsetFromOrigin(),
-                                surface_->layer()->size()));
+  surface_->window()->SetBounds(
+      gfx::Rect(gfx::Point() - hotspot_.OffsetFromOrigin(),
+                surface_->window()->layer()->size()));
 }
 
 bool Pointer::IsSurfaceSynchronized() const {

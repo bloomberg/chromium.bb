@@ -46,7 +46,7 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
 
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
-  focus_client->FocusWindow(surface.get());
+  focus_client->FocusWindow(surface->window());
 
   // Keyboard should try to set initial focus to surface.
   MockKeyboardDelegate delegate;
@@ -68,9 +68,9 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
                                   expected_pressed_keys +
                                       arraysize(expected_pressed_keys))));
   focus_client->FocusWindow(nullptr);
-  focus_client->FocusWindow(surface.get());
+  focus_client->FocusWindow(surface->window());
   // Surface should maintain keyboard focus when moved to top-level window.
-  focus_client->FocusWindow(surface->GetToplevelWindow());
+  focus_client->FocusWindow(surface->window()->GetToplevelWindow());
 
   EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
@@ -97,7 +97,7 @@ TEST_F(KeyboardTest, OnKeyboardLeave) {
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
   EXPECT_CALL(delegate,
               OnKeyboardEnter(surface.get(), std::vector<ui::DomCode>()));
-  focus_client->FocusWindow(surface.get());
+  focus_client->FocusWindow(surface->window());
 
   EXPECT_CALL(delegate, OnKeyboardLeave(surface.get()));
   focus_client->FocusWindow(nullptr);
@@ -127,7 +127,7 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
   EXPECT_CALL(delegate,
               OnKeyboardEnter(surface.get(), std::vector<ui::DomCode>()));
-  focus_client->FocusWindow(surface.get());
+  focus_client->FocusWindow(surface->window());
 
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   // This should only generate one press event for KEY_A.
@@ -166,7 +166,7 @@ TEST_F(KeyboardTest, OnKeyboardModifiers) {
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
   EXPECT_CALL(delegate,
               OnKeyboardEnter(surface.get(), std::vector<ui::DomCode>()));
-  focus_client->FocusWindow(surface.get());
+  focus_client->FocusWindow(surface->window());
 
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   // This should generate a modifier event.

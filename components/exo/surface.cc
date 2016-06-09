@@ -107,7 +107,7 @@ class CustomWindowDelegate : public aura::WindowDelegate {
     // trigger proper events in the views/ash level there. Event handling for
     // Surfaces is done in a post event handler in keyboard.cc.
     views::Widget* widget =
-        views::Widget::GetTopLevelWidgetForNativeView(surface_);
+        views::Widget::GetTopLevelWidgetForNativeView(surface_->window());
     if (widget)
       widget->OnKeyEvent(event);
   }
@@ -187,7 +187,7 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
 // Surface, public:
 
 Surface::Surface()
-    : aura::Window(new CustomWindowDelegate(this)),
+    : window_(new aura::Window(new CustomWindowDelegate(this))),
       has_pending_contents_(false),
       pending_input_region_(SkIRect::MakeLargest()),
       pending_buffer_scale_(1.0f),
@@ -201,13 +201,13 @@ Surface::Surface()
       update_contents_after_successful_compositing_(false),
       compositor_(nullptr),
       delegate_(nullptr) {
-  SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  SetName("ExoSurface");
-  SetProperty(kSurfaceKey, this);
-  Init(ui::LAYER_SOLID_COLOR);
-  set_layer_owner_delegate(this);
-  SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
-  set_owned_by_parent(false);
+  window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  window_->SetName("ExoSurface");
+  window_->SetProperty(kSurfaceKey, this);
+  window_->Init(ui::LAYER_SOLID_COLOR);
+  window_->set_layer_owner_delegate(this);
+  window_->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
+  window_->set_owned_by_parent(false);
   surface_manager_ =
       aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
   if (use_surface_layer_) {
@@ -220,19 +220,19 @@ Surface::Surface()
   }
 
   if (!factory_owner_) {
-    AddObserver(this);
+    window_->AddObserver(this);
   }
 }
 
 Surface::~Surface() {
   FOR_EACH_OBSERVER(SurfaceObserver, observers_, OnSurfaceDestroying(this));
 
-  layer()->SetShowSolidColorContent();
+  window_->layer()->SetShowSolidColorContent();
 
   if (factory_owner_) {
     factory_owner_->surface_ = nullptr;
   } else {
-    RemoveObserver(this);
+    window_->RemoveObserver(this);
   }
   if (compositor_)
     compositor_->RemoveObserver(this);
@@ -303,9 +303,9 @@ void Surface::AddSubSurface(Surface* sub_surface) {
   TRACE_EVENT1("exo", "Surface::AddSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
 
-  DCHECK(!sub_surface->parent());
-  DCHECK(!sub_surface->IsVisible());
-  AddChild(sub_surface);
+  DCHECK(!sub_surface->window()->parent());
+  DCHECK(!sub_surface->window()->IsVisible());
+  window_->AddChild(sub_surface->window());
 
   DCHECK(!ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
@@ -315,9 +315,9 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
   TRACE_EVENT1("exo", "Surface::AddSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
 
-  RemoveChild(sub_surface);
-  if (sub_surface->IsVisible())
-    sub_surface->Hide();
+  window_->RemoveChild(sub_surface->window());
+  if (sub_surface->window()->IsVisible())
+    sub_surface->window()->Hide();
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(
@@ -468,20 +468,20 @@ void Surface::CommitSurfaceHierarchy() {
 
     // Enable/disable sub-surface based on if it has contents.
     if (sub_surface->has_contents())
-      sub_surface->Show();
+      sub_surface->window()->Show();
     else
-      sub_surface->Hide();
+      sub_surface->window()->Hide();
 
     // Move sub-surface to its new position in the stack.
     if (stacking_target)
-      StackChildAbove(sub_surface, stacking_target);
+      window_->StackChildAbove(sub_surface->window(), stacking_target);
 
     // Stack next sub-surface above this sub-surface.
-    stacking_target = sub_surface;
+    stacking_target = sub_surface->window();
 
     // Update sub-surface position relative to surface origin.
-    sub_surface->SetBounds(
-        gfx::Rect(sub_surface_entry.second, sub_surface->layer()->size()));
+    sub_surface->window()->SetBounds(gfx::Rect(
+        sub_surface_entry.second, sub_surface->window()->layer()->size()));
   }
 }
 
@@ -491,7 +491,8 @@ bool Surface::IsSynchronized() const {
 
 gfx::Rect Surface::GetHitTestBounds() const {
   SkIRect bounds = input_region_.getBounds();
-  if (!bounds.intersect(gfx::RectToSkIRect(gfx::Rect(layer()->size()))))
+  if (!bounds.intersect(
+          gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))))
     return gfx::Rect();
   return gfx::SkIRectToRect(bounds);
 }
@@ -500,12 +501,12 @@ bool Surface::HitTestRect(const gfx::Rect& rect) const {
   if (HasHitTestMask())
     return input_region_.intersects(gfx::RectToSkIRect(rect));
 
-  return rect.Intersects(gfx::Rect(layer()->size()));
+  return rect.Intersects(gfx::Rect(window_->layer()->size()));
 }
 
 bool Surface::HasHitTestMask() const {
   return !input_region_.contains(
-      gfx::RectToSkIRect(gfx::Rect(layer()->size())));
+      gfx::RectToSkIRect(gfx::Rect(window_->layer()->size())));
 }
 
 void Surface::GetHitTestMask(gfx::Path* mask) const {
@@ -548,7 +549,7 @@ bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
 std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
   std::unique_ptr<base::trace_event::TracedValue> value(
       new base::trace_event::TracedValue());
-  value->SetString("name", layer()->name());
+  value->SetString("name", window_->layer()->name());
   return value;
 }
 
@@ -558,7 +559,7 @@ std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
 void Surface::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK(!compositor_);
   DCHECK(!factory_owner_);
-  compositor_ = layer()->GetCompositor();
+  compositor_ = window_->layer()->GetCompositor();
   compositor_->AddObserver(this);
 }
 
@@ -617,7 +618,7 @@ void Surface::OnCompositingEnded(ui::Compositor* compositor) {
     return;
 
   // Update contents by producing a new texture mailbox for the current buffer.
-  SetTextureLayerContents(layer());
+  SetTextureLayerContents(window_->layer());
 }
 
 void Surface::OnCompositingAborted(ui::Compositor* compositor) {
@@ -659,26 +660,26 @@ void Surface::CommitTextureContents() {
     if (texture_mailbox_release_callback) {
       texture_size_in_dip_ = gfx::ScaleToFlooredSize(
           texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_);
-      layer()->SetTextureMailbox(texture_mailbox,
-                                 std::move(texture_mailbox_release_callback),
-                                 texture_size_in_dip_);
-      layer()->SetTextureFlipped(false);
+      window_->layer()->SetTextureMailbox(
+          texture_mailbox, std::move(texture_mailbox_release_callback),
+          texture_size_in_dip_);
+      window_->layer()->SetTextureFlipped(false);
     } else {
       // Show solid color content if no buffer is attached or we failed
       // to produce a texture mailbox for the currently attached buffer.
-      layer()->SetShowSolidColorContent();
-      layer()->SetColor(SK_ColorBLACK);
+      window_->layer()->SetShowSolidColorContent();
+      window_->layer()->SetColor(SK_ColorBLACK);
     }
 
     // Schedule redraw of the damage region.
     for (SkRegion::Iterator it(pending_damage_); !it.done(); it.next())
-      layer()->SchedulePaint(gfx::SkIRectToRect(it.rect()));
+      window_->layer()->SchedulePaint(gfx::SkIRectToRect(it.rect()));
 
     // Reset damage.
     pending_damage_.setEmpty();
   }
 
-  if (layer()->has_external_content()) {
+  if (window_->layer()->has_external_content()) {
     // Determine the new surface size.
     // - Texture size in DIP defines the size if nothing else is set.
     // - If a viewport is set then that defines the size, otherwise
@@ -693,13 +694,15 @@ void Surface::CommitTextureContents() {
           << ") most be expressible using integers when viewport is not set";
       contents_size = gfx::ToCeiledSize(crop_.size());
     }
-    layer()->SetTextureCrop(crop_);
-    layer()->SetTextureScale(static_cast<float>(texture_size_in_dip_.width()) /
-                                 contents_size.width(),
-                             static_cast<float>(texture_size_in_dip_.height()) /
-                                 contents_size.height());
-    layer()->SetTextureAlpha(alpha_);
-    layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
+    window_->layer()->SetTextureCrop(crop_);
+    window_->layer()->SetTextureScale(
+        static_cast<float>(texture_size_in_dip_.width()) /
+            contents_size.width(),
+        static_cast<float>(texture_size_in_dip_.height()) /
+            contents_size.height());
+    window_->layer()->SetTextureAlpha(alpha_);
+    window_->layer()->SetBounds(
+        gfx::Rect(window_->layer()->bounds().origin(), contents_size));
   }
 
   // Move pending frame callbacks to the end of |frame_callbacks_|.
@@ -708,10 +711,10 @@ void Surface::CommitTextureContents() {
   // Update alpha compositing properties.
   // TODO(reveman): Use a more reliable way to force blending off than setting
   // fills-bounds-opaquely.
-  layer()->SetFillsBoundsOpaquely(
+  window_->layer()->SetFillsBoundsOpaquely(
       pending_blend_mode_ == SkXfermode::kSrc_Mode ||
       pending_opaque_region_.contains(
-          gfx::RectToSkIRect(gfx::Rect(layer()->size()))));
+          gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))));
 }
 
 void Surface::CommitSurfaceContents() {
@@ -844,13 +847,14 @@ void Surface::CommitSurfaceContents() {
     factory_owner_->surface_factory_->Destroy(old_surface_id);
   }
 
-  layer()->SetShowSurface(
+  window_->layer()->SetShowSurface(
       surface_id_,
       base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
       base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
       contents_surface_size, contents_surface_to_layer_scale, layer_size);
-  layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), layer_size));
-  layer()->SetFillsBoundsOpaquely(alpha_ == 1.0f && frame_is_opaque);
+  window_->layer()->SetBounds(
+      gfx::Rect(window_->layer()->bounds().origin(), layer_size));
+  window_->layer()->SetFillsBoundsOpaquely(alpha_ == 1.0f && frame_is_opaque);
 
   // Reset damage.
   pending_damage_.setEmpty();

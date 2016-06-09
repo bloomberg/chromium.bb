@@ -67,7 +67,8 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       // Convert location to focus surface coordinate space.
       DCHECK(focus_);
       gfx::Point location = event->location();
-      aura::Window::ConvertPointToTarget(target, focus_, &location);
+      aura::Window::ConvertPointToTarget(target->window(), focus_->window(),
+                                         &location);
 
       // Generate a touch down event for the focus surface. Note that this can
       // be different from the target surface.
@@ -96,7 +97,8 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
         // Convert location to focus surface coordinate space.
         gfx::Point location = event->location();
         aura::Window::ConvertPointToTarget(
-            static_cast<aura::Window*>(event->target()), focus_, &location);
+            static_cast<aura::Window*>(event->target()), focus_->window(),
+            &location);
 
         delegate_->OnTouchMotion(event->time_stamp(), event->touch_id(),
                                  location);

@@ -48,7 +48,7 @@ TEST_P(ShellSurfaceTest, AcknowledgeConfigure) {
   gfx::Point origin(100, 100);
   shell_surface->GetWidget()->SetBounds(gfx::Rect(origin, buffer_size));
   EXPECT_EQ(origin.ToString(),
-            surface->GetBoundsInRootWindow().origin().ToString());
+            surface->window()->GetBoundsInRootWindow().origin().ToString());
 
   const uint32_t kSerial = 1;
   shell_surface->set_configure_callback(
@@ -57,7 +57,7 @@ TEST_P(ShellSurfaceTest, AcknowledgeConfigure) {
 
   // Surface origin should not change until configure request is acknowledged.
   EXPECT_EQ(origin.ToString(),
-            surface->GetBoundsInRootWindow().origin().ToString());
+            surface->window()->GetBoundsInRootWindow().origin().ToString());
 
   shell_surface->AcknowledgeConfigure(kSerial);
   std::unique_ptr<Buffer> fullscreen_buffer(
@@ -67,7 +67,7 @@ TEST_P(ShellSurfaceTest, AcknowledgeConfigure) {
   surface->Commit();
 
   EXPECT_EQ(gfx::Point().ToString(),
-            surface->GetBoundsInRootWindow().origin().ToString());
+            surface->window()->GetBoundsInRootWindow().origin().ToString());
 }
 
 TEST_P(ShellSurfaceTest, SetParent) {
@@ -220,7 +220,7 @@ TEST_P(ShellSurfaceTest, SetGeometry) {
       shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
   EXPECT_EQ(gfx::Rect(gfx::Point() - geometry.OffsetFromOrigin(), buffer_size)
                 .ToString(),
-            surface->bounds().ToString());
+            surface->window()->bounds().ToString());
 }
 
 TEST_P(ShellSurfaceTest, SetScale) {
@@ -238,7 +238,7 @@ TEST_P(ShellSurfaceTest, SetScale) {
   gfx::Transform transform;
   transform.Scale(1.0 / scale, 1.0 / scale);
   EXPECT_EQ(transform.ToString(),
-            surface->layer()->GetTargetTransform().ToString());
+            surface->window()->layer()->GetTargetTransform().ToString());
 }
 
 void Close(int* close_call_count) {

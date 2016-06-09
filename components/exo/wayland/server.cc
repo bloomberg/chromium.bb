@@ -132,6 +132,10 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 // associated with window.
 DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
+wl_resource* GetSurfaceResource(Surface* surface) {
+  return surface->window()->GetProperty(kSurfaceResourceKey);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // wl_buffer_interface:
 
@@ -298,7 +302,7 @@ void compositor_create_surface(wl_client* client,
       client, &wl_surface_interface, wl_resource_get_version(resource), id);
 
   // Set the surface resource property for type-checking downcast support.
-  surface->SetProperty(kSurfaceResourceKey, surface_resource);
+  surface->window()->SetProperty(kSurfaceResourceKey, surface_resource);
 
   SetImplementation(surface_resource, &surface_implementation,
                     std::move(surface));
@@ -1307,7 +1311,7 @@ void xdg_shell_get_xdg_popup(wl_client* client,
                              int32_t y) {
   // Parent widget can be found by locating the closest ancestor with a widget.
   views::Widget* parent_widget = nullptr;
-  aura::Window* parent_window = GetUserDataAs<Surface>(parent);
+  aura::Window* parent_window = GetUserDataAs<Surface>(parent)->window();
   while (parent_window) {
     parent_widget = views::Widget::GetWidgetForNativeWindow(parent_window);
     if (parent_widget)
@@ -1489,13 +1493,10 @@ class WaylandWorkspaceObserver : public ash::ShellObserver,
     Surface* lost_active_surface =
         lost_active ? ShellSurface::GetMainSurface(lost_active) : nullptr;
     wl_resource* gained_active_surface_resource =
-        gained_active_surface
-            ? gained_active_surface->GetProperty(kSurfaceResourceKey)
-            : nullptr;
+        gained_active_surface ? GetSurfaceResource(gained_active_surface)
+                              : nullptr;
     wl_resource* lost_active_surface_resource =
-        lost_active_surface
-            ? lost_active_surface->GetProperty(kSurfaceResourceKey)
-            : nullptr;
+        lost_active_surface ? GetSurfaceResource(lost_active_surface) : nullptr;
 
     wl_client* client = wl_resource_get_client(remote_shell_resource_);
 
@@ -1711,7 +1712,7 @@ class WaylandPointerDelegate : public PointerDelegate {
   // Overridden from PointerDelegate:
   void OnPointerDestroying(Pointer* pointer) override { delete this; }
   bool CanAcceptPointerEventsForSurface(Surface* surface) const override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     // We can accept events for this surface if the client is the same as the
     // pointer.
     return surface_resource &&
@@ -1720,7 +1721,7 @@ class WaylandPointerDelegate : public PointerDelegate {
   void OnPointerEnter(Surface* surface,
                       const gfx::PointF& location,
                       int button_flags) override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     // Should we be sending button events to the client before the enter event
     // if client's pressed button state is different from |button_flags|?
@@ -1729,7 +1730,7 @@ class WaylandPointerDelegate : public PointerDelegate {
                           wl_fixed_from_double(location.y()));
   }
   void OnPointerLeave(Surface* surface) override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_pointer_send_leave(pointer_resource_, next_serial(), surface_resource);
   }
@@ -1883,7 +1884,7 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
   // Overridden from KeyboardDelegate:
   void OnKeyboardDestroying(Keyboard* keyboard) override { delete this; }
   bool CanAcceptKeyboardEventsForSurface(Surface* surface) const override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     // We can accept events for this surface if the client is the same as the
     // keyboard.
     return surface_resource &&
@@ -1891,7 +1892,7 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
   }
   void OnKeyboardEnter(Surface* surface,
                        const std::vector<ui::DomCode>& pressed_keys) override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_array keys;
     wl_array_init(&keys);
@@ -1907,7 +1908,7 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
     wl_client_flush(client());
   }
   void OnKeyboardLeave(Surface* surface) override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_keyboard_send_leave(keyboard_resource_, next_serial(), surface_resource);
     wl_client_flush(client());
@@ -2014,7 +2015,7 @@ class WaylandTouchDelegate : public TouchDelegate {
   // Overridden from TouchDelegate:
   void OnTouchDestroying(Touch* touch) override { delete this; }
   bool CanAcceptTouchEventsForSurface(Surface* surface) const override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     // We can accept events for this surface if the client is the same as the
     // touch resource.
     return surface_resource &&
@@ -2024,7 +2025,7 @@ class WaylandTouchDelegate : public TouchDelegate {
                    base::TimeTicks time_stamp,
                    int id,
                    const gfx::Point& location) override {
-    wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
+    wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_touch_send_down(touch_resource_, next_serial(),
                        TimeTicksToMilliseconds(time_stamp), surface_resource,
@@ -2146,14 +2147,14 @@ class Viewport : public SurfaceObserver {
  public:
   explicit Viewport(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
-    surface_->SetProperty(kSurfaceHasViewportKey, true);
+    surface_->window()->SetProperty(kSurfaceHasViewportKey, true);
   }
   ~Viewport() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
       surface_->SetCrop(gfx::RectF());
       surface_->SetViewport(gfx::Size());
-      surface_->SetProperty(kSurfaceHasViewportKey, false);
+      surface_->window()->SetProperty(kSurfaceHasViewportKey, false);
     }
   }
 
@@ -2242,7 +2243,7 @@ void viewporter_get_viewport(wl_client* client,
                              uint32_t id,
                              wl_resource* surface_resource) {
   Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->GetProperty(kSurfaceHasViewportKey)) {
+  if (surface->window()->GetProperty(kSurfaceHasViewportKey)) {
     wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS,
                            "a viewport for that surface already exists");
     return;
@@ -2280,13 +2281,13 @@ class Security : public SurfaceObserver {
  public:
   explicit Security(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
-    surface_->SetProperty(kSurfaceHasSecurityKey, true);
+    surface_->window()->SetProperty(kSurfaceHasSecurityKey, true);
   }
   ~Security() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
       surface_->SetOnlyVisibleOnSecureOutput(false);
-      surface_->SetProperty(kSurfaceHasSecurityKey, false);
+      surface_->window()->SetProperty(kSurfaceHasSecurityKey, false);
     }
   }
 
@@ -2331,7 +2332,7 @@ void secure_output_get_security(wl_client* client,
                                 uint32_t id,
                                 wl_resource* surface_resource) {
   Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->GetProperty(kSurfaceHasSecurityKey)) {
+  if (surface->window()->GetProperty(kSurfaceHasSecurityKey)) {
     wl_resource_post_error(resource, ZWP_SECURE_OUTPUT_V1_ERROR_SECURITY_EXISTS,
                            "a security object for that surface already exists");
     return;
@@ -2369,14 +2370,14 @@ class Blending : public SurfaceObserver {
  public:
   explicit Blending(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
-    surface_->SetProperty(kSurfaceHasBlendingKey, true);
+    surface_->window()->SetProperty(kSurfaceHasBlendingKey, true);
   }
   ~Blending() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
       surface_->SetBlendMode(SkXfermode::kSrcOver_Mode);
       surface_->SetAlpha(1.0f);
-      surface_->SetProperty(kSurfaceHasBlendingKey, false);
+      surface_->window()->SetProperty(kSurfaceHasBlendingKey, false);
     }
   }
 
@@ -2447,7 +2448,7 @@ void alpha_compositing_get_blending(wl_client* client,
                                     uint32_t id,
                                     wl_resource* surface_resource) {
   Surface* surface = GetUserDataAs<Surface>(surface_resource);
-  if (surface->GetProperty(kSurfaceHasBlendingKey)) {
+  if (surface->window()->GetProperty(kSurfaceHasBlendingKey)) {
     wl_resource_post_error(resource,
                            ZWP_ALPHA_COMPOSITING_V1_ERROR_BLENDING_EXISTS,
                            "a blending object for that surface already exists");
