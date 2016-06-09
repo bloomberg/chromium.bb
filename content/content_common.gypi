@@ -366,8 +366,6 @@
       'common/input/input_event_dispatch_type.h',
       'common/input/input_event_stream_validator.cc',
       'common/input/input_event_stream_validator.h',
-      'common/input/input_event_utils.cc',
-      'common/input/input_event_utils.h',
       'common/input/input_param_traits.cc',
       'common/input/input_param_traits.h',
       'common/input/scoped_web_input_event.cc',

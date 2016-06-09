@@ -122,7 +122,6 @@ class OverscrollController {
   // The delegate that receives the overscroll updates. The delegate is not
   // owned by this controller.
   OverscrollControllerDelegate* delegate_;
-  bool use_gesture_wheel_scrolling_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };

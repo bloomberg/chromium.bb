@@ -1196,7 +1196,6 @@ EventSender::SavedEvent::SavedEvent()
 
 EventSender::EventSender(WebTestProxyBase* web_test_proxy_base)
     : web_test_proxy_base_(web_test_proxy_base),
-      send_wheel_gestures_(false),
       replaying_saved_events_(false),
       weak_factory_(this) {
   Reset();
@@ -2547,7 +2546,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
       }
     }
   }
-  if (can_scroll && send_wheel_gestures_) {
+  if (can_scroll) {
     can_scroll = false;
     *send_gestures = true;
   }

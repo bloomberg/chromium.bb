@@ -109,13 +109,6 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     main_thread_sync.Wait();
   }
 
-  // ContentBrowserTest:
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    // TODO(dtapuska): Remove this switch once wheel-gestures ships.
-    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-    cmd->AppendSwitch(switches::kEnableWheelGestures);
-  }
-
   int ExecuteScriptAndExtractInt(const std::string& script) {
     int value = 0;
     EXPECT_TRUE(content::ExecuteScriptAndExtractInt(

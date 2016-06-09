@@ -56,8 +56,7 @@ class CONTENT_EXPORT InputHandlerManager {
   void AddInputHandler(int routing_id,
                        const base::WeakPtr<cc::InputHandler>& input_handler,
                        const base::WeakPtr<RenderViewImpl>& render_view_impl,
-                       bool enable_smooth_scrolling,
-                       bool enable_wheel_gestures);
+                       bool enable_smooth_scrolling);
 
   void ObserveWheelEventAndResultOnMainThread(
       int routing_id,
@@ -98,8 +97,7 @@ class CONTENT_EXPORT InputHandlerManager {
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       const base::WeakPtr<cc::InputHandler>& input_handler,
       const base::WeakPtr<RenderViewImpl>& render_view_impl,
-      bool enable_smooth_scrolling,
-      bool enable_wheel_gestures);
+      bool enable_smooth_scrolling);
 
   void ObserveWheelEventAndResultOnCompositorThread(
       int routing_id,

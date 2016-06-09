@@ -44,7 +44,6 @@
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
@@ -250,7 +249,6 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   }
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
-  settings.use_mouse_wheel_gestures = UseGestureBasedWheelScrolling();
 
   settings.default_tile_size = CalculateDefaultTileSize(device_scale_factor);
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {

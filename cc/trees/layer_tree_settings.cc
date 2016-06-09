@@ -116,7 +116,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          verify_clip_tree_calculations == other.verify_clip_tree_calculations &&
          image_decode_tasks_enabled == other.image_decode_tasks_enabled &&
          wait_for_beginframe_interval == other.wait_for_beginframe_interval &&
-         use_mouse_wheel_gestures == other.use_mouse_wheel_gestures &&
          max_staging_buffer_usage_in_bytes ==
              other.max_staging_buffer_usage_in_bytes &&
          memory_policy_ == other.memory_policy_ &&
@@ -176,7 +175,6 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
       use_occlusion_for_tile_prioritization);
   proto->set_image_decode_tasks_enabled(image_decode_tasks_enabled);
   proto->set_wait_for_beginframe_interval(wait_for_beginframe_interval);
-  proto->set_use_mouse_wheel_gestures(use_mouse_wheel_gestures);
   proto->set_max_staging_buffer_usage_in_bytes(
       max_staging_buffer_usage_in_bytes);
   memory_policy_.ToProtobuf(proto->mutable_memory_policy());
@@ -240,7 +238,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
       proto.use_occlusion_for_tile_prioritization();
   image_decode_tasks_enabled = proto.image_decode_tasks_enabled();
   wait_for_beginframe_interval = proto.wait_for_beginframe_interval();
-  use_mouse_wheel_gestures = proto.use_mouse_wheel_gestures();
   max_staging_buffer_usage_in_bytes = proto.max_staging_buffer_usage_in_bytes();
   memory_policy_.FromProtobuf(proto.memory_policy());
   initial_debug_state.FromProtobuf(proto.initial_debug_state());

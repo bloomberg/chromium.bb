@@ -52,7 +52,6 @@
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
-#include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/text_input_state.h"
@@ -563,7 +562,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
-      wheel_gestures_enabled_(UseGestureBasedWheelScrolling()),
       fullscreen_parent_host_view_(nullptr),
       begin_frame_source_(nullptr),
       needs_begin_frames_(false),
@@ -1577,25 +1575,9 @@ void RenderWidgetHostViewMac::UnlockMouse() {
     render_widget_host_->LostMouseLock();
 }
 
-void RenderWidgetHostViewMac::WheelEventAck(
-    const blink::WebMouseWheelEvent& event,
-    InputEventAckState ack_result) {
-  // TODO(dtapuska): Remove this handling of the wheel event ack
-  // once wheel gestures is enabled for a full release; see crbug.com/598798.
-  if (wheel_gestures_enabled_)
-    return;
-  bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  // Only record a wheel event as unhandled if JavaScript handlers got a chance
-  // to see it (no-op wheel events are ignored by the event dispatcher)
-  if (event.deltaX || event.deltaY)
-    [cocoa_view_ processedWheelEvent:event consumed:consumed];
-}
-
 void RenderWidgetHostViewMac::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  if (!wheel_gestures_enabled_)
-    return;
   bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   switch (event.type) {
     case blink::WebInputEvent::GestureScrollBegin:

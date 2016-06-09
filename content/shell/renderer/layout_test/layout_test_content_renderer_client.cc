@@ -13,7 +13,6 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
-#include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
@@ -123,7 +122,6 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   // the main frame in WebTestProxy.
   proxy->set_web_widget(render_view->GetWebView()->widget());
   proxy->Reset();
-  proxy->SetSendWheelGestures(UseGestureBasedWheelScrolling());
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);

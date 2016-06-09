@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
-#include "content/common/input/input_event_utils.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/common/content_switches.h"
 
@@ -36,15 +35,13 @@ OverscrollController::OverscrollController()
       scroll_state_(STATE_UNKNOWN),
       overscroll_delta_x_(0.f),
       overscroll_delta_y_(0.f),
-      delegate_(NULL),
-      use_gesture_wheel_scrolling_(UseGestureBasedWheelScrolling()) {}
+      delegate_(NULL) {}
 
 OverscrollController::~OverscrollController() {
 }
 
 bool OverscrollController::ShouldProcessEvent(
     const blink::WebInputEvent& event) {
-  if (use_gesture_wheel_scrolling_) {
     switch (event.type) {
       case blink::WebInputEvent::MouseWheel:
         return false;
@@ -76,7 +73,6 @@ bool OverscrollController::ShouldProcessEvent(
       default:
         break;
     }
-  }
   return true;
 }
 

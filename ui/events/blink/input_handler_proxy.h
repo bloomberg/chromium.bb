@@ -47,9 +47,6 @@ class InputHandlerProxy
   }
 
   void set_smooth_scroll_enabled(bool value) { smooth_scroll_enabled_ = value; }
-  void set_use_gesture_events_for_mouse_wheel(bool value) {
-    use_gesture_events_for_mouse_wheel_ = value;
-  }
 
   enum EventDisposition {
     DID_HANDLE,
@@ -204,7 +201,6 @@ class InputHandlerProxy
 
   bool smooth_scroll_enabled_;
   bool uma_latency_reporting_enabled_;
-  bool use_gesture_events_for_mouse_wheel_;
 
   // The merged result of the last touch start with previous touch starts.
   // This value will get returned for subsequent TouchMove events to allow
