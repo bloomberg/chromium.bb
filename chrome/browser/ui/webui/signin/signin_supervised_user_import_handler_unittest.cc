@@ -182,8 +182,9 @@ TEST_F(SigninSupervisedUserImportHandlerTest, NotAuthenticated) {
   // Expect an error response.
   VerifyResponse(1U, kTestCallbackId, false);
 
-  base::string16 expected_error_message = l10n_util::GetStringUTF16(
-      IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR);
+  base::string16 expected_error_message = l10n_util::GetStringFUTF16(
+      IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR,
+      base::ASCIIToUTF16(profile()->GetProfileUserName()));
   base::string16 error_message;
   ASSERT_TRUE(web_ui()->call_data()[0]->arg3()->GetAsString(&error_message));
   EXPECT_EQ(expected_error_message, error_message);
@@ -206,8 +207,9 @@ TEST_F(SigninSupervisedUserImportHandlerTest, AuthError) {
   // Expect an error response.
   VerifyResponse(1U, kTestCallbackId, false);
 
-  base::string16 expected_error_message = l10n_util::GetStringUTF16(
-      IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR);
+  base::string16 expected_error_message = l10n_util::GetStringFUTF16(
+      IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR,
+      base::ASCIIToUTF16(profile()->GetProfileUserName()));
   base::string16 error_message;
   ASSERT_TRUE(web_ui()->call_data()[0]->arg3()->GetAsString(&error_message));
   EXPECT_EQ(expected_error_message, error_message);

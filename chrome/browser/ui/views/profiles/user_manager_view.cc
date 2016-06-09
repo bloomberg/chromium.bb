@@ -57,41 +57,17 @@ namespace {
 UserManagerView* instance_ = nullptr;
 base::Closure* user_manager_shown_callback_for_testing_ = nullptr;
 bool instance_under_construction_ = false;
+}  // namespace
 
-class ReauthDelegate : public views::DialogDelegateView,
-                       public UserManager::ReauthDialogObserver {
- public:
-  ReauthDelegate(views::WebView* web_view,
-                 const std::string& email_address);
-  ~ReauthDelegate() override {}
+// ReauthDelegate---------------------------------------------------------------
 
- private:
-  ReauthDelegate();
-  // views::DialogDelegate:
-  gfx::Size GetPreferredSize() const override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
-  bool ShouldUseCustomFrame() const override;
-  ui::ModalType GetModalType() const override;
-  void DeleteDelegate() override;
-  base::string16 GetWindowTitle() const override;
-  int GetDialogButtons() const override;
-  views::View* GetInitiallyFocusedView() override;
-
-  // UserManager::ReauthObserver:
-  void CloseReauthDialog() override;
-
-  views::WebView* web_view_;
-  const std::string email_address_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReauthDelegate);
-};
-
-ReauthDelegate::ReauthDelegate(views::WebView* web_view,
-                               const std::string& email_address)
-    : UserManager::ReauthDialogObserver(
-          web_view->GetWebContents(), email_address),
+ReauthDelegate::ReauthDelegate(UserManagerView* parent,
+                               views::WebView* web_view,
+                               const std::string& email_address,
+                               signin_metrics::Reason reason)
+    : UserManager::ReauthDialogObserver(web_view->GetWebContents(),
+                                        email_address),
+      parent_(parent),
       web_view_(web_view),
       email_address_(email_address) {
   AddChildView(web_view_);
@@ -101,10 +77,12 @@ ReauthDelegate::ReauthDelegate(views::WebView* web_view,
   // Add the index of the profile to the URL so that the inline login page
   // knows which profile to load and update the credentials.
   GURL url = signin::GetReauthURLWithEmail(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::Reason::REASON_UNLOCK, email_address_);
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason,
+      email_address_);
   web_view_->LoadInitialURL(url);
 }
+
+ReauthDelegate::~ReauthDelegate() {}
 
 gfx::Size ReauthDelegate::GetPreferredSize() const {
   return gfx::Size(UserManager::kReauthDialogWidth,
@@ -132,6 +110,7 @@ ui::ModalType ReauthDelegate::GetModalType() const {
 }
 
 void ReauthDelegate::DeleteDelegate() {
+  OnReauthDialogDestroyed();
   delete this;
 }
 
@@ -148,10 +127,16 @@ views::View* ReauthDelegate::GetInitiallyFocusedView() {
 }
 
 void ReauthDelegate::CloseReauthDialog() {
+  OnReauthDialogDestroyed();
   GetWidget()->Close();
 }
 
-}  // namespace
+void ReauthDelegate::OnReauthDialogDestroyed() {
+  if (parent_) {
+    parent_->OnReauthDialogDestroyed();
+    parent_ = nullptr;
+  }
+}
 
 // UserManager -----------------------------------------------------------------
 
@@ -222,18 +207,22 @@ void UserManager::OnUserManagerShown() {
 
 // static
 void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
-                                   const std::string& email) {
+                                   const std::string& email,
+                                   signin_metrics::Reason reason) {
   // This method should only be called if the user manager is already showing.
   if (!IsShowing())
     return;
 
-  // The dialog delegate will be deleted when the dialog closes and the created
-  // WebView's lifetime is managed by the delegate.
-  views::DialogDelegate* delegate =
-      new ReauthDelegate(new views::WebView(browser_context), email);
-  gfx::NativeView parent = instance_->GetWidget()->GetNativeView();
-  views::DialogDelegate::CreateDialogWidget(delegate, nullptr, parent);
-  delegate->GetWidget()->Show();
+  instance_->ShowReauthDialog(browser_context, email, reason);
+}
+
+// static
+void UserManager::HideReauthDialog() {
+  // This method should only be called if the user manager is already showing.
+  if (!IsShowing())
+    return;
+
+  instance_->HideReauthDialog();
 }
 
 // static
@@ -246,7 +235,8 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
 // UserManagerView -------------------------------------------------------------
 
 UserManagerView::UserManagerView()
-    : web_view_(NULL),
+    : web_view_(nullptr),
+      delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
 #if !defined(USE_ASH)
   keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::USER_MANAGER_VIEW,
@@ -255,6 +245,7 @@ UserManagerView::UserManagerView()
 }
 
 UserManagerView::~UserManagerView() {
+  HideReauthDialog();
 }
 
 // static
@@ -270,6 +261,32 @@ void UserManagerView::OnSystemProfileCreated(
   DCHECK(!instance_);
   instance_ = instance.release();  // |instance_| takes over ownership.
   instance_->Init(system_profile, GURL(url));
+}
+
+void UserManagerView::ShowReauthDialog(content::BrowserContext* browser_context,
+                                       const std::string& email,
+                                       signin_metrics::Reason reason) {
+  HideReauthDialog();
+  // The dialog delegate will be deleted when the widget closes. The created
+  // WebView's lifetime is managed by the delegate.
+  delegate_ = new ReauthDelegate(this,
+                                 new views::WebView(browser_context),
+                                 email,
+                                 reason);
+  gfx::NativeView parent = instance_->GetWidget()->GetNativeView();
+  views::DialogDelegate::CreateDialogWidget(delegate_, nullptr, parent);
+  delegate_->GetWidget()->Show();
+}
+
+void UserManagerView::HideReauthDialog() {
+  if (delegate_) {
+    delegate_->CloseReauthDialog();
+    DCHECK(!delegate_);
+  }
+}
+
+void UserManagerView::OnReauthDialogDestroyed() {
+  delegate_ = nullptr;
 }
 
 void UserManagerView::Init(Profile* system_profile, const GURL& url) {

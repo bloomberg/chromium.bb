@@ -164,12 +164,14 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
  @private
   std::string emailAddress_;
   content::WebContents* webContents_;
+  signin_metrics::Reason reason_;
   std::unique_ptr<ReauthDialogDelegate> webContentsDelegate_;
   std::unique_ptr<ConstrainedWindowMac> constrained_window_;
   std::unique_ptr<content::WebContents> reauthWebContents_;
 }
 - (id)initWithProfile:(Profile*)profile
                 email:(std::string)email
+               reason:(signin_metrics::Reason)reason
           webContents:(content::WebContents*)webContents;
 - (void)close;
 @end
@@ -178,9 +180,11 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 
 - (id)initWithProfile:(Profile*)profile
                 email:(std::string)email
+               reason:(signin_metrics::Reason)reason
           webContents:(content::WebContents*)webContents {
   webContents_ = webContents;
   emailAddress_ = email;
+  reason_ = reason;
 
   NSRect frame = NSMakeRect(
       0, 0, UserManager::kReauthDialogWidth, UserManager::kReauthDialogHeight);
@@ -219,8 +223,8 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 
 - (void)show {
   GURL url = signin::GetReauthURLWithEmail(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
-      signin_metrics::Reason::REASON_UNLOCK, emailAddress_);
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason_,
+      emailAddress_);
   reauthWebContents_->GetController().LoadURL(url, content::Referrer(),
                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());
@@ -259,7 +263,9 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
 - (void)show;
 - (void)close;
 - (BOOL)isVisible;
-- (void)showReauthDialogWithProfile:(Profile*)profile email:(std::string)email;
+- (void)showReauthDialogWithProfile:(Profile*)profile
+                              email:(std::string)email
+                             reason:(signin_metrics::Reason)reason;
 - (void)closeReauthDialog;
 @end
 
@@ -365,12 +371,14 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
   userManagerObserver_->WindowWasClosed();
 }
 
-- (void)showReauthDialogWithProfile:(Profile*)profile email:(std::string)email {
-  reauth_window_controller_.reset(
-      [[ReauthDialogWindowController alloc]
-          initWithProfile:profile
-                    email:email
-              webContents:webContents_.get()]);
+- (void)showReauthDialogWithProfile:(Profile*)profile
+                              email:(std::string)email
+                             reason:(signin_metrics::Reason)reason {
+  reauth_window_controller_.reset([[ReauthDialogWindowController alloc]
+      initWithProfile:profile
+                email:email
+               reason:reason
+          webContents:webContents_.get()]);
 }
 
 - (void)closeReauthDialog {
@@ -441,9 +449,22 @@ void UserManager::OnUserManagerShown() {
 
 // static
 void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
-                                   const std::string& email) {
-  DCHECK(instance_);
-  instance_->ShowReauthDialog(browser_context, email);
+                                   const std::string& email,
+                                   signin_metrics::Reason reason) {
+  // This method should only be called if the user manager is already showing.
+  if (!IsShowing())
+    return;
+
+  instance_->ShowReauthDialog(browser_context, email, reason);
+}
+
+// static
+void UserManager::HideReauthDialog() {
+  // This method should only be called if the user manager is already showing.
+  if (!IsShowing())
+    return;
+
+  instance_->CloseReauthDialog();
 }
 
 // static
@@ -455,10 +476,12 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
 }
 
 void UserManagerMac::ShowReauthDialog(content::BrowserContext* browser_context,
-                                      const std::string& email) {
+                                      const std::string& email,
+                                      signin_metrics::Reason reason) {
   [window_controller_
       showReauthDialogWithProfile:Profile::FromBrowserContext(browser_context)
-                            email:email];
+                            email:email
+                           reason:reason];
 }
 
 void UserManagerMac::CloseReauthDialog() {

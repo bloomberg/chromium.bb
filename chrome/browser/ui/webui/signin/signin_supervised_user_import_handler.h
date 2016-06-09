@@ -49,10 +49,13 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   // browser is not tabbed.
   void OpenUrlInLastActiveProfileBrowser(const base::ListValue* args);
 
-  // Callback for the "getExistingSupervisedUsers" message.
-  // Checks the sign-in status of the custodian and accordingly
-  // sends an update to the WebUI.
+  // Callback for the "getExistingSupervisedUsers" message. Returns a list of
+  // supervised users attached to the given custodian profile.
   void GetExistingSupervisedUsers(const base::ListValue* args);
+
+  // Callback for the "authenticateCustodian" message. Authenticates the
+  // custodian profile with the given email address.
+  void AuthenticateCustodian(const base::ListValue* args);
 
   void LoadCustodianProfileCallback(Profile* custodian_profile,
                                     Profile::CreateStatus status);
@@ -60,9 +63,9 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   // Reject the WebUI callback with an error message.
   void RejectCallback(const base::string16& error);
 
-  base::string16 GetLocalErorrMessage() const;
+  base::string16 GetLocalErrorMessage() const;
 
-  base::string16 GetAuthErorrMessage() const;
+  base::string16 GetAuthErrorMessage(Profile* profile) const;
 
   // Sends an array of supervised users to WebUI. Each entry is of the form:
   //   supervisedProfile = {

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -74,6 +76,10 @@ void SigninSupervisedUserImportHandler::RegisterMessages() {
       base::Bind(
           &SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "authenticateCustodian",
+      base::Bind(&SigninSupervisedUserImportHandler::AuthenticateCustodian,
+                 base::Unretained(this)));
 }
 
 void SigninSupervisedUserImportHandler::AssignWebUICallbackId(
@@ -121,6 +127,19 @@ void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
   }
 }
 
+void SigninSupervisedUserImportHandler::AuthenticateCustodian(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+
+  std::string email;
+  bool success = args->GetString(0, &email);
+  DCHECK(success);
+
+  UserManager::ShowReauthDialog(
+      web_ui()->GetWebContents()->GetBrowserContext(), email,
+      signin_metrics::Reason::REASON_REAUTHENTICATION);
+}
+
 void SigninSupervisedUserImportHandler::GetExistingSupervisedUsers(
     const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
@@ -150,7 +169,7 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL: {
       // TODO(mahmadi): see if a better error message is required here.
-      RejectCallback(GetLocalErorrMessage());
+      RejectCallback(GetLocalErrorMessage());
       break;
     }
     case Profile::CREATE_STATUS_CREATED: {
@@ -166,7 +185,7 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
       }
 
       if (!IsAccountConnected(profile) || HasAuthError(profile)) {
-        RejectCallback(GetAuthErorrMessage());
+        RejectCallback(GetAuthErrorMessage(profile));
         return;
       }
 
@@ -197,14 +216,16 @@ void SigninSupervisedUserImportHandler::RejectCallback(
   webui_callback_id_.clear();
 }
 
-base::string16 SigninSupervisedUserImportHandler::GetLocalErorrMessage() const {
+base::string16 SigninSupervisedUserImportHandler::GetLocalErrorMessage() const {
   return l10n_util::GetStringUTF16(
       IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR);
 }
 
-base::string16 SigninSupervisedUserImportHandler::GetAuthErorrMessage() const {
-  return l10n_util::GetStringUTF16(
-      IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR);
+base::string16 SigninSupervisedUserImportHandler::GetAuthErrorMessage(
+    Profile* profile) const {
+  return l10n_util::GetStringFUTF16(
+      IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR,
+      base::ASCIIToUTF16(profile->GetProfileUserName()));
 }
 
 void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(

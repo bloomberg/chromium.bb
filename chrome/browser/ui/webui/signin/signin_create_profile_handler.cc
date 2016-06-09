@@ -567,8 +567,9 @@ void SigninCreateProfileHandler::LoadCustodianProfileCallback(
       // everything is ready.
       if (!IsAccountConnected(custodian_profile) ||
           HasAuthError(custodian_profile)) {
-        ShowProfileCreationError(nullptr, l10n_util::GetStringUTF16(
-          IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR));
+        ShowProfileCreationError(nullptr, l10n_util::GetStringFUTF16(
+          IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR,
+          base::ASCIIToUTF16(custodian_profile->GetProfileUserName())));
         return;
       }
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -36,7 +37,6 @@ Browser* GetDesktopBrowser(content::WebUI* web_ui) {
       web_ui->GetWebContents());
   if (!browser)
     browser = chrome::FindLastActiveWithProfile(Profile::FromWebUI(web_ui));
-  DCHECK(browser);
   return browser;
 }
 
@@ -283,7 +283,10 @@ void InlineLoginHandler::HandleNavigationButtonClicked(
 
 void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
   Browser* browser = GetDesktopBrowser(web_ui());
-  DCHECK(browser);
+  // If the dialog was opened in the User Manager browser will be null here.
+  if (browser)
+    browser->CloseModalSigninWindow();
 
-  browser->CloseModalSigninWindow();
+  // Does nothing if user manager is not showing.
+  UserManager::HideReauthDialog();
 }

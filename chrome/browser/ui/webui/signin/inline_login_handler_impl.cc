@@ -693,19 +693,34 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   // taken from web_ui().
   Profile* profile = Profile::FromWebUI(web_ui());
   if (IsSystemProfile(profile)) {
-    // Switch to the profile and finish the login.  Don't pass a handler pointer
-    // since it will be destroyed before the callback runs.
     ProfileManager* manager = g_browser_process->profile_manager();
     base::FilePath path = profiles::GetPathOfProfileWithEmail(manager, email);
     if (!path.empty()) {
-      FinishCompleteLoginParams params(nullptr, partition, current_url, path,
-                                       confirm_untrusted_signin_, email,
-                                       gaia_id, password, session_index,
-                                       auth_code, choose_what_to_sync);
-      ProfileManager::CreateCallback callback = base::Bind(
-          &InlineLoginHandlerImpl::FinishCompleteLogin, params);
-      profiles::SwitchToProfile(path, true, callback,
-                                ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+      signin_metrics::Reason reason =
+          signin::GetSigninReasonForPromoURL(current_url);
+      // If we are only reauthenticating a profile in the user manager (and not
+      // unlocking it), load the profile and finish the login.
+      if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
+        FinishCompleteLoginParams params(
+            this, partition, current_url, base::FilePath(),
+            confirm_untrusted_signin_, email, gaia_id, password, session_index,
+            auth_code, choose_what_to_sync);
+        ProfileManager::CreateCallback callback =
+            base::Bind(&InlineLoginHandlerImpl::FinishCompleteLogin, params);
+        profiles::LoadProfileAsync(path, callback);
+      } else {
+        // Otherwise, switch to the profile and finish the login. Pass the
+        // profile path so it can be marked as unlocked. Don't pass a handler
+        // pointer since it will be destroyed before the callback runs.
+        FinishCompleteLoginParams params(nullptr, partition, current_url, path,
+                                         confirm_untrusted_signin_, email,
+                                         gaia_id, password, session_index,
+                                         auth_code, choose_what_to_sync);
+        ProfileManager::CreateCallback callback =
+            base::Bind(&InlineLoginHandlerImpl::FinishCompleteLogin, params);
+        profiles::SwitchToProfile(path, true, callback,
+                                  ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+      }
     }
   } else {
     FinishCompleteLogin(
@@ -836,7 +851,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
                          params.choose_what_to_sync,
                          params.confirm_untrusted_signin);
 
-  // If opened from user manager to reauthenticate, make sure the user manager
+  // If opened from user manager to unlock a profile, make sure the user manager
   // is closed and that the profile is marked as unlocked.
   if (!params.profile_path.empty()) {
     UserManager::Hide();

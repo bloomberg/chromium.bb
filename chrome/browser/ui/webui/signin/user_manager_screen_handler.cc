@@ -451,7 +451,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   // In order to support the upgrade case where we have a local hash but no
   // password token, the user perform a full online reauth.
   UserManager::ShowReauthDialog(web_ui()->GetWebContents()->GetBrowserContext(),
-                                email_address_);
+                                email_address_,
+                                signin_metrics::Reason::REASON_UNLOCK);
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
@@ -676,7 +677,8 @@ void UserManagerScreenHandler::OnOAuthError() {
   DCHECK(!email_address_.empty());
   oauth_client_.reset();
   UserManager::ShowReauthDialog(web_ui()->GetWebContents()->GetBrowserContext(),
-                                email_address_);
+                                email_address_,
+                                signin_metrics::Reason::REASON_UNLOCK);
 }
 
 void UserManagerScreenHandler::OnNetworkError(int response_code) {

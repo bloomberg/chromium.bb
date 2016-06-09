@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 namespace base {
 class FilePath;
@@ -38,12 +39,20 @@ class UserManager {
   static void AddOnUserManagerShownCallbackForTesting(
       const base::Closure& callback);
 
-  // Shows a dialog where the user can re-authenticate when their profile is
-  // not yet open.  This is called from the user manager when a profile is
-  // locked and it has detected that the user's password has changed since the
-  // profile was locked.
+  // Shows a dialog where the user can re-authenticate the profile with the
+  // given |email|. This is called in the following scenarios:
+  //  -From the user manager when a profile is locked and the user's password is
+  //   detected to have been changed.
+  //  -From the user manager when a custodian account needs to be
+  //   reauthenticated.
+  // |reason| can be REASON_UNLOCK or REASON_REAUTHENTICATION to indicate
+  // whether this is a reauth or unlock scenario.
   static void ShowReauthDialog(content::BrowserContext* browser_context,
-                               const std::string& email);
+                               const std::string& email,
+                               signin_metrics::Reason reason);
+
+  // Hides the reauth dialog if it is showing.
+  static void HideReauthDialog();
 
   // TODO(noms): Figure out if this size can be computed dynamically or adjusted
   // for smaller screens.

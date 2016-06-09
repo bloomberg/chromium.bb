@@ -68,6 +68,11 @@ void OpenBrowserWindowForProfile(ProfileManager::CreateCallback callback,
                                  Profile::CreateStatus status);
 
 #if !defined(OS_ANDROID)
+// Loads the specified profile given by |path| asynchronously. Once profile is
+// loaded and initialized it runs |callback| if it isn't null.
+void LoadProfileAsync(const base::FilePath& path,
+                      ProfileManager::CreateCallback callback);
+
 // Opens a Browser with the specified profile given by |path|.
 // If |always_create| is true then a new window is created
 // even if a window for that profile already exists. When the browser is

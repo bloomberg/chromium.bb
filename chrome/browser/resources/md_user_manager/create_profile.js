@@ -171,8 +171,12 @@ Polymer({
     } else if (element.id == 'sign-in-to-chrome') {
       this.browserProxy_.openUrlInLastActiveProfileBrowser(element.href);
       event.preventDefault();
+    } else if (element.id == 'reauth') {
+      var elementData = /** @type {{userEmail: string}} */ (element.dataset);
+      this.browserProxy_.authenticateCustodian(elementData.userEmail);
+      this.hideMessage_();
+      event.preventDefault();
     }
-    // TODO(mahmadi): handle tap event on '#reauth' to re-auth the custodian.
   },
 
   /**

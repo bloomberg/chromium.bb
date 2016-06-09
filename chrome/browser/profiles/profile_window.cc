@@ -163,6 +163,20 @@ void OnUserManagerSystemProfileCreated(
   callback.Run(system_profile, page);
 }
 
+// Called in profiles::LoadProfileAsync once profile is loaded. It runs
+// |callback| if it isn't null.
+void ProfileLoadedCallback(ProfileManager::CreateCallback callback,
+                           Profile* profile,
+                           Profile::CreateStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+
+  if (!callback.is_null())
+    callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
+}
+
 }  // namespace
 
 namespace profiles {
@@ -277,6 +291,14 @@ void OpenBrowserWindowForProfile(
 }
 
 #if !defined(OS_ANDROID)
+
+void LoadProfileAsync(const base::FilePath& path,
+                      ProfileManager::CreateCallback callback) {
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      path, base::Bind(&ProfileLoadedCallback, callback), base::string16(),
+      std::string(), std::string());
+}
+
 void SwitchToProfile(const base::FilePath& path,
                      bool always_create,
                      ProfileManager::CreateCallback callback,
