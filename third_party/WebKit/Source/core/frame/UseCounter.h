@@ -1206,6 +1206,7 @@ public:
         V8RegExpPrototypeSourceGetter = 1396,
         V8RegExpPrototypeOldFlagGetter = 1397,
         V8DecimalWithLeadingZeroInStrictMode = 1398,
+        FormSubmissionNotInDocumentTree = 1399,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -339,6 +339,9 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
     LocalFrame* frame = document().frame();
     if (!view || !frame || !frame->page())
         return;
+    // See crbug.com/586749.
+    if (!inShadowIncludingDocument())
+        UseCounter::count(document(), UseCounter::FormSubmissionNotInDocumentTree);
 
     if (m_isSubmittingOrInUserJSSubmitEvent) {
         m_shouldSubmit = true;

@@ -74694,6 +74694,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1396" label="V8RegExpPrototypeSourceGetter"/>
   <int value="1397" label="V8RegExpPrototypeOldFlagGetter"/>
   <int value="1398" label="V8DecimalWithLeadingZeroInStrictMode"/>
+  <int value="1399" label="FormSubmissionNotInDocumentTree"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
