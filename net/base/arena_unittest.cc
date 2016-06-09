@@ -63,5 +63,31 @@ TEST(UnsafeArenaTest, UseAfterReset) {
   EXPECT_EQ(StringPiece(c, length), kTestString);
 }
 
+TEST(UnsafeArenaTest, Free) {
+  UnsafeArena arena(kDefaultBlockSize);
+  const size_t length = strlen(kTestString);
+  // Freeing memory not owned by the arena should be a no-op, and freeing
+  // before any allocations from the arena should be a no-op.
+  arena.Free(const_cast<char*>(kTestString), length);
+  char* c1 = arena.Memdup("Foo", 3);
+  char* c2 = arena.Memdup(kTestString, length);
+  arena.Free(const_cast<char*>(kTestString), length);
+  char* c3 = arena.Memdup("Bar", 3);
+  char* c4 = arena.Memdup(kTestString, length);
+  EXPECT_NE(c1, c2);
+  EXPECT_NE(c1, c3);
+  EXPECT_NE(c1, c4);
+  EXPECT_NE(c2, c3);
+  EXPECT_NE(c2, c4);
+  EXPECT_NE(c3, c4);
+  // Freeing c4 should succeed, since it was the most recent allocation.
+  arena.Free(c4, length);
+  // Freeing c2 should be a no-op.
+  arena.Free(c2, length);
+  // c5 should reuse memory that was previously used by c4.
+  char* c5 = arena.Memdup("Baz", 3);
+  EXPECT_EQ(c4, c5);
+}
+
 }  // namespace
 }  // namespace net

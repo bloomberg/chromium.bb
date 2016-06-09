@@ -47,6 +47,12 @@ class SpdyHeaderBlock::Storage {
     return StringPiece(arena_.Memdup(s.data(), s.size()), s.size());
   }
 
+  // If |s| points to the most recent allocation from arena_, the arena will
+  // reclaim the memory. Otherwise, this method is a no-op.
+  void Rewind(const StringPiece s) {
+    arena_.Free(const_cast<char*>(s.data()), s.size());
+  }
+
   void Clear() { arena_.Reset(); }
 
  private:
@@ -61,12 +67,38 @@ SpdyHeaderBlock::StringPieceProxy::StringPieceProxy(
     : block_(block),
       storage_(storage),
       lookup_result_(lookup_result),
-      key_(key) {}
+      key_(key),
+      valid_(true) {}
 
-SpdyHeaderBlock::StringPieceProxy::StringPieceProxy(
-    const StringPieceProxy& other) = default;
+SpdyHeaderBlock::StringPieceProxy::StringPieceProxy(StringPieceProxy&& other)
+    : block_(other.block_),
+      storage_(other.storage_),
+      lookup_result_(other.lookup_result_),
+      key_(other.key_),
+      valid_(true) {
+  other.valid_ = false;
+}
 
-SpdyHeaderBlock::StringPieceProxy::~StringPieceProxy() {}
+SpdyHeaderBlock::StringPieceProxy& SpdyHeaderBlock::StringPieceProxy::operator=(
+    SpdyHeaderBlock::StringPieceProxy&& other) {
+  block_ = other.block_;
+  storage_ = other.storage_;
+  lookup_result_ = other.lookup_result_;
+  key_ = other.key_;
+  valid_ = true;
+  other.valid_ = false;
+  return *this;
+}
+
+SpdyHeaderBlock::StringPieceProxy::~StringPieceProxy() {
+  // If the StringPieceProxy is destroyed while lookup_result_ == block_->end(),
+  // the assignment operator was never used, and the block's Storage can
+  // reclaim the memory used by the key. This makes lookup-only access to
+  // SpdyHeaderBlock through operator[] memory-neutral.
+  if (valid_ && lookup_result_ == block_->end()) {
+    storage_->Rewind(key_);
+  }
+}
 
 SpdyHeaderBlock::StringPieceProxy& SpdyHeaderBlock::StringPieceProxy::operator=(
     const StringPiece value) {

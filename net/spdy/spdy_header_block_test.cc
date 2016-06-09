@@ -18,6 +18,14 @@ using std::string;
 using ::testing::ElementsAre;
 
 namespace net {
+namespace test {
+
+class StringPieceProxyPeer {
+ public:
+  static base::StringPiece key(SpdyHeaderBlock::StringPieceProxy* p) {
+    return p->key_;
+  }
+};
 
 std::pair<base::StringPiece, base::StringPiece> Pair(base::StringPiece k,
                                                      base::StringPiece v) {
@@ -35,6 +43,35 @@ TEST(SpdyHeaderBlockTest, EmptyBlock) {
 
   // Should have no effect.
   block.erase("bar");
+}
+
+TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
+  SpdyHeaderBlock block;
+  base::StringPiece copied_key1;
+  {
+    auto proxy1 = block["some key name"];
+    copied_key1 = StringPieceProxyPeer::key(&proxy1);
+  }
+  base::StringPiece copied_key2;
+  {
+    auto proxy2 = block["some other key name"];
+    copied_key2 = StringPieceProxyPeer::key(&proxy2);
+  }
+  // Because proxy1 was never used to modify the block, the memory used for the
+  // key could be reclaimed and used for the second call to operator[].
+  // Therefore, we expect the pointers of the two StringPieces to be equal.
+  EXPECT_EQ(copied_key1.data(), copied_key2.data());
+
+  {
+    auto proxy1 = block["some key name"];
+    block["some other key name"] = "some value";
+  }
+  // Nothing should blow up when proxy1 is destructed, and we should be able to
+  // modify and access the SpdyHeaderBlock.
+  block["key"] = "value";
+  EXPECT_EQ(base::StringPiece("value"), block["key"]);
+  EXPECT_EQ(base::StringPiece("some value"), block["some other key name"]);
+  EXPECT_TRUE(block.find("some key name") == block.end());
 }
 
 // This test verifies that headers can be set in a variety of ways.
@@ -106,4 +143,5 @@ TEST(SpdyHeaderBlockTest, Equality) {
   EXPECT_NE(block1, block2);
 }
 
+}  // namespace test
 }  // namespace net

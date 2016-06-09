@@ -29,6 +29,19 @@ char* UnsafeArena::Memdup(const char* data, size_t size) {
   return out;
 }
 
+void UnsafeArena::Free(void* data, size_t size) {
+  if (blocks_.empty()) {
+    return;
+  }
+  Block& b = blocks_.back();
+  if (size <= b.used &&
+      reinterpret_cast<char*>(data) + size == b.data.get() + b.used) {
+    // The memory region passed by the caller was the most recent allocation
+    // from the final block in this arena.
+    b.used -= size;
+  }
+}
+
 void UnsafeArena::Reset() {
   blocks_.clear();
 }
