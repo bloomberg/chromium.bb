@@ -42,7 +42,10 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
       display_manager_observer_binding_(this) {
 }
 
-ScreenMus::~ScreenMus() {}
+ScreenMus::~ScreenMus() {
+  DCHECK_EQ(this, display::Screen::GetScreen());
+  display::Screen::SetScreenInstance(nullptr);
+}
 
 void ScreenMus::Init(shell::Connector* connector) {
   display::Screen::SetScreenInstance(this);
