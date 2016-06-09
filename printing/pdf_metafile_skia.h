@@ -18,6 +18,8 @@
 #include <windows.h>
 #endif
 
+class SkCanvas;
+
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace base {
 struct FileDescriptor;
@@ -64,11 +66,6 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
 #endif
 
   bool SaveTo(base::File* file) const override;
-
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // TODO(vitalybuka): replace with SaveTo().
-  bool SaveToFD(const base::FileDescriptor& fd) const;
-#endif  // if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
   // Return a new metafile containing just the current page in draft mode.
   std::unique_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();

@@ -4,29 +4,13 @@
 
 #include "printing/pdf_metafile_skia.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "base/containers/hash_tables.h"
-#include "base/files/file_util.h"
-#include "base/metrics/histogram.h"
-#include "base/numerics/safe_conversions.h"
-#include "base/posix/eintr_wrapper.h"
+#include "base/files/file.h"
 #include "base/time/time.h"
 #include "printing/print_settings.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkScalar.h"
-#include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_MACOSX)
@@ -38,20 +22,6 @@
 #endif
 
 namespace {
-
-// This struct represents all the data we need to draw and redraw this
-// page into a SkDocument.
-struct Page {
-  Page(const SkSize& page_size, const SkRect& content_area, float scale)
-      : page_size_(page_size),
-        content_area_(content_area),
-        scale_factor_(scale),
-        content_(/*NULL*/) {}
-  SkSize page_size_;
-  SkRect content_area_;
-  float scale_factor_;
-  sk_sp<SkPicture> content_;
-};
 
 bool WriteAssetToBuffer(const SkStreamAsset* asset,
                         void* buffer,
@@ -65,18 +35,32 @@ bool WriteAssetToBuffer(const SkStreamAsset* asset,
 }
 
 SkTime::DateTime TimeToSkTime(base::Time time) {
-    base::Time::Exploded exploded;
-    time.UTCExplode(&exploded);
-    SkTime::DateTime skdate;
-    skdate.fTimeZoneMinutes = 0;
-    skdate.fYear = exploded.year;
-    skdate.fMonth = exploded.month;
-    skdate.fDayOfWeek = exploded.day_of_week;
-    skdate.fDay = exploded.day_of_month;
-    skdate.fHour = exploded.hour;
-    skdate.fMinute = exploded.minute;
-    skdate.fSecond = exploded.second;
-    return skdate;
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  SkTime::DateTime skdate;
+  skdate.fTimeZoneMinutes = 0;
+  skdate.fYear = exploded.year;
+  skdate.fMonth = exploded.month;
+  skdate.fDayOfWeek = exploded.day_of_week;
+  skdate.fDay = exploded.day_of_month;
+  skdate.fHour = exploded.hour;
+  skdate.fMinute = exploded.minute;
+  skdate.fSecond = exploded.second;
+  return skdate;
+}
+
+sk_sp<SkDocument> MakePdfDocument(SkWStream* wStream) {
+  SkDocument::PDFMetadata metadata;
+  SkTime::DateTime now = TimeToSkTime(base::Time::Now());
+  metadata.fCreation.fEnabled = true;
+  metadata.fCreation.fDateTime = now;
+  metadata.fModified.fEnabled = true;
+  metadata.fModified.fDateTime = now;
+  const std::string& agent = printing::GetAgent();
+  metadata.fCreator = agent.empty() ? SkString("Chromium")
+                                    : SkString(agent.c_str(), agent.size());
+  return SkDocument::MakePDF(wStream, SK_ScalarDefaultRasterDPI, metadata,
+                             nullptr, false);
 }
 
 }  // namespace
@@ -86,8 +70,13 @@ namespace printing {
 struct PdfMetafileSkiaData {
   SkPictureRecorder recorder_;  // Current recording
 
-  std::vector<Page> pages_;
+  std::vector<sk_sp<SkPicture>> pages_;
   std::unique_ptr<SkStreamAsset> pdf_data_;
+
+  // The scale factor is used because Blink occasionally calls
+  // SkCanvas::getTotalMatrix() even though the total matrix is not as
+  // meaningful for a vector canvas as for a raster canvas.
+  float scale_factor_;
 
 #if defined(OS_MACOSX)
   PdfMetafileCg pdf_cg_;
@@ -112,38 +101,60 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
 bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
                                 const gfx::Rect& content_area,
                                 const float& scale_factor) {
+  DCHECK_GT(page_size.width(), 0);
+  DCHECK_GT(page_size.height(), 0);
+  DCHECK_GT(scale_factor, 0.0f);
   if (data_->recorder_.getRecordingCanvas())
     FinishPage();
   DCHECK(!data_->recorder_.getRecordingCanvas());
-  SkSize sk_page_size = gfx::SizeFToSkSize(gfx::SizeF(page_size));
-  data_->pages_.push_back(
-      Page(sk_page_size, gfx::RectToSkRect(content_area), scale_factor));
-  DCHECK_GT(scale_factor, 0.0f);
+
+  float inverse_scale = 1.0 / scale_factor;
+  SkCanvas* canvas = data_->recorder_.beginRecording(
+      inverse_scale * page_size.width(), inverse_scale * page_size.height());
+  if (content_area != gfx::Rect(page_size)) {
+    canvas->scale(inverse_scale, inverse_scale);
+    SkRect sk_content_area = gfx::RectToSkRect(content_area);
+    canvas->clipRect(sk_content_area);
+    canvas->translate(sk_content_area.x(), sk_content_area.y());
+    canvas->scale(scale_factor, scale_factor);
+  }
+
+  data_->scale_factor_ = scale_factor;
   // We scale the recording canvas's size so that
   // canvas->getTotalMatrix() returns a value that ignores the scale
-  // factor.  We store the scale factor and re-apply it to the PDF
-  // Canvas later.  http://crbug.com/469656
+  // factor.  We store the scale factor and re-apply it later.
+  // http://crbug.com/469656
   // Recording canvas is owned by the data_->recorder_.  No ref() necessary.
-  return !!data_->recorder_.beginRecording(sk_page_size.width() / scale_factor,
-                                           sk_page_size.height() / scale_factor,
-                                           NULL, 0);
+  return true;
 }
 
 SkCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const float& scale_factor) {
-  if (!StartPage(page_size, content_area, scale_factor))
-    return nullptr;
+  StartPage(page_size, content_area, scale_factor);
   return data_->recorder_.getRecordingCanvas();
 }
 
 bool PdfMetafileSkia::FinishPage() {
   if (!data_->recorder_.getRecordingCanvas())
     return false;
-  DCHECK(!(data_->pages_.back().content_));
-  data_->pages_.back().content_ =
-      data_->recorder_.finishRecordingAsPicture();
+
+  sk_sp<SkPicture> pic = data_->recorder_.finishRecordingAsPicture();
+  if (data_->scale_factor_ != 1.0f) {
+    SkRect rect = pic->cullRect();
+    DCHECK_EQ(rect.x(), 0);
+    DCHECK_EQ(rect.y(), 0);
+    DCHECK_GT(rect.right(), 0);
+    DCHECK_GT(rect.bottom(), 0);
+    SkCanvas* canvas =
+        data_->recorder_.beginRecording(data_->scale_factor_ * rect.right(),
+                                        data_->scale_factor_ * rect.bottom());
+    canvas->scale(data_->scale_factor_, data_->scale_factor_);
+    canvas->drawPicture(pic);
+    pic = data_->recorder_.finishRecordingAsPicture();
+  }
+  data_->pages_.push_back(std::move(pic));
   return true;
 }
 
@@ -155,32 +166,26 @@ bool PdfMetafileSkia::FinishDocument() {
   if (data_->recorder_.getRecordingCanvas())
     FinishPage();
 
-  SkDynamicMemoryWStream pdf_stream;
+  SkDynamicMemoryWStream stream;
+  // TODO(halacanary): support more document types (XPS, a sequence of
+  // display lists).
+  sk_sp<SkDocument> doc = MakePdfDocument(&stream);
 
-  SkDocument::PDFMetadata metadata;
-  SkTime::DateTime now = TimeToSkTime(base::Time::Now());
-  metadata.fCreation.fEnabled = true;
-  metadata.fCreation.fDateTime = now;
-  metadata.fModified.fEnabled = true;
-  metadata.fModified.fDateTime = now;
-  const std::string& agent = GetAgent();
-  metadata.fCreator = agent.empty() ? SkString("Chromium")
-                                    : SkString(agent.c_str(), agent.size());
-  sk_sp<SkDocument> pdf_doc = SkDocument::MakePDF(
-      &pdf_stream, SK_ScalarDefaultRasterDPI, metadata, nullptr, false);
-
-  for (const auto& page : data_->pages_) {
-    SkCanvas* canvas = pdf_doc->beginPage(
-        page.page_size_.width(), page.page_size_.height(), &page.content_area_);
-    // No need to save/restore, since this canvas is not reused after endPage()
-    canvas->scale(page.scale_factor_, page.scale_factor_);
-    canvas->drawPicture(page.content_);
-    pdf_doc->endPage();
+  for (const sk_sp<SkPicture>& page : data_->pages_) {
+    SkRect rect = page->cullRect();
+    DCHECK_EQ(rect.x(), 0);
+    DCHECK_EQ(rect.y(), 0);
+    DCHECK_GT(rect.right(), 0);
+    DCHECK_GT(rect.bottom(), 0);
+    SkCanvas* canvas = doc->beginPage(rect.right(), rect.bottom());
+    DCHECK(canvas);
+    canvas->drawPicture(page);
+    doc->endPage();
   }
-  if (!pdf_doc->close())
+  if (!doc->close())
     return false;
 
-  data_->pdf_data_.reset(pdf_stream.detachAsStream());
+  data_->pdf_data_.reset(stream.detachAsStream());
   return true;
 }
 
@@ -200,8 +205,14 @@ bool PdfMetafileSkia::GetData(void* dst_buffer,
 
 gfx::Rect PdfMetafileSkia::GetPageBounds(unsigned int page_number) const {
   if (page_number < data_->pages_.size()) {
-    return gfx::Rect(gfx::ToFlooredSize(
-        gfx::SkSizeToSizeF(data_->pages_[page_number].page_size_)));
+    const sk_sp<SkPicture>& page = data_->pages_[page_number];
+    SkRect rect = page->cullRect();
+    DCHECK_EQ(rect.x(), 0);
+    DCHECK_EQ(rect.y(), 0);
+    DCHECK_GT(rect.right(), 0);
+    DCHECK_GT(rect.bottom(), 0);
+    return gfx::Rect(gfx::ToRoundedInt(rect.right()),
+                     gfx::ToRoundedInt(rect.bottom()));
   }
   return gfx::Rect();
 }
@@ -276,24 +287,6 @@ bool PdfMetafileSkia::SaveTo(base::File* file) const {
   return true;
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
-  DCHECK_GT(GetDataSize(), 0U);
-
-  if (fd.fd < 0) {
-    DLOG(ERROR) << "Invalid file descriptor!";
-    return false;
-  }
-  base::File file(fd.fd);
-  bool result = SaveTo(&file);
-  DLOG_IF(ERROR, !result) << "Failed to save file with fd " << fd.fd;
-
-  if (!fd.auto_close)
-    file.TakePlatformFile();
-  return result;
-}
-#endif
-
 PdfMetafileSkia::PdfMetafileSkia() : data_(new PdfMetafileSkiaData) {
 }
 
@@ -308,9 +301,7 @@ std::unique_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
   if (data_->recorder_.getRecordingCanvas())  // page outstanding
     return metafile;
 
-  const Page& page = data_->pages_.back();
-
-  metafile->data_->pages_.push_back(page);
+  metafile->data_->pages_.push_back(data_->pages_.back());
 
   if (!metafile->FinishDocument())  // Generate PDF.
     metafile.reset();

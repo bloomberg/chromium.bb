@@ -17,6 +17,29 @@
 #include "base/process/process_handle.h"
 #endif  // defined(OS_ANDROID)
 
+namespace {
+
+#if defined(OS_ANDROID)
+bool SaveToFD(const printing::Metafile& metafile,
+              const base::FileDescriptor& fd) {
+  DCHECK_GT(metafile.GetDataSize(), 0U);
+
+  if (fd.fd < 0) {
+    DLOG(ERROR) << "Invalid file descriptor!";
+    return false;
+  }
+  base::File file(fd.fd);
+  bool result = metafile.SaveTo(&file);
+  DLOG_IF(ERROR, !result) << "Failed to save file with fd " << fd.fd;
+
+  if (!fd.auto_close)
+    file.TakePlatformFile();
+  return result;
+}
+#endif  // defined(OS_ANDROID)
+
+}  // namespace
+
 namespace printing {
 
 #if defined(ENABLE_BASIC_PRINTING)
@@ -50,7 +73,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   Send(new PrintHostMsg_AllocateTempFileForPrinting(routing_id(),
                                                     &fd,
                                                     &sequence_number));
-  if (!metafile.SaveToFD(fd))
+  if (!SaveToFD(metafile, fd))
     return false;
 
   // Tell the browser we've finished writing the file.
