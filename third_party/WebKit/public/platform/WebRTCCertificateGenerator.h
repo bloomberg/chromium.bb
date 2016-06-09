@@ -34,7 +34,6 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCKeyParams.h"
-#include "public/platform/WebURL.h"
 
 #include <memory>
 
@@ -51,17 +50,13 @@ public:
     // same thread that called generateCertificate when the operation is completed.
     virtual void generateCertificate(
         const WebRTCKeyParams&,
-        const WebURL&,
-        const WebURL& firstPartyForCookies,
         std::unique_ptr<WebRTCCertificateCallback> observer) = 0;
     virtual void generateCertificateWithExpiration(
         const WebRTCKeyParams&,
-        const WebURL&,
-        const WebURL& firstPartyForCookies,
         uint64_t expiresMs,
         std::unique_ptr<WebRTCCertificateCallback> observer) = 0;
 
-    // Determines if the parameters are supported by generateCertificate.
+    // Determines if the parameters are supported by |generateCertificate|.
     // For example, if the number of bits of some parameter is too small or too large we
     // may want to reject it for security or performance reasons.
     virtual bool isSupportedKeyParams(const WebRTCKeyParams&) = 0;

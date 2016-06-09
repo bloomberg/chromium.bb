@@ -765,14 +765,10 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
     if (expires.isNull()) {
         certificateGenerator->generateCertificate(
             keyParams.get(),
-            toDocument(scriptState->getExecutionContext())->url(),
-            toDocument(scriptState->getExecutionContext())->firstPartyForCookies(),
             std::move(certificateObserver));
     } else {
         certificateGenerator->generateCertificateWithExpiration(
             keyParams.get(),
-            toDocument(scriptState->getExecutionContext())->url(),
-            toDocument(scriptState->getExecutionContext())->firstPartyForCookies(),
             expires.get(),
             std::move(certificateObserver));
     }

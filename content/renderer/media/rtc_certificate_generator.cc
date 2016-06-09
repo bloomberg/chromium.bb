@@ -109,29 +109,21 @@ class RTCCertificateGeneratorRequest
 
 void RTCCertificateGenerator::generateCertificate(
     const blink::WebRTCKeyParams& key_params,
-    const blink::WebURL& url,
-    const blink::WebURL& first_party_for_cookies,
     std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
   generateCertificateWithOptionalExpiration(
-      key_params, url, first_party_for_cookies, rtc::Optional<uint64_t>(),
-      std::move(observer));
+      key_params, rtc::Optional<uint64_t>(), std::move(observer));
 }
 
 void RTCCertificateGenerator::generateCertificateWithExpiration(
     const blink::WebRTCKeyParams& key_params,
-    const blink::WebURL& url,
-    const blink::WebURL& first_party_for_cookies,
     uint64_t expires_ms,
     std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
   generateCertificateWithOptionalExpiration(
-    key_params, url, first_party_for_cookies,
-    rtc::Optional<uint64_t>(expires_ms), std::move(observer));
+    key_params, rtc::Optional<uint64_t>(expires_ms), std::move(observer));
 }
 
 void RTCCertificateGenerator::generateCertificateWithOptionalExpiration(
     const blink::WebRTCKeyParams& key_params,
-    const blink::WebURL& url,
-    const blink::WebURL& first_party_for_cookies,
     const rtc::Optional<uint64_t>& expires_ms,
     std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
   DCHECK(isSupportedKeyParams(key_params));
