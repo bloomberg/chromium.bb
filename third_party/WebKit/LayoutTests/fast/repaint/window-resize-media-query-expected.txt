@@ -1,52 +1,48 @@
 {
-  "bounds": [200, 300],
+  "bounds": [600, 250],
   "children": [
     {
-      "bounds": [200, 300],
+      "bounds": [600, 250],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 200, 300],
-          "reason": "style change"
+          "rect": [0, 250, 600, 250],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 200, 8],
+          "rect": [0, 0, 600, 8],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "reason": "style change"
         }
       ]
     }
   ]
 }
 {
-  "bounds": [300, 300],
+  "bounds": [400, 250],
   "children": [
     {
-      "bounds": [300, 300],
+      "bounds": [400, 250],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 300, 300],
-          "reason": "full"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 300, 8],
+          "rect": [0, 0, 600, 8],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
-          "rect": [200, 0, 100, 300],
+          "rect": [0, 0, 400, 250],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 200, 250],
           "reason": "incremental"
         },
         {
@@ -58,22 +54,27 @@
   ]
 }
 {
-  "bounds": [300, 250],
+  "bounds": [400, 600],
   "children": [
     {
-      "bounds": [300, 250],
+      "bounds": [400, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 250, 300, 50],
+          "rect": [0, 0, 400, 600],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 400, 350],
           "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 300, 8],
+          "rect": [0, 0, 400, 8],
           "reason": "forced by layout"
         }
       ]
@@ -81,27 +82,27 @@
   ]
 }
 {
-  "bounds": [250, 250],
+  "bounds": [800, 600],
   "children": [
     {
-      "bounds": [250, 250],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "full"
+        },
+        {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 300, 8],
+          "rect": [0, 0, 800, 8],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 250, 250],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [250, 0, 50, 250],
+          "rect": [400, 0, 400, 600],
           "reason": "incremental"
         },
         {

@@ -1137,6 +1137,10 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
+crbug.com/600008 fast/repaint/window-resize-background-image-non-fixed.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-centered-inline-under-fixed-pos.html [ NeedsRebaseline ]
+crbug.com/600008 fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
+
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
