@@ -42,6 +42,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -328,7 +329,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
 
     // If we're in strict mode, we'll automagically fail everything, and intentionally skip
     // the client checks in order to prevent degrading the site's security UI.
-    bool strictMode = mixedFrame->securityContext()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
+    bool strictMode = mixedFrame->securityContext()->getInsecureRequestPolicy() & kBlockAllMixedContent || settings->strictMixedContentChecking();
 
     ContextType contextType = contextTypeFromContext(requestContext, mixedFrame);
 
@@ -420,7 +421,7 @@ bool MixedContentChecker::shouldBlockWebSocket(LocalFrame* frame, const KURL& ur
 
     // If we're in strict mode, we'll automagically fail everything, and intentionally skip
     // the client checks in order to prevent degrading the site's security UI.
-    bool strictMode = mixedFrame->securityContext()->shouldEnforceStrictMixedContentChecking() || settings->strictMixedContentChecking();
+    bool strictMode = mixedFrame->securityContext()->getInsecureRequestPolicy() & kBlockAllMixedContent || settings->strictMixedContentChecking();
     if (!strictMode) {
         bool allowedPerSettings = settings && settings->allowRunningOfInsecureContent();
         allowed = client->allowRunningInsecureContent(allowedPerSettings, securityOrigin, url);

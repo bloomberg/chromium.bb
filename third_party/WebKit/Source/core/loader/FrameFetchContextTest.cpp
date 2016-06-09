@@ -44,6 +44,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -231,7 +232,7 @@ TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests)
     };
 
     FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
-    document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
+    document->setInsecureRequestPolicy(kUpgradeInsecureRequests);
 
     for (const auto& test : tests) {
         document->insecureNavigationsToUpgrade()->clear();
@@ -259,7 +260,7 @@ TEST_F(FrameFetchContextUpgradeTest, DoNotUpgradeInsecureResourceRequests)
 {
     FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     document->setSecurityOrigin(secureOrigin);
-    document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
+    document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
 
     expectUpgrade("http://example.test/image.png", "http://example.test/image.png");
     expectUpgrade("http://example.test:80/image.png", "http://example.test:80/image.png");
@@ -295,20 +296,20 @@ TEST_F(FrameFetchContextUpgradeTest, SendHTTPSHeader)
     // when it doesn't (e.g. during main frame navigations), so run through the tests
     // both before and after providing a document to the context.
     for (const auto& test : tests) {
-        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
+        document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
         expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
 
-        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
+        document->setInsecureRequestPolicy(kUpgradeInsecureRequests);
         expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
     }
 
     FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
 
     for (const auto& test : tests) {
-        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
+        document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
         expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
 
-        document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
+        document->setInsecureRequestPolicy(kUpgradeInsecureRequests);
         expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
     }
 }

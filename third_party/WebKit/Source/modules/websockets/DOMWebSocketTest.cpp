@@ -15,6 +15,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "platform/v8_inspector/public/ConsoleTypes.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
@@ -209,7 +210,7 @@ TEST_F(DOMWebSocketTest, insecureRequestsUpgrade)
         EXPECT_CALL(channel(), connect(KURL(KURL(), "wss://example.com/endpoint"), String())).WillOnce(Return(true));
     }
 
-    m_pageHolder->document().setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
+    m_pageHolder->document().setInsecureRequestPolicy(kUpgradeInsecureRequests);
     m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());
@@ -224,7 +225,7 @@ TEST_F(DOMWebSocketTest, insecureRequestsDoNotUpgrade)
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/endpoint"), String())).WillOnce(Return(true));
     }
 
-    m_pageHolder->document().setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
+    m_pageHolder->document().setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
     m_websocket->connect("ws://example.com/endpoint", Vector<String>(), m_exceptionState);
 
     EXPECT_FALSE(m_exceptionState.hadException());

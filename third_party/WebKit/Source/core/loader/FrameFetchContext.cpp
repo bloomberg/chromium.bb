@@ -72,6 +72,7 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebFrameScheduler.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 
 #include <algorithm>
 
@@ -680,10 +681,10 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
 
     // If we don't yet have an |m_document| (because we're loading an iframe, for instance), check the FrameLoader's policy.
-    SecurityContext::InsecureRequestsPolicy relevantPolicy = m_document ? m_document->getInsecureRequestsPolicy() : frame()->loader().getInsecureRequestsPolicy();
+    WebInsecureRequestPolicy relevantPolicy = m_document ? m_document->getInsecureRequestPolicy() : frame()->loader().getInsecureRequestPolicy();
     SecurityContext::InsecureNavigationsSet* relevantNavigationSet = m_document ? m_document->insecureNavigationsToUpgrade() : frame()->loader().insecureNavigationsToUpgrade();
 
-    if (url.protocolIs("http") && relevantPolicy == SecurityContext::InsecureRequestsUpgrade) {
+    if (url.protocolIs("http") && relevantPolicy & kUpgradeInsecureRequests) {
         // We always upgrade requests that meet any of the following criteria:
         //
         // 1. Are for subresources (including nested frames).

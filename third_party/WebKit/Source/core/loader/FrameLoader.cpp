@@ -1555,28 +1555,13 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     return flags;
 }
 
-bool FrameLoader::shouldEnforceStrictMixedContentChecking() const
+WebInsecureRequestPolicy FrameLoader::getInsecureRequestPolicy() const
 {
     Frame* parentFrame = m_frame->tree().parent();
     if (!parentFrame)
-        return false;
+        return kLeaveInsecureRequestsAlone;
 
-    return parentFrame->securityContext()->shouldEnforceStrictMixedContentChecking();
-}
-
-SecurityContext::InsecureRequestsPolicy FrameLoader::getInsecureRequestsPolicy() const
-{
-    Frame* parentFrame = m_frame->tree().parent();
-    if (!parentFrame)
-        return SecurityContext::InsecureRequestsDoNotUpgrade;
-
-    // FIXME: We need a way to propagate insecure requests policy flags to
-    // out-of-process frames. For now, we'll always use default behavior.
-    if (!parentFrame->isLocalFrame())
-        return SecurityContext::InsecureRequestsDoNotUpgrade;
-
-    ASSERT(toLocalFrame(parentFrame)->document());
-    return toLocalFrame(parentFrame)->document()->getInsecureRequestsPolicy();
+    return parentFrame->securityContext()->getInsecureRequestPolicy();
 }
 
 SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgrade() const

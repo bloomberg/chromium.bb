@@ -45,6 +45,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/FormDataEncoder.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
@@ -198,7 +199,7 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& 
     Document& document = form->document();
     KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().getString() : copiedAttributes.action());
 
-    if (document.getInsecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && actionURL.protocolIs("http")) {
+    if (document.getInsecureRequestPolicy() & kUpgradeInsecureRequests && actionURL.protocolIs("http")) {
         UseCounter::count(document, UseCounter::UpgradeInsecureRequestsUpgradedRequest);
         actionURL.setProtocol("https");
         if (actionURL.port() == 80)

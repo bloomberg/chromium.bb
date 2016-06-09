@@ -53,6 +53,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -1071,7 +1072,7 @@ public:
     WebTaskRunner* loadingTaskRunner() const;
     WebTaskRunner* timerTaskRunner() const;
 
-    void enforceStrictMixedContentChecking();
+    void enforceInsecureRequestPolicy(WebInsecureRequestPolicy);
 
     bool mayContainV0Shadow() const { return m_mayContainV0Shadow; }
 

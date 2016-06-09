@@ -185,14 +185,13 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         }
         if (m_treatAsPublicAddress)
             document->setAddressSpace(WebAddressSpacePublic);
+
+        document->enforceInsecureRequestPolicy(m_insecureRequestPolicy);
         if (m_insecureRequestPolicy & kUpgradeInsecureRequests) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
-            document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
             if (!securityOrigin->host().isNull())
                 document->addInsecureNavigationUpgrade(securityOrigin->host().impl()->hash());
         }
-        if (m_insecureRequestPolicy & kBlockAllMixedContent)
-            document->enforceStrictMixedContentChecking();
 
         for (const auto& consoleMessage : m_consoleMessages)
             m_executionContext->addConsoleMessage(consoleMessage);

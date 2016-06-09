@@ -52,6 +52,7 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
 #include "platform/UserGestureIndicator.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "wtf/text/AtomicString.h"
 #include <limits>
 
@@ -452,13 +453,13 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_attributes.parseAction(value);
         logUpdateAttributeIfIsolatedWorldAndInDocument("form", actionAttr, oldValue, value);
 
-        if (document().getInsecureRequestsPolicy() != SecurityContext::InsecureRequestsUpgrade) {
-            // If we're not upgrading insecure requests, and the new action attribute is pointing to
-            // an insecure "action" location from a secure page it is marked as "passive" mixed content.
-            KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().getString() : m_attributes.action());
-            if (MixedContentChecker::isMixedFormAction(document().frame(), actionURL))
-                UseCounter::count(document().frame(), UseCounter::MixedContentFormPresent);
-        }
+        // If we're not upgrading insecure requests, and the new action attribute is pointing to
+        // an insecure "action" location from a secure page it is marked as "passive" mixed content.
+        if (document().getInsecureRequestPolicy() & kUpgradeInsecureRequests)
+            return;
+        KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().getString() : m_attributes.action());
+        if (MixedContentChecker::isMixedFormAction(document().frame(), actionURL))
+            UseCounter::count(document().frame(), UseCounter::MixedContentFormPresent);
     } else if (name == targetAttr) {
         m_attributes.setTarget(value);
     } else if (name == methodAttr) {

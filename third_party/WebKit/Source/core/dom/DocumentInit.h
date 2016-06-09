@@ -34,6 +34,7 @@
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 
 namespace blink {
 
@@ -60,9 +61,8 @@ public:
     bool isSeamlessAllowedFor(Document* child) const;
     bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
     SandboxFlags getSandboxFlags() const;
-    bool shouldEnforceStrictMixedContentChecking() const;
     bool isHostedInReservedIPRange() const;
-    SecurityContext::InsecureRequestsPolicy getInsecureRequestsPolicy() const;
+    WebInsecureRequestPolicy getInsecureRequestPolicy() const;
     SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
 
     Document* parent() const { return m_parent.get(); }

@@ -46,14 +46,12 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy)
     struct TestCase {
         const char* header;
         WebInsecureRequestPolicy expectedPolicy;
-        SecurityContext::InsecureRequestsPolicy expectedDocumentPolicy;
-        bool expectedStrictMode;
     } cases[] = {
-        { "default-src 'none'", 0, SecurityContext::InsecureRequestsDoNotUpgrade, false },
-        { "upgrade-insecure-requests", kUpgradeInsecureRequests, SecurityContext::InsecureRequestsUpgrade, false },
-        { "block-all-mixed-content", kBlockAllMixedContent, SecurityContext::InsecureRequestsDoNotUpgrade, true },
-        { "upgrade-insecure-requests; block-all-mixed-content", kUpgradeInsecureRequests | kBlockAllMixedContent, SecurityContext::InsecureRequestsUpgrade, true },
-        { "upgrade-insecure-requests, block-all-mixed-content", kUpgradeInsecureRequests | kBlockAllMixedContent, SecurityContext::InsecureRequestsUpgrade, true }
+        { "default-src 'none'", kLeaveInsecureRequestsAlone },
+        { "upgrade-insecure-requests", kUpgradeInsecureRequests },
+        { "block-all-mixed-content", kBlockAllMixedContent },
+        { "upgrade-insecure-requests; block-all-mixed-content", kUpgradeInsecureRequests | kBlockAllMixedContent },
+        { "upgrade-insecure-requests, block-all-mixed-content", kUpgradeInsecureRequests | kBlockAllMixedContent }
     };
 
     // Enforced
@@ -66,10 +64,9 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy)
         document = Document::create();
         document->setSecurityOrigin(secureOrigin);
         csp->bindToExecutionContext(document.get());
-        EXPECT_EQ(test.expectedDocumentPolicy, document->getInsecureRequestsPolicy());
-        EXPECT_EQ(test.expectedStrictMode, document->shouldEnforceStrictMixedContentChecking());
-        EXPECT_EQ(test.expectedDocumentPolicy == SecurityContext::InsecureRequestsUpgrade,
-            document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
+        EXPECT_EQ(test.expectedPolicy, document->getInsecureRequestPolicy());
+        bool expectUpgrade = test.expectedPolicy & kUpgradeInsecureRequests;
+        EXPECT_EQ(expectUpgrade, document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
     }
 
     // Report-Only
@@ -82,8 +79,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy)
         document = Document::create();
         document->setSecurityOrigin(secureOrigin);
         csp->bindToExecutionContext(document.get());
-        EXPECT_EQ(SecurityContext::InsecureRequestsDoNotUpgrade, document->getInsecureRequestsPolicy());
-        EXPECT_FALSE(document->shouldEnforceStrictMixedContentChecking());
+        EXPECT_EQ(kLeaveInsecureRequestsAlone, document->getInsecureRequestPolicy());
         EXPECT_FALSE(document->insecureNavigationsToUpgrade()->contains(secureOrigin->host().impl()->hash()));
     }
 }

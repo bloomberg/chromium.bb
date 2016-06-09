@@ -4918,9 +4918,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // In the common case, create the security context from the currently
     // loading URL with a fresh content security policy.
     enforceSandboxFlags(initializer.getSandboxFlags());
-    if (initializer.shouldEnforceStrictMixedContentChecking())
-        enforceStrictMixedContentChecking();
-    setInsecureRequestsPolicy(initializer.getInsecureRequestsPolicy());
+    setInsecureRequestPolicy(initializer.getInsecureRequestPolicy());
     if (initializer.insecureNavigationsToUpgrade()) {
         for (auto toUpgrade : *initializer.insecureNavigationsToUpgrade())
             addInsecureNavigationUpgrade(toUpgrade);
@@ -5873,10 +5871,16 @@ WebTaskRunner* Document::timerTaskRunner() const
     return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
 }
 
-void Document::enforceStrictMixedContentChecking()
+void Document::enforceInsecureRequestPolicy(WebInsecureRequestPolicy policy)
 {
-    securityContext().setShouldEnforceStrictMixedContentChecking(true);
-    if (frame())
+    // Combine the new policy with the existing policy, as a base policy may be
+    // inherited from a remote parent before this page's policy is set. In other
+    // words, insecure requests should be upgraded or blocked if _either_ the
+    // existing policy or the newly enforced policy triggers upgrades or
+    // blockage.
+    setInsecureRequestPolicy(getInsecureRequestPolicy() | policy);
+
+    if (frame() && policy & kBlockAllMixedContent)
         frame()->loader().client()->didEnforceStrictMixedContentChecking();
 }
 

@@ -32,6 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -53,12 +54,6 @@ public:
 
     using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
 
-    // The ordering here is important: 'Upgrade' overrides 'DoNotUpgrade'.
-    enum InsecureRequestsPolicy {
-        InsecureRequestsDoNotUpgrade = 0,
-        InsecureRequestsUpgrade
-    };
-
     SecurityOrigin* getSecurityOrigin() const { return m_securityOrigin.get(); }
     ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
 
@@ -76,14 +71,11 @@ public:
     WebAddressSpace addressSpace() const { return m_addressSpace; }
     String addressSpaceForBindings() const;
 
-    void setInsecureRequestsPolicy(InsecureRequestsPolicy policy) { m_insecureRequestsPolicy = policy; }
-    InsecureRequestsPolicy getInsecureRequestsPolicy() const { return m_insecureRequestsPolicy; }
-
     void addInsecureNavigationUpgrade(unsigned hashedHost) { m_insecureNavigationsToUpgrade.add(hashedHost); }
     InsecureNavigationsSet* insecureNavigationsToUpgrade() { return &m_insecureNavigationsToUpgrade; }
 
-    void setShouldEnforceStrictMixedContentChecking(bool shouldEnforce) { m_enforceStrictMixedContentChecking = shouldEnforce; }
-    bool shouldEnforceStrictMixedContentChecking() { return m_enforceStrictMixedContentChecking; }
+    virtual void setInsecureRequestPolicy(WebInsecureRequestPolicy policy) { m_insecureRequestPolicy = policy; }
+    WebInsecureRequestPolicy getInsecureRequestPolicy() const { return m_insecureRequestPolicy; }
 
     void enforceSuborigin(const Suborigin&);
 
@@ -102,9 +94,8 @@ private:
     SandboxFlags m_sandboxFlags;
 
     WebAddressSpace m_addressSpace;
-    InsecureRequestsPolicy m_insecureRequestsPolicy;
+    WebInsecureRequestPolicy m_insecureRequestPolicy;
     InsecureNavigationsSet m_insecureNavigationsToUpgrade;
-    bool m_enforceStrictMixedContentChecking;
 };
 
 } // namespace blink
