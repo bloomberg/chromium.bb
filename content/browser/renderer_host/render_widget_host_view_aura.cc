@@ -2585,7 +2585,12 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   // to avoid the web contents area looking blurry we translate the web contents
   // in the +x, +y direction to land on the nearest pixel boundary. This may
   // cause the bottom and right edges to be clipped slightly, but that's ok.
+#if defined(OS_CHROMEOS)
+  aura::Window* snapped = window_->GetToplevelWindow();
+#else
   aura::Window* snapped = window_->GetRootWindow();
+#endif
+
   if (snapped && snapped != window_)
     ui::SnapLayerToPhysicalPixelBoundary(snapped->layer(), window_->layer());
 
