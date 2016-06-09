@@ -3673,8 +3673,16 @@ void HTMLMediaElement::unlockUserGesture()
 
 bool HTMLMediaElement::isGestureNeededForPlayback() const
 {
-    return m_lockedPendingUserGesture
-        && !m_autoplayHelper->isGestureRequirementOverridden();
+    if (!m_lockedPendingUserGesture)
+        return false;
+
+    if (muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled())
+        return false;
+
+    if (m_autoplayHelper->isGestureRequirementOverridden())
+        return false;
+
+    return true;
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state)

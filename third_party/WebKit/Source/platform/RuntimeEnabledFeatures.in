@@ -232,6 +232,7 @@ XSLT status=stable
 smil status=stable
 ScrollCustomization
 ScrollRestoration status=stable
+AutoplayMutedVideos settable_from_internals=True
 VisualViewportAPI status=experimental
 WakeLock status=experimental
 WebFontsInterventionV2With2G

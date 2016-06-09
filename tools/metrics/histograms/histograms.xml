@@ -79607,6 +79607,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="455698038"
       label="disable-gesture-requirement-for-media-playback"/>
+  <int value="457881889" label="enable-autoplay-muted-videos"/>
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="460475728" label="wake-on-wifi-packet"/>
   <int value="466248382" label="disable-push-api-background-mode"/>

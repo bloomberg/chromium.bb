@@ -1090,6 +1090,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.resue_global_for_unowned_main_frame);
   settings->setPreferHiddenVolumeControls(true);
   settings->setShrinksViewportContentToFit(true);
+  WebRuntimeFeatures::enableAutoplayMutedVideos(
+      prefs.autoplay_muted_videos_enabled);
 #endif
 
   settings->setAutoplayExperimentMode(

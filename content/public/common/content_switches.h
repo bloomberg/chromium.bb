@@ -280,6 +280,7 @@ extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 CONTENT_EXPORT extern const char kEnableOSKOverscroll[];
+CONTENT_EXPORT extern const char kEnableAutoplayMutedVideos[];
 #endif
 
 #if defined(OS_CHROMEOS)

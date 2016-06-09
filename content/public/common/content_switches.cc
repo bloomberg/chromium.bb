@@ -959,6 +959,9 @@ const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
 
 // Enables overscrolling for the OSK on Android.
 const char kEnableOSKOverscroll[]               = "enable-osk-overscroll";
+
+// Allow videos to autoplay without a user gesture if muted.
+const char kEnableAutoplayMutedVideos[] = "enable-autoplay-muted-videos";
 #endif
 
 // Enable the aggressive flushing of DOM Storage to minimize data loss.

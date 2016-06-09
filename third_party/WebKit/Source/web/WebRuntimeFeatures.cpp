@@ -320,4 +320,9 @@ void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableAutoplayMutedVideos(bool enable)
+{
+    RuntimeEnabledFeatures::setAutoplayMutedVideosEnabled(enable);
+}
+
 } // namespace blink
