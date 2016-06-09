@@ -33,28 +33,9 @@ int64_t AmountOfPhysicalMemory() {
   return AmountOfMemory(_SC_PHYS_PAGES);
 }
 
-uint64_t MaxSharedMemorySize() {
-  std::string contents;
-  base::ReadFileToString(base::FilePath("/proc/sys/kernel/shmmax"), &contents);
-  DCHECK(!contents.empty());
-  if (!contents.empty() && contents.back() == '\n') {
-    contents.erase(contents.length() - 1);
-  }
-
-  uint64_t limit;
-  if (!base::StringToUint64(contents, &limit)) {
-    limit = 0;
-  }
-  DCHECK_GT(limit, 0u);
-  return limit;
-}
-
 base::LazyInstance<
     base::internal::LazySysInfoValue<int64_t, AmountOfPhysicalMemory>>::Leaky
     g_lazy_physical_memory = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<
-    base::internal::LazySysInfoValue<uint64_t, MaxSharedMemorySize>>::Leaky
-    g_lazy_max_shared_memory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -68,11 +49,6 @@ int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
 // static
 int64_t SysInfo::AmountOfPhysicalMemory() {
   return g_lazy_physical_memory.Get().value();
-}
-
-// static
-uint64_t SysInfo::MaxSharedMemorySize() {
-  return g_lazy_max_shared_memory.Get().value();
 }
 
 // static

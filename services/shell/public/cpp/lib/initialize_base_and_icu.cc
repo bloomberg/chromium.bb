@@ -31,9 +31,6 @@ InitializeBase(const uint8_t* icu_data) {
   base::RandUint64();
   base::SysInfo::AmountOfPhysicalMemory();
   base::SysInfo::NumberOfProcessors();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::SysInfo::MaxSharedMemorySize();
-#endif
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   // Initialize core ICU. We must perform the full initialization before we

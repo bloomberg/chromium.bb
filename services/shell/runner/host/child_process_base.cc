@@ -38,7 +38,6 @@ std::unique_ptr<LinuxSandbox> InitializeSandbox() {
   // Warm parts of base in the copy of base in the mojo runner.
   base::RandUint64();
   base::SysInfo::AmountOfPhysicalMemory();
-  base::SysInfo::MaxSharedMemorySize();
   base::SysInfo::NumberOfProcessors();
 
   // TODO(erg,jln): Allowing access to all of /dev/shm/ makes it easy to
