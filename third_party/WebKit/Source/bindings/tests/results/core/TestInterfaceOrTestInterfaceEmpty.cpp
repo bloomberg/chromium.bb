@@ -11,8 +11,8 @@
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/tests/idls/core/TestImplements2.h"
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
-#include "bindings/tests/idls/core/TestPartialInterface.h"
-#include "bindings/tests/idls/core/TestPartialInterfaceImplementation.h"
+#include "bindings/tests/idls/core/TestInterfacePartial.h"
+#include "bindings/tests/idls/core/TestInterfacePartial2Implementation.h"
 
 namespace blink {
 

@@ -14,7 +14,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterface.h"
-#include "bindings/tests/idls/modules/TestPartialInterfaceImplementation3.h"
+#include "bindings/tests/idls/modules/TestInterfacePartial3Implementation.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -35,7 +35,7 @@ static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::
         if (!value.prepare())
             return;
     }
-    TestPartialInterfaceImplementation3::voidMethodPartialOverload(*impl, value);
+    TestInterfacePartial3Implementation::voidMethodPartialOverload(*impl, value);
 }
 
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -66,7 +66,7 @@ static void staticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInf
         if (!value.prepare())
             return;
     }
-    TestPartialInterfaceImplementation3::staticVoidMethodPartialOverload(value);
+    TestInterfacePartial3Implementation::staticVoidMethodPartialOverload(value);
 }
 
 static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -100,7 +100,7 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
             return;
         }
     }
-    v8SetReturnValue(info, TestPartialInterfaceImplementation3::promiseMethodPartialOverload(*impl, document).v8Value());
+    v8SetReturnValue(info, TestInterfacePartial3Implementation::promiseMethodPartialOverload(*impl, document).v8Value());
 }
 
 static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -131,7 +131,7 @@ static void staticPromiseMethodPartialOverload2MethodPromise(const v8::FunctionC
         if (!value.prepare(exceptionState))
             return;
     }
-    v8SetReturnValue(info, TestPartialInterfaceImplementation3::staticPromiseMethodPartialOverload(value).v8Value());
+    v8SetReturnValue(info, TestInterfacePartial3Implementation::staticPromiseMethodPartialOverload(value).v8Value());
 }
 
 static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -171,7 +171,7 @@ static void partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         if (!value.prepare())
             return;
     }
-    TestPartialInterfaceImplementation3::partial2VoidMethod(*impl, value);
+    TestInterfacePartial3Implementation::partial2VoidMethod(*impl, value);
 }
 
 static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -185,7 +185,7 @@ static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
             return;
         }
     }
-    TestPartialInterfaceImplementation3::partial2VoidMethod(*impl, node);
+    TestInterfacePartial3Implementation::partial2VoidMethod(*impl, node);
 }
 
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -235,7 +235,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
             return;
         }
     }
-    TestPartialInterfaceImplementation3::partialVoidTestEnumModulesArgMethod(*impl, arg);
+    TestInterfacePartial3Implementation::partialVoidTestEnumModulesArgMethod(*impl, arg);
 }
 
 static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -251,7 +251,7 @@ static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::V
         if (!value.prepare())
             return;
     }
-    TestPartialInterfaceImplementation3::partial2StaticVoidMethod(value);
+    TestInterfacePartial3Implementation::partial2StaticVoidMethod(value);
 }
 
 static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -277,7 +277,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
 static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    TestPartialInterfaceImplementation3::unscopeableVoidMethod(*impl);
+    TestInterfacePartial3Implementation::unscopeableVoidMethod(*impl);
 }
 
 static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

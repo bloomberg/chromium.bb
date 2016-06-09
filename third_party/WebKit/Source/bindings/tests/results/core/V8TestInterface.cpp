@@ -24,8 +24,8 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/tests/idls/core/TestImplements2.h"
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
-#include "bindings/tests/idls/core/TestPartialInterface.h"
-#include "bindings/tests/idls/core/TestPartialInterfaceImplementation.h"
+#include "bindings/tests/idls/core/TestInterfacePartial.h"
+#include "bindings/tests/idls/core/TestInterfacePartial2Implementation.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -829,7 +829,7 @@ static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    v8SetReturnValueInt(info, TestPartialInterface::partialLongAttribute(*impl));
+    v8SetReturnValueInt(info, TestInterfacePartial::partialLongAttribute(*impl));
 }
 
 static void partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -845,7 +845,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    TestPartialInterface::setPartialLongAttribute(*impl, cppValue);
+    TestInterfacePartial::setPartialLongAttribute(*impl, cppValue);
 }
 
 static void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -856,7 +856,7 @@ static void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallba
 
 static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueInt(info, TestPartialInterface::partialStaticLongAttribute());
+    v8SetReturnValueInt(info, TestInterfacePartial::partialStaticLongAttribute());
 }
 
 static void partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -871,7 +871,7 @@ static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    TestPartialInterface::setPartialStaticLongAttribute(cppValue);
+    TestInterfacePartial::setPartialStaticLongAttribute(cppValue);
 }
 
 static void partialStaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -885,7 +885,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValueInt(info, TestPartialInterface::partialCallWithExecutionContextLongAttribute(executionContext, *impl));
+    v8SetReturnValueInt(info, TestInterfacePartial::partialCallWithExecutionContextLongAttribute(executionContext, *impl));
 }
 
 static void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -902,7 +902,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     if (exceptionState.throwIfNeeded())
         return;
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    TestPartialInterface::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
+    TestInterfacePartial::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
 
 static void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -915,7 +915,7 @@ static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCal
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    v8SetReturnValueString(info, TestPartialInterface::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
+    v8SetReturnValueString(info, TestInterfacePartial::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
 }
 
 static void partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -939,7 +939,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
         return;
     }
-    TestPartialInterface::setPartialPartialEnumTypeAttribute(*impl, cppValue);
+    TestInterfacePartial::setPartialPartialEnumTypeAttribute(*impl, cppValue);
 }
 
 static void partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -983,7 +983,7 @@ static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2LongAttribute(*impl));
+    v8SetReturnValueInt(info, TestInterfacePartial2Implementation::partial2LongAttribute(*impl));
 }
 
 static void partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -999,7 +999,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    TestPartialInterfaceImplementation::setPartial2LongAttribute(*impl, cppValue);
+    TestInterfacePartial2Implementation::setPartial2LongAttribute(*impl, cppValue);
 }
 
 static void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1010,7 +1010,7 @@ static void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallb
 
 static void partial2StaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2StaticLongAttribute());
+    v8SetReturnValueInt(info, TestInterfacePartial2Implementation::partial2StaticLongAttribute());
 }
 
 static void partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1025,7 +1025,7 @@ static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    TestPartialInterfaceImplementation::setPartial2StaticLongAttribute(cppValue);
+    TestInterfacePartial2Implementation::setPartial2StaticLongAttribute(cppValue);
 }
 
 static void partial2StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1520,7 +1520,7 @@ static void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallback
 static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    TestPartialInterface::partialVoidMethod(*impl);
+    TestInterfacePartial::partialVoidMethod(*impl);
 }
 
 static void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1530,7 +1530,7 @@ static void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void partialStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestPartialInterface::partialStaticVoidMethod();
+    TestInterfacePartial::partialStaticVoidMethod();
 }
 
 static void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1553,7 +1553,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
         if (exceptionState.throwIfNeeded())
             return;
     }
-    TestPartialInterface::partialVoidMethodLongArg(*impl, longArg);
+    TestInterfacePartial::partialVoidMethodLongArg(*impl, longArg);
 }
 
 static void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1566,7 +1566,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialCallWithExecutionContextRaisesExceptionVoidMethod", "TestInterface", info.Holder(), info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    TestPartialInterface::partialCallWithExecutionContextRaisesExceptionVoidMethod(executionContext, *impl, exceptionState);
+    TestInterfacePartial::partialCallWithExecutionContextRaisesExceptionVoidMethod(executionContext, *impl, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -1593,7 +1593,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
         }
         partialCallbackTypeArg = ScriptValue(ScriptState::current(info.GetIsolate()), info[0]);
     }
-    TestPartialInterface::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
+    TestInterfacePartial::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }
 
 static void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1630,12 +1630,12 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback
 static void partial2VoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
-    TestPartialInterfaceImplementation::partial2VoidMethod(*impl);
+    TestInterfacePartial2Implementation::partial2VoidMethod(*impl);
 }
 
 static void partial2StaticVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestPartialInterfaceImplementation::partial2StaticVoidMethod();
+    TestInterfacePartial2Implementation::partial2StaticVoidMethod();
 }
 
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
