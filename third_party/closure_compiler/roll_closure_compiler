@@ -10,7 +10,7 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEMP_DIR=$(mktemp -d)
 
 readonly COMPILER_PATH="${SCRIPT_DIR}/compiler/compiler.jar"
-readonly EXTERNS_PATH="${SCRIPT_DIR}/externs/chrome_extensions.js"
+readonly EXTERNS_DIR="${SCRIPT_DIR}/externs"
 
 readonly README="${SCRIPT_DIR}/README.chromium"
 
@@ -18,14 +18,15 @@ cleanup() {
   rm -rf "${TEMP_DIR}"
 }
 
-get_externs_sha1() {
-  sha1sum "${EXTERNS_PATH}" | cut -d' ' -f1
+get_sha1() {
+  sha1sum "$1" | cut -d" " -f1
 }
 
 trap cleanup SIGINT SIGHUP SIGTERM
 
-old_head=$(egrep -o '^Revision: [0-9a-f]{5,40}$' "${README}" | cut -d' ' -f2)
-old_externs_sha1=$(get_externs_sha1)
+old_head=$(egrep -o "^Revision: [0-9a-f]{5,40}$" "${README}" | cut -d" " -f2)
+old_extensions_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome_extensions.js")
+old_polymer_sha1=$(get_sha1 "${EXTERNS_DIR}/polymer-1.0.js")
 
 cd "${TEMP_DIR}"
 
@@ -67,7 +68,7 @@ if [[ "$?" -ne 0 ]]; then
   exit 1
 fi
 
-(cat <<EOT && cat contrib/externs/chrome_extensions.js) > "${EXTERNS_PATH}"
+readonly WARNING="$(cat <<EOT
 //    SSSSSSSSSSSSSSS TTTTTTTTTTTTTTTTTTTTTTT     OOOOOOOOO     PPPPPPPPPPPPPPPPP
 //  SS:::::::::::::::ST:::::::::::::::::::::T   OO:::::::::OO   P::::::::::::::::P
 // S:::::SSSSSS::::::ST:::::::::::::::::::::T OO:::::::::::::OO P::::::PPPPPP:::::P
@@ -85,11 +86,19 @@ fi
 // S:::::::::::::::SS       T:::::::::T         OO:::::::::OO   P::::::::P
 //  SSSSSSSSSSSSSSS         TTTTTTTTTTT           OOOOOOOOO     PPPPPPPPPP
 EOT
+)"
 
-new_externs_sha1=$(get_externs_sha1)
+(echo "${WARNING}" && cat contrib/externs/chrome_extensions.js) > "${EXTERNS_DIR}/chrome_extensions.js"
+(echo "${WARNING}" && cat contrib/externs/polymer-1.0.js) > "${EXTERNS_DIR}/polymer-1.0.js"
 
-if [[ "${new_externs_sha1}" != "${old_externs_sha1}" ]]; then
-  externs_range="chrome_extensions.js: ${old_externs_sha1} -> ${new_externs_sha1}"
+new_extensions_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome_extensions.js")
+if [[ "${new_extensions_sha1}" != "${old_extensions_sha1}" ]]; then
+  extensions_range="chrome_extensions.js: ${old_extensions_sha1} -> ${new_extensions_sha1}"
+fi
+
+new_polymer_sha1=$(get_sha1 "${EXTERNS_DIR}/polymer-1.0.js")
+if [[ "${new_polymer_sha1}" != "${old_polymer_sha1}" ]]; then
+  polymer_range="polymer-1.0.js: ${old_polymer_sha1} -> ${new_polymer_sha1}"
 fi
 
 echo
@@ -101,9 +110,13 @@ echo "@  closure-compiler.git HEAD:"
 echo "@    Old: ${old_head}"
 echo "@    New: ${new_head}"
 echo "@"
-echo "@  Externs SHA1:"
-echo "@    Old: ${old_externs_sha1}"
-echo "@    New: ${new_externs_sha1}"
+echo "@  externs/chrome_extensions.js SHA1:"
+echo "@    Old: ${old_extensions_sha1}"
+echo "@    New: ${new_extensions_sha1}"
+echo "@"
+echo "@  externs/polymer-1.0.js SHA1:"
+echo "@    Old: ${old_polymer_sha1}"
+echo "@    New: ${new_polymer_sha1}"
 echo "@"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo
@@ -113,7 +126,8 @@ sed -i "s/^Revision: ${old_head}$/Revision: ${new_head}/" "${README}"
 echo "git commit -a -m 'Roll closure compiler"
 echo
 echo "${head_range}"
-if [[ ! -z "${externs_range}" ]]; then echo "${externs_range}"; fi
+if [[ ! -z "${extensions_range}" ]]; then echo "${extensions_range}"; fi
+if [[ ! -z "${polymer_range}" ]]; then echo "${polymer_range}"; fi
 echo
 echo "TBR="
 echo "BUG='"

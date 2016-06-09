@@ -347,10 +347,7 @@ if __name__ == "__main__":
   externs = set(opts.externs or [])
   sources = set(opts.sources)
 
-  polymer_externs = os.path.join(os.path.dirname(_CURRENT_DIR), 'polymer',
-                                 'v1_0', 'components-chromium',
-                                 'polymer-externs', 'polymer.externs.js')
-  externs.add(polymer_externs)
+  externs.add(os.path.join(_CURRENT_DIR, "externs", "polymer-1.0.js"))
 
   checker = Checker(verbose=opts.verbose, strict=opts.strict)
   if opts.single_file:

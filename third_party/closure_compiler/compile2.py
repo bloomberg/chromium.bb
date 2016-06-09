@@ -35,9 +35,7 @@ class Checker(object):
 
   _MAP_FILE_FORMAT = "%s.map"
 
-  _POLYMER_EXTERNS = os.path.join(_CURRENT_DIR, "..", "polymer",
-                                  "v1_0", "components-chromium",
-                                  "polymer-externs", "polymer.externs.js")
+  _POLYMER_EXTERNS = os.path.join(_CURRENT_DIR, "externs", "polymer-1.0.js")
 
   def __init__(self, verbose=False):
     """

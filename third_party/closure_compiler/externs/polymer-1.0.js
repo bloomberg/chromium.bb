@@ -1,5 +1,37 @@
+//    SSSSSSSSSSSSSSS TTTTTTTTTTTTTTTTTTTTTTT     OOOOOOOOO     PPPPPPPPPPPPPPPPP
+//  SS:::::::::::::::ST:::::::::::::::::::::T   OO:::::::::OO   P::::::::::::::::P
+// S:::::SSSSSS::::::ST:::::::::::::::::::::T OO:::::::::::::OO P::::::PPPPPP:::::P
+// S:::::S     SSSSSSST:::::TT:::::::TT:::::TO:::::::OOO:::::::OPP:::::P     P:::::P
+// S:::::S            TTTTTT  T:::::T  TTTTTTO::::::O   O::::::O  P::::P     P:::::P
+// S:::::S                    T:::::T        O:::::O     O:::::O  P::::P     P:::::P
+//  S::::SSSS                                                     P::::PPPPPP:::::P
+//   SS::::::SSSSS       This file is generated. To update it,    P:::::::::::::PP
+//     SSS::::::::SS          run roll_closure_compiler.          P::::PPPPPPPPP
+//        SSSSSS::::S                                             P::::P
+//             S:::::S        T:::::T        O:::::O     O:::::O  P::::P
+//             S:::::S        T:::::T        O::::::O   O::::::O  P::::P
+// SSSSSSS     S:::::S      TT:::::::TT      O:::::::OOO:::::::OPP::::::PP
+// S::::::SSSSSS:::::S      T:::::::::T       OO:::::::::::::OO P::::::::P
+// S:::::::::::::::SS       T:::::::::T         OO:::::::::OO   P::::::::P
+//  SSSSSSSSSSSSSSS         TTTTTTTTTTT           OOOOOOOOO     PPPPPPPPPP
+/*
+ * Copyright 2016 The Closure Compiler Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /**
  * @fileoverview Closure compiler externs for the Polymer library.
+ * Originally part of the Polymer Project. Original license below.
  *
  * @externs
  * @license
@@ -17,6 +49,23 @@
  * @see https://github.com/Polymer/polymer/blob/0.8-preview/PRIMER.md#custom-element-registration
  */
 var Polymer = function(descriptor) {};
+
+
+/**
+ * Re-evaluates and applies custom CSS properties based on dynamic
+ * changes to this element's scope, such as adding or removing classes.
+ *
+ * For performance reasons, Polymer's custom CSS property shim relies
+ * on this explicit signal from the user to indicate when changes have
+ * been made that affect the values of custom properties.
+ *
+ * @param {Object=} properties Properties object which is mixed into
+ *     the document root `customStyle` property. This argument provides a
+ *     shortcut for setting `customStyle` and then calling `updateStyles`.
+ *
+ * @see http://polymer.github.io/polymer/
+ */
+Polymer.updateStyles = function(properties) {};
 
 
 /** @constructor @extends {HTMLElement} */
@@ -309,10 +358,20 @@ PolymerElement.prototype.getEffectiveChildren = function() {};
 PolymerElement.prototype.getEffectiveTextContent = function() {};
 
 /**
+ * Returns the first effective child that match selector.
+ *
  * @param {string} selector
  * @return {?HTMLElement}
  */
 PolymerElement.prototype.queryEffectiveChildren = function(selector) {};
+
+/**
+ * Returns a list of effective children that match selector.
+ *
+ * @param {string} selector
+ * @return {!Array<!HTMLElement>}
+ */
+PolymerElement.prototype.queryAllEffectiveChildren = function(selector) {};
 
 /**
  * Fire an event.
@@ -439,6 +498,17 @@ Polymer.Base;
 Polymer.Base.async = function(method, wait) {};
 
 /**
+ * Copies own properties (including accessor descriptors) from a source
+ * object to a target object.
+ *
+ * @param {?Object} target Target object to copy properties to.
+ * @param {?Object} source Source object to copy properties from.
+ * @return {?Object} Target object that was passed as first argument or source
+ *     object if the target was null.
+ */
+Polymer.Base.extend = function(target, source) {};
+
+/**
  * Returns a property descriptor object for the property specified.
  *
  * This method allows introspecting the configuration of a Polymer element's
@@ -449,6 +519,19 @@ Polymer.Base.async = function(method, wait) {};
  * @return {Object} Property descriptor for specified property.
 */
 Polymer.Base.getPropertyInfo = function(property) {};
+
+/**
+ * Copies props from a source object to a target object.
+ *
+ * Note, this method uses a simple `for...in` strategy for enumerating
+ * properties.  To ensure only `ownProperties` are copied from source
+ * to target and that accessor implementations are copied, use `extend`.
+ *
+ * @param {!Object} target Target object to copy properties to.
+ * @param {?Object} source Source object to copy properties from.
+ * @return {!Object} Target object that was passed as first argument.
+ */
+Polymer.Base.mixin = function(target, source) {};
 
 Polymer.Gestures;
 
@@ -577,7 +660,7 @@ PolymerElement.prototype.getComputedStyleValue = function(property) {};
 /**
  * Logs a message to the console.
  *
- * @param {!Array} var_args
+ * @param {...*} var_args
  * @protected
  */
 PolymerElement.prototype._log = function(var_args) {};
@@ -585,7 +668,7 @@ PolymerElement.prototype._log = function(var_args) {};
 /**
  * Logs a message to the console with a 'warn' level.
  *
- * @param {!Array} var_args
+ * @param {...*} var_args
  * @protected
  */
 PolymerElement.prototype._warn = function(var_args) {};
@@ -593,7 +676,7 @@ PolymerElement.prototype._warn = function(var_args) {};
 /**
  * Logs a message to the console with an 'error' level.
  *
- * @param {!Array} var_args
+ * @param {...*} var_args
  * @protected
  */
 PolymerElement.prototype._error = function(var_args) {};
@@ -606,6 +689,33 @@ PolymerElement.prototype._error = function(var_args) {};
  * @protected
  */
 PolymerElement.prototype._logf = function(var_args) {};
+
+/** @type {boolean} True after this.ready() has run */
+PolymerElement.prototype._readied;
+
+/**
+ * Do not call this function.
+ *
+ * @param {string} path .
+ * @param {*} value .
+ */
+PolymerElement.prototype._notifyPathUp = function(path, value) {};
+
+/**
+ * Do not call this function.
+ *
+ * @param {string} path .
+ * @param {*} value .
+ */
+PolymerElement.prototype._pathEffector = function(path, value) {};
+
+/**
+ * Do not call this function.
+ *
+ * @param {string} path .
+ * @param {*} value .
+ */
+PolymerElement.prototype._propertySetter = function(path, value) {};
 
 
 /**
@@ -772,6 +882,9 @@ PolymerEventApi.prototype.localTarget;
 
 /** @type {?Array<!Element>|undefined} */
 PolymerEventApi.prototype.path;
+
+/** @type {Event} */
+PolymerEventApi.prototype.event;
 
 
 Polymer.Async;
@@ -1146,6 +1259,19 @@ var PolymerKeySplice;
 var PolymerSpliceChange;
 
 /**
+ * The type of the object received by an observer function when deep
+ * sub-property observation is enabled. See:
+ * https://www.polymer-project.org/1.0/docs/devguide/properties.html#deep-observation
+ *
+ * @typedef {{
+ *   path: string,
+ *   value: (?Object|undefined),
+ *   base: (?Object|undefined)
+ * }}
+ */
+var PolymerDeepPropertyChange;
+
+/**
  * The interface that iconsets should obey. Iconsets are registered by setting
  * their name in the IronMeta 'iconset' db, and a value of type Polymer.Iconset.
  *
@@ -1207,34 +1333,3 @@ Polymer.RenderStatus.whenReady = function(cb) {}
  * @param {...*} args The function arguments.
  */
 Polymer.RenderStatus.afterNextRender = function(element, fn, args) {}
-
-Polymer.AppLayout;
-
-/** @constructor */
-Polymer.AppLayout.LocalDomWithBackground = function(){};
-/** @type {!HTMLElement} */
-Polymer.AppLayout.LocalDomWithBackground.prototype.backgroundFrontLayer;
-/** @type {!HTMLElement} */
-Polymer.AppLayout.LocalDomWithBackground.prototype.backgroundRearLayer;
-/** @type {!HTMLElement} */
-Polymer.AppLayout.LocalDomWithBackground.prototype.background;
-
-/**
- * @constructor
- * @extends {PolymerElement}
- */
-Polymer.AppLayout.ElementWithBackground = function(){};
-
-// TODO(garlicnation): Follow up with app-layout team and remove private api from this prototype
-Polymer.AppLayout.ElementWithBackground.prototype = {
-  /** @type {!Polymer.AppLayout.LocalDomWithBackground} */
-  $: null,
-  /** @return {boolean} True if there's content below the current element */
-  isContentBelow: function(){},
-  /** Updates the elements scroll state */
-  _updateScrollState: function(){},
-  /** @return {boolean} true if the element is on screen */
-  isOnScreen: function(){},
-  /** @type {number} Internal bookkeeping to track screen position */
-  _deltaHeight: 0,
-}

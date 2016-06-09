@@ -139,7 +139,7 @@
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
           '../../../../third_party/analytics/externs.js',
-          '../../../../third_party/polymer/v1_0/components-chromium/polymer-externs/polymer.externs.js',
+          '../../../../third_party/closure_compiler/externs/polymer-1.0.js',
           '../../externs/chrome_test.js',
           '../../externs/es6_workaround.js',
           '../../externs/exif_entry.js',

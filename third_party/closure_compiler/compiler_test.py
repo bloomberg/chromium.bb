@@ -19,9 +19,7 @@ _ASSERT_JS = os.path.join(_RESOURCES_DIR, "assert.js")
 _CR_JS = os.path.join(_RESOURCES_DIR, "cr.js")
 _CR_UI_JS = os.path.join(_RESOURCES_DIR, "cr", "ui.js")
 _PROMISE_RESOLVER_JS = os.path.join(_RESOURCES_DIR, "promise_resolver.js")
-_POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v1_0",
-                                "components-chromium", "polymer-externs",
-                                "polymer.externs.js")
+_POLYMER_EXTERNS = os.path.join(_SCRIPT_DIR, "externs", "polymer-1.0.js")
 _CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
                                     "externs", "chrome_send.js")
 _CLOSURE_ARGS_GYPI = os.path.join(_SCRIPT_DIR, "closure_args.gypi")
