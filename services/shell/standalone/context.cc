@@ -14,15 +14,18 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -133,7 +136,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   if (!init_params || init_params->init_edk)
     EnsureEmbedderIsInitialized();
 
-  shell_runner_ = base::MessageLoop::current()->task_runner();
+  shell_runner_ = base::ThreadTaskRunnerHandle::Get();
   blocking_pool_ =
       new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool");
 
@@ -209,7 +212,7 @@ void Context::Shutdown() {
   // loop shutdown.
   shell_.reset();
 
-  DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
+  DCHECK_EQ(base::ThreadTaskRunnerHandle::Get(), shell_runner_);
 
   // If we didn't initialize the edk we should not shut it down.
   if (!init_edk_)
@@ -224,7 +227,7 @@ void Context::Shutdown() {
 }
 
 void Context::OnShutdownComplete() {
-  DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
+  DCHECK_EQ(base::ThreadTaskRunnerHandle::Get(), shell_runner_);
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
