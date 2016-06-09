@@ -21,7 +21,6 @@ namespace blink {
 class BluetoothRemoteGATTServer;
 class ScriptPromise;
 class ScriptPromiseResolver;
-class ScriptState;
 
 // BluetoothDevice represents a physical bluetooth device in the DOM. See IDL.
 //
@@ -78,9 +77,6 @@ public:
     String name() { return m_webDevice->name; }
     BluetoothRemoteGATTServer* gatt() { return m_gatt; }
     Vector<String> uuids();
-    // TODO(ortuno): Remove connectGATT
-    // http://crbug.com/582292
-    ScriptPromise connectGATT(ScriptState*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
 

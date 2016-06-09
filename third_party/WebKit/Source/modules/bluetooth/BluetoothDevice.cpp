@@ -86,9 +86,4 @@ Vector<String> BluetoothDevice::uuids()
     return uuids;
 }
 
-ScriptPromise BluetoothDevice::connectGATT(ScriptState* scriptState)
-{
-    return m_gatt->connect(scriptState);
-}
-
 } // namespace blink

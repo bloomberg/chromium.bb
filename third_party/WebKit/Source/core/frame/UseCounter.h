@@ -964,7 +964,6 @@ public:
         MediaStreamConstraintsConformant = 1152,
         CSSSelectorIndirectAdjacent = 1153,
         NodeRootNode = 1154,
-        BluetoothDeviceConnectGATT = 1155,
         CreateImageBitmap = 1156,
         PresentationConnectionConnectEventListener = 1157,
         PresentationConnectionCloseEventListener = 1158,
