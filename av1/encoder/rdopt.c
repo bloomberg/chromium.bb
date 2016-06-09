@@ -660,7 +660,7 @@ static void choose_tx_size_from_rd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
 
   if (tx_select) {
     start_tx = max_tx_size;
-    end_tx = 0;
+    end_tx = (max_tx_size == TX_32X32) ? TX_8X8 : TX_4X4;
   } else {
     const TX_SIZE chosen_tx_size =
         AOMMIN(max_tx_size, tx_mode_to_biggest_tx_size[cm->tx_mode]);
