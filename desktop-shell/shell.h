@@ -114,6 +114,12 @@ struct shell_output {
 	struct exposay_output eoutput;
 	struct wl_listener    destroy_listener;
 	struct wl_list        link;
+
+	struct weston_surface *panel_surface;
+	struct wl_listener panel_surface_listener;
+
+	struct weston_surface *background_surface;
+	struct wl_listener background_surface_listener;
 };
 
 struct desktop_shell {
@@ -122,6 +128,7 @@ struct desktop_shell {
 	struct wl_listener idle_listener;
 	struct wl_listener wake_listener;
 	struct wl_listener transform_listener;
+	struct wl_listener resized_listener;
 	struct wl_listener destroy_listener;
 	struct wl_listener show_input_panel_listener;
 	struct wl_listener hide_input_panel_listener;

@@ -4365,6 +4365,20 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer)
 	}
 }
 
+
+static struct shell_output *
+find_shell_output_from_weston_output(struct desktop_shell *shell, struct weston_output *output)
+{
+	struct shell_output *shell_output;
+
+	wl_list_for_each(shell_output, &shell->output_list, link) {
+		if (shell_output->output == output)
+			return shell_output;
+	}
+
+	return NULL;
+}
+
 static int
 background_get_label(struct weston_surface *surface, char *buf, size_t len)
 {
@@ -4384,6 +4398,16 @@ background_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 }
 
 static void
+handle_background_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct shell_output *output =
+	    container_of(listener, struct shell_output, background_surface_listener);
+
+	weston_log("background surface gone\n");
+	output->background_surface = NULL;
+}
+
+static void
 desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *resource,
 			     struct wl_resource *output_resource,
@@ -4392,6 +4416,7 @@ desktop_shell_set_background(struct wl_client *client,
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
+	struct shell_output *sh_output;
 	struct weston_view *view, *next;
 
 	if (surface->configure) {
@@ -4414,6 +4439,12 @@ desktop_shell_set_background(struct wl_client *client,
 					    surface_resource,
 					    surface->output->width,
 					    surface->output->height);
+
+	sh_output = find_shell_output_from_weston_output(shell, surface->output);
+	sh_output->background_surface = surface;
+
+	sh_output->background_surface_listener.notify = handle_background_surface_destroy;
+	wl_signal_add(&surface->destroy_signal, &sh_output->background_surface_listener);
 }
 
 static int
@@ -4435,6 +4466,17 @@ panel_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 }
 
 static void
+handle_panel_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct shell_output *output =
+	    container_of(listener, struct shell_output, panel_surface_listener);
+
+	weston_log("panel surface gone\n");
+	output->panel_surface = NULL;
+}
+
+
+static void
 desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *resource,
 			struct wl_resource *output_resource,
@@ -4444,6 +4486,7 @@ desktop_shell_set_panel(struct wl_client *client,
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 	struct weston_view *view, *next;
+	struct shell_output *sh_output;
 
 	if (surface->configure) {
 		wl_resource_post_error(surface_resource,
@@ -4465,6 +4508,12 @@ desktop_shell_set_panel(struct wl_client *client,
 					    surface_resource,
 					    surface->output->width,
 					    surface->output->height);
+
+	sh_output = find_shell_output_from_weston_output(shell, surface->output);
+	sh_output->panel_surface = surface;
+
+	sh_output->panel_surface_listener.notify = handle_panel_surface_destroy;
+	wl_signal_add(&surface->destroy_signal, &sh_output->panel_surface_listener);
 }
 
 static int
@@ -6382,6 +6431,33 @@ handle_output_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
+shell_resize_surface_to_output(struct desktop_shell *shell,
+				struct weston_surface *surface,
+				const struct weston_output *output)
+{
+	if (!surface)
+		return;
+
+	weston_desktop_shell_send_configure(shell->child.desktop_shell, 0,
+					surface->resource,
+					output->width,
+					output->height);
+}
+
+
+static void
+handle_output_resized(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell =
+		container_of(listener, struct desktop_shell, resized_listener);
+	struct weston_output *output = (struct weston_output *)data;
+	struct shell_output *sh_output = find_shell_output_from_weston_output(shell, output);
+
+	shell_resize_surface_to_output(shell, sh_output->background_surface, output);
+	shell_resize_surface_to_output(shell, sh_output->panel_surface, output);
+}
+
+static void
 create_shell_output(struct desktop_shell *shell,
 					struct weston_output *output)
 {
@@ -6488,6 +6564,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 
 	wl_list_remove(&shell->output_create_listener.link);
 	wl_list_remove(&shell->output_move_listener.link);
+	wl_list_remove(&shell->resized_listener.link);
 
 	wl_array_for_each(ws, &shell->workspaces.array)
 		workspace_destroy(*ws);
@@ -6703,6 +6780,9 @@ module_init(struct weston_compositor *ec,
 		handle_seat_created(NULL, seat);
 	shell->seat_create_listener.notify = handle_seat_created;
 	wl_signal_add(&ec->seat_created_signal, &shell->seat_create_listener);
+
+	shell->resized_listener.notify = handle_output_resized;
+	wl_signal_add(&ec->output_resized_signal, &shell->resized_listener);
 
 	screenshooter_create(ec);
 
