@@ -131,12 +131,12 @@ TEST(FormFieldTest, ParseFormFields) {
   field_data.label = ASCIIToUTF16("Address line1");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
-  field_data.is_checkable = true;
+  field_data.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   field_data.label = ASCIIToUTF16("Is PO Box");
   fields.push_back(new AutofillField(field_data, field_data.label));
 
   // reset |is_checkable| to false.
-  field_data.is_checkable = false;
+  field_data.check_status = FormFieldData::NOT_CHECKABLE;
 
   field_data.label = ASCIIToUTF16("Address line2");
   fields.push_back(new AutofillField(field_data, field_data.label));

@@ -246,7 +246,7 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
   form.fields.push_back(field);
 
   FormFieldData checkable_field;
-  checkable_field.is_checkable = true;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   checkable_field.name = ASCIIToUTF16("radiobtn");
   checkable_field.form_control_type = "radio";
   form.fields.push_back(checkable_field);
@@ -1859,7 +1859,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.is_checkable = true;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   form.fields.push_back(checkable_field);
@@ -2027,7 +2027,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.is_checkable = true;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   form.fields.push_back(checkable_field);
@@ -3077,7 +3077,7 @@ TEST_F(FormStructureTest, CheckFormSignature) {
   field.label = ASCIIToUTF16("Select");
   field.name = ASCIIToUTF16("Select");
   field.form_control_type = "checkbox";
-  field.is_checkable = true;
+  field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
@@ -3104,7 +3104,7 @@ TEST_F(FormStructureTest, CheckFormSignature) {
       std::string("https://login.facebook.com&login_form&email&first")),
       form_structure->FormSignature());
 
-  field.is_checkable = false;
+  field.check_status = FormFieldData::NOT_CHECKABLE;
   field.label = ASCIIToUTF16("Random Field label");
   field.name = ASCIIToUTF16("random1234");
   field.form_control_type = "text";
@@ -3165,13 +3165,13 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   field.label = ASCIIToUTF16("select");
   field.name = ASCIIToUTF16("select");
   field.form_control_type = "checkbox";
-  field.is_checkable = true;
+  field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   form.fields.push_back(field);
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "text";
-  field.is_checkable = false;
+  field.check_status = FormFieldData::NOT_CHECKABLE;
   form.fields.push_back(field);
 
   ScopedVector<FormStructure> forms;
@@ -3333,7 +3333,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   // No name set for this field.
   field.name = ASCIIToUTF16("");
   field.form_control_type = "text";
-  field.is_checkable = false;
+  field.check_status = FormFieldData::NOT_CHECKABLE;
   form.fields.push_back(field);
 
   ScopedVector<FormStructure> forms;
@@ -3385,7 +3385,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   field.label = base::string16();
   field.name = ASCIIToUTF16("country");
   field.form_control_type = "text";
-  field.is_checkable = false;
+  field.check_status = FormFieldData::NOT_CHECKABLE;
   form.fields.push_back(field);
 
   ScopedVector<FormStructure> forms;
@@ -3478,7 +3478,7 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   FormFieldData checkable_field;
   checkable_field.label = ASCIIToUTF16("radio_button");
   checkable_field.form_control_type = "radio";
-  checkable_field.is_checkable = true;
+  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   form.fields.push_back(checkable_field);
 
   ScopedVector<FormStructure> forms;

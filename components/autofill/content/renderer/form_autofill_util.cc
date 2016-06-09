@@ -889,7 +889,7 @@ void FillFormField(const FormFieldData& data,
 
   WebInputElement* input_element = toWebInputElement(field);
   if (IsCheckableElement(input_element)) {
-    input_element->setChecked(data.is_checked, true);
+    input_element->setChecked(IsChecked(data.check_status), true);
   } else {
     base::string16 value = data.value;
     if (IsTextInput(input_element) || IsMonthInput(input_element)) {
@@ -1404,8 +1404,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     if (IsTextInput(input_element))
       field->max_length = input_element->maxLength();
 
-    field->is_checkable = IsCheckableElement(input_element);
-    field->is_checked = input_element->isChecked();
+    SetCheckStatus(field, IsCheckableElement(input_element),
+                   input_element->isChecked());
   } else if (IsTextAreaElement(element)) {
     // Nothing more to do in this case.
   } else if (extract_mask & EXTRACT_OPTIONS) {

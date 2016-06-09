@@ -34,7 +34,7 @@ bool ShouldBeProcessed(const AutofillField* field) {
   // interferes with correctly understanding ADDRESS_LINE2.
   // Ignore fields marked as presentational. See
   // http://www.w3.org/TR/wai-aria/roles#presentation
-  return !(field->is_checkable ||
+  return !(IsCheckable(field->check_status) ||
            field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION);
 }
 

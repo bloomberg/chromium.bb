@@ -21,8 +21,7 @@ void FillCommonFields(FormFieldData* data) {
   data->autocomplete_attribute = "off";
   data->max_length = 200;
   data->is_autofilled = true;
-  data->is_checked = true;
-  data->is_checkable = true;
+  data->check_status = FormFieldData::CheckStatus::CHECKED;
   data->is_focusable = true;
   data->should_autocomplete = false;
   data->text_direction = base::i18n::RIGHT_TO_LEFT;
@@ -40,7 +39,7 @@ void FillVersion3Fields(FormFieldData* data) {
   data->placeholder = base::ASCIIToUTF16("placeholder");
 }
 
-void WriteCommonSection1(const FormFieldData& data, base::Pickle* pickle) {
+void WriteSection1(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString16(data.label);
   pickle->WriteString16(data.name);
   pickle->WriteString16(data.value);
@@ -48,13 +47,23 @@ void WriteCommonSection1(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString(data.autocomplete_attribute);
   pickle->WriteUInt64(data.max_length);
   pickle->WriteBool(data.is_autofilled);
-  pickle->WriteBool(data.is_checked);
-  pickle->WriteBool(data.is_checkable);
+}
+
+void WriteSection3(const FormFieldData& data, base::Pickle* pickle) {
+  pickle->WriteBool(IsChecked(data.check_status));
+  pickle->WriteBool(IsCheckable(data.check_status));
+}
+
+void WriteSection4(const FormFieldData& data, base::Pickle* pickle) {
+  pickle->WriteInt(data.check_status);
+}
+
+void WriteSection5(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteBool(data.is_focusable);
   pickle->WriteBool(data.should_autocomplete);
 }
 
-void WriteCommonSection2(const FormFieldData& data, base::Pickle* pickle) {
+void WriteSection2(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteInt(data.text_direction);
   pickle->WriteInt(static_cast<int>(data.option_values.size()));
   for (auto s : data.option_values)
@@ -68,17 +77,45 @@ void WriteVersion2Specific(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteInt(data.role);
 }
 
+void WriteVersion3Specific(const FormFieldData& data, base::Pickle* pickle) {
+  pickle->WriteString16(data.placeholder);
+}
+
 void SerializeInVersion1Format(const FormFieldData& data,
                                base::Pickle* pickle) {
-  WriteCommonSection1(data, pickle);
-  WriteCommonSection2(data, pickle);
+  WriteSection1(data, pickle);
+  WriteSection3(data, pickle);
+  WriteSection5(data, pickle);
+  WriteSection2(data, pickle);
 }
 
 void SerializeInVersion2Format(const FormFieldData& data,
                                base::Pickle* pickle) {
-  WriteCommonSection1(data, pickle);
+  WriteSection1(data, pickle);
+  WriteSection3(data, pickle);
+  WriteSection5(data, pickle);
   WriteVersion2Specific(data, pickle);
-  WriteCommonSection2(data, pickle);
+  WriteSection2(data, pickle);
+}
+
+void SerializeInVersion3Format(const FormFieldData& data,
+                               base::Pickle* pickle) {
+  WriteSection1(data, pickle);
+  WriteSection3(data, pickle);
+  WriteSection5(data, pickle);
+  WriteVersion2Specific(data, pickle);
+  WriteSection2(data, pickle);
+  WriteVersion3Specific(data, pickle);
+}
+
+void SerializeInVersion4Format(const FormFieldData& data,
+                               base::Pickle* pickle) {
+  WriteSection1(data, pickle);
+  WriteSection4(data, pickle);
+  WriteSection5(data, pickle);
+  WriteVersion2Specific(data, pickle);
+  WriteSection2(data, pickle);
+  WriteVersion3Specific(data, pickle);
 }
 
 }  // namespace
@@ -122,6 +159,40 @@ TEST(FormFieldDataTest, DeserializeVersion2) {
   base::Pickle pickle;
   pickle.WriteInt(2);
   SerializeInVersion2Format(data, &pickle);
+
+  base::PickleIterator iter(pickle);
+  FormFieldData actual;
+  EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
+
+  EXPECT_TRUE(actual.SameFieldAs(data));
+}
+
+TEST(FormFieldDataTest, DeserializeVersion3) {
+  FormFieldData data;
+  FillCommonFields(&data);
+  FillVersion2Fields(&data);
+  FillVersion3Fields(&data);
+
+  base::Pickle pickle;
+  pickle.WriteInt(3);
+  SerializeInVersion3Format(data, &pickle);
+
+  base::PickleIterator iter(pickle);
+  FormFieldData actual;
+  EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
+
+  EXPECT_TRUE(actual.SameFieldAs(data));
+}
+
+TEST(FormFieldDataTest, DeserializeVersion4) {
+  FormFieldData data;
+  FillCommonFields(&data);
+  FillVersion2Fields(&data);
+  FillVersion3Fields(&data);
+
+  base::Pickle pickle;
+  pickle.WriteInt(4);
+  SerializeInVersion4Format(data, &pickle);
 
   base::PickleIterator iter(pickle);
   FormFieldData actual;

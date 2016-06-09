@@ -1711,8 +1711,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.value = ASCIIToUTF16("mail");
   expected.form_control_type = "checkbox";
   expected.is_autofilled = true;
-  expected.is_checkable = true;
-  expected.is_checked = true;
+  expected.check_status = FormFieldData::CHECKED;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 
   element = GetInputElementById("radio");
@@ -1722,8 +1721,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.value = ASCIIToUTF16("male");
   expected.form_control_type = "radio";
   expected.is_autofilled = true;
-  expected.is_checkable = true;
-  expected.is_checked = false;
+  expected.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
 

@@ -29,6 +29,12 @@ struct FormFieldData {
     ROLE_ATTRIBUTE_OTHER,
   };
 
+  enum CheckStatus {
+    NOT_CHECKABLE,
+    CHECKABLE_BUT_UNCHECKED,
+    CHECKED,
+  };
+
   FormFieldData();
   FormFieldData(const FormFieldData& other);
   ~FormFieldData();
@@ -53,8 +59,7 @@ struct FormFieldData {
   // (base::Pickle used to serialize that as 64 bit).
   uint64_t max_length;
   bool is_autofilled;
-  bool is_checked;
-  bool is_checkable;
+  CheckStatus check_status;
   bool is_focusable;
   bool should_autocomplete;
   RoleAttribute role;
@@ -76,6 +81,12 @@ bool DeserializeFormFieldData(base::PickleIterator* pickle_iterator,
 // So we can compare FormFieldDatas with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
+bool IsCheckable(const FormFieldData::CheckStatus& check_status);
+bool IsChecked(const FormFieldData::CheckStatus& check_status);
+void SetCheckStatus(FormFieldData* form_field_data,
+                    bool isCheckable,
+                    bool isChecked);
+
 // Prefer to use this macro in place of |EXPECT_EQ()| for comparing
 // |FormFieldData|s in test code.
 #define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual)                        \
@@ -88,8 +99,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.placeholder, actual.placeholder);                       \
     EXPECT_EQ(expected.max_length, actual.max_length);                         \
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled);                   \
-    EXPECT_EQ(expected.is_checked, actual.is_checked);                         \
-    EXPECT_EQ(expected.is_checkable, actual.is_checkable);                     \
+    EXPECT_EQ(expected.check_status, actual.check_status);                     \
   } while (0)
 
 }  // namespace autofill

@@ -1145,7 +1145,7 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
 
   for (const AutofillField* field : fields_) {
     // Don't upload checkable fields.
-    if (field->is_checkable)
+    if (IsCheckable(field->check_status))
       continue;
 
     const ServerFieldTypeSet& types = field->possible_types();
@@ -1310,7 +1310,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
 }
 
 bool FormStructure::ShouldSkipField(const FormFieldData& field) const {
-  return field.is_checkable;
+  return IsCheckable(field.check_status);
 }
 
 void FormStructure::ProcessExtractedFields() {
