@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/network_time_update_callback.h"
@@ -34,7 +34,7 @@ FakeServerNetworkResources::GetHttpPostProviderFactory(
     CancelationSignal* cancelation_signal) {
   return base::WrapUnique<syncer::HttpPostProviderFactory>(
       new FakeServerHttpPostProviderFactory(
-          fake_server_, base::MessageLoop::current()->task_runner()));
+          fake_server_, base::ThreadTaskRunnerHandle::Get()));
 }
 
 }  // namespace fake_server
