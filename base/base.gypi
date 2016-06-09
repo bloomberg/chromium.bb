@@ -557,9 +557,8 @@
           'sequenced_task_runner.cc',
           'sequenced_task_runner.h',
           'sequenced_task_runner_helpers.h',
+          'sha1.cc',
           'sha1.h',
-          'sha1_portable.cc',
-          'sha1_win.cc',
           'single_thread_task_runner.h',
           'stl_util.h',
           'strings/latin1_string_conversions.cc',
@@ -1006,9 +1005,6 @@
               'files/file_path_watcher_stub.cc',
               'message_loop/message_pump_libevent.cc',
               'posix/file_descriptor_shuffle.cc',
-              # Not using sha1_win.cc because it may have caused a
-              # regression to page cycler moz.
-              'sha1_win.cc',
               'strings/string16.cc',
             ],
           },],

@@ -30,7 +30,7 @@
       'target_name': 'goobsdiff_sha1_adapter',
       'type': 'static_library',
       'sources': [
-        '../../../../../base/sha1_portable.cc',
+        '../../../../../base/sha1.cc',
         'sha1_adapter.cc',
         'sha1_adapter.h',
       ],

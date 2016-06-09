@@ -270,7 +270,7 @@ def write_ninja(path, root_gen_dir, options):
       'base/run_loop.cc',
       'base/sequence_checker_impl.cc',
       'base/sequenced_task_runner.cc',
-      'base/sha1_portable.cc',
+      'base/sha1.cc',
       'base/strings/pattern.cc',
       'base/strings/string16.cc',
       'base/strings/string_number_conversions.cc',
