@@ -207,17 +207,8 @@ NTPSnippetsService::NTPSnippetsService(
     return;
   }
 
-  snippets_fetcher_->SetCallback(base::Bind(
-      &NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
-
-  // |sync_service_| can be null in tests or if sync is disabled.
-  // This is a service we want to keep listening to all the time, independently
-  // from the state, since it will allow us to enable or disable the snippets
-  // service.
-  if (sync_service_)
-    sync_service_observer_.Add(sync_service_);
-
-  // Will trigger the transition to the READY state.
+  // We transition to other states while finalizing the initialization, when the
+  // database is done loading.
   database_->Load(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,
                              base::Unretained(this)));
 }
@@ -389,7 +380,7 @@ int NTPSnippetsService::GetMaxSnippetCountForTesting() {
 // Private methods
 
 void NTPSnippetsService::OnStateChanged() {
-  if (!initialized())
+  if (state_ == State::SHUT_DOWN)
     return;
 
   DVLOG(1) << "[OnStateChanged]";
@@ -415,20 +406,8 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
               return lhs->score() > rhs->score();
             });
 
-  // Change state after we started loading the snippets. During startup, the
-  // Sync service might not be completely loaded when we initialize this
-  // service. Whether we had snippets in the last season is used to guess if
-  // we should enable the service or not. See |GetStateForDependenciesStatus|.
-  EnterState(GetStateForDependenciesStatus());
-
-  LoadingSnippetsFinished();
-
-  // Start a fetch if we don't have any snippets yet, or a fetch was requested
-  // earlier.
-  if (snippets_.empty() || fetch_after_load_) {
-    fetch_after_load_ = false;
-    FetchSnippets();
-  }
+  ClearExpiredSnippets();
+  FinishInitialization();
 }
 
 void NTPSnippetsService::OnSuggestionsChanged(
@@ -473,7 +452,30 @@ void NTPSnippetsService::OnFetchFinished(
                                 snippets->size());
     MergeSnippets(std::move(*snippets));
   }
-  LoadingSnippetsFinished();
+
+  ClearExpiredSnippets();
+
+  // If there are still more snippets than we want to show, move the extra ones
+  // over into |to_delete|.
+  NTPSnippet::PtrVector to_delete;
+  if (snippets_.size() > kMaxSnippetCount) {
+    to_delete.insert(
+        to_delete.end(),
+        std::make_move_iterator(snippets_.begin() + kMaxSnippetCount),
+                     std::make_move_iterator(snippets_.end()));
+    snippets_.resize(kMaxSnippetCount);
+  }
+  database_->Delete(to_delete);
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticles",
+                              snippets_.size());
+  if (snippets_.empty() && !discarded_snippets_.empty()) {
+    UMA_HISTOGRAM_COUNTS("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
+                         discarded_snippets_.size());
+  }
+
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded());
 }
 
 void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
@@ -559,10 +561,7 @@ void NTPSnippetsService::StoreSnippetHostsToPrefs(
   pref_service_->Set(prefs::kSnippetHosts, list);
 }
 
-void NTPSnippetsService::LoadingSnippetsFinished() {
-  DCHECK(ready());
-
-  // Remove expired snippets.
+void NTPSnippetsService::ClearExpiredSnippets() {
   base::Time expiry = base::Time::Now();
 
   // Move expired snippets over into |to_delete|.
@@ -573,16 +572,6 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
   }
   Compact(&snippets_);
 
-  // If there are still more snippets than we want to show, move the extra ones
-  // over into |to_delete| as well.
-  if (snippets_.size() > kMaxSnippetCount) {
-    to_delete.insert(
-        to_delete.end(),
-        std::make_move_iterator(snippets_.begin() + kMaxSnippetCount),
-        std::make_move_iterator(snippets_.end()));
-    snippets_.resize(kMaxSnippetCount);
-  }
-
   // Move expired discarded snippets over into |to_delete| as well.
   for (std::unique_ptr<NTPSnippet>& snippet : discarded_snippets_) {
     if (snippet->expiry_date() <= expiry)
@@ -592,16 +581,6 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
 
   // Finally, actually delete the removed snippets from the DB.
   database_->Delete(to_delete);
-
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticles",
-                              snippets_.size());
-  if (snippets_.empty() && !discarded_snippets_.empty()) {
-    UMA_HISTOGRAM_COUNTS("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
-                         discarded_snippets_.size());
-  }
-
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
 
   // If there are any snippets left, schedule a timer for the next expiry.
   if (snippets_.empty() && discarded_snippets_.empty())
@@ -618,7 +597,7 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
   }
   DCHECK_GT(next_expiry, expiry);
   expiry_timer_.Start(FROM_HERE, next_expiry - expiry,
-                      base::Bind(&NTPSnippetsService::LoadingSnippetsFinished,
+                      base::Bind(&NTPSnippetsService::ClearExpiredSnippets,
                                  base::Unretained(this)));
 }
 
@@ -660,6 +639,34 @@ void NTPSnippetsService::EnterStateShutdown() {
     sync_service_observer_.Remove(sync_service_);
 }
 
+void NTPSnippetsService::FinishInitialization() {
+  snippets_fetcher_->SetCallback(
+      base::Bind(&NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
+
+  // |sync_service_| can be null in tests or if sync is disabled.
+  // This is a service we want to keep listening to all the time, independently
+  // from the state, since it will allow us to enable or disable the snippets
+  // service.
+  if (sync_service_)
+    sync_service_observer_.Add(sync_service_);
+
+  // Change state after we started loading the snippets. During startup, the
+  // Sync service might not be completely loaded when we initialize this
+  // service, so we might stay in the NOT_INITED state until the sync state is
+  // updated. See |GetStateForDependenciesStatus|.
+  EnterState(GetStateForDependenciesStatus());
+
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded());
+
+  // Start a fetch if we don't have any snippets yet, or a fetch was requested
+  // earlier.
+  if (ready() && (snippets_.empty() || fetch_after_load_)) {
+    fetch_after_load_ = false;
+    FetchSnippets();
+  }
+}
+
 NTPSnippetsService::State NTPSnippetsService::GetStateForDependenciesStatus() {
   switch (GetDisabledReason()) {
     case DisabledReason::NONE:
@@ -667,13 +674,11 @@ NTPSnippetsService::State NTPSnippetsService::GetStateForDependenciesStatus() {
 
     case DisabledReason::HISTORY_SYNC_STATE_UNKNOWN:
       // HistorySync is not initialized yet, so we don't know what the actual
-      // state is. However, because we retreived the previous snippets from the
-      // database, if we got something, we know that the service was previously
-      // enabled, so we just restore that state. If things changed,
-      // |OnStateChanged| will call this function again to fix the state.
+      // state is and we just return the current one. If things change,
+      // |OnStateChanged| will call this function again to update the state.
       DVLOG(1) << "Sync configuration incomplete, continuing based on the "
              "current state.";
-      return snippets_.empty() ? State::DISABLED : State::READY;
+      return state_;
 
     case DisabledReason::EXPLICITLY_DISABLED:
     case DisabledReason::HISTORY_SYNC_DISABLED:
@@ -686,6 +691,9 @@ NTPSnippetsService::State NTPSnippetsService::GetStateForDependenciesStatus() {
 }
 
 void NTPSnippetsService::EnterState(State state) {
+  if (state == state_)
+    return;
+
   switch (state) {
     case State::NOT_INITED:
       // Initial state, it should not be possible to get back there.
@@ -693,25 +701,20 @@ void NTPSnippetsService::EnterState(State state) {
       return;
 
     case State::READY: {
-      DCHECK(state_ == State::NOT_INITED || state_ == State::READY ||
-             state_ == State::DISABLED);
-      if (state_ == State::READY)
-        return;
+      DCHECK(state_ == State::NOT_INITED || state_ == State::DISABLED);
 
       // If the service was previously disabled, we will need to start a fetch
       // because otherwise there won't be any.
-      bool fetch_snippets = state_ == State::DISABLED;
+      bool fetch_snippets = state_ == State::DISABLED || fetch_after_load_;
       DVLOG(1) << "Entering state: READY";
       state_ = State::READY;
+      fetch_after_load_ = false;
       EnterStateEnabled(fetch_snippets);
       return;
     }
 
     case State::DISABLED:
-      DCHECK(state_ == State::NOT_INITED || state_ == State::READY ||
-             state_ == State::DISABLED);
-      if (state_ == State::DISABLED)
-        return;
+      DCHECK(state_ == State::NOT_INITED || state_ == State::READY);
 
       DVLOG(1) << "Entering state: DISABLED";
       state_ = State::DISABLED;
@@ -719,8 +722,6 @@ void NTPSnippetsService::EnterState(State state) {
       return;
 
     case State::SHUT_DOWN:
-      DCHECK(state_ == State::NOT_INITED || state_ == State::DISABLED ||
-             state_ == State::READY);
       DVLOG(1) << "Entering state: SHUT_DOWN";
       state_ = State::SHUT_DOWN;
       EnterStateShutdown();

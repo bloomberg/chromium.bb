@@ -177,7 +177,6 @@ class NTPSnippetsService : public KeyedService,
 
     // The service registered observers, timers, etc. and is ready to answer to
     // queries, fetch snippets... Can change to states:
-    // - READY: noop
     // - DISABLED: when the global Chrome state changes, for example after
     //             |OnStateChanged| is called and sync is disabled.
     // - SHUT_DOWN: when |Shutdown| is called, during the browser shutdown.
@@ -185,7 +184,6 @@ class NTPSnippetsService : public KeyedService,
 
     // The service is disabled and unregistered the related resources.
     // Can change to states:
-    // - DISABLED: noop
     // - READY: when the global Chrome state changes, for example after
     //          |OnStateChanged| is called and sync is enabled.
     // - SHUT_DOWN: when |Shutdown| is called, during the browser shutdown.
@@ -214,6 +212,14 @@ class NTPSnippetsService : public KeyedService,
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
+  // Removes the expired snippets (including discarded) from the service and the
+  // database, and schedules another pass for the next expiration.
+  void ClearExpiredSnippets();
+
+  // Completes the initialization phase of the service, registering the last
+  // observers. This is done after construction, once the database is loaded.
+  void FinishInitialization();
+
   void LoadingSnippetsFinished();
 
   // Returns whether the service should be enabled or disable depending on its
@@ -221,6 +227,7 @@ class NTPSnippetsService : public KeyedService,
   State GetStateForDependenciesStatus();
 
   // Verifies state transitions (see |State|'s documentation) and applies them.
+  // Does nothing if called with the current state.
   void EnterState(State state);
 
   // Enables the service and triggers a fetch if required. Do not call directly,
