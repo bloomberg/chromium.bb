@@ -1579,7 +1579,7 @@
     'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
-                  'gavinp+prer@chromium.org', 'davidben+watch@chromium.org'],
+                  'gavinp+prer@chromium.org'],
     'push_messaging': ['peter@chromium.org', 'johnme+watch@chromium.org',
                        'mvanouwerkerk+watch@chromium.org',
                        'harkness+watch@chromium.org'],
