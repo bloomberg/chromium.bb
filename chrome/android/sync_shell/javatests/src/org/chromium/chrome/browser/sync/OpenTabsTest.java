@@ -264,12 +264,16 @@ public class OpenTabsTest extends SyncTestBase {
     }
 
     private String getClientName() throws Exception {
-        pollInstrumentationThread(Criteria.equals(2, new Callable<Integer>() {
+        pollInstrumentationThread(new Criteria("Expected at least one tab entity to exist.") {
             @Override
-            public Integer call() throws Exception {
-                return SyncTestUtil.getLocalData(mContext, OPEN_TABS_TYPE).size();
+            public boolean isSatisfied() {
+                try {
+                    return SyncTestUtil.getLocalData(mContext, OPEN_TABS_TYPE).size() > 0;
+                } catch (JSONException e) {
+                    return false;
+                }
             }
-        }));
+        });
         List<Pair<String, JSONObject>> tabEntities = SyncTestUtil.getLocalData(
                 mContext, OPEN_TABS_TYPE);
         for (Pair<String, JSONObject> tabEntity : tabEntities) {
