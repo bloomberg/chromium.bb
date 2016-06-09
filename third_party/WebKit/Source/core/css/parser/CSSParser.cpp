@@ -66,7 +66,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
     CSSParserMode parserMode = declaration->cssParserMode();
     CSSValue* value = CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
     if (value)
-        return declaration->setProperty(CSSProperty(resolvedProperty, value, important));
+        return declaration->setProperty(CSSProperty(resolvedProperty, *value, important));
     CSSParserContext context(parserMode, 0);
     if (styleSheet) {
         context = styleSheet->parserContext();

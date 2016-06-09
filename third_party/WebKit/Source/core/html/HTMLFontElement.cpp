@@ -201,7 +201,7 @@ void HTMLFontElement::collectStyleForPresentationAttribute(const QualifiedName& 
         addHTMLColorToStyle(style, CSSPropertyColor, value);
     } else if (name == faceAttr && !value.isEmpty()) {
         if (CSSValueList* fontFaceValue = createFontFaceValueWithPool(value))
-            style->setProperty(CSSProperty(CSSPropertyFontFamily, fontFaceValue));
+            style->setProperty(CSSProperty(CSSPropertyFontFamily, *fontFaceValue));
     } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
     }

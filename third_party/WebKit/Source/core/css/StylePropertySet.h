@@ -68,7 +68,7 @@ public:
         CSSValue* value() { return const_cast<CSSValue*>(propertyValue()); }
 
         // FIXME: Remove this.
-        CSSProperty toCSSProperty() const { return CSSProperty(propertyMetadata(), const_cast<CSSValue*>(propertyValue())); }
+        CSSProperty toCSSProperty() const { return CSSProperty(propertyMetadata(), *propertyValue()); }
 
         const StylePropertyMetadata& propertyMetadata() const;
 

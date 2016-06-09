@@ -58,14 +58,14 @@ struct StylePropertyMetadata {
 class CSSProperty {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    CSSProperty(CSSPropertyID propertyID, const CSSValue* value, bool important = false, bool isSetFromShorthand = false, int indexInShorthandsVector = 0, bool implicit = false)
+    CSSProperty(CSSPropertyID propertyID, const CSSValue& value, bool important = false, bool isSetFromShorthand = false, int indexInShorthandsVector = 0, bool implicit = false)
         : m_metadata(propertyID, isSetFromShorthand, indexInShorthandsVector, important, implicit, CSSPropertyMetadata::isInheritedProperty(propertyID))
         , m_value(value)
     {
     }
 
     // FIXME: Remove this.
-    CSSProperty(StylePropertyMetadata metadata, const CSSValue* value)
+    CSSProperty(StylePropertyMetadata metadata, const CSSValue& value)
         : m_metadata(metadata)
         , m_value(value)
     {

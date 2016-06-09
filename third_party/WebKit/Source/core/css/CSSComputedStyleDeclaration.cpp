@@ -626,7 +626,7 @@ MutableStylePropertySet* CSSComputedStyleDeclaration::copyPropertiesInSet(const 
     for (unsigned i = 0; i < properties.size(); ++i) {
         const CSSValue* value = getPropertyCSSValue(properties[i]);
         if (value)
-            list.append(CSSProperty(properties[i], value, false));
+            list.append(CSSProperty(properties[i], *value, false));
     }
     return MutableStylePropertySet::create(list.data(), list.size());
 }

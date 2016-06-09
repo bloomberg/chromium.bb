@@ -76,7 +76,7 @@ void CSSPropertyParser::addProperty(CSSPropertyID property, CSSPropertyID curren
             shorthandIndex = indexOfShorthandForLonghand(currentShorthand, shorthands);
     }
 
-    m_parsedProperties->append(CSSProperty(property, value, important, setFromShorthand, shorthandIndex, implicit));
+    m_parsedProperties->append(CSSProperty(property, *value, important, setFromShorthand, shorthandIndex, implicit));
 }
 
 void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID property, CSSValue* value, bool important)

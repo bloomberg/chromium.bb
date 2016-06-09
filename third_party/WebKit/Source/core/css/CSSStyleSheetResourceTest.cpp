@@ -87,7 +87,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         selectors.append(adoptPtr(new CSSParserSelector()));
         selectors[0]->setMatch(CSSSelector::Id);
         selectors[0]->setValue("foo");
-        CSSProperty property(CSSPropertyBackground, crossfade);
+        CSSProperty property(CSSPropertyBackground, *crossfade);
         contents->parserAppendRule(
             StyleRule::create(CSSSelectorList::adoptSelectorVector(selectors), ImmutableStylePropertySet::create(&property, 1, HTMLStandardMode)));
 

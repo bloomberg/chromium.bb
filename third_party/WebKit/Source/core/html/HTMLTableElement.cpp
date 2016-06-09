@@ -300,7 +300,7 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
         if (!url.isEmpty()) {
             CSSImageValue* imageValue = CSSImageValue::create(url, document().completeURL(url));
             imageValue->setReferrer(Referrer(document().outgoingReferrer(), document().getReferrerPolicy()));
-            style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue));
+            style->setProperty(CSSProperty(CSSPropertyBackgroundImage, *imageValue));
         }
     } else if (name == valignAttr) {
         if (!value.isEmpty())
