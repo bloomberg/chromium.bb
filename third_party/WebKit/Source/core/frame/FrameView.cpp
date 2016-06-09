@@ -490,13 +490,6 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
         return true;
     }
 
-    // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-    LayoutPart* frameLayoutObject = m_frame->ownerLayoutObject();
-    if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(PseudoIdScrollbar)) {
-        customScrollbarFrame = m_frame.get();
-        return true;
-    }
-
     return false;
 }
 

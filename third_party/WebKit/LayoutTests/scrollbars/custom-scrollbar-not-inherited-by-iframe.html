@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<style>
+::-webkit-scrollbar {
+    width: 150px;
+    height: 150px;
+}
+iframe {
+  width: 300px;
+  border: 0;
+  outline: 1px solid blue;
+}
+</style>
+<iframe srcdoc="
+    <style>
+        body { margin: 0; padding: 10px; height: 500px; font: 10pt monospace; }
+    </style>
+  "></iframe>
+<script>
+onload = function() {
+    var body = document.querySelector("iframe").contentDocument.body;
+    shouldBe("285", String(body.clientWidth));
+};
+</script>

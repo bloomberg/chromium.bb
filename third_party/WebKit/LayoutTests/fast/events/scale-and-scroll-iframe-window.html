@@ -1,11 +1,5 @@
 <html>
 <head>
-    <style>
-        ::-webkit-scrollbar {
-            width: 0px;
-            height: 0px;
-        }
-    </style>
     <script>
         window.enablePixelTesting = true;
 
@@ -42,6 +36,7 @@
     <script>
         var frame = document.getElementById('frame');
         var doc = frame.contentDocument.open();
+        doc.write("<html><style>::-webkit-scrollbar {width: 0px;height: 0px;}</style></html>");
         doc.write("<div style='left:0; top:0; width:100px; height:100px; position:absolute; background:yellow;'></div>");
         doc.write("<div style='left:100px; top:0; width:100px; height:100px; position:absolute; background:green;'></div>");
         doc.write("<div style='left:200px; top:0; width:100px; height:100px; position:absolute; background:blue;'></div>");

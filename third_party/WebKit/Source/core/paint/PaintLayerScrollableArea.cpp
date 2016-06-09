@@ -989,11 +989,6 @@ static inline const LayoutObject& layoutObjectForScrollbar(const LayoutObject& l
             Element* docElement = doc.documentElement();
             if (docElement && docElement->layoutObject() && docElement->layoutObject()->style()->hasPseudoStyle(PseudoIdScrollbar))
                 return *docElement->layoutObject();
-
-            // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-            LayoutPart* frameLayoutObject = node->document().frame()->ownerLayoutObject();
-            if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(PseudoIdScrollbar))
-                return *frameLayoutObject;
         }
 
         if (layoutObject.styleRef().hasPseudoStyle(PseudoIdScrollbar))
