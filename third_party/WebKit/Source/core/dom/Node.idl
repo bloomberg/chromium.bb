@@ -60,7 +60,7 @@
     [TreatUndefinedAs=NullString, CEReactions, CustomElementCallbacks] attribute DOMString? textContent;
     [CEReactions, CustomElementCallbacks] void normalize();
 
-    [NewObject, CEReactions, CustomElementCallbacks] Node cloneNode(optional boolean deep = false);
+    [NewObject, DoNotTestNewObject, CEReactions, CustomElementCallbacks] Node cloneNode(optional boolean deep = false);
     boolean isEqualNode(Node? otherNode);
     boolean isSameNode(Node? otherNode); // historical alias of ===
 

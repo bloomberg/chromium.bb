@@ -61,7 +61,7 @@ interface Document : Node {
     [NewObject] Comment createComment(DOMString data);
     [NewObject, RaisesException] ProcessingInstruction createProcessingInstruction(DOMString target, DOMString data);
 
-    [NewObject, CEReactions, CustomElementCallbacks, RaisesException] Node importNode(Node node, optional boolean deep = false);
+    [NewObject, DoNotTestNewObject, CEReactions, CustomElementCallbacks, RaisesException] Node importNode(Node node, optional boolean deep = false);
     [RaisesException, CEReactions, CustomElementCallbacks] Node adoptNode(Node node);
 
     [NewObject, RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute(DOMString localName);

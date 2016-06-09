@@ -27,6 +27,7 @@ public:
     // may be a different object for a given element over its lifetime
     // as it moves between documents.
     static CustomElementsRegistry* registry(const Element&);
+    static CustomElementsRegistry* registry(const Document&);
 
     // Returns true if element could possibly match a custom element
     // descriptor *now*. See CustomElementDescriptor::matches for the
@@ -57,6 +58,9 @@ public:
     static HTMLElement* createCustomElement(Document&, const QualifiedName&, CreateElementFlags);
 
     static void enqueueUpgradeReaction(Element*, CustomElementDefinition*);
+
+private:
+    static HTMLElement* createCustomElementAsync(Document&, CustomElementDefinition&, const QualifiedName&);
 };
 
 } // namespace blink

@@ -7,7 +7,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/custom/CEReactionsScope.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementUpgradeReaction.h"
+#include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -19,7 +21,12 @@ namespace blink {
 
 CustomElementsRegistry* CustomElement::registry(const Element& element)
 {
-    if (LocalDOMWindow* window = element.document().domWindow())
+    return registry(element.document());
+}
+
+CustomElementsRegistry* CustomElement::registry(const Document& document)
+{
+    if (LocalDOMWindow* window = document.domWindow())
         return window->customElements();
     return nullptr;
 }
@@ -75,7 +82,7 @@ bool CustomElement::shouldCreateCustomElement(Document& document, const Qualifie
 HTMLElement* CustomElement::createCustomElement(Document& document, const AtomicString& localName, CreateElementFlags flags)
 {
     return createCustomElement(document,
-        QualifiedName(nullAtom, document.convertLocalName(localName), HTMLNames::xhtmlNamespaceURI),
+        QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI),
         flags);
 }
 
@@ -83,10 +90,20 @@ HTMLElement* CustomElement::createCustomElement(Document& document, const Qualif
 {
     DCHECK(shouldCreateCustomElement(document, tagName));
 
-    // TODO(kojii): Look up already defined custom elements when custom element
-    // queues and upgrade are implemented.
-
+    // To create an element:
+    // https://dom.spec.whatwg.org/#concept-create-element
+    // 6. If definition is non-null, then:
     HTMLElement* element;
+    if (CustomElementsRegistry* registry = CustomElement::registry(document)) {
+        if (CustomElementDefinition* definition = registry->definitionForName(tagName.localName())) {
+            // 6.2. If the synchronous custom elements flag is not set:
+            if (flags & AsynchronousCustomElements)
+                return createCustomElementAsync(document, *definition, tagName);
+
+            // TODO(kojii): Synchronous mode implementation coming after async.
+        }
+    }
+
     if (V0CustomElement::isValidName(tagName.localName()) && document.registrationContext()) {
         Element* v0element = document.registrationContext()->createCustomTagElement(document, tagName);
         SECURITY_DCHECK(v0element->isHTMLElement());
@@ -97,6 +114,24 @@ HTMLElement* CustomElement::createCustomElement(Document& document, const Qualif
 
     element->setCustomElementState(CustomElementState::Undefined);
 
+    return element;
+}
+
+HTMLElement* CustomElement::createCustomElementAsync(Document& document,
+    CustomElementDefinition& definition, const QualifiedName& tagName)
+{
+    // https://dom.spec.whatwg.org/#concept-create-element
+    // 6. If definition is non-null, then:
+    // 6.2. If the synchronous custom elements flag is not set:
+    // 6.2.1. Set result to a new element that implements the HTMLElement
+    // interface, with no attributes, namespace set to the HTML namespace,
+    // namespace prefix set to prefix, local name set to localName, custom
+    // element state set to "undefined", and node document set to document.
+    HTMLElement* element = HTMLElement::create(tagName, document);
+    element->setCustomElementState(CustomElementState::Undefined);
+    // 6.2.2. Enqueue a custom element upgrade reaction given result and
+    // definition.
+    enqueueUpgradeReaction(element, &definition);
     return element;
 }
 
