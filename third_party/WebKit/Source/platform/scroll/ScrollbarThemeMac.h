@@ -50,7 +50,7 @@ public:
     double initialAutoscrollTimerDelay() override;
     double autoscrollTimerDelay() override;
 
-    void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTickmarks(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
     bool shouldRepaintAllPartsOnInvalidation() const override { return false; }
     ScrollbarPart invalidateOnThumbPositionChange(
@@ -64,8 +64,8 @@ public:
     void setNewPainterForScrollbar(ScrollbarThemeClient&, ScrollbarPainter);
     ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient&) const;
 
-    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
     float thumbOpacity(const ScrollbarThemeClient&) const override;
 
@@ -79,7 +79,7 @@ protected:
 
     virtual void updateButtonPlacement(WebScrollbarButtonsPlacement) {}
 
-    void paintGivenTickmarks(SkCanvas*, const ScrollbarThemeClient&, const IntRect&, const Vector<IntRect>&);
+    void paintGivenTickmarks(SkCanvas*, const Scrollbar&, const IntRect&, const Vector<IntRect>&);
 
     IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
     IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;

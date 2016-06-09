@@ -30,7 +30,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -39,7 +38,7 @@ namespace blink {
 
 class Widget;
 
-class PLATFORM_EXPORT ScrollbarThemeClient : public DisplayItemClient {
+class PLATFORM_EXPORT ScrollbarThemeClient {
 public:
     virtual int x() const = 0;
     virtual int y() const = 0;

@@ -28,7 +28,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
+#include "platform/scroll/Scrollbar.h"
 
 namespace blink {
 
@@ -49,7 +49,7 @@ IntRect ScrollbarThemeMock::trackRect(const ScrollbarThemeClient& scrollbar, boo
     return scrollbar.frameRect();
 }
 
-void ScrollbarThemeMock::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& trackRect)
+void ScrollbarThemeMock::paintTrackBackground(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& trackRect)
 {
     if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTrackBackground))
         return;
@@ -58,7 +58,7 @@ void ScrollbarThemeMock::paintTrackBackground(GraphicsContext& context, const Sc
     context.fillRect(trackRect, scrollbar.enabled() ? Color::lightGray : Color(0xFFE0E0E0));
 }
 
-void ScrollbarThemeMock::paintThumb(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& thumbRect)
+void ScrollbarThemeMock::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& thumbRect)
 {
     if (!scrollbar.enabled())
         return;

@@ -137,7 +137,7 @@ ScrollbarTheme& ScrollbarTheme::nativeTheme()
     return overlayTheme;
 }
 
-void ScrollbarThemeMac::paintGivenTickmarks(SkCanvas* canvas, const ScrollbarThemeClient& scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
+void ScrollbarThemeMac::paintGivenTickmarks(SkCanvas* canvas, const Scrollbar& scrollbar, const IntRect& rect, const Vector<IntRect>& tickmarks)
 {
     if (scrollbar.orientation() != VerticalScrollbar)
         return;
@@ -176,7 +176,7 @@ void ScrollbarThemeMac::paintGivenTickmarks(SkCanvas* canvas, const ScrollbarThe
     }
 }
 
-void ScrollbarThemeMac::paintTickmarks(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
+void ScrollbarThemeMac::paintTickmarks(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect)
 {
     // Note: This is only used for css-styled scrollbars on mac.
     if (scrollbar.orientation() != VerticalScrollbar)
@@ -293,7 +293,7 @@ ScrollbarPainter ScrollbarThemeMac::painterForScrollbar(const ScrollbarThemeClie
     return [scrollbarPainterMap().get(const_cast<ScrollbarThemeClient*>(&scrollbar)).get() painter];
 }
 
-void ScrollbarThemeMac::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect) {
+void ScrollbarThemeMac::paintTrackBackground(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect) {
     if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarTrackBackground))
         return;
 
@@ -311,7 +311,7 @@ void ScrollbarThemeMac::paintTrackBackground(GraphicsContext& context, const Scr
     [scrollbarPainter drawKnobSlotInRect:trackRect highlight:NO];
 }
 
-void ScrollbarThemeMac::paintThumb(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect) {
+void ScrollbarThemeMac::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect) {
     if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarThumb))
         return;
 

@@ -65,12 +65,12 @@ protected:
     IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
     IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
 
-    void paintScrollbarBackground(GraphicsContext&, const ScrollbarThemeClient&) override;
-    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    void paintTrackPiece(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
-    void paintButton(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
-    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintScrollbarBackground(GraphicsContext&, const Scrollbar&) override;
+    void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+    void paintTrackPiece(GraphicsContext&, const Scrollbar&, const IntRect&, ScrollbarPart) override;
+    void paintButton(GraphicsContext&, const Scrollbar&, const IntRect&, ScrollbarPart) override;
+    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+    void paintTickmarks(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
     IntRect constrainTrackRectToTrackPieces(const ScrollbarThemeClient&, const IntRect&) override;
 };

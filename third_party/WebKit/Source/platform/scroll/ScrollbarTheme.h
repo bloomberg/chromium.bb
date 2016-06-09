@@ -30,7 +30,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
+#include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebScrollbarButtonsPlacement.h"
 
 namespace blink {
@@ -53,7 +53,7 @@ public:
 
     virtual void updateEnabledState(const ScrollbarThemeClient&) { }
 
-    virtual bool paint(const ScrollbarThemeClient&, GraphicsContext&, const CullRect&);
+    virtual bool paint(const Scrollbar&, GraphicsContext&, const CullRect&);
 
     virtual ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&);
 
@@ -78,7 +78,7 @@ public:
     }
 
     virtual void paintScrollCorner(GraphicsContext&, const DisplayItemClient&, const IntRect& cornerRect);
-    virtual void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) { }
+    virtual void paintTickmarks(GraphicsContext&, const Scrollbar&, const IntRect&) { }
 
     virtual bool shouldCenterOnThumb(const ScrollbarThemeClient&, const PlatformMouseEvent&);
     virtual bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient&, const PlatformMouseEvent&);
@@ -110,11 +110,11 @@ public:
 
     virtual void splitTrack(const ScrollbarThemeClient&, const IntRect& track, IntRect& startTrack, IntRect& thumb, IntRect& endTrack);
 
-    virtual void paintScrollbarBackground(GraphicsContext&, const ScrollbarThemeClient&) { }
-    virtual void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) { }
-    virtual void paintTrackPiece(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) { }
-    virtual void paintButton(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) { }
-    virtual void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) { }
+    virtual void paintScrollbarBackground(GraphicsContext&, const Scrollbar&) { }
+    virtual void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) { }
+    virtual void paintTrackPiece(GraphicsContext&, const Scrollbar&, const IntRect&, ScrollbarPart) { }
+    virtual void paintButton(GraphicsContext&, const Scrollbar&, const IntRect&, ScrollbarPart) { }
+    virtual void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) { }
 
     virtual int maxOverlapBetweenPages() { return std::numeric_limits<int>::max(); }
 

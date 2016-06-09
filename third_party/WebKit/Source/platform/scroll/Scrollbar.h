@@ -45,7 +45,7 @@ class ScrollAnimatorBase;
 class ScrollableArea;
 class ScrollbarTheme;
 
-class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
+class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient, public DisplayItemClient {
 public:
     static Scrollbar* create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, HostWindow* hostWindow)
     {

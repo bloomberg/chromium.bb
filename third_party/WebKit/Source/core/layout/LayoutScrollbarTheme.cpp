@@ -29,7 +29,7 @@
 #include "core/paint/ScrollbarPainter.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
+#include "platform/scroll/Scrollbar.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -120,32 +120,32 @@ void LayoutScrollbarTheme::paintScrollCorner(GraphicsContext& context, const Dis
     context.fillRect(cornerRect, Color::white);
 }
 
-void LayoutScrollbarTheme::paintScrollbarBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar)
+void LayoutScrollbarTheme::paintScrollbarBackground(GraphicsContext& context, const Scrollbar& scrollbar)
 {
     ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, ScrollbarBGPart, scrollbar.frameRect());
 }
 
-void LayoutScrollbarTheme::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
+void LayoutScrollbarTheme::paintTrackBackground(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect)
 {
     ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, TrackBGPart, rect);
 }
 
-void LayoutScrollbarTheme::paintTrackPiece(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart part)
+void LayoutScrollbarTheme::paintTrackPiece(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
 }
 
-void LayoutScrollbarTheme::paintButton(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart part)
+void LayoutScrollbarTheme::paintButton(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
 }
 
-void LayoutScrollbarTheme::paintThumb(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
+void LayoutScrollbarTheme::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect)
 {
     ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, ThumbPart, rect);
 }
 
-void LayoutScrollbarTheme::paintTickmarks(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
+void LayoutScrollbarTheme::paintTickmarks(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect)
 {
     ScrollbarTheme::theme().paintTickmarks(context, scrollbar, rect);
 }

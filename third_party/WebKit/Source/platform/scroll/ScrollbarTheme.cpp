@@ -34,7 +34,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
+#include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
 #include "public/platform/Platform.h"
@@ -56,7 +56,7 @@ static inline bool shouldPaintScrollbarPart(const IntRect& partRect, const CullR
     return (!partRect.isEmpty()) || cullRect.intersectsCullRect(partRect);
 }
 
-bool ScrollbarTheme::paint(const ScrollbarThemeClient& scrollbar, GraphicsContext& graphicsContext, const CullRect& cullRect)
+bool ScrollbarTheme::paint(const Scrollbar& scrollbar, GraphicsContext& graphicsContext, const CullRect& cullRect)
 {
     // Create the ScrollbarControlPartMask based on the cullRect
     ScrollbarControlPartMask scrollMask = NoPart;

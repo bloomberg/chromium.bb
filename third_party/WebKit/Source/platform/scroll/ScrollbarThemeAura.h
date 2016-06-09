@@ -49,11 +49,11 @@ protected:
     IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
     int minimumThumbLength(const ScrollbarThemeClient&) override;
 
-    void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    void paintTrackPiece(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
-    void paintButton(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
-    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTickmarks(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+    void paintTrackPiece(GraphicsContext&, const Scrollbar&, const IntRect&, ScrollbarPart) override;
+    void paintButton(GraphicsContext&, const Scrollbar&, const IntRect&, ScrollbarPart) override;
+    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
     bool shouldRepaintAllPartsOnInvalidation() const override;
     ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;

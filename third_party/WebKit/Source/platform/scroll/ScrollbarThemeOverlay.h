@@ -57,7 +57,7 @@ public:
     int thumbThickness(const ScrollbarThemeClient&) override;
     int thumbThickness() { return m_thumbThickness; }
 
-    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
     ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&) override;
 
     static ScrollbarThemeOverlay& mobileTheme();

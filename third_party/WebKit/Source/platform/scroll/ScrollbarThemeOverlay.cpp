@@ -28,7 +28,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
+#include "platform/scroll/Scrollbar.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
@@ -127,7 +127,7 @@ int ScrollbarThemeOverlay::thumbThickness(const ScrollbarThemeClient&)
     return m_thumbThickness;
 }
 
-void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
+void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect)
 {
     if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::ScrollbarThumb))
         return;

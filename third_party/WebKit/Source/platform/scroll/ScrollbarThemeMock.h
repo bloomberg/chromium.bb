@@ -44,8 +44,8 @@ protected:
     IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
     IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
 
-    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
 private:
     bool isMockTheme() const final { return true; }
