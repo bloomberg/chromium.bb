@@ -55,7 +55,7 @@ CSSStyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState&
         return nullptr;
     }
 
-    CSSStyleValueVector styleVector = getAll(propertyID);
+    CSSStyleValueVector styleVector = getAllInternal(propertyID);
     if (styleVector.isEmpty())
         return nullptr;
 
@@ -66,7 +66,7 @@ CSSStyleValueVector StylePropertyMap::getAll(const String& propertyName, Excepti
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid)
-        return getAll(propertyID);
+        return getAllInternal(propertyID);
 
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
@@ -77,7 +77,7 @@ bool StylePropertyMap::has(const String& propertyName, ExceptionState& exception
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid)
-        return !getAll(propertyID).isEmpty();
+        return !getAllInternal(propertyID).isEmpty();
 
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);

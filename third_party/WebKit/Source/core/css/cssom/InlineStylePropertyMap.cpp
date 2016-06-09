@@ -27,13 +27,22 @@ CSSValue* styleValueToCSSValue(CSSPropertyID propertyID, const CSSStyleValue& st
 
 } // namespace
 
-CSSStyleValueVector InlineStylePropertyMap::getAll(CSSPropertyID propertyID)
+CSSStyleValueVector InlineStylePropertyMap::getAllInternal(CSSPropertyID propertyID)
 {
     CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
     if (!cssValue)
         return CSSStyleValueVector();
 
     return StyleValueFactory::cssValueToStyleValueVector(propertyID, *cssValue);
+}
+
+CSSStyleValueVector InlineStylePropertyMap::getAllInternal(AtomicString customPropertyName)
+{
+    CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(customPropertyName);
+    if (!cssValue)
+        return CSSStyleValueVector();
+
+    return StyleValueFactory::cssValueToStyleValueVector(CSSPropertyInvalid, *cssValue);
 }
 
 Vector<String> InlineStylePropertyMap::getProperties()

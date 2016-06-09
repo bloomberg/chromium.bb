@@ -61,6 +61,7 @@ private:
     String cssText() const final;
     void setCSSText(const String&, ExceptionState&) final;
     const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) final;
+    const CSSValue* getPropertyCSSValueInternal(AtomicString customPropertyName) final;
     String getPropertyValueInternal(CSSPropertyID) final;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) final;
 

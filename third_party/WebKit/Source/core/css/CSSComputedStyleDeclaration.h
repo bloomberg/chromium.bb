@@ -95,6 +95,7 @@ private:
     String cssText() const override;
     void setCSSText(const String&, ExceptionState&) override;
     const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) override;
+    const CSSValue* getPropertyCSSValueInternal(AtomicString customPropertyName) override;
     String getPropertyValueInternal(CSSPropertyID) override;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) override;
 

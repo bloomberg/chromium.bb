@@ -263,6 +263,11 @@ const CSSValue* AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValueInter
     return propertySet().getPropertyCSSValue(propertyID);
 }
 
+const CSSValue* AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValueInternal(AtomicString customPropertyName)
+{
+    return propertySet().getPropertyCSSValue(customPropertyName);
+}
+
 String AbstractPropertySetCSSStyleDeclaration::getPropertyValueInternal(CSSPropertyID propertyID)
 {
     return propertySet().getPropertyValue(propertyID);

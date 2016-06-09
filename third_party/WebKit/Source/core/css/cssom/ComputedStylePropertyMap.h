@@ -19,7 +19,6 @@ public:
         return new ComputedStylePropertyMap(computedStyleDeclaration);
     }
 
-    CSSStyleValueVector getAll(CSSPropertyID) override;
     Vector<String> getProperties() override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -32,6 +31,9 @@ protected:
     ComputedStylePropertyMap(CSSComputedStyleDeclaration* computedStyleDeclaration)
         : ImmutableStylePropertyMap()
         , m_computedStyleDeclaration(computedStyleDeclaration) { }
+
+    CSSStyleValueVector getAllInternal(CSSPropertyID) override;
+    CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
 
     HeapVector<StylePropertyMapEntry> getIterationEntries() override { return HeapVector<StylePropertyMapEntry>(); }
 

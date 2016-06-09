@@ -16,7 +16,6 @@ public:
     explicit InlineStylePropertyMap(Element* ownerElement)
         : m_ownerElement(ownerElement) { }
 
-    CSSStyleValueVector getAll(CSSPropertyID) override;
     Vector<String> getProperties() override;
 
     void set(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState&) override;
@@ -30,6 +29,9 @@ public:
     }
 
 protected:
+    CSSStyleValueVector getAllInternal(CSSPropertyID) override;
+    CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
+
     HeapVector<StylePropertyMapEntry> getIterationEntries() override;
 
 private:

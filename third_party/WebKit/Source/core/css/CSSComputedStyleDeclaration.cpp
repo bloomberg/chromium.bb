@@ -683,6 +683,11 @@ const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValueInternal(CSSProp
     return getPropertyCSSValue(propertyID);
 }
 
+const CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValueInternal(AtomicString customPropertyName)
+{
+    return getPropertyCSSValue(customPropertyName);
+}
+
 String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID propertyID)
 {
     return getPropertyValue(propertyID);

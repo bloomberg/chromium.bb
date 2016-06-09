@@ -9,12 +9,20 @@
 
 namespace blink {
 
-CSSStyleValueVector ComputedStylePropertyMap::getAll(CSSPropertyID propertyID)
+CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(CSSPropertyID propertyID)
 {
     const CSSValue* cssValue = m_computedStyleDeclaration->getPropertyCSSValueInternal(propertyID);
     if (!cssValue)
         return CSSStyleValueVector();
     return StyleValueFactory::cssValueToStyleValueVector(propertyID, *cssValue);
+}
+
+CSSStyleValueVector ComputedStylePropertyMap::getAllInternal(AtomicString customPropertyName)
+{
+    const CSSValue* cssValue = m_computedStyleDeclaration->getPropertyCSSValueInternal(customPropertyName);
+    if (!cssValue)
+        return CSSStyleValueVector();
+    return StyleValueFactory::cssValueToStyleValueVector(CSSPropertyInvalid, *cssValue);
 }
 
 Vector<String> ComputedStylePropertyMap::getProperties()

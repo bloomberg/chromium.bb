@@ -26,11 +26,10 @@ public:
     virtual ~StylePropertyMap() { }
 
     // Accessors.
-    CSSStyleValue* get(const String& propertyName, ExceptionState&);
-    CSSStyleValueVector getAll(const String& propertyName, ExceptionState&);
-    bool has(const String& propertyName, ExceptionState&);
+    virtual CSSStyleValue* get(const String& propertyName, ExceptionState&);
+    virtual CSSStyleValueVector getAll(const String& propertyName, ExceptionState&);
+    virtual bool has(const String& propertyName, ExceptionState&);
 
-    virtual CSSStyleValueVector getAll(CSSPropertyID) = 0;
     virtual Vector<String> getProperties() = 0;
 
     // Modifiers.
@@ -46,6 +45,9 @@ public:
 
 protected:
     StylePropertyMap() { }
+
+    virtual CSSStyleValueVector getAllInternal(CSSPropertyID) = 0;
+    virtual CSSStyleValueVector getAllInternal(AtomicString customPropertyName) = 0;
 
     virtual HeapVector<StylePropertyMapEntry> getIterationEntries() = 0;
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
