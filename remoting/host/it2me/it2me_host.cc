@@ -96,11 +96,17 @@ void It2MeHost::Connect() {
 void It2MeHost::Disconnect() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Shutdown, this));
+      FROM_HERE, base::Bind(&It2MeHost::DisconnectOnNetworkThread, this));
 }
 
-void It2MeHost::Shutdown() {
+void It2MeHost::DisconnectOnNetworkThread() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
+  // Disconnect() may be called even when after the host been already stopped.
+  // Ignore repeated calls.
+  if (state_ == kDisconnected) {
+    return;
+  }
 
   confirmation_dialog_proxy_.reset();
 
@@ -164,7 +170,7 @@ void It2MeHost::OnConfirmationResult(It2MeConfirmationDialog::Result result) {
       break;
 
     case It2MeConfirmationDialog::Result::CANCEL:
-      Shutdown();
+      DisconnectOnNetworkThread();
       break;
 
     default:
@@ -284,7 +290,7 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
 
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
-    Shutdown();
+    DisconnectOnNetworkThread();
   }
 }
 
@@ -313,7 +319,7 @@ void It2MeHost::OnClientConnected(const std::string& jid) {
 void It2MeHost::OnClientDisconnected(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  Shutdown();
+  DisconnectOnNetworkThread();
 }
 
 void It2MeHost::OnPolicyUpdate(
@@ -361,7 +367,7 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
   // When transitioning from enabled to disabled, force disconnect any
   // existing session.
   if (nat_traversal_enabled_ && !nat_traversal_enabled && IsConnected()) {
-    Shutdown();
+    DisconnectOnNetworkThread();
   }
 
   nat_traversal_enabled_ = nat_traversal_enabled;
@@ -379,7 +385,7 @@ void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
 
   // When setting a host domain policy, force disconnect any existing session.
   if (!host_domain.empty() && IsConnected()) {
-    Shutdown();
+    DisconnectOnNetworkThread();
   }
 
   required_host_domain_ = host_domain;
@@ -392,7 +398,7 @@ void It2MeHost::UpdateClientDomainPolicy(const std::string& client_domain) {
 
   // When setting a client  domain policy, disconnect any existing session.
   if (!client_domain.empty() && IsConnected()) {
-    Shutdown();
+    DisconnectOnNetworkThread();
   }
 
   required_client_domain_ = client_domain;
@@ -462,7 +468,7 @@ void It2MeHost::OnReceivedSupportID(
 
   if (!error_message.empty()) {
     SetState(kError, error_message);
-    Shutdown();
+    DisconnectOnNetworkThread();
     return;
   }
 
@@ -476,7 +482,7 @@ void It2MeHost::OnReceivedSupportID(
     std::string error_message = "Failed to generate host certificate.";
     LOG(ERROR) << error_message;
     SetState(kError, error_message);
-    Shutdown();
+    DisconnectOnNetworkThread();
     return;
   }
 

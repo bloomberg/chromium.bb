@@ -139,7 +139,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void UpdateHostDomainPolicy(const std::string& host_domain);
   void UpdateClientDomainPolicy(const std::string& client_domain);
 
-  void Shutdown();
+  void DisconnectOnNetworkThread();
 
   // Caller supplied fields.
   std::unique_ptr<ChromotingHostContext> host_context_;
