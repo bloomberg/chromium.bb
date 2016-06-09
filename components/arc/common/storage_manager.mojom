@@ -4,23 +4,22 @@
 
 module arc.mojom;
 
-// Information for mounted volume.
-struct ArcVolumeInfo {
-  // The volume description.
-  string description;
-  // Total space of the volume, in byte. Zero if the volume hasn't mounted,
-  // though that shouldn't happen for private volume.
-  uint64 total_bytes;
-  // Available free space of the volume, in byte.
-  uint64 free_bytes;
-};
-
-// Next MinVersion: 1
-// Next method ID: 3
+// Next MinVersion: 2
+// Next method ID: 4
+// Deprecated method ID: 1
 interface StorageManagerInstance {
-  // Gets mounted private volume info.
-  GetPrivateVolumes@1() => (array<ArcVolumeInfo> volumes);
-
   // Opens private volume details settings.
   OpenPrivateVolumeSettings@2();
+
+  // Gets storage usage of all applications' code, data, and cache size.
+  // So far an external storage of ARC is an emulated sdcard, this RPC returns
+  // the sum of the internal storage and the external storage usages in order
+  // to describe the stateful volume usage of ARC.
+  // The |succeeded| value indicates whether there is any error on ARC side.
+  // When |succeeded| is false, all other arguments are invalid.
+  [MinVersion=1] GetApplicationsSize@3()
+      => (bool succeeded,
+          uint64 total_code_bytes,
+          uint64 total_data_bytes,
+          uint64 total_cache_bytes);
 };

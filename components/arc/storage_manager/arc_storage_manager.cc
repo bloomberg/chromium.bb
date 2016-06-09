@@ -14,7 +14,7 @@ namespace arc {
 
 namespace {
 
-const int kMinInstanceVersion = 0;  // See storage_manager.mojom.
+const int kMinInstanceVersion = 1;  // See storage_manager.mojom.
 
 // This class is owned by ArcServiceManager so that it is safe to use this raw
 // pointer as the singleton reference.
@@ -43,22 +43,22 @@ void ArcStorageManager::OnStorageManagerInstanceReady() {
   VLOG(1) << "ArcStorageManagerInstance is ready";
 }
 
-bool ArcStorageManager::GetPrivateVolumes(
-  const GetPrivateVolumesCallback& callback) {
-  auto storage_manager_instance = GetStorageManagerInstance();
-  if (!storage_manager_instance) {
-    return false;
-  }
-  storage_manager_instance->GetPrivateVolumes(callback);
-  return true;
-}
-
 bool ArcStorageManager::OpenPrivateVolumeSettings() {
   auto storage_manager_instance = GetStorageManagerInstance();
   if (!storage_manager_instance) {
     return false;
   }
   storage_manager_instance->OpenPrivateVolumeSettings();
+  return true;
+}
+
+bool ArcStorageManager::GetApplicationsSize(
+    const GetApplicationsSizeCallback& callback) {
+  auto storage_manager_instance = GetStorageManagerInstance();
+  if (!storage_manager_instance) {
+    return false;
+  }
+  storage_manager_instance->GetApplicationsSize(callback);
   return true;
 }
 
