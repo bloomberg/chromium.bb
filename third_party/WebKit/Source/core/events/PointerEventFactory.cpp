@@ -128,6 +128,8 @@ PointerEvent* PointerEventFactory::create(
     }
     pointerEventInit.setPressure(getPointerEventPressure(
         mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
+    pointerEventInit.setTiltX(mouseEvent.pointerProperties().tiltX);
+    pointerEventInit.setTiltY(mouseEvent.pointerProperties().tiltY);
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.getModifiers());
 
@@ -169,8 +171,6 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
 
     pointerEventInit.setWidth(pointRadius.width());
     pointerEventInit.setHeight(pointRadius.height());
-    pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);
-    pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
     pointerEventInit.setScreenX(touchPoint.screenPos().x());
     pointerEventInit.setScreenY(touchPoint.screenPos().y());
     pointerEventInit.setClientX(clientPoint.x());
@@ -178,6 +178,8 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
     pointerEventInit.setButton(pointerPressedOrReleased ? LeftButton: NoButton);
     pointerEventInit.setPressure(getPointerEventPressure(
         touchPoint.force(), pointerEventInit.buttons()));
+    pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);
+    pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
     pointerEventInit.setView(view);
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, modifiers);
@@ -239,8 +241,6 @@ PointerEvent* PointerEventFactory::createPointerBoundaryEvent(
     pointerEventInit.setIsPrimary(pointerEvent->isPrimary());
     pointerEventInit.setWidth(pointerEvent->width());
     pointerEventInit.setHeight(pointerEvent->height());
-    pointerEventInit.setTiltX(pointerEvent->tiltX());
-    pointerEventInit.setTiltY(pointerEvent->tiltY());
     pointerEventInit.setScreenX(pointerEvent->screenX());
     pointerEventInit.setScreenY(pointerEvent->screenY());
     pointerEventInit.setClientX(pointerEvent->clientX());
@@ -248,6 +248,8 @@ PointerEvent* PointerEventFactory::createPointerBoundaryEvent(
     pointerEventInit.setButton(pointerEvent->button());
     pointerEventInit.setButtons(pointerEvent->buttons());
     pointerEventInit.setPressure(pointerEvent->pressure());
+    pointerEventInit.setTiltX(pointerEvent->tiltX());
+    pointerEventInit.setTiltY(pointerEvent->tiltY());
     pointerEventInit.setView(pointerEvent->view());
 
     setBubblesAndCancelable(pointerEventInit, type);

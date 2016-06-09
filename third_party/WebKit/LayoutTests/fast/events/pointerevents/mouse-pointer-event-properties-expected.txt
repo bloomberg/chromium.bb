@@ -1,21 +1,30 @@
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 70: Uncaught TypeError: Cannot read property 'type' of undefined
-Verifies that pointer event parameters are correct when fired for mouse events.
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 78: Uncaught TypeError: Cannot read property 'type' of undefined
+Verifies that pointer event parameters are correct when fired through mouse events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+===== mouse tests =====
 --- move mouse into target ---
 Received mouseover
 FAIL lastPointerEvents.length should be 2. Was 0.
@@ -324,6 +333,37 @@ FAIL lastPointerEvents[0].type should be pointerout. Threw exception TypeError: 
 Received mouseleave
 FAIL lastPointerEvents.length should be 1. Was 0.
 FAIL lastPointerEvents[0].type should be pointerleave. Threw exception TypeError: Cannot read property 'type' of undefined
+
+===== pen tests =====
+--- move pen into target ---
+Received mouseover
+FAIL lastPointerEvents.length should be 2. Was 0.
+FAIL lastPointerEvents[0].type should be pointerover. Threw exception TypeError: Cannot read property 'type' of undefined
+Received mouseenter
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerenter. Threw exception TypeError: Cannot read property 'type' of undefined
+Received mousemove
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointermove. Threw exception TypeError: Cannot read property 'type' of undefined
+
+--- move within target & tap ---
+Received mousemove
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointermove. Threw exception TypeError: Cannot read property 'type' of undefined
+Received mousedown
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+Received mouseup
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+--- move pen out of target ---
+Received mouseout
+FAIL lastPointerEvents.length should be 2. Was 0.
+FAIL lastPointerEvents[0].type should be pointerout. Threw exception TypeError: Cannot read property 'type' of undefined
+Received mouseleave
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerleave. Threw exception TypeError: Cannot read property 'type' of undefined
+
 FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE

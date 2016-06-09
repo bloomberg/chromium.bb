@@ -68,11 +68,17 @@ class EventSender {
   void PointerDown(int button_number,
                    int modifiers,
                    blink::WebPointerProperties::PointerType,
-                   int pointerId);
+                   int pointerId,
+                   float pressure,
+                   int tiltX,
+                   int tiltY);
   void PointerUp(int button_number,
                  int modifiers,
                  blink::WebPointerProperties::PointerType,
-                 int pointerId);
+                 int pointerId,
+                 float pressure,
+                 int tiltX,
+                 int tiltY);
   void SetMouseButtonState(int button_number, int modifiers);
 
   void KeyDown(const std::string& code_str,

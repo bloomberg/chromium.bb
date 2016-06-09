@@ -61,7 +61,7 @@ namespace test_runner {
 
 namespace {
 
-const int kMousePointerId = -1;
+const int kRawMousePointerId = -1;
 const char* kPointerTypeStringUnknown = "";
 const char* kPointerTypeStringMouse = "mouse";
 const char* kPointerTypeStringPen = "pen";
@@ -71,7 +71,7 @@ const char* kPointerTypeStringTouch = "touch";
 // any error.
 bool getPointerType(gin::Arguments* args,
                     bool isOnlyMouseAndPenAllowed,
-                    blink::WebPointerProperties::PointerType& pointerType) {
+                    WebPointerProperties::PointerType& pointerType) {
   if (args->PeekNext().IsEmpty())
     return true;
   std::string pointer_type_string;
@@ -100,30 +100,52 @@ bool getPointerType(gin::Arguments* args,
   return true;
 }
 
-// Assigns |pointerType| and |pointerId| from the provided |args|. Returns
-// false if there was any error.
-bool getMousePenPointerTypeAndId(
+// Parses |pointerType|, |rawPointerId|, |pressure|, |tiltX| and |tiltY| from
+// the provided |args|. Returns false if there was any error, assuming the last
+// 3 of the five parsed parameters are optional.
+bool getMousePenPointerProperties(
     gin::Arguments* args,
-    blink::WebPointerProperties::PointerType& pointerType,
-    int& pointerId) {
-  pointerType = blink::WebPointerProperties::PointerType::Mouse;
-  pointerId = kMousePointerId;
+    WebPointerProperties::PointerType& pointerType,
+    int& rawPointerId,
+    float& pressure,
+    int& tiltX,
+    int& tiltY) {
+  pointerType = WebPointerProperties::PointerType::Mouse;
+  rawPointerId = kRawMousePointerId;
+  pressure = std::numeric_limits<float>::quiet_NaN();
+  tiltX = 0;
+  tiltY = 0;
+
   // Only allow pen or mouse through this API.
   if (!getPointerType(args, false, pointerType))
     return false;
   if (!args->PeekNext().IsEmpty()) {
-    if (!args->GetNext(&pointerId)) {
+    if (!args->GetNext(&rawPointerId)) {
       args->ThrowError();
       return false;
     }
-    if (pointerType != blink::WebPointerProperties::PointerType::Mouse &&
-        pointerId == kMousePointerId) {
-      args->ThrowError();
-      return false;
+
+    // Parse optional params
+    if (!args->PeekNext().IsEmpty()) {
+      if (!args->GetNext(&pressure)) {
+        args->ThrowError();
+        return false;
+      }
+      if (!args->PeekNext().IsEmpty()) {
+        if (!args->GetNext(&tiltX)) {
+          args->ThrowError();
+          return false;
+        }
+        if (!args->PeekNext().IsEmpty()) {
+          if (!args->GetNext(&tiltY)) {
+            args->ThrowError();
+            return false;
+          }
+        }
+      }
     }
-  } else if (pointerType == blink::WebPointerProperties::PointerType::Pen) {
-    pointerId = 1;  // A default value for the id of the pen.
   }
+
   return true;
 }
 
@@ -165,16 +187,19 @@ int modifiersWithButtons(int modifiers, int buttons) {
       | (buttons & kButtonsInModifiers);
 }
 
-void InitMouseEvent(WebInputEvent::Type t,
-                    WebMouseEvent::Button b,
-                    int current_buttons,
-                    const WebPoint& pos,
-                    double time_stamp,
-                    int click_count,
-                    int modifiers,
-                    blink::WebPointerProperties::PointerType pointerType,
-                    int pointerId,
-                    WebMouseEvent* e) {
+void InitMouseEventGeneric(WebInputEvent::Type t,
+                           WebMouseEvent::Button b,
+                           int current_buttons,
+                           const WebPoint& pos,
+                           double time_stamp,
+                           int click_count,
+                           int modifiers,
+                           WebPointerProperties::PointerType pointerType,
+                           int pointerId,
+                           float pressure,
+                           int tiltX,
+                           int tiltY,
+                           WebMouseEvent* e) {
   e->type = t;
   e->button = b;
   e->modifiers = modifiersWithButtons(modifiers, current_buttons);
@@ -184,8 +209,24 @@ void InitMouseEvent(WebInputEvent::Type t,
   e->globalY = pos.y;
   e->pointerType = pointerType;
   e->id = pointerId;
+  e->force = pressure;
+  e->tiltX = tiltX;
+  e->tiltY = tiltY;
   e->timeStampSeconds = time_stamp;
   e->clickCount = click_count;
+}
+
+void InitMouseEvent(WebInputEvent::Type t,
+                    WebMouseEvent::Button b,
+                    int current_buttons,
+                    const WebPoint& pos,
+                    double time_stamp,
+                    int click_count,
+                    int modifiers,
+                    WebMouseEvent* e) {
+  InitMouseEventGeneric(t, b, current_buttons, pos, time_stamp, click_count,
+                        modifiers, WebPointerProperties::PointerType::Mouse, 0,
+                        0.0, 0, 0, e);
 }
 
 void InitGestureEventFromMouseWheel(WebInputEvent::Type type,
@@ -989,9 +1030,6 @@ void EventSenderBindings::MouseDown(gin::Arguments* args) {
 
   int button_number = 0;
   int modifiers = 0;
-  blink::WebPointerProperties::PointerType pointerType =
-      blink::WebPointerProperties::PointerType::Mouse;
-  int pointerId = 0;
   if (!args->PeekNext().IsEmpty()) {
     if (!args->GetNext(&button_number)) {
       args->ThrowError();
@@ -1003,10 +1041,18 @@ void EventSenderBindings::MouseDown(gin::Arguments* args) {
     }
   }
 
-  if (!getMousePenPointerTypeAndId(args, pointerType, pointerId))
+  WebPointerProperties::PointerType pointerType =
+      WebPointerProperties::PointerType::Mouse;
+  int pointerId = 0;
+  float pressure = 0;
+  int tiltX = 0;
+  int tiltY = 0;
+  if (!getMousePenPointerProperties(args, pointerType, pointerId, pressure,
+                                    tiltX, tiltY))
     return;
 
-  sender_->PointerDown(button_number, modifiers, pointerType, pointerId);
+  sender_->PointerDown(button_number, modifiers, pointerType, pointerId,
+                       pressure, tiltX, tiltY);
 }
 
 void EventSenderBindings::MouseUp(gin::Arguments* args) {
@@ -1015,9 +1061,6 @@ void EventSenderBindings::MouseUp(gin::Arguments* args) {
 
   int button_number = 0;
   int modifiers = 0;
-  blink::WebPointerProperties::PointerType pointerType =
-      blink::WebPointerProperties::PointerType::Mouse;
-  int pointerId = 0;
   if (!args->PeekNext().IsEmpty()) {
     if (!args->GetNext(&button_number)) {
       args->ThrowError();
@@ -1029,10 +1072,18 @@ void EventSenderBindings::MouseUp(gin::Arguments* args) {
     }
   }
 
-  if (!getMousePenPointerTypeAndId(args, pointerType, pointerId))
+  WebPointerProperties::PointerType pointerType =
+      WebPointerProperties::PointerType::Mouse;
+  int pointerId = 0;
+  float pressure = 0;
+  int tiltX = 0;
+  int tiltY = 0;
+  if (!getMousePenPointerProperties(args, pointerType, pointerId, pressure,
+                                    tiltX, tiltY))
     return;
 
-  sender_->PointerUp(button_number, modifiers, pointerType, pointerId);
+  sender_->PointerUp(button_number, modifiers, pointerType, pointerId, pressure,
+                     tiltX, tiltY);
 }
 
 void EventSenderBindings::SetMouseButtonState(gin::Arguments* args) {
@@ -1209,7 +1260,7 @@ void EventSender::Reset() {
   current_drag_effect_ = blink::WebDragOperationNone;
   current_drag_effects_allowed_ = blink::WebDragOperationNone;
   if (view() &&
-      current_pointer_state_[kMousePointerId].pressed_button_ !=
+      current_pointer_state_[kRawMousePointerId].pressed_button_ !=
           WebMouseEvent::ButtonNone)
     view()->mouseCaptureLost();
   current_pointer_state_.clear();
@@ -1256,15 +1307,11 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
                               WebDragOperationsMask mask) {
   WebMouseEvent event;
   InitMouseEvent(WebInputEvent::MouseDown,
-                 current_pointer_state_[kMousePointerId].pressed_button_,
-                 current_pointer_state_[kMousePointerId].current_buttons_,
-                 current_pointer_state_[kMousePointerId].last_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 current_pointer_state_[kMousePointerId].modifiers_,
-                 blink::WebPointerProperties::PointerType::Mouse,
-                 0,
-                 &event);
+                 current_pointer_state_[kRawMousePointerId].pressed_button_,
+                 current_pointer_state_[kRawMousePointerId].current_buttons_,
+                 current_pointer_state_[kRawMousePointerId].last_pos_,
+                 GetCurrentEventTimeSec(), click_count_,
+                 current_pointer_state_[kRawMousePointerId].modifiers_, &event);
   WebPoint client_point(event.x, event.y);
   WebPoint screen_point(event.globalX, event.globalY);
   current_drag_data_ = drag_data;
@@ -1272,8 +1319,8 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
   current_drag_effect_ = view()->dragTargetDragEnter(
       drag_data, client_point, screen_point, current_drag_effects_allowed_,
       modifiersWithButtons(
-          current_pointer_state_[kMousePointerId].modifiers_,
-          current_pointer_state_[kMousePointerId].current_buttons_));
+          current_pointer_state_[kRawMousePointerId].modifiers_,
+          current_pointer_state_[kRawMousePointerId].current_buttons_));
 
   // Finish processing events.
   ReplaySavedEvents();
@@ -1281,19 +1328,22 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
 
 void EventSender::MouseDown(int button_number, int modifiers) {
   PointerDown(button_number, modifiers,
-              blink::WebPointerProperties::PointerType::Mouse, kMousePointerId);
+              WebPointerProperties::PointerType::Mouse, kRawMousePointerId, 0.0,
+              0, 0);
 }
 
 void EventSender::MouseUp(int button_number, int modifiers) {
-  PointerUp(button_number, modifiers,
-            blink::WebPointerProperties::PointerType::Mouse, kMousePointerId);
+  PointerUp(button_number, modifiers, WebPointerProperties::PointerType::Mouse,
+            kRawMousePointerId, 0.0, 0, 0);
 }
 
-void EventSender::PointerDown(
-    int button_number,
-    int modifiers,
-    blink::WebPointerProperties::PointerType pointerType,
-    int pointerId) {
+void EventSender::PointerDown(int button_number,
+                              int modifiers,
+                              WebPointerProperties::PointerType pointerType,
+                              int pointerId,
+                              float pressure,
+                              int tiltX,
+                              int tiltY) {
   if (force_layout_on_events_)
     view()->updateAllLifecyclePhases();
 
@@ -1309,29 +1359,28 @@ void EventSender::PointerDown(
       GetWebMouseEventModifierForButton(button_type);
   current_pointer_state_[pointerId].modifiers_ = modifiers;
 
-  if (pointerType == blink::WebPointerProperties::PointerType::Mouse) {
+  if (pointerType == WebPointerProperties::PointerType::Mouse) {
     UpdateClickCountForButton(button_type);
     click_count = click_count_;
   }
-  InitMouseEvent(WebInputEvent::MouseDown,
-                 current_pointer_state_[pointerId].pressed_button_,
-                 current_pointer_state_[pointerId].current_buttons_,
-                 current_pointer_state_[pointerId].last_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count,
-                 current_pointer_state_[pointerId].modifiers_,
-                 pointerType,
-                 pointerId,
-                 &event);
+  InitMouseEventGeneric(WebInputEvent::MouseDown,
+                        current_pointer_state_[pointerId].pressed_button_,
+                        current_pointer_state_[pointerId].current_buttons_,
+                        current_pointer_state_[pointerId].last_pos_,
+                        GetCurrentEventTimeSec(), click_count,
+                        current_pointer_state_[pointerId].modifiers_,
+                        pointerType, pointerId, pressure, tiltX, tiltY, &event);
 
   HandleInputEventOnViewOrPopup(event);
 }
 
-void EventSender::PointerUp(
-    int button_number,
-    int modifiers,
-    blink::WebPointerProperties::PointerType pointerType,
-    int pointerId) {
+void EventSender::PointerUp(int button_number,
+                            int modifiers,
+                            WebPointerProperties::PointerType pointerType,
+                            int pointerId,
+                            float pressure,
+                            int tiltX,
+                            int tiltY) {
   if (force_layout_on_events_)
     view()->updateAllLifecyclePhases();
 
@@ -1340,7 +1389,7 @@ void EventSender::PointerUp(
   WebMouseEvent::Button button_type =
       GetButtonTypeFromButtonNumber(button_number);
 
-  if (pointerType == blink::WebPointerProperties::PointerType::Mouse &&
+  if (pointerType == WebPointerProperties::PointerType::Mouse &&
       is_drag_mode_ && !replaying_saved_events_) {
     SavedEvent saved_event;
     saved_event.type = SavedEvent::TYPE_MOUSE_UP;
@@ -1355,27 +1404,28 @@ void EventSender::PointerUp(
         WebMouseEvent::ButtonNone;
 
     WebMouseEvent event;
-    InitMouseEvent(
-        WebInputEvent::MouseUp, button_type,
-        current_pointer_state_[pointerId].current_buttons_,
-        current_pointer_state_[pointerId].last_pos_, GetCurrentEventTimeSec(),
-        pointerType == blink::WebPointerProperties::PointerType::Mouse
-            ? click_count_
-            : 0,
-        modifiers, pointerType, pointerId, &event);
+    int click_count = pointerType == WebPointerProperties::PointerType::Mouse
+                          ? click_count_
+                          : 0;
+    InitMouseEventGeneric(WebInputEvent::MouseUp, button_type,
+                          current_pointer_state_[pointerId].current_buttons_,
+                          current_pointer_state_[pointerId].last_pos_,
+                          GetCurrentEventTimeSec(), click_count, modifiers,
+                          pointerType, pointerId, pressure, tiltX, tiltY,
+                          &event);
     HandleInputEventOnViewOrPopup(event);
-    if (pointerType == blink::WebPointerProperties::PointerType::Mouse)
+    if (pointerType == WebPointerProperties::PointerType::Mouse)
       DoDragAfterMouseUp(event);
   }
 }
 
 void EventSender::SetMouseButtonState(int button_number, int modifiers) {
-  current_pointer_state_[kMousePointerId].pressed_button_ =
+  current_pointer_state_[kRawMousePointerId].pressed_button_ =
       GetButtonTypeFromButtonNumber(button_number);
-  current_pointer_state_[kMousePointerId].current_buttons_ =
+  current_pointer_state_[kRawMousePointerId].current_buttons_ =
       (modifiers == -1)
           ? GetWebMouseEventModifierForButton(
-                current_pointer_state_[kMousePointerId].pressed_button_)
+                current_pointer_state_[kRawMousePointerId].pressed_button_)
           : modifiers & kButtonsInModifiers;
 }
 
@@ -1632,15 +1682,10 @@ void EventSender::KeyDown(const std::string& code_str,
   if (code == ui::VKEY_ESCAPE && !current_drag_data_.isNull()) {
     WebMouseEvent event;
     InitMouseEvent(WebInputEvent::MouseDown,
-                   current_pointer_state_[kMousePointerId].pressed_button_,
-                   current_pointer_state_[kMousePointerId].current_buttons_,
-                   current_pointer_state_[kMousePointerId].last_pos_,
-                   GetCurrentEventTimeSec(),
-                   click_count_,
-                   0,
-                   blink::WebPointerProperties::PointerType::Mouse,
-                   0,
-                   &event);
+                   current_pointer_state_[kRawMousePointerId].pressed_button_,
+                   current_pointer_state_[kRawMousePointerId].current_buttons_,
+                   current_pointer_state_[kRawMousePointerId].last_pos_,
+                   GetCurrentEventTimeSec(), click_count_, 0, &event);
     FinishDragAndDrop(event, blink::WebDragOperationNone);
   }
 
@@ -1684,42 +1729,30 @@ std::vector<std::string> EventSender::ContextClick() {
   // pressed.
   // TODO(mustaq): This hack seems unused here! But do we need this hack at all
   //   after adding current_buttons_.
-  if (current_pointer_state_[kMousePointerId].pressed_button_ ==
+  if (current_pointer_state_[kRawMousePointerId].pressed_button_ ==
       WebMouseEvent::ButtonNone) {
-    current_pointer_state_[kMousePointerId].pressed_button_ =
+    current_pointer_state_[kRawMousePointerId].pressed_button_ =
         WebMouseEvent::ButtonRight;
-    current_pointer_state_[kMousePointerId].current_buttons_ |=
+    current_pointer_state_[kRawMousePointerId].current_buttons_ |=
         GetWebMouseEventModifierForButton(
-            current_pointer_state_[kMousePointerId].pressed_button_);
+            current_pointer_state_[kRawMousePointerId].pressed_button_);
   }
-  InitMouseEvent(WebInputEvent::MouseDown,
-                 WebMouseEvent::ButtonRight,
-                 current_pointer_state_[kMousePointerId].current_buttons_,
-                 current_pointer_state_[kMousePointerId].last_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 0,
-                 blink::WebPointerProperties::PointerType::Mouse,
-                 0,
-                 &event);
+  InitMouseEvent(WebInputEvent::MouseDown, WebMouseEvent::ButtonRight,
+                 current_pointer_state_[kRawMousePointerId].current_buttons_,
+                 current_pointer_state_[kRawMousePointerId].last_pos_,
+                 GetCurrentEventTimeSec(), click_count_, 0, &event);
   HandleInputEventOnViewOrPopup(event);
 
 #if defined(OS_WIN)
-  current_pointer_state_[kMousePointerId].current_buttons_ &=
+  current_pointer_state_[kRawMousePointerId].current_buttons_ &=
       ~GetWebMouseEventModifierForButton(WebMouseEvent::ButtonRight);
-  current_pointer_state_[kMousePointerId].pressed_button_ =
+  current_pointer_state_[kRawMousePointerId].pressed_button_ =
       WebMouseEvent::ButtonNone;
 
-  InitMouseEvent(WebInputEvent::MouseUp,
-                 WebMouseEvent::ButtonRight,
-                 current_pointer_state_[kMousePointerId].current_buttons_,
-                 current_pointer_state_[kMousePointerId].last_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 0,
-                 blink::WebPointerProperties::PointerType::Mouse,
-                 0,
-                 &event);
+  InitMouseEvent(WebInputEvent::MouseUp, WebMouseEvent::ButtonRight,
+                 current_pointer_state_[kRawMousePointerId].current_buttons_,
+                 current_pointer_state_[kRawMousePointerId].last_pos_,
+                 GetCurrentEventTimeSec(), click_count_, 0, &event);
   HandleInputEventOnViewOrPopup(event);
 #endif
 
@@ -1946,7 +1979,7 @@ void EventSender::NotifyStartOfTouchScroll() {
 
 void EventSender::LeapForward(int milliseconds) {
   if (is_drag_mode_ &&
-      current_pointer_state_[kMousePointerId].pressed_button_ ==
+      current_pointer_state_[kRawMousePointerId].pressed_button_ ==
           WebMouseEvent::ButtonLeft &&
       !replaying_saved_events_) {
     SavedEvent saved_event;
@@ -1983,20 +2016,20 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   current_drag_effects_allowed_ = blink::WebDragOperationCopy;
 
   // Provide a drag source.
-  view()->dragTargetDragEnter(current_drag_data_,
-                              current_pointer_state_[kMousePointerId].last_pos_,
-                              current_pointer_state_[kMousePointerId].last_pos_,
-                              current_drag_effects_allowed_, 0);
+  view()->dragTargetDragEnter(
+      current_drag_data_, current_pointer_state_[kRawMousePointerId].last_pos_,
+      current_pointer_state_[kRawMousePointerId].last_pos_,
+      current_drag_effects_allowed_, 0);
   // |is_drag_mode_| saves events and then replays them later. We don't
   // need/want that.
   is_drag_mode_ = false;
 
   // Make the rest of eventSender think a drag is in progress.
-  current_pointer_state_[kMousePointerId].pressed_button_ =
+  current_pointer_state_[kRawMousePointerId].pressed_button_ =
       WebMouseEvent::ButtonLeft;
-  current_pointer_state_[kMousePointerId].current_buttons_ |=
+  current_pointer_state_[kRawMousePointerId].current_buttons_ |=
       GetWebMouseEventModifierForButton(
-          current_pointer_state_[kMousePointerId].pressed_button_);
+          current_pointer_state_[kRawMousePointerId].pressed_button_);
 }
 
 void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
@@ -2096,9 +2129,6 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
 
   double x;
   double y;
-  blink::WebPointerProperties::PointerType pointerType =
-      blink::WebPointerProperties::PointerType::Mouse;
-  int pointerId = 0;
   if (!args->GetNext(&x) || !args->GetNext(&y)) {
     args->ThrowError();
     return;
@@ -2111,12 +2141,19 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
     args->Skip();
   }
 
-  if (!getMousePenPointerTypeAndId(args, pointerType, pointerId))
+  WebPointerProperties::PointerType pointerType =
+      WebPointerProperties::PointerType::Mouse;
+  int pointerId = 0;
+  float pressure = 0;
+  int tiltX = 0;
+  int tiltY = 0;
+  if (!getMousePenPointerProperties(args, pointerType, pointerId, pressure,
+                                    tiltX, tiltY))
     return;
 
-  if (pointerType == blink::WebPointerProperties::PointerType::Mouse &&
+  if (pointerType == WebPointerProperties::PointerType::Mouse &&
       is_drag_mode_ && !replaying_saved_events_ &&
-      current_pointer_state_[kMousePointerId].pressed_button_ ==
+      current_pointer_state_[kRawMousePointerId].pressed_button_ ==
           WebMouseEvent::ButtonLeft) {
     SavedEvent saved_event;
     saved_event.type = SavedEvent::TYPE_MOUSE_MOVE;
@@ -2126,21 +2163,17 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
   } else {
     current_pointer_state_[pointerId].last_pos_ = mouse_pos;
     WebMouseEvent event;
-    InitMouseEvent(
+    int click_count = pointerType == WebPointerProperties::PointerType::Mouse
+                          ? click_count_
+                          : 0;
+    InitMouseEventGeneric(
         WebInputEvent::MouseMove,
-        current_pointer_state_[kMousePointerId].pressed_button_,
-        current_pointer_state_[kMousePointerId].current_buttons_,
-        mouse_pos,
-        GetCurrentEventTimeSec(),
-        pointerType == blink::WebPointerProperties::PointerType::Mouse
-            ? click_count_
-            : 0,
-        modifiers,
-        pointerType,
-        pointerId,
-        &event);
+        current_pointer_state_[kRawMousePointerId].pressed_button_,
+        current_pointer_state_[kRawMousePointerId].current_buttons_, mouse_pos,
+        GetCurrentEventTimeSec(), click_count, modifiers, pointerType,
+        pointerId, pressure, tiltX, tiltY, &event);
     HandleInputEventOnViewOrPopup(event);
-    if (pointerType == blink::WebPointerProperties::PointerType::Mouse)
+    if (pointerType == WebPointerProperties::PointerType::Mouse)
       DoDragAfterMouseMove(event);
   }
 }
@@ -2150,16 +2183,9 @@ void EventSender::MouseLeave() {
     view()->updateAllLifecyclePhases();
 
   WebMouseEvent event;
-  InitMouseEvent(WebInputEvent::MouseLeave,
-                 WebMouseEvent::ButtonNone,
-                 0,
-                 current_pointer_state_[kMousePointerId].last_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 0,
-                 blink::WebPointerProperties::PointerType::Mouse,
-                 0,
-                 &event);
+  InitMouseEvent(WebInputEvent::MouseLeave, WebMouseEvent::ButtonNone, 0,
+                 current_pointer_state_[kRawMousePointerId].last_pos_,
+                 GetCurrentEventTimeSec(), click_count_, 0, &event);
   HandleInputEventOnViewOrPopup(event);
 }
 
@@ -2478,13 +2504,10 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   if (type == WebInputEvent::GestureLongPress && !current_drag_data_.isNull()) {
     WebMouseEvent mouse_event;
     InitMouseEvent(WebInputEvent::MouseDown,
-                   current_pointer_state_[kMousePointerId].pressed_button_,
-                   current_pointer_state_[kMousePointerId].current_buttons_,
-                   WebPoint(x, y), GetCurrentEventTimeSec(),
-                   click_count_,
-                   current_pointer_state_[kMousePointerId].modifiers_,
-                   blink::WebPointerProperties::PointerType::Mouse,
-                   0,
+                   current_pointer_state_[kRawMousePointerId].pressed_button_,
+                   current_pointer_state_[kRawMousePointerId].current_buttons_,
+                   WebPoint(x, y), GetCurrentEventTimeSec(), click_count_,
+                   current_pointer_state_[kRawMousePointerId].modifiers_,
                    &mouse_event);
 
     FinishDragAndDrop(mouse_event, blink::WebDragOperationNone);
@@ -2497,7 +2520,7 @@ void EventSender::UpdateClickCountForButton(
   if ((GetCurrentEventTimeSec() - last_click_time_sec_ <
        kMultipleClickTimeSec) &&
       (!OutsideMultiClickRadius(
-          current_pointer_state_[kMousePointerId].last_pos_,
+          current_pointer_state_[kRawMousePointerId].last_pos_,
           last_click_pos_)) &&
       (button_type == last_button_type_)) {
     ++click_count_;
@@ -2552,15 +2575,10 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
   }
 
   InitMouseEvent(WebInputEvent::MouseWheel,
-                 current_pointer_state_[kMousePointerId].pressed_button_,
-                 current_pointer_state_[kMousePointerId].current_buttons_,
-                 current_pointer_state_[kMousePointerId].last_pos_,
-                 GetCurrentEventTimeSec(),
-                 click_count_,
-                 modifiers,
-                 blink::WebPointerProperties::PointerType::Mouse,
-                 0,
-                 event);
+                 current_pointer_state_[kRawMousePointerId].pressed_button_,
+                 current_pointer_state_[kRawMousePointerId].current_buttons_,
+                 current_pointer_state_[kRawMousePointerId].last_pos_,
+                 GetCurrentEventTimeSec(), click_count_, modifiers, event);
   event->wheelTicksX = static_cast<float>(horizontal);
   event->wheelTicksY = static_cast<float>(vertical);
   event->deltaX = event->wheelTicksX;
@@ -2581,7 +2599,7 @@ void EventSender::InitMouseWheelEvent(gin::Arguments* args,
 // WebPointerProperties.
 // TODO(e_hakkinen): Drop radius_{x,y}_pointer parameters once that happens.
 void EventSender::InitPointerProperties(gin::Arguments* args,
-                                        blink::WebPointerProperties* e,
+                                        WebPointerProperties* e,
                                         float* radius_x_pointer,
                                         float* radius_y_pointer) {
   if (!args->PeekNext().IsEmpty()) {
@@ -2646,7 +2664,7 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& e,
 
 void EventSender::DoDragAfterMouseUp(const WebMouseEvent& e) {
   last_click_time_sec_ = e.timeStampSeconds;
-  last_click_pos_ = current_pointer_state_[kMousePointerId].last_pos_;
+  last_click_pos_ = current_pointer_state_[kRawMousePointerId].last_pos_;
 
   // If we're in a drag operation, complete it.
   if (current_drag_data_.isNull())
@@ -2665,7 +2683,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& e) {
 }
 
 void EventSender::DoDragAfterMouseMove(const WebMouseEvent& e) {
-  if (current_pointer_state_[kMousePointerId].pressed_button_ ==
+  if (current_pointer_state_[kRawMousePointerId].pressed_button_ ==
           WebMouseEvent::ButtonNone ||
       current_drag_data_.isNull()) {
     return;
@@ -2688,16 +2706,10 @@ void EventSender::ReplaySavedEvents() {
         WebMouseEvent event;
         InitMouseEvent(
             WebInputEvent::MouseMove,
-            current_pointer_state_[kMousePointerId].pressed_button_,
-            current_pointer_state_[kMousePointerId].current_buttons_,
-            e.pos,
-            GetCurrentEventTimeSec(),
-            click_count_,
-            e.modifiers,
-            blink::WebPointerProperties::PointerType::Mouse,
-            0,
-            &event);
-        current_pointer_state_[kMousePointerId].last_pos_ =
+            current_pointer_state_[kRawMousePointerId].pressed_button_,
+            current_pointer_state_[kRawMousePointerId].current_buttons_, e.pos,
+            GetCurrentEventTimeSec(), click_count_, e.modifiers, &event);
+        current_pointer_state_[kRawMousePointerId].last_pos_ =
             WebPoint(event.x, event.y);
         HandleInputEventOnViewOrPopup(event);
         DoDragAfterMouseMove(event);
@@ -2707,22 +2719,17 @@ void EventSender::ReplaySavedEvents() {
         DoLeapForward(e.milliseconds);
         break;
       case SavedEvent::TYPE_MOUSE_UP: {
-        current_pointer_state_[kMousePointerId].current_buttons_ &=
+        current_pointer_state_[kRawMousePointerId].current_buttons_ &=
             ~GetWebMouseEventModifierForButton(e.button_type);
-        current_pointer_state_[kMousePointerId].pressed_button_ =
+        current_pointer_state_[kRawMousePointerId].pressed_button_ =
             WebMouseEvent::ButtonNone;
 
         WebMouseEvent event;
-        InitMouseEvent(WebInputEvent::MouseUp,
-                       e.button_type,
-                       current_pointer_state_[kMousePointerId].current_buttons_,
-                       current_pointer_state_[kMousePointerId].last_pos_,
-                       GetCurrentEventTimeSec(),
-                       click_count_,
-                       e.modifiers,
-                       blink::WebPointerProperties::PointerType::Mouse,
-                       0,
-                       &event);
+        InitMouseEvent(
+            WebInputEvent::MouseUp, e.button_type,
+            current_pointer_state_[kRawMousePointerId].current_buttons_,
+            current_pointer_state_[kRawMousePointerId].last_pos_,
+            GetCurrentEventTimeSec(), click_count_, e.modifiers, &event);
         HandleInputEventOnViewOrPopup(event);
         DoDragAfterMouseUp(event);
         break;
