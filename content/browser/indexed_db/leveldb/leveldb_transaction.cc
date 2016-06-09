@@ -36,7 +36,7 @@ void LevelDBTransaction::Clear() {
 
 LevelDBTransaction::~LevelDBTransaction() { Clear(); }
 
-void LevelDBTransaction::Set(const StringPiece& key,
+bool LevelDBTransaction::Set(const StringPiece& key,
                              std::string* value,
                              bool deleted) {
   DCHECK(!finished_);
@@ -49,20 +49,21 @@ void LevelDBTransaction::Set(const StringPiece& key,
     record->deleted = deleted;
     data_[record->key] = record;
     NotifyIterators();
-    return;
+    return false;
   }
-
+  bool replaced_deleted_value = it->second->deleted;
   it->second->value.swap(*value);
   it->second->deleted = deleted;
+  return replaced_deleted_value;
 }
 
 void LevelDBTransaction::Put(const StringPiece& key, std::string* value) {
   Set(key, value, false);
 }
 
-void LevelDBTransaction::Remove(const StringPiece& key) {
+bool LevelDBTransaction::Remove(const StringPiece& key) {
   std::string empty;
-  Set(key, &empty, true);
+  return !Set(key, &empty, true);
 }
 
 leveldb::Status LevelDBTransaction::Get(const StringPiece& key,

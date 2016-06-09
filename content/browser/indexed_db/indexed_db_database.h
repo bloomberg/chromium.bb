@@ -311,6 +311,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   PendingDeleteCallList pending_delete_calls_;
 
   ConnectionSet connections_;
+  bool experimental_web_platform_features_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabase);
 };

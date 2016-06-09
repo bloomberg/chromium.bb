@@ -467,7 +467,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
-      const IndexedDBKeyRange&) WARN_UNUSED_RESULT;
+      const IndexedDBKeyRange&,
+      size_t* delete_count) WARN_UNUSED_RESULT;
   virtual leveldb::Status GetKeyGeneratorCurrentNumber(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,

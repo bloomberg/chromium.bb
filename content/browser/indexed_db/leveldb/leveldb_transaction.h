@@ -26,7 +26,10 @@ class CONTENT_EXPORT LevelDBTransaction
     : public base::RefCounted<LevelDBTransaction> {
  public:
   void Put(const base::StringPiece& key, std::string* value);
-  void Remove(const base::StringPiece& key);
+
+  // Returns true if this operation performs a change, where the value wasn't
+  // already deleted.
+  bool Remove(const base::StringPiece& key);
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
                               bool* found);
@@ -129,8 +132,8 @@ class CONTENT_EXPORT LevelDBTransaction
 
     DISALLOW_COPY_AND_ASSIGN(TransactionIterator);
   };
-
-  void Set(const base::StringPiece& key, std::string* value, bool deleted);
+  // Returns true if the key was originally marked deleted, false otherwise.
+  bool Set(const base::StringPiece& key, std::string* value, bool deleted);
   void Clear();
   void RegisterIterator(TransactionIterator* iterator);
   void UnregisterIterator(TransactionIterator* iterator);

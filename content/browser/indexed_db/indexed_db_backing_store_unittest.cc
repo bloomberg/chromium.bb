@@ -459,10 +459,12 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
     IndexedDBBackingStore::Transaction transaction3(backing_store_.get());
     transaction3.Begin();
     IndexedDBValue result_value;
-    EXPECT_TRUE(backing_store_->DeleteRange(&transaction3,
-                                            1,
-                                            1,
-                                            IndexedDBKeyRange(m_key3)).ok());
+    size_t delete_count = 0;
+    EXPECT_TRUE(backing_store_
+                    ->DeleteRange(&transaction3, 1, 1,
+                                  IndexedDBKeyRange(m_key3), &delete_count)
+                    .ok());
+    EXPECT_EQ(1UL, delete_count);
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction3.CommitPhaseOne(callback).ok());
     task_runner_->RunUntilIdle();
@@ -547,8 +549,12 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
       IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
       transaction2.Begin();
       IndexedDBValue result_value;
+      size_t delete_count = 0;
       EXPECT_TRUE(
-          backing_store_->DeleteRange(&transaction2, 1, i + 1, ranges[i]).ok());
+          backing_store_
+              ->DeleteRange(&transaction2, 1, i + 1, ranges[i], &delete_count)
+              .ok());
+      EXPECT_EQ(2UL, delete_count);
       scoped_refptr<TestCallback> callback(new TestCallback());
       EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
       task_runner_->RunUntilIdle();
@@ -637,8 +643,12 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
       IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
       transaction2.Begin();
       IndexedDBValue result_value;
+      size_t delete_count = 0;
       EXPECT_TRUE(
-          backing_store_->DeleteRange(&transaction2, 1, i + 1, ranges[i]).ok());
+          backing_store_
+              ->DeleteRange(&transaction2, 1, i + 1, ranges[i], &delete_count)
+              .ok());
+      EXPECT_EQ(0UL, delete_count);
       scoped_refptr<TestCallback> callback(new TestCallback());
       EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
       task_runner_->RunUntilIdle();
@@ -732,10 +742,12 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   {
     IndexedDBBackingStore::Transaction transaction3(backing_store_.get());
     transaction3.Begin();
-    EXPECT_TRUE(backing_store_->DeleteRange(&transaction3,
-                                            1,
-                                            1,
-                                            IndexedDBKeyRange(m_key3)).ok());
+    size_t delete_count = 0;
+    EXPECT_TRUE(backing_store_
+                    ->DeleteRange(&transaction3, 1, 1,
+                                  IndexedDBKeyRange(m_key3), &delete_count)
+                    .ok());
+    EXPECT_EQ(1UL, delete_count);
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction3.CommitPhaseOne(callback).ok());
     task_runner_->RunUntilIdle();
