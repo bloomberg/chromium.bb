@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test muted autoplay videos interaction with data saver off</title>
+  <script src="../resources/testharness.js"></script>
+  <script src="../resources/testharnessreport.js"></script>
+  <script src="media-file.js"></script>
+</head>
+<body>
+<script>
+  window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+  window.internals.runtimeFlags.autoplayMutedVideosEnabled = true;
+  window.internals.settings.setDataSaverEnabled(true);
+
+  promise_test(function(t)
+  {
+    var video = document.createElement('video');
+    video.src = findMediaFile('video', 'content/test');
+    video.muted = true;
+    return promise_rejects(t,
+      new DOMException('play() can only be initiated by a user gesture.',
+                       'NotAllowedError'),
+      video.play());
+  });
+</script>
+</body>
+</html>

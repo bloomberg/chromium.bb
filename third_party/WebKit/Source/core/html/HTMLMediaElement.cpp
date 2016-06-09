@@ -3699,8 +3699,13 @@ bool HTMLMediaElement::isGestureNeededForPlayback() const
     if (!m_lockedPendingUserGesture)
         return false;
 
-    if (muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled())
+    // We want to allow muted video to autoplay if:
+    // - the flag is enabled;
+    // - Data Saver is not enabled;
+    if (muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()
+        && !(document().settings() && document().settings()->dataSaverEnabled())) {
         return false;
+    }
 
     if (m_autoplayHelper->isGestureRequirementOverridden())
         return false;
