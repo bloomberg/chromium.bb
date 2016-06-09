@@ -81,6 +81,7 @@ public class WebApkActivity extends WebappActivity {
         };
     }
 
+    @Override
     public void onStop() {
         super.onStop();
         WebApkServiceConnectionManager.getInstance().disconnect(
