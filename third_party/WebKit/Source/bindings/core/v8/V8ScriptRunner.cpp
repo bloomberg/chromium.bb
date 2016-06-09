@@ -466,15 +466,19 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(v8::Isolate* isolate
     CHECK(constructor->IsFunction());
     v8::Local<v8::Function> function = constructor.As<v8::Function>();
 
-    bool shouldTraceFunctionCall = !depth;
-    if (shouldTraceFunctionCall)
+    if (!depth)
         TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data", InspectorFunctionCallEvent::data(context, function));
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
-    ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
-    v8::MaybeLocal<v8::Value> result = constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
-    crashIfIsolateIsDead(isolate);
-    ThreadDebugger::didExecuteScript(isolate);
-    if (shouldTraceFunctionCall)
+    v8::MaybeLocal<v8::Value> result;
+    {
+        // Create an extra block so FunctionCall trace event end phase is recorded after
+        // v8::MicrotasksScope destructor, as the latter is running microtasks.
+        v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+        ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
+        result = constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
+        crashIfIsolateIsDead(isolate);
+        ThreadDebugger::didExecuteScript(isolate);
+    }
+    if (!depth)
         TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
     return result;
 }
