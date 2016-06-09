@@ -2733,6 +2733,8 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
         availableHeight = stretchedFlexHeight;
     } else if (hasOverrideContainingBlockLogicalHeight() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         availableHeight = overrideContainingBlockContentLogicalHeight();
+    } else if (cb->isGridItem() && cb->hasOverrideLogicalContentHeight()) {
+        availableHeight = cb->overrideLogicalContentHeight();
     } else if (cbstyle.logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
         availableHeight = cb->constrainContentBoxLogicalHeightByMinMax(
