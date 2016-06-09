@@ -176,7 +176,7 @@ void WebrtcTransport::Start(
   }
 
   fake_audio_device_module_.reset(new webrtc::FakeAudioDeviceModule());
-  video_encoder_factory_ = new remoting::WebRtcVideoEncoderFactory();
+  video_encoder_factory_ = new remoting::WebrtcVideoEncoderFactory();
 
   // Takes ownership of video_encoder_factory_
   peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(

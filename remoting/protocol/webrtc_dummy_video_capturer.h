@@ -17,14 +17,14 @@ namespace protocol {
 
 // A dummy video capturer needed to create peer connection. We do not supply
 // captured frames throught this interface, but instead provide encoded
-// frames to WebRtc. We expect this requirement to go away once we have
-// proper support for providing encoded frames to WebRtc through
+// frames to Webrtc. We expect this requirement to go away once we have
+// proper support for providing encoded frames to Webrtc through
 // VideoSourceInterface
-class WebRtcDummyVideoCapturer : public cricket::VideoCapturer {
+class WebrtcDummyVideoCapturer : public cricket::VideoCapturer {
  public:
-  explicit WebRtcDummyVideoCapturer(
-      std::unique_ptr<WebRtcFrameScheduler> frame_scheduler);
-  ~WebRtcDummyVideoCapturer() override;
+  explicit WebrtcDummyVideoCapturer(
+      std::unique_ptr<WebrtcFrameScheduler> frame_scheduler);
+  ~WebrtcDummyVideoCapturer() override;
 
   cricket::CaptureState Start(
       const cricket::VideoFormat& capture_format) override;
@@ -34,9 +34,9 @@ class WebRtcDummyVideoCapturer : public cricket::VideoCapturer {
   bool GetPreferredFourccs(std::vector<uint32_t>* fourccs) override;
 
  private:
-  std::unique_ptr<WebRtcFrameScheduler> frame_scheduler_;
+  std::unique_ptr<WebrtcFrameScheduler> frame_scheduler_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcDummyVideoCapturer);
+  DISALLOW_COPY_AND_ASSIGN(WebrtcDummyVideoCapturer);
 };
 
 }  // namespace protocol

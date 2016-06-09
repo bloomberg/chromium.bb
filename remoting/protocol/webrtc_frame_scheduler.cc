@@ -34,7 +34,7 @@ const int kDefaultTargetBitrateKbps = 1000;
 // at 30 FPS to capture, encode and send frames over webrtc transport.
 // An improved solution will use target bitrate feedback to pace out
 // the capture rate.
-WebRtcFrameScheduler::WebRtcFrameScheduler(
+WebrtcFrameScheduler::WebrtcFrameScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     std::unique_ptr<webrtc::DesktopCapturer> capturer,
     WebrtcTransport* webrtc_transport,
@@ -56,22 +56,22 @@ WebRtcFrameScheduler::WebRtcFrameScheduler(
   capture_timer_.reset(new base::RepeatingTimer());
 }
 
-WebRtcFrameScheduler::~WebRtcFrameScheduler() {
+WebrtcFrameScheduler::~WebrtcFrameScheduler() {
   encode_task_runner_->DeleteSoon(FROM_HERE, encoder_.release());
 }
 
-void WebRtcFrameScheduler::Start() {
+void WebrtcFrameScheduler::Start() {
   // Register for PLI requests.
   webrtc_transport_->video_encoder_factory()->SetKeyFrameRequestCallback(
-      base::Bind(&WebRtcFrameScheduler::SetKeyFrameRequest,
+      base::Bind(&WebrtcFrameScheduler::SetKeyFrameRequest,
                  base::Unretained(this)));
   // Register for target bitrate notifications.
   webrtc_transport_->video_encoder_factory()->SetTargetBitrateCallback(
-      base::Bind(&WebRtcFrameScheduler::SetTargetBitrate,
+      base::Bind(&WebrtcFrameScheduler::SetTargetBitrate,
                  base::Unretained(this)));
 }
 
-void WebRtcFrameScheduler::Stop() {
+void WebrtcFrameScheduler::Stop() {
   // Clear PLI request callback.
   webrtc_transport_->video_encoder_factory()->SetKeyFrameRequestCallback(
       base::Closure());
@@ -82,7 +82,7 @@ void WebRtcFrameScheduler::Stop() {
   capture_timer_->Stop();
 }
 
-void WebRtcFrameScheduler::Pause(bool pause) {
+void WebrtcFrameScheduler::Pause(bool pause) {
   if (pause) {
     Stop();
   } else {
@@ -90,42 +90,42 @@ void WebRtcFrameScheduler::Pause(bool pause) {
   }
 }
 
-void WebRtcFrameScheduler::SetSizeCallback(
+void WebrtcFrameScheduler::SetSizeCallback(
     const VideoStream::SizeCallback& callback) {
   size_callback_ = callback;
 }
 
-void WebRtcFrameScheduler::SetKeyFrameRequest() {
+void WebrtcFrameScheduler::SetKeyFrameRequest() {
   VLOG(1) << "Request key frame";
   base::AutoLock lock(lock_);
   key_frame_request_ = true;
   if (!received_first_frame_request_) {
     received_first_frame_request_ = true;
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&WebRtcFrameScheduler::StartCaptureTimer,
+        FROM_HERE, base::Bind(&WebrtcFrameScheduler::StartCaptureTimer,
                               weak_factory_.GetWeakPtr()));
   }
 }
 
-void WebRtcFrameScheduler::StartCaptureTimer() {
+void WebrtcFrameScheduler::StartCaptureTimer() {
   capture_timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(1) / 30, this,
-                        &WebRtcFrameScheduler::CaptureNextFrame);
+                        &WebrtcFrameScheduler::CaptureNextFrame);
 }
 
-void WebRtcFrameScheduler::SetTargetBitrate(int target_bitrate_kbps) {
+void WebrtcFrameScheduler::SetTargetBitrate(int target_bitrate_kbps) {
   VLOG(1) << "Set Target bitrate " << target_bitrate_kbps;
   base::AutoLock lock(lock_);
   target_bitrate_kbps_ = target_bitrate_kbps;
 }
 
-bool WebRtcFrameScheduler::ClearAndGetKeyFrameRequest() {
+bool WebrtcFrameScheduler::ClearAndGetKeyFrameRequest() {
   base::AutoLock lock(lock_);
   bool key_frame_request = key_frame_request_;
   key_frame_request_ = false;
   return key_frame_request;
 }
 
-void WebRtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
+void WebrtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::TimeTicks captured_ticks = base::TimeTicks::Now();
@@ -162,14 +162,14 @@ void WebRtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   encode_pending_ = true;
   task_tracker_.PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
-      base::Bind(&WebRtcFrameScheduler::EncodeFrame, encoder_.get(),
+      base::Bind(&WebrtcFrameScheduler::EncodeFrame, encoder_.get(),
                  base::Passed(std::move(owned_frame)), target_bitrate_kbps_,
                  ClearAndGetKeyFrameRequest(), capture_timestamp_ms),
-      base::Bind(&WebRtcFrameScheduler::OnFrameEncoded,
+      base::Bind(&WebrtcFrameScheduler::OnFrameEncoded,
                  weak_factory_.GetWeakPtr()));
 }
 
-void WebRtcFrameScheduler::CaptureNextFrame() {
+void WebrtcFrameScheduler::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (capture_pending_ || encode_pending_) {
@@ -186,7 +186,7 @@ void WebRtcFrameScheduler::CaptureNextFrame() {
 }
 
 // static
-std::unique_ptr<VideoPacket> WebRtcFrameScheduler::EncodeFrame(
+std::unique_ptr<VideoPacket> WebrtcFrameScheduler::EncodeFrame(
     VideoEncoder* encoder,
     std::unique_ptr<webrtc::DesktopFrame> frame,
     uint32_t target_bitrate_kbps,
@@ -213,7 +213,7 @@ std::unique_ptr<VideoPacket> WebRtcFrameScheduler::EncodeFrame(
   return packet;
 }
 
-void WebRtcFrameScheduler::OnFrameEncoded(std::unique_ptr<VideoPacket> packet) {
+void WebrtcFrameScheduler::OnFrameEncoded(std::unique_ptr<VideoPacket> packet) {
   DCHECK(thread_checker_.CalledOnValidThread());
   encode_pending_ = false;
   if (!packet)
@@ -235,7 +235,7 @@ void WebRtcFrameScheduler::OnFrameEncoded(std::unique_ptr<VideoPacket> packet) {
   }
   capture_timer_->Start(FROM_HERE,
                         base::TimeDelta::FromMilliseconds(next_sched_ms), this,
-                        &WebRtcFrameScheduler::CaptureNextFrame);
+                        &WebrtcFrameScheduler::CaptureNextFrame);
 }
 
 }  // namespace protocol

@@ -24,15 +24,15 @@ namespace remoting {
 namespace protocol {
 
 // Class responsible for scheduling frames for encode and hand-over to
-// WebRtc transport for sending across the network.
-class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
+// Webrtc transport for sending across the network.
+class WebrtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
  public:
-  WebRtcFrameScheduler(
+  WebrtcFrameScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       std::unique_ptr<webrtc::DesktopCapturer> capturer,
       WebrtcTransport* webrtc_transport,
       std::unique_ptr<VideoEncoder> encoder);
-  ~WebRtcFrameScheduler() override;
+  ~WebrtcFrameScheduler() override;
 
   // Starts scheduling frames to be encoded and transported.
   void Start();
@@ -106,9 +106,9 @@ class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<WebRtcFrameScheduler> weak_factory_;
+  base::WeakPtrFactory<WebrtcFrameScheduler> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcFrameScheduler);
+  DISALLOW_COPY_AND_ASSIGN(WebrtcFrameScheduler);
 };
 
 }  // namespace protocol

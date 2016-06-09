@@ -9,32 +9,32 @@
 namespace remoting {
 namespace protocol {
 
-WebRtcDummyVideoCapturer::WebRtcDummyVideoCapturer(
-    std::unique_ptr<WebRtcFrameScheduler> frame_scheduler)
+WebrtcDummyVideoCapturer::WebrtcDummyVideoCapturer(
+    std::unique_ptr<WebrtcFrameScheduler> frame_scheduler)
     : frame_scheduler_(std::move(frame_scheduler)) {}
 
-WebRtcDummyVideoCapturer::~WebRtcDummyVideoCapturer() {}
+WebrtcDummyVideoCapturer::~WebrtcDummyVideoCapturer() {}
 
-cricket::CaptureState WebRtcDummyVideoCapturer::Start(
+cricket::CaptureState WebrtcDummyVideoCapturer::Start(
     const cricket::VideoFormat& capture_format) {
   frame_scheduler_->Start();
   return cricket::CS_RUNNING;
 }
 
-void WebRtcDummyVideoCapturer::Stop() {
+void WebrtcDummyVideoCapturer::Stop() {
   frame_scheduler_->Stop();
   SetCaptureState(cricket::CS_STOPPED);
 }
 
-bool WebRtcDummyVideoCapturer::IsRunning() {
+bool WebrtcDummyVideoCapturer::IsRunning() {
   return true;
 }
 
-bool WebRtcDummyVideoCapturer::IsScreencast() const {
+bool WebrtcDummyVideoCapturer::IsScreencast() const {
   return true;
 }
 
-bool WebRtcDummyVideoCapturer::GetPreferredFourccs(
+bool WebrtcDummyVideoCapturer::GetPreferredFourccs(
     std::vector<uint32_t>* fourccs) {
   return true;
 }

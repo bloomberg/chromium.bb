@@ -53,7 +53,7 @@ class WebrtcVideoStream : public VideoStream {
   scoped_refptr<webrtc::MediaStreamInterface> stream_;
 
   // Owned by the dummy video capturer.
-  WebRtcFrameScheduler* webrtc_frame_scheduler_;
+  WebrtcFrameScheduler* webrtc_frame_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoStream);
 };

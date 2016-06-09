@@ -68,7 +68,7 @@ class WebrtcTransport : public Transport,
   webrtc::PeerConnectionFactoryInterface* peer_connection_factory() {
     return peer_connection_factory_;
   }
-  remoting::WebRtcVideoEncoderFactory* video_encoder_factory() {
+  remoting::WebrtcVideoEncoderFactory* video_encoder_factory() {
     return video_encoder_factory_;
   }
 
@@ -130,7 +130,7 @@ class WebrtcTransport : public Transport,
       peer_connection_factory_;
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
-  remoting::WebRtcVideoEncoderFactory* video_encoder_factory_;
+  remoting::WebrtcVideoEncoderFactory* video_encoder_factory_;
 
   bool negotiation_pending_ = false;
 

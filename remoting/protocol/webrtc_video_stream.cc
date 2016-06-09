@@ -45,8 +45,8 @@ bool WebrtcVideoStream::Start(
   DCHECK(peer_connection_factory);
   DCHECK(connection_);
 
-  std::unique_ptr<WebRtcFrameScheduler> frame_scheduler(
-      new WebRtcFrameScheduler(video_encode_task_runner,
+  std::unique_ptr<WebrtcFrameScheduler> frame_scheduler(
+      new WebrtcFrameScheduler(video_encode_task_runner,
                                std::move(desktop_capturer), webrtc_transport,
                                std::move(video_encoder)));
   webrtc_frame_scheduler_ = frame_scheduler.get();
@@ -58,7 +58,7 @@ bool WebrtcVideoStream::Start(
 
   rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> src =
       peer_connection_factory->CreateVideoSource(
-          new WebRtcDummyVideoCapturer(std::move(frame_scheduler)),
+          new WebrtcDummyVideoCapturer(std::move(frame_scheduler)),
           &video_constraints);
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
       peer_connection_factory->CreateVideoTrack(kVideoLabel, src);

@@ -18,15 +18,15 @@ namespace remoting {
 
 using TargetBitrateCallback = base::Callback<void(int)>;
 
-// This is the interface between the WebRtc engine and the external encoder
-// provided by remoting. WebRtc provides feedback on network bandwidth, latency
+// This is the interface between the Webrtc engine and the external encoder
+// provided by remoting. Webrtc provides feedback on network bandwidth, latency
 // & RTT and in turn remoting passes encoded frames as they get encoded
 // through the capture pipeline.
-class WebRtcVideoEncoder : public webrtc::VideoEncoder {
+class WebrtcVideoEncoder : public webrtc::VideoEncoder {
  public:
   enum State { kUninitialized = 0, kInitialized };
-  explicit WebRtcVideoEncoder(webrtc::VideoCodecType codec);
-  ~WebRtcVideoEncoder() override;
+  explicit WebrtcVideoEncoder(webrtc::VideoCodecType codec);
+  ~WebrtcVideoEncoder() override;
 
   // webrtc::VideoEncoder overrides
   int32_t InitEncode(const webrtc::VideoCodec* codec_settings,
@@ -60,10 +60,10 @@ class WebRtcVideoEncoder : public webrtc::VideoEncoder {
 // This is the external encoder factory implementation that is passed to
 // WebRTC at the time of creation of peer connection. The external encoder
 // factory primarily manages creation and destruction of encoder.
-class WebRtcVideoEncoderFactory : public cricket::WebRtcVideoEncoderFactory {
+class WebrtcVideoEncoderFactory : public cricket::WebRtcVideoEncoderFactory {
  public:
-  WebRtcVideoEncoderFactory();
-  ~WebRtcVideoEncoderFactory() override;
+  WebrtcVideoEncoderFactory();
+  ~WebrtcVideoEncoderFactory() override;
 
   webrtc::VideoEncoder* CreateVideoEncoder(
       webrtc::VideoCodecType type) override;
@@ -85,7 +85,7 @@ class WebRtcVideoEncoderFactory : public cricket::WebRtcVideoEncoderFactory {
   base::Closure key_frame_request_;
   TargetBitrateCallback target_bitrate_cb_;
   std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec> codecs_;
-  std::vector<std::unique_ptr<WebRtcVideoEncoder>> encoders_;
+  std::vector<std::unique_ptr<WebrtcVideoEncoder>> encoders_;
 };
 
 }  // namespace remoting

@@ -14,14 +14,14 @@
 
 namespace remoting {
 
-WebRtcVideoEncoder::WebRtcVideoEncoder(webrtc::VideoCodecType codec)
+WebrtcVideoEncoder::WebrtcVideoEncoder(webrtc::VideoCodecType codec)
     : state_(kUninitialized), video_codec_type_(codec) {
   VLOG(1) << "video codecType " << video_codec_type_;
 }
 
-WebRtcVideoEncoder::~WebRtcVideoEncoder() {}
+WebrtcVideoEncoder::~WebrtcVideoEncoder() {}
 
-int32_t WebRtcVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
+int32_t WebrtcVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
                                        int32_t number_of_cores,
                                        size_t max_payload_size) {
   base::AutoLock lock(lock_);
@@ -48,7 +48,7 @@ int32_t WebRtcVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebRtcVideoEncoder::RegisterEncodeCompleteCallback(
+int32_t WebrtcVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
   base::AutoLock lock(lock_);
   DCHECK(callback);
@@ -56,13 +56,13 @@ int32_t WebRtcVideoEncoder::RegisterEncodeCompleteCallback(
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebRtcVideoEncoder::Release() {
+int32_t WebrtcVideoEncoder::Release() {
   base::AutoLock lock(lock_);
   encoded_callback_ = nullptr;
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebRtcVideoEncoder::Encode(
+int32_t WebrtcVideoEncoder::Encode(
     const webrtc::VideoFrame& frame,
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::FrameType>* frame_types) {
@@ -72,16 +72,16 @@ int32_t WebRtcVideoEncoder::Encode(
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebRtcVideoEncoder::SetChannelParameters(uint32_t packet_loss,
+int32_t WebrtcVideoEncoder::SetChannelParameters(uint32_t packet_loss,
                                                  int64_t rtt) {
-  VLOG(1) << "WebRtcVideoEncoder::SetChannelParameters "
+  VLOG(1) << "WebrtcVideoEncoder::SetChannelParameters "
           << "loss:RTT " << packet_loss << ":" << rtt;
   // Unused right now.
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebRtcVideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
-  VLOG(1) << "WebRtcVideoEncoder::SetRates bitrate:framerate " << bitrate << ":"
+int32_t WebrtcVideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
+  VLOG(1) << "WebrtcVideoEncoder::SetRates bitrate:framerate " << bitrate << ":"
           << framerate;
   if (!target_bitrate_cb_.is_null())
     target_bitrate_cb_.Run(bitrate);
@@ -90,7 +90,7 @@ int32_t WebRtcVideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int WebRtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
+int WebrtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
   uint8_t* buffer =
       reinterpret_cast<uint8_t*>(const_cast<char*>(frame->data().data()));
   size_t buffer_size = frame->data().size();
@@ -138,34 +138,34 @@ int WebRtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
   return result;
 }
 
-void WebRtcVideoEncoder::SetKeyFrameRequestCallback(
+void WebrtcVideoEncoder::SetKeyFrameRequestCallback(
     const base::Closure& key_frame_request) {
   base::AutoLock lock(lock_);
   key_frame_request_ = key_frame_request;
 }
 
-void WebRtcVideoEncoder::SetTargetBitrateCallback(
+void WebrtcVideoEncoder::SetTargetBitrateCallback(
     const TargetBitrateCallback& target_bitrate_cb) {
   base::AutoLock lock(lock_);
   target_bitrate_cb_ = target_bitrate_cb;
 }
 
-WebRtcVideoEncoderFactory::WebRtcVideoEncoderFactory() {
+WebrtcVideoEncoderFactory::WebrtcVideoEncoderFactory() {
   // TODO(isheriff): These do not really affect anything internally
   // in webrtc.
   codecs_.push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
       webrtc::kVideoCodecVP8, "VP8", 1280, 720, 30));
 }
 
-WebRtcVideoEncoderFactory::~WebRtcVideoEncoderFactory() {
+WebrtcVideoEncoderFactory::~WebrtcVideoEncoderFactory() {
   DCHECK(encoders_.empty());
 }
 
-webrtc::VideoEncoder* WebRtcVideoEncoderFactory::CreateVideoEncoder(
+webrtc::VideoEncoder* WebrtcVideoEncoderFactory::CreateVideoEncoder(
     webrtc::VideoCodecType type) {
-  VLOG(2) << "WebRtcVideoEncoderFactory::CreateVideoEncoder " << type;
+  VLOG(2) << "WebrtcVideoEncoderFactory::CreateVideoEncoder " << type;
   DCHECK(type == webrtc::kVideoCodecVP8);
-  WebRtcVideoEncoder* encoder = new WebRtcVideoEncoder(type);
+  WebrtcVideoEncoder* encoder = new WebrtcVideoEncoder(type);
   base::AutoLock lock(lock_);
   encoder->SetKeyFrameRequestCallback(key_frame_request_);
   encoder->SetTargetBitrateCallback(target_bitrate_cb_);
@@ -175,20 +175,20 @@ webrtc::VideoEncoder* WebRtcVideoEncoderFactory::CreateVideoEncoder(
 }
 
 const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&
-WebRtcVideoEncoderFactory::codecs() const {
-  VLOG(2) << "WebRtcVideoEncoderFactory::codecs";
+WebrtcVideoEncoderFactory::codecs() const {
+  VLOG(2) << "WebrtcVideoEncoderFactory::codecs";
   return codecs_;
 }
 
-bool WebRtcVideoEncoderFactory::EncoderTypeHasInternalSource(
+bool WebrtcVideoEncoderFactory::EncoderTypeHasInternalSource(
     webrtc::VideoCodecType type) const {
-  VLOG(2) << "WebRtcVideoEncoderFactory::EncoderTypeHasInternalSource";
+  VLOG(2) << "WebrtcVideoEncoderFactory::EncoderTypeHasInternalSource";
   return true;
 }
 
-void WebRtcVideoEncoderFactory::DestroyVideoEncoder(
+void WebrtcVideoEncoderFactory::DestroyVideoEncoder(
     webrtc::VideoEncoder* encoder) {
-  VLOG(2) << "WebRtcVideoEncoderFactory::DestroyVideoEncoder";
+  VLOG(2) << "WebrtcVideoEncoderFactory::DestroyVideoEncoder";
   if (encoder == nullptr) {
     LOG(ERROR) << "Attempting to destroy null encoder";
     return;
@@ -202,7 +202,7 @@ void WebRtcVideoEncoderFactory::DestroyVideoEncoder(
   DCHECK(false) << "Asked to remove encoder not owned by factory";
 }
 
-int WebRtcVideoEncoderFactory::SendEncodedFrame(
+int WebrtcVideoEncoderFactory::SendEncodedFrame(
     std::unique_ptr<VideoPacket> frame) {
   if (encoders_.size() != 1) {
     LOG(ERROR) << "Unexpected number of encoders " << encoders_.size();
@@ -211,7 +211,7 @@ int WebRtcVideoEncoderFactory::SendEncodedFrame(
   return encoders_.front()->SendEncodedFrame(std::move(frame));
 }
 
-void WebRtcVideoEncoderFactory::SetKeyFrameRequestCallback(
+void WebrtcVideoEncoderFactory::SetKeyFrameRequestCallback(
     const base::Closure& key_frame_request) {
   base::AutoLock lock(lock_);
   key_frame_request_ = key_frame_request;
@@ -224,7 +224,7 @@ void WebRtcVideoEncoderFactory::SetKeyFrameRequestCallback(
   }
 }
 
-void WebRtcVideoEncoderFactory::SetTargetBitrateCallback(
+void WebrtcVideoEncoderFactory::SetTargetBitrateCallback(
     const TargetBitrateCallback& target_bitrate_cb) {
   base::AutoLock lock(lock_);
   target_bitrate_cb_ = target_bitrate_cb;

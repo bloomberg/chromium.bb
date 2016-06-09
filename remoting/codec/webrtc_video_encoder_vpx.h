@@ -28,13 +28,13 @@ namespace remoting {
 // This is a copy of VideoEncoderVpx with enhancements to encoder for use
 // over WebRTC as transport. The original VideoEncoderVpx should be deleted
 // once the old implementation is no longer in use.
-class WebRtcVideoEncoderVpx : public VideoEncoder {
+class WebrtcVideoEncoderVpx : public VideoEncoder {
  public:
   // Create encoder for the specified protocol.
-  static std::unique_ptr<WebRtcVideoEncoderVpx> CreateForVP8();
-  static std::unique_ptr<WebRtcVideoEncoderVpx> CreateForVP9();
+  static std::unique_ptr<WebrtcVideoEncoderVpx> CreateForVP8();
+  static std::unique_ptr<WebrtcVideoEncoderVpx> CreateForVP9();
 
-  ~WebRtcVideoEncoderVpx() override;
+  ~WebrtcVideoEncoderVpx() override;
 
   void SetTickClockForTests(base::TickClock* tick_clock);
 
@@ -46,7 +46,7 @@ class WebRtcVideoEncoderVpx : public VideoEncoder {
   void UpdateTargetBitrate(int bitrate_kbps) override;
 
  private:
-  explicit WebRtcVideoEncoderVpx(bool use_vp9);
+  explicit WebrtcVideoEncoderVpx(bool use_vp9);
 
   // (Re)Configures this instance to encode frames of the specified |size|,
   // with the configured lossless color & encoding modes.
@@ -99,7 +99,7 @@ class WebRtcVideoEncoderVpx : public VideoEncoder {
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcVideoEncoderVpx);
+  DISALLOW_COPY_AND_ASSIGN(WebrtcVideoEncoderVpx);
 };
 
 }  // namespace remoting

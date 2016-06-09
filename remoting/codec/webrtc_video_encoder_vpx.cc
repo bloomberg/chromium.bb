@@ -237,22 +237,22 @@ void CreateImage(bool use_i444,
 }  // namespace
 
 // static
-std::unique_ptr<WebRtcVideoEncoderVpx> WebRtcVideoEncoderVpx::CreateForVP8() {
-  return base::WrapUnique(new WebRtcVideoEncoderVpx(false));
+std::unique_ptr<WebrtcVideoEncoderVpx> WebrtcVideoEncoderVpx::CreateForVP8() {
+  return base::WrapUnique(new WebrtcVideoEncoderVpx(false));
 }
 
 // static
-std::unique_ptr<WebRtcVideoEncoderVpx> WebRtcVideoEncoderVpx::CreateForVP9() {
-  return base::WrapUnique(new WebRtcVideoEncoderVpx(true));
+std::unique_ptr<WebrtcVideoEncoderVpx> WebrtcVideoEncoderVpx::CreateForVP9() {
+  return base::WrapUnique(new WebrtcVideoEncoderVpx(true));
 }
 
-WebRtcVideoEncoderVpx::~WebRtcVideoEncoderVpx() {}
+WebrtcVideoEncoderVpx::~WebrtcVideoEncoderVpx() {}
 
-void WebRtcVideoEncoderVpx::SetTickClockForTests(base::TickClock* tick_clock) {
+void WebrtcVideoEncoderVpx::SetTickClockForTests(base::TickClock* tick_clock) {
   clock_ = tick_clock;
 }
 
-void WebRtcVideoEncoderVpx::SetLosslessEncode(bool want_lossless) {
+void WebrtcVideoEncoderVpx::SetLosslessEncode(bool want_lossless) {
   if (use_vp9_ && (want_lossless != lossless_encode_)) {
     lossless_encode_ = want_lossless;
     if (codec_)
@@ -261,7 +261,7 @@ void WebRtcVideoEncoderVpx::SetLosslessEncode(bool want_lossless) {
   }
 }
 
-void WebRtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
+void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
   if (use_vp9_ && (want_lossless != lossless_color_)) {
     lossless_color_ = want_lossless;
     // TODO(wez): Switch to ConfigureCodec() path once libvpx supports it.
@@ -273,7 +273,7 @@ void WebRtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
   }
 }
 
-void WebRtcVideoEncoderVpx::UpdateTargetBitrate(int new_bitrate_kbps) {
+void WebrtcVideoEncoderVpx::UpdateTargetBitrate(int new_bitrate_kbps) {
   target_bitrate_kbps_ = new_bitrate_kbps;
   // Configuration not initialized.
   if (config_.g_timebase.den == 0)
@@ -290,7 +290,7 @@ void WebRtcVideoEncoderVpx::UpdateTargetBitrate(int new_bitrate_kbps) {
   VLOG(1) << "New rc_target_bitrate: " << new_bitrate_kbps << " kbps";
 }
 
-std::unique_ptr<VideoPacket> WebRtcVideoEncoderVpx::Encode(
+std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
     const webrtc::DesktopFrame& frame,
     uint32_t flags) {
   DCHECK_LE(32, frame.size().width());
@@ -386,7 +386,7 @@ std::unique_ptr<VideoPacket> WebRtcVideoEncoderVpx::Encode(
   return packet;
 }
 
-WebRtcVideoEncoderVpx::WebRtcVideoEncoderVpx(bool use_vp9)
+WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)
     : use_vp9_(use_vp9),
       target_bitrate_kbps_(kDefaultTargetBitrateKbps),
       encode_unchanged_frame_(false),
@@ -395,7 +395,7 @@ WebRtcVideoEncoderVpx::WebRtcVideoEncoderVpx(bool use_vp9)
   config_.g_timebase.den = 0;
 }
 
-void WebRtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
+void WebrtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   DCHECK(use_vp9_ || !lossless_color_);
   DCHECK(use_vp9_ || !lossless_encode_);
 
@@ -453,7 +453,7 @@ void WebRtcVideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   }
 }
 
-void WebRtcVideoEncoderVpx::PrepareImage(
+void WebrtcVideoEncoderVpx::PrepareImage(
     const webrtc::DesktopFrame& frame,
     webrtc::DesktopRegion* updated_region) {
   if (frame.updated_region().is_empty()) {
@@ -535,7 +535,7 @@ void WebRtcVideoEncoderVpx::PrepareImage(
   }
 }
 
-void WebRtcVideoEncoderVpx::SetActiveMapFromRegion(
+void WebrtcVideoEncoderVpx::SetActiveMapFromRegion(
     const webrtc::DesktopRegion& updated_region) {
   // Clear active map first.
   memset(active_map_.get(), 0,
@@ -561,7 +561,7 @@ void WebRtcVideoEncoderVpx::SetActiveMapFromRegion(
   }
 }
 
-void WebRtcVideoEncoderVpx::UpdateRegionFromActiveMap(
+void WebrtcVideoEncoderVpx::UpdateRegionFromActiveMap(
     webrtc::DesktopRegion* updated_region) {
   const uint8_t* map = active_map_.get();
   for (int y = 0; y < active_map_size_.height(); ++y) {

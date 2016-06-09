@@ -79,7 +79,7 @@ std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   // TODO(isheriff): make this codec independent
   std::unique_ptr<VideoEncoder> video_encoder =
-      WebRtcVideoEncoderVpx::CreateForVP8();
+      WebrtcVideoEncoderVpx::CreateForVP8();
   std::unique_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
   if (!stream->Start(std::move(desktop_capturer), transport_.get(),
                      video_encode_task_runner_, std::move(video_encoder))) {
