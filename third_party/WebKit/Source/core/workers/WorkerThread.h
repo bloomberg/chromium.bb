@@ -60,6 +60,14 @@ enum WorkerThreadStartMode {
 //
 // WorkerThread start and termination must be initiated on the main thread and
 // an actual task is executed on the worker thread.
+//
+// When termination starts, (debugger) tasks on WorkerThread are handled as
+// follows:
+//  - A running task may finish unless a forcible termination task interrupts.
+//    If the running task is for debugger, it's guaranteed to finish without
+//    any interruptions.
+//  - Queued tasks never run.
+//  - postTask() and appendDebuggerTask() reject posting new tasks.
 class CORE_EXPORT WorkerThread {
 public:
     // Represents how this thread is terminated. Used for UMA. Append only.
@@ -104,11 +112,9 @@ public:
     void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
     void appendDebuggerTask(std::unique_ptr<CrossThreadClosure>);
 
-    // Runs only debugger tasks while paused in debugger, called on the worker
-    // thread.
-    void startRunningDebuggerTasksOnPause();
-    void stopRunningDebuggerTasksOnPause();
-    bool isRunningDebuggerTasksOnPause() const { return m_pausedInDebugger; }
+    // Runs only debugger tasks while paused in debugger.
+    void startRunningDebuggerTasksOnPauseOnWorkerThread();
+    void stopRunningDebuggerTasksOnPauseOnWorkerThread();
 
     // Can be called only on the worker thread, WorkerGlobalScope is not thread
     // safe.
@@ -161,8 +167,8 @@ private:
     void prepareForShutdownOnWorkerThread();
     void performShutdownOnWorkerThread();
     void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
-    void runDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
-    void runDebuggerTaskDontWaitOnWorkerThread();
+    void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
+    void performDebuggerTaskDontWaitOnWorkerThread();
 
     void setForceTerminationDelayInMsForTesting(long long forceTerminationDelayInMs) { m_forceTerminationDelayInMs = forceTerminationDelayInMs; }
 

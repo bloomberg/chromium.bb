@@ -97,7 +97,7 @@ void WorkerInspectorController::dispose()
 
 void WorkerInspectorController::resumeStartup()
 {
-    m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPause();
+    m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
 void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, const String& response, const String& state)

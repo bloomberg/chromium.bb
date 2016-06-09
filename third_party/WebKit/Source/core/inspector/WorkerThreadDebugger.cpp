@@ -76,12 +76,12 @@ int WorkerThreadDebugger::contextGroupId()
 void WorkerThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 {
     ASSERT(contextGroupId == workerContextGroupId);
-    m_workerThread->startRunningDebuggerTasksOnPause();
+    m_workerThread->startRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause()
 {
-    m_workerThread->stopRunningDebuggerTasksOnPause();
+    m_workerThread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
 bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)

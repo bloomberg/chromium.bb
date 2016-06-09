@@ -32,6 +32,8 @@ InspectorTaskRunner::~InspectorTaskRunner()
 void InspectorTaskRunner::appendTask(std::unique_ptr<Task> task)
 {
     MutexLocker lock(m_mutex);
+    if (m_killed)
+        return;
     m_queue.append(std::move(task));
     m_condition.signal();
 }
