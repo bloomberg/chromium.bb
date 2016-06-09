@@ -63,7 +63,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    GestureEvent();
     GestureEvent(const AtomicString& type, AbstractView*, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, ScrollInertialPhase, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource);
 
     float m_deltaX;
