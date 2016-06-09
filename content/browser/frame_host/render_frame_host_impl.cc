@@ -1271,6 +1271,9 @@ void RenderFrameHostImpl::SwapOut(
                               replication_state));
   }
 
+  if (web_ui())
+    web_ui()->RenderFrameHostSwappingOut();
+
   // TODO(nasko): If the frame is not live, the RFH should just be deleted by
   // simulating the receipt of swap out ack.
   is_waiting_for_swapout_ack_ = true;

@@ -100,6 +100,11 @@ void WebUIImpl::RenderViewReused(RenderViewHost* render_view_host,
     handler->RenderViewReused();
 }
 
+void WebUIImpl::RenderFrameHostSwappingOut() {
+  for (WebUIMessageHandler* handler : handlers_)
+    handler->DisallowJavascript();
+}
+
 WebContents* WebUIImpl::GetWebContents() const {
   return web_contents_;
 }

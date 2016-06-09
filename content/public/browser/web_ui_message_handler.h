@@ -35,6 +35,9 @@ class CONTENT_EXPORT WebUIMessageHandler {
   WebUIMessageHandler() : javascript_allowed_(false), web_ui_(nullptr) {}
   virtual ~WebUIMessageHandler() {}
 
+  // Call this when a page should not receive JavaScript messages.
+  void DisallowJavascript();
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractIntegerValue);
   FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractDoubleValue);
@@ -43,9 +46,6 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Subclasses must call this once the page is ready for JavaScript calls
   // from this handler.
   void AllowJavascript();
-
-  // Call this when a page should not receive JavaScript messages.
-  void DisallowJavascript();
 
   bool IsJavascriptAllowed() const;
 

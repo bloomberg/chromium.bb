@@ -606,6 +606,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                            RenderViewInitAfterNewProxyAndProcessKill);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            UnloadPushStateOnCrossProcessNavigation);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           WebUIJavascriptDisallowedAfterSwapOut);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderViewHostIsNotReusedAfterDelayedSwapOutACK);

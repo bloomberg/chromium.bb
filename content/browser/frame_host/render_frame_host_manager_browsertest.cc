@@ -34,6 +34,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
@@ -74,6 +75,58 @@ void OpenUrlViaClickTarget(const ToRenderFrameHost& adapter, const GURL& url) {
   EXPECT_TRUE(ExecuteScript(adapter,
       std::string(kOpenUrlViaClickTargetFunc) + "(\"" + url.spec() + "\");"));
 }
+
+class TestWebUIMessageHandler : public WebUIMessageHandler {
+ public:
+  using WebUIMessageHandler::AllowJavascript;
+  using WebUIMessageHandler::IsJavascriptAllowed;
+
+ protected:
+  void RegisterMessages() override {}
+};
+
+// This class implements waiting for RenderFrameHost destruction. It relies on
+// the fact that RenderFrameDeleted event is fired when RenderFrameHost is
+// destroyed.
+// Note: RenderFrameDeleted is also fired when the process associated with the
+// RenderFrameHost crashes, so this cannot be used in cases where process dying
+// is expected.
+class RenderFrameHostDestructionObserver : public WebContentsObserver {
+ public:
+  explicit RenderFrameHostDestructionObserver(RenderFrameHost* rfh)
+      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+        message_loop_runner_(new MessageLoopRunner),
+        deleted_(false),
+        render_frame_host_(rfh) {}
+  ~RenderFrameHostDestructionObserver() override {}
+
+  bool deleted() const { return deleted_; }
+
+  void Wait() {
+    if (deleted_)
+      return;
+
+    message_loop_runner_->Run();
+  }
+
+  // WebContentsObserver implementation:
+  void RenderFrameDeleted(RenderFrameHost* rfh) override {
+    if (rfh == render_frame_host_) {
+      CHECK(!deleted_);
+      deleted_ = true;
+    }
+
+    if (deleted_ && message_loop_runner_->loop_running()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, message_loop_runner_->QuitClosure());
+    }
+  }
+
+ private:
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  bool deleted_;
+  RenderFrameHost* render_frame_host_;
+};
 
 }  // anonymous namespace
 
@@ -1817,6 +1870,64 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell()->web_contents()->GetRenderProcessHost()->GetID()));
 }
 
+// crbug.com/615274
+// This test ensures that after an RFH is swapped out, the associated WebUI
+// instance is no longer allowed to send JavaScript messages. This is necessary
+// because WebUI currently (and unusually) always sends JavaScript messages to
+// the current main frame, rather than the RFH that owns the WebUI.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       WebUIJavascriptDisallowedAfterSwapOut) {
+  StartEmbeddedServer();
+
+  const GURL web_ui_url(std::string(kChromeUIScheme) + "://" +
+                        std::string(kChromeUIGpuHost));
+  EXPECT_TRUE(NavigateToURL(shell(), web_ui_url));
+
+  RenderFrameHostImpl* rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->GetMainFrame();
+
+  // Set up a slow unload handler to force the RFH to linger in the swapped
+  // out but not-yet-deleted state.
+  EXPECT_TRUE(
+      ExecuteScript(rfh, "window.onunload=function(e){ while(1); };\n"));
+
+  WebUIImpl* web_ui = rfh->web_ui();
+
+  EXPECT_TRUE(web_ui->CanCallJavascript());
+  TestWebUIMessageHandler* handler = new TestWebUIMessageHandler();
+
+  web_ui->AddMessageHandler(handler);
+  EXPECT_FALSE(handler->IsJavascriptAllowed());
+
+  handler->AllowJavascript();
+  EXPECT_TRUE(handler->IsJavascriptAllowed());
+
+  rfh->DisableSwapOutTimerForTesting();
+  RenderFrameHostDestructionObserver rfh_observer(rfh);
+
+  // Navigate, but wait for commit, not the actual load to finish.
+  SiteInstanceImpl* web_ui_site_instance = rfh->GetSiteInstance();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  TestFrameNavigationObserver commit_observer(root);
+  shell()->LoadURL(GURL(url::kAboutBlankURL));
+  commit_observer.WaitForCommit();
+  EXPECT_NE(web_ui_site_instance, shell()->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(
+      root->render_manager()->GetRenderFrameProxyHost(web_ui_site_instance));
+
+  // The previous RFH should still be pending deletion, as we wait for either
+  // the SwapOut ACK or a timeout.
+  ASSERT_TRUE(rfh->IsRenderFrameLive());
+  ASSERT_FALSE(rfh->is_active());
+
+  // We specifically want verify behavior between swap-out and RFH destruction.
+  ASSERT_FALSE(rfh_observer.deleted());
+
+  EXPECT_FALSE(handler->IsJavascriptAllowed());
+}
+
 class FileChooserDelegate : public WebContentsDelegate {
  public:
   FileChooserDelegate(const base::FilePath& file)
@@ -1958,47 +2069,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
 }
-
-// This class implements waiting for RenderFrameHost destruction. It relies on
-// the fact that RenderFrameDeleted event is fired when RenderFrameHost is
-// destroyed.
-// Note: RenderFrameDeleted is also fired when the process associated with the
-// RenderFrameHost crashes, so this cannot be used in cases where process dying
-// is expected.
-class RenderFrameHostDestructionObserver : public WebContentsObserver {
- public:
-  explicit RenderFrameHostDestructionObserver(RenderFrameHost* rfh)
-      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-        message_loop_runner_(new MessageLoopRunner),
-        deleted_(false),
-        render_frame_host_(rfh) {}
-  ~RenderFrameHostDestructionObserver() override {}
-
-  void Wait() {
-    if (deleted_)
-      return;
-
-    message_loop_runner_->Run();
-  }
-
-  // WebContentsObserver implementation:
-  void RenderFrameDeleted(RenderFrameHost* rfh) override {
-    if (rfh == render_frame_host_) {
-      CHECK(!deleted_);
-      deleted_ = true;
-    }
-
-    if (deleted_ && message_loop_runner_->loop_running()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, message_loop_runner_->QuitClosure());
-    }
-  }
-
- private:
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-  bool deleted_;
-  RenderFrameHost* render_frame_host_;
-};
 
 // Ensures that no RenderFrameHost/RenderViewHost objects are leaked when
 // doing a simple cross-process navigation.
