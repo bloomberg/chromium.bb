@@ -118,8 +118,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       for key in constants.ANDROID_BUILD_TARGETS.iterkeys():
         self.setupMockBuild(key, version)
     self.new_subpaths = {
-        'ARM': 'linux-cheets_arm-userdebug100',
-        'X86': 'linux-cheets_x86-userdebug100',
+        'ARM': 'linux-cheets_arm-user100',
+        'X86': 'linux-cheets_x86-user100',
         'CTS': 'linux-cts100',
         'SDK_TOOLS': 'linux-static_sdk_tools100',
     }
@@ -206,8 +206,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.old_version)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 4)
-    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug25')
-    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug25')
+    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user25')
+    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-user25')
     self.assertEquals(subpaths['CTS'], 'linux-cts25')
     self.assertEquals(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools25')
 
@@ -243,8 +243,8 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
     self.assertEquals(len(subpaths), 4)
-    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
-    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
+    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-user100')
+    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-user100')
     self.assertEquals(subpaths['CTS'], 'linux-cts100')
     self.assertEquals(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools100')
 
