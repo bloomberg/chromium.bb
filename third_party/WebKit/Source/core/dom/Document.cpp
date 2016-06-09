@@ -242,6 +242,11 @@
 using namespace WTF;
 using namespace Unicode;
 
+#ifndef NDEBUG
+using WeakDocumentSet = blink::PersistentHeapHashSet<blink::WeakMember<blink::Document>>;
+static WeakDocumentSet& liveDocumentSet();
+#endif
+
 namespace blink {
 
 using namespace HTMLNames;
@@ -366,14 +371,6 @@ static bool isOriginPotentiallyTrustworthy(SecurityOrigin* origin, String* error
 uint64_t Document::s_globalTreeVersion = 0;
 
 static bool s_threadedParsingEnabledForTesting = true;
-
-using WeakDocumentSet = PersistentHeapHashSet<WeakMember<Document>>;
-
-static WeakDocumentSet& liveDocumentSet()
-{
-    DEFINE_STATIC_LOCAL(WeakDocumentSet, set, ());
-    return set;
-}
 
 // This class doesn't work with non-Document ExecutionContext.
 class AutofocusTask final : public ExecutionContextTask {
@@ -514,7 +511,9 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     // ignoring the defersLoading flag.
     DCHECK(!parentDocument() || !parentDocument()->activeDOMObjectsAreSuspended());
 
+#ifndef NDEBUG
     liveDocumentSet().add(this);
+#endif
 }
 
 Document::~Document()
@@ -5996,6 +5995,13 @@ template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 #ifndef NDEBUG
 using namespace blink;
+
+static WeakDocumentSet& liveDocumentSet()
+{
+    DEFINE_STATIC_LOCAL(WeakDocumentSet, set, ());
+    return set;
+}
+
 void showLiveDocumentInstances()
 {
     WeakDocumentSet& set = liveDocumentSet();
