@@ -821,10 +821,10 @@ static CSSValue* valueForGridTrackList(GridTrackSizingDirection direction, const
     // Handle the 'none' case.
     bool trackListIsEmpty = trackSizes.isEmpty() && autoRepeatTrackSizes.isEmpty();
     if (isLayoutGrid && trackListIsEmpty) {
-        // For grids we should consider every listed track, whether implicitly or explicitly created. If we don't have
-        // any explicit track and there are no children then there are no implicit tracks. We cannot simply check the
-        // number of rows/columns in our internal grid representation because it's always at least 1x1 (see r143331).
-        trackListIsEmpty = !toLayoutBlock(layoutObject)->firstChild();
+        // For grids we should consider every listed track, whether implicitly or explicitly
+        // created. Empty grids have a sole grid line per axis.
+        auto& positions = isRowAxis ? toLayoutGrid(layoutObject)->columnPositions() : toLayoutGrid(layoutObject)->rowPositions();
+        trackListIsEmpty = positions.size() == 1;
     }
 
     if (trackListIsEmpty)
