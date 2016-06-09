@@ -76,7 +76,7 @@ test("blimp_unittests") {
 if (is_linux) {
   test("blimp_browsertests") {
     deps = [
-      "//blimp/test:engine_browsertests",
+      "//blimp/engine:browser_tests",
     ]
   }
 

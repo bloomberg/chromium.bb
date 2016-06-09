@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/test/browser_tests/blimp_browser_test.h"
+#include "blimp/engine/browser_tests/blimp_browser_test.h"
 
 #include <string>
 

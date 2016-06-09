@@ -12,7 +12,7 @@
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/client/session/assignment_source.h"
 #include "blimp/client/session/test_client_session.h"
-#include "blimp/test/browser_tests/blimp_browser_test.h"
+#include "blimp/engine/browser_tests/blimp_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"

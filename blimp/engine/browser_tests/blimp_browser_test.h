@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_TEST_BROWSER_TESTS_BLIMP_BROWSER_TEST_H_
-#define BLIMP_TEST_BROWSER_TESTS_BLIMP_BROWSER_TEST_H_
+#ifndef BLIMP_ENGINE_BROWSER_TESTS_BLIMP_BROWSER_TEST_H_
+#define BLIMP_ENGINE_BROWSER_TESTS_BLIMP_BROWSER_TEST_H_
 
 #include <memory>
 
@@ -65,4 +65,4 @@ class BlimpBrowserTest : public content::BrowserTestBase {
 
 }  // namespace blimp
 
-#endif  // BLIMP_TEST_BROWSER_TESTS_BLIMP_BROWSER_TEST_H_
+#endif  // BLIMP_ENGINE_BROWSER_TESTS_BLIMP_BROWSER_TEST_H_
