@@ -45,12 +45,16 @@ protected:
         m_resolver.clear();
     }
 
-    // Rejects the promise with a DOMException.
+    // Rejects the promise with a DOMException. This will post a task to
+    // actually reject the promise later on.
     void reject(ExceptionCode, const String& errorMessage);
 
     ExecutionContext* getExecutionContext() const;
 
 private:
+    // Rejects the promise with a DOMException.
+    void rejectInternal(ExceptionCode, const String& errorMessage);
+
     Member<ScriptPromiseResolver> m_resolver;
 };
 
