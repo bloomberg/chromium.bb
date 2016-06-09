@@ -51,7 +51,9 @@ void AutofillPrivateEventRouter::Shutdown() {
 }
 
 void AutofillPrivateEventRouter::OnPersonalDataChanged() {
-  DCHECK(personal_data_ && personal_data_->IsDataLoaded());
+  // Ignore any updates before data is loaded. This can happen in tests.
+  if (!(personal_data_ && personal_data_->IsDataLoaded()))
+    return;
 
   autofill_util::AddressEntryList addressList =
       extensions::autofill_util::GenerateAddressList(*personal_data_);
