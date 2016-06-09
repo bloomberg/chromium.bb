@@ -19,7 +19,7 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
                                      OmniboxClient* client)
     : omnibox_edit_model_(omnibox_edit_model),
       client_(client),
-      popup_(NULL),
+      popup_(nullptr),
       autocomplete_controller_(new AutocompleteController(
           client_->CreateAutocompleteProviderClient(),
           this,
@@ -51,7 +51,7 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     } else {
       InvalidateCurrentMatch();
       popup_->OnResultChanged();
-      omnibox_edit_model_->OnPopupDataChanged(base::string16(), NULL,
+      omnibox_edit_model_->OnPopupDataChanged(base::string16(), nullptr,
                                               base::string16(), false);
     }
   } else {

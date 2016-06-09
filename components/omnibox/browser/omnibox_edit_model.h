@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
-class AutocompleteController;
 class AutocompleteResult;
 class OmniboxClient;
 class OmniboxEditController;
@@ -380,7 +380,11 @@ class OmniboxEditModel {
   // in progress.  This logic should in the future live in
   // AutocompleteController but resides here for now.  This method is used by
   // AutomationProvider::AutocompleteEditIsQueryInProgress.
-  bool query_in_progress() const;
+  bool query_in_progress() const { return !autocomplete_controller()->done(); }
+
+  // Returns true if the popup exists and is open.  (This is a convenience
+  // wrapper for the benefit of test code, which may not have a popup model.)
+  bool PopupIsOpen() const;
 
   // Called whenever user_text_ should change.
   void InternalSetUserText(const base::string16& text);

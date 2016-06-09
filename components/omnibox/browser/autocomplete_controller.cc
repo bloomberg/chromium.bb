@@ -175,10 +175,10 @@ AutocompleteController::AutocompleteController(
     int provider_types)
     : delegate_(delegate),
       provider_client_(std::move(provider_client)),
-      history_url_provider_(NULL),
-      keyword_provider_(NULL),
-      search_provider_(NULL),
-      zero_suggest_provider_(NULL),
+      history_url_provider_(nullptr),
+      keyword_provider_(nullptr),
+      search_provider_(nullptr),
+      zero_suggest_provider_(nullptr),
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
@@ -408,9 +408,10 @@ void AutocompleteController::UpdateResult(
   if (last_default_was_valid) {
     last_default_fill_into_edit = result_.default_match()->fill_into_edit;
     last_default_keyword = result_.default_match()->keyword;
-    if (result_.default_match()->associated_keyword != NULL)
+    if (result_.default_match()->associated_keyword) {
       last_default_associated_keyword =
           result_.default_match()->associated_keyword->keyword;
+    }
   }
 
   if (regenerate_result)
@@ -447,7 +448,7 @@ void AutocompleteController::UpdateResult(
   const bool default_is_valid = result_.default_match() != result_.end();
   base::string16 default_associated_keyword;
   if (default_is_valid &&
-      (result_.default_match()->associated_keyword != NULL)) {
+      result_.default_match()->associated_keyword) {
     default_associated_keyword =
         result_.default_match()->associated_keyword->keyword;
   }

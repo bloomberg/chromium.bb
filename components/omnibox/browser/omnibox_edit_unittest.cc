@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
+#include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
@@ -22,9 +23,6 @@
 #include "components/sessions/core/session_id.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
 
 namespace {
 
@@ -80,8 +78,8 @@ class TestingOmniboxView : public OmniboxView {
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override {
     return false;
   }
-  gfx::NativeView GetNativeView() const override { return NULL; }
-  gfx::NativeView GetRelativeWindowForPopup() const override { return NULL; }
+  gfx::NativeView GetNativeView() const override { return nullptr; }
+  gfx::NativeView GetRelativeWindowForPopup() const override { return nullptr; }
   void SetGrayTextAutocompletion(const base::string16& input) override {}
   base::string16 GetGrayTextAutocompletion() const override {
     return base::string16();
@@ -246,11 +244,24 @@ TestingOmniboxClient::CreateAutocompleteProviderClient() {
 
 class OmniboxEditTest : public ::testing::Test {
  public:
+  OmniboxEditTest()
+      : controller_(&toolbar_model_),
+        view_(&controller_),
+        model_(&view_, &controller_, base::MakeUnique<TestingOmniboxClient>()) {
+  }
+
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
+  const TestingOmniboxView& view() { return view_; }
+  OmniboxEditModel* model() { return &model_; }
 
  private:
   base::MessageLoop message_loop_;
   TestToolbarModel toolbar_model_;
+  TestingOmniboxEditController controller_;
+  TestingOmniboxView view_;
+  OmniboxEditModel model_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxEditTest);
 };
 
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
@@ -307,24 +318,21 @@ TEST_F(OmniboxEditTest, AdjustTextForCopy) {
     { "www.google.com/webhp?", 0, true, "hello world", "hello world", false,
       "", true },
   };
-  TestingOmniboxEditController controller(toolbar_model());
-  TestingOmniboxView view(&controller);
-  OmniboxEditModel model(&view, &controller,
-                         base::WrapUnique(new TestingOmniboxClient()));
 
   for (size_t i = 0; i < arraysize(input); ++i) {
-    toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
-    model.UpdatePermanentText();
+    toolbar_model()->set_text(base::ASCIIToUTF16(input[i].perm_text));
+    model()->UpdatePermanentText();
 
     toolbar_model()->set_perform_search_term_replacement(
         input[i].extracted_search_terms);
 
-    base::string16 result = ASCIIToUTF16(input[i].input);
+    base::string16 result = base::ASCIIToUTF16(input[i].input);
     GURL url;
     bool write_url;
-    model.AdjustTextForCopy(input[i].sel_start, input[i].is_all_selected,
-                            &result, &url, &write_url);
-    EXPECT_EQ(ASCIIToUTF16(input[i].expected_output), result) << "@: " << i;
+    model()->AdjustTextForCopy(input[i].sel_start, input[i].is_all_selected,
+                               &result, &url, &write_url);
+    EXPECT_EQ(base::ASCIIToUTF16(input[i].expected_output), result) << "@: "
+                                                                    << i;
     EXPECT_EQ(input[i].write_url, write_url) << " @" << i;
     if (write_url)
       EXPECT_EQ(input[i].expected_url, url.spec()) << " @" << i;
@@ -332,38 +340,36 @@ TEST_F(OmniboxEditTest, AdjustTextForCopy) {
 }
 
 TEST_F(OmniboxEditTest, InlineAutocompleteText) {
-  TestingOmniboxEditController controller(toolbar_model());
-  TestingOmniboxView view(&controller);
-  OmniboxEditModel model(&view, &controller,
-                         base::WrapUnique(new TestingOmniboxClient()));
-
   // Test if the model updates the inline autocomplete text in the view.
-  EXPECT_EQ(base::string16(), view.inline_autocomplete_text());
-  model.SetUserText(UTF8ToUTF16("he"));
-  model.OnPopupDataChanged(UTF8ToUTF16("llo"), NULL, base::string16(), false);
-  EXPECT_EQ(UTF8ToUTF16("hello"), view.GetText());
-  EXPECT_EQ(UTF8ToUTF16("llo"), view.inline_autocomplete_text());
+  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+  model()->SetUserText(base::ASCIIToUTF16("he"));
+  model()->OnPopupDataChanged(base::ASCIIToUTF16("llo"), nullptr,
+                              base::string16(), false);
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("llo"), view().inline_autocomplete_text());
 
-  base::string16 text_before = UTF8ToUTF16("he");
-  base::string16 text_after = UTF8ToUTF16("hel");
+  base::string16 text_before = base::ASCIIToUTF16("he");
+  base::string16 text_after = base::ASCIIToUTF16("hel");
   OmniboxView::StateChanges state_changes{
       &text_before, &text_after, 3, 3, false, true, false, false};
-  model.OnAfterPossibleChange(state_changes, true);
-  EXPECT_EQ(base::string16(), view.inline_autocomplete_text());
-  model.OnPopupDataChanged(UTF8ToUTF16("lo"), NULL, base::string16(), false);
-  EXPECT_EQ(UTF8ToUTF16("hello"), view.GetText());
-  EXPECT_EQ(UTF8ToUTF16("lo"), view.inline_autocomplete_text());
+  model()->OnAfterPossibleChange(state_changes, true);
+  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
+  model()->OnPopupDataChanged(base::ASCIIToUTF16("lo"), nullptr,
+                              base::string16(), false);
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("lo"), view().inline_autocomplete_text());
 
-  model.Revert();
-  EXPECT_EQ(base::string16(), view.GetText());
-  EXPECT_EQ(base::string16(), view.inline_autocomplete_text());
+  model()->Revert();
+  EXPECT_EQ(base::string16(), view().GetText());
+  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
 
-  model.SetUserText(UTF8ToUTF16("he"));
-  model.OnPopupDataChanged(UTF8ToUTF16("llo"), NULL, base::string16(), false);
-  EXPECT_EQ(UTF8ToUTF16("hello"), view.GetText());
-  EXPECT_EQ(UTF8ToUTF16("llo"), view.inline_autocomplete_text());
+  model()->SetUserText(base::ASCIIToUTF16("he"));
+  model()->OnPopupDataChanged(base::ASCIIToUTF16("llo"), nullptr,
+                              base::string16(), false);
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("llo"), view().inline_autocomplete_text());
 
-  model.AcceptTemporaryTextAsUserText();
-  EXPECT_EQ(UTF8ToUTF16("hello"), view.GetText());
-  EXPECT_EQ(base::string16(), view.inline_autocomplete_text());
+  model()->AcceptTemporaryTextAsUserText();
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), view().GetText());
+  EXPECT_EQ(base::string16(), view().inline_autocomplete_text());
 }
