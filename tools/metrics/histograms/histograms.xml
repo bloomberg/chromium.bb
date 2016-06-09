@@ -3516,7 +3516,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Image orientation inferred during decode.</summary>
 </histogram>
 
-<histogram name="Blink.DecodedImage.XCanvasExpansion" units="bytes">
+<histogram name="Blink.DecodedImage.XCanvasExpansion" units="pixels">
   <owner>ryansturm@chromium.org</owner>
   <owner>bengr@google.com</owner>
   <summary>
@@ -3527,7 +3527,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Blink.DecodedImage.YCanvasExpansion" units="bytes">
+<histogram name="Blink.DecodedImage.YCanvasExpansion" units="pixels">
   <owner>ryansturm@chromium.org</owner>
   <owner>bengr@google.com</owner>
   <summary>
