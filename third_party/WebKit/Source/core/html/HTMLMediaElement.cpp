@@ -2069,7 +2069,8 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState)
         default:
             NOTREACHED();
         }
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(code.get(), message));
+        resolver->reject(DOMException::create(code.get(), message));
+        return promise;
     }
 
     return promise;
