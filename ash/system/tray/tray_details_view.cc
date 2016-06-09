@@ -4,10 +4,10 @@
 
 #include "ash/system/tray/tray_details_view.h"
 
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"

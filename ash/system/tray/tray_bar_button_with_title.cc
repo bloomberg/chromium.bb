@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"

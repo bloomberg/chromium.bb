@@ -4,8 +4,8 @@
 
 #include "ash/system/tray/tray_notification_view.h"
 
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"

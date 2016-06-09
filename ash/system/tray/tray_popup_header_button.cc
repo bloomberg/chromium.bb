@@ -5,7 +5,7 @@
 #include "ash/system/tray/tray_popup_header_button.h"
 
 #include "ash/ash_constants.h"
-#include "ash/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/background.h"
 #include "ui/views/painter.h"

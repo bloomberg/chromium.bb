@@ -4,13 +4,13 @@
 
 #include "ash/system/chromeos/tray_caps_lock.h"
 
+#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
-#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_constants.h"
 #include "base/sys_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

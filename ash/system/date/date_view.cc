@@ -5,8 +5,8 @@
 #include "ash/system/date/date_view.h"
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/shell.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"

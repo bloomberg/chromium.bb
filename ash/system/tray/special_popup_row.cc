@@ -4,9 +4,9 @@
 
 #include "ash/system/tray/special_popup_row.h"
 
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/throbber_view.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

@@ -5,8 +5,8 @@
 #include "ash/system/tray/tray_utils.h"
 
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/font_list.h"

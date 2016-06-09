@@ -9,6 +9,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/volume_control_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
@@ -20,7 +21,6 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"

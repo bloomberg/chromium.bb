@@ -4,8 +4,8 @@
 
 #include "ash/system/chromeos/label_tray_view.h"
 
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"

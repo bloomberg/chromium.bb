@@ -4,7 +4,7 @@
 
 #include "ash/system/tray/tray_popup_item_container.h"
 
-#include "ash/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"

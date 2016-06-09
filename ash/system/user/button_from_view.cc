@@ -5,7 +5,7 @@
 #include "ash/system/user/button_from_view.h"
 
 #include "ash/ash_constants.h"
-#include "ash/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
