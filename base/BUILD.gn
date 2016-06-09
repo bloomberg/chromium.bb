@@ -1261,7 +1261,6 @@ component("base") {
 
     libs = [
       "cfgmgr32.lib",
-      "netapi32.lib",
       "powrprof.lib",
       "setupapi.lib",
       "userenv.lib",
