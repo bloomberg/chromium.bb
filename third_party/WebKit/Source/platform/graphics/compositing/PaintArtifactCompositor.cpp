@@ -272,8 +272,8 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
     if (transformTree.size() < 2) {
         transformTree.Insert(cc::TransformNode(), kRealRootNodeId);
         cc::TransformNode& transformNode = *transformTree.back();
-        transformNode.data.target_id = kRealRootNodeId;
-        transformNode.data.content_target_id = kSecondaryRootNodeId;
+        transformTree.SetTargetId(transformNode.id, kRealRootNodeId);
+        transformTree.SetContentTargetId(transformNode.id, kSecondaryRootNodeId);
         transformNode.data.source_node_id = kRealRootNodeId;
         transformNode.data.needs_local_transform_update = true;
         transformNode.owner_id = ownerId;

@@ -25,13 +25,7 @@ message TranformNodeData {
   optional Transform local = 2;
   optional Transform post_local = 3;
   optional Transform to_parent = 4;
-  optional Transform to_target = 5;
-  optional Transform from_target = 6;
-  optional Transform to_screen = 7;
-  optional Transform from_screen = 8;
 
-  optional int64 target_id = 9;
-  optional int64 content_target_id = 10;
   optional int64 source_node_id = 11;
   optional bool needs_local_transform_update = 12;
   optional bool node_and_ancestors_are_animated_or_invertible = 41;
@@ -65,6 +59,16 @@ message TranformNodeData {
   optional Vector2dF source_offset = 37;
   optional Vector2dF source_to_parent = 38;
   optional int64 sorting_context_id = 39;
+}
+
+// Proto for TransformCachedNodeData
+message TransformCachedNodeData {
+  optional Transform from_target = 1;
+  optional Transform to_target = 2;
+  optional Transform from_screen = 3;
+  optional Transform to_screen = 4;
+  optional int64 target_id = 5;
+  optional int64 content_target_id = 6;
 }
 
 // Proto for struct ClipNodeData.
@@ -185,6 +189,7 @@ message TransformTreeData {
       [packed = true];
   repeated int64 nodes_affected_by_outer_viewport_bounds_delta = 8
       [packed = true];
+  repeated TransformCachedNodeData cached_data = 9;
 }
 
 // Proto for class PropertyTrees.

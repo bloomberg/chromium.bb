@@ -126,7 +126,7 @@ void CalculateClipRects(
     if (!fully_visible) {
       const TransformNode* transform_node =
           transform_tree.Node(layer->transform_tree_index());
-      int target_node_id = transform_node->data.content_target_id;
+      int target_node_id = transform_tree.ContentTargetId(transform_node->id);
 
       // The clip node stores clip rect in its target space.
       gfx::RectF clip_rect_in_target_space =
@@ -208,7 +208,8 @@ void CalculateVisibleRects(
         gfx::Transform target_to_content;
         target_to_content.Translate(-layer->offset_to_transform_parent().x(),
                                     -layer->offset_to_transform_parent().y());
-        target_to_content.PreconcatTransform(transform_node->data.from_screen);
+        target_to_content.PreconcatTransform(
+            transform_tree.FromScreen(transform_node->id));
 
         gfx::Rect visible_rect =
             gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
@@ -231,7 +232,7 @@ void CalculateVisibleRects(
       continue;
     }
 
-    int target_node_id = transform_node->data.content_target_id;
+    int target_node_id = transform_tree.ContentTargetId(transform_node->id);
 
     // The clip node stores clip rect in its target space. If required,
     // this clip rect should be mapped to the current layer's target space.
@@ -269,7 +270,8 @@ void CalculateVisibleRects(
     }
 
     // The clip rect should be intersected with layer rect in target space.
-    gfx::Transform content_to_target = transform_node->data.to_target;
+    gfx::Transform content_to_target =
+        transform_tree.ToTarget(transform_node->id);
     content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                 layer->offset_to_transform_parent().y());
     gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
@@ -293,7 +295,7 @@ void CalculateVisibleRects(
 
     gfx::Transform target_to_layer;
     if (transform_node->data.ancestors_are_invertible) {
-      target_to_layer = transform_node->data.from_target;
+      target_to_layer = transform_tree.FromTarget(transform_node->id);
     } else {
       if (!transform_tree.ComputeTransformWithSourceSublayerScale(
               target_node_id, transform_node->id, &target_to_layer)) {
@@ -339,7 +341,7 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
   const TransformNode* node = tree.Node(transform_tree_index);
   return layer->use_local_transform_for_backface_visibility()
              ? node->data.local.IsBackFaceVisible()
-             : node->data.to_target.IsBackFaceVisible();
+             : tree.ToTarget(transform_tree_index).IsBackFaceVisible();
 }
 
 static inline bool TransformToScreenIsKnown(Layer* layer,
@@ -572,7 +574,8 @@ void ComputeClips(ClipTree* clip_tree,
     if (clip_node->data.resets_clip && non_root_surfaces_enabled) {
       if (clip_node->data.applies_local_clip) {
         clip_node->data.clip_in_target_space = MathUtil::MapClippedRect(
-            transform_node->data.to_target, clip_node->data.clip);
+            transform_tree.ToTarget(clip_node->data.transform_id),
+            clip_node->data.clip);
         ResetIfHasNanCoordinate(&clip_node->data.clip_in_target_space);
         clip_node->data.combined_clip_in_target_space =
             gfx::IntersectRects(clip_node->data.clip_in_target_space,
@@ -605,10 +608,12 @@ void ComputeClips(ClipTree* clip_tree,
       gfx::Transform source_to_target;
 
       if (!non_root_surfaces_enabled) {
-        source_to_target = transform_node->data.to_screen;
-      } else if (transform_node->data.content_target_id ==
+        source_to_target =
+            transform_tree.ToScreen(clip_node->data.transform_id);
+      } else if (transform_tree.ContentTargetId(transform_node->id) ==
                  clip_node->data.target_id) {
-        source_to_target = transform_node->data.to_target;
+        source_to_target =
+            transform_tree.ToTarget(clip_node->data.transform_id);
       } else {
         success = transform_tree.ComputeTransformWithDestinationSublayerScale(
             transform_node->id, clip_node->data.target_id, &source_to_target);
@@ -967,7 +972,7 @@ gfx::Transform DrawTransform(const LayerImpl* layer,
   if (!owns_non_root_surface) {
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.
-    xform = node->data.to_target;
+    xform = tree.ToTarget(layer->transform_tree_index());
     if (layer->should_flatten_transform_from_property_tree())
       xform.FlattenTo2d();
     xform.Translate(layer->offset_to_transform_parent().x(),
@@ -989,7 +994,7 @@ static void SetSurfaceDrawTransform(const TransformTree& tree,
   }
 
   gfx::Transform render_surface_transform;
-  const TransformNode* target_node = tree.Node(node->data.target_id);
+  const TransformNode* target_node = tree.Node(tree.TargetId(node->id));
   tree.ComputeTransformWithDestinationSublayerScale(node->id, target_node->id,
                                                     &render_surface_transform);
   if (node->data.sublayer_scale.x() != 0.0 &&
@@ -1017,7 +1022,8 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
 
   const TransformNode* transform_node =
       transform_tree.Node(render_surface->TransformTreeIndex());
-  if (transform_node->data.target_id == parent_clip_node->data.target_id) {
+  if (transform_tree.TargetId(transform_node->id) ==
+      parent_clip_node->data.target_id) {
     render_surface->SetClipRect(
         gfx::ToEnclosingRect(parent_clip_node->data.clip_in_target_space));
     return;
@@ -1029,7 +1035,8 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
   gfx::Transform clip_parent_target_to_target;
   const bool success =
       transform_tree.ComputeTransformWithDestinationSublayerScale(
-          parent_clip_node->data.target_id, transform_node->data.target_id,
+          parent_clip_node->data.target_id,
+          transform_tree.TargetId(transform_node->id),
           &clip_parent_target_to_target);
 
   if (!success) {
@@ -1037,7 +1044,8 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
     return;
   }
 
-  DCHECK_LT(parent_clip_node->data.target_id, transform_node->data.target_id);
+  DCHECK_LT(parent_clip_node->data.target_id,
+            transform_tree.TargetId(transform_node->id));
   render_surface->SetClipRect(gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
       clip_parent_target_to_target,
       parent_clip_node->data.clip_in_target_space)));
@@ -1045,10 +1053,10 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
 
 template <typename LayerType>
 static gfx::Transform ScreenSpaceTransformInternal(LayerType* layer,
-                                                   const TransformNode* node) {
+                                                   const TransformTree& tree) {
   gfx::Transform xform(1, 0, 0, 1, layer->offset_to_transform_parent().x(),
                        layer->offset_to_transform_parent().y());
-  gfx::Transform ssxform = node->data.to_screen;
+  gfx::Transform ssxform = tree.ToScreen(layer->transform_tree_index());
   xform.ConcatTransform(ssxform);
   if (layer->should_flatten_transform_from_property_tree())
     xform.FlattenTo2d();
@@ -1057,14 +1065,12 @@ static gfx::Transform ScreenSpaceTransformInternal(LayerType* layer,
 
 gfx::Transform ScreenSpaceTransform(const Layer* layer,
                                     const TransformTree& tree) {
-  return ScreenSpaceTransformInternal(layer,
-                                      tree.Node(layer->transform_tree_index()));
+  return ScreenSpaceTransformInternal(layer, tree);
 }
 
 gfx::Transform ScreenSpaceTransform(const LayerImpl* layer,
                                     const TransformTree& tree) {
-  return ScreenSpaceTransformInternal(layer,
-                                      tree.Node(layer->transform_tree_index()));
+  return ScreenSpaceTransformInternal(layer, tree);
 }
 
 static float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
@@ -1143,7 +1149,7 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
       property_trees->clip_tree.Node(layer->clip_tree_index());
 
   layer->draw_properties().screen_space_transform =
-      ScreenSpaceTransformInternal(layer, transform_node);
+      ScreenSpaceTransformInternal(layer, property_trees->transform_tree);
   if (property_trees->non_root_surfaces_enabled) {
     layer->draw_properties().target_space_transform =
         DrawTransform(layer, property_trees->transform_tree);
@@ -1187,8 +1193,7 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
   // properties computed for other layers are not needed.
   mask_layer->draw_properties().screen_space_transform =
       ScreenSpaceTransformInternal(mask_layer,
-                                   property_trees->transform_tree.Node(
-                                       mask_layer->transform_tree_index()));
+                                   property_trees->transform_tree);
   mask_layer->draw_properties().visible_layer_rect =
       gfx::Rect(mask_layer->bounds());
 }

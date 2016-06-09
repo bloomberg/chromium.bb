@@ -31,7 +31,8 @@ class EffectNodeData;
 class PropertyTree;
 class PropertyTrees;
 class ScrollNodeData;
-class TranformNodeData;
+class TransformNodeData;
+class TransformCachedNodeData;
 class TransformTreeData;
 class TreeNode;
 }
@@ -93,17 +94,6 @@ struct CC_EXPORT TransformNodeData {
   gfx::Transform post_local;
 
   gfx::Transform to_parent;
-
-  gfx::Transform to_target;
-  gfx::Transform from_target;
-
-  gfx::Transform to_screen;
-  gfx::Transform from_screen;
-
-  int target_id;
-  // This id is used for all content that draws into a render surface associated
-  // with this transform node.
-  int content_target_id;
 
   // This is the node with respect to which source_offset is defined. This will
   // not be needed once layerization moves to cc, but is needed in order to
@@ -211,6 +201,26 @@ struct CC_EXPORT TransformNodeData {
   void FromProtobuf(const proto::TreeNode& proto);
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
+};
+
+struct CC_EXPORT TransformCachedNodeData {
+  TransformCachedNodeData();
+  TransformCachedNodeData(const TransformCachedNodeData& other);
+  ~TransformCachedNodeData();
+
+  gfx::Transform from_target;
+  gfx::Transform to_target;
+  gfx::Transform from_screen;
+  gfx::Transform to_screen;
+  int target_id;
+  // This id is used for all content that draws into a render surface associated
+  // with this transform node.
+  int content_target_id;
+
+  bool operator==(const TransformCachedNodeData& other) const;
+
+  void ToProtobuf(proto::TransformCachedNodeData* proto) const;
+  void FromProtobuf(const proto::TransformCachedNodeData& proto);
 };
 
 typedef TreeNode<TransformNodeData> TransformNode;
@@ -406,6 +416,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   bool operator==(const TransformTree& other) const;
 
+  int Insert(const TransformNode& tree_node, int parent_id);
+
   void clear();
 
   // Computes the change of basis transform from node |source_id| to |dest_id|.
@@ -505,6 +517,28 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return nodes_affected_by_outer_viewport_bounds_delta_;
   }
 
+  const gfx::Transform& FromTarget(int node_id) const;
+  void SetFromTarget(int node_id, const gfx::Transform& transform);
+
+  const gfx::Transform& ToTarget(int node_id) const;
+  void SetToTarget(int node_id, const gfx::Transform& transform);
+
+  const gfx::Transform& FromScreen(int node_id) const;
+  void SetFromScreen(int node_id, const gfx::Transform& transform);
+
+  const gfx::Transform& ToScreen(int node_id) const;
+  void SetToScreen(int node_id, const gfx::Transform& transform);
+
+  int TargetId(int node_id) const;
+  void SetTargetId(int node_id, int target_id);
+
+  int ContentTargetId(int node_id) const;
+  void SetContentTargetId(int node_id, int content_target_id);
+
+  const std::vector<TransformCachedNodeData>& cached_data() const {
+    return cached_data_;
+  }
+
   gfx::Transform ToScreenSpaceTransformWithoutSublayerScale(int id) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
@@ -555,6 +589,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   float device_transform_scale_factor_;
   std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
+  std::vector<TransformCachedNodeData> cached_data_;
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {

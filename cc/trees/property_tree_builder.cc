@@ -503,13 +503,17 @@ bool AddTransformNodeIfNeeded(
       ShouldFlattenTransform(layer) || has_surface;
   DCHECK_GT(data_from_ancestor.property_trees->effect_tree.size(), 0u);
 
-  node->data.target_id = data_for_children->property_trees->effect_tree
-                             .Node(data_from_ancestor.render_target)
-                             ->data.transform_id;
-  node->data.content_target_id = data_for_children->property_trees->effect_tree
-                                     .Node(data_for_children->render_target)
-                                     ->data.transform_id;
-  DCHECK_NE(node->data.target_id, kInvalidPropertyTreeNodeId);
+  data_for_children->property_trees->transform_tree.SetTargetId(
+      node->id, data_for_children->property_trees->effect_tree
+                    .Node(data_from_ancestor.render_target)
+                    ->data.transform_id);
+  data_for_children->property_trees->transform_tree.SetContentTargetId(
+      node->id, data_for_children->property_trees->effect_tree
+                    .Node(data_for_children->render_target)
+                    ->data.transform_id);
+  DCHECK_NE(
+      data_for_children->property_trees->transform_tree.TargetId(node->id),
+      kInvalidPropertyTreeNodeId);
 
   node->data.has_potential_animation = has_potentially_animated_transform;
   node->data.is_currently_animating = layer->TransformIsAnimating();
