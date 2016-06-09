@@ -34,6 +34,8 @@ enum CommandType {
   // These correspond to pathing commands.
   MOVE_TO,
   R_MOVE_TO,
+  ARC_TO,
+  R_ARC_TO,
   LINE_TO,
   R_LINE_TO,
   H_LINE_TO,

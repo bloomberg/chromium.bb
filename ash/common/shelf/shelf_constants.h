@@ -36,6 +36,10 @@ ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 // based on the desired shelf opacity level.
 ASH_EXPORT extern const SkColor kShelfBaseColor;
 
+// The foreground color of the icons used in the shelf (launcher,
+// notifications, etc).
+ASH_EXPORT extern const SkColor kShelfIconColor;
+
 // The direction of the focus cycling.
 enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };
 

@@ -513,6 +513,8 @@ action("aggregate_vector_icons") {
     "vector_icons/remove_circle.icon",
     "vector_icons/sad_tab.icon",
     "vector_icons/settings.icon",
+    "vector_icons/shelf_applist.1x.icon",
+    "vector_icons/shelf_applist.icon",
     "vector_icons/smartphone.icon",
     "vector_icons/submenu_arrow.1x.icon",
     "vector_icons/submenu_arrow.icon",

@@ -15,6 +15,7 @@ const int kShelfButtonSpacing = 10;
 const int kShelfButtonSize = 44;
 const int kTimeToSwitchBackgroundMs = 1000;
 const SkColor kShelfBaseColor = SK_ColorBLACK;
+const SkColor kShelfIconColor = SK_ColorWHITE;
 
 int GetShelfConstant(ShelfConstant shelf_constant) {
   const int kShelfBackgroundAlpha[] = {204, 153, 153};

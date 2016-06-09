@@ -37,6 +37,8 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(CAP_SQUARE);
   RETURN_IF_IS(MOVE_TO);
   RETURN_IF_IS(R_MOVE_TO);
+  RETURN_IF_IS(ARC_TO);
+  RETURN_IF_IS(R_ARC_TO);
   RETURN_IF_IS(LINE_TO);
   RETURN_IF_IS(R_LINE_TO);
   RETURN_IF_IS(H_LINE_TO);
@@ -142,6 +144,38 @@ void PaintPath(Canvas* canvas,
         SkScalar x = path_elements[++i].arg;
         SkScalar y = path_elements[++i].arg;
         path.rMoveTo(x, y);
+        break;
+      }
+
+      case ARC_TO: {
+        SkScalar rx = path_elements[++i].arg;
+        SkScalar ry = path_elements[++i].arg;
+        SkScalar angle = path_elements[++i].arg;
+        SkScalar large_arc_flag = path_elements[++i].arg;
+        SkScalar arc_sweep_flag = path_elements[++i].arg;
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
+        path.arcTo(
+            rx, ry, angle,
+            large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
+            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
+            x, y);
+        break;
+      }
+
+      case R_ARC_TO: {
+        SkScalar rx = path_elements[++i].arg;
+        SkScalar ry = path_elements[++i].arg;
+        SkScalar angle = path_elements[++i].arg;
+        SkScalar large_arc_flag = path_elements[++i].arg;
+        SkScalar arc_sweep_flag = path_elements[++i].arg;
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
+        path.rArcTo(
+            rx, ry, angle,
+            large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
+            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
+            x, y);
         break;
       }
 

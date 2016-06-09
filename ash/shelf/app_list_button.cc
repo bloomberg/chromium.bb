@@ -5,6 +5,7 @@
 #include "ash/shelf/app_list_button.h"
 
 #include "ash/ash_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
@@ -19,6 +20,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -109,19 +112,17 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
     else
       background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
   }
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* background_image =
       rb.GetImageNamed(background_image_id).ToImageSkia();
-  // TODO(mgiuca): When the "classic" app list is removed, also remove this
-  // resource and its icon file.
-  int foreground_image_id = app_list::switches::IsExperimentalAppListEnabled()
-                                ? IDR_ASH_SHELF_ICON_APPLIST
-                                : IDR_ASH_SHELF_ICON_APPLIST_CLASSIC;
-  const gfx::ImageSkia* forground_image =
-      rb.GetImageNamed(foreground_image_id).ToImageSkia();
+  const gfx::ImageSkia& foreground_image =
+      MaterialDesignController::IsShelfMaterial()
+          ? CreateVectorIcon(gfx::VectorIconId::SHELF_APPLIST, kShelfIconColor)
+          : *rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia();
 
   gfx::Rect contents_bounds = GetContentsBounds();
-  gfx::Rect background_bounds, forground_bounds;
+  gfx::Rect background_bounds, foreground_bounds;
 
   ShelfAlignment alignment = shelf_view_->shelf()->alignment();
   background_bounds.set_size(background_image->size());
@@ -140,20 +141,21 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
         (contents_bounds.width() - background_image->width()) / 2);
   }
 
-  forground_bounds.set_size(forground_image->size());
-  forground_bounds.set_x(background_bounds.x() +
+  foreground_bounds.set_size(foreground_image.size());
+
+  foreground_bounds.set_x(background_bounds.x() +
       std::max(0,
-          (background_bounds.width() - forground_bounds.width()) / 2));
-  forground_bounds.set_y(background_bounds.y() +
+          (background_bounds.width() - foreground_bounds.width()) / 2));
+  foreground_bounds.set_y(background_bounds.y() +
       std::max(0,
-          (background_bounds.height() - forground_bounds.height()) / 2));
+          (background_bounds.height() - foreground_bounds.height()) / 2));
 
   canvas->DrawImageInt(*background_image,
                        background_bounds.x(),
                        background_bounds.y());
-  canvas->DrawImageInt(*forground_image,
-                       forground_bounds.x(),
-                       forground_bounds.y());
+  canvas->DrawImageInt(foreground_image,
+                       foreground_bounds.x(),
+                       foreground_bounds.y());
 
   views::Painter::PaintFocusPainter(this, canvas, focus_painter());
 }
