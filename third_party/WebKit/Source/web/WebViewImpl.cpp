@@ -1540,6 +1540,9 @@ WebInputEventResult WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& ev
         Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
         if (!focusedFrame->isLocalFrame())
             return WebInputEventResult::NotHandled;
+        // Firefox reveal focus based on "keydown" event but not "contextmenu" event, we match FF.
+        if (Element* focusedElement = toLocalFrame(focusedFrame)->document()->focusedElement())
+            focusedElement->scrollIntoViewIfNeeded();
         return toLocalFrame(focusedFrame)->eventHandler().sendContextMenuEventForKey(nullptr);
     }
 }
