@@ -306,7 +306,7 @@ void OfflinePageModelImpl::SavePage(
 void OfflinePageModelImpl::MarkPageAccessed(int64_t offline_id) {
   DCHECK(is_loaded_);
   auto iter = offline_pages_.find(offline_id);
-  if (iter == offline_pages_.end())
+  if (iter == offline_pages_.end() || iter->second.IsExpired())
     return;
 
   // Make a copy of the cached item and update it. The cached item should only
@@ -414,7 +414,8 @@ void OfflinePageModelImpl::HasPagesAfterLoadDone(
   bool has_pages = false;
 
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id.name_space == name_space) {
+    if (id_page_pair.second.client_id.name_space == name_space &&
+        !id_page_pair.second.IsExpired()) {
       has_pages = true;
       break;
     }
@@ -437,6 +438,8 @@ void OfflinePageModelImpl::CheckPagesExistOfflineAfterLoadDone(
   DCHECK(is_loaded_);
   CheckPagesExistOfflineResult result;
   for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.IsExpired())
+      continue;
     auto iter = urls.find(id_page_pair.second.url);
     if (iter != urls.end())
       result.insert(*iter);
@@ -455,8 +458,10 @@ void OfflinePageModelImpl::GetAllPagesAfterLoadDone(
   DCHECK(is_loaded_);
 
   MultipleOfflinePageItemResult offline_pages;
-  for (const auto& id_page_pair : offline_pages_)
-    offline_pages.push_back(id_page_pair.second);
+  for (const auto& id_page_pair : offline_pages_) {
+    if (!id_page_pair.second.IsExpired())
+      offline_pages.push_back(id_page_pair.second);
+  }
 
   callback.Run(offline_pages);
 }
@@ -483,8 +488,10 @@ const std::vector<int64_t> OfflinePageModelImpl::MaybeGetOfflineIdsForClientId(
   // We want only all pages, including those marked for deletion.
   // TODO(bburns): actually use an index rather than linear scan.
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id == client_id)
+    if (id_page_pair.second.client_id == client_id &&
+        !id_page_pair.second.IsExpired()) {
       results.push_back(id_page_pair.second.offline_id);
+    }
   }
   return results;
 }
@@ -510,7 +517,9 @@ void OfflinePageModelImpl::GetPageByOfflineIdWhenLoadDone(
 const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineId(
     int64_t offline_id) const {
   const auto iter = offline_pages_.find(offline_id);
-  return iter != offline_pages_.end() ? &(iter->second) : nullptr;
+  return iter != offline_pages_.end() && !iter->second.IsExpired()
+             ? &(iter->second)
+             : nullptr;
 }
 
 void OfflinePageModelImpl::GetPageByOfflineURL(
@@ -524,6 +533,9 @@ void OfflinePageModelImpl::GetPageByOfflineURL(
 void OfflinePageModelImpl::GetPageByOfflineURLWhenLoadDone(
     const GURL& offline_url,
     const SingleOfflinePageItemCallback& callback) const {
+  // Getting pages by offline URL does not exclude expired pages, as the caller
+  // already holds the offline URL and simply needs to look up a corresponding
+  // online URL.
   base::Optional<OfflinePageItem> result;
 
   for (const auto& id_page_pair : offline_pages_) {
@@ -538,6 +550,9 @@ void OfflinePageModelImpl::GetPageByOfflineURLWhenLoadDone(
 
 const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineURL(
     const GURL& offline_url) const {
+  // Getting pages by offline URL does not exclude expired pages, as the caller
+  // already holds the offline URL and simply needs to look up a corresponding
+  // online URL.
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.GetOfflineURL() == offline_url)
       return &(id_page_pair.second);
@@ -579,8 +594,10 @@ void OfflinePageModelImpl::GetPagesByOnlineURLWhenLoadDone(
   std::vector<OfflinePageItem> result;
 
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.url == online_url)
+    if (id_page_pair.second.url == online_url &&
+        !id_page_pair.second.IsExpired()) {
       result.push_back(id_page_pair.second);
+    }
   }
 
   callback.Run(result);
@@ -590,7 +607,8 @@ const OfflinePageItem* OfflinePageModelImpl::MaybeGetBestPageForOnlineURL(
     const GURL& online_url) const {
   const OfflinePageItem* result = nullptr;
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.url == online_url) {
+    if (id_page_pair.second.url == online_url &&
+        !id_page_pair.second.IsExpired()) {
       if (!result || id_page_pair.second.creation_time > result->creation_time)
         result = &(id_page_pair.second);
     }
@@ -598,11 +616,11 @@ const OfflinePageItem* OfflinePageModelImpl::MaybeGetBestPageForOnlineURL(
   return result;
 }
 
-void OfflinePageModelImpl::CheckForExternalFileDeletion() {
+void OfflinePageModelImpl::CheckMetadataConsistency() {
   DCHECK(is_loaded_);
 
   archive_manager_->GetAllArchives(
-      base::Bind(&OfflinePageModelImpl::ScanForMissingArchiveFiles,
+      base::Bind(&OfflinePageModelImpl::DoCheckMetadataConsistency,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -772,7 +790,7 @@ void OfflinePageModelImpl::OnLoadDone(
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
 
-  CheckForExternalFileDeletion();
+  CheckMetadataConsistency();
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&OfflinePageModelImpl::ClearStorageIfNeeded,
@@ -853,41 +871,64 @@ void OfflinePageModelImpl::InformDeletePageDone(
     callback.Run(result);
 }
 
-void OfflinePageModelImpl::ScanForMissingArchiveFiles(
+void OfflinePageModelImpl::DoCheckMetadataConsistency(
+    const std::set<base::FilePath>& archive_paths) {
+  ExpirePagesMissingArchiveFile(archive_paths);
+  DeleteOrphanedArchives(archive_paths);
+}
+
+void OfflinePageModelImpl::ExpirePagesMissingArchiveFile(
     const std::set<base::FilePath>& archive_paths) {
   std::vector<int64_t> ids_of_pages_missing_archive_file;
-  std::vector<std::pair<int64_t, ClientId>> offline_client_id_pairs;
   for (const auto& id_page_pair : offline_pages_) {
-    if (archive_paths.count(id_page_pair.second.file_path) == 0UL) {
+    if (archive_paths.count(id_page_pair.second.file_path) == 0UL)
       ids_of_pages_missing_archive_file.push_back(id_page_pair.first);
-      offline_client_id_pairs.push_back(
-          std::make_pair(id_page_pair.first, id_page_pair.second.client_id));
-    }
   }
 
-  // No offline pages missing archive files, we can bail out.
   if (ids_of_pages_missing_archive_file.empty())
     return;
 
-  DeletePageCallback remove_pages_done_callback(base::Bind(
-      &OfflinePageModelImpl::OnRemoveOfflinePagesMissingArchiveFileDone,
-      weak_ptr_factory_.GetWeakPtr(), offline_client_id_pairs));
-
-  store_->RemoveOfflinePages(
-      ids_of_pages_missing_archive_file,
-      base::Bind(&OfflinePageModelImpl::OnRemoveOfflinePagesDone,
+  ExpirePages(
+      ids_of_pages_missing_archive_file, base::Time::Now(),
+      base::Bind(&OfflinePageModelImpl::OnExpirePagesMissingArchiveFileDone,
                  weak_ptr_factory_.GetWeakPtr(),
-                 ids_of_pages_missing_archive_file,
-                 remove_pages_done_callback));
+                 ids_of_pages_missing_archive_file));
 }
 
-void OfflinePageModelImpl::OnRemoveOfflinePagesMissingArchiveFileDone(
-    const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
-    DeletePageResult /* result */) {
-  for (const auto& id_pair : offline_client_id_pairs) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OfflinePageDeleted(id_pair.first, id_pair.second));
-  }
+void OfflinePageModelImpl::OnExpirePagesMissingArchiveFileDone(
+    const std::vector<int64_t>& offline_ids,
+    bool success) {
+  UMA_HISTOGRAM_COUNTS("OfflinePages.Consistency.PagesMissingArchiveFileCount",
+                       static_cast<int32_t>(offline_ids.size()));
+  UMA_HISTOGRAM_BOOLEAN(
+      "OfflinePages.Consistency.ExpirePagesMissingArchiveFileResult", success);
+}
+
+void OfflinePageModelImpl::DeleteOrphanedArchives(
+    const std::set<base::FilePath>& archive_paths) {
+  // Archives are considered orphaned unless they are pointed to by some pages.
+  std::set<base::FilePath> orphaned_archive_set(archive_paths);
+  for (const auto& id_page_pair : offline_pages_)
+    orphaned_archive_set.erase(id_page_pair.second.file_path);
+
+  if (orphaned_archive_set.empty())
+    return;
+
+  std::vector<base::FilePath> orphaned_archives(orphaned_archive_set.begin(),
+                                                orphaned_archive_set.end());
+  archive_manager_->DeleteMultipleArchives(
+      orphaned_archives,
+      base::Bind(&OfflinePageModelImpl::OnDeleteOrphanedArchivesDone,
+                 weak_ptr_factory_.GetWeakPtr(), orphaned_archives));
+}
+
+void OfflinePageModelImpl::OnDeleteOrphanedArchivesDone(
+    const std::vector<base::FilePath>& archives,
+    bool success) {
+  UMA_HISTOGRAM_COUNTS("OfflinePages.Consistency.OrphanedArchivesCount",
+                       static_cast<int32_t>(archives.size()));
+  UMA_HISTOGRAM_BOOLEAN("OfflinePages.Consistency.DeleteOrphanedArchivesResult",
+                        success);
 }
 
 void OfflinePageModelImpl::OnRemoveAllFilesDoneForClearAll(

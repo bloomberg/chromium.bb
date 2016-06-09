@@ -63,7 +63,7 @@ const OfflinePageItem* StubOfflinePageModel::MaybeGetBestPageForOnlineURL(
     const GURL& online_url) const {
   return nullptr;
 }
-void StubOfflinePageModel::CheckForExternalFileDeletion() {}
+void StubOfflinePageModel::CheckMetadataConsistency() {}
 void StubOfflinePageModel::ExpirePages(
     const std::vector<int64_t>& offline_ids,
     const base::Time& expiration_time,

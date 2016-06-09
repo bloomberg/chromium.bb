@@ -395,7 +395,7 @@ void OfflinePageBridge::DeletePages(
 void OfflinePageBridge::CheckMetadataConsistency(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  offline_page_model_->CheckForExternalFileDeletion();
+  offline_page_model_->CheckMetadataConsistency();
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

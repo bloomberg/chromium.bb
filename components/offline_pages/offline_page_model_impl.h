@@ -103,7 +103,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const SingleOfflinePageItemCallback callback) override;
   const OfflinePageItem* MaybeGetBestPageForOnlineURL(
       const GURL& online_url) const override;
-  void CheckForExternalFileDeletion() override;
+  void CheckMetadataConsistency() override;
   void ExpirePages(const std::vector<int64_t>& offline_ids,
                    const base::Time& expiration_time,
                    const base::Callback<void(bool)>& callback) override;
@@ -193,12 +193,20 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnMarkPageAccesseDone(const OfflinePageItem& offline_page_item,
                              bool success);
 
-  // Callbacks for checking if offline pages are missing archive files.
-  void ScanForMissingArchiveFiles(
+  // Callbacks for checking metadata consistency.
+  void DoCheckMetadataConsistency(
       const std::set<base::FilePath>& archive_paths);
-  void OnRemoveOfflinePagesMissingArchiveFileDone(
-      const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
-      DeletePageResult result);
+  // Callback called after headless archives deleted. Orphaned archives are
+  // archives files on disk which are not pointed to by any of the page items
+  // in metadata store.
+  void ExpirePagesMissingArchiveFile(
+      const std::set<base::FilePath>& archive_paths);
+  void OnExpirePagesMissingArchiveFileDone(
+      const std::vector<int64_t>& offline_ids,
+      bool success);
+  void DeleteOrphanedArchives(const std::set<base::FilePath>& archive_paths);
+  void OnDeleteOrphanedArchivesDone(const std::vector<base::FilePath>& archives,
+                                    bool success);
 
   // Steps for clearing all.
   void OnRemoveAllFilesDoneForClearAll(const base::Closure& callback,

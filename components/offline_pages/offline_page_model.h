@@ -57,8 +57,6 @@ class OfflinePageModel : public base::SupportsUserData {
     virtual void OfflinePageModelChanged(OfflinePageModel* model) = 0;
 
     // Invoked when an offline copy related to |offline_id| was deleted.
-    // In can be invoked as a result of |CheckForExternalFileDeletion|, if a
-    // deleted page is detected.
     virtual void OfflinePageDeleted(int64_t offline_id,
                                     const ClientId& client_id) = 0;
 
@@ -179,11 +177,12 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual const OfflinePageItem* MaybeGetBestPageForOnlineURL(
       const GURL& online_url) const = 0;
 
-  // Checks that all of the offline pages have corresponding offline copies.
+  // Checks that all of the offline pages have corresponding offline copies,
+  // and all archived files have offline pages pointing to them.
   // If a page is discovered to be missing an offline copy, its offline page
-  // metadata will be removed and |OfflinePageDeleted| will be sent to model
-  // observers.
-  virtual void CheckForExternalFileDeletion() = 0;
+  // metadata will be expired. If an archive file is discovered missing its
+  // offline page, it will be deleted.
+  virtual void CheckMetadataConsistency() = 0;
 
   // Marks pages with |offline_ids| as expired and deletes the associated
   // archive files.

@@ -727,10 +727,10 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissing) {
 
   // Delete the offline copy of the page and check the metadata.
   base::DeleteFile(page->file_path, false);
-  model()->CheckForExternalFileDeletion();
+  model()->CheckMetadataConsistency();
   PumpLoop();
 
-  EXPECT_EQ(last_deleted_offline_id(), offline_id);
+  // Check if the page has been expired.
   EXPECT_EQ(0UL, GetAllPages().size());
 }
 
@@ -749,8 +749,31 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissingAfterLoad) {
   ResetModel();
   PumpLoop();
 
-  EXPECT_EQ(last_deleted_offline_id(), offline_id);
+  // Check if the page has been expired.
   EXPECT_EQ(0UL, GetAllPages().size());
+}
+
+TEST_F(OfflinePageModelImplTest, DetectThatHeadlessPageIsDeleted) {
+  // Save a page.
+  SavePage(kTestUrl, kTestClientId1);
+  PumpLoop();
+  int64_t offline_id = last_save_offline_id();
+
+  ResetResults();
+  base::Optional<OfflinePageItem> page = GetPageByOfflineId(offline_id);
+  base::FilePath path = page->file_path;
+  EXPECT_TRUE(base::PathExists(path));
+  GetStore()->ClearAllPages();
+
+  EXPECT_TRUE(base::PathExists(path));
+  // Since we've manually changed the store, we have to reload the model to
+  // actually refresh the in-memory copy in model. Otherwise GetAllPages() would
+  // still have the page we saved above.
+  ResetModel();
+  PumpLoop();
+
+  EXPECT_EQ(0UL, GetAllPages().size());
+  EXPECT_FALSE(base::PathExists(path));
 }
 
 TEST_F(OfflinePageModelImplTest, DeleteMultiplePages) {

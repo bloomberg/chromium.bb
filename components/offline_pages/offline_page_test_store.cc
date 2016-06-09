@@ -84,4 +84,8 @@ std::vector<OfflinePageItem> OfflinePageTestStore::GetAllPages() const {
   return offline_pages;
 }
 
+void OfflinePageTestStore::ClearAllPages() {
+  offline_pages_.clear();
+}
+
 }  // namespace offline_pages

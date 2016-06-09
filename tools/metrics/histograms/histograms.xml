@@ -35115,6 +35115,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of asking storage manager to clear storage.</summary>
 </histogram>
 
+<histogram name="OfflinePages.Consistency.DeleteOrphanedArchivesResult"
+    enum="BooleanSuccess">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Whether an attempt to delete archive files without metadata was successful.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Consistency.ExpirePagesMissingArchiveFileResult"
+    enum="BooleanSuccess">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Whether an attempt to expire pages without archives was successful.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Consistency.OrphanedArchivesCount">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Number of archives without metadata entry when checking consistency.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Consistency.PagesMissingArchiveFileCount">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Number of offline pages without archive file when checking consistency.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.DeletePage.AccessCount">
   <owner>jianli@chromium.org</owner>
   <summary>

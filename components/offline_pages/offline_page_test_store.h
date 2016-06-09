@@ -49,6 +49,9 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   // Returns all pages, regardless their states.
   std::vector<OfflinePageItem> GetAllPages() const;
 
+  // Clear all pages in the store.
+  void ClearAllPages();
+
   const OfflinePageItem& last_saved_page() const { return last_saved_page_; }
 
   void set_test_scenario(TestScenario scenario) { scenario_ = scenario; };
