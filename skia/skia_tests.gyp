@@ -25,7 +25,6 @@
         'ext/image_operations_unittest.cc',
         'ext/platform_canvas_unittest.cc',
         'ext/recursive_gaussian_convolution_unittest.cc',
-        'ext/refptr_unittest.cc',
         'ext/skia_memory_dump_provider_unittest.cc',
         'ext/skia_utils_ios_unittest.mm',
         'ext/skia_utils_mac_unittest.mm',

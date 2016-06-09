@@ -203,15 +203,6 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'skia::RefPtr',
-      (
-        'The use of skia::RefPtr is prohibited. ',
-        'Please use sk_sp<> instead.'
-      ),
-      True,
-      (),
-    ),
-    (
       'SkRefPtr',
       (
         'The use of SkRefPtr is prohibited. ',
