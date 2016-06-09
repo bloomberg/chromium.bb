@@ -58,10 +58,14 @@ void ForeignFetchRequestHandler::InitializeHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBody> body) {
+    scoped_refptr<ResourceRequestBody> body,
+    bool initiated_in_secure_context) {
   if (!context_wrapper) {
     return;
   }
+
+  if (!initiated_in_secure_context)
+    return;
 
   if (!context_wrapper->OriginHasForeignFetchRegistrations(
           request->url().GetOrigin())) {
@@ -70,6 +74,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
 
   if (request->initiator().IsSameOriginWith(url::Origin(request->url())))
     return;
+
   if (ServiceWorkerUtils::IsMainResourceType(resource_type))
     return;
 

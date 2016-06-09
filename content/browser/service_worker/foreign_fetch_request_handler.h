@@ -61,7 +61,8 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBody> body);
+      scoped_refptr<ResourceRequestBody> body,
+      bool initiated_in_secure_context);
 
   // Returns the handler attached to |request|. This may return null
   // if no handler is attached.

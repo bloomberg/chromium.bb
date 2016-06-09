@@ -157,5 +157,31 @@ promise_test(t => {
         });
   }, 'Referrer and origin are set correctly in ForeignFetchEvent.');
 
+function fetch_from_iframe(origin, url) {
+  return with_iframe(origin +
+      '/serviceworker/resources/foreign-fetch-helper-iframe.html')
+    .then(frame => new Promise((resolve) => {
+        var channel = new MessageChannel();
+        frame.contentWindow.postMessage({url: url,
+                                         port: channel.port1},
+                                         '*', [channel.port1]);
+        channel.port2.onmessage = reply => resolve(reply.data);
+      }));
+}
+
+promise_test(t => {
+    var scope = 'simple.txt?basic_insecure';
+    var remote_url =
+        host_info.AUTHENTICATED_ORIGIN + '/serviceworker/resources/' + scope;
+    return install_cross_origin_worker(t, worker_for_scopes(['']), scope,
+                                       host_info.AUTHENTICATED_ORIGIN)
+      .then(() => fetch_from_iframe(host_info.HTTPS_REMOTE_ORIGIN, remote_url))
+      .then(response => assert_equals(response, 'Success: Foreign Fetch'))
+      .then(() => fetch_from_iframe(host_info.UNAUTHENTICATED_ORIGIN,
+                                    remote_url))
+      .then(response => assert_equals(response,
+                                      'Error: TypeError: Failed to fetch'));
+  }, 'Service Worker does not intercept fetches from an insecure context.');
+
 </script>
 </body>
