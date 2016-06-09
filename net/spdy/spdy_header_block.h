@@ -104,9 +104,6 @@ class NET_EXPORT SpdyHeaderBlock {
     // This makes SpdyHeaderBlock::operator[] easy to use with StringPieces.
     operator base::StringPiece() const;
 
-    // Reserves |size| bytes in the underlying storage.
-    void reserve(size_t size);
-
     std::string as_string() const {
       return static_cast<base::StringPiece>(*this).as_string();
     }
