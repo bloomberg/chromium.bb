@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/security_state/security_state_model.h"
-#include "third_party/skia/include/core/SKColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class CommandUpdater;
 class OmniboxPopupView;
