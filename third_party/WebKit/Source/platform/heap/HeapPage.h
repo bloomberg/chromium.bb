@@ -494,7 +494,7 @@ public:
         return sizeof(NormalPage) + paddingSize;
     }
 
-    NormalPageArena* arenaForNormalPage();
+    inline NormalPageArena* arenaForNormalPage() const;
 
 private:
     HeapObjectHeader* findHeaderFromAddress(Address);
@@ -923,6 +923,11 @@ inline Address NormalPageArena::allocateObject(size_t allocationSize, size_t gcI
         return result;
     }
     return outOfLineAllocate(allocationSize, gcInfoIndex);
+}
+
+inline NormalPageArena* NormalPage::arenaForNormalPage() const
+{
+    return static_cast<NormalPageArena*>(arena());
 }
 
 } // namespace blink

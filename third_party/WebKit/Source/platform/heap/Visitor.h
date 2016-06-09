@@ -35,7 +35,6 @@
 #include "platform/heap/GarbageCollected.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTraits.h"
 #include "wtf/TypeTraits.h"

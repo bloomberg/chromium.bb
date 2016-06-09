@@ -13,7 +13,6 @@
 #include "platform/heap/WrapperVisitor.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/Deque.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

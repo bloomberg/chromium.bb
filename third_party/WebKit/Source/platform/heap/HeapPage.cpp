@@ -992,13 +992,12 @@ void FreeList::addToFreeList(Address address, size_t size)
     size_t allowedCount = 0;
     size_t forbiddenCount = 0;
     for (size_t i = sizeof(FreeListEntry); i < size; i++) {
-        if (address[i] == reuseAllowedZapValue) {
+        if (address[i] == reuseAllowedZapValue)
             allowedCount++;
-        } else if (address[i] == reuseForbiddenZapValue) {
+        else if (address[i] == reuseForbiddenZapValue)
             forbiddenCount++;
-        } else {
+        else
             ASSERT_NOT_REACHED();
-        }
     }
     size_t entryCount = size - sizeof(FreeListEntry);
     if (forbiddenCount == entryCount) {
@@ -1183,8 +1182,6 @@ void NormalPage::sweep()
             headerAddress += size;
             continue;
         }
-        ASSERT(header->checkHeader());
-
         if (!header->isMarked()) {
             // This is a fast version of header->payloadSize().
             size_t payloadSize = size - sizeof(HeapObjectHeader);
@@ -1240,7 +1237,6 @@ void NormalPage::makeConsistentForGC()
             headerAddress += header->size();
             continue;
         }
-        ASSERT(header->checkHeader());
         if (header->isMarked()) {
             header->unmark();
             markedObjectSize += header->size();
@@ -1256,6 +1252,7 @@ void NormalPage::makeConsistentForGC()
 void NormalPage::makeConsistentForMutator()
 {
     Address startOfGap = payload();
+    NormalPageArena* normalArena = arenaForNormalPage();
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         size_t size = header->size();
@@ -1272,10 +1269,8 @@ void NormalPage::makeConsistentForMutator()
             headerAddress += size;
             continue;
         }
-        ASSERT(header->checkHeader());
-
         if (startOfGap != headerAddress)
-            arenaForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
+            normalArena->addToFreeList(startOfGap, headerAddress - startOfGap);
         if (header->isMarked())
             header->unmark();
         headerAddress += size;
@@ -1283,7 +1278,7 @@ void NormalPage::makeConsistentForMutator()
         ASSERT(headerAddress <= payloadEnd());
     }
     if (startOfGap != payloadEnd())
-        arenaForNormalPage()->addToFreeList(startOfGap, payloadEnd() - startOfGap);
+        normalArena->addToFreeList(startOfGap, payloadEnd() - startOfGap);
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -1298,7 +1293,6 @@ void NormalPage::poisonUnmarkedObjects()
             headerAddress += header->size();
             continue;
         }
-        ASSERT(header->checkHeader());
         if (!header->isMarked())
             ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
         headerAddress += header->size();
@@ -1476,11 +1470,6 @@ bool NormalPage::contains(Address addr)
     return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
 }
 #endif
-
-NormalPageArena* NormalPage::arenaForNormalPage()
-{
-    return static_cast<NormalPageArena*>(arena());
-}
 
 LargeObjectPage::LargeObjectPage(PageMemory* storage, BaseArena* arena, size_t payloadSize)
     : BasePage(storage, arena)

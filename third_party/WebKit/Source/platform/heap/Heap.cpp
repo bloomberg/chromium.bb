@@ -440,17 +440,15 @@ void ThreadHeap::decommitCallbackStacks()
 void ThreadHeap::preGC()
 {
     ASSERT(!ThreadState::current()->isInGC());
-    for (ThreadState* state : m_threads) {
+    for (ThreadState* state : m_threads)
         state->preGC();
-    }
 }
 
 void ThreadHeap::postGC(BlinkGC::GCType gcType)
 {
     ASSERT(ThreadState::current()->isInGC());
-    for (ThreadState* state : m_threads) {
+    for (ThreadState* state : m_threads)
         state->postGC(gcType);
-    }
 }
 
 const char* ThreadHeap::gcReasonString(BlinkGC::GCReason reason)
@@ -744,18 +742,16 @@ void ThreadHeap::visitPersistentRoots(Visitor* visitor)
     TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
     ProcessHeap::crossThreadPersistentRegion().tracePersistentNodes(visitor);
 
-    for (ThreadState* state : m_threads) {
+    for (ThreadState* state : m_threads)
         state->visitPersistents(visitor);
-    }
 }
 
 void ThreadHeap::visitStackRoots(Visitor* visitor)
 {
     ASSERT(ThreadState::current()->isInGC());
     TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
-    for (ThreadState* state : m_threads) {
+    for (ThreadState* state : m_threads)
         state->visitStack(visitor);
-    }
 }
 
 void ThreadHeap::checkAndPark(ThreadState* threadState, SafePointAwareMutexLocker* locker)

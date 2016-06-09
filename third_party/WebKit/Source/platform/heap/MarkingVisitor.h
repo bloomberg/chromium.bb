@@ -63,7 +63,7 @@ protected:
         Impl::registerWeakCellWithCallback(cell, callback);
     }
 
-    inline bool shouldMarkObject(const void* objectPointer)
+    inline bool shouldMarkObject(const void* objectPointer) const
     {
         if (Mode != ThreadLocalMarking)
             return true;

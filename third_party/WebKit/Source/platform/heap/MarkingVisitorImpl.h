@@ -9,10 +9,6 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/Allocator.h"
-#include "wtf/Functional.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/Locker.h"
-#include "wtf/TypeTraits.h"
 
 namespace blink {
 

@@ -47,7 +47,7 @@ public:
 protected:
     // Methods to be called from MarkingVisitorImpl.
 
-    inline bool shouldMarkObject(const void*)
+    inline bool shouldMarkObject(const void*) const
     {
         // As this is global marking visitor, we need to mark all objects.
         return true;
