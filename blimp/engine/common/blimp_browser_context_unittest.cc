@@ -4,8 +4,8 @@
 
 #include "blimp/engine/common/blimp_browser_context.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/log/net_log.h"
@@ -20,8 +20,7 @@ class BlimpBrowserContextTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    base::SetRecordActionTaskRunner(
-        base::MessageLoop::current()->task_runner());
+    base::SetRecordActionTaskRunner(base::ThreadTaskRunnerHandle::Get());
     // Create BlimpBrowserContext.
     browser_context_.reset(new BlimpBrowserContext(false /* off_the_record */,
                                                    &net_log_));
