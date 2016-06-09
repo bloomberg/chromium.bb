@@ -1009,8 +1009,9 @@ void OmniboxEditModel::OnWillKillFocus() {
 void OmniboxEditModel::OnKillFocus() {
   SetFocusState(OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   focus_source_ = INVALID;
-  control_key_state_ = UP;
+  last_omnibox_focus_ = base::TimeTicks();
   paste_state_ = NONE;
+  control_key_state_ = UP;
 }
 
 bool OmniboxEditModel::WillHandleEscapeKey() const {
