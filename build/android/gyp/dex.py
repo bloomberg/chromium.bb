@@ -102,18 +102,45 @@ def _DexWasEmpty(paths, changes):
   return True
 
 
+def _IterAllClassFiles(changes):
+  for path in changes.IterAllPaths():
+    for subpath in changes.IterAllSubpaths(path):
+      if subpath.endswith('.class'):
+        yield path
+
+
+def _MightHitDxBug(changes):
+  # We've seen dx --incremental fail for small libraries. It's unlikely a
+  # speed-up anyways in this case.
+  num_classes = sum(1 for x in _IterAllClassFiles(changes))
+  if num_classes < 10:
+    return True
+
+  # We've also been able to consistently produce a failure by adding an empty
+  # line to the top of the first .java file of a library.
+  # https://crbug.com/617935
+  first_file = next(_IterAllClassFiles(changes))
+  for path in changes.IterChangedPaths():
+    for subpath in changes.IterChangedSubpaths(path):
+      if first_file == subpath:
+        return True
+  return False
+
+
 def _RunDx(changes, options, dex_cmd, paths):
   with build_utils.TempDir() as classes_temp_dir:
     # --multi-dex is incompatible with --incremental.
     if options.multi_dex:
       dex_cmd.append('--main-dex-list=%s' % options.main_dex_list_path)
     else:
-      # Use --incremental when .class files are added or modified (never when
-      # removed).
       # --incremental tells dx to merge all newly dex'ed .class files with
       # what that already exist in the output dex file (existing classes are
       # replaced).
-      if options.incremental and changes.AddedOrModifiedOnly():
+      # Use --incremental when .class files are added or modified, but not when
+      # any are removed (since it won't know to remove them).
+      if (options.incremental
+          and not _MightHitDxBug(changes)
+          and changes.AddedOrModifiedOnly()):
         changed_inputs = set(changes.IterChangedPaths())
         changed_paths = [p for p in paths if p in changed_inputs]
         if not changed_paths:
