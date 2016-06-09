@@ -39,7 +39,7 @@ Canvas2dImageChromium status=experimental
 ClientHints status=stable
 CompositedSelectionUpdate
 CompositorWorker status=experimental
-ContextMenu status=experimental
+ContextMenu status=test
 CorsRFC1918 status=test
 CredentialManager status=stable
 CSS3Text status=experimental
