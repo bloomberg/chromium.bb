@@ -5,10 +5,12 @@
 // https://mediasession.spec.whatwg.org/#the-mediametadata-interface
 
 [
+    ConstructorCallWith=ExecutionContext,
     Constructor(MediaMetadataInit metadata),
     RuntimeEnabled=MediaSession,
 ] interface MediaMetadata {
     readonly attribute DOMString title;
     readonly attribute DOMString artist;
     readonly attribute DOMString album;
+    readonly attribute FrozenArray<MediaArtwork> artwork;
 };

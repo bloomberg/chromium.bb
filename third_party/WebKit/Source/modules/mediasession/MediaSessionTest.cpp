@@ -90,7 +90,7 @@ TEST_F(MediaSessionTest, SetMetadata_NotNull)
     MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
 
     EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::NotNull()));
-    mediaSession->setMetadata(MediaMetadata::create(MediaMetadataInit()));
+    mediaSession->setMetadata(MediaMetadata::create(&document(), MediaMetadataInit()));
 
     EXPECT_NE(nullptr, mediaSession->metadata());
 }

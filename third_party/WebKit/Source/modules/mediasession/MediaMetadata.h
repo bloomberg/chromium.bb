@@ -9,9 +9,12 @@
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/mediasession/WebMediaMetadata.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class ExecutionContext;
+class MediaArtwork;
 class MediaMetadataInit;
 
 // Implementation of MediaMetadata interface from the Media Session API.
@@ -20,20 +23,24 @@ class MODULES_EXPORT MediaMetadata final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaMetadata* create(const MediaMetadataInit&);
+    static MediaMetadata* create(ExecutionContext*, const MediaMetadataInit&);
 
     String title() const;
     String artist() const;
     String album() const;
+    const HeapVector<Member<MediaArtwork>>& artwork() const;
 
-    WebMediaMetadata* data() { return &m_data; }
+    explicit operator WebMediaMetadata() const;
 
-    DEFINE_INLINE_TRACE() { }
+    DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaMetadata(const MediaMetadataInit&);
+    MediaMetadata(ExecutionContext*, const MediaMetadataInit&);
 
-    WebMediaMetadata m_data;
+    String m_title;
+    String m_artist;
+    String m_album;
+    HeapVector<Member<MediaArtwork>> m_artwork;
 };
 
 } // namespace blink

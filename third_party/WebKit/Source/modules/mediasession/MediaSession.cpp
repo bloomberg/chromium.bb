@@ -57,8 +57,12 @@ ScriptPromise MediaSession::deactivate(ScriptState* scriptState)
 void MediaSession::setMetadata(MediaMetadata* metadata)
 {
     m_metadata = metadata;
-
-    m_webMediaSession->setMetadata(m_metadata ? m_metadata->data() : nullptr);
+    if (metadata) {
+        WebMediaMetadata webMetadata = (WebMediaMetadata) *metadata;
+        m_webMediaSession->setMetadata(&webMetadata);
+    } else {
+        m_webMediaSession->setMetadata(nullptr);
+    }
 }
 
 MediaMetadata* MediaSession::metadata() const

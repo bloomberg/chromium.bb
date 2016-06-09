@@ -6,6 +6,8 @@
 #define WebMediaMetadata_h
 
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/mediasession/WebMediaArtwork.h"
 
 namespace blink {
 
@@ -14,6 +16,7 @@ struct WebMediaMetadata {
     WebString title;
     WebString artist;
     WebString album;
+    WebVector<WebMediaArtwork> artwork;
 };
 
 } // namespace blink

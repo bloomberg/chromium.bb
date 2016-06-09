@@ -27,10 +27,23 @@
   }, 'Test that MediaMetadata is constructed using a dictionary');
 
   test(function() {
-    var metadata = new MediaMetadata({ title: 'foo', album: 'bar', artist: 'plop' });
+    var metadata = new MediaMetadata({
+        title: 'foo', album: 'bar', artist: 'plop',
+        artwork: [ { src: 'src1', sizes: 'sizes1', type: 'type1'},
+                   { src: 'src2', sizes: 'sizes2', type: 'type2'} ] });
     assert_equals(metadata.title, 'foo');
     assert_equals(metadata.album, 'bar');
     assert_equals(metadata.artist, 'plop');
+    assert_equals(2, metadata.artwork.length);
+
+    var artwork1 = new MediaArtwork({ src: 'src1', sizes: 'sizes1', type: 'type1'});
+    var artwork2 = new MediaArtwork({ src: 'src2', sizes: 'sizes2', type: 'type2'});
+    assert_equals(metadata.artwork[0].src, artwork1.src);
+    assert_equals(metadata.artwork[0].sizes, artwork1.sizes);
+    assert_equals(metadata.artwork[0].type, artwork1.type);
+    assert_equals(metadata.artwork[1].src, artwork2.src);
+    assert_equals(metadata.artwork[1].sizes, artwork2.sizes);
+    assert_equals(metadata.artwork[1].type, artwork2.type);
   }, 'Test the different values allowed in MediaMetadata init dictionary');
 
   test(function() {
@@ -38,10 +51,12 @@
     assert_equals(metadata.title, '');
     assert_equals(metadata.artist, '');
     assert_equals(metadata.album, '');
+    assert_equals(0, metadata.artwork.length);
   }, 'Test the default values for MediaMetadata');
 
   test(function() {
     var metadata = new MediaMetadata({ randomValueThatWillNotBeAdded: '... hopefully ;)' });
     assert_equals(metadata.randomValueThatWillNotBeAdded, undefined);
   }, 'Test that passing unknown values to the dictionary is a no-op');
+
 </script>
