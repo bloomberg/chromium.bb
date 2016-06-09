@@ -116,7 +116,7 @@ LinkServiceWorker status=experimental
 FractionalScrollOffsets
 MediaCapture
 MediaCaptureFromCanvas status=stable
-MediaCaptureFromVideo status=test
+MediaCaptureFromVideo status=experimental
 MediaConstraints status=experimental
 MediaDevices status=stable
 MediaDocumentDownloadButton
