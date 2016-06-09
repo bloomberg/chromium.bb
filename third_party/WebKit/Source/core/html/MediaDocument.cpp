@@ -126,11 +126,9 @@ void MediaDocumentParser::createDocumentStructure()
 {
     ASSERT(document());
     HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
-    rootElement->insertedByParser();
     document()->appendChild(rootElement);
+    rootElement->insertedByParser();
 
-    document()->frame()->loader().dispatchDocumentElementAvailable();
-    document()->frame()->loader().runScriptsAtDocumentElementAvailable();
     if (isDetached())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 

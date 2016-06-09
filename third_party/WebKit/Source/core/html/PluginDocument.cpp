@@ -91,10 +91,8 @@ void PluginDocumentParser::createDocumentStructure()
         return;
 
     HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
-    rootElement->insertedByParser();
     document()->appendChild(rootElement);
-    frame->loader().dispatchDocumentElementAvailable();
-    frame->loader().runScriptsAtDocumentElementAvailable();
+    rootElement->insertedByParser();
     if (isStopped())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 

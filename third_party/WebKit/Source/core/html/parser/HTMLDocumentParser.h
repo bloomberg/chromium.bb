@@ -139,6 +139,7 @@ private:
     bool isWaitingForScripts() const final;
     bool isExecutingScript() const final;
     void executeScriptsWaitingForResources() final;
+    void documentElementAvailable() override;
 
     // HTMLScriptRunnerHost
     void notifyScriptLoaded(Resource*) final;
@@ -173,8 +174,6 @@ private:
     bool isScheduledForResume() const;
     bool inPumpSession() const { return m_pumpSessionNestingLevel > 0; }
     bool shouldDelayEnd() const { return inPumpSession() || isWaitingForScripts() || isScheduledForResume() || isExecutingScript(); }
-
-    void pumpPreloadQueue();
 
     PassOwnPtr<HTMLPreloadScanner> createPreloadScanner();
 

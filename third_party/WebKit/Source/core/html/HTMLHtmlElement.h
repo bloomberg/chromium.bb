@@ -39,6 +39,8 @@ public:
 private:
     explicit HTMLHtmlElement(Document&);
 
+    void maybeSetupApplicationCache();
+
     bool isURLAttribute(const Attribute&) const override;
 };
 

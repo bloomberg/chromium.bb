@@ -312,7 +312,7 @@ void HTMLDocumentParser::notifyPendingParsedChunks()
     } else {
         // We can safely assume that there are no queued preloads request after
         // the document element is available, as we empty the queue immediately
-        // after the document element is created in pumpPendingSpeculations().
+        // after the document element is created in documentElementAvailable().
         ASSERT(m_queuedPreloads.isEmpty());
         ASSERT(m_queuedDocumentWriteScripts.isEmpty());
         for (auto& chunk : pendingChunks) {
@@ -453,8 +453,6 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
 
         if (isStopped())
             break;
-
-        pumpPreloadQueue();
 
         if (!m_triedLoadingLinkHeaders && document()->loader()) {
             String linkHeader = document()->loader()->response().httpHeaderField(HTTPNames::Link);
@@ -1055,11 +1053,10 @@ void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
         HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, m_backgroundParser, passed(takeDecoder())));
 }
 
-void HTMLDocumentParser::pumpPreloadQueue()
+void HTMLDocumentParser::documentElementAvailable()
 {
-    if (!document()->documentElement())
-        return;
-
+    TRACE_EVENT0("blink,loader", "HTMLDocumentParser::documentElementAvailable");
+    DCHECK(document()->documentElement());
     for (const String& scriptSource : m_queuedDocumentWriteScripts) {
         evaluateAndPreloadScriptForDocumentWrite(scriptSource);
     }

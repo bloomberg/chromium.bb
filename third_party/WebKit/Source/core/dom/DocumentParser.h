@@ -86,6 +86,10 @@ public:
     // Oilpan: We don't need to call detach when a Document is destructed.
     virtual void detach();
 
+    // Notifies the parser that the document element is available. Used by
+    // HTMLDocumentParser to dispatch preloads.
+    virtual void documentElementAvailable() { }
+
     void setDocumentWasLoadedAsPartOfNavigation() { m_documentWasLoadedAsPartOfNavigation = true; }
     bool documentWasLoadedAsPartOfNavigation() const { return m_documentWasLoadedAsPartOfNavigation; }
 

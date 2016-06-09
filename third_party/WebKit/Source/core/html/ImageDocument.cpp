@@ -208,8 +208,6 @@ void ImageDocument::createDocumentStructure()
     appendChild(rootElement);
     rootElement->insertedByParser();
 
-    frame()->loader().dispatchDocumentElementAvailable();
-    frame()->loader().runScriptsAtDocumentElementAvailable();
     if (isStopped())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 

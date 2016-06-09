@@ -3,7 +3,9 @@
 <script src="../../resources/check-layout.js"></script>
 <p>crbug.com/522673: Return the correct width for images with broken data: uri's.</p>
 <script>
-    checkLayout("img");
+    window.onload = function() {
+        checkLayout("img");
+    }
 </script>
 
 

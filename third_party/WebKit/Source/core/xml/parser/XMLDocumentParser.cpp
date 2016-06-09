@@ -1022,10 +1022,11 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     else
         pushCurrentNode(newElement);
 
-    if (isHTMLHtmlElement(*newElement))
+    // Note: |insertedByParser| will perform dispatching if this is an
+    // HTMLHtmlElement.
+    if (isHTMLHtmlElement(*newElement) && isFirstElement) {
         toHTMLHtmlElement(*newElement).insertedByParser();
-
-    if (!m_parsingFragment && isFirstElement && document()->frame()) {
+    } else if (!m_parsingFragment && isFirstElement && document()->frame()) {
         document()->frame()->loader().dispatchDocumentElementAvailable();
         document()->frame()->loader().runScriptsAtDocumentElementAvailable();
         // runScriptsAtDocumentElementAvailable might have invalidated the document.
