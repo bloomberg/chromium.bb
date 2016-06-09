@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<div id="root"></div>
+<div id="target"></div>
+<script>
+if (self.testRunner)
+  testRunner.dumpAsText();
+var root = document.getElementById("root");
+var target = document.getElementById("target");
+new IntersectionObserver(c => {}, {root: root}).observe(target);
+</script>

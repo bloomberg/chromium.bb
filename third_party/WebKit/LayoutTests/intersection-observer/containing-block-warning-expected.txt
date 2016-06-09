@@ -1,0 +1,2 @@
+CONSOLE WARNING: line 9: IntersectionObserver.observe(target): target element is not a descendant of root.
+

@@ -19,6 +19,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
@@ -185,13 +186,29 @@ void IntersectionObserver::observe(Element* target, ExceptionState& exceptionSta
         return;
 
     bool shouldReportRootBounds = false;
+    bool isDOMDescendant = false;
     LocalFrame* targetFrame = target->document().frame();
-    LocalFrame* rootFrame = rootNode()->document().frame();
-    if (targetFrame && rootFrame)
+    LocalFrame* rootFrame = m_root->document().frame();
+
+    if (target->document() == rootNode()->document()) {
+        shouldReportRootBounds = true;
+        isDOMDescendant = target->isDescendantOf(rootNode());
+    } else if (targetFrame && rootFrame) {
         shouldReportRootBounds = targetFrame->securityContext()->getSecurityOrigin()->canAccess(rootFrame->securityContext()->getSecurityOrigin());
+        isDOMDescendant = (targetFrame->tree().top() == rootFrame);
+    }
+
     IntersectionObservation* observation = new IntersectionObservation(*this, *target, shouldReportRootBounds);
     target->ensureIntersectionObserverData().addObservation(*observation);
     m_observations.add(observation);
+
+    if (!isDOMDescendant) {
+        m_root->document().addConsoleMessage(ConsoleMessage::create(
+            JSMessageSource, WarningMessageLevel,
+            "IntersectionObserver.observe(target): target element is not a descendant of root."));
+        return;
+    }
+
     if (!rootFrame)
         return;
     if (FrameView* rootFrameView = rootFrame->view())
