@@ -158,8 +158,6 @@ private:
         Graceful,
     };
 
-    std::unique_ptr<CrossThreadClosure> createWorkerThreadTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
-
     void terminateInternal(TerminationMode);
     void forciblyTerminateExecution();
 

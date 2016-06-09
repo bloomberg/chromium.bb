@@ -227,7 +227,13 @@ void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<Ex
         if (m_terminated || m_readyToShutdown)
             return;
     }
-    workerBackingThread().backingThread().postTask(location, createWorkerThreadTask(std::move(task), true));
+
+    bool isInstrumented = !task->taskNameForInstrumentation().isEmpty();
+    if (isInstrumented) {
+        DCHECK(isCurrentThread());
+        InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
+    }
+    workerBackingThread().backingThread().postTask(location, threadSafeBind(&WorkerThread::performTaskOnWorkerThread, AllowCrossThreadAccess(this), passed(std::move(task)), isInstrumented));
 }
 
 void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
@@ -310,17 +316,6 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);
-}
-
-std::unique_ptr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
-{
-    if (isInstrumented)
-        isInstrumented = !task->taskNameForInstrumentation().isEmpty();
-    if (isInstrumented) {
-        DCHECK(isCurrentThread());
-        InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
-    }
-    return threadSafeBind(&WorkerThread::performTaskOnWorkerThread, AllowCrossThreadAccess(this), passed(std::move(task)), isInstrumented);
 }
 
 void WorkerThread::terminateInternal(TerminationMode mode)
