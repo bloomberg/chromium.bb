@@ -214,6 +214,7 @@ class IDLParser(object):
     """CallbackOrInterface : CALLBACK CallbackRestOrInterface
                            | Interface"""
     if len(p) > 2:
+      p[2].AddChildren(self.BuildTrue('CALLBACK'))
       p[0] = p[2]
     else:
       p[0] = p[1]
