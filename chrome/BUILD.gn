@@ -435,6 +435,13 @@ if (is_win) {
     if (debug_devtools) {
       deps += [ ":devtools_debug_resources" ]
     }
+
+    if (is_chrome_branded && is_official_build) {
+      deps += [
+        ":chrome_dsym_archive",
+        ":chrome_dump_syms",
+      ]
+    }
   }
 
   tweak_info_plist("chrome_app_plist") {
@@ -1002,6 +1009,85 @@ if (is_win) {
       public_deps = [
         ":chrome_framework",
       ]
+    }
+  }
+
+  if (enable_dsyms) {
+    # This list must be updated with the two targets' deps list below, and
+    # the list of _dsyms in :chrome_dsym_archive.
+    _chrome_symbols_sources = [
+      "$root_out_dir/$chrome_framework_name.framework/$chrome_framework_name",
+      "$root_out_dir/$chrome_helper_name.app/Contents/MacOS/$chrome_helper_name",
+      "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
+      "$root_out_dir/crashpad_handler",
+    ]
+
+    # It is possible to run dump_syms on unstripped products without dSYMs,
+    # but doing so isn't logical and won't happen in practice.
+    action_foreach("chrome_dump_syms") {
+      script = "//build/redirect_stdout.py"
+
+      sources = _chrome_symbols_sources
+
+      outputs = [
+        "$root_out_dir/{{source_file_part}}-$chrome_version_full.breakpad",
+      ]
+
+      # Use an aboslute path to dump_syms in case a user has it in their path.
+      args = rebase_path(outputs, root_out_dir) + [
+               rebase_path("$root_out_dir/dump_syms"),
+               "-g",
+               rebase_path(
+                   "$root_out_dir/{{source_name_part}}.dSYM/Contents/Resources/DWARF/{{source_name_part}}",
+                   root_out_dir),
+               "{{source}}",
+             ]
+
+      deps = [
+        ":chrome_app",
+        ":chrome_framework",
+        ":chrome_helper_app",
+        "//breakpad:dump_syms",
+        "//third_party/crashpad/crashpad/handler:crashpad_handler",
+      ]
+    }
+
+    action("chrome_dsym_archive") {
+      script = "//chrome/tools/build/mac/archive_symbols.py"
+
+      # These are the dSYMs that will be archived. The sources list must be
+      # are the target outputs that correspond to the dSYMs (since a dSYM is
+      # a directory it cannot be listed as a source file). The targets that
+      # generate both the dSYM and binary image are listed in deps.
+      _dsyms = [
+        "$root_out_dir/$chrome_framework_name.dSYM",
+        "$root_out_dir/$chrome_helper_name.dSYM",
+        "$root_out_dir/$chrome_product_full_name.dSYM",
+        "$root_out_dir/crashpad_handler.dSYM",
+      ]
+
+      sources = _chrome_symbols_sources
+
+      _output = "$root_out_dir/$chrome_product_full_name.dSYM.tar.bz2"
+
+      outputs = [
+        _output,
+      ]
+
+      args = [ rebase_path(_output, root_out_dir) ] +
+             rebase_path(_dsyms, root_out_dir)
+
+      deps = [
+        ":chrome_app",
+        ":chrome_framework",
+        ":chrome_helper_app",
+        "//third_party/crashpad/crashpad/handler:crashpad_handler",
+      ]
+    }
+  } else {
+    group("chrome_dump_syms") {
+    }
+    group("chrome_symbol_archive") {
     }
   }
 }
