@@ -2357,8 +2357,10 @@ void ProfileSyncService::RequestStart() {
     return;
   }
   DCHECK(sync_client_);
-  sync_prefs_.SetSyncRequested(true);
-  DCHECK(!signin_.get() || signin_->GetOriginal()->IsAuthenticated());
+  if (!IsSyncRequested()) {
+    sync_prefs_.SetSyncRequested(true);
+    NotifyObservers();
+  }
   startup_controller_->TryStart();
 }
 
