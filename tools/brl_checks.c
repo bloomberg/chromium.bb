@@ -328,8 +328,11 @@ int check_inpos(const char *tableList, const char *str,
   for (i = 0; i < inlen; i++) {
     inbuf[i] = str[i];
   }
-  lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, NULL,
-                inpos, NULL, 0);
+  if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, NULL,
+		     inpos, NULL, 0)) {
+    fprintf(stderr, "Translation failed.\n");
+    return 1;
+  }
   for (i = 0; i < outlen; i++) {
     if (expected_poslist[i] != inpos[i]) {
       rv = 1;
@@ -363,8 +366,11 @@ int check_outpos(const char *tableList, const char *str,
   for (i = 0; i < inlen; i++) {
     inbuf[i] = str[i];
   }
-  lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, outpos,
-                inpos, NULL, 0);
+  if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, outpos,
+		     inpos, NULL, 0)) {
+    fprintf(stderr, "Translation failed.\n");
+    return 1;
+  }
   if (inlen != origInlen) {
     fprintf(stderr, "original inlen %d and returned inlen %d differ\n",
             origInlen, inlen);
@@ -406,13 +412,15 @@ int check_cursor_pos(const char *tableList, const char *str,
 
   for (i = 0; i < inlen; i++) {
     cursor_pos = i;
-    lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, NULL,
-                  NULL, &cursor_pos, compbrlAtCursor);
+    if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, NULL,
+		       NULL, &cursor_pos, compbrlAtCursor)) {
+      fprintf(stderr, "Translation failed.\n");
+      return 1;
+    }
     if (expected_pos[i] != cursor_pos) {
       rv = 1;
       fprintf(stderr,
-              "string='%s' cursor=%d ('%c') expected=%d \
-received=%d ('%c')\n",
+              "string='%s' cursor=%d ('%c') expected=%d received=%d ('%c')\n",
               str, i, str[i], expected_pos[i], cursor_pos,
               (char)outbuf[cursor_pos]);
     }
