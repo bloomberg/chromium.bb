@@ -57,7 +57,7 @@ TEST(EmfTest, DC) {
   {
     Emf emf;
     EXPECT_TRUE(emf.Init());
-    EXPECT_TRUE(emf.context() != NULL);
+    EXPECT_TRUE(emf.context());
     // An empty EMF is invalid, so we put at least a rectangle in it.
     ::Rectangle(emf.context(), 10, 10, 190, 190);
     EXPECT_TRUE(emf.FinishDocument());
@@ -139,10 +139,10 @@ TEST_F(EmfPrintingTest, PageBreak) {
   {
     Emf emf;
     EXPECT_TRUE(emf.Init());
-    EXPECT_TRUE(emf.context() != NULL);
+    EXPECT_TRUE(emf.context());
     int pages = 3;
     while (pages) {
-      EXPECT_TRUE(emf.StartPage(gfx::Size(), gfx::Rect(), 1));
+      emf.StartPage(gfx::Size(), gfx::Rect(), 1);
       ::Rectangle(emf.context(), 10, 10, 190, 190);
       EXPECT_TRUE(emf.FinishPage());
       --pages;
@@ -184,7 +184,7 @@ TEST(EmfTest, FileBackedEmf) {
   {
     Emf emf;
     EXPECT_TRUE(emf.InitToFile(metafile_path));
-    EXPECT_TRUE(emf.context() != NULL);
+    EXPECT_TRUE(emf.context());
     // An empty EMF is invalid, so we put at least a rectangle in it.
     ::Rectangle(emf.context(), 10, 10, 190, 190);
     EXPECT_TRUE(emf.FinishDocument());
@@ -210,7 +210,7 @@ TEST(EmfTest, FileBackedEmf) {
 TEST(EmfTest, RasterizeMetafile) {
   Emf emf;
   EXPECT_TRUE(emf.Init());
-  EXPECT_TRUE(emf.context() != NULL);
+  EXPECT_TRUE(emf.context());
   HBRUSH brush = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
   for (int i = 0; i < 4; ++i) {
     RECT rect = { 5 + i, 5 + i, 5 + i + 1, 5 + i + 2};

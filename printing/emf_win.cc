@@ -460,10 +460,9 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
   return res;
 }
 
-bool Emf::StartPage(const gfx::Size& /*page_size*/,
+void Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Rect& /*content_area*/,
                     const float& /*scale_factor*/) {
-  return true;
 }
 
 bool Emf::FinishPage() {

@@ -113,9 +113,9 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
                             uint32_t src_buffer_size) = 0;
 
   // Prepares a context for rendering a new page with the given |page_size|,
-  // |content_area| and  a |scale_factor| to use for the drawing. The units are
-  // in points (=1/72 in). Returns true on success.
-  virtual bool StartPage(const gfx::Size& page_size,
+  // |content_area| and a |scale_factor| to use for the drawing. The units are
+  // in points (=1/72 in).
+  virtual void StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
                          const float& scale_factor) = 0;
 

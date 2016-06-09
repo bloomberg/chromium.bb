@@ -64,7 +64,7 @@ class PRINTING_EXPORT Emf : public Metafile {
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
   // when hdc_ is non-NULL. |page_size|, |content_area|, and |scale_factor| are
   // ignored.
-  bool StartPage(const gfx::Size& page_size,
+  void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
                  const float& scale_factor) override;
   bool FinishPage() override;

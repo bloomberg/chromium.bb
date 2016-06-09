@@ -40,7 +40,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   bool Init() override;
   bool InitFromData(const void* src_buffer, uint32_t src_buffer_size) override;
 
-  bool StartPage(const gfx::Size& page_size,
+  void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
                  const float& scale_factor) override;
   bool FinishPage() override;

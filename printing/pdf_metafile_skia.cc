@@ -98,7 +98,7 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
   return true;
 }
 
-bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
+void PdfMetafileSkia::StartPage(const gfx::Size& page_size,
                                 const gfx::Rect& content_area,
                                 const float& scale_factor) {
   DCHECK_GT(page_size.width(), 0);
@@ -125,7 +125,6 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
   // factor.  We store the scale factor and re-apply it later.
   // http://crbug.com/469656
   // Recording canvas is owned by the data_->recorder_.  No ref() necessary.
-  return true;
 }
 
 SkCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
@@ -167,8 +166,8 @@ bool PdfMetafileSkia::FinishDocument() {
     FinishPage();
 
   SkDynamicMemoryWStream stream;
-  // TODO(halacanary): support more document types (XPS, a sequence of
-  // display lists).
+  // TODO(halcanary): support more document types (XPS, a sequence of display
+  // lists).
   sk_sp<SkDocument> doc = MakePdfDocument(&stream);
 
   for (const sk_sp<SkPicture>& page : data_->pages_) {
@@ -178,7 +177,6 @@ bool PdfMetafileSkia::FinishDocument() {
     DCHECK_GT(rect.right(), 0);
     DCHECK_GT(rect.bottom(), 0);
     SkCanvas* canvas = doc->beginPage(rect.right(), rect.bottom());
-    DCHECK(canvas);
     canvas->drawPicture(page);
     doc->endPage();
   }
@@ -223,8 +221,9 @@ unsigned int PdfMetafileSkia::GetPageCount() const {
 
 gfx::NativeDrawingContext PdfMetafileSkia::context() const {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
+
 
 #if defined(OS_WIN)
 bool PdfMetafileSkia::Playback(gfx::NativeDrawingContext hdc,
@@ -271,8 +270,8 @@ bool PdfMetafileSkia::SaveTo(base::File* file) const {
   // Calling duplicate() keeps original asset state unchanged.
   std::unique_ptr<SkStreamAsset> asset(data_->pdf_data_->duplicate());
 
-  const size_t maximum_buffer_size = 1024 * 1024;
-  std::vector<char> buffer(std::min(maximum_buffer_size, asset->getLength()));
+  const size_t kMaximumBufferSize = 1024 * 1024;
+  std::vector<char> buffer(std::min(kMaximumBufferSize, asset->getLength()));
   do {
     size_t read_size = asset->read(&buffer[0], buffer.size());
     if (read_size == 0)

@@ -102,7 +102,7 @@ bool PdfMetafileCg::InitFromData(const void* src_buffer,
   return true;
 }
 
-bool PdfMetafileCg::StartPage(const gfx::Size& page_size,
+void PdfMetafileCg::StartPage(const gfx::Size& page_size,
                               const gfx::Rect& content_area,
                               const float& scale_factor) {
   DCHECK(context_.get());
@@ -122,8 +122,6 @@ bool PdfMetafileCg::StartPage(const gfx::Size& page_size,
   // Flip the context.
   CGContextTranslateCTM(context_, 0, height);
   CGContextScaleCTM(context_, scale_factor, -scale_factor);
-
-  return context_.get();
 }
 
 bool PdfMetafileCg::FinishPage() {

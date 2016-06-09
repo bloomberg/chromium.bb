@@ -29,9 +29,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   // Metafile methods.
   bool Init() override;
   bool InitFromData(const void* src_buffer, uint32_t src_buffer_size) override;
-
-  // Not implemented on mac.
-  bool StartPage(const gfx::Size& page_size,
+  void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
                  const float& scale_factor) override;
   bool FinishPage() override;
@@ -53,7 +51,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
                   const MacRenderPageParams& params) const override;
 
  private:
-  // Returns a CGPDFDocumentRef version of pdf_data_.
+  // Returns a CGPDFDocumentRef version of |pdf_data_|.
   CGPDFDocumentRef GetPDFDocument() const;
 
   // Context for rendering to the pdf.
@@ -62,7 +60,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   // PDF backing store.
   base::ScopedCFTypeRef<CFMutableDataRef> pdf_data_;
 
-  // Lazily-created CGPDFDocument representation of pdf_data_.
+  // Lazily-created CGPDFDocument representation of |pdf_data_|.
   mutable base::ScopedCFTypeRef<CGPDFDocumentRef> pdf_doc_;
 
   // Whether or not a page is currently open.
