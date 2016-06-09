@@ -118,7 +118,7 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document) cons
     request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
     MixedContentChecker::shouldBlockFetch(document->frame(), m_fetched->resource()->lastResourceRequest(),
         m_fetched->resource()->lastResourceRequest().url(), MixedContentChecker::SendReport);
-    document->fetcher()->requestLoadStarted(m_fetched->resource(), request, ResourceFetcher::ResourceLoadingFromCache);
+    document->fetcher()->requestLoadStarted(m_fetched->resource()->identifier(), m_fetched->resource(), request, ResourceFetcher::ResourceLoadingFromCache);
 }
 
 bool CSSFontFaceSrcValue::equals(const CSSFontFaceSrcValue& other) const

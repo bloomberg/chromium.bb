@@ -73,7 +73,7 @@ public:
     WebCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption) const override;
     void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
     void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-    void dispatchDidLoadResourceFromMemoryCache(Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext) override;
+    void dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext) override;
     void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*) override;
     void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength) override;
     void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength)  override;
@@ -81,7 +81,7 @@ public:
     void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest) override;
 
     bool shouldLoadNewResource(Resource::Type) const override;
-    void willStartLoadingResource(Resource*, ResourceRequest&) override;
+    void willStartLoadingResource(unsigned long identifier, ResourceRequest&, Resource::Type) override;
     void didLoadResource(Resource*) override;
 
     void addResourceTiming(const ResourceTimingInfo&) override;
@@ -124,6 +124,8 @@ private:
     void printAccessDeniedMessage(const KURL&) const;
     ResourceRequestBlockedReason canRequestInternal(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction, ResourceRequest::RedirectStatus) const;
     bool contentSecurityPolicyBlocksRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, ResourceRequest::RedirectStatus) const;
+
+    void prepareRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse&);
 
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because ComputedStyle and its data are not on the heap.

@@ -58,6 +58,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
 {
     ASSERT(m_resource);
     ASSERT(m_fetcher);
+    m_resource->setLoader(this);
 }
 
 ResourceLoader::~ResourceLoader()
@@ -71,15 +72,18 @@ DEFINE_TRACE(ResourceLoader)
     visitor->trace(m_resource);
 }
 
-void ResourceLoader::start(ResourceRequest& request)
+void ResourceLoader::start(const ResourceRequest& request, WebTaskRunner* loadingTaskRunner, bool defersLoading)
 {
     ASSERT(!m_loader);
+    if (m_resource->options().synchronousPolicy == RequestSynchronously && defersLoading) {
+        cancel();
+        return;
+    }
 
-    m_fetcher->willStartLoadingResource(m_resource.get(), this, request);
     m_loader = adoptPtr(Platform::current()->createURLLoader());
-    m_loader->setDefersLoading(m_fetcher->defersLoading());
+    m_loader->setDefersLoading(defersLoading);
     ASSERT(m_loader);
-    m_loader->setLoadingTaskRunner(m_fetcher->loadingTaskRunner());
+    m_loader->setLoadingTaskRunner(loadingTaskRunner);
 
     if (m_resource->options().synchronousPolicy == RequestSynchronously)
         requestSynchronously(request);
@@ -216,19 +220,12 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     m_fetcher->didFailLoading(m_resource.get(), error);
 }
 
-void ResourceLoader::requestSynchronously(ResourceRequest& request)
+void ResourceLoader::requestSynchronously(const ResourceRequest& request)
 {
     // downloadToFile is not supported for synchronous requests.
     ASSERT(!request.downloadToFile());
     ASSERT(m_loader);
-
-    // Synchronous requests should always be max priority, lest they hang the renderer.
-    request.setPriority(ResourceLoadPriorityHighest);
-
-    if (m_fetcher->defersLoading()) {
-        cancel();
-        return;
-    }
+    DCHECK(request.priority() == ResourceLoadPriorityHighest);
 
     WrappedResourceRequest requestIn(request);
     WebURLResponse responseOut;

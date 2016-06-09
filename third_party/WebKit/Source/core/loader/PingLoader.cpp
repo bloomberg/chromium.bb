@@ -138,6 +138,7 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     , m_keepAlive(this)
 {
     frame->loader().client()->didDispatchPingLoader(request.url());
+    frame->document()->fetcher()->context().willStartLoadingResource(m_identifier, request, Resource::Image);
     frame->document()->fetcher()->context().dispatchWillSendRequest(m_identifier, request, ResourceResponse(), initiatorInfo);
 
     m_loader = adoptPtr(Platform::current()->createURLLoader());

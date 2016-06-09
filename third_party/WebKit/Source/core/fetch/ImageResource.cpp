@@ -505,7 +505,7 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
     else
         updateImageAndClearBuffer();
     setStatus(NotStarted);
-    load(fetcher);
+    fetcher->startLoad(this);
 }
 
 void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect)

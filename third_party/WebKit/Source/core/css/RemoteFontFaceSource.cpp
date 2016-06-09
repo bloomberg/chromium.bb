@@ -8,6 +8,7 @@
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/Document.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/NetworkStateNotifier.h"
@@ -205,7 +206,7 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(c
 void RemoteFontFaceSource::beginLoadIfNeeded()
 {
     if (m_fontSelector->document() && m_font->stillNeedsLoad()) {
-        m_font->load(m_fontSelector->document()->fetcher());
+        m_fontSelector->document()->fetcher()->startLoad(m_font);
         m_histograms.loadStarted();
     }
     m_font->startLoadLimitTimersIfNeeded();

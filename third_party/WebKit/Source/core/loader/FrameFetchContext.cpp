@@ -295,10 +295,19 @@ void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifi
     InspectorInstrumentation::didChangeResourcePriority(frame(), identifier, loadPriority);
 }
 
-void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
+void FrameFetchContext::prepareRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     frame()->loader().applyUserAgent(request);
     frame()->loader().client()->dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse);
+}
+
+void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
+{
+    // For initial requests, prepareRequest() is called in
+    // willStartLoadingResource(), before revalidation policy is determined.
+    // That call doesn't exist for redirects, so call preareRequest() here.
+    if (!redirectResponse.isNull())
+        prepareRequest(identifier, request, redirectResponse);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(identifier, frame(), request));
     InspectorInstrumentation::willSendRequest(frame(), identifier, masterDocumentLoader(), request, redirectResponse, initiatorInfo);
 }
@@ -363,10 +372,9 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier, const Resource
         frame()->console().didFailLoading(identifier, error);
 }
 
-void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(Resource* resource, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
+void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource* resource, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
 {
     ResourceRequest request(resource->url());
-    unsigned long identifier = createUniqueIdentifier();
     frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, resource->response());
     dispatchWillSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
 
@@ -400,13 +408,14 @@ static PassOwnPtr<TracedValue> loadResourceTraceData(unsigned long identifier, c
     return value;
 }
 
-void FrameFetchContext::willStartLoadingResource(Resource* resource, ResourceRequest& request)
+void FrameFetchContext::willStartLoadingResource(unsigned long identifier, ResourceRequest& request, Resource::Type type)
 {
-    TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", resource, "data", loadResourceTraceData(resource->identifier(), resource->url(), resource->resourceRequest().priority()));
+    TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", identifier, "data", loadResourceTraceData(identifier, request.url(), request.priority()));
+    prepareRequest(identifier, request, ResourceResponse());
 
-    if (!m_documentLoader)
+    if (!m_documentLoader || m_documentLoader->fetcher()->archive() || !request.url().isValid())
         return;
-    if (resource->getType() == Resource::MainResource)
+    if (type == Resource::MainResource)
         m_documentLoader->applicationCacheHost()->willStartLoadingMainResource(request);
     else
         m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);

@@ -42,6 +42,7 @@ enum class ScriptIntegrityDisposition {
 };
 
 class FetchRequest;
+class ResourceFetcher;
 class ScriptResource;
 
 class CORE_EXPORT ScriptResourceClient : public GarbageCollectedMixin, public ResourceClient {

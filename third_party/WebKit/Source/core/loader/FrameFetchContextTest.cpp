@@ -31,6 +31,7 @@
 #include "core/loader/FrameFetchContext.h"
 
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
@@ -489,7 +490,7 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
     response.setHasMajorCertificateErrors(true);
     Resource* resource = Resource::create(resourceRequest, Resource::Image);
     resource->setResponse(response);
-    fetchContext->dispatchDidLoadResourceFromMemoryCache(resource, WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
+    fetchContext->dispatchDidLoadResourceFromMemoryCache(createUniqueIdentifier(), resource, WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
 }
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)

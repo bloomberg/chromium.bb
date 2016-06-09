@@ -92,7 +92,7 @@ void CSSImageValue::restoreCachedResourceIfNeeded(Document& document) const
     FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, resource->options());
     MixedContentChecker::shouldBlockFetch(document.frame(), resource->lastResourceRequest(),
         resource->lastResourceRequest().url(), MixedContentChecker::SendReport);
-    document.fetcher()->requestLoadStarted(resource, request, ResourceFetcher::ResourceLoadingFromCache);
+    document.fetcher()->requestLoadStarted(resource->identifier(), resource, request, ResourceFetcher::ResourceLoadingFromCache);
 }
 
 bool CSSImageValue::hasFailedOrCanceledSubresources() const

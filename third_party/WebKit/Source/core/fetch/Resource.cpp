@@ -29,7 +29,6 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientOrObserverWalker.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/InstanceCounters.h"
 #include "platform/Histogram.h"
@@ -332,24 +331,12 @@ DEFINE_TRACE(Resource)
     visitor->trace(m_cacheHandler);
 }
 
-void Resource::load(ResourceFetcher* fetcher)
+void Resource::setLoader(ResourceLoader* loader)
 {
-    // TOOD(japhet): Temporary, out of place hack to stop a top crasher.
-    // Make this more organic.
-    if (!fetcher->loadingTaskRunner())
-        return;
-
     RELEASE_ASSERT(!m_loader);
     ASSERT(stillNeedsLoad());
+    m_loader = loader;
     m_status = Pending;
-
-    KURL url = m_resourceRequest.url();
-    m_resourceRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
-
-    m_fetcherSecurityOrigin = fetcher->context().getSecurityOrigin();
-    m_loader = ResourceLoader::create(fetcher, this);
-    m_loader->start(m_resourceRequest);
-    m_resourceRequest.setURL(url);
 }
 
 void Resource::checkNotify()
@@ -552,8 +539,6 @@ void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceRes
 {
     if (m_isRevalidating)
         revalidationFailed();
-
-    newRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
     m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
 }
 

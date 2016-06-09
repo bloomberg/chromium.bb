@@ -1,3 +1,5 @@
+Blocked access to external URL http://www.example.com/fonts/example
+Blocked access to external URL http://www.example.com/fonts/example
 The test verifies the CSS outline functionality.
 
 {

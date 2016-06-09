@@ -46,7 +46,6 @@ struct FetchInitiatorInfo;
 class CachedMetadata;
 class FetchRequest;
 class ResourceClient;
-class ResourceFetcher;
 class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
@@ -92,8 +91,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    void load(ResourceFetcher*);
-
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
     virtual void appendData(const char*, size_t);
@@ -118,6 +115,8 @@ public:
     const ResourceRequest& lastResourceRequest() const;
 
     virtual void setRevalidatingRequest(const ResourceRequest&);
+
+    void setFetcherSecurityOrigin(SecurityOrigin* origin) { m_fetcherSecurityOrigin = origin; }
 
     // This url can have a fragment, but it can match resources that differ by the fragment only.
     const KURL& url() const { return m_resourceRequest.url();}
@@ -155,6 +154,7 @@ public:
     bool isLoading() const { return m_status == Pending; }
     bool stillNeedsLoad() const { return m_status < Pending; }
 
+    void setLoader(ResourceLoader*);
     ResourceLoader* loader() const { return m_loader.get(); }
 
     virtual bool isImage() const { return false; }

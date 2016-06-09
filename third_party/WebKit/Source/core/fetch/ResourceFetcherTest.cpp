@@ -117,9 +117,9 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     EXPECT_EQ(resource, static_cast<Resource*>(nullptr));
     EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(nullptr));
 
-    // Try calling Resource::load directly. This shouldn't crash.
-    Resource* resource2 = Resource::create(secureURL, Resource::Raw);
-    resource2->load(fetcher);
+    // Start by calling startLoad() directly, rather than via requestResource().
+    // This shouldn't crash.
+    fetcher->startLoad(Resource::create(secureURL, Resource::Raw));
 }
 
 TEST_F(ResourceFetcherTest, UseExistingResource)
@@ -293,7 +293,7 @@ TEST_F(ResourceFetcherTest, RevalidateDeferedResourceFromTwoInitiators)
     FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
     Resource* resource1 = fetcher->requestResource(fetchRequest1, TestResourceFactory(Resource::Font));
     ASSERT_TRUE(resource1);
-    resource1->load(fetcher);
+    fetcher->startLoad(resource1);
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     EXPECT_TRUE(resource1->isLoaded());
     EXPECT_FALSE(resource1->errorOccurred());
@@ -320,8 +320,8 @@ TEST_F(ResourceFetcherTest, RevalidateDeferedResourceFromTwoInitiators)
     EXPECT_TRUE(resource3->isCacheValidator());
     EXPECT_TRUE(resource3->stillNeedsLoad());
 
-    // load() can be called from any initiator. Here, call it from the latter.
-    resource3->load(fetcher);
+    // startLoad() can be called from any initiator. Here, call it from the latter.
+    fetcher->startLoad(resource3);
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     EXPECT_TRUE(resource3->isLoaded());
     EXPECT_FALSE(resource3->errorOccurred());

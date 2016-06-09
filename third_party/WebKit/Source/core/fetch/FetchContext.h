@@ -77,7 +77,7 @@ public:
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
     virtual void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
-    virtual void dispatchDidLoadResourceFromMemoryCache(Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext);
+    virtual void dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext);
     virtual void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*);
     virtual void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     virtual void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength);
@@ -85,7 +85,7 @@ public:
     virtual void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest);
 
     virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
-    virtual void willStartLoadingResource(Resource*, ResourceRequest&);
+    virtual void willStartLoadingResource(unsigned long identifier, ResourceRequest&, Resource::Type);
     virtual void didLoadResource(Resource*);
 
     virtual void addResourceTiming(const ResourceTimingInfo&);

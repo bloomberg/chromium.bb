@@ -6080,7 +6080,9 @@ TEST_P(ParameterizedWebFrameTest, NavigateToSameNoConditionalRequestForSubresour
     WebCache::clear();
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "foo_with_image.html");
 
-    EXPECT_EQ(client.numOfImageRequests(), 2);
+    // 2 images are requested, and each triggers 2 willSendRequest() calls,
+    // once for preloading and once for the real request.
+    EXPECT_EQ(client.numOfImageRequests(), 4);
 }
 
 TEST_P(ParameterizedWebFrameTest, WebNodeImageContents)

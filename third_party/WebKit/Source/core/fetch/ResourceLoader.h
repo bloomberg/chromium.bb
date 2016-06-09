@@ -48,7 +48,7 @@ public:
     ~ResourceLoader() override;
     DECLARE_TRACE();
 
-    void start(ResourceRequest&);
+    void start(const ResourceRequest&, WebTaskRunner* loadingTaskRunner, bool defersLoading);
     void cancel();
 
     void setDefersLoading(bool);
@@ -83,7 +83,7 @@ private:
     // Assumes ResourceFetcher and Resource are non-null.
     ResourceLoader(ResourceFetcher*, Resource*);
 
-    void requestSynchronously(ResourceRequest&);
+    void requestSynchronously(const ResourceRequest&);
 
     bool responseNeedsAccessControlCheck() const;
 

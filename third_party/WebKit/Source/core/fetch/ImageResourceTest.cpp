@@ -123,7 +123,7 @@ TEST(ImageResourceTest, MultipartImage)
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
     ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
     cachedImage->setIdentifier(createUniqueIdentifier());
-    cachedImage->load(fetcher);
+    fetcher->startLoad(cachedImage);
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 
     Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);
@@ -188,7 +188,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
     cachedImage->setIdentifier(createUniqueIdentifier());
 
-    cachedImage->load(fetcher);
+    fetcher->startLoad(cachedImage);
     memoryCache()->add(cachedImage);
 
     Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);

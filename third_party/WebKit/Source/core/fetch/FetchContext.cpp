@@ -65,7 +65,7 @@ void FetchContext::dispatchWillSendRequest(unsigned long, ResourceRequest&, cons
 {
 }
 
-void FetchContext::dispatchDidLoadResourceFromMemoryCache(Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext)
+void FetchContext::dispatchDidLoadResourceFromMemoryCache(unsigned long, Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext)
 {
 }
 
@@ -89,7 +89,7 @@ void FetchContext::dispatchDidFail(unsigned long, const ResourceError&, bool)
 {
 }
 
-void FetchContext::willStartLoadingResource(Resource*, ResourceRequest&)
+void FetchContext::willStartLoadingResource(unsigned long, ResourceRequest&, Resource::Type)
 {
 }
 
