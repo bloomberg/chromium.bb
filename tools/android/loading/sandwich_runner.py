@@ -216,7 +216,7 @@ class SandwichRunner(object):
     else:
       logging.error('Failed to navigate to %s after %d attemps' % \
                     (self.url, self._ATTEMPT_COUNT))
-      raise
+      error.RaiseOriginal()
 
   def _PullCacheFromDevice(self):
     assert self.cache_operation == CacheOperation.SAVE
