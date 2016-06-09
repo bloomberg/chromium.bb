@@ -20,10 +20,13 @@
 #include "ui/views/view.h"
 
 namespace internal {
+class ComboboxModelAdapter;
+class PermissionCombobox;
 class PermissionMenuButton;
 }
 
 namespace views {
+class GridLayout;
 class ImageView;
 class MenuRunner;
 }
@@ -46,11 +49,20 @@ class PermissionSelectorView : public views::View {
  private:
   ~PermissionSelectorView() override;
 
+  void InitializeMenuButtonView(
+      views::GridLayout* layout,
+      const WebsiteSettingsUI::PermissionInfo& permission);
+  void InitializeComboboxView(
+      views::GridLayout* layout,
+      const WebsiteSettingsUI::PermissionInfo& permission);
+
   // Model for the permission's menu.
   std::unique_ptr<PermissionMenuModel> menu_model_;
+  std::unique_ptr<internal::ComboboxModelAdapter> combobox_model_adapter_;
 
   views::ImageView* icon_;  // Owned by the views hierachy.
   internal::PermissionMenuButton* menu_button_;  // Owned by the views hierachy.
+  internal::PermissionCombobox* combobox_;  // Owned by the views hierarchy.
 
   base::ObserverList<PermissionSelectorViewObserver, false> observer_list_;
 

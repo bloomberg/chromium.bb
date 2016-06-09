@@ -132,6 +132,7 @@ void PermissionCombobox::OnMenuButtonClicked(views::MenuButton* source,
 
 void PermissionCombobox::PermissionChanged(
     const WebsiteSettingsUI::PermissionInfo& permission) {
+  LOG(ERROR) << "PermissionChanged!";
   SetText(model_->GetLabelAt(model_->GetIndexOfCommandId(permission.setting)));
   SizeToPreferredSize();
 

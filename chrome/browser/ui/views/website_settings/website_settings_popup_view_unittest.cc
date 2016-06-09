@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 
@@ -58,11 +59,18 @@ class WebsiteSettingsPopupViewTestApi {
         permissions_content()->child_at(index));
   }
 
-  views::MenuButton* GetPermissionButtonAt(int index) {
+  base::string16 GetPermissionButtonTextAt(int index) {
     const int kButtonIndex = 2;  // Button should be the third child.
     views::View* view = GetPermissionSelectorAt(index)->child_at(kButtonIndex);
-    EXPECT_EQ(views::MenuButton::kViewClassName, view->GetClassName());
-    return static_cast<views::MenuButton*>(view);
+    if (view->GetClassName() == views::MenuButton::kViewClassName) {
+      return static_cast<views::MenuButton*>(view)->GetText();
+    } else if (view->GetClassName() == views::Combobox::kViewClassName) {
+      views::Combobox* combobox = static_cast<views::Combobox*>(view);
+      return combobox->GetTextForRow(combobox->GetSelectedRow());
+    } else {
+      NOTREACHED() << "Unknown class " << view->GetClassName();
+      return base::ASCIIToUTF16("");
+    }
   }
 
   // Simulates recreating the dialog with a new PermissionInfoList.
@@ -155,13 +163,28 @@ class WebsiteSettingsPopupViewTest : public testing::Test {
 
 }  // namespace
 
+// TODO(ellyjones): re-enable this test for OSX.
+// This test exercises PermissionSelectorView in a way that it is not used in
+// practice. In practice, every setting in PermissionSelectorView starts off
+// "set", so there is always one option checked in the resulting MenuModel. This
+// test creates settings that are left at their defaults, leading to zero
+// checked options, and checks that the text on the MenuButtons is right. Since
+// the Comboboxes the MacViews version of this dialog uses don't have separate
+// text, this test doesn't work.
+#if defined(OS_MACOSX)
+#define MAYBE_SetPermissionInfo DISABLED_SetPermissionInfo
+#else
+#define MAYBE_SetPermissionInfo SetPermissionInfo
+#endif
+
 // Test UI construction and reconstruction via
 // WebsiteSettingsPopupView::SetPermissionInfo().
-TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
+TEST_F(WebsiteSettingsPopupViewTest, MAYBE_SetPermissionInfo) {
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
   list.back().source = content_settings::SETTING_SOURCE_USER;
   list.back().is_incognito = false;
+  list.back().setting = CONTENT_SETTING_DEFAULT;
 
   const int kExpectedChildren =
       ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13;
@@ -182,13 +205,13 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
       static_cast<views::Label*>(selector->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Location:"), label->text());
   EXPECT_EQ(base::ASCIIToUTF16("Allowed by you"),
-            api_->GetPermissionButtonAt(0)->GetText());
+            api_->GetPermissionButtonTextAt(0));
 
   // Verify calling SetPermisisonInfo() directly updates the UI.
   list.back().setting = CONTENT_SETTING_BLOCK;
   api_->SetPermissionInfo(list);
   EXPECT_EQ(base::ASCIIToUTF16("Blocked by you"),
-            api_->GetPermissionButtonAt(0)->GetText());
+            api_->GetPermissionButtonTextAt(0));
 
   // Simulate a user selection via the UI. Note this will also cover logic in
   // WebsiteSettings to update the pref.
@@ -196,14 +219,14 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
   EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Allowed by you"),
-            api_->GetPermissionButtonAt(0)->GetText());
+            api_->GetPermissionButtonTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
   list.back().setting = CONTENT_SETTING_ASK;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
   EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Ask by you"),
-            api_->GetPermissionButtonAt(0)->GetText());
+            api_->GetPermissionButtonTextAt(0));
 
   // However, since the setting is now default, recreating the dialog with those
   // settings should omit the permission from the UI.

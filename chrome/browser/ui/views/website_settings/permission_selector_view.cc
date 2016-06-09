@@ -13,8 +13,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -112,6 +115,102 @@ void PermissionMenuButton::OnMenuButtonClicked(views::MenuButton* source,
   }
 }
 
+// This class adapts a |PermissionMenuModel| into a |ui::ComboboxModel| so that
+// |PermissionCombobox| can use it.
+class ComboboxModelAdapter : public ui::ComboboxModel {
+ public:
+  explicit ComboboxModelAdapter(PermissionMenuModel* model) : model_(model) {}
+  ~ComboboxModelAdapter() override {}
+
+  void OnPerformAction(int index);
+
+  // Returns the checked index of the underlying PermissionMenuModel, of which
+  // there must be exactly one. This is used to choose which index is selected
+  // in the PermissionCombobox.
+  int GetCheckedIndex();
+
+  // ui::ComboboxModel:
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
+
+ private:
+  PermissionMenuModel* model_;
+};
+
+void ComboboxModelAdapter::OnPerformAction(int index) {
+  model_->ExecuteCommand(index, 0);
+}
+
+int ComboboxModelAdapter::GetCheckedIndex() {
+  int checked_index = -1;
+  for (int i = 0; i < model_->GetItemCount(); ++i) {
+    if (model_->IsCommandIdChecked(i)) {
+      // This function keeps track of |checked_index| instead of returning early
+      // here so that it can DCHECK that there's exactly one selected item,
+      // which is not normally guaranteed by MenuModel, but *is* true of
+      // PermissionMenuModel.
+      DCHECK_EQ(checked_index, -1);
+      checked_index = i;
+    }
+  }
+  return checked_index;
+}
+
+int ComboboxModelAdapter::GetItemCount() const {
+  DCHECK(model_);
+  return model_->GetItemCount();
+}
+
+base::string16 ComboboxModelAdapter::GetItemAt(int index) {
+  return model_->GetLabelAt(index);
+}
+
+// The |PermissionCombobox| provides a combobox for selecting a permission type.
+// This is only used on platforms where the permission dialog uses a combobox
+// instead of a MenuButton (currently, Mac).
+class PermissionCombobox : public views::Combobox,
+                           public views::ComboboxListener {
+ public:
+  PermissionCombobox(const base::string16& text,
+                     ComboboxModelAdapter* model,
+                     bool enabled,
+                     bool use_default);
+  ~PermissionCombobox() override;
+
+  void UpdateSelectedIndex(bool use_default);
+
+ private:
+  // views::ComboboxListener:
+  void OnPerformAction(Combobox* combobox) override;
+
+  ComboboxModelAdapter* model_;
+};
+
+PermissionCombobox::PermissionCombobox(const base::string16& text,
+                                       ComboboxModelAdapter* model,
+                                       bool enabled,
+                                       bool use_default)
+    : views::Combobox(model), model_(model) {
+  set_listener(this);
+  SetEnabled(enabled);
+  UpdateSelectedIndex(use_default);
+}
+
+PermissionCombobox::~PermissionCombobox() {}
+
+void PermissionCombobox::UpdateSelectedIndex(bool use_default) {
+  int index = model_->GetCheckedIndex();
+  if (use_default && index == -1) {
+    LOG(ERROR) << "ow!";
+    index = 0;
+  }
+  SetSelectedIndex(index);
+}
+
+void PermissionCombobox::OnPerformAction(Combobox* combobox) {
+  model_->OnPerformAction(combobox->selected_index());
+}
+
 }  // namespace internal
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,7 +220,7 @@ void PermissionMenuButton::OnMenuButtonClicked(views::MenuButton* source,
 PermissionSelectorView::PermissionSelectorView(
     const GURL& url,
     const WebsiteSettingsUI::PermissionInfo& permission)
-    : icon_(NULL), menu_button_(NULL) {
+    : icon_(NULL), menu_button_(NULL), combobox_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   const int column_set_id = 0;
@@ -172,17 +271,11 @@ PermissionSelectorView::PermissionSelectorView(
       base::Bind(&PermissionSelectorView::PermissionChanged,
                  base::Unretained(this))));
   // Create the permission menu button.
-  bool button_enabled =
-      permission.source == content_settings::SETTING_SOURCE_USER;
-  menu_button_ = new internal::PermissionMenuButton(
-      WebsiteSettingsUI::PermissionActionToUIString(
-          permission.type, permission.setting, permission.default_setting,
-          permission.source),
-      menu_model_.get(), button_enabled);
-  menu_button_->SetEnabled(button_enabled);
-  menu_button_->SetAccessibleName(
-      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
-  layout->AddView(menu_button_);
+#if defined(OS_MACOSX)
+  InitializeComboboxView(layout, permission);
+#else
+  InitializeMenuButtonView(layout, permission);
+#endif
 }
 
 void PermissionSelectorView::AddObserver(
@@ -200,6 +293,53 @@ void PermissionSelectorView::ChildPreferredSizeChanged(View* child) {
 }
 
 PermissionSelectorView::~PermissionSelectorView() {
+  // Gross. On paper the Combobox and the ComboboxModelAdapter are both owned by
+  // this class, but actually, the Combobox is owned by View and will be
+  // destroyed in ~View(), which runs *after* ~PermissionSelectorView() is done,
+  // which means the Combobox gets destroyed after its ComboboxModel, which
+  // causes an explosion when the Combobox attempts to stop observing the
+  // ComboboxModel. This hack ensures the Combobox is deleted before its
+  // ComboboxModel.
+  //
+  // Technically, the MenuButton has the same problem, but MenuButton doesn't
+  // use its model in its destructor.
+  if (combobox_)
+    RemoveChildView(combobox_);
+}
+
+void PermissionSelectorView::InitializeMenuButtonView(
+    views::GridLayout* layout,
+    const WebsiteSettingsUI::PermissionInfo& permission) {
+  bool button_enabled =
+      permission.source == content_settings::SETTING_SOURCE_USER;
+  menu_button_ = new internal::PermissionMenuButton(
+      WebsiteSettingsUI::PermissionActionToUIString(
+          permission.type, permission.setting, permission.default_setting,
+          permission.source),
+      menu_model_.get(), button_enabled);
+  menu_button_->SetEnabled(button_enabled);
+  menu_button_->SetAccessibleName(
+      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
+  layout->AddView(menu_button_);
+}
+
+void PermissionSelectorView::InitializeComboboxView(
+    views::GridLayout* layout,
+    const WebsiteSettingsUI::PermissionInfo& permission) {
+  bool button_enabled =
+      permission.source == content_settings::SETTING_SOURCE_USER;
+  combobox_model_adapter_.reset(
+      new internal::ComboboxModelAdapter(menu_model_.get()));
+  combobox_ = new internal::PermissionCombobox(
+      WebsiteSettingsUI::PermissionActionToUIString(
+          permission.type, permission.setting, permission.default_setting,
+          permission.source),
+      combobox_model_adapter_.get(), button_enabled,
+      true);
+  combobox_->SetEnabled(button_enabled);
+  combobox_->SetAccessibleName(
+      WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
+  layout->AddView(combobox_);
 }
 
 void PermissionSelectorView::PermissionChanged(
@@ -208,11 +348,18 @@ void PermissionSelectorView::PermissionChanged(
   const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
   icon_->SetImage(image.ToImageSkia());
 
+  LOG(ERROR) << "PermissionChanged";
+
   // Update the menu button text to reflect the new setting.
-  menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
-      permission.type, permission.setting, permission.default_setting,
-      content_settings::SETTING_SOURCE_USER));
-  menu_button_->SizeToPreferredSize();
+  if (menu_button_) {
+    menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
+        permission.type, permission.setting, permission.default_setting,
+        content_settings::SETTING_SOURCE_USER));
+    menu_button_->SizeToPreferredSize();
+  } else if (combobox_) {
+    bool use_default = permission.setting == CONTENT_SETTING_DEFAULT;
+    combobox_->UpdateSelectedIndex(use_default);
+  }
 
   FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
                     observer_list_,
