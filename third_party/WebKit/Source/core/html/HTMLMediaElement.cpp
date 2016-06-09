@@ -487,6 +487,16 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
 {
     DVLOG(MEDIA_LOG_LEVEL) << "didMoveToNewDocument(" << (void*)this << ")";
 
+    // If any experiment is enabled, then we want to enable a user gesture by
+    // default, otherwise the experiment does nothing.
+    bool oldDocumentRequiresUserGesture = (oldDocument.settings() && oldDocument.settings()->mediaPlaybackRequiresUserGesture())
+        || m_autoplayHelper->isExperimentEnabled();
+    bool newDocumentRequiresUserGesture = (document().settings() && document().settings()->mediaPlaybackRequiresUserGesture())
+        || m_autoplayHelper->isExperimentEnabled();
+    if (newDocumentRequiresUserGesture && !oldDocumentRequiresUserGesture) {
+        m_lockedPendingUserGesture = true;
+    }
+
     if (m_shouldDelayLoadEvent) {
         document().incrementLoadEventDelayCount();
         // Note: Keeping the load event delay count increment on oldDocument that was added
