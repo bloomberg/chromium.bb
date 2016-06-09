@@ -141,6 +141,11 @@ public class BindingManagerImplTest {
         public boolean isModerateBindingBound() {
             return mModerateBindingBound;
         }
+
+        @Override
+        public String getPackageName() {
+            return null;
+        }
     }
 
     /**

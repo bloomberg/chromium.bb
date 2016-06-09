@@ -108,8 +108,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
         // Kick off long running IO tasks that can be done in parallel.
         mNativeInitializationController = new NativeInitializationController(this, this);
+        initializeChildProcessCreationParams();
         mNativeInitializationController.startBackgroundTasks();
     }
+
+    /**
+     * Allow derived classes to initialize their own {@link ChildProcessCreationParams}.
+     */
+    protected void initializeChildProcessCreationParams() {}
 
     @Override
     public void postInflationStartup() {

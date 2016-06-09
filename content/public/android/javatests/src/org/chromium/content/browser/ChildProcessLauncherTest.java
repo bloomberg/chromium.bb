@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -20,6 +21,8 @@ import java.util.concurrent.Callable;
 
 /**
  * Instrumentation tests for ChildProcessLauncher.
+ * TODO(hanxi): Add tests for assigning {@ChildConnectionAllocator} for different package names
+ * when render processes can be run in WebAPKs.
  */
 public class ChildProcessLauncherTest extends InstrumentationTestCase {
     // Pseudo command line arguments to instruct the child process to wait until being killed.
@@ -33,23 +36,23 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
+    @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
     public void testServiceFailedToBind() throws InterruptedException, RemoteException {
-        final Context appContext = getInstrumentation().getTargetContext();
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(0, allocatedChromeSandboxedConnectionsCount());
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
         // Try to allocate a connection to service class in incorrect package. We can do that by
         // using the instrumentation context (getContext()) instead of the app context
         // (getTargetContext()).
         Context context = getInstrumentation().getContext();
-        ChildProcessLauncher.allocateBoundConnectionForTesting(context);
+        ChildProcessLauncher.allocateBoundConnectionForTesting(
+                context, getDefaultChildProcessCreationParams(context.getPackageName()));
 
         // Verify that the connection is not considered as allocated.
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return ChildProcessLauncher.allocatedConnectionsCountForTesting(
-                        appContext);
+                return allocatedChromeSandboxedConnectionsCount();
             }
         }));
 
@@ -67,13 +70,12 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testServiceCrashedBeforeSetup() throws InterruptedException, RemoteException {
-        final Context appContext = getInstrumentation().getTargetContext();
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(0, allocatedChromeSandboxedConnectionsCount());
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
         // Start and connect to a new service.
         final ChildProcessConnectionImpl connection = startConnection();
-        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
         // Verify that the service is not yet set up.
         assertEquals(0, connection.getPid());
@@ -86,8 +88,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return ChildProcessLauncher.allocatedConnectionsCountForTesting(
-                        appContext);
+                return allocatedChromeSandboxedConnectionsCount();
             }
         }));
 
@@ -105,12 +106,11 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testServiceCrashedAfterSetup() throws InterruptedException, RemoteException {
-        final Context appContext = getInstrumentation().getTargetContext();
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
         // Start and connect to a new service.
         final ChildProcessConnectionImpl connection = startConnection();
-        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
         // Initiate the connection setup.
         triggerConnectionSetup(connection);
@@ -138,8 +138,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return ChildProcessLauncher.allocatedConnectionsCountForTesting(
-                        appContext);
+                return allocatedChromeSandboxedConnectionsCount();
             }
         }));
 
@@ -161,16 +160,20 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @Feature({"ProcessManagement"})
     public void testPendingSpawnQueue() throws InterruptedException, RemoteException {
         final Context appContext = getInstrumentation().getTargetContext();
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
         // Start and connect to a new service.
         final ChildProcessConnectionImpl connection = startConnection();
-        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
+        assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
         // Queue up a new spawn request. There is no way to kill the pending connection, leak it
         // until the browser restart.
-        ChildProcessLauncher.enqueuePendingSpawnForTesting(appContext, sProcessWaitArguments);
-        assertEquals(1, ChildProcessLauncher.pendingSpawnsCountForTesting());
+        final String packageName = appContext.getPackageName();
+        final boolean inSandbox = true;
+        ChildProcessLauncher.enqueuePendingSpawnForTesting(appContext, sProcessWaitArguments,
+                getDefaultChildProcessCreationParams(packageName), inSandbox);
+        assertEquals(1, ChildProcessLauncher.pendingSpawnsCountForTesting(appContext, packageName,
+                inSandbox));
 
         // Initiate the connection setup.
         triggerConnectionSetup(connection);
@@ -199,7 +202,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return ChildProcessLauncher.pendingSpawnsCountForTesting();
+                return ChildProcessLauncher.pendingSpawnsCountForTesting(appContext, packageName,
+                        inSandbox);
             }
         }));
 
@@ -207,8 +211,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 Criteria.equals(1, new Callable<Integer>() {
                     @Override
                     public Integer call() {
-                        return ChildProcessLauncher.allocatedConnectionsCountForTesting(
-                                appContext);
+                        return allocatedChromeSandboxedConnectionsCount();
                     }
                 }));
 
@@ -224,8 +227,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     private ChildProcessConnectionImpl startConnection() throws InterruptedException {
         // Allocate a new connection.
         Context context = getInstrumentation().getTargetContext();
-        final ChildProcessConnectionImpl connection = (ChildProcessConnectionImpl)
-                ChildProcessLauncher.allocateBoundConnectionForTesting(context);
+        final ChildProcessConnectionImpl connection =
+                (ChildProcessConnectionImpl) ChildProcessLauncher.allocateBoundConnectionForTesting(
+                        context, getDefaultChildProcessCreationParams(context.getPackageName()));
 
         // Wait for the service to connect.
         CriteriaHelper.pollInstrumentationThread(
@@ -236,6 +240,20 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                     }
                 });
         return connection;
+    }
+
+    /**
+     * Returns the number of Chrome's sandboxed connections.
+     */
+    private int allocatedChromeSandboxedConnectionsCount() {
+        Context context = getInstrumentation().getTargetContext();
+        return ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
+                context, context.getPackageName());
+    }
+
+    private ChildProcessCreationParams getDefaultChildProcessCreationParams(String packageName) {
+        return new ChildProcessCreationParams(packageName, 0,
+                LibraryProcessType.PROCESS_CHILD);
     }
 
     private void triggerConnectionSetup(ChildProcessConnectionImpl connection) {

@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -15,6 +17,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
@@ -83,5 +86,45 @@ public class WebApkActivity extends WebappActivity {
         String packageName = getWebappInfo().webApkPackageName();
         WebApkServiceConnectionManager.getInstance().disconnect(
                 ContextUtils.getApplicationContext(), packageName);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // WebAPK hosts Chrome's renderer processes by declaring the Chrome's renderer service in
+        // its AndroidManifest.xml. We set {@link ChildProcessCreationParams} for WebAPK's renderer
+        // process so the {@link ChildProcessLauncher} knows which application's renderer
+        // service to connect.
+        initializeChildProcessCreationParams(true);
+    }
+
+    @Override
+    protected void initializeChildProcessCreationParams() {
+        // TODO(hanxi): crbug.com/611842. Investigates whether this function works for multiple
+        // windows or with --site-per-process enabled.
+        initializeChildProcessCreationParams(true);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        initializeChildProcessCreationParams(false);
+    }
+
+    /**
+     * Initializes {@link ChildProcessCreationParams} as a WebAPK's renderer process if
+     * {@link isForWebApk}} is true; as Chrome's child process otherwise.
+     * @param isForWebApk: Whether the {@link ChildProcessCreationParams} is initialized as a
+     *                     WebAPK renderer process.
+     */
+    private void initializeChildProcessCreationParams(boolean isForWebApk) {
+        ChromeApplication chrome = (ChromeApplication) ContextUtils.getApplicationContext();
+        ChildProcessCreationParams params = chrome.getChildProcessCreationParams();
+        if (isForWebApk) {
+            int extraBindFlag = params == null ? 0 : params.getExtraBindFlags();
+            params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
+                    extraBindFlag, LibraryProcessType.PROCESS_CHILD);
+        }
+        ChildProcessCreationParams.set(params);
     }
 }

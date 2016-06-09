@@ -39,25 +39,6 @@ public class ChromePrerenderService extends Service {
     public static final String KEY_PRERENDER_HEIGHT = "prerender_height";
     public static final String KEY_REFERRER = "referrer";
 
-    private static class LauncherWarmUpTaskParams {
-        final Context mContext;
-        final ChildProcessCreationParams mParams;
-
-        LauncherWarmUpTaskParams(Context context, ChildProcessCreationParams params) {
-            mContext = context;
-            mParams = params;
-        }
-    }
-
-    private static class LauncherWarmUpTask
-            extends AsyncTask<LauncherWarmUpTaskParams, Void, Void> {
-        @Override
-        protected Void doInBackground(LauncherWarmUpTaskParams... args) {
-            ChildProcessLauncher.warmUp(args[0].mContext, args[0].mParams);
-            return null;
-        }
-    }
-
     /**
      * Handler of incoming messages from clients.
      */
@@ -90,8 +71,14 @@ public class ChromePrerenderService extends Service {
         try {
             final Context context = getApplicationContext();
             final ChromeApplication chrome = (ChromeApplication) context;
-            new LauncherWarmUpTask().execute(new LauncherWarmUpTaskParams(
-                            context, chrome.getChildProcessCreationParams()));
+            ChildProcessCreationParams.set(chrome.getChildProcessCreationParams());
+            new AsyncTask<Context, Void, Void>() {
+                @Override
+                protected Void doInBackground(Context... params) {
+                    ChildProcessLauncher.warmUp(params[0]);
+                    return null;
+                }
+            }.execute(context);
             ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
 
             ApplicationInitialization.enableFullscreenFlags(

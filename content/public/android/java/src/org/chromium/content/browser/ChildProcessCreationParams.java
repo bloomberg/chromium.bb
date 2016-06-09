@@ -38,8 +38,16 @@ public class ChildProcessCreationParams {
         mLibraryProcessType = libraryProcessType;
     }
 
+    public ChildProcessCreationParams copy() {
+        return new ChildProcessCreationParams(mPackageName, mExtraBindFlags, mLibraryProcessType);
+    }
+
     public String getPackageName() {
         return mPackageName;
+    }
+
+    public int getExtraBindFlags() {
+        return mExtraBindFlags;
     }
 
     /**

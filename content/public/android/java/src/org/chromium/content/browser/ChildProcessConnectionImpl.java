@@ -271,6 +271,12 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     @Override
+    public String getPackageName() {
+        return mCreationParams != null ? mCreationParams.getPackageName()
+                : mContext.getPackageName();
+    }
+
+    @Override
     public IChildProcessService getService() {
         synchronized (mLock) {
             return mService;

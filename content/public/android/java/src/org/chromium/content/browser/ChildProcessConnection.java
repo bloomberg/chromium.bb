@@ -40,6 +40,8 @@ public interface ChildProcessConnection {
 
     boolean isInSandbox();
 
+    String getPackageName();
+
     IChildProcessService getService();
 
     /**
