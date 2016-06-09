@@ -316,3 +316,14 @@ def get_cacerts_bundle():
     # to current directory instead. We use our own bundled copy of cacert.pem.
     _ca_certs = zip_package.extract_resource(utils, 'cacert.pem', temp_dir='.')
     return _ca_certs
+
+
+def sliding_timeout(timeout):
+  """Returns a function that returns how much time left till (now+timeout).
+
+  If timeout is None, the returned function always returns None.
+  """
+  if timeout is None:
+    return lambda: None
+  deadline = time.time() + timeout
+  return lambda: deadline - time.time()

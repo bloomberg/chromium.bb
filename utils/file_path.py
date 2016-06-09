@@ -746,7 +746,7 @@ def link_file(outfile, infile, action):
   """Links a file. The type of link depends on |action|.
 
   Returns:
-    True if the action was caried on, False if fallback was used.
+    True if the action was carried on, False if fallback was used.
   """
   if action not in (HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY):
     raise ValueError('Unknown mapping action %s' % action)

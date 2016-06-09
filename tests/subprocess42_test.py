@@ -665,6 +665,36 @@ class Subprocess42Test(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  def test_split(self):
+    data = [
+      ('stdout', 'o1\no2\no3\n'),
+      ('stderr', 'e1\ne2\ne3\n'),
+      ('stdout', '\n\n'),
+      ('stdout', '\n'),
+      ('stdout', 'o4\no5'),
+      ('stdout', '_sameline\npart1 of one line '),
+      ('stderr', 'err inserted between two parts of stdout\n'),
+      ('stdout', 'part2 of one line\n'),
+      ('stdout', 'incomplete last stdout'),
+      ('stderr', 'incomplete last stderr'),
+    ]
+    self.assertEquals(list(subprocess42.split(data)), [
+      ('stdout', 'o1'),
+      ('stdout', 'o2'),
+      ('stdout', 'o3'),
+      ('stderr', 'e1'),
+      ('stderr', 'e2'),
+      ('stderr', 'e3'),
+      ('stdout', ''),
+      ('stdout', ''),
+      ('stdout', ''),
+      ('stdout', 'o4'),
+      ('stdout', 'o5_sameline'),
+      ('stderr', 'err inserted between two parts of stdout'),
+      ('stdout', 'part1 of one line part2 of one line'),
+      ('stderr', 'incomplete last stderr'),
+      ('stdout', 'incomplete last stdout'),
+    ])
 
 if __name__ == '__main__':
   if '-v' in sys.argv:

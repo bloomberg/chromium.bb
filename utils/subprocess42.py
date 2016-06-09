@@ -27,6 +27,7 @@ Example:
 TODO(maruel): Add VOID support like subprocess2.
 """
 
+import collections
 import contextlib
 import errno
 import os
@@ -387,6 +388,13 @@ class Popen(subprocess.Popen):
       self.end = time.time()
     return ret
 
+  def yield_any_line(self, **kwargs):
+    """Yields lines until the process terminates.
+
+    Like yield_any, but yields lines.
+    """
+    return split(self.yield_any(**kwargs))
+
   def yield_any(self, maxsize=None, timeout=None):
     """Yields output until the process terminates.
 
@@ -418,8 +426,9 @@ class Popen(subprocess.Popen):
 
     last_yield = time.time()
     while self.poll() is None:
-      to = (None if timeout is None
-            else max(timeout() - (time.time() - last_yield), 0))
+      to = timeout() if timeout else None
+      if to is not None:
+        to = max(to - (time.time() - last_yield), 0)
       t, data = self.recv_any(
           maxsize=maxsize() if callable(maxsize) else maxsize, timeout=to)
       if data or to is 0:
@@ -446,7 +455,7 @@ class Popen(subprocess.Popen):
   def recv_any(self, maxsize=None, timeout=None):
     """Reads from the first pipe available from stdout and stderr.
 
-    Unlike wait(), it does not throw TimeoutExpired.
+    Unlike wait(), does not throw TimeoutExpired.
 
     Arguments:
     - maxsize: Maximum number of bytes to return. Defaults to MAX_SIZE.
@@ -635,3 +644,46 @@ def inhibit_os_error_reporting():
   #     defaults write com.apple.CrashReporter UseUNC 1
   #     defaults write com.apple.CrashReporter DialogType none
   # - Ubuntu, disable apport if needed.
+
+
+def split(data, sep='\n'):
+  """Splits pipe data by |sep|. Does some buffering.
+
+  For example, [('stdout', 'a\nb'), ('stdout', '\n'), ('stderr', 'c\n')] ->
+  [('stdout', 'a'), ('stdout', 'b'), ('stderr', 'c')].
+
+  Args:
+    data: iterable of tuples (pipe_name, bytes).
+
+  Returns:
+    An iterator of tuples (pipe_name, bytes) where bytes is the input data
+    but split by sep into separate tuples.
+  """
+  # A dict {pipe_name -> list of pending chunks without separators}
+  pending_chunks = collections.defaultdict(list)
+  for pipe_name, chunk in data:
+    if chunk is None:
+      # Happens if a pipe is closed.
+      continue
+
+    pending = pending_chunks[pipe_name]
+    start = 0  # offset in chunk to start |sep| search from
+    while start < len(chunk):
+      j = chunk.find(sep, start)
+      if j == -1:
+        pending_chunks[pipe_name].append(chunk[start:])
+        break
+
+      to_emit = chunk[start:j]
+      start = j + 1
+      if pending:
+        # prepend and forget
+        to_emit = ''.join(pending) + to_emit
+        pending = []
+        pending_chunks[pipe_name] = pending
+      yield pipe_name, to_emit
+
+  # Emit remaining chunks that don't end with separators as is.
+  for pipe_name, chunks in sorted(pending_chunks.iteritems()):
+    if chunks:
+      yield pipe_name, ''.join(chunks)

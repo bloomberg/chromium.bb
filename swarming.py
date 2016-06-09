@@ -1395,7 +1395,8 @@ def CMDreproduce(parser, args):
         workdir = os.path.join(workdir, bundle.relative_cwd)
       command.extend(properties.get('extra_args') or [])
     # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
-    new_command = run_isolated.process_command(command, options.output_dir)
+    new_command = run_isolated.process_command(
+        command, options.output_dir, None)
     if not options.output_dir and new_command != command:
       parser.error('The task has outputs, you must use --output-dir')
     command = new_command

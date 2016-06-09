@@ -32,6 +32,7 @@ from utils import file_path
 from utils import logging_utils
 from utils import tools
 
+import httpserver_mock
 import isolateserver_mock
 
 
@@ -155,7 +156,7 @@ class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
     return super(NonBlockingEvent, self).wait(0)
 
 
-class SwarmingServerHandler(isolateserver_mock.MockHandler):
+class SwarmingServerHandler(httpserver_mock.MockHandler):
   """An extremely minimal implementation of the swarming server API v1.0."""
 
   def do_GET(self):
@@ -183,7 +184,7 @@ class SwarmingServerHandler(isolateserver_mock.MockHandler):
     raise NotImplementedError(self.path)
 
 
-class MockSwarmingServer(isolateserver_mock.MockServer):
+class MockSwarmingServer(httpserver_mock.MockServer):
   _HANDLER_CLS = SwarmingServerHandler
 
   def __init__(self):

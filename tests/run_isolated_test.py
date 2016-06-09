@@ -19,12 +19,14 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
+import cipd
 import isolated_format
 import isolateserver
 import run_isolated
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from utils import file_path
+from utils import fs
 from utils import large
 from utils import logging_utils
 from utils import on_error
@@ -32,6 +34,7 @@ from utils import subprocess42
 from utils import tools
 
 import isolateserver_mock
+import cipdserver_mock
 
 
 def write_content(filepath, content):
@@ -79,6 +82,8 @@ class RunIsolatedTestBase(auto_stub.TestCase):
         logging_utils.OptionParserWithLogging, 'logger_root',
         logging.Logger('unittest'))
 
+    self.cipd_server = cipdserver_mock.MockCipdServer()
+
   def tearDown(self):
     for dirpath, dirnames, filenames in os.walk(self.tempdir, topdown=True):
       for filename in filenames:
@@ -86,6 +91,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
       for dirname in dirnames:
         file_path.set_read_only(os.path.join(dirpath, dirname), False)
     file_path.rmtree(self.tempdir)
+    self.cipd_server.close()
     super(RunIsolatedTestBase, self).tearDown()
 
   @property
@@ -95,7 +101,9 @@ class RunIsolatedTestBase(auto_stub.TestCase):
 
   def fake_make_temp_dir(self, prefix, _root_dir=None):
     """Predictably returns directory for run_tha_test (one per test case)."""
-    self.assertIn(prefix, ('isolated_out', 'isolated_run', 'isolated_tmp'))
+    self.assertIn(
+        prefix,
+        ('isolated_out', 'isolated_run', 'isolated_tmp', 'cipd_site_root'))
     temp_dir = os.path.join(self.tempdir, prefix)
     self.assertFalse(os.path.isdir(temp_dir))
     os.makedirs(temp_dir)
@@ -117,6 +125,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
         kwargs.pop('env', None)
         self.popen_calls.append((args, kwargs))
         self2.returncode = None
+
+      def yield_any_line(self, timeout=None):  # pylint: disable=unused-argument
+        return ()
 
       def wait(self, timeout=None):  # pylint: disable=unused-argument
         self.returncode = 0
@@ -191,6 +202,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
         StorageFake(files),
         isolateserver.MemoryCache(),
         False,
+        None,
+        None,
         None,
         None,
         None,
@@ -320,6 +333,47 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [([u'/bin/echo', u'hello', u'world'], {'detached': True})],
         self.popen_calls)
 
+  def test_main_naked_with_packages(self):
+    cmd = [
+      '--no-log',
+      '--cipd-package', 'infra/tools/echo/${platform}:latest',
+      '--cipd-server', self.cipd_server.url,
+      '${CIPD_PATH}/echo',
+      'hello',
+      'world',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
+
+    self.assertEqual(2, len(self.popen_calls))
+
+    # Test cipd-ensure command.
+    cipd_ensure_cmd, _ = self.popen_calls[0]
+    self.assertEqual(cipd_ensure_cmd[:2], [
+      os.path.abspath('cipd_cache/cipd' + cipd.EXECUTABLE_SUFFIX),
+      'ensure',
+    ])
+    cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
+    self.assertEqual(
+        cipd_ensure_cmd[cache_dir_index+1],
+        os.path.abspath('cipd_cache/cipd_internal'))
+
+    # Test cipd cache.
+    version_file = unicode(os.path.abspath(
+        'cipd_cache/versions/1481d0a0ceb16ea4672fed76a0710306eb9f3a33'))
+    self.assertTrue(fs.isfile(version_file))
+    with open(version_file) as f:
+      self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+    client_binary_file = unicode(os.path.abspath(
+        'cipd_cache/clients/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    self.assertTrue(fs.isfile(client_binary_file))
+
+    # Test echo call.
+    echo_cmd, _ = self.popen_calls[1]
+    self.assertTrue(echo_cmd[0].endswith('cipd_site_root/echo'))
+    self.assertEqual(echo_cmd[1:], ['hello', 'world'])
+
   def test_modified_cwd(self):
     isolated = json_dumps({
         'command': ['../out/some.exe', 'arg'],
@@ -398,7 +452,9 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           None,
           None,
           None,
-          [])
+          [],
+          None,
+          None)
       self.assertEqual(0, ret)
 
       # It uploaded back. Assert the store has a new item containing foo.
@@ -529,7 +585,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
           },
         },
       },
-      u'version': 4,
+      u'version': 5,
     }
     actual = tools.read_json(out)
     # duration can be exactly 0 due to low timer resolution, especially but not

@@ -1218,6 +1218,9 @@ class LocalCache(object):
     self._evicted = []
     self._linked = []
 
+  def __contains__(self, digest):
+    raise NotImplementedError()
+
   def __enter__(self):
     """Context manager interface."""
     return self
@@ -1301,6 +1304,10 @@ class MemoryCache(LocalCache):
     super(MemoryCache, self).__init__()
     self._file_mode_mask = file_mode_mask
     self._contents = {}
+
+  def __contains__(self, digest):
+    with self._lock:
+      return digest in self._contents
 
   def cached_set(self):
     with self._lock:
@@ -1394,6 +1401,10 @@ class DiskCache(LocalCache):
       with self._lock:
         # self._load() calls self._trim() which initializes self._free_disk.
         self._load()
+
+  def __contains__(self, digest):
+    with self._lock:
+      return digest in self._lru
 
   def __enter__(self):
     return self
