@@ -4123,8 +4123,17 @@ void WebGLRenderingContextBase::texImageHelperDOMArrayBufferView(TexImageFunctio
         sourceType = Tex2D;
     else
         sourceType = Tex3D;
-    if (!validateTexFuncData(funcName, sourceType, level, width, height, depth, format, type, pixels, NullAllowed))
-        return;
+    switch (functionID) {
+    case TexImage2D:
+    case TexImage3D:
+        if (!validateTexFuncData(funcName, sourceType, level, width, height, depth, format, type, pixels, NullAllowed))
+            return;
+        break;
+    case TexSubImage2D:
+    case TexSubImage3D:
+        if (!validateTexFuncData(funcName, sourceType, level, width, height, depth, format, type, pixels, NullNotAllowed))
+            return;
+    }
     void* data = pixels ? pixels->baseAddress() : 0;
     Vector<uint8_t> tempData;
     bool changeUnpackAlignment = false;
