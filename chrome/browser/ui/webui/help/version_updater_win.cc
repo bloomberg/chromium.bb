@@ -10,7 +10,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -42,10 +41,6 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback,
     callback_.Run(CHECKING, 0, base::string16());
     BeginUpdateCheckOnFileThread(false /* !install_update_if_possible */);
   }
-}
-
-void VersionUpdaterWin::RelaunchBrowser() const {
-  chrome::AttemptRestart();
 }
 
 void VersionUpdaterWin::OnUpdateCheckComplete(

@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/grit/chromium_strings.h"
@@ -128,11 +127,6 @@ void VersionUpdaterMac::PromoteUpdater() const {
   // If the promotion was successful, KeystoneGlue will re-register the ticket
   // and UpdateStatus() will be called again indicating first that
   // registration is in progress and subsequently that it has completed.
-}
-
-void VersionUpdaterMac::RelaunchBrowser() const {
-  // Tell the Broweser to restart if possible.
-  chrome::AttemptRestart();
 }
 
 void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {

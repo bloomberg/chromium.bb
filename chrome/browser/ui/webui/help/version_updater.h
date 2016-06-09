@@ -73,9 +73,6 @@ class VersionUpdater {
   virtual void PromoteUpdater() const = 0;
 #endif
 
-  // Relaunches the browser, generally after being updated.
-  virtual void RelaunchBrowser() const = 0;
-
 #if defined(OS_CHROMEOS)
   virtual void SetChannel(const std::string& channel,
                           bool is_powerwash_allowed) = 0;

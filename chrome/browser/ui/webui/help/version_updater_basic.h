@@ -15,8 +15,6 @@ class VersionUpdaterBasic : public VersionUpdater {
   // VersionUpdater implementation.
   void CheckForUpdate(const StatusCallback& callback,
                       const PromoteCallback&) override;
-  void RelaunchBrowser() const override;
-
  protected:
   friend class VersionUpdater;
 

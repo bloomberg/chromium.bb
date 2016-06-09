@@ -156,10 +156,6 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback,
   }
 }
 
-void VersionUpdaterCros::RelaunchBrowser() const {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
-}
-
 void VersionUpdaterCros::SetChannel(const std::string& channel,
                                     bool is_powerwash_allowed) {
   OwnerSettingsServiceChromeOS* service =

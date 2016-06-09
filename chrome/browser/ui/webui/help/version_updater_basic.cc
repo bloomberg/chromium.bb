@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/help/version_updater_basic.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/upgrade_detector.h"
 
 void VersionUpdaterBasic::CheckForUpdate(
@@ -15,10 +14,6 @@ void VersionUpdaterBasic::CheckForUpdate(
     status_callback.Run(NEARLY_UPDATED, 0, base::string16());
   else
     status_callback.Run(DISABLED, 0, base::string16());
-}
-
-void VersionUpdaterBasic::RelaunchBrowser() const {
-  chrome::AttemptRestart();
 }
 
 VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {

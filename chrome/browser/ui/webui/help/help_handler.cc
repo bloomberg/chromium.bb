@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -537,7 +538,7 @@ void HelpHandler::PromoteUpdater(const base::ListValue* args) {
 
 void HelpHandler::RelaunchNow(const base::ListValue* args) {
   DCHECK(args->empty());
-  version_updater_->RelaunchBrowser();
+  chrome::AttemptRelaunch();
 }
 
 void HelpHandler::OpenFeedbackDialog(const base::ListValue* args) {

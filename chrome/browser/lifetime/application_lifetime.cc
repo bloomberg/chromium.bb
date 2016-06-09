@@ -235,6 +235,14 @@ void AttemptRestart() {
 }
 #endif  // !defined(OS_ANDROID)
 
+void AttemptRelaunch() {
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  // If running the Chrome OS build, but we're not on the device, fall through.
+#endif
+  chrome::AttemptRestart();
+}
+
 void AttemptExit() {
 #if defined(OS_CHROMEOS)
   // On ChromeOS, user exit and system exits are the same.
