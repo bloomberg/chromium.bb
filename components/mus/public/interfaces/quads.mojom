@@ -4,6 +4,7 @@
 
 module mus.mojom;
 
+import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
@@ -43,8 +44,7 @@ struct RenderPassQuadState {
   gfx.mojom.Size mask_texture_size;
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
-  // TODO(jamesr): Support
-  // FilterOperations filters;
+  cc.mojom.FilterOperations filters;
 
   // The scale from layer space of the root layer of the render pass to
   // the render pass physical pixels. This scale is applied to the filter
@@ -54,8 +54,7 @@ struct RenderPassQuadState {
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.
-  // TODO(jamesr): Support
-  // FilterOperations background_filters;
+  cc.mojom.FilterOperations background_filters;
 };
 
 struct SolidColorQuadState {

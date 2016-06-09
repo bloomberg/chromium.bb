@@ -103,9 +103,9 @@ bool ConvertDrawQuad(const QuadPtr& input,
           render_pass_quad_state->mask_resource_id,
           render_pass_quad_state->mask_uv_scale.OffsetFromOrigin(),
           render_pass_quad_state->mask_texture_size,
-          cc::FilterOperations(),  // TODO(jamesr): filters
+          render_pass_quad_state->filters,
           render_pass_quad_state->filters_scale.OffsetFromOrigin(),
-          cc::FilterOperations());  // TODO(jamesr): background_filters
+          render_pass_quad_state->background_filters);
       break;
     }
     case mus::mojom::Material::SOLID_COLOR: {
@@ -239,10 +239,10 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       pass_state->mask_uv_scale =
           gfx::PointAtOffsetFromOrigin(render_pass_quad->mask_uv_scale);
       pass_state->mask_texture_size = render_pass_quad->mask_texture_size;
-      // TODO(jamesr): pass_state->filters
+      pass_state->filters = render_pass_quad->filters;
       pass_state->filters_scale =
           gfx::PointAtOffsetFromOrigin(render_pass_quad->filters_scale);
-      // TODO(jamesr): pass_state->background_filters
+      pass_state->background_filters = render_pass_quad->background_filters;
       quad->render_pass_quad_state = std::move(pass_state);
       break;
     }

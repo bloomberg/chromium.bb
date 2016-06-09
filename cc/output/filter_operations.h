@@ -33,9 +33,13 @@ class CC_EXPORT FilterOperations {
 
   FilterOperations(const FilterOperations& other);
 
+  explicit FilterOperations(std::vector<FilterOperation>&& operations);
+
   ~FilterOperations();
 
   FilterOperations& operator=(const FilterOperations& other);
+
+  FilterOperations& operator=(FilterOperations&& other);
 
   bool operator==(const FilterOperations& other) const;
 
@@ -62,6 +66,8 @@ class CC_EXPORT FilterOperations {
   size_t size() const {
     return operations_.size();
   }
+
+  const std::vector<FilterOperation>& operations() const { return operations_; }
 
   const FilterOperation& at(size_t index) const {
     DCHECK_LT(index, size());

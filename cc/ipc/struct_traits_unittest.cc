@@ -43,6 +43,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(f);
   }
 
+  void EchoFilterOperations(
+      const FilterOperations& f,
+      const EchoFilterOperationsCallback& callback) override {
+    callback.Run(f);
+  }
+
   void EchoRenderPassId(const RenderPassId& r,
                         const EchoRenderPassIdCallback& callback) override {
     callback.Run(r);
@@ -244,6 +250,20 @@ TEST_F(StructTraitsTest, FilterOperation) {
         NOTREACHED();
         break;
     }
+  }
+}
+
+TEST_F(StructTraitsTest, FilterOperations) {
+  FilterOperations input;
+  input.Append(FilterOperation::CreateBlurFilter(0.f));
+  input.Append(FilterOperation::CreateSaturateFilter(4.f));
+  input.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  FilterOperations output;
+  proxy->EchoFilterOperations(input, &output);
+  EXPECT_EQ(input.size(), output.size());
+  for (size_t i = 0; i < input.size(); ++i) {
+    EXPECT_EQ(input.at(i), output.at(i));
   }
 }
 
