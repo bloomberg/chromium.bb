@@ -26,7 +26,7 @@ TouchNoiseFinder::~TouchNoiseFinder() {
 
 void TouchNoiseFinder::HandleTouches(
     const std::vector<InProgressTouchEvdev>& touches,
-    base::TimeDelta time) {
+    base::TimeTicks time) {
   for (const InProgressTouchEvdev& touch : touches) {
     if (!touch.was_touching)
       slots_with_noise_.set(touch.slot, false);
@@ -44,7 +44,7 @@ bool TouchNoiseFinder::SlotHasNoise(size_t slot) const {
   return slots_with_noise_.test(slot);
 }
 
-void TouchNoiseFinder::RecordUMA(bool had_noise, base::TimeDelta time) {
+void TouchNoiseFinder::RecordUMA(bool had_noise, base::TimeTicks time) {
   if (slots_with_noise_.any()) {
     if (!had_noise) {
       UMA_HISTOGRAM_LONG_TIMES(

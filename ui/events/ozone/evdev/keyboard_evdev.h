@@ -44,7 +44,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void OnKeyChange(unsigned int code,
                    bool down,
                    bool suppress_auto_repeat,
-                   base::TimeDelta timestamp,
+                   base::TimeTicks timestamp,
                    int device_id);
 
   // Handle Caps Lock modifier.
@@ -77,7 +77,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void DispatchKey(unsigned int key,
                    bool down,
                    bool repeat,
-                   base::TimeDelta timestamp,
+                   base::TimeTicks timestamp,
                    int device_id);
 
   // Aggregated key state. There is only one bit of state per key; we do not

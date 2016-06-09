@@ -22,7 +22,7 @@ namespace {
 class TestEvent : public Event {
  public:
   explicit TestEvent(EventType type)
-      : Event(type, base::TimeDelta(), 0), unique_id_(next_unique_id_++) {}
+      : Event(type, base::TimeTicks(), 0), unique_id_(next_unique_id_++) {}
   ~TestEvent() override {}
   int unique_id() const { return unique_id_; }
 

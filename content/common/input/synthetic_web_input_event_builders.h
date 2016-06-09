@@ -86,7 +86,7 @@ class CONTENT_EXPORT SyntheticWebTouchEvent
   void ReleasePoint(int index);
   void CancelPoint(int index);
 
-  void SetTimestamp(base::TimeDelta timestamp);
+  void SetTimestamp(base::TimeTicks timestamp);
 };
 
 }  // namespace content

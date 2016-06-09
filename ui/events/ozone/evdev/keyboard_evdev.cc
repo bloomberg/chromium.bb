@@ -74,7 +74,7 @@ KeyboardEvdev::~KeyboardEvdev() {
 void KeyboardEvdev::OnKeyChange(unsigned int key,
                                 bool down,
                                 bool suppress_auto_repeat,
-                                base::TimeDelta timestamp,
+                                base::TimeTicks timestamp,
                                 int device_id) {
   if (key > KEY_MAX)
     return;
@@ -223,7 +223,7 @@ void KeyboardEvdev::OnRepeatCommit(unsigned int sequence) {
 void KeyboardEvdev::DispatchKey(unsigned int key,
                                 bool down,
                                 bool repeat,
-                                base::TimeDelta timestamp,
+                                base::TimeTicks timestamp,
                                 int device_id) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));

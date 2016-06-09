@@ -22,7 +22,7 @@
 namespace {
 
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
-base::TimeDelta GetTime() {
+base::TimeTicks GetTime() {
   return ui::EventTimeForNow();
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN)

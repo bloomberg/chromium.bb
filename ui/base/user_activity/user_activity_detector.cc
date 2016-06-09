@@ -21,9 +21,9 @@ UserActivityDetector* g_instance = nullptr;
 // Returns a string describing |event|.
 std::string GetEventDebugString(const ui::Event* event) {
   std::string details = base::StringPrintf(
-      "type=%d name=%s flags=%d time=%" PRId64,
-      event->type(), event->name().c_str(), event->flags(),
-      event->time_stamp().InMilliseconds());
+      "type=%d name=%s flags=%d time=%" PRId64, event->type(),
+      event->name().c_str(), event->flags(),
+      (event->time_stamp() - base::TimeTicks()).InMilliseconds());
 
   if (event->IsKeyEvent()) {
     details += base::StringPrintf(" key_code=%d",

@@ -29,12 +29,12 @@ class MockPointerDelegate : public PointerDelegate {
   MOCK_CONST_METHOD1(CanAcceptPointerEventsForSurface, bool(Surface*));
   MOCK_METHOD3(OnPointerEnter, void(Surface*, const gfx::PointF&, int));
   MOCK_METHOD1(OnPointerLeave, void(Surface*));
-  MOCK_METHOD2(OnPointerMotion, void(base::TimeDelta, const gfx::PointF&));
-  MOCK_METHOD3(OnPointerButton, void(base::TimeDelta, int, bool));
+  MOCK_METHOD2(OnPointerMotion, void(base::TimeTicks, const gfx::PointF&));
+  MOCK_METHOD3(OnPointerButton, void(base::TimeTicks, int, bool));
   MOCK_METHOD3(OnPointerScroll,
-               void(base::TimeDelta, const gfx::Vector2dF&, bool));
-  MOCK_METHOD1(OnPointerScrollCancel, void(base::TimeDelta));
-  MOCK_METHOD1(OnPointerScrollStop, void(base::TimeDelta));
+               void(base::TimeTicks, const gfx::Vector2dF&, bool));
+  MOCK_METHOD1(OnPointerScrollCancel, void(base::TimeTicks));
+  MOCK_METHOD1(OnPointerScrollStop, void(base::TimeTicks));
   MOCK_METHOD0(OnPointerFrame, void());
 };
 

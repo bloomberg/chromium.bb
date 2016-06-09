@@ -12,8 +12,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/event_utils.h"
 
 namespace ui {
 
@@ -143,9 +145,9 @@ void EventConverterEvdev::SetCapsLockLed(bool enabled) {
 void EventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
 }
 
-base::TimeDelta EventConverterEvdev::TimeDeltaFromInputEvent(
+base::TimeTicks EventConverterEvdev::TimeTicksFromInputEvent(
     const input_event& event) {
-  return base::TimeDelta::FromMicroseconds(
-      static_cast<int64_t>(event.time.tv_sec) * 1000000L + event.time.tv_usec);
+  return ui::EventTimeStampFromSeconds(event.time.tv_sec) +
+      base::TimeDelta::FromMicroseconds(event.time.tv_usec);
 }
 }  // namespace ui

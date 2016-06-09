@@ -17,7 +17,7 @@ class TouchNoiseFilter {
  public:
   virtual ~TouchNoiseFilter() {}
   virtual void Filter(const std::vector<InProgressTouchEvdev>& touches,
-                      base::TimeDelta time,
+                      base::TimeTicks time,
                       std::bitset<kNumTouchEvdevSlots>* slots_with_noise) = 0;
 };
 

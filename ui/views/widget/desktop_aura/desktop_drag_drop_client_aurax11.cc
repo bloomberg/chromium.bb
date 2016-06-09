@@ -765,7 +765,7 @@ void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {
 void DesktopDragDropClientAuraX11::OnMouseMovement(
     const gfx::Point& screen_point,
     int flags,
-    base::TimeDelta event_time) {
+    base::TimeTicks event_time) {
   if (drag_widget_.get()) {
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(
@@ -785,7 +785,8 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(
   current_modifier_state_ = flags & kModifiers;
 
   repeat_mouse_move_timer_.Stop();
-  ProcessMouseMove(screen_point, event_time.InMilliseconds());
+  ProcessMouseMove(screen_point,
+                   (event_time - base::TimeTicks()).InMilliseconds());
 }
 
 void DesktopDragDropClientAuraX11::OnMouseReleased() {

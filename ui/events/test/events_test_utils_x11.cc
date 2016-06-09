@@ -294,7 +294,7 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
   std::vector<Valuator> valuators_with_time = valuators;
   valuators_with_time.push_back(
       Valuator(DeviceDataManagerX11::DT_TOUCH_RAW_TIMESTAMP,
-               (ui::EventTimeForNow()).InMicroseconds()));
+               (ui::EventTimeForNow() - base::TimeTicks()).InMicroseconds()));
   SetUpValuators(valuators_with_time);
 }
 

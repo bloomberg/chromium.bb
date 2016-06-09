@@ -73,7 +73,7 @@ class EVENTS_EXPORT Event {
   EventType type() const { return type_; }
   const std::string& name() const { return name_; }
   // time_stamp represents time since machine was booted.
-  const base::TimeDelta& time_stamp() const { return time_stamp_; }
+  const base::TimeTicks time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
 
   // This is only intended to be used externally by classes that are modifying
@@ -278,13 +278,13 @@ class EVENTS_EXPORT Event {
   bool handled() const { return result_ != ER_UNHANDLED; }
 
  protected:
-  Event(EventType type, base::TimeDelta time_stamp, int flags);
+  Event(EventType type, base::TimeTicks time_stamp, int flags);
   Event(const base::NativeEvent& native_event, EventType type, int flags);
   Event(const Event& copy);
   void SetType(EventType type);
   void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
 
-  void set_time_stamp(const base::TimeDelta& time_stamp) {
+  void set_time_stamp(base::TimeTicks time_stamp) {
     time_stamp_ = time_stamp;
   }
 
@@ -295,7 +295,7 @@ class EVENTS_EXPORT Event {
 
   EventType type_;
   std::string name_;
-  base::TimeDelta time_stamp_;
+  base::TimeTicks time_stamp_;
   LatencyInfo latency_;
   int flags_;
   base::NativeEvent native_event_;
@@ -375,7 +375,7 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   LocatedEvent(EventType type,
                const gfx::PointF& location,
                const gfx::PointF& root_location,
-               base::TimeDelta time_stamp,
+               base::TimeTicks time_stamp,
                int flags);
 
   gfx::PointF location_;
@@ -472,7 +472,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   MouseEvent(EventType type,
              const gfx::Point& location,
              const gfx::Point& root_location,
-             base::TimeDelta time_stamp,
+             base::TimeTicks time_stamp,
              int flags,
              int changed_button_flags);
 
@@ -589,7 +589,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   MouseWheelEvent(const gfx::Vector2d& offset,
                   const gfx::Point& location,
                   const gfx::Point& root_location,
-                  base::TimeDelta time_stamp,
+                  base::TimeTicks time_stamp,
                   int flags,
                   int changed_button_flags);
 
@@ -626,13 +626,13 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   TouchEvent(EventType type,
              const gfx::Point& location,
              int touch_id,
-             base::TimeDelta time_stamp);
+             base::TimeTicks time_stamp);
 
   TouchEvent(EventType type,
              const gfx::Point& location,
              int flags,
              int touch_id,
-             base::TimeDelta timestamp,
+             base::TimeTicks timestamp,
              float radius_x,
              float radius_y,
              float angle,
@@ -723,7 +723,7 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
                int flags,
                int pointer_id,
                const PointerDetails& pointer_details,
-               base::TimeDelta time_stamp);
+               base::TimeTicks time_stamp);
 
   int32_t pointer_id() const { return pointer_id_; }
   const PointerDetails& pointer_details() const { return details_; }
@@ -799,7 +799,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
            DomCode code,
            int flags,
            DomKey key,
-           base::TimeDelta time_stamp);
+           base::TimeTicks time_stamp);
 
   // Create a character event.
   KeyEvent(base::char16 character, KeyboardCode key_code, int flags);
@@ -956,7 +956,7 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
   // Used for tests.
   ScrollEvent(EventType type,
               const gfx::Point& location,
-              base::TimeDelta time_stamp,
+              base::TimeTicks time_stamp,
               int flags,
               float x_offset,
               float y_offset,
@@ -991,7 +991,7 @@ class EVENTS_EXPORT GestureEvent : public LocatedEvent {
   GestureEvent(float x,
                float y,
                int flags,
-               base::TimeDelta time_stamp,
+               base::TimeTicks time_stamp,
                const GestureEventDetails& details);
 
   // Create a new GestureEvent which is identical to the provided model.

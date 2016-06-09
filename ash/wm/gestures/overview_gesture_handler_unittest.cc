@@ -87,8 +87,7 @@ TEST_F(OverviewGestureHandlerTest, SwipeUpDownWithoutReleasing) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   ui::test::EventGenerator generator(root_window, root_window);
-  base::TimeDelta timestamp = base::TimeDelta::FromInternalValue(
-      base::TimeTicks::Now().ToInternalValue());
+  base::TimeTicks timestamp = base::TimeTicks::Now();
   gfx::Point start;
   int num_fingers = 3;
   base::TimeDelta step_delay(base::TimeDelta::FromMilliseconds(5));

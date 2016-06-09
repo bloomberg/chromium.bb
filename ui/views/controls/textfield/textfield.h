@@ -462,7 +462,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // State variables used to track double and triple clicks.
   size_t aggregated_clicks_;
-  base::TimeDelta last_click_time_;
+  base::TimeTicks last_click_time_;
   gfx::Point last_click_location_;
   gfx::Range double_click_word_;
 

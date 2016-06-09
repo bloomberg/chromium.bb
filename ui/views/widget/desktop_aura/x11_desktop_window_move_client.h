@@ -33,7 +33,7 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient :
   // Overridden from X11WholeScreenMoveLoopDelegate:
   void OnMouseMovement(const gfx::Point& screen_point,
                        int flags,
-                       base::TimeDelta event_time) override;
+                       base::TimeTicks event_time) override;
   void OnMouseReleased() override;
   void OnMoveLoopEnded() override;
 

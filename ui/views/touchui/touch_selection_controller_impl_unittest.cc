@@ -153,7 +153,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
     gfx::Point grip_location = gfx::Point(handle->size().width() / 2,
                                           handle->size().height() / 2);
-    base::TimeDelta time_stamp = base::TimeDelta();
+    base::TimeTicks time_stamp = base::TimeTicks();
     {
       ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_BEGIN);
       ui::GestureEvent scroll_begin(
@@ -288,7 +288,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     // Tap the textfield to invoke selection.
     ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
     details.set_tap_count(1);
-    ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
+    ui::GestureEvent tap(0, 0, 0, base::TimeTicks(), details);
     textfield_->OnGestureEvent(&tap);
 
     // Select some text such that one handle is hidden.
@@ -323,7 +323,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   // Tap the textfield to invoke touch selection.
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(1);
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(), details);
   textfield_->OnGestureEvent(&tap);
 
   // Test selecting a range.
@@ -356,7 +356,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
   // Tap the textfield to invoke touch selection.
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(1);
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(), details);
   textfield_->OnGestureEvent(&tap);
 
   // Test cursor at run boundary and with empty selection.
@@ -408,7 +408,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   // Tap the textfield to invoke touch selection.
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(1);
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(), details);
   textfield_->OnGestureEvent(&tap);
   textfield_->SelectRange(gfx::Range(3, 7));
 
@@ -450,7 +450,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // Tap the textfield to invoke touch selection.
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(1);
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(), details);
   textfield_->OnGestureEvent(&tap);
 
   // Select [c] from left to right.
@@ -575,7 +575,6 @@ TEST_F(TouchSelectionControllerImplTest,
        HiddenSelectionHandleRetainsCursorPosition) {
   static const uint32_t selection_start = 10u;
   SetupSelectionInvisibleHandle(selection_start);
-
   // Drag the visible handle around and make sure the selection end point of the
   // invisible handle does not change.
   size_t visible_handle_position = textfield_->GetSelectedRange().end();
@@ -851,7 +850,7 @@ TEST_F(TouchSelectionControllerImplTest, MouseCaptureChangedEventIgnored) {
   StartTouchEditing();
   EXPECT_TRUE(GetSelectionController());
   ui::MouseEvent capture_changed(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(5, 5),
-                                 gfx::Point(5, 5), base::TimeDelta(), 0, 0);
+                                 gfx::Point(5, 5), base::TimeTicks(), 0, 0);
   generator.Dispatch(&capture_changed);
   RunPendingMessages();
   EXPECT_TRUE(GetSelectionController());

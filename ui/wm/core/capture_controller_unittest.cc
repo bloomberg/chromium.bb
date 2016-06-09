@@ -274,7 +274,7 @@ TEST_F(CaptureControllerTest, GestureResetWithCapture) {
 
   // Send a mouse click. We no longer hold capture so this should not crash.
   ui::MouseEvent mouse_press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             base::TimeDelta(), 0, 0);
+                             base::TimeTicks(), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse_press);
 }
 

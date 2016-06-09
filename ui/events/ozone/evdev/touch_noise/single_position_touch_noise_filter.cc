@@ -46,10 +46,10 @@ SinglePositionTouchNoiseFilter::SinglePositionTouchNoiseFilter()
 
 void SinglePositionTouchNoiseFilter::Filter(
     const std::vector<InProgressTouchEvdev>& touches,
-    base::TimeDelta time,
+    base::TimeTicks time,
     std::bitset<kNumTouchEvdevSlots>* slots_with_noise) {
   // Forget old touches which will no longer be considered for overlap.
-  base::TimeDelta touch_cutoff =
+  base::TimeTicks touch_cutoff =
       time - base::TimeDelta::FromMilliseconds(kMaxDurationMs);
   for (size_t i = tracked_touches_start_; i != tracked_touches_end_;
        i = (i + 1) % kNumTrackedTouches) {
@@ -142,7 +142,7 @@ void SinglePositionTouchNoiseFilter::StopTrackingTouch(size_t index) {
 
 void SinglePositionTouchNoiseFilter::TrackTouch(
     const InProgressTouchEvdev& touch,
-    base::TimeDelta time) {
+    base::TimeTicks time) {
   size_t index = tracked_touches_end_;
   tracked_touches_end_ = (tracked_touches_end_ + 1) % kNumTrackedTouches;
   // If we would reach the start touch index, we cannot track any more touches.

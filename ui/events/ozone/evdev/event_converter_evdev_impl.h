@@ -53,12 +53,12 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   void ConvertMouseMoveEvent(const input_event& input);
   void OnKeyChange(unsigned int key,
                    bool down,
-                   const base::TimeDelta& timestamp);
+                   const base::TimeTicks& timestamp);
   void ReleaseKeys();
   void ReleaseMouseButtons();
   void OnLostSync();
   void DispatchMouseButton(const input_event& input);
-  void OnButtonChange(int code, bool down, const base::TimeDelta& timestamp);
+  void OnButtonChange(int code, bool down, base::TimeTicks timestamp);
 
   // Flush events delimited by EV_SYN. This is useful for handling
   // non-axis-aligned movement properly.

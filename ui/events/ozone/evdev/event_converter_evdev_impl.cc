@@ -100,7 +100,7 @@ void EventConverterEvdevImpl::SetKeyFilter(bool enable_filter,
   }
 
   // Release any pressed blocked keys.
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeTicks timestamp = ui::EventTimeForNow();
   for (int key = 0; key < KEY_CNT; ++key) {
     if (blocked_keys_.test(key))
       OnKeyChange(key, false /* down */, timestamp);
@@ -146,7 +146,7 @@ void EventConverterEvdevImpl::ConvertKeyEvent(const input_event& input) {
 
   // Keyboard processing.
   OnKeyChange(input.code, input.value != kKeyReleaseValue,
-              TimeDeltaFromInputEvent(input));
+              TimeTicksFromInputEvent(input));
 }
 
 void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {
@@ -164,7 +164,7 @@ void EventConverterEvdevImpl::ConvertMouseMoveEvent(const input_event& input) {
 
 void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
                                           bool down,
-                                          const base::TimeDelta& timestamp) {
+                                          const base::TimeTicks& timestamp) {
   if (key > KEY_MAX)
     return;
 
@@ -184,13 +184,13 @@ void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
 }
 
 void EventConverterEvdevImpl::ReleaseKeys() {
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeTicks timestamp = ui::EventTimeForNow();
   for (int key = 0; key < KEY_CNT; ++key)
     OnKeyChange(key, false /* down */, timestamp);
 }
 
 void EventConverterEvdevImpl::ReleaseMouseButtons() {
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeTicks timestamp = ui::EventTimeForNow();
   for (int code = BTN_MOUSE; code < BTN_JOYSTICK; ++code)
     OnButtonChange(code, false /* down */, timestamp);
 }
@@ -208,12 +208,12 @@ void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
   if (!cursor_)
     return;
 
-  OnButtonChange(input.code, input.value, TimeDeltaFromInputEvent(input));
+  OnButtonChange(input.code, input.value, TimeTicksFromInputEvent(input));
 }
 
 void EventConverterEvdevImpl::OnButtonChange(int code,
                                              bool down,
-                                             const base::TimeDelta& timestamp) {
+                                             base::TimeTicks timestamp) {
   if (code == BTN_SIDE)
     code = BTN_BACK;
   else if (code == BTN_EXTRA)
@@ -240,7 +240,7 @@ void EventConverterEvdevImpl::FlushEvents(const input_event& input) {
   dispatcher_->DispatchMouseMoveEvent(
       MouseMoveEventParams(input_device_.id, cursor_->GetLocation(),
                            PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
-                           TimeDeltaFromInputEvent(input)));
+                           TimeTicksFromInputEvent(input)));
 
   x_offset_ = 0;
   y_offset_ = 0;

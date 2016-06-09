@@ -26,7 +26,7 @@ EVENTS_X_EXPORT EventType EventTypeFromXEvent(const XEvent& xev);
 EVENTS_X_EXPORT int EventFlagsFromXEvent(const XEvent& xev);
 
 // Gets the timestamp from a XEvent.
-EVENTS_X_EXPORT base::TimeDelta EventTimeFromXEvent(const XEvent& xev);
+EVENTS_X_EXPORT base::TimeTicks EventTimeFromXEvent(const XEvent& xev);
 
 // Gets the location from a XEvent.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of

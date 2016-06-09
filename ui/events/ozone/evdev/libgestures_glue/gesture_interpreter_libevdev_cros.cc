@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -78,9 +79,8 @@ void OnGestureReadyHelper(void* client_data, const Gesture* gesture) {
 }
 
 // Convert gestures timestamp (stime_t) to ui::Event timestamp.
-base::TimeDelta StimeToTimedelta(stime_t timestamp) {
-  return base::TimeDelta::FromMicroseconds(timestamp *
-                                           base::Time::kMicrosecondsPerSecond);
+base::TimeTicks StimeToTimeTicks(stime_t timestamp) {
+  return ui::EventTimeStampFromSeconds(timestamp);
 }
 
 // Number of fingers for scroll gestures.
@@ -274,7 +274,7 @@ void GestureInterpreterLibevdevCros::OnGestureMove(const Gesture* gesture,
   dispatcher_->DispatchMouseMoveEvent(
       MouseMoveEventParams(id_, cursor_->GetLocation(),
                            PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
-                           StimeToTimedelta(gesture->end_time)));
+                           StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureScroll(
@@ -291,13 +291,13 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
   if (is_mouse_) {
     dispatcher_->DispatchMouseWheelEvent(MouseWheelEventParams(
         id_, cursor_->GetLocation(), gfx::Vector2d(scroll->dx, scroll->dy),
-        StimeToTimedelta(gesture->end_time)));
+        StimeToTimeTicks(gesture->end_time)));
   } else {
     dispatcher_->DispatchScrollEvent(ScrollEventParams(
         id_, ET_SCROLL, cursor_->GetLocation(),
         gfx::Vector2dF(scroll->dx, scroll->dy),
         gfx::Vector2dF(scroll->ordinal_dx, scroll->ordinal_dy),
-        kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
+        kGestureScrollFingerCount, StimeToTimeTicks(gesture->end_time)));
   }
 }
 
@@ -341,7 +341,7 @@ void GestureInterpreterLibevdevCros::OnGestureFling(const Gesture* gesture,
   dispatcher_->DispatchScrollEvent(ScrollEventParams(
       id_, type, cursor_->GetLocation(), gfx::Vector2dF(fling->vx, fling->vy),
       gfx::Vector2dF(fling->ordinal_vx, fling->ordinal_vy),
-      kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
+      kGestureScrollFingerCount, StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
@@ -360,7 +360,7 @@ void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
       id_, ET_SCROLL, cursor_->GetLocation(),
       gfx::Vector2dF(swipe->dx, swipe->dy),
       gfx::Vector2dF(swipe->ordinal_dx, swipe->ordinal_dy),
-      kGestureSwipeFingerCount, StimeToTimedelta(gesture->end_time)));
+      kGestureSwipeFingerCount, StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
@@ -377,7 +377,7 @@ void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
   dispatcher_->DispatchScrollEvent(ScrollEventParams(
       id_, ET_SCROLL_FLING_START, cursor_->GetLocation(),
       gfx::Vector2dF() /* delta */, gfx::Vector2dF() /* ordinal_delta */,
-      kGestureScrollFingerCount, StimeToTimedelta(gesture->end_time)));
+      kGestureScrollFingerCount, StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGesturePinch(const Gesture* gesture,
@@ -390,7 +390,7 @@ void GestureInterpreterLibevdevCros::OnGesturePinch(const Gesture* gesture,
 
   dispatcher_->DispatchPinchEvent(
       PinchEventParams(id_, ET_GESTURE_PINCH_UPDATE, cursor_->GetLocation(),
-                       pinch->dz, StimeToTimedelta(gesture->end_time)));
+                       pinch->dz, StimeToTimeTicks(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureMetrics(
@@ -428,7 +428,7 @@ void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
       id_, cursor_->GetLocation(), button, down, allow_remap,
       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
-      StimeToTimedelta(time)));
+      StimeToTimeTicks(time)));
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedKeys(
@@ -456,7 +456,7 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(
       // Dispatch key press or release to keyboard.
       dispatcher_->DispatchKeyEvent(
           KeyEventParams(id_, key, value, false /* suppress_auto_repeat */,
-                         StimeToTimedelta(timestamp)));
+                         StimeToTimeTicks(timestamp)));
     }
   }
 

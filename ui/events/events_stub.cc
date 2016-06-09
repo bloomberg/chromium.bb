@@ -27,9 +27,9 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
   return 0;
 }
 
-base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
-  return base::TimeDelta();
+  return base::TimeTicks();
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {

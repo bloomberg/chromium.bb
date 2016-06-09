@@ -411,15 +411,9 @@ TEST_F(WidgetTestInteractive, ResetCaptureOnGestureEnd) {
   toplevel->Show();
 
   // Start a gesture on |gesture|.
-  ui::GestureEvent tap_down(15,
-                            15,
-                            0,
-                            base::TimeDelta(),
+  ui::GestureEvent tap_down(15, 15, 0, base::TimeTicks(),
                             ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
-  ui::GestureEvent end(15,
-                       15,
-                       0,
-                       base::TimeDelta(),
+  ui::GestureEvent end(15, 15, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_END));
   toplevel->OnGestureEvent(&tap_down);
 

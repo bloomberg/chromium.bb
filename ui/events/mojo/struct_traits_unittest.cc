@@ -164,27 +164,27 @@ TEST_F(StructTraitsTest, PointerEvent) {
       // Mouse pointer events:
       {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE,
        PointerEvent::kMousePointerId,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeDelta()},
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeTicks()},
       {ET_POINTER_MOVED, gfx::Point(1, 5), gfx::Point(5, 1),
        EF_LEFT_MOUSE_BUTTON, PointerEvent::kMousePointerId,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeDelta()},
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeTicks()},
       {ET_POINTER_UP, gfx::Point(411, 130), gfx::Point(20, 30),
        EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
        PointerEvent::kMousePointerId,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeDelta()},
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeTicks()},
       {ET_POINTER_EXITED, gfx::Point(10, 10), gfx::Point(20, 30),
        EF_BACK_MOUSE_BUTTON, PointerEvent::kMousePointerId,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeDelta()},
+       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), base::TimeTicks()},
 
       // Touch pointer events:
       {ET_POINTER_DOWN, gfx::Point(10, 10), gfx::Point(20, 30), EF_NONE, 1,
        PointerDetails(EventPointerType::POINTER_TYPE_TOUCH, 1.0, 2.0, 3.0, 4.0,
                       5.0),
-       base::TimeDelta()},
+       base::TimeTicks()},
       {ET_POINTER_CANCELLED, gfx::Point(120, 120), gfx::Point(2, 3), EF_NONE, 2,
        PointerDetails(EventPointerType::POINTER_TYPE_TOUCH, 5.5, 4.5, 3.5, 2.5,
                       0.5),
-       base::TimeDelta()},
+       base::TimeTicks()},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -207,12 +207,12 @@ TEST_F(StructTraitsTest, PointerEvent) {
 TEST_F(StructTraitsTest, MouseWheelEvent) {
   MouseWheelEvent kTestData[] = {
       {gfx::Vector2d(11, 15), gfx::Point(3, 4), gfx::Point(40, 30),
-       base::TimeDelta(), EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
+       base::TimeTicks(), EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON},
       {gfx::Vector2d(-5, 3), gfx::Point(40, 3), gfx::Point(4, 0),
-       base::TimeDelta(), EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
+       base::TimeTicks(), EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
        EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
       {gfx::Vector2d(1, 0), gfx::Point(3, 4), gfx::Point(40, 30),
-       base::TimeDelta(), EF_NONE, EF_NONE},
+       base::TimeTicks(), EF_NONE, EF_NONE},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();

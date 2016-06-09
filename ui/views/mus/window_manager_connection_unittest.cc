@@ -68,9 +68,9 @@ TEST_F(WindowManagerConnectionTest, PointerWatcher) {
   WindowManagerConnection* connection = WindowManagerConnection::Get();
   ASSERT_TRUE(connection);
   ui::MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                               base::TimeDelta(), ui::EF_NONE, 0);
+                               base::TimeTicks(), ui::EF_NONE, 0);
   ui::TouchEvent touch_pressed(ui::ET_TOUCH_PRESSED, gfx::Point(), 1,
-                               base::TimeDelta());
+                               base::TimeTicks());
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
 
   // PointerWatchers receive mouse events.

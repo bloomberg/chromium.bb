@@ -49,7 +49,7 @@ class TestingCursorClientObserver : public aura::client::CursorClientObserver {
   DISALLOW_COPY_AND_ASSIGN(TestingCursorClientObserver);
 };
 
-base::TimeDelta getTime() {
+base::TimeTicks getTime() {
   return ui::EventTimeForNow();
 }
 

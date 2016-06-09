@@ -1077,7 +1077,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
   gfx::Point mid = start + gfx::Vector2d(drag_view->bounds().width() / 6, 0);
   gfx::Point end = start + gfx::Vector2d(drag_view->bounds().width() / 3, 0);
 
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeTicks timestamp = ui::EventTimeForNow();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, 0, timestamp);
   generator.Dispatch(&press);
 

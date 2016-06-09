@@ -64,9 +64,7 @@ class CursorRendererAuraTest : public AuraTestBase {
     cursor_renderer_->tick_clock_ = clock;
   }
 
-  base::TimeDelta Now() {
-    return cursor_renderer_->tick_clock_->NowTicks() - base::TimeTicks();
-  }
+  base::TimeTicks Now() { return cursor_renderer_->tick_clock_->NowTicks(); }
 
   bool CursorDisplayed() { return cursor_renderer_->cursor_displayed_; }
 

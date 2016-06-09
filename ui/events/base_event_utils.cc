@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
@@ -40,6 +41,14 @@ bool IsSystemKeyModifier(int flags) {
   // so we don't consider keys with the AltGr modifier as a system key.
   return (kSystemKeyModifierMask & flags) != 0 &&
          (EF_ALTGR_DOWN & flags) == 0;
+}
+
+double EventTimeStampToSeconds(base::TimeTicks time_stamp) {
+  return (time_stamp - base::TimeTicks()).InSecondsF();
+}
+
+base::TimeTicks EventTimeStampFromSeconds(double time_stamp_seconds) {
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(time_stamp_seconds);
 }
 
 }  // namespace ui

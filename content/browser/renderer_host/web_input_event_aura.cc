@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -56,25 +57,26 @@ blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
 #if defined(OS_WIN)
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp,
+    const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type);
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp,
+    const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type);
 blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp);
+    const base::TimeTicks& time_stamp);
 blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp);
+    const base::TimeTicks& time_stamp);
 #endif
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     const ui::KeyEvent& event) {
   blink::WebKeyboardEvent webkit_event;
 
-  webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
+  webkit_event.timeStampSeconds =
+      ui::EventTimeStampToSeconds(event.time_stamp());
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags()) |
                            DomCodeToWebInputEventModifiers(event.code());
 
@@ -117,7 +119,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.type = blink::WebInputEvent::MouseWheel;
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
+  webkit_event.timeStampSeconds =
+      ui::EventTimeStampToSeconds(event.time_stamp());
   webkit_event.hasPreciseScrollingDeltas = true;
 
   float offset_ordinal_x = 0.f;
@@ -168,7 +171,8 @@ blink::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 
   webkit_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
+  webkit_event.timeStampSeconds =
+      ui::EventTimeStampToSeconds(event.time_stamp());
   return webkit_event;
 }
 
@@ -362,7 +366,8 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
 
   // All other fields are ignored on a GestureFlingCancel event.
   gesture_event.type = blink::WebInputEvent::GestureFlingCancel;
-  gesture_event.timeStampSeconds = ui::EventTimeForNow().InSecondsF();
+  gesture_event.timeStampSeconds =
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow());
   gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   return gesture_event;
 }
@@ -372,8 +377,8 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
   blink::WebMouseEvent webkit_event;
 
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
-
+  webkit_event.timeStampSeconds =
+      ui::EventTimeStampToSeconds(event.time_stamp());
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
   int button_flags = event.flags();
   if (event.type() == ui::ET_MOUSE_PRESSED ||
@@ -427,7 +432,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.type = blink::WebInputEvent::MouseWheel;
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
+  webkit_event.timeStampSeconds =
+      ui::EventTimeStampToSeconds(event.time_stamp());
 
   if ((event.flags() & ui::EF_SHIFT_DOWN) != 0 && event.x_offset() == 0) {
     webkit_event.deltaX = event.y_offset();

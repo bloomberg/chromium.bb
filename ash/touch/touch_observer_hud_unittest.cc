@@ -293,7 +293,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
   }
 
  private:
-  base::TimeDelta event_time;
+  base::TimeTicks event_time;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudProjectionTest);
 };

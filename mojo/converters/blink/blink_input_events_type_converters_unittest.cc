@@ -45,7 +45,7 @@ TEST(BlinkInputEventsConvertersTest, WheelEvent) {
   const int kDeltaY = -3;
   ui::MouseWheelEvent ui_event(
       ui::MouseEvent(ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(),
-                     base::TimeDelta(), 0, 0),
+                     base::TimeTicks(), 0, 0),
       kDeltaX, kDeltaY);
   const std::unique_ptr<blink::WebInputEvent> web_event(
       TypeConverter<std::unique_ptr<blink::WebInputEvent>, ui::Event>::Convert(
@@ -84,7 +84,7 @@ TEST(BlinkInputEventsConvertersTest, MousePointerEvent) {
   for (size_t i = 0; i < arraysize(tests); i++) {
     ui::PointerEvent ui_event(ui::MouseEvent(
         tests[i].ui_type, tests[i].location, tests[i].screen_location,
-        base::TimeDelta(), tests[i].ui_modifiers, 0));
+        base::TimeTicks(), tests[i].ui_modifiers, 0));
     const std::unique_ptr<blink::WebInputEvent> web_event(
         TypeConverter<std::unique_ptr<blink::WebInputEvent>,
                       ui::Event>::Convert(ui_event));
@@ -120,7 +120,7 @@ TEST(BlinkInputEventsConvertersTest, TouchPointerEvent) {
   for (size_t i = 0; i < arraysize(tests); i++) {
     ui::PointerEvent ui_event(ui::TouchEvent(
         tests[i].ui_type, tests[i].location, 0, tests[i].touch_id,
-        base::TimeDelta(), tests[i].radius_x, tests[i].radius_y, 0.0, 0.0));
+        base::TimeTicks(), tests[i].radius_x, tests[i].radius_y, 0.0, 0.0));
     const std::unique_ptr<blink::WebInputEvent> web_event(
         TypeConverter<std::unique_ptr<blink::WebInputEvent>,
                       ui::Event>::Convert(ui_event));

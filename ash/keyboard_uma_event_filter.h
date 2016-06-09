@@ -25,7 +25,7 @@ class KeyboardUMAEventFilter : public ui::EventHandler {
 
  private:
   // The timestamp of the last character keystroke.
-  base::TimeDelta last_keystroke_time_;
+  base::TimeTicks last_keystroke_time_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUMAEventFilter);
 };

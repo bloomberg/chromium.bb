@@ -145,7 +145,7 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
     NOTREACHED();
   }
 
-  closing_event_time_ = ui::EventTimeForNow();
+  closing_event_time_ = (base::TimeTicks::Now() - base::TimeTicks());
   running_ = false;
 
   if (delete_after_run_) {

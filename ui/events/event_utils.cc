@@ -61,9 +61,8 @@ int RegisterCustomEventType() {
   return ++g_custom_event_types;
 }
 
-base::TimeDelta EventTimeForNow() {
-  return base::TimeDelta::FromInternalValue(
-      base::TimeTicks::Now().ToInternalValue());
+base::TimeTicks EventTimeForNow() {
+  return base::TimeTicks::Now();
 }
 
 bool ShouldDefaultToNaturalScroll() {
@@ -86,8 +85,8 @@ display::Display::TouchSupport GetInternalDisplayTouchSupport() {
 }
 
 void ComputeEventLatencyOS(const base::NativeEvent& native_event) {
-  base::TimeDelta current_time = EventTimeForNow();
-  base::TimeDelta time_stamp = EventTimeFromNative(native_event);
+  base::TimeTicks current_time = EventTimeForNow();
+  base::TimeTicks time_stamp = EventTimeFromNative(native_event);
   base::TimeDelta delta = current_time - time_stamp;
 
   EventType type = EventTypeFromNative(native_event);

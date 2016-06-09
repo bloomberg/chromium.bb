@@ -168,10 +168,7 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   EXPECT_FALSE(widget2->GetNativeView()->HasCapture());
   EXPECT_EQ(capture_client->GetCaptureWindow(), widget1->GetNativeView());
 
-  ui::GestureEvent g1(80,
-                      80,
-                      0,
-                      base::TimeDelta(),
+  ui::GestureEvent g1(80, 80, 0, base::TimeTicks(),
                       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   details = root1->OnEventFromSource(&g1);
   EXPECT_FALSE(details.dispatcher_destroyed);

@@ -17,8 +17,11 @@ TEST(BlinkEventUtilTest, NoScalingWith1DSF) {
   ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE, 1, 1);
   details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   auto event =
-      CreateWebGestureEvent(details, base::TimeDelta::FromMilliseconds(1),
-                            gfx::PointF(1.f, 1.f), gfx::PointF(1.f, 1.f), 0);
+      CreateWebGestureEvent(details,
+                            base::TimeTicks(),
+                            gfx::PointF(1.f, 1.f),
+                            gfx::PointF(1.f, 1.f),
+                            0);
   EXPECT_FALSE(ScaleWebInputEvent(event, 1.f));
   EXPECT_TRUE(ScaleWebInputEvent(event, 2.f));
 }

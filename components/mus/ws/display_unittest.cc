@@ -169,7 +169,7 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
 
   static_cast<PlatformDisplayDelegate*>(display)->OnEvent(ui::PointerEvent(
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
-                     gfx::Point(20, 25), base::TimeDelta(),
+                     gfx::Point(20, 25), base::TimeTicks(),
                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON)));
 
   EXPECT_TRUE(EventDispatcherTestApi(active_wms->event_dispatcher())

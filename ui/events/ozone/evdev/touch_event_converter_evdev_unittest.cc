@@ -273,7 +273,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   EXPECT_EQ(1u, size());
   ui::TouchEventParams event = dispatched_event(0);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(1427323282019203),
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(1427323282019203),
             event.timestamp);
   EXPECT_EQ(295, event.location.x());
   EXPECT_EQ(421, event.location.y());
@@ -290,7 +290,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   EXPECT_EQ(2u, size());
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, event.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(1427323282034693),
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(1427323282034693),
             event.timestamp);
   EXPECT_EQ(312, event.location.x());
   EXPECT_EQ(432, event.location.y());
@@ -307,7 +307,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   EXPECT_EQ(3u, size());
   event = dispatched_event(2);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, event.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(1427323282144540),
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(1427323282144540),
             event.timestamp);
   EXPECT_EQ(312, event.location.x());
   EXPECT_EQ(432, event.location.y());
@@ -360,7 +360,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
 
   // Move
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ev0.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev0.timestamp);
   EXPECT_EQ(40, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
   EXPECT_EQ(0, ev0.slot);
@@ -368,7 +368,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
 
   // Press
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ev1.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev1.timestamp);
   EXPECT_EQ(101, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
   EXPECT_EQ(1, ev1.slot);
@@ -384,7 +384,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   ev1 = dispatched_event(4);
 
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ev1.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev1.timestamp);
   EXPECT_EQ(40, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
   EXPECT_EQ(1, ev1.slot);
@@ -401,7 +401,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   ev0 = dispatched_event(5);
 
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ev0.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev0.timestamp);
   EXPECT_EQ(39, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
   EXPECT_EQ(0, ev0.slot);
@@ -419,14 +419,14 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   ev1 = dispatched_event(7);
 
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ev0.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev0.timestamp);
   EXPECT_EQ(39, ev0.location.x());
   EXPECT_EQ(51, ev0.location.y());
   EXPECT_EQ(0, ev0.slot);
   EXPECT_FLOAT_EQ(0.17647059f, ev0.pointer_details.force);
 
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ev1.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev1.timestamp);
   EXPECT_EQ(38, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
   EXPECT_EQ(1, ev1.slot);
@@ -442,7 +442,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   ev1 = dispatched_event(8);
 
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ev1.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1.timestamp);
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(0), ev1.timestamp);
   EXPECT_EQ(38, ev1.location.x());
   EXPECT_EQ(102, ev1.location.y());
   EXPECT_EQ(1, ev1.slot);
@@ -665,7 +665,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldUseLeftButtonIfNoTouchButton) {
   EXPECT_EQ(1u, size());
   ui::TouchEventParams event = dispatched_event(0);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(1433965490837958),
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(1433965490837958),
             event.timestamp);
   EXPECT_EQ(3654, event.location.x());
   EXPECT_EQ(1055, event.location.y());
@@ -680,7 +680,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldUseLeftButtonIfNoTouchButton) {
   EXPECT_EQ(2u, size());
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, event.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(1433965491001953),
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(1433965491001953),
             event.timestamp);
   EXPECT_EQ(3644, event.location.x());
   EXPECT_EQ(1059, event.location.y());
@@ -695,7 +695,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldUseLeftButtonIfNoTouchButton) {
   EXPECT_EQ(3u, size());
   event = dispatched_event(2);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, event.type);
-  EXPECT_EQ(base::TimeDelta::FromMicroseconds(1433965491225959),
+  EXPECT_EQ(base::TimeTicks::FromInternalValue(1433965491225959),
             event.timestamp);
   EXPECT_EQ(3644, event.location.x());
   EXPECT_EQ(1059, event.location.y());
@@ -790,7 +790,7 @@ class EventTypeTouchNoiseFilter : public TouchNoiseFilter {
 
   // TouchNoiseFilter:
   void Filter(const std::vector<InProgressTouchEvdev>& touches,
-              base::TimeDelta time,
+              base::TimeTicks time,
               std::bitset<kNumTouchEvdevSlots>* slots_with_noise) override {
     for (const InProgressTouchEvdev& touch : touches) {
       EventType event_type = EventTypeFromTouch(touch);

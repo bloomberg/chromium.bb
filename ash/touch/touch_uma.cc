@@ -25,20 +25,20 @@ namespace {
 
 struct WindowTouchDetails {
   // Move and start times of the touch points. The key is the touch-id.
-  std::map<int, base::TimeDelta> last_move_time_;
-  std::map<int, base::TimeDelta> last_start_time_;
+  std::map<int, base::TimeTicks> last_move_time_;
+  std::map<int, base::TimeTicks> last_start_time_;
 
   // The first and last positions of the touch points.
   std::map<int, gfx::Point> start_touch_position_;
   std::map<int, gfx::Point> last_touch_position_;
 
   // Last time-stamp of the last touch-end event.
-  base::TimeDelta last_release_time_;
+  base::TimeTicks last_release_time_;
 
   // Stores the time of the last touch released on this window (if there was a
   // multi-touch gesture on the window, then this is the release-time of the
   // last touch on the window).
-  base::TimeDelta last_mt_time_;
+  base::TimeTicks last_mt_time_;
 };
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails,

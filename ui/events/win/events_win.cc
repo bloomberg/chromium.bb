@@ -215,7 +215,7 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
   return flags;
 }
 
-base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   // On Windows, the native input event timestamp (|native_event.time|) is
   // coming from |GetTickCount()| clock [1], while in platform independent code
   // path we get timestamps by calling |TimeTicks::Now()|, which, if using high-

@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ui::EventProcessor* dispatcher = content->GetHost()->event_processor();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
-  base::TimeDelta timestamp = ui::EventTimeForNow();
+  base::TimeTicks timestamp = ui::EventTimeForNow();
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED,
       gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5), 0,
@@ -1033,7 +1033,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
   {
     int kXStep = bounds.width() / 10;
     gfx::Point location(bounds.right() - kXStep, bounds.y() + 5);
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, 0, timestamp);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);
@@ -1065,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
 
     int kYStep = bounds.height() / 10;
     gfx::Point location(bounds.x() + 10, bounds.y() + kYStep);
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, 0, timestamp);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);
@@ -1099,7 +1099,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
     int kXStep = bounds.width() / 10;
     int kYStep = bounds.height() / 10;
     gfx::Point location = bounds.origin() + gfx::Vector2d(0, kYStep);
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, 0, timestamp);
     ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
     ASSERT_FALSE(details.dispatcher_destroyed);

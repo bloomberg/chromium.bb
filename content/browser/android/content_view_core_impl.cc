@@ -1040,8 +1040,9 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(
     return false;
 
   // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
-  base::TimeDelta current_time = ui::EventTimeForNow();
-  base::TimeDelta event_time = base::TimeDelta::FromMilliseconds(time_ms);
+  base::TimeTicks current_time = ui::EventTimeForNow();
+  base::TimeTicks event_time = base::TimeTicks() +
+      base::TimeDelta::FromMilliseconds(time_ms);
   base::TimeDelta delta = current_time - event_time;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
       delta.InMicroseconds(), 1, 1000000, 50);

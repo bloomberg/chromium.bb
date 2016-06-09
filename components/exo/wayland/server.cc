@@ -109,6 +109,13 @@ void SetImplementation(wl_resource* resource,
                                  DestroyUserData<T>);
 }
 
+// Convert a timestamp to a time value that can be used when interfacing
+// with wayland. Note that we cast a int64_t value to uint32_t which can
+// potentially overflow.
+uint32_t TimeTicksToMilliseconds(base::TimeTicks ticks) {
+  return (ticks - base::TimeTicks()).InMilliseconds();
+}
+
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with window.
 DEFINE_WINDOW_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
@@ -171,8 +178,7 @@ void surface_damage(wl_client* client,
 void HandleSurfaceFrameCallback(wl_resource* resource,
                                 base::TimeTicks frame_time) {
   if (!frame_time.is_null()) {
-    wl_callback_send_done(resource,
-                          (frame_time - base::TimeTicks()).InMilliseconds());
+    wl_callback_send_done(resource, TimeTicksToMilliseconds(frame_time));
     // TODO(reveman): Remove this potentially blocking flush and instead watch
     // the file descriptor to be ready for write without blocking.
     wl_client_flush(wl_resource_get_client(resource));
@@ -1727,13 +1733,13 @@ class WaylandPointerDelegate : public PointerDelegate {
     DCHECK(surface_resource);
     wl_pointer_send_leave(pointer_resource_, next_serial(), surface_resource);
   }
-  void OnPointerMotion(base::TimeDelta time_stamp,
+  void OnPointerMotion(base::TimeTicks time_stamp,
                        const gfx::PointF& location) override {
-    wl_pointer_send_motion(pointer_resource_, time_stamp.InMilliseconds(),
-                           wl_fixed_from_double(location.x()),
-                           wl_fixed_from_double(location.y()));
+    wl_pointer_send_motion(
+        pointer_resource_, TimeTicksToMilliseconds(time_stamp),
+        wl_fixed_from_double(location.x()), wl_fixed_from_double(location.y()));
   }
-  void OnPointerButton(base::TimeDelta time_stamp,
+  void OnPointerButton(base::TimeTicks time_stamp,
                        int button_flags,
                        bool pressed) override {
     struct {
@@ -1749,15 +1755,15 @@ class WaylandPointerDelegate : public PointerDelegate {
     uint32_t serial = next_serial();
     for (auto button : buttons) {
       if (button_flags & button.flag) {
-        wl_pointer_send_button(pointer_resource_, serial,
-                               time_stamp.InMilliseconds(), button.value,
-                               pressed ? WL_POINTER_BUTTON_STATE_PRESSED
-                                       : WL_POINTER_BUTTON_STATE_RELEASED);
+        wl_pointer_send_button(
+            pointer_resource_, serial, TimeTicksToMilliseconds(time_stamp),
+            button.value, pressed ? WL_POINTER_BUTTON_STATE_PRESSED
+                                  : WL_POINTER_BUTTON_STATE_RELEASED);
       }
     }
   }
 
-  void OnPointerScroll(base::TimeDelta time_stamp,
+  void OnPointerScroll(base::TimeTicks time_stamp,
                        const gfx::Vector2dF& offset,
                        bool discrete) override {
     // Same as Weston, the reference compositor.
@@ -1771,29 +1777,31 @@ class WaylandPointerDelegate : public PointerDelegate {
     }
 
     double x_value = offset.x() * kAxisStepDistance;
-    wl_pointer_send_axis(pointer_resource_, time_stamp.InMilliseconds(),
+    wl_pointer_send_axis(pointer_resource_, TimeTicksToMilliseconds(time_stamp),
                          WL_POINTER_AXIS_HORIZONTAL_SCROLL,
                          wl_fixed_from_double(-x_value));
 
     double y_value = offset.y() * kAxisStepDistance;
-    wl_pointer_send_axis(pointer_resource_, time_stamp.InMilliseconds(),
+    wl_pointer_send_axis(pointer_resource_, TimeTicksToMilliseconds(time_stamp),
                          WL_POINTER_AXIS_VERTICAL_SCROLL,
                          wl_fixed_from_double(-y_value));
   }
 
-  void OnPointerScrollCancel(base::TimeDelta time_stamp) override {
+  void OnPointerScrollCancel(base::TimeTicks time_stamp) override {
     // Wayland doesn't know the concept of a canceling kinetic scrolling.
     // But we can send a 0 distance scroll to emulate this behavior.
     OnPointerScroll(time_stamp, gfx::Vector2dF(0, 0), false);
     OnPointerScrollStop(time_stamp);
   }
 
-  void OnPointerScrollStop(base::TimeDelta time_stamp) override {
+  void OnPointerScrollStop(base::TimeTicks time_stamp) override {
     if (wl_resource_get_version(pointer_resource_) >=
         WL_POINTER_AXIS_STOP_SINCE_VERSION) {
-      wl_pointer_send_axis_stop(pointer_resource_, time_stamp.InMilliseconds(),
+      wl_pointer_send_axis_stop(pointer_resource_,
+                                TimeTicksToMilliseconds(time_stamp),
                                 WL_POINTER_AXIS_HORIZONTAL_SCROLL);
-      wl_pointer_send_axis_stop(pointer_resource_, time_stamp.InMilliseconds(),
+      wl_pointer_send_axis_stop(pointer_resource_,
+                                TimeTicksToMilliseconds(time_stamp),
                                 WL_POINTER_AXIS_VERTICAL_SCROLL);
     }
   }
@@ -1904,11 +1912,11 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
     wl_keyboard_send_leave(keyboard_resource_, next_serial(), surface_resource);
     wl_client_flush(client());
   }
-  void OnKeyboardKey(base::TimeDelta time_stamp,
+  void OnKeyboardKey(base::TimeTicks time_stamp,
                      ui::DomCode key,
                      bool pressed) override {
     wl_keyboard_send_key(keyboard_resource_, next_serial(),
-                         time_stamp.InMilliseconds(), DomCodeToKey(key),
+                         TimeTicksToMilliseconds(time_stamp), DomCodeToKey(key),
                          pressed ? WL_KEYBOARD_KEY_STATE_PRESSED
                                  : WL_KEYBOARD_KEY_STATE_RELEASED);
     wl_client_flush(client());
@@ -2013,27 +2021,27 @@ class WaylandTouchDelegate : public TouchDelegate {
            wl_resource_get_client(surface_resource) == client();
   }
   void OnTouchDown(Surface* surface,
-                   base::TimeDelta time_stamp,
+                   base::TimeTicks time_stamp,
                    int id,
                    const gfx::Point& location) override {
     wl_resource* surface_resource = surface->GetProperty(kSurfaceResourceKey);
     DCHECK(surface_resource);
     wl_touch_send_down(touch_resource_, next_serial(),
-                       time_stamp.InMilliseconds(), surface_resource, id,
-                       wl_fixed_from_int(location.x()),
+                       TimeTicksToMilliseconds(time_stamp), surface_resource,
+                       id, wl_fixed_from_int(location.x()),
                        wl_fixed_from_int(location.y()));
     wl_client_flush(client());
   }
-  void OnTouchUp(base::TimeDelta time_stamp, int id) override {
+  void OnTouchUp(base::TimeTicks time_stamp, int id) override {
     wl_touch_send_up(touch_resource_, next_serial(),
-                     time_stamp.InMilliseconds(), id);
+                     TimeTicksToMilliseconds(time_stamp), id);
     wl_client_flush(client());
   }
-  void OnTouchMotion(base::TimeDelta time_stamp,
+  void OnTouchMotion(base::TimeTicks time_stamp,
                      int id,
                      const gfx::Point& location) override {
-    wl_touch_send_motion(touch_resource_, time_stamp.InMilliseconds(), id,
-                         wl_fixed_from_int(location.x()),
+    wl_touch_send_motion(touch_resource_, TimeTicksToMilliseconds(time_stamp),
+                         id, wl_fixed_from_int(location.x()),
                          wl_fixed_from_int(location.y()));
     wl_client_flush(client());
   }

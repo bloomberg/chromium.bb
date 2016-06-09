@@ -181,11 +181,8 @@ class TabScrubberTest : public InProcessBrowserTest,
       event_generator.set_async(true);
     }
     event_generator.ScrollSequence(gfx::Point(0, 0),
-                                   ui::EventTimeForNow(),
-                                   x_offset,
-                                   0,
-                                   1,
-                                   3);
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   x_offset, 0, 1, 3);
     if (wait_for_active)
       RunUntilTabActive(browser, index);
   }

@@ -306,7 +306,7 @@ class TestTextfield : public views::Textfield {
 class GestureEventForTest : public ui::GestureEvent {
  public:
   GestureEventForTest(int x, int y, ui::GestureEventDetails details)
-      : GestureEvent(x, y, 0, base::TimeDelta(), details) {}
+      : GestureEvent(x, y, 0, base::TimeTicks(), details) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);

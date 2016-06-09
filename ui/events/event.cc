@@ -322,7 +322,7 @@ void Event::SetHandled() {
   result_ = static_cast<EventResult>(result_ | ER_HANDLED);
 }
 
-Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
+Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp),
       flags_(flags),
@@ -411,7 +411,7 @@ void Event::SetType(EventType type) {
 // CancelModeEvent
 
 CancelModeEvent::CancelModeEvent()
-    : Event(ET_CANCEL_MODE, base::TimeDelta(), 0) {
+    : Event(ET_CANCEL_MODE, base::TimeTicks(), 0) {
   set_cancelable(false);
 }
 
@@ -435,12 +435,11 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
 LocatedEvent::LocatedEvent(EventType type,
                            const gfx::PointF& location,
                            const gfx::PointF& root_location,
-                           base::TimeDelta time_stamp,
+                           base::TimeTicks time_stamp,
                            int flags)
     : Event(type, time_stamp, flags),
       location_(location),
-      root_location_(root_location) {
-}
+      root_location_(root_location) {}
 
 void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& reversed_root_transform) {
@@ -505,7 +504,7 @@ MouseEvent::MouseEvent(const PointerEvent& pointer_event)
 MouseEvent::MouseEvent(EventType type,
                        const gfx::Point& location,
                        const gfx::Point& root_location,
-                       base::TimeDelta time_stamp,
+                       base::TimeTicks time_stamp,
                        int flags,
                        int changed_button_flags)
     : LocatedEvent(type,
@@ -669,7 +668,7 @@ MouseWheelEvent::MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event)
 MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
                                  const gfx::Point& location,
                                  const gfx::Point& root_location,
-                                 base::TimeDelta time_stamp,
+                                 base::TimeTicks time_stamp,
                                  int flags,
                                  int changed_button_flags)
     : MouseEvent(ui::ET_MOUSEWHEEL,
@@ -744,7 +743,7 @@ TouchEvent::TouchEvent(const PointerEvent& pointer_event)
 TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
                        int touch_id,
-                       base::TimeDelta time_stamp)
+                       base::TimeTicks time_stamp)
     : LocatedEvent(type,
                    gfx::PointF(location),
                    gfx::PointF(location),
@@ -763,7 +762,7 @@ TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
                        int flags,
                        int touch_id,
-                       base::TimeDelta time_stamp,
+                       base::TimeTicks time_stamp,
                        float radius_x,
                        float radius_y,
                        float angle,
@@ -928,7 +927,7 @@ PointerEvent::PointerEvent(EventType type,
                            int flags,
                            int pointer_id,
                            const PointerDetails& pointer_details,
-                           base::TimeDelta time_stamp)
+                           base::TimeTicks time_stamp)
     : LocatedEvent(type,
                    gfx::PointF(location),
                    gfx::PointF(root_location),
@@ -1027,12 +1026,11 @@ KeyEvent::KeyEvent(EventType type,
                    DomCode code,
                    int flags,
                    DomKey key,
-                   base::TimeDelta time_stamp)
+                   base::TimeTicks time_stamp)
     : Event(type, time_stamp, flags),
       key_code_(key_code),
       code_(code),
-      key_(key) {
-}
+      key_(key) {}
 
 KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
     : Event(ET_KEY_PRESSED, EventTimeForNow(), flags),
@@ -1248,7 +1246,7 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
 
 ScrollEvent::ScrollEvent(EventType type,
                          const gfx::Point& location,
-                         base::TimeDelta time_stamp,
+                         base::TimeTicks time_stamp,
                          int flags,
                          float x_offset,
                          float y_offset,
@@ -1277,15 +1275,14 @@ void ScrollEvent::Scale(const float factor) {
 GestureEvent::GestureEvent(float x,
                            float y,
                            int flags,
-                           base::TimeDelta time_stamp,
+                           base::TimeTicks time_stamp,
                            const GestureEventDetails& details)
     : LocatedEvent(details.type(),
                    gfx::PointF(x, y),
                    gfx::PointF(x, y),
                    time_stamp,
                    flags | EF_FROM_TOUCH),
-      details_(details) {
-}
+      details_(details) {}
 
 GestureEvent::~GestureEvent() {
 }

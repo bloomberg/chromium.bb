@@ -31,7 +31,7 @@ class MockKeyboardDelegate : public KeyboardDelegate {
   MOCK_METHOD2(OnKeyboardEnter,
                void(Surface*, const std::vector<ui::DomCode>&));
   MOCK_METHOD1(OnKeyboardLeave, void(Surface*));
-  MOCK_METHOD3(OnKeyboardKey, void(base::TimeDelta, ui::DomCode, bool));
+  MOCK_METHOD3(OnKeyboardKey, void(base::TimeTicks, ui::DomCode, bool));
   MOCK_METHOD1(OnKeyboardModifiers, void(int));
 };
 

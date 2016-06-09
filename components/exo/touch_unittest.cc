@@ -29,9 +29,9 @@ class MockTouchDelegate : public TouchDelegate {
   MOCK_METHOD1(OnTouchDestroying, void(Touch*));
   MOCK_CONST_METHOD1(CanAcceptTouchEventsForSurface, bool(Surface*));
   MOCK_METHOD4(OnTouchDown,
-               void(Surface*, base::TimeDelta, int, const gfx::Point&));
-  MOCK_METHOD2(OnTouchUp, void(base::TimeDelta, int));
-  MOCK_METHOD3(OnTouchMotion, void(base::TimeDelta, int, const gfx::Point&));
+               void(Surface*, base::TimeTicks, int, const gfx::Point&));
+  MOCK_METHOD2(OnTouchUp, void(base::TimeTicks, int));
+  MOCK_METHOD3(OnTouchMotion, void(base::TimeTicks, int, const gfx::Point&));
   MOCK_METHOD0(OnTouchCancel, void());
 };
 

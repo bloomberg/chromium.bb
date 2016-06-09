@@ -31,16 +31,16 @@ class TouchDelegate {
   // reference this ID. |location| is the initial location of touch point
   // relative to the origin of the surface.
   virtual void OnTouchDown(Surface* surface,
-                           base::TimeDelta time_stamp,
+                           base::TimeTicks time_stamp,
                            int id,
                            const gfx::Point& location) = 0;
 
   // Called when a touch point has disappeared. No further events will be sent
   // for this touch point.
-  virtual void OnTouchUp(base::TimeDelta time_stamp, int id) = 0;
+  virtual void OnTouchUp(base::TimeTicks time_stamp, int id) = 0;
 
   // Called when a touch point has changed coordinates.
-  virtual void OnTouchMotion(base::TimeDelta time_stamp,
+  virtual void OnTouchMotion(base::TimeTicks time_stamp,
                              int id,
                              const gfx::Point& location) = 0;
 

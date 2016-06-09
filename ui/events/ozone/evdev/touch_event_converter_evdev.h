@@ -73,8 +73,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   void ReportEvent(const InProgressTouchEvdev& event,
                    EventType event_type,
-                   const base::TimeDelta& delta);
-  void ReportEvents(base::TimeDelta delta);
+                   base::TimeTicks timestamp);
+  void ReportEvents(base::TimeTicks timestamp);
 
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();

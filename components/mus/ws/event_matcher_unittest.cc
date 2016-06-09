@@ -27,11 +27,11 @@ TEST_F(EventTesterTest, MatchesEventByType) {
   EventMatcher pointer_down_matcher(*matcher);
 
   ui::PointerEvent pointer_down(
-      ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(), 1, base::TimeDelta()));
+      ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(), 1, base::TimeTicks()));
   EXPECT_TRUE(pointer_down_matcher.MatchesEvent(pointer_down));
 
   ui::PointerEvent pointer_up(ui::TouchEvent(
-      ui::ET_TOUCH_RELEASED, gfx::Point(), 1, base::TimeDelta()));
+      ui::ET_TOUCH_RELEASED, gfx::Point(), 1, base::TimeTicks()));
   EXPECT_FALSE(pointer_down_matcher.MatchesEvent(pointer_up));
 }
 

@@ -372,7 +372,7 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
 void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
   switch (input.code) {
     case SYN_REPORT:
-      ReportEvents(EventConverterEvdev::TimeDeltaFromInputEvent(input));
+      ReportEvents(EventConverterEvdev::TimeTicksFromInputEvent(input));
       break;
     case SYN_DROPPED:
       // Some buffer has overrun. We ignore all events up to and
@@ -402,7 +402,7 @@ EventType TouchEventConverterEvdev::GetEventTypeForTouch(
 
 void TouchEventConverterEvdev::ReportEvent(const InProgressTouchEvdev& event,
                                            EventType event_type,
-                                           const base::TimeDelta& timestamp) {
+                                           base::TimeTicks timestamp) {
   PointerDetails details(GetPointerTypeFromEvent(event), event.radius_x,
                          event.radius_y, event.pressure,
                          /* tilt_x */ 0.0f,
@@ -412,14 +412,14 @@ void TouchEventConverterEvdev::ReportEvent(const InProgressTouchEvdev& event,
                        gfx::PointF(event.x, event.y), details, timestamp));
 }
 
-void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
+void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
   if (dropped_events_) {
     Reinitialize();
     dropped_events_ = false;
   }
 
   if (touch_noise_finder_)
-    touch_noise_finder_->HandleTouches(events_, delta);
+    touch_noise_finder_->HandleTouches(events_, timestamp);
 
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
@@ -431,7 +431,7 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
       event->cancelled = true;
 
     if (event_type != ET_UNKNOWN)
-      ReportEvent(*event, event_type, delta);
+      ReportEvent(*event, event_type, timestamp);
 
     event->was_touching = event->touching;
     event->altered = false;

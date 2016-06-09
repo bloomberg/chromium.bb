@@ -8,7 +8,7 @@
 
 namespace ui {
 
-base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   const ui::Event* event = static_cast<const ui::Event*>(native_event);
   return event->time_stamp();
 }

@@ -291,7 +291,7 @@ class GestureTrackPositionDelegate : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(GestureTrackPositionDelegate);
 };
 
-base::TimeDelta getTime() {
+base::TimeTicks getTime() {
   return ui::EventTimeForNow();
 }
 
@@ -935,7 +935,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   CaptureWindowDelegateImpl delegate;
   std::unique_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 50, 50), root_window()));
-  base::TimeDelta time = getTime();
+  base::TimeTicks time = getTime();
   const int kTimeDelta = 100;
 
   ui::TouchEvent press(

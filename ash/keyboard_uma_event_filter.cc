@@ -30,7 +30,7 @@ void KeyboardUMAEventFilter::OnKeyEvent(ui::KeyEvent* event) {
 
   // Reset the timer on non-character keystrokes.
   if (!isprint(event->GetCharacter())) {
-    last_keystroke_time_ = base::TimeDelta();
+    last_keystroke_time_ = base::TimeTicks();
     return;
   }
 

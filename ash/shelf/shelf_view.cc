@@ -383,7 +383,7 @@ ShelfView::ShelfView(ShelfModel* model,
       leading_inset_(kDefaultLeadingInset),
       cancelling_drag_model_changed_(false),
       last_hidden_index_(0),
-      closing_event_time_(base::TimeDelta()),
+      closing_event_time_(base::TimeTicks()),
       got_deleted_(nullptr),
       drag_and_drop_item_pinned_(false),
       drag_and_drop_shelf_id_(0),
@@ -1794,7 +1794,7 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
                          const gfx::Point& click_point,
                          bool context_menu,
                          ui::MenuSourceType source_type) {
-  closing_event_time_ = base::TimeDelta();
+  closing_event_time_ = base::TimeTicks();
   launcher_menu_runner_.reset(new views::MenuRunner(
       menu_model, context_menu ? views::MenuRunner::CONTEXT_MENU : 0));
 
@@ -1847,7 +1847,8 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
 
   // Unpinning an item will reset |launcher_menu_runner_| before coming here.
   if (launcher_menu_runner_)
-    closing_event_time_ = launcher_menu_runner_->closing_event_time();
+    closing_event_time_ =
+        base::TimeTicks() + launcher_menu_runner_->closing_event_time();
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
@@ -1879,15 +1880,14 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 }
 
 bool ShelfView::IsRepostEvent(const ui::Event& event) {
-  if (closing_event_time_.is_zero())
+  if (closing_event_time_.is_null())
     return false;
 
-  base::TimeDelta delta =
-      base::TimeDelta(event.time_stamp() - closing_event_time_);
-  closing_event_time_ = base::TimeDelta();
+  base::TimeTicks last_closing_event_time = closing_event_time_;
+  closing_event_time_ = base::TimeTicks();
   // If the current (press down) event is a repost event, the time stamp of
   // these two events should be the same.
-  return (delta.InMilliseconds() == 0);
+  return last_closing_event_time == event.time_stamp();
 }
 
 const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {

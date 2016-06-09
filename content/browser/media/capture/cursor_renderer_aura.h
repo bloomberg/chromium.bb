@@ -67,7 +67,7 @@ class CONTENT_EXPORT CursorRendererAura : public CursorRenderer,
 
   // Updated in mouse event listener and used to make a decision on
   // when the cursor is rendered.
-  base::TimeDelta last_mouse_movement_timestamp_;
+  base::TimeTicks last_mouse_movement_timestamp_;
   float last_mouse_position_x_;
   float last_mouse_position_y_;
   bool cursor_displayed_;

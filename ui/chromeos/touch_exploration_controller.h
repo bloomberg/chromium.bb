@@ -243,7 +243,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
       std::unique_ptr<ui::Event>* rewritten_event);
 
   // Returns the current time of the tick clock.
-  base::TimeDelta Now();
+  base::TimeTicks Now();
 
   // This timer is started every time we get the first press event, and
   // it fires after the double-click timeout elapses (300 ms by default).

@@ -34,7 +34,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     bool may_cause_scrolling);
 
 blink::WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
-                                             base::TimeDelta timestamp,
+                                             base::TimeTicks timestamp,
                                              const gfx::PointF& location,
                                              const gfx::PointF& raw_location,
                                              int flags);

@@ -20,7 +20,7 @@ class SinglePositionTouchNoiseFilter : public TouchNoiseFilter {
 
   // TouchNoiseFilter:
   void Filter(const std::vector<InProgressTouchEvdev>& touches,
-              base::TimeDelta time,
+              base::TimeTicks time,
               std::bitset<kNumTouchEvdevSlots>* slots_with_noise) override;
 
  private:
@@ -32,8 +32,8 @@ class SinglePositionTouchNoiseFilter : public TouchNoiseFilter {
     size_t slot;
     int x;
     int y;
-    base::TimeDelta begin;
-    base::TimeDelta end;
+    base::TimeTicks begin;
+    base::TimeTicks end;
 
     // The age of the oldest touch at the same location as this TrackedTouch.
     // Logged to UMA when we stop tracking the TrackedTouch.
@@ -42,7 +42,7 @@ class SinglePositionTouchNoiseFilter : public TouchNoiseFilter {
 
   void StopTrackingTouch(size_t index);
   void TrackTouch(const InProgressTouchEvdev& touch,
-                  base::TimeDelta time);
+                  base::TimeTicks time);
 
   // A mapping of slot to tracked touch index in |tracked_touches_|.
   size_t tracked_slots_[kNumTouchEvdevSlots];

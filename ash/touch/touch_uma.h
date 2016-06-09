@@ -75,7 +75,7 @@ class ASH_EXPORT TouchUMA {
   // quick succession, regardless of the target window.
   bool touch_in_progress_;
   int burst_length_;
-  base::TimeDelta last_touch_down_time_;
+  base::TimeTicks last_touch_down_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchUMA);
 };

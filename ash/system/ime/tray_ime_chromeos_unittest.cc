@@ -142,7 +142,7 @@ TEST_F(TrayIMETest, PerformActionOnDetailedView) {
   test::VirtualKeyboardTestHelper::SuppressKeyboard();
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
   views::View* toggle = GetScrollChildView(0);
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(),
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   // Enable the keyboard.
   toggle->OnGestureEvent(&tap);
@@ -151,7 +151,7 @@ TEST_F(TrayIMETest, PerformActionOnDetailedView) {
   // With no IMEs the toggle should be the first child.
   toggle = GetScrollChildView(0);
   // Clicking again should disable the keyboard.
-  tap = ui::GestureEvent(0, 0, 0, base::TimeDelta(),
+  tap = ui::GestureEvent(0, 0, 0, base::TimeTicks(),
                          ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   toggle->OnGestureEvent(&tap);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());

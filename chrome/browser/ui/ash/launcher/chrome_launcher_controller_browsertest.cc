@@ -85,8 +85,7 @@ namespace {
 class TestEvent : public ui::Event {
  public:
   explicit TestEvent(ui::EventType type)
-      : ui::Event(type, base::TimeDelta(), 0) {
-  }
+      : ui::Event(type, base::TimeTicks(), 0) {}
   ~TestEvent() override {}
 
  private:

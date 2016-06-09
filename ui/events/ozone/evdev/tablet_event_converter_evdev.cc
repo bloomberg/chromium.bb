@@ -183,7 +183,7 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
       PointerDetails(EventPointerType::POINTER_TYPE_PEN,
                      /* radius_x */ 0.0f, /* radius_y */ 0.0f, pressure_,
                      tilt_x_, tilt_y_),
-      TimeDeltaFromInputEvent(input)));
+      TimeTicksFromInputEvent(input)));
 }
 
 void TabletEventConverterEvdev::FlushEvents(const input_event& input) {
@@ -206,7 +206,7 @@ void TabletEventConverterEvdev::FlushEvents(const input_event& input) {
       PointerDetails(EventPointerType::POINTER_TYPE_PEN,
                      /* radius_x */ 0.0f, /* radius_y */ 0.0f, pressure_,
                      tilt_x_, tilt_y_),
-      TimeDeltaFromInputEvent(input)));
+      TimeTicksFromInputEvent(input)));
 
   abs_value_dirty_ = false;
 }

@@ -1442,7 +1442,7 @@ void DesktopWindowTreeHostX11::UpdateWMUserTime(
       type == ui::ET_KEY_PRESSED ||
       type == ui::ET_TOUCH_PRESSED) {
     unsigned long wm_user_time_ms = static_cast<unsigned long>(
-        ui::EventTimeFromNative(event).InMilliseconds());
+        (ui::EventTimeFromNative(event) - base::TimeTicks()).InMilliseconds());
     XChangeProperty(xdisplay_,
                     xwindow_,
                     atom_cache_.GetAtom("_NET_WM_USER_TIME"),

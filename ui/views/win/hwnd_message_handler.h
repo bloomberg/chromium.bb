@@ -499,13 +499,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Generates a touch event and adds it to the |touch_events| parameter.
   // |point| is the point where the touch was initiated.
   // |id| is the event id associated with the touch event.
-  // |event_time| is the current time used for latency calculation.
-  // |time_stamp| is the time delta associated with the message.
+  // |time_stamp| is the time stamp associated with the message.
   void GenerateTouchEvent(ui::EventType event_type,
                           const gfx::Point& point,
                           unsigned int id,
-                          base::TimeTicks event_time,
-                          base::TimeDelta time_stamp,
+                          base::TimeTicks time_stamp,
                           TouchEvents* touch_events);
 
   // Handles WM_NCLBUTTONDOWN and WM_NCMOUSEMOVE messages on the caption.

@@ -232,8 +232,8 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
   maximize_mode_controller->EnableMaximizeModeWindowManager(true);
   ASSERT_FALSE(tray_view()->visible());
 
-  ui::GestureEvent tap(
-      0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   default_view()->OnGestureEvent(&tap);
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(tray_view()->visible());

@@ -96,7 +96,7 @@ struct TouchPointLog {
       : id(touch.touch_id()),
         type(touch.type()),
         location(touch.root_location()),
-        timestamp(touch.time_stamp().InMillisecondsF()),
+        timestamp((touch.time_stamp() - base::TimeTicks()).InMillisecondsF()),
         radius_x(touch.pointer_details().radius_x),
         radius_y(touch.pointer_details().radius_y),
         pressure(touch.pointer_details().force),

@@ -99,8 +99,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Update touch event logging state.
   virtual void SetTouchEventLoggingEnabled(bool enabled);
 
-  // Helper to generate a base::TimeDelta from an input_event's time
-  static base::TimeDelta TimeDeltaFromInputEvent(const input_event& event);
+  // Helper to generate a base::TimeTicks from an input_event's time
+  static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);
 
  protected:
   // base::MessagePumpLibevent::Watcher:

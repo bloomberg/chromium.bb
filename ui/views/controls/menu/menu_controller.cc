@@ -1154,7 +1154,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     // Remember the time stamp of the current (press down) event. The owner can
     // then use this to figure out if this menu was finished with the same click
     // which is sent to it thereafter.
-    closing_event_time_ = event->time_stamp();
+    closing_event_time_ = event->time_stamp() - base::TimeTicks();
     // Event wasn't pressed over any menu, or the active menu, cancel.
     RepostEventAndCancel(source, event);
     // Do not repost events for Linux Aura because this behavior is more

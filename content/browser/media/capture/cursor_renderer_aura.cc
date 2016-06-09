@@ -120,7 +120,7 @@ bool CursorRendererAura::SnapshotCursorState(const gfx::Rect& region_in_frame) {
   if (cursor_display_setting_ == kCursorEnabledOnMouseMovement) {
     if (cursor_displayed_) {
       // Stop displaying cursor if there has been no mouse movement
-      base::TimeDelta now = tick_clock_->NowTicks() - base::TimeTicks();
+      base::TimeTicks now = tick_clock_->NowTicks();
       if ((now - last_mouse_movement_timestamp_) >
           base::TimeDelta::FromSeconds(MAX_IDLE_TIME_SECONDS)) {
         cursor_displayed_ = false;

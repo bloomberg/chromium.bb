@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_win.h"
+#include "ui/events/base_event_utils.h"
 
 namespace content {
 
@@ -16,33 +17,35 @@ namespace content {
 
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp,
+    const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseEventBuilder::Build(native_event.hwnd, native_event.message,
                                      native_event.wParam, native_event.lParam,
-                                     time_stamp.InSecondsF(), pointer_type);
+                                     ui::EventTimeStampToSeconds(time_stamp),
+                                     pointer_type);
 }
 
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp,
+    const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseWheelEventBuilder::Build(
       native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, time_stamp.InSecondsF(), pointer_type);
+      native_event.lParam, ui::EventTimeStampToSeconds(time_stamp),
+      pointer_type);
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp) {
+    const base::TimeTicks& time_stamp) {
   return WebKeyboardEventBuilder::Build(
       native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, time_stamp.InSecondsF());
+      native_event.lParam, ui::EventTimeStampToSeconds(time_stamp));
 }
 
 blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp) {
+    const base::TimeTicks& time_stamp) {
   // TODO: Create gestures from native event.
   NOTIMPLEMENTED();
   return  blink::WebGestureEvent();

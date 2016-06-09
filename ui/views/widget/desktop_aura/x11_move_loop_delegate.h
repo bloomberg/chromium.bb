@@ -13,7 +13,7 @@ class X11MoveLoopDelegate {
   // Called when we receive a mouse move event.
   virtual void OnMouseMovement(const gfx::Point& screen_point,
                                int flags,
-                               base::TimeDelta event_time) = 0;
+                               base::TimeTicks event_time) = 0;
 
   // Called when the mouse button is released.
   virtual void OnMouseReleased() = 0;

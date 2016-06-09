@@ -211,7 +211,7 @@ class TableViewTest : public testing::Test {
   void TapOnRow(int row) {
     const int y = row * table_->row_height();
     const ui::GestureEventDetails event_details(ui::ET_GESTURE_TAP);
-    ui::GestureEvent tap(0, y, 0, base::TimeDelta(), event_details);
+    ui::GestureEvent tap(0, y, 0, base::TimeTicks(), event_details);
     table_->OnGestureEvent(&tap);
   }
 
@@ -320,17 +320,11 @@ TEST_F(TableViewTest, ResizeViaGesture) {
   EXPECT_NE(0, x);
   // Drag the mouse 1 pixel to the left.
   ui::GestureEvent scroll_begin(
-      x,
-      0,
-      0,
-      base::TimeDelta(),
+      x, 0, 0, base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
   helper_->header()->OnGestureEvent(&scroll_begin);
   ui::GestureEvent scroll_update(
-      x - 1,
-      0,
-      0,
-      base::TimeDelta(),
+      x - 1, 0, 0, base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE));
   helper_->header()->OnGestureEvent(&scroll_update);
 

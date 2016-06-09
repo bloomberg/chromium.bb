@@ -40,7 +40,6 @@
 #include "ui/events/event.h"
 #endif
 
-using base::TimeDelta;
 using blink::WebGestureDevice;
 using blink::WebGestureEvent;
 using blink::WebKeyboardEvent;
@@ -114,7 +113,7 @@ bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
     return false;
   if (first.touch_id() != second.touch_id())
     return false;
-  if (second.time_stamp().InSeconds() != first.time_stamp().InSeconds())
+  if (second.time_stamp() != first.time_stamp())
     return false;
   return true;
 }
@@ -254,7 +253,7 @@ class InputRouterImplTest : public testing::Test {
         velocity_x, velocity_y, source_device));
   }
 
-  void SetTouchTimestamp(base::TimeDelta timestamp) {
+  void SetTouchTimestamp(base::TimeTicks timestamp) {
     touch_event_.SetTimestamp(timestamp);
   }
 
@@ -858,7 +857,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
 
   // Use a custom timestamp for all the events to test that the acked events
   // have the same timestamp;
-  base::TimeDelta timestamp = base::Time::NowFromSystemTime() - base::Time();
+  base::TimeTicks timestamp = base::TimeTicks::Now();
   timestamp -= base::TimeDelta::FromSeconds(600);
 
   // Press the first finger.

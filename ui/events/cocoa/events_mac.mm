@@ -12,6 +12,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
@@ -77,14 +78,14 @@ int EventFlagsFromNative(const base::NativeEvent& event) {
   return EventFlagsFromNSEventWithModifiers(event, modifiers);
 }
 
-base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   NSTimeInterval since_system_startup = [native_event timestamp];
   // Truncate to extract seconds before doing floating point arithmetic.
   int64_t seconds = since_system_startup;
   since_system_startup -= seconds;
   int64_t microseconds = since_system_startup * 1000000;
-  return base::TimeDelta::FromSeconds(seconds) +
-      base::TimeDelta::FromMicroseconds(microseconds);
+  return ui::EventTimeStampFromSeconds(seconds) +
+         base::TimeDelta::FromMicroseconds(microseconds);
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {

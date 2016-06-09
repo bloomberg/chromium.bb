@@ -48,8 +48,8 @@ class TouchNoiseFinderTest : public testing::Test {
       touches.push_back(touch);
 
       if (i == count - 1 || entry.time_ms != entries[i + 1].time_ms) {
-        touch_noise_finder_->HandleTouches(
-            touches, base::TimeDelta::FromMilliseconds(entry.time_ms));
+        touch_noise_finder_->HandleTouches(touches, base::TimeTicks() +
+            base::TimeDelta::FromMilliseconds(entry.time_ms));
 
         for (size_t j = 0; j < touches.size(); ++j) {
           bool expect_noise = entries[j + start_index].expect_noise;

@@ -38,7 +38,7 @@ class KeyboardDelegate {
 
   // Called when pkeyboard key state changed. |pressed| is true when |key|
   // was pressed and false if it was released.
-  virtual void OnKeyboardKey(base::TimeDelta time_stamp,
+  virtual void OnKeyboardKey(base::TimeTicks time_stamp,
                              ui::DomCode key,
                              bool pressed) = 0;
 

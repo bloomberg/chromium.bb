@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
@@ -172,8 +173,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
   result.dispatchType = result.type == WebInputEvent::TouchCancel
                             ? WebInputEvent::EventNonBlocking
                             : WebInputEvent::Blocking;
-  result.timeStampSeconds =
-      (event.GetEventTime() - base::TimeTicks()).InSecondsF();
+  result.timeStampSeconds = ui::EventTimeStampToSeconds(event.GetEventTime());
   result.movedBeyondSlopRegion = moved_beyond_slop_region;
   result.modifiers = EventFlagsToWebEventModifiers(event.GetFlags());
   DCHECK_NE(event.GetUniqueEventId(), 0U);
@@ -223,12 +223,12 @@ int EventFlagsToWebEventModifiers(int flags) {
 }
 
 WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
-                                      base::TimeDelta timestamp,
+                                      base::TimeTicks timestamp,
                                       const gfx::PointF& location,
                                       const gfx::PointF& raw_location,
                                       int flags) {
   WebGestureEvent gesture;
-  gesture.timeStampSeconds = timestamp.InSecondsF();
+  gesture.timeStampSeconds = ui::EventTimeStampToSeconds(timestamp);
   gesture.x = gfx::ToFlooredInt(location.x());
   gesture.y = gfx::ToFlooredInt(location.y());
   gesture.globalX = gfx::ToFlooredInt(raw_location.x());
@@ -348,7 +348,7 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
 
 WebGestureEvent CreateWebGestureEventFromGestureEventData(
     const GestureEventData& data) {
-  return CreateWebGestureEvent(data.details, data.time - base::TimeTicks(),
+  return CreateWebGestureEvent(data.details, data.time,
                                gfx::PointF(data.x, data.y),
                                gfx::PointF(data.raw_x, data.raw_y), data.flags);
 }

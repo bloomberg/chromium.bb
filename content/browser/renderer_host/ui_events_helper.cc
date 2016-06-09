@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -64,8 +65,8 @@ bool MakeUITouchEventsFromWebTouchEvents(
   }
 
   int flags = WebEventModifiersToEventFlags(touch.modifiers);
-  base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
-      static_cast<int64_t>(touch.timeStampSeconds * 1000000));
+  base::TimeTicks timestamp =
+      ui::EventTimeStampFromSeconds(touch.timeStampSeconds);
   for (unsigned i = 0; i < touch.touchesLength; ++i) {
     const blink::WebTouchPoint& point = touch.touches[i];
     if (WebTouchPointStateToEventType(point.state) != type)

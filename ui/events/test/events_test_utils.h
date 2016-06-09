@@ -19,7 +19,7 @@ class EventTestApi {
   explicit EventTestApi(Event* event);
   virtual ~EventTestApi();
 
-  void set_time_stamp(base::TimeDelta time_stamp) {
+  void set_time_stamp(base::TimeTicks time_stamp) {
     event_->time_stamp_ = time_stamp;
   }
 

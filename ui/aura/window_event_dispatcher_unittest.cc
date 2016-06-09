@@ -408,7 +408,7 @@ TEST_F(WindowEventDispatcherTest, TouchEventsOutsideBounds) {
 
 // Tests that scroll events are dispatched correctly.
 TEST_F(WindowEventDispatcherTest, ScrollEventDispatch) {
-  base::TimeDelta now = ui::EventTimeForNow();
+  base::TimeTicks now = ui::EventTimeForNow();
   ui::test::TestEventHandler handler;
   root_window()->AddPreTargetHandler(&handler);
 
@@ -1652,7 +1652,7 @@ TEST_F(WindowEventDispatcherTest, DeleteDispatcherDuringPreDispatch) {
   // Here we can't use EventGenerator since it expects that the dispatcher is
   // not destroyed at the end of the dispatch.
   ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(20, 20),
-                            gfx::Point(20, 20), base::TimeDelta(), 0, 0);
+                            gfx::Point(20, 20), base::TimeTicks(), 0, 0);
   ui::EventDispatchDetails details =
       host->dispatcher()->DispatchEvent(w2, &mouse_move);
   EXPECT_TRUE(details.dispatcher_destroyed);

@@ -20,7 +20,7 @@ const int32_t kLongLongDuration = INT32_MAX;
 
 class DummyEvent : public ui::Event {
  public:
-  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeDelta(), 0) {}
+  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
   ~DummyEvent() override {}
 };
 

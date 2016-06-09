@@ -588,7 +588,7 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   // Set the timestamp for the touch-event.
-  void SetTouchTimestamp(base::TimeDelta timestamp) {
+  void SetTouchTimestamp(base::TimeTicks timestamp) {
     touch_event_.SetTimestamp(timestamp);
   }
 

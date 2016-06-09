@@ -392,11 +392,10 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     return touch_exploration_controller_->GetSlopDistanceFromEdge();
   }
 
-  base::TimeDelta Now() {
+  base::TimeTicks Now() {
     // This is the same as what EventTimeForNow() does, but here we do it
     // with our simulated clock.
-    return base::TimeDelta::FromInternalValue(
-        simulated_clock_->NowTicks().ToInternalValue());
+    return simulated_clock_->NowTicks();
   }
 
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& location) {
@@ -883,10 +882,10 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   ASSERT_EQ(2U, captured_events.size());
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
   EXPECT_EQ(tap_location, captured_events[0]->location());
-  base::TimeDelta pressed_time = captured_events[0]->time_stamp();
+  base::TimeTicks pressed_time = captured_events[0]->time_stamp();
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
   EXPECT_EQ(tap_location, captured_events[1]->location());
-  base::TimeDelta released_time = captured_events[1]->time_stamp();
+  base::TimeTicks released_time = captured_events[1]->time_stamp();
   EXPECT_EQ(released_time - pressed_time,
             gesture_detector_config_.longpress_timeout);
 }

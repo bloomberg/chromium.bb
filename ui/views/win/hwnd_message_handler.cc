@@ -2221,12 +2221,11 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
 
       gfx::Point touch_point(point.x, point.y);
       unsigned int touch_id = id_generator_.GetGeneratedID(input[i].dwID);
-      base::TimeDelta time_delta = event_time - base::TimeTicks();
 
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
         GenerateTouchEvent(ui::ET_TOUCH_PRESSED, touch_point, touch_id,
-                           event_time, time_delta, &touch_events);
+                           event_time, &touch_events);
         touch_down_contexts_++;
         base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
@@ -2236,13 +2235,13 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       } else {
         if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
           GenerateTouchEvent(ui::ET_TOUCH_MOVED, touch_point, touch_id,
-                             event_time, time_delta, &touch_events);
+                             event_time, &touch_events);
         }
 
         if (input[i].dwFlags & TOUCHEVENTF_UP) {
           touch_ids_.erase(input[i].dwID);
           GenerateTouchEvent(ui::ET_TOUCH_RELEASED, touch_point, touch_id,
-                             event_time, time_delta, &touch_events);
+                             event_time, &touch_events);
           id_generator_.ReleaseNumber(input[i].dwID);
         }
       }
@@ -2595,8 +2594,7 @@ void HWNDMessageHandler::PerformDwmTransition() {
 void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
                                             const gfx::Point& point,
                                             unsigned int id,
-                                            base::TimeTicks event_time,
-                                            base::TimeDelta time_stamp,
+                                            base::TimeTicks time_stamp,
                                             TouchEvents* touch_events) {
   ui::TouchEvent event(event_type, point, id, time_stamp);
 
@@ -2606,7 +2604,7 @@ void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
       0,
       0,
-      event_time,
+      time_stamp,
       1);
 
   touch_events->push_back(event);

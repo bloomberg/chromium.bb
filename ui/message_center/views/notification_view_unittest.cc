@@ -39,7 +39,7 @@ namespace {
 std::unique_ptr<ui::GestureEvent> GenerateGestureEvent(ui::EventType type) {
   ui::GestureEventDetails detail(type);
   std::unique_ptr<ui::GestureEvent> event(
-      new ui::GestureEvent(0, 0, 0, base::TimeDelta(), detail));
+      new ui::GestureEvent(0, 0, 0, base::TimeTicks(), detail));
   return event;
 }
 
@@ -47,7 +47,7 @@ std::unique_ptr<ui::GestureEvent> GenerateGestureVerticalScrollUpdateEvent(
     int dx) {
   ui::GestureEventDetails detail(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0);
   std::unique_ptr<ui::GestureEvent> event(
-      new ui::GestureEvent(0, 0, 0, base::TimeDelta(), detail));
+      new ui::GestureEvent(0, 0, 0, base::TimeTicks(), detail));
   return event;
 }
 

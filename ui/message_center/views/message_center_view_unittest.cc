@@ -39,7 +39,7 @@ enum CallType {
 
 class DummyEvent : public ui::Event {
  public:
-  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeDelta(), 0) {}
+  DummyEvent() : Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
   ~DummyEvent() override {}
 };
 
@@ -357,12 +357,10 @@ void MessageCenterViewTest::RegisterCall(CallType type) {
 }
 
 void MessageCenterViewTest::FireOnMouseExitedEvent() {
-  ui::MouseEvent dummy_event(ui::ET_MOUSE_EXITED /* type */,
-                             gfx::Point(0,0) /* location */,
-                             gfx::Point(0,0) /* root location */,
-                             base::TimeDelta() /* time_stamp */,
-                             0 /* flags */,
-                             0 /*changed_button_flags */);
+  ui::MouseEvent dummy_event(
+      ui::ET_MOUSE_EXITED /* type */, gfx::Point(0, 0) /* location */,
+      gfx::Point(0, 0) /* root location */, base::TimeTicks() /* time_stamp */,
+      0 /* flags */, 0 /*changed_button_flags */);
   message_center_view_->OnMouseExited(dummy_event);
 }
 

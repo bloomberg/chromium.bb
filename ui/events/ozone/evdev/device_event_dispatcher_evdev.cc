@@ -10,7 +10,7 @@ KeyEventParams::KeyEventParams(int device_id,
                                unsigned int code,
                                bool down,
                                bool suppress_auto_repeat,
-                               base::TimeDelta timestamp)
+                               base::TimeTicks timestamp)
     : device_id(device_id),
       code(code),
       down(down),
@@ -26,7 +26,7 @@ KeyEventParams::~KeyEventParams() {
 MouseMoveEventParams::MouseMoveEventParams(int device_id,
                                            const gfx::PointF& location,
                                            const PointerDetails& details,
-                                           base::TimeDelta timestamp)
+                                           base::TimeTicks timestamp)
     : device_id(device_id),
       location(location),
       pointer_details(details),
@@ -44,7 +44,7 @@ MouseButtonEventParams::MouseButtonEventParams(int device_id,
                                                bool down,
                                                bool allow_remap,
                                                const PointerDetails& details,
-                                               base::TimeDelta timestamp)
+                                               base::TimeTicks timestamp)
     : device_id(device_id),
       location(location),
       button(button),
@@ -62,7 +62,7 @@ MouseButtonEventParams::~MouseButtonEventParams() {
 MouseWheelEventParams::MouseWheelEventParams(int device_id,
                                              const gfx::PointF& location,
                                              const gfx::Vector2d& delta,
-                                             base::TimeDelta timestamp)
+                                             base::TimeTicks timestamp)
     : device_id(device_id),
       location(location),
       delta(delta),
@@ -79,7 +79,7 @@ PinchEventParams::PinchEventParams(int device_id,
                                    EventType type,
                                    const gfx::PointF location,
                                    float scale,
-                                   const base::TimeDelta timestamp)
+                                   const base::TimeTicks timestamp)
     : device_id(device_id),
       type(type),
       location(location),
@@ -97,7 +97,7 @@ ScrollEventParams::ScrollEventParams(int device_id,
                                      const gfx::Vector2dF& delta,
                                      const gfx::Vector2dF& ordinal_delta,
                                      int finger_count,
-                                     const base::TimeDelta timestamp)
+                                     const base::TimeTicks timestamp)
     : device_id(device_id),
       type(type),
       location(location),
@@ -117,7 +117,7 @@ TouchEventParams::TouchEventParams(int device_id,
                                    EventType type,
                                    const gfx::PointF& location,
                                    const PointerDetails& details,
-                                   const base::TimeDelta& timestamp)
+                                   const base::TimeTicks& timestamp)
     : device_id(device_id),
       slot(slot),
       type(type),

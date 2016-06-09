@@ -93,7 +93,7 @@ class CursorTest : public testing::Test {
     WindowManagerState* active_wms = display->GetActiveWindowManagerState();
     ASSERT_TRUE(active_wms);
     static_cast<PlatformDisplayDelegate*>(display)->OnEvent(ui::PointerEvent(
-        ui::MouseEvent(ui::ET_MOUSE_MOVED, p, p, base::TimeDelta(), 0, 0)));
+        ui::MouseEvent(ui::ET_MOUSE_MOVED, p, p, base::TimeTicks(), 0, 0)));
     active_wms->OnEventAck(active_wms->tree(), mojom::EventResult::HANDLED);
   }
 

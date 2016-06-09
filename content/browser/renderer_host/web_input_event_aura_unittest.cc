@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -253,14 +254,15 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventKeyPadKeyCode) {
 TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   {
     // Left pressed.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(
         ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
         timestamp, ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -271,14 +273,15 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Left released.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::Point(123, 321),
                               gfx::Point(123, 321), timestamp, 0,
                               ui::EF_LEFT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -289,14 +292,15 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Middle pressed.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(
         ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
         timestamp, ui::EF_MIDDLE_MOUSE_BUTTON, ui::EF_MIDDLE_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonMiddle, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -307,14 +311,15 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Middle released.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::Point(123, 321),
                               gfx::Point(123, 321), timestamp, 0,
                               ui::EF_MIDDLE_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonMiddle, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -325,14 +330,15 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Right pressed.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(
         ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
         timestamp, ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonRight, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -343,14 +349,15 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Right released.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(ui::ET_MOUSE_RELEASED, gfx::Point(123, 321),
                               gfx::Point(123, 321), timestamp, 0,
                               ui::EF_RIGHT_MOUSE_BUTTON);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonRight, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -361,13 +368,14 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Moved
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(ui::ET_MOUSE_MOVED, gfx::Point(123, 321),
                               gfx::Point(123, 321), timestamp, 0, 0);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonNone, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseMove, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -378,14 +386,15 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Moved with left down
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(ui::ET_MOUSE_MOVED, gfx::Point(123, 321),
                               gfx::Point(123, 321), timestamp,
                               ui::EF_LEFT_MOUSE_BUTTON, 0);
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseMove, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -396,7 +405,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Left with shift pressed.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(ui::ET_MOUSE_PRESSED, gfx::Point(123, 321),
                               gfx::Point(123, 321), timestamp,
                               ui::EF_LEFT_MOUSE_BUTTON | ui::EF_SHIFT_DOWN,
@@ -404,7 +413,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
     blink::WebMouseEvent webkit_event = MakeWebMouseEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(aura_event.GetClickCount(), webkit_event.clickCount);
@@ -415,7 +425,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Default values for PointerDetails.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(
         ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
         timestamp, ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
@@ -433,7 +443,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
   }
   {
     // Stylus values for PointerDetails.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseEvent aura_event(
         ui::ET_MOUSE_PRESSED, gfx::Point(123, 321), gfx::Point(123, 321),
         timestamp, ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
@@ -461,7 +471,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
 TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
   {
     // Mouse wheel.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseWheelEvent aura_event(
         gfx::Vector2d(ui::MouseWheelEvent::kWheelDelta * 2,
                       -ui::MouseWheelEvent::kWheelDelta * 2),
@@ -469,7 +479,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
     blink::WebMouseWheelEvent webkit_event = MakeWebMouseWheelEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonNone, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
     EXPECT_FLOAT_EQ(aura_event.x_offset() / 53.0f, webkit_event.wheelTicksX);
@@ -486,7 +497,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
   }
   {
     // Mouse wheel with shift and no x offset.
-    base::TimeDelta timestamp = ui::EventTimeForNow();
+    base::TimeTicks timestamp = ui::EventTimeForNow();
     ui::MouseWheelEvent aura_event(
         gfx::Vector2d(0, -ui::MouseWheelEvent::kWheelDelta * 2),
         gfx::Point(123, 321), gfx::Point(123, 321), timestamp,
@@ -494,7 +505,8 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
     blink::WebMouseWheelEvent webkit_event = MakeWebMouseWheelEvent(aura_event);
     EXPECT_EQ(ui::EventFlagsToWebEventModifiers(aura_event.flags()),
               webkit_event.modifiers);
-    EXPECT_FLOAT_EQ(timestamp.InSecondsF(), webkit_event.timeStampSeconds);
+    EXPECT_FLOAT_EQ(ui::EventTimeStampToSeconds(timestamp),
+                    webkit_event.timeStampSeconds);
     EXPECT_EQ(blink::WebMouseEvent::ButtonNone, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
     EXPECT_FLOAT_EQ(aura_event.y_offset() / 53.0f, webkit_event.wheelTicksX);

@@ -313,7 +313,7 @@ TEST_F(EventDispatcherTest, ProcessEvent) {
   // Send event that is over child.
   const ui::PointerEvent ui_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(ui_event);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -480,7 +480,7 @@ TEST_F(EventDispatcherTest, Capture) {
   MouseEventTest tests[] = {
       // Send a mouse down event over child.
       {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
-                      gfx::Point(20, 25), base::TimeDelta(),
+                      gfx::Point(20, 25), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child.get(), gfx::Point(20, 25), gfx::Point(10, 15), nullptr,
        gfx::Point(), gfx::Point()},
@@ -488,13 +488,13 @@ TEST_F(EventDispatcherTest, Capture) {
       // Capture should be activated. Let's send a mouse move outside the bounds
       // of the child.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40), nullptr,
        gfx::Point(), gfx::Point()},
       // Release the mouse and verify that the mouse up event goes to the child.
       {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40), nullptr,
        gfx::Point(), gfx::Point()},
@@ -503,7 +503,7 @@ TEST_F(EventDispatcherTest, Capture) {
       // move crosses between |child| and |root| |child| gets an exit, and
       // |root| the move.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40), root,
        gfx::Point(50, 50), gfx::Point(50, 50)},
@@ -522,7 +522,7 @@ TEST_F(EventDispatcherTest, CaptureMultipleMouseButtons) {
   MouseEventTest tests[] = {
       // Send a mouse down event over child with a left mouse button
       {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
-                      gfx::Point(20, 25), base::TimeDelta(),
+                      gfx::Point(20, 25), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child.get(), gfx::Point(20, 25), gfx::Point(10, 15), nullptr,
        gfx::Point(), gfx::Point()},
@@ -530,7 +530,7 @@ TEST_F(EventDispatcherTest, CaptureMultipleMouseButtons) {
       // Capture should be activated. Let's send a mouse move outside the bounds
       // of the child and press the right mouse button too.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON, 0),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40), nullptr,
        gfx::Point(), gfx::Point()},
@@ -538,7 +538,7 @@ TEST_F(EventDispatcherTest, CaptureMultipleMouseButtons) {
       // Release the left mouse button and verify that the mouse up event goes
       // to the child.
       {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
                       ui::EF_RIGHT_MOUSE_BUTTON),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40), nullptr,
@@ -546,7 +546,7 @@ TEST_F(EventDispatcherTest, CaptureMultipleMouseButtons) {
 
       // A mouse move at (50, 50) should still go to the child.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, 0),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40), nullptr,
        gfx::Point(), gfx::Point()},
@@ -571,7 +571,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   // Start move loop by sending mouse event over non-client area.
   const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(press_event);
 
   // Events should target child and be in the non-client area.
@@ -585,7 +585,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   // Move the mouse 5,6 pixels and target is the same.
   const ui::PointerEvent move_event(
       ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(17, 18), gfx::Point(17, 18),
-                     base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   dispatcher->ProcessEvent(move_event);
 
   // Still same target.
@@ -597,7 +597,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   // Release the mouse.
   const ui::PointerEvent release_event(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, gfx::Point(17, 18), gfx::Point(17, 18),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(release_event);
 
   // The event should not have been dispatched to the delegate.
@@ -610,7 +610,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   // should get an exit first.
   const ui::PointerEvent press_event2(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(21, 22), gfx::Point(21, 22),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(press_event2);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_TRUE(event_dispatcher_delegate->has_queued_events());
@@ -640,7 +640,7 @@ TEST_F(EventDispatcherTest, AdditionalClientArea) {
   // Press in the additional client area, it should go to the child.
   const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(28, 11), gfx::Point(28, 11),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(press_event);
 
   // Events should target child and be in the client area.
@@ -661,7 +661,7 @@ TEST_F(EventDispatcherTest, HitTestMask) {
   // Move in the masked area.
   const ui::PointerEvent move1(ui::MouseEvent(
       ui::ET_MOUSE_MOVED, gfx::Point(11, 11), gfx::Point(11, 11),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   event_dispatcher()->ProcessEvent(move1);
 
   // Event went through the child window and hit the root.
@@ -675,7 +675,7 @@ TEST_F(EventDispatcherTest, HitTestMask) {
   // Move right in the same part of the window.
   const ui::PointerEvent move2(ui::MouseEvent(
       ui::ET_MOUSE_MOVED, gfx::Point(11, 12), gfx::Point(11, 12),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   event_dispatcher()->ProcessEvent(move2);
 
   // Mouse exits the root.
@@ -705,7 +705,7 @@ TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
   // Press on child1. First press event should change focus.
   const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(press_event);
   std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -717,7 +717,7 @@ TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
   // Press (with a different pointer id) on child2. Event should go to child2,
   // but focus should not change.
   const ui::PointerEvent touch_event(ui::TouchEvent(
-      ui::ET_TOUCH_PRESSED, gfx::Point(53, 54), 2, base::TimeDelta()));
+      ui::ET_TOUCH_PRESSED, gfx::Point(53, 54), 2, base::TimeTicks()));
   dispatcher->ProcessEvent(touch_event);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
@@ -739,7 +739,7 @@ TEST_F(EventDispatcherTest, TwoPointersActive) {
 
   // Press on child1.
   const ui::PointerEvent touch_event1(ui::TouchEvent(
-      ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+      ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeTicks()));
   dispatcher->ProcessEvent(touch_event1);
   std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -747,21 +747,21 @@ TEST_F(EventDispatcherTest, TwoPointersActive) {
 
   // Drag over child2, child1 should get the drag.
   const ui::PointerEvent drag_event1(ui::TouchEvent(
-      ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1, base::TimeDelta()));
+      ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1, base::TimeTicks()));
   dispatcher->ProcessEvent(drag_event1);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
 
   // Press on child2 with a different touch id.
   const ui::PointerEvent touch_event2(ui::TouchEvent(
-      ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2, base::TimeDelta()));
+      ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2, base::TimeTicks()));
   dispatcher->ProcessEvent(touch_event2);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child2.get(), details->window);
 
   // Drag over child1 with id 2, child2 should continue to get the drag.
   const ui::PointerEvent drag_event2(ui::TouchEvent(
-      ui::ET_TOUCH_MOVED, gfx::Point(13, 14), 2, base::TimeDelta()));
+      ui::ET_TOUCH_MOVED, gfx::Point(13, 14), 2, base::TimeTicks()));
   dispatcher->ProcessEvent(drag_event2);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child2.get(), details->window);
@@ -773,12 +773,12 @@ TEST_F(EventDispatcherTest, TwoPointersActive) {
 
   // Release touch id 1, and click on 2. 2 should get it.
   const ui::PointerEvent touch_release(ui::TouchEvent(
-      ui::ET_TOUCH_RELEASED, gfx::Point(54, 55), 1, base::TimeDelta()));
+      ui::ET_TOUCH_RELEASED, gfx::Point(54, 55), 1, base::TimeTicks()));
   dispatcher->ProcessEvent(touch_release);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
   const ui::PointerEvent touch_event3(ui::TouchEvent(
-      ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2, base::TimeDelta()));
+      ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2, base::TimeTicks()));
   dispatcher->ProcessEvent(touch_event3);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child2.get(), details->window);
@@ -796,7 +796,7 @@ TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
 
   // Press on child.
   const ui::PointerEvent touch_event1(ui::TouchEvent(
-      ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+      ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeTicks()));
   dispatcher->ProcessEvent(touch_event1);
   std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -807,7 +807,7 @@ TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   child.reset();
 
   const ui::PointerEvent drag_event1(ui::TouchEvent(
-      ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1, base::TimeDelta()));
+      ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1, base::TimeTicks()));
   dispatcher->ProcessEvent(drag_event1);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(nullptr, details.get());
@@ -827,7 +827,7 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   // Send event that is not over child.
   const ui::PointerEvent ui_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(8, 9), gfx::Point(8, 9),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(ui_event);
   std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -836,7 +836,7 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   // Release the mouse.
   const ui::PointerEvent release_event(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, gfx::Point(8, 9), gfx::Point(8, 9),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(release_event);
   details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
@@ -873,13 +873,13 @@ TEST_F(EventDispatcherTest, WheelWhileDown) {
   MouseEventTest tests[] = {
       // Send a mouse down event over child1.
       {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(15, 15),
-                      gfx::Point(15, 15), base::TimeDelta(),
+                      gfx::Point(15, 15), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child1.get(), gfx::Point(15, 15), gfx::Point(5, 5), nullptr,
        gfx::Point(), gfx::Point()},
       // Send mouse wheel over child2, should go to child1 as it has capture.
       {ui::MouseWheelEvent(gfx::Vector2d(1, 0), gfx::Point(53, 54),
-                           gfx::Point(53, 54), base::TimeDelta(), ui::EF_NONE,
+                           gfx::Point(53, 54), base::TimeTicks(), ui::EF_NONE,
                            ui::EF_NONE),
        child1.get(), gfx::Point(53, 54), gfx::Point(43, 44), nullptr,
        gfx::Point(), gfx::Point()},
@@ -910,7 +910,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     // bounds.
     const ui::PointerEvent left_press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(left_press_event);
 
     // Events should target child.
@@ -925,7 +925,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     // The mouse down state should update while capture is set.
     const ui::PointerEvent right_press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
         ui::EF_RIGHT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(right_press_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -934,7 +934,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     // One button released should not clear mouse down
     const ui::PointerEvent left_release_event(ui::MouseEvent(
         ui::ET_MOUSE_RELEASED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
         ui::EF_LEFT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(left_release_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -942,7 +942,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
 
     // Touch Event while mouse is down should not affect state.
     const ui::PointerEvent touch_event(ui::TouchEvent(
-        ui::ET_TOUCH_PRESSED, gfx::Point(15, 15), 2, base::TimeDelta()));
+        ui::ET_TOUCH_PRESSED, gfx::Point(15, 15), 2, base::TimeTicks()));
     dispatcher->ProcessEvent(touch_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     EXPECT_TRUE(IsMouseButtonDown());
@@ -950,7 +950,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     // Move event should not affect down
     const ui::PointerEvent move_event(
         ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(15, 5), gfx::Point(15, 5),
-                       base::TimeDelta(), ui::EF_RIGHT_MOUSE_BUTTON,
+                       base::TimeTicks(), ui::EF_RIGHT_MOUSE_BUTTON,
                        ui::EF_RIGHT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(move_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -959,7 +959,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     // All mouse buttons up should clear mouse down.
     const ui::PointerEvent right_release_event(
         ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(5, 5),
-                       gfx::Point(5, 5), base::TimeDelta(),
+                       gfx::Point(5, 5), base::TimeTicks(),
                        ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(right_release_event);
     details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -971,7 +971,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     dispatcher->SetCaptureWindow(nullptr, false);
     const ui::PointerEvent press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(press_event);
 
     // Events should target the root.
@@ -1000,25 +1000,25 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
   MouseEventTest tests[] = {
       // Send a mouse down event over child with a left mouse button
       {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
-                      gfx::Point(20, 25), base::TimeDelta(),
+                      gfx::Point(20, 25), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
        child.get(), gfx::Point(20, 25), gfx::Point(10, 15)},
       // Capture should be activated. Let's send a mouse move outside the bounds
       // of the child and press the right mouse button too.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON, 0),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40)},
       // Release the left mouse button and verify that the mouse up event goes
       // to the child.
       {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
                       ui::EF_RIGHT_MOUSE_BUTTON),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40)},
       // A mouse move at (50, 50) should still go to the child.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
-                      gfx::Point(50, 50), base::TimeDelta(),
+                      gfx::Point(50, 50), base::TimeTicks(),
                       ui::EF_LEFT_MOUSE_BUTTON, 0),
        child.get(), gfx::Point(50, 50), gfx::Point(40, 40)},
 
@@ -1029,7 +1029,7 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
   // Add a second pointer target to the child.
   {
     const ui::PointerEvent touch_event(ui::TouchEvent(
-        ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+        ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeTicks()));
     dispatcher->ProcessEvent(touch_event);
   }
 
@@ -1061,7 +1061,7 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
 
   const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(press_event);
 
   // Events should target the root.
@@ -1081,7 +1081,7 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
   {
     const ui::PointerEvent press_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(5, 5), gfx::Point(5, 5),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(press_event);
 
     std::unique_ptr<DispatchedEventDetails> details =
@@ -1091,7 +1091,7 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
   }
   {
     const ui::PointerEvent touch_event(ui::TouchEvent(
-        ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
+        ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeTicks()));
     dispatcher->ProcessEvent(touch_event);
   }
 
@@ -1162,7 +1162,7 @@ TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
   // Press in the client area, it should be marked as non client.
   const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(6, 6), gfx::Point(6, 6),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(press_event);
 
   // Events should target child and be in the client area.
@@ -1182,7 +1182,7 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
   {
     const ui::PointerEvent pointer_event(ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
-        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
     event_dispatcher()->ProcessEvent(pointer_event);
 
     std::unique_ptr<DispatchedEventDetails> details =
@@ -1202,7 +1202,7 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
     const int touch_id = 3;
     const ui::PointerEvent pointer_event(
         ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(25, 20), touch_id,
-                       base::TimeDelta()));
+                       base::TimeTicks()));
     event_dispatcher()->ProcessEvent(pointer_event);
 
     std::unique_ptr<DispatchedEventDetails> details =
@@ -1229,7 +1229,7 @@ TEST_F(EventDispatcherTest, ResetClearsPointerDown) {
   // Send event that is over child.
   const ui::PointerEvent ui_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(ui_event);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1272,7 +1272,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalParent) {
   // Send event that is over |w1|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1304,7 +1304,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalChild) {
   // Send event that is over |w2|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(55, 15), gfx::Point(55, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1339,7 +1339,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
   // Send event that is over |w3|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(75, 15), gfx::Point(75, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1375,7 +1375,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
   // Send event that is over |w11|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(25, 25), gfx::Point(25, 25),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1403,7 +1403,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnSystemModal) {
   // Send event that is over |w1|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1432,7 +1432,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
   // Send event that is over |w1|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(45, 15), gfx::Point(45, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
   std::unique_ptr<DispatchedEventDetails> details =
@@ -1560,7 +1560,7 @@ TEST_F(EventDispatcherTest, CaptureNotResetOnParentChange) {
   // Send event that is over |w11|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
-      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
   event_dispatcher()->SetCaptureWindow(w11.get(), false);
 

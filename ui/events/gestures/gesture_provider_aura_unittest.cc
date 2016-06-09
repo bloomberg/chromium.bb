@@ -38,7 +38,7 @@ class GestureProviderAuraTest : public testing::Test,
 };
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {
-  base::TimeDelta time = ui::EventTimeForNow();
+  base::TimeTicks time = ui::EventTimeForNow();
   TouchEvent press1(ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, time);
   EXPECT_TRUE(provider()->OnTouchEvent(&press1));
 
@@ -48,7 +48,7 @@ TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {
 }
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraMoveOrReleaseEvents) {
-  base::TimeDelta time = ui::EventTimeForNow();
+  base::TimeTicks time = ui::EventTimeForNow();
   TouchEvent press1(ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, time);
   EXPECT_TRUE(provider()->OnTouchEvent(&press1));
 
@@ -73,7 +73,7 @@ TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
   const int kTouchId0 = 5;
   const int kTouchId1 = 3;
 
-  base::TimeDelta time = ui::EventTimeForNow();
+  base::TimeTicks time = ui::EventTimeForNow();
   TouchEvent press0_1(ET_TOUCH_PRESSED, gfx::Point(9, 10), kTouchId0, time);
   EXPECT_TRUE(provider()->OnTouchEvent(&press0_1));
 

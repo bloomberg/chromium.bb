@@ -9,6 +9,10 @@
 
 #include "ui/events/events_base_export.h"
 
+namespace base {
+class TimeTicks;
+}
+
 // Common functions to be used for all platforms.
 namespace ui {
 
@@ -17,6 +21,17 @@ EVENTS_BASE_EXPORT uint32_t GetNextTouchEventId();
 
 // Checks if |flags| contains system key modifiers.
 EVENTS_BASE_EXPORT bool IsSystemKeyModifier(int flags);
+
+// Converts an event timestamp ticks to seconds (floating point representation).
+// WARNING: This should only be used when interfacing with platform code that
+// does not use base::Time* types.
+EVENTS_BASE_EXPORT double EventTimeStampToSeconds(base::TimeTicks time_stamp);
+
+// Converts an event timestamp in seconds to TimeTicks.
+// WARNING: This should only be used when interfacing with platform code that
+// does not use base::Time* types.
+EVENTS_BASE_EXPORT base::TimeTicks EventTimeStampFromSeconds(
+    double time_stamp_seconds);
 
 }  // namespace ui
 

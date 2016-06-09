@@ -29,7 +29,7 @@ class Vector2d;
 }
 
 namespace base {
-class TimeDelta;
+class TimeTicks;
 }
 
 // Common functions to be used for all platforms except Android.
@@ -54,11 +54,13 @@ EVENTS_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
 // Get the timestamp from a native event.
 // Note: This is not a pure function meaning that multiple applications on the
 // same native event may return different values.
-EVENTS_EXPORT base::TimeDelta EventTimeFromNative(
+EVENTS_EXPORT base::TimeTicks EventTimeFromNative(
     const base::NativeEvent& native_event);
 
 // Create a timestamp based on the current time.
-EVENTS_EXPORT base::TimeDelta EventTimeForNow();
+// TODO(majidvp): Get rid of this in favor of call to TimeTicks::Now().
+// crbug.com/453559
+EVENTS_EXPORT base::TimeTicks EventTimeForNow();
 
 // Get the location from a native event.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of

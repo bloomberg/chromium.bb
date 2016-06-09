@@ -104,8 +104,8 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
   // Overview Mode only works when there is a window
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  ui::GestureEvent tap(
-      0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(Shell::GetInstance()->window_selector_controller()->
       IsSelecting());
@@ -119,7 +119,7 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   // Tapping on the control when there are no windows (and thus the user cannot
   // enter overview mode) should still record the action.
   base::UserActionTester user_action_tester;
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(),
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
   ASSERT_FALSE(
@@ -208,8 +208,8 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   // Overview Mode only works when there is a window
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  ui::GestureEvent tap(
-      0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(
       Shell::GetInstance()->window_selector_controller()->IsSelecting());

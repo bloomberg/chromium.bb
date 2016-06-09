@@ -16,12 +16,7 @@
 namespace mojo {
 namespace {
 
-double EventTimeToWebEventTime(const ui::Event& event) {
-  return base::TimeDelta::FromInternalValue(
-             event.time_stamp().ToInternalValue())
-      .InSecondsF();
-}
-
+// TODO(majidvp): remove this and directly use ui::EventFlagsToWebEventModifiers
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
 
@@ -43,6 +38,7 @@ int EventFlagsToWebEventModifiers(int flags) {
   return modifiers;
 }
 
+// TODO(majidvp): remove this and directly use ui::EventFlagsToWebEventModifiers
 int EventFlagsToWebInputEventModifiers(int flags) {
   return (flags & ui::EF_SHIFT_DOWN ? blink::WebInputEvent::ShiftKey : 0) |
          (flags & ui::EF_CONTROL_DOWN ? blink::WebInputEvent::ControlKey : 0) |
@@ -75,7 +71,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
   SetWebMouseEventLocation(event, web_event.get());
 
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
-  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
+  web_event->timeStampSeconds = ui::EventTimeStampToSeconds(event.time_stamp());
 
   web_event->button = blink::WebMouseEvent::ButtonNone;
   if (event.flags() & ui::EF_LEFT_MOUSE_BUTTON)
@@ -114,7 +110,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
       new blink::WebKeyboardEvent);
 
   web_event->modifiers = EventFlagsToWebInputEventModifiers(event.flags());
-  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
+  web_event->timeStampSeconds = ui::EventTimeStampToSeconds(event.time_stamp());
 
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:
@@ -148,7 +144,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   web_event->type = blink::WebInputEvent::MouseWheel;
   web_event->button = blink::WebMouseEvent::ButtonNone;
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
-  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
+  web_event->timeStampSeconds = ui::EventTimeStampToSeconds(event.time_stamp());
 
   SetWebMouseEventLocation(event, web_event.get());
 
@@ -191,7 +187,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebTouchEvent(
   touch->radiusY = event.pointer_details().radius_y;
 
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
-  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
+  web_event->timeStampSeconds = ui::EventTimeStampToSeconds(event.time_stamp());
   web_event->uniqueTouchEventId = ui::GetNextTouchEventId();
 
   switch (event.type()) {

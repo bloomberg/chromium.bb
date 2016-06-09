@@ -63,10 +63,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
       ad->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   }
 
-  base::TimeDelta Now() {
-    return base::TimeDelta::FromInternalValue(
-        simulated_clock_->NowTicks().ToInternalValue());
-  }
+  base::TimeTicks Now() { return simulated_clock_->NowTicks(); }
 
   ui::GestureDetector::Config gesture_detector_config_;
   base::SimpleTestTickClock* simulated_clock_;
@@ -90,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, MAYBE_NoRewritingEventsWhenOff) {
   SwitchTouchExplorationMode(false);
   ui::test::EventGenerator generator(root_window_);
 
-  base::TimeDelta initial_time = Now();
+  base::TimeTicks initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(99, 200), 1, initial_time);
   generator.Dispatch(&initial_press);
@@ -139,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_RewritesEventsWhenOn) {
   SwitchTouchExplorationMode(true);
   ui::test::EventGenerator generator(root_window_);
 
-  base::TimeDelta initial_time = Now();
+  base::TimeTicks initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
   generator.Dispatch(&initial_press);
@@ -209,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_SplitTapExplore) {
 
   // The cursor should be shown immediately after the  press, and hidden
   // after the move.
-  base::TimeDelta initial_time = Now();
+  base::TimeTicks initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), 1, initial_time);
   generator.Dispatch(&initial_press);

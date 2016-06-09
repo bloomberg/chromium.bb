@@ -2799,7 +2799,7 @@ void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
       if (selection_controller_->WillHandleLongPressEvent(
-              base::TimeTicks() + event->time_stamp(), event->location_f())) {
+              event->time_stamp(), event->location_f())) {
         event->SetHandled();
       }
       break;

@@ -372,7 +372,7 @@ class EventGenerator {
   void SetTickClock(std::unique_ptr<base::TickClock> tick_clock);
 
   // Get the current time from the tick clock.
-  base::TimeDelta Now();
+  base::TimeTicks Now();
 
   // Default delegate set by a platform-specific GeneratorDelegate singleton.
   static EventGeneratorDelegate* default_delegate;

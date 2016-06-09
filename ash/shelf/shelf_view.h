@@ -389,7 +389,7 @@ class ASH_EXPORT ShelfView : public views::View,
   mutable int last_hidden_index_;
 
   // The timestamp of the event which closed the last menu - or 0.
-  base::TimeDelta closing_event_time_;
+  base::TimeTicks closing_event_time_;
 
   // When this object gets deleted while a menu is shown, this pointed
   // element will be set to false.
