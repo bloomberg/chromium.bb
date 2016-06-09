@@ -76,6 +76,9 @@ public class PrecacheController {
     static final Set<Integer> SYNC_SERVICE_CONFIGURED_DATATYPES =
             Collections.unmodifiableSet(new HashSet<Integer>(Arrays.asList(ModelType.SESSIONS)));
 
+    private static final String PREF_PRECACHE_PERIODIC_TASK_START_TIME_MS =
+            "precache.periodic_task_start_time_ms";
+
     /**
      * Singleton instance of the PrecacheController. PrecacheController is a
      * singleton so that there is a single handle by which to determine if
@@ -355,6 +358,7 @@ public class PrecacheController {
         }
         if (setIsPrecaching(true)) {
             if (PERIODIC_TASK_TAG.equals(tag)) {
+                recordPeriodicTaskIntervalHistogram();
                 cancelPrecacheCompletionTask(mAppContext);
             }
             startPrecachingAfterSyncInit();
@@ -503,5 +507,20 @@ public class PrecacheController {
     @VisibleForTesting
     static void setTaskScheduler(PrecacheTaskScheduler taskScheduler) {
         PrecacheController.sTaskScheduler = taskScheduler;
+    }
+
+    private static void recordPeriodicTaskIntervalHistogram() {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        long previous_start_time_ms = prefs.getLong(PREF_PRECACHE_PERIODIC_TASK_START_TIME_MS, 0);
+        long current_start_time_ms = System.currentTimeMillis();
+        if (previous_start_time_ms > 0 && current_start_time_ms > previous_start_time_ms) {
+            int interval_mins =
+                    (int) ((current_start_time_ms - previous_start_time_ms) / (1000 * 60));
+            RecordHistogram.recordCustomCountHistogram(
+                    "Precache.PeriodicTaskInterval", interval_mins, 1, 10000, 50);
+        }
+        prefs.edit()
+                .putLong(PREF_PRECACHE_PERIODIC_TASK_START_TIME_MS, current_start_time_ms)
+                .apply();
     }
 }

@@ -41716,6 +41716,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.PeriodicTaskInterval" units="minutes">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The time between successive precache periodic GCM task invocations. When
+    precache task is started, the time interval from previous task invocation is
+    logged.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Saved" units="bytes">
   <owner>bengr@chromium.org</owner>
   <summary>
