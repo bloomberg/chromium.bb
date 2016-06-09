@@ -71,6 +71,10 @@ BEGIN
       VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_SECURITY_KEY_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remote_security_key.exe"
       VALUE "OriginalFilename", "remote_security_key.exe"
+#elif (BINARY == BINARY_REMOTING_START_HOST)
+      VALUE "FileDescription", "{% trans %}REMOTING_START_HOST_DESCRIPTION{% endtrans %}"
+      VALUE "InternalName", "remoting_start_host.exe"
+      VALUE "OriginalFilename", "remoting_start_host.exe"
 #else
 #error BINARY must be set to one of BINARY_XXX values.
 #endif

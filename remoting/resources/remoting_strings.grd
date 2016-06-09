@@ -1093,6 +1093,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message name="IDS_REMOTING_HOST_COMMAND_DESCRIPTION" desc="The file description specified in the version information of remoting_host_command.exe. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
         Application to issue commands to Chrome remote desktop host.
       </message>
+      <message name="IDS_REMOTING_START_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_start_host.exe.">
+        Host Provisioning Utility
+      </message>
       <message name="IDS_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
         Account
       </message>

@@ -580,8 +580,12 @@ if (is_mac) {
         "it2me/it2me_native_messaging_host_main.h",
         "security_key/remote_security_key_main.cc",
         "security_key/remote_security_key_main.h",
+        "setup/host_starter.cc",
+        "setup/host_starter.h",
         "setup/me2me_native_messaging_host_main.cc",
         "setup/me2me_native_messaging_host_main.h",
+        "setup/start_host_main.cc",
+        "setup/start_host_main.h",
         "win/chromoting_lib.rc",
         "win/chromoting_module.cc",
         "win/chromoting_module.h",
@@ -656,7 +660,7 @@ if (is_mac) {
     executable("remote_security_key") {
       configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-      defines = [ "BINARY=BINARY_REMOTE_SECURITY_KEY" ]
+      defines = host_predefines + [ "BINARY=BINARY_REMOTE_SECURITY_KEY" ]
 
       deps = [
         ":remoting_core",
@@ -723,16 +727,33 @@ if (is_mac) {
   if (enable_remoting_host && !is_android) {
     executable("remoting_start_host") {
       sources = [
-        "setup/host_starter.cc",
-        "setup/host_starter.h",
-        "setup/start_host.cc",
+        "setup/start_host_entry_point.cc",
       ]
 
       deps = [
         "//build/config/sanitizers:deps",
-        "//build/win:default_exe_manifest",
-        "//remoting/host/setup",
       ]
+
+      configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+      if (is_win) {
+        defines = host_predefines + [ "BINARY=BINARY_REMOTING_START_HOST" ]
+
+        deps += [
+          ":remoting_core",
+          ":remoting_windows_resources",
+          "//build/win:default_exe_manifest",
+        ]
+      } else {
+        sources += [
+          "setup/host_starter.cc",
+          "setup/host_starter.h",
+          "setup/start_host_main.cc",
+          "setup/start_host_main.h",
+        ]
+
+        deps += [ "//remoting/host/setup" ]
+      }
 
       if (enable_webrtc) {
         deps += [ "//third_party/libjingle:libjingle_webrtc" ]

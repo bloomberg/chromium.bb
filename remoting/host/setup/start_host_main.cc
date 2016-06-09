@@ -1,8 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A simple command-line app that registers and starts a host.
+
+#include "remoting/host/setup/start_host_main.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -31,7 +31,9 @@
 #include "remoting/host/win/elevation_helpers.h"
 #endif  // defined(OS_WIN)
 
-using remoting::HostStarter;
+namespace remoting {
+
+namespace {
 
 // True if the host was started successfully.
 bool g_started = false;
@@ -110,7 +112,9 @@ std::string GetAuthorizationCodeUri() {
   return remoting::GetOauthStartUrl(remoting::GetDefaultOauthRedirectUrl());
 }
 
-int main(int argc, char** argv) {
+}  // namespace
+
+int StartHostMain(int argc, char** argv) {
   // google_apis::GetOAuth2ClientID/Secret need a static CommandLine.
   base::CommandLine::Init(argc, argv);
   const base::CommandLine* command_line =
@@ -233,3 +237,5 @@ int main(int argc, char** argv) {
 
   return g_started ? 0 : 1;
 }
+
+}  // namespace remoting

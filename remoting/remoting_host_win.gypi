@@ -228,8 +228,12 @@
         'host/it2me/it2me_native_messaging_host_main.h',
         'host/security_key/remote_security_key_main.cc',
         'host/security_key/remote_security_key_main.h',
+        'host/setup/host_starter.cc',
+        'host/setup/host_starter.h',
         'host/setup/me2me_native_messaging_host_main.cc',
         'host/setup/me2me_native_messaging_host_main.h',
+        'host/setup/start_host_main.cc',
+        'host/setup/start_host_main.h',
         'host/win/chromoting_module.cc',
         'host/win/chromoting_module.h',
         'host/win/core.cc',
@@ -354,6 +358,29 @@
         },
       },
     },  # end of target 'remoting_me2me_host'
+    {
+      # GN target: //remoting/host:remoting_start_host
+      'target_name': 'remoting_start_host',
+      'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': [
+        'BINARY=BINARY_REMOTING_START_HOST',
+      ],
+      'dependencies': [
+        'remoting_core',
+        'remoting_windows_resources',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+        'host/setup/start_host_entry_point.cc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'IgnoreAllDefaultLibraries': 'true',
+          'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+        },
+      },
+    },  # end of target 'remoting_start_host'
     {
       # GN version: //remoting/host:remote_security_key
       'target_name': 'remote_security_key',
