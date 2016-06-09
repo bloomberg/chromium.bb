@@ -71,7 +71,7 @@ def copy_file(source, dest):
     # TODO(thakis): This copies file attributes like mtime, while the
     # single-file branch below doesn't. This should probably be changed to
     # be consistent with the single-file branch.
-    shutil.copytree(source, dest)
+    shutil.copytree(source, dest, symlinks=True)
     return
 
   if os.path.exists(dest):
