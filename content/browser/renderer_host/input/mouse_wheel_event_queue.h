@@ -47,6 +47,7 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   // |scroll_transaction_ms| is the duration in which the
   // ScrollEnd should be sent after a ScrollUpdate.
   MouseWheelEventQueue(MouseWheelEventQueueClient* client,
+                       bool send_gestures,
                        int64_t scroll_transaction_ms);
 
   ~MouseWheelEventQueue();
@@ -97,6 +98,7 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   // GSB has been sent in the past.
   bool needs_scroll_end_;
 
+  bool send_gestures_;
   int64_t scroll_transaction_ms_;
   blink::WebGestureDevice scrolling_device_;
 

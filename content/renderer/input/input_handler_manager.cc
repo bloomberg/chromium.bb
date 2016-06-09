@@ -67,18 +67,20 @@ void InputHandlerManager::AddInputHandler(
     int routing_id,
     const base::WeakPtr<cc::InputHandler>& input_handler,
     const base::WeakPtr<RenderViewImpl>& render_view_impl,
-    bool enable_smooth_scrolling) {
+    bool enable_smooth_scrolling,
+    bool enable_wheel_gestures) {
   if (task_runner_->BelongsToCurrentThread()) {
     AddInputHandlerOnCompositorThread(
         routing_id, base::ThreadTaskRunnerHandle::Get(), input_handler,
-        render_view_impl, enable_smooth_scrolling);
+        render_view_impl, enable_smooth_scrolling, enable_wheel_gestures);
   } else {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&InputHandlerManager::AddInputHandlerOnCompositorThread,
                    base::Unretained(this), routing_id,
                    base::ThreadTaskRunnerHandle::Get(), input_handler,
-                   render_view_impl, enable_smooth_scrolling));
+                   render_view_impl, enable_smooth_scrolling,
+                   enable_wheel_gestures));
   }
 }
 
@@ -87,7 +89,8 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const base::WeakPtr<cc::InputHandler>& input_handler,
     const base::WeakPtr<RenderViewImpl>& render_view_impl,
-    bool enable_smooth_scrolling) {
+    bool enable_smooth_scrolling,
+    bool enable_wheel_gestures) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // The handler could be gone by this point if the compositor has shut down.
@@ -101,9 +104,9 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   TRACE_EVENT1("input",
       "InputHandlerManager::AddInputHandlerOnCompositorThread",
       "result", "AddingRoute");
-  std::unique_ptr<InputHandlerWrapper> wrapper(
-      new InputHandlerWrapper(this, routing_id, main_task_runner, input_handler,
-                              render_view_impl, enable_smooth_scrolling));
+  std::unique_ptr<InputHandlerWrapper> wrapper(new InputHandlerWrapper(
+      this, routing_id, main_task_runner, input_handler, render_view_impl,
+      enable_smooth_scrolling, enable_wheel_gestures));
   client_->DidAddInputHandler(routing_id);
   if (synchronous_handler_proxy_client_) {
     synchronous_handler_proxy_client_->DidAddSynchronousHandlerProxy(

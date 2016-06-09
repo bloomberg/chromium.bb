@@ -179,7 +179,8 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* root_layer) {
       root_layer->layer_tree_impl()->event_listener_properties(
           EventListenerClass::kMouseWheel);
   if (event_properties == EventListenerProperties::kNone ||
-      event_properties == EventListenerProperties::kPassive) {
+      (root_layer->layer_tree_impl()->settings().use_mouse_wheel_gestures &&
+       event_properties == EventListenerProperties::kPassive)) {
     return;
   }
 

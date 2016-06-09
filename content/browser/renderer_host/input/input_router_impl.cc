@@ -21,6 +21,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
+#include "content/common/input/input_event_utils.h"
 #include "content/common/input/touch_action.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
@@ -83,7 +84,9 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       flush_requested_(false),
       active_renderer_fling_count_(0),
       touch_scroll_started_sent_(false),
-      wheel_event_queue_(this, kDefaultWheelScrollTransactionMs),
+      wheel_event_queue_(this,
+                         UseGestureBasedWheelScrolling(),
+                         kDefaultWheelScrollTransactionMs),
       touch_event_queue_(this, config.touch_config),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f) {

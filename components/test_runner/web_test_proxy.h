@@ -96,6 +96,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   void SetInterfaces(WebTestInterfaces* web_test_interfaces);
 
   EventSender* event_sender() { return event_sender_.get(); }
+  void SetSendWheelGestures(bool send_gestures);
 
   AccessibilityController* accessibility_controller() {
     return accessibility_controller_.get();

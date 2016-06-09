@@ -2523,6 +2523,20 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     }
   }
 
+  if (IsWheelBasedScroll(type) &&
+      !active_tree()->settings().use_mouse_wheel_gestures) {
+    EventListenerProperties event_properties =
+        active_tree()->event_listener_properties(
+            EventListenerClass::kMouseWheel);
+    if (event_properties != EventListenerProperties::kNone) {
+      TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
+      scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+      scroll_status.main_thread_scrolling_reasons =
+          MainThreadScrollingReason::kEventHandlers;
+      return scroll_status;
+    }
+  }
+
   if (!scroll_node->data.scrollable) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
     scroll_status.thread = InputHandler::SCROLL_IGNORED;

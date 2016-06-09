@@ -305,6 +305,9 @@ const char kDisableWebSecurity[]            = "disable-web-security";
 // Disables Blink's XSSAuditor. The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 
+// Disable gesture generation for wheel events.
+const char kDisableWheelGestures[] = "disable-wheel-gestures";
+
 // Disable rasterizer that writes directly to GPU memory associated with tiles.
 const char kDisableZeroCopy[]                = "disable-zero-copy";
 
@@ -512,6 +515,9 @@ const char kEnableWebGLImageChromium[] = "enable-webgl-image-chromium";
 
 // Enables interaction with virtual reality devices.
 const char kEnableWebVR[] = "enable-webvr";
+
+// Enables gesture generation for wheel events.
+const char kEnableWheelGestures[] = "enable-wheel-gestures";
 
 // Enable rasterizer that writes directly to GPU memory associated with tiles.
 const char kEnableZeroCopy[]                = "enable-zero-copy";

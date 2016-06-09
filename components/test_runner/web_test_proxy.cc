@@ -38,6 +38,10 @@ void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
   test_interfaces_->WindowOpened(this);
 }
 
+void WebTestProxyBase::SetSendWheelGestures(bool send_gestures) {
+  event_sender_->set_send_wheel_gestures(send_gestures);
+}
+
 void WebTestProxyBase::Reset() {
   accessibility_controller_->Reset();
   event_sender_->Reset();
