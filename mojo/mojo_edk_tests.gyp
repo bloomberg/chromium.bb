@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    'mojo_variables.gypi',
-  ],
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets': [
     {
       'target_name': 'mojo_edk_tests',
@@ -169,7 +169,11 @@
         'mojo_public.gyp:mojo_public_test_utils',
       ],
       'sources': [
-        '<@(mojo_public_system_unittest_sources)',
+        '<(DEPTH)/mojo/public/c/system/tests/core_unittest.cc',
+        '<(DEPTH)/mojo/public/c/system/tests/core_unittest_pure_c.c',
+        '<(DEPTH)/mojo/public/c/system/tests/macros_unittest.cc',
+        '<(DEPTH)/mojo/public/cpp/system/tests/core_unittest.cc',
+        '<(DEPTH)/mojo/public/cpp/system/tests/watcher_unittest.cc',
       ],
     },
     {
@@ -180,6 +184,7 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'mojo_edk.gyp:mojo_run_all_perftests',
+        'mojo_public.gyp:mojo_public_system',
         'mojo_public.gyp:mojo_public_test_utils',
       ],
       'sources': [
@@ -197,6 +202,7 @@
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_edk.gyp:mojo_system_impl',
         'mojo_edk.gyp:mojo_system_ports',
+        'mojo_public.gyp:mojo_public_system',
       ],
       'sources': [
         'edk/embedder/embedder_unittest.cc',
@@ -246,6 +252,7 @@
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_perftests',
         'mojo_edk.gyp:mojo_system_impl',
+        'mojo_public.gyp:mojo_public_system',
       ],
       'sources': [
         'edk/system/message_pipe_perftest.cc',

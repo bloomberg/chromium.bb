@@ -3,15 +3,13 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    'mojo_variables.gypi',
-  ],
   'target_defaults' : {
     'include_dirs': [
       '..',
     ],
   },
   'variables': {
+    'chromium_code': 1,
     'mojo_public_test_interfaces_mojom_files': [
       'public/interfaces/bindings/tests/math_calculator.mojom',
       'public/interfaces/bindings/tests/no_module.mojom',
@@ -36,48 +34,15 @@
       'type': 'none',
       'dependencies': [
         'mojo_js_bindings',
+        'mojo_public_system',
         'mojo_public_test_interfaces',
         'mojo_public_test_utils',
-        'mojo_system',
-      ],
-    },
-    {
-      # Targets that (a) need to obtain the settings that mojo_system passes on
-      # to its direct dependents but (b) are not themselves in a position to
-      # hardcode a dependency to mojo_system vs. mojo_system_impl (e.g.,
-      # because they are components) should depend on this target.
-      'target_name': 'mojo_system_placeholder',
-      'type': 'none',
-    },
-    {
-      'target_name': 'mojo_system',
-      'type': 'static_library',
-      'defines': [
-        'MOJO_SYSTEM_IMPLEMENTATION',
-      ],
-      'all_dependent_settings': {
-        'conditions': [
-          # We need to be able to call the MojoSetSystemThunks() function in
-          # system_thunks.cc
-          ['OS=="android"', {
-            'ldflags!': [
-              '-Wl,--exclude-libs=ALL',
-            ],
-          }],
-        ],
-      },
-      'sources': [
-        'public/platform/native/system_thunks.cc',
-        'public/platform/native/system_thunks.h',
-      ],
-      'dependencies': [
-        'mojo_system_headers',
       ],
     },
     {
       # GN version: //mojo/public/c/system
-      'target_name': 'mojo_system_headers',
-      'type': 'none',
+      'target_name': 'mojo_public_system',
+      'type': '<(component)',
       'sources': [
         'public/c/system/buffer.h',
         'public/c/system/core.h',
@@ -87,8 +52,13 @@
         'public/c/system/message_pipe.h',
         'public/c/system/platform_handle.h',
         'public/c/system/system_export.h',
+        'public/c/system/thunks.cc',
+        'public/c/systme/thunks.h',
         'public/c/system/types.h',
         'public/c/system/wait_set.h',
+      ],
+      'defines': [
+        'MOJO_SYSTEM_IMPLEMENTATION',
       ],
     },
     {
@@ -111,7 +81,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        'mojo_system_headers',
+        'mojo_public_system',
       ],
     },
     {
@@ -248,7 +218,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(mojo_system_for_component)',
+        'mojo_cpp_system',
       ],
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
