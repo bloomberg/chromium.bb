@@ -463,14 +463,6 @@
       'browser/task_management/task_manager_tester.h',
       'browser/themes/theme_service_browsertest.cc',
       'browser/tracing/chrome_tracing_delegate_browsertest.cc',
-      'browser/translate/cld_data_harness.cc',
-      'browser/translate/cld_data_harness.h',
-      'browser/translate/cld_data_harness_factory.cc',
-      'browser/translate/cld_data_harness_factory.h',
-      'browser/translate/component_cld_data_harness.cc',
-      'browser/translate/component_cld_data_harness.h',
-      'browser/translate/standalone_cld_data_harness.cc',
-      'browser/translate/standalone_cld_data_harness.h',
       'browser/translate/translate_browsertest.cc',
       'browser/translate/translate_manager_browsertest.cc',
       'browser/ui/autofill/card_unmask_prompt_view_browsertest.cc',
@@ -1675,7 +1667,6 @@
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/cld_2/cld_2.gyp:cld2_platform_impl',
         '../third_party/hunspell/hunspell.gyp:hunspell',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -2202,7 +2193,6 @@
         '../testing/gtest.gyp:gtest',
         '../testing/perf/perf_test.gyp:*',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        '../third_party/cld_2/cld_2.gyp:cld2_platform_impl',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -2772,7 +2762,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../testing/perf/perf_test.gyp:*',
-        '../third_party/cld_2/cld_2.gyp:cld2_platform_impl',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -2937,10 +2926,6 @@
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        # Language detection is irrelevant to sync, so it can depend on
-        # any implementation for CLD2. Dynamic is smaller, so go with
-        # dynamic.
-        '../third_party/cld_2/cld_2.gyp:cld2_dynamic',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -3042,10 +3027,6 @@
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        # Language detection is irrelevant to sync, so it can depend on
-        # any implementation for CLD2. Dynamic is smaller, so go with
-        # dynamic.
-        '../third_party/cld_2/cld_2.gyp:cld2_dynamic',
       ],
       'include_dirs': [
         '..',

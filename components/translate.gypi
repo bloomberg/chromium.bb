@@ -141,16 +141,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/browser/browser_cld_data_provider.cc',
-            'translate/content/browser/browser_cld_data_provider.h',
-            'translate/content/browser/browser_cld_data_provider_factory.cc',
-            'translate/content/browser/browser_cld_data_provider_factory.h',
-            'translate/content/browser/browser_cld_utils.cc',
-            'translate/content/browser/browser_cld_utils.h',
             'translate/content/browser/content_translate_driver.cc',
             'translate/content/browser/content_translate_driver.h',
-            'translate/content/browser/data_file_browser_cld_data_provider.cc',
-            'translate/content/browser/data_file_browser_cld_data_provider.h',
           ],
         },
         {
@@ -169,10 +161,6 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/common/cld_data_source.cc',
-            'translate/content/common/cld_data_source.h',
-            'translate/content/common/data_file_cld_data_provider_messages.cc',
-            'translate/content/common/data_file_cld_data_provider_messages.h',
             'translate/content/common/translate_messages.cc',
             'translate/content/common/translate_messages.h',
            ],
@@ -199,14 +187,6 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
-            'translate/content/renderer/data_file_renderer_cld_data_provider.h',
-            'translate/content/renderer/renderer_cld_data_provider.cc',
-            'translate/content/renderer/renderer_cld_data_provider.h',
-            'translate/content/renderer/renderer_cld_data_provider_factory.cc',
-            'translate/content/renderer/renderer_cld_data_provider_factory.h',
-            'translate/content/renderer/renderer_cld_utils.cc',
-            'translate/content/renderer/renderer_cld_utils.h',
             'translate/content/renderer/translate_helper.cc',
             'translate/content/renderer/translate_helper.h',
            ],

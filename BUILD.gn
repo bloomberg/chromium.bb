@@ -675,7 +675,6 @@ group("gn_only") {
       "//third_party/angle:libANGLE",
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
-      "//third_party/cld_2:cld_2_dynamic_data_tool",
       "//third_party/leveldatabase:leveldb_arena_test",
       "//third_party/leveldatabase:leveldb_bloom_test",
       "//third_party/leveldatabase:leveldb_cache_test",

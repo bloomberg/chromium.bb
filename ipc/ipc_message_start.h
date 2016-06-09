@@ -90,7 +90,6 @@ enum IPCMessageStart {
   MediaStreamTrackMetricsHostMsgStart,
   ChromeExtensionMsgStart,
   TranslateMsgStart,
-  CldDataProviderMsgStart,
   PushMessagingMsgStart,
   GinJavaBridgeMsgStart,
   ChromeUtilityPrintingMsgStart,

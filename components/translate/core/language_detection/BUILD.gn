@@ -13,8 +13,8 @@ source_set("language_detection") {
   deps = [
     "//base",
     "//components/translate/core/common",
+    "//third_party/cld_2",
     "//url",
-    "//third_party/cld_2:cld2_platform_impl",
   ]
 }
 

@@ -265,7 +265,7 @@
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
-        '../third_party/cld_2/cld_2.gyp:cld2_static',
+        '../third_party/cld_2/cld_2.gyp:cld_2',
         'browser/api/api_registration.gyp:extensions_api_registration',
         'common/api/api.gyp:cast_channel_proto',
         'common/api/api.gyp:extensions_api',

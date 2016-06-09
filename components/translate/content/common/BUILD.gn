@@ -6,10 +6,6 @@ import("//build/config/features.gni")
 
 static_library("common") {
   sources = [
-    "cld_data_source.cc",
-    "cld_data_source.h",
-    "data_file_cld_data_provider_messages.cc",
-    "data_file_cld_data_provider_messages.h",
     "translate_messages.cc",
     "translate_messages.h",
   ]

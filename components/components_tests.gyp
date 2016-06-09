@@ -1084,7 +1084,6 @@
         '../sync/sync.gyp:test_support_sync_api',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/cld_2/cld_2.gyp:cld2_static',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',

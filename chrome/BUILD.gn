@@ -1043,7 +1043,6 @@ group("child_dependencies") {
   public_deps = [
     "//chrome/common",
     "//sync",
-    "//third_party/cld_2:cld2_platform_impl",
   ]
   if (!is_ios) {
     public_deps += [

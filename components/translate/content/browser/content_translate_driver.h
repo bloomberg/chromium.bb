@@ -21,7 +21,6 @@ namespace translate {
 
 struct LanguageDetectionDetails;
 class TranslateManager;
-class BrowserCldDataProvider;
 
 
 // Content implementation of TranslateDriver.
@@ -115,9 +114,6 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
-
-  // Provides CLD data for this process.
-  std::unique_ptr<translate::BrowserCldDataProvider> cld_data_provider_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
 

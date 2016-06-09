@@ -69,7 +69,6 @@
       'browser/chrome_process_singleton_win_unittest.cc',
       'browser/command_updater_unittest.cc',
       'browser/component_updater/chrome_component_updater_configurator_unittest.cc',
-      'browser/component_updater/cld_component_installer_unittest.cc',
       'browser/component_updater/sth_set_component_installer_unittest.cc',
       'browser/component_updater/supervised_user_whitelist_installer_unittest.cc',
       'browser/content_settings/content_settings_default_provider_unittest.cc',
@@ -2249,9 +2248,6 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        # Unit tests should be independent of the CLD2 access mechanism,
-        # just use static for simplicity.
-        '../third_party/cld_2/cld_2.gyp:cld2_static',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',

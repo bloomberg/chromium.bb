@@ -9,8 +9,6 @@
 
 {
   'variables': {
-    'cld2_platform_support%': 'static',
-
     # These sources need to be included in both static and dynamic builds as
     # well as the dynamic data tool.
     'cld2_core_sources': [
@@ -60,14 +58,6 @@
       'src/internal/utf8statetable.cc',
     ],
 
-    # These sources are needed for a dynamic build to load data at runtime.
-    'cld2_dynamic_data_loader_sources': [
-      'src/internal/cld2_dynamic_data.h',
-      'src/internal/cld2_dynamic_data.cc',
-      'src/internal/cld2_dynamic_data_loader.h',
-      'src/internal/cld2_dynamic_data_loader.cc',
-    ],
-
     # These sources are for both small-table and large-table data sets.
     'cld2_data_sources': [
       'src/internal/cld2_generated_cjk_compatible.cc',
@@ -94,65 +84,8 @@
 
   'targets': [
     {
-      # GN version: //third_party/cld_2:cld_2_dynamic_data_tool
-      'target_name': 'cld_2_dynamic_data_tool',
-      'type': 'executable',
-      'include_dirs': [
-        'src/internal',
-        'src/public',
-      ],
-
-      'sources': [
-        # Note: sources list duplicated in GN build.
-        '<@(cld2_core_sources)',
-        '<@(cld2_core_impl_sources)',
-        '<@(cld2_data_sources)',
-        '<@(cld2_dynamic_data_loader_sources)',
-        'src/internal/cld2_dynamic_data_extractor.h',
-        'src/internal/cld2_dynamic_data_extractor.cc',
-        'src/internal/cld2_dynamic_data_tool.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'msvs_disabled_warnings': [4267], # size_t -> int conversion.
-        }],
-        ['cld2_table_size==0', {
-          'sources+': ['<@(cld2_data_smallest_sources)']
-        }],
-        ['cld2_table_size==2', {
-          'sources+': ['<@(cld2_data_largest_sources)']
-        }],
-      ],
-      'defines': ['CLD2_DYNAMIC_MODE'],
-      'variables': {
-        'clang_warning_flags': [
-          # The generated files don't have braces around subobject initializers.
-          '-Wno-missing-braces',
-        ],
-      },
-    },
-
-    {
       # GN version: //third_party/cld_2
       'target_name': 'cld_2',
-      'type': 'none',
-      'sources': ['<@(cld2_core_sources)'],
-      'dependencies': [],
-    },
-
-    # As described above in the comments for cld2_platform_support, this is a
-    # passthrough target that allows high-level targets to depend upon the same
-    # CLD support as desired by the embedder.
-    {
-      # GN version: //third_party/cld_2:cld2_platform_impl
-      'target_name': 'cld2_platform_impl',
-      'type': 'none',
-      'dependencies': ['cld2_<(cld2_platform_support)'],
-    },
-
-    {
-      # GN version: //third_party/cld_2:cld2_static
-      'target_name': 'cld2_static',
       'type': 'static_library',
       'include_dirs': [
         'src/internal',
@@ -178,34 +111,6 @@
         'clang_warning_flags': [
           # The generated files don't have braces around subobject initializers.
           '-Wno-missing-braces',
-          # cld_2 contains unused private fields,
-          # https://code.google.com/p/cld2/issues/detail?id=37
-          '-Wno-unused-private-field',
-        ],
-      },
-    },
-
-    {
-      # GN version: //third_party/cld_2:cld2_dynamic
-      'target_name': 'cld2_dynamic',
-      'type': 'static_library',
-      'conditions': [
-        ['OS=="win"', {
-          'msvs_disabled_warnings': [4267], # size_t -> int conversion.
-        }],
-      ],
-      'include_dirs': [
-        'src/internal',
-        'src/public',
-      ],
-      'sources': [
-        '<@(cld2_core_sources)',
-        '<@(cld2_core_impl_sources)',
-        '<@(cld2_dynamic_data_loader_sources)',
-      ],
-      'defines': ['CLD2_DYNAMIC_MODE'],
-      'variables': {
-        'clang_warning_flags': [
           # cld_2 contains unused private fields,
           # https://code.google.com/p/cld2/issues/detail?id=37
           '-Wno-unused-private-field',

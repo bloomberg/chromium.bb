@@ -161,8 +161,6 @@
       'browser/component_updater/caps_installer_win.h',
       'browser/component_updater/chrome_component_updater_configurator.cc',
       'browser/component_updater/chrome_component_updater_configurator.h',
-      'browser/component_updater/cld_component_installer.cc',
-      'browser/component_updater/cld_component_installer.h',
       'browser/component_updater/component_patcher_operation_out_of_process.cc',
       'browser/component_updater/component_patcher_operation_out_of_process.h',
       'browser/component_updater/component_updater_resource_throttle.cc',

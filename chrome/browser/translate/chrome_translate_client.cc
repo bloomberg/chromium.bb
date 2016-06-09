@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -42,18 +41,6 @@
 #include "grit/theme_resources.h"
 #include "url/gurl.h"
 
-namespace {
-
-// TODO(andrewhayden): Make the data file path into a gyp/gn define
-// If you change this, also update standalone_cld_data_harness.cc
-// accordingly!
-const base::FilePath::CharType kCldDataFileName[] =
-    FILE_PATH_LITERAL("cld2_data.bin");
-
-bool g_cld_file_path_initialized_ = false;
-
-}  // namespace
-
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeTranslateClient);
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
@@ -63,24 +50,6 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
           new translate::TranslateManager(this, prefs::kAcceptLanguages)) {
   translate_driver_.AddObserver(this);
   translate_driver_.set_translate_manager(translate_manager_.get());
-  // Customization: for the standalone data source, we configure the path to
-  // CLD data immediately on startup.
-  // TODO(andrewhayden): This belongs in the data source implementation, not
-  // here.
-  if (translate::CldDataSource::IsUsingStandaloneDataSource() &&
-      !g_cld_file_path_initialized_) {
-    DVLOG(1) << "Initializing CLD file path for the first time.";
-    base::FilePath path;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
-      // Chrome isn't properly installed
-      LOG(WARNING) << "Unable to locate user data directory";
-    } else {
-      g_cld_file_path_initialized_ = true;
-      path = path.Append(kCldDataFileName);
-      DVLOG(1) << "Setting CLD data file path: " << path.value();
-      translate::CldDataSource::Get()->SetCldDataFilePath(path);
-    }
-  }
 }
 
 ChromeTranslateClient::~ChromeTranslateClient() {

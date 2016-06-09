@@ -37,7 +37,6 @@
           'utility',
           '../content/content.gyp:content_gpu',
           '../content/content.gyp:content_ppapi_plugin',
-          '../third_party/cld_2/cld_2.gyp:cld2_platform_impl',
           '../third_party/WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources',
         ],
         'conditions': [

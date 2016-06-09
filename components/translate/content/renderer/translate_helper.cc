@@ -15,9 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/translate/content/common/translate_messages.h"
-#include "components/translate/content/renderer/renderer_cld_data_provider.h"
-#include "components/translate/content/renderer/renderer_cld_data_provider_factory.h"
-#include "components/translate/content/renderer/renderer_cld_utils.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
@@ -64,18 +61,6 @@ const char kAutoDetectionLanguage[] = "auto";
 
 // Isolated world sets following content-security-policy.
 const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
-
-// Whether or not we have set the CLD callback yet.
-bool g_cld_callback_set = false;
-
-// Obtain a new CLD data provider. Defined as a standalone method for ease of
-// use in constructor initialization list.
-std::unique_ptr<translate::RendererCldDataProvider> CreateDataProvider(
-    content::RenderFrameObserver* render_frame_observer) {
-  translate::RendererCldUtils::ConfigureDefaultDataProvider();
-  return translate::RendererCldDataProviderFactory::Get()
-      ->CreateRendererCldDataProvider(render_frame_observer);
-}
 
 // Returns whether the page associated with |document| is a candidate for
 // translation.  Some pages can explictly specify (via a meta-tag) that they
@@ -131,9 +116,6 @@ TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
     : content::RenderFrameObserver(render_frame),
       page_seq_no_(0),
       translation_pending_(false),
-      cld_data_provider_(CreateDataProvider(this)),
-      cld_data_polling_started_(false),
-      cld_data_polling_canceled_(false),
       deferred_page_capture_(false),
       deferred_page_seq_no_(-1),
       world_id_(world_id),
@@ -142,8 +124,6 @@ TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
       weak_method_factory_(this) {}
 
 TranslateHelper::~TranslateHelper() {
-  CancelPendingTranslation();
-  CancelCldDataPolling();
 }
 
 void TranslateHelper::PrepareForUrl(const GURL& url) {
@@ -153,27 +133,6 @@ void TranslateHelper::PrepareForUrl(const GURL& url) {
   deferred_page_capture_ = false;
   deferred_page_seq_no_ = -1;
   deferred_contents_.clear();
-  if (cld_data_polling_started_)
-    return;
-
-  // TODO(andrewhayden): Refactor translate_manager.cc's IsTranslatableURL to
-  // components/translate/core/common/translate_util.cc, and ignore any URL
-  // that fails that check. This will require moving unit tests and rewiring
-  // other function calls as well, so for now replicate the logic here.
-  if (url.is_empty())
-    return;
-  if (url.SchemeIs(content::kChromeUIScheme))
-    return;
-  if (url.SchemeIs(content::kChromeDevToolsScheme))
-    return;
-  if (url.SchemeIs(url::kFtpScheme))
-    return;
-  if (url.SchemeIs(extension_scheme_.c_str()))
-    return;
-
-  // Start polling for CLD data.
-  cld_data_polling_started_ = true;
-  TranslateHelper::SendCldDataRequest(0, 1000);
 }
 
 void TranslateHelper::PageCaptured(const base::string16& contents) {
@@ -194,25 +153,6 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame || page_seq_no_ != page_seq_no)
     return;
-
-  if (!cld_data_provider_->IsCldDataAvailable()) {
-    // We're in dynamic mode and CLD data isn't loaded. Retry when CLD data
-    // is loaded, if ever.
-    deferred_page_capture_ = true;
-    deferred_page_seq_no_ = page_seq_no;
-    deferred_contents_ = contents;
-    RecordLanguageDetectionTiming(DEFERRED);
-    return;
-  }
-
-  if (deferred_page_seq_no_ == -1) {
-    // CLD data was available before language detection was requested.
-    RecordLanguageDetectionTiming(ON_TIME);
-  } else {
-    // This is a request that was triggered because CLD data is now available
-    // and was previously deferred.
-    RecordLanguageDetectionTiming(RESUMED);
-  }
 
   WebDocument document = main_frame->document();
   std::string content_language = document.contentLanguage().utf8();
@@ -256,7 +196,6 @@ void TranslateHelper::CancelPendingTranslation() {
   translation_pending_ = false;
   source_lang_.clear();
   target_lang_.clear();
-  CancelCldDataPolling();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -380,9 +319,6 @@ bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeFrameMsg_RevertTranslation, OnRevertTranslation)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  if (!handled) {
-    handled = cld_data_provider_->OnMessageReceived(message);
-  }
   return handled;
 }
 
@@ -546,96 +482,6 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
   // Notify the browser there was an error.
   render_frame()->Send(new ChromeFrameHostMsg_PageTranslated(
       render_frame()->GetRoutingID(), source_lang_, target_lang_, error));
-}
-
-void TranslateHelper::CancelCldDataPolling() {
-  cld_data_polling_canceled_ = true;
-}
-
-void TranslateHelper::SendCldDataRequest(const int delay_millis,
-                                         const int next_delay_millis) {
-  DCHECK_GE(delay_millis, 0);
-  DCHECK_GT(next_delay_millis, 0);
-
-  // Terminate immediately if told to stop polling.
-  if (cld_data_polling_canceled_) {
-    DVLOG(1) << "Aborting CLD data request (polling canceled)";
-    return;
-  }
-
-  // Terminate immediately if data is already loaded.
-  if (cld_data_provider_->IsCldDataAvailable()) {
-    DVLOG(1) << "Aborting CLD data request (data available)";
-    return;
-  }
-
-  // Terminate immediately if the decayed delay is sufficiently large.
-  if (next_delay_millis > std::numeric_limits<int>::max() / 2) {
-    DVLOG(1) << "Aborting CLD data request (exceeded max number of requests)";
-    cld_data_polling_started_ = false;
-    return;
-  }
-
-  if (!g_cld_callback_set) {
-    g_cld_callback_set = true;
-    cld_data_provider_->SetCldAvailableCallback(
-        base::Bind(&TranslateHelper::OnCldDataAvailable,
-                   weak_method_factory_.GetWeakPtr()));
-  }
-
-  // Else, make an asynchronous request to get the data we need.
-  DVLOG(1) << "Requesting CLD data from data provider";
-  cld_data_provider_->SendCldDataRequest();
-
-  // ... and enqueue another delayed task to call again. This will start a
-  // chain of polling that will last until the pointer stops being NULL,
-  // which is the right thing to do.
-  // NB: In the great majority of cases, the data file will be available and
-  // the very first delayed task will be a no-op that terminates the chain.
-  // It's only while downloading the file that this will chain for a
-  // nontrivial amount of time.
-  // Use a weak pointer to avoid keeping this helper object around forever.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&TranslateHelper::SendCldDataRequest,
-                            weak_method_factory_.GetWeakPtr(),
-                            next_delay_millis, next_delay_millis * 2),
-      base::TimeDelta::FromMilliseconds(delay_millis));
-}
-
-void TranslateHelper::OnCldDataAvailable() {
-  if (deferred_page_capture_) {
-    deferred_page_capture_ = false; // Don't do this a second time.
-    PageCapturedImpl(deferred_page_seq_no_, deferred_contents_);
-    deferred_page_seq_no_ = -1; // Clean up for sanity
-    deferred_contents_.clear(); // Clean up for sanity
-  }
-}
-
-void TranslateHelper::RecordLanguageDetectionTiming(
-    LanguageDetectionTiming timing) {
-  // The following comment is copied from page_load_histograms.cc, and applies
-  // just as equally here:
-  //
-  // Since there are currently no guarantees that renderer histograms will be
-  // sent to the browser, we initiate a PostTask here to be sure that we send
-  // the histograms we generated.  Without this call, pages that don't have an
-  // on-close-handler might generate data that is lost when the renderer is
-  // shutdown abruptly (perchance because the user closed the tab).
-  DVLOG(1) << "Language detection timing: " << timing;
-  UMA_HISTOGRAM_ENUMERATION("Translate.LanguageDetectionTiming", timing,
-                            LANGUAGE_DETECTION_TIMING_MAX_VALUE);
-
-  // Note on performance: Under normal circumstances, this should get called
-  // once per page load. The code will either manage to do it ON_TIME or will
-  // be DEFERRED until CLD is ready. In the latter case, CLD is in dynamic mode
-  // and may eventually become available, triggering the RESUMED event; after
-  // this, everything should start being ON_TIME. This should never run more
-  // than twice in a page load, under any conditions.
-  // Also note that language detection is triggered off of a delay AFTER the
-  // page load completed event has fired, making this very much off the critical
-  // path.
-  content::RenderThread::Get()->UpdateHistograms(
-      content::kHistogramSynchronizerReservedSequenceNumber);
 }
 
 void TranslateHelper::OnDestruct() {

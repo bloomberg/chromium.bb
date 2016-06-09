@@ -74,8 +74,6 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/cld_data_harness.h"
-#include "chrome/browser/translate/cld_data_harness_factory.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
@@ -2389,10 +2387,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
 #if !defined(USE_AURA)
 // http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
-  std::unique_ptr<test::CldDataHarness> cld_data_scope =
-      test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
-  ASSERT_NO_FATAL_FAILURE(cld_data_scope->Init());
-
   // Verifies that translate can be forced enabled or disabled by policy.
 
   // Get the InfoBarService, and verify that there are no infobars on startup.

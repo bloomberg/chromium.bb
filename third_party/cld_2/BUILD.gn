@@ -17,28 +17,6 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "cld_2.gyp" ])
 
-# This variable controls which dependency is resolved by the pass-through
-# target 'cld2_platform_impl', and allows the embedder to choose which
-# kind of CLD2 support is required at build time:
-#
-# - If the value is 'static', then the cld2_platform_impl target will depend
-#   upon the cld2_static target
-# - If the value is 'dynamic', then the cld2_platform_impl target will
-#   depend upon the cld2_dynamic target.
-#
-# High-level targets for Chromium unit tests hard-code a dependency upon
-# cld2_static because doing so makes sense for use cases that aren't
-# affected by the loading of language detection data; however, most other
-# targets (e.g. the final executables and interactive UI tests) should be
-# linked against whatever the embedder needs.
-#
-# Maintainers:
-# This value may be reasonably tweaked on a per-platform basis.
-# Don't forget to update this file as well to match:
-#   components/translate/content/browser/browser_cld_utils.cc
-#   components/translate/content/renderer/renderer_cld_utils.cc
-cld2_platform_support = "static"
-
 config("cld2_data_warnings") {
   visibility = [ ":*" ]
   if (is_clang) {
@@ -69,29 +47,6 @@ source_set("cld2_data") {
   ]
 }
 
-# As in the corresponding gyp file, this just builds the core interfaces for
-# CLD2. You must still declare a dependency on a specific data set, either
-# cld2_dynamic or cld2_static.
-source_set("cld_2") {
-  sources = gypi_values.cld2_core_sources
-  include_dirs = [
-    "src/internal",
-    "src/public",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-}
-
-source_set("cld2_platform_impl") {
-  public_deps = []
-  if (cld2_platform_support == "static") {
-    public_deps += [ ":cld2_static" ]
-  } else if (cld2_platform_support == "dynamic") {
-    public_deps += [ ":cld2_dynamic" ]
-  }
-}
-
 config("cld2_warnings") {
   if (is_clang) {
     cflags = [
@@ -105,8 +60,8 @@ config("cld2_warnings") {
   }
 }
 
-static_library("cld2_static") {
-  sources = gypi_values.cld2_core_impl_sources
+static_library("cld_2") {
+  sources = gypi_values.cld2_core_sources + gypi_values.cld2_core_impl_sources
   include_dirs = [
     "src/internal",
     "src/public",
@@ -114,59 +69,10 @@ static_library("cld2_static") {
 
   public_deps = [
     ":cld2_data",
-    ":cld_2",
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
     ":cld2_warnings",
   ]
-}
-
-config("cld2_dynamic_mode_config") {
-  defines = [ "CLD2_DYNAMIC_MODE" ]
-}
-
-static_library("cld2_dynamic") {
-  sources = gypi_values.cld2_core_sources + gypi_values.cld2_core_impl_sources +
-            gypi_values.cld2_dynamic_data_loader_sources
-  include_dirs = [
-    "src/internal",
-    "src/public",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":cld2_dynamic_mode_config",
-    "//build/config/compiler:no_chromium_code",
-    ":cld2_warnings",
-  ]
-}
-
-# Does not build on Windows, Android or iOS.
-if (!is_win && !is_android && !is_ios) {
-  executable("cld_2_dynamic_data_tool") {
-    sources = [
-      "src/internal/cld2_dynamic_data_extractor.cc",
-      "src/internal/cld2_dynamic_data_extractor.h",
-      "src/internal/cld2_dynamic_data_tool.cc",
-    ]
-
-    include_dirs = [
-      "src/internal",
-      "src/public",
-    ]
-
-    deps = [
-      ":cld2_data",
-      ":cld2_dynamic",
-      "//build/config/sanitizers:deps",
-    ]
-
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":cld2_dynamic_mode_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
-  }
 }

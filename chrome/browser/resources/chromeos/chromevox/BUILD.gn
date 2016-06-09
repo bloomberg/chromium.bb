@@ -332,8 +332,6 @@ test("chromevox_tests") {
     "//content/test:browsertest_base",
     "//testing/gmock",
     "//testing/gtest",
-    # Because the browser_tests use translate, they need CLD data.
-    "//third_party/cld_2:cld2_platform_impl"
   ]
 }
 

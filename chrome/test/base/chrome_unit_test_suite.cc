@@ -17,8 +17,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
-#include "components/translate/content/browser/browser_cld_data_provider_factory.h"
-#include "components/translate/content/common/cld_data_source.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,10 +126,6 @@ void ChromeUnitTestSuite::InitializeProviders() {
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();
   ui::RegisterPathProvider();
-  translate::BrowserCldDataProviderFactory::SetDefault(
-      new translate::BrowserCldDataProviderFactory());
-  translate::CldDataSource::SetDefault(
-      translate::CldDataSource::GetStaticDataSource());
   component_updater::RegisterPathProvider(chrome::DIR_COMPONENTS,
                                           chrome::DIR_USER_DATA);
 

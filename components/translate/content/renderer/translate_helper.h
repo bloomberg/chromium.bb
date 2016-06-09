@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/translate/content/renderer/renderer_cld_data_provider.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
@@ -22,61 +21,10 @@ class WebDocument;
 class WebLocalFrame;
 }
 
-namespace content {
-class RendererCldDataProvider;
-}
-
 namespace translate {
 
 // This class deals with page translation.
 // There is one TranslateHelper per RenderView.
-//
-// This class provides metrics that allow tracking the user experience impact
-// of non-static CldDataProvider implementations. For background on the data
-// providers, please refer to the following documentation:
-// http://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
-//
-// Available metrics (from the LanguageDetectionTiming enum):
-// 1. ON_TIME
-//    Recorded if PageCaptured(...) is invoked after CLD is available. This is
-//    the ideal case, indicating that CLD is available before it is needed.
-// 2. DEFERRED
-//    Recorded if PageCaptured(...) is invoked before CLD is available.
-//    Sub-optimal case indicating that CLD wasn't available when it was needed,
-//    so the request for detection has been deferred until CLD is available or
-//    until the user navigates to a different page.
-// 3. RESUMED
-//    Recorded if CLD becomes available after a language detection request was
-//    deferred, but before the user navigated to a different page. Language
-//    detection is ultimately completed, it just didn't happen on time.
-//
-// Note that there is NOT a metric that records the number of times that
-// language detection had to be aborted because CLD never became available in
-// time. This is because there is no reasonable way to cover all the cases
-// under which this could occur, particularly the destruction of the renderer
-// for which this object was created. However, this value can be synthetically
-// derived, using the logic below.
-//
-// Every page load that triggers language detection will result in the
-// recording of exactly one of the first two events: ON_TIME or DEFERRED. If
-// CLD is available in time to satisfy the request, the third event (RESUMED)
-// will be recorded; thus, the number of times when language detection
-// ultimately fails because CLD isn't ever available is implied as the number of
-// times that detection is deferred minus the number of times that language
-// detection is late:
-//
-//   count(FAILED) ~= count(DEFERRED) - count(RESUMED)
-//
-// Note that this is not 100% accurate: some renderer process are so short-lived
-// that language detection wouldn't have been relevant anyway, and so a failure
-// to detect the language in a timely manner might be completely innocuous. The
-// overall problem with language detection is that it isn't possible to know
-// whether it was required or not until after it has been performed!
-//
-// We use histograms for recording these metrics. On Android, the renderer can
-// be killed without the chance to clean up or transmit these histograms,
-// leading to dropped metrics. To work around this, this method forces an IPC
-// message to be sent to the browser process immediately.
 class TranslateHelper : public content::RenderFrameObserver {
  public:
   explicit TranslateHelper(content::RenderFrame* render_frame,
@@ -151,13 +99,6 @@ class TranslateHelper : public content::RenderFrameObserver {
   virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
 
  private:
-  enum LanguageDetectionTiming {
-    ON_TIME,   // Language detection was performed as soon as it was requested
-    DEFERRED,  // Language detection couldn't be performed when it was requested
-    RESUMED,   // A deferred language detection attempt was completed later
-    LANGUAGE_DETECTION_TIMING_MAX_VALUE  // The bounding value for this enum
-  };
-
   // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
 
@@ -189,22 +130,6 @@ class TranslateHelper : public content::RenderFrameObserver {
   // if the page is being closed.
   blink::WebLocalFrame* GetMainFrame();
 
-  // Do not ask for CLD data any more.
-  void CancelCldDataPolling();
-
-  // Start polling for CLD data.
-  // Polling will automatically halt as soon as the renderer obtains a
-  // reference to the data file.
-  void SendCldDataRequest(const int delay_millis, const int next_delay_millis);
-
-  // Callback triggered when CLD data becomes available.
-  void OnCldDataAvailable();
-
-  // Record the timing of language detection, immediately sending an IPC-based
-  // histogram delta update to the browser process in case the hosting renderer
-  // process terminates before the metrics would otherwise be transferred.
-  void RecordLanguageDetectionTiming(LanguageDetectionTiming timing);
-
   // An ever-increasing sequence number of the current page, used to match up
   // translation requests with responses.
   int page_seq_no_;
@@ -217,15 +142,6 @@ class TranslateHelper : public content::RenderFrameObserver {
   // Time when a page langauge is determined. This is used to know a duration
   // time from showing infobar to requesting translation.
   base::TimeTicks language_determined_time_;
-
-  // Provides CLD data for this process.
-  std::unique_ptr<RendererCldDataProvider> cld_data_provider_;
-
-  // Whether or not polling for CLD2 data has started.
-  bool cld_data_polling_started_;
-
-  // Whether or not CancelCldDataPolling has been called.
-  bool cld_data_polling_canceled_;
 
   // Whether or not a PageCaptured event arrived prior to CLD data becoming
   // available. If true, deferred_contents_ contains the most recent contents.

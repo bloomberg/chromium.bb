@@ -6,14 +6,6 @@ import("//build/config/features.gni")
 
 static_library("renderer") {
   sources = [
-    "data_file_renderer_cld_data_provider.cc",
-    "data_file_renderer_cld_data_provider.h",
-    "renderer_cld_data_provider.cc",
-    "renderer_cld_data_provider.h",
-    "renderer_cld_data_provider_factory.cc",
-    "renderer_cld_data_provider_factory.h",
-    "renderer_cld_utils.cc",
-    "renderer_cld_utils.h",
     "translate_helper.cc",
     "translate_helper.h",
   ]

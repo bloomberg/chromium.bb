@@ -57,7 +57,7 @@ source_set("app_shell_lib") {
     "//mojo/edk/system",
     "//skia",
     "//third_party/WebKit/public:blink",
-    "//third_party/cld_2:cld2_platform_impl",
+    "//third_party/cld_2",
     "//ui/base",
     "//ui/base/ime",
     "//v8",

@@ -10,8 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/cld_data_harness.h"
-#include "chrome/browser/translate/cld_data_harness_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -36,9 +34,6 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
  protected:
   // InProcessBrowserTest members.
   void SetUp() override {
-    std::unique_ptr<test::CldDataHarness> cld_data_harness =
-        test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
-    ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
     InProcessBrowserTest::SetUp();
   }
   void SetUpOnMainThread() override {

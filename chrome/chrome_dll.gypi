@@ -122,7 +122,6 @@
             'chrome_features.gyp:chrome_common_features',
             'policy_path_parser',
             '../content/content.gyp:content_app_browser',
-            '../third_party/cld_2/cld_2.gyp:cld_2',
           ],
           'conditions': [
             ['OS=="win"', {

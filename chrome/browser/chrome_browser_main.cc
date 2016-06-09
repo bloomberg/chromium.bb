@@ -47,7 +47,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
@@ -131,8 +130,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/translate/content/browser/browser_cld_utils.h"
-#include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
@@ -464,10 +461,6 @@ void RegisterComponentsForUpdate() {
 #endif  // defined(OS_CHROMEOS)
     g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
 #endif  // !defined(DISABLE_NACL) && !defined(OS_ANDROID)
-
-  // Registration of the CLD Component is a no-op unless the CLD data source has
-  // been configured to be the "Component" data source.
-  RegisterCldComponent(cus);
 
   component_updater::SupervisedUserWhitelistInstaller* whitelist_installer =
       g_browser_process->supervised_user_whitelist_installer();
@@ -1741,10 +1734,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // triggering the timer and call that explicitly in the approprate place.
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
-
-  // This must be called prior to RegisterComponentsForUpdate, in case the CLD
-  // data source is based on the Component Updater.
-  translate::BrowserCldUtils::ConfigureDefaultDataProvider();
 
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
     RegisterComponentsForUpdate();

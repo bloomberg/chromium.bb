@@ -94,7 +94,7 @@ source_set("test_support") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/cld_2:cld2_static",
+    "//third_party/cld_2",
   ]
 
   public_deps = [
