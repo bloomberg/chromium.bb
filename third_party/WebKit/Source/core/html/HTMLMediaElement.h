@@ -485,6 +485,8 @@ private:
 
     EnumerationHistogram& showControlsHistogram() const;
 
+    void recordAutoplaySourceMetric(int source);
+
     UnthrottledTimer<HTMLMediaElement> m_loadTimer;
     UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;
     UnthrottledTimer<HTMLMediaElement> m_playbackProgressTimer;

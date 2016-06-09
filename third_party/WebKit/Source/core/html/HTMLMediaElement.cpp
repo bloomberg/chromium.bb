@@ -281,6 +281,16 @@ String preloadTypeToString(WebMediaPlayer::Preload preloadType)
     return String();
 }
 
+// These values are used for histograms. Do not reorder.
+enum AutoplaySource {
+    // Autoplay comes from HTMLMediaElement `autoplay` attribute.
+    AutoplaySourceAttribute = 0,
+    // Autoplay comes from `play()` method.
+    AutoplaySourceMethod = 1,
+    // This enum value must be last.
+    NumberOfAutoplaySources = 2,
+};
+
 } // anonymous namespace
 
 class HTMLMediaElement::AutoplayHelperClientImpl :
@@ -1630,6 +1640,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
         // Check for autoplay, and record metrics about it if needed.
         if (shouldAutoplay(RecordMetricsBehavior::DoRecord)) {
+            recordAutoplaySourceMetric(AutoplaySourceAttribute);
             // If the autoplay experiment says that it's okay to play now,
             // then don't require a user gesture.
             m_autoplayHelper->becameReadyToPlay();
@@ -2071,6 +2082,7 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
     m_autoplayHelper->playMethodCalled();
 
     if (!UserGestureIndicator::processingUserGesture()) {
+        recordAutoplaySourceMetric(AutoplaySourceMethod);
         if (isGestureNeededForPlayback()) {
             // If playback is deferred, then don't start playback but don't
             // fail yet either.
@@ -3824,6 +3836,21 @@ EnumerationHistogram& HTMLMediaElement::showControlsHistogram() const
 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram, ("Media.Controls.Show.Audio", MediaControlsShowMax));
     return histogram;
+}
+
+void HTMLMediaElement::recordAutoplaySourceMetric(int source)
+{
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, videoHistogram, ("Media.Video.Autoplay", NumberOfAutoplaySources));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, mutedVideoHistogram, ("Media.Video.Autoplay.Muted", NumberOfAutoplaySources));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, audioHistogram, ("Media.Audio.Autoplay", NumberOfAutoplaySources));
+
+    if (isHTMLVideoElement()) {
+        videoHistogram.count(source);
+        if (muted())
+            mutedVideoHistogram.count(source);
+    } else {
+        audioHistogram.count(source);
+    }
 }
 
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)

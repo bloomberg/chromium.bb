@@ -20606,6 +20606,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Autoplay" enum="AutoplaySource">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>Records the autoplay source of audios.</summary>
+</histogram>
+
 <histogram name="Media.Audio.Capture.FramesProvided" units="frames">
   <owner>grunell@chromium.org</owner>
   <summary>
@@ -22145,6 +22152,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Error codes reported by video encode using VA-API hardware video encoder.
   </summary>
+</histogram>
+
+<histogram name="Media.Video.Autoplay" enum="AutoplaySource">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Records the autoplay source of videos. This includes
+    Media.Video.Autoplay.Muted.
+  </summary>
+</histogram>
+
+<histogram name="Media.Video.Autoplay.Muted" enum="AutoplaySource">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>Records the autoplay source of muted videos.</summary>
 </histogram>
 
 <histogram name="Media.VideoCapture.AspectRatio" units="%">
@@ -64915,6 +64939,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>
   <int value="2" label="[Deprecated] AUTO_LAUNCH_FOREGROUND"/>
   <int value="3" label="[Deprecated] AUTO_LAUNCH_FOREGROUND_USELESS"/>
+</enum>
+
+<enum name="AutoplaySource" type="int">
+  <int value="0" label="autoplay attribute"/>
+  <int value="1" label="play() method"/>
 </enum>
 
 <enum name="AutoSigninFirstRun" type="int">
