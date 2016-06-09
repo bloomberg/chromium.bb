@@ -47,7 +47,7 @@ component("chromeos") {
   ]
   sources = gypi_values.chromeos_sources
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
-  if (target_cpu == "arm" || target_cpu == "x86") {
+  if (current_cpu == "arm" || current_cpu == "x86") {
     defines += [ "BINDER_IPC_32BIT" ]
   }
 }
@@ -171,7 +171,7 @@ test("chromeos_unittests") {
   ]
   sources = gypi_values.chromeos_test_sources
   if (use_binder) {
-    if (target_cpu == "arm" || target_cpu == "x86") {
+    if (current_cpu == "arm" || current_cpu == "x86") {
       defines += [ "BINDER_IPC_32BIT" ]
     }
     sources += gypi_values.chromeos_binder_test_sources
