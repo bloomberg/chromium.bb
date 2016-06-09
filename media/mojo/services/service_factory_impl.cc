@@ -5,7 +5,7 @@
 #include "media/mojo/services/service_factory_impl.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -59,7 +59,7 @@ void ServiceFactoryImpl::CreateAudioDecoder(
     mojo::InterfaceRequest<mojom::AudioDecoder> request) {
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-      base::MessageLoop::current()->task_runner());
+      base::ThreadTaskRunnerHandle::Get());
 
   std::unique_ptr<AudioDecoder> audio_decoder =
       mojo_media_client_->CreateAudioDecoder(task_runner);
@@ -86,7 +86,7 @@ void ServiceFactoryImpl::CreateRenderer(
   // The created object is owned by the pipe.
   // The audio and video sinks are owned by the client.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-      base::MessageLoop::current()->task_runner());
+      base::ThreadTaskRunnerHandle::Get());
   AudioRendererSink* audio_renderer_sink =
       mojo_media_client_->CreateAudioRendererSink();
   VideoRendererSink* video_renderer_sink =

@@ -5,8 +5,10 @@
 #include "media/midi/midi_manager.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
@@ -119,7 +121,7 @@ void MidiManager::StartSession(MidiManagerClient* client) {
         // Call StartInitialization() only for the first request.
         if (pending_clients_.empty()) {
           completion = Completion::INVOKE_INITIALIZATION;
-          session_thread_runner_ = base::MessageLoop::current()->task_runner();
+          session_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
         } else {
           completion = Completion::COMPLETE_ASYNCHRONOUSLY;
         }

@@ -4,8 +4,12 @@
 
 #include "media/midi/midi_scheduler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
 
@@ -42,8 +46,8 @@ void MidiScheduler::PostSendDataTask(MidiManagerClient* client,
                                 timestamp * base::Time::kMicrosecondsPerSecond);
     delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
   }
-  base::MessageLoop::current()->task_runner()->PostDelayedTask(
-      FROM_HERE, weak_closure, delay);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, weak_closure,
+                                                       delay);
 }
 
 void MidiScheduler::InvokeClosure(MidiManagerClient* client,

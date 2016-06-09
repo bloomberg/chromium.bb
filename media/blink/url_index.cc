@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -187,8 +186,7 @@ UrlIndex::UrlIndex(blink::WebFrame* frame) : UrlIndex(frame, kBlockSizeShift) {}
 
 UrlIndex::UrlIndex(blink::WebFrame* frame, int block_shift)
     : frame_(frame),
-      lru_(new MultiBuffer::GlobalLRU(
-          base::MessageLoop::current()->task_runner())),
+      lru_(new MultiBuffer::GlobalLRU(base::ThreadTaskRunnerHandle::Get())),
       block_shift_(block_shift),
       weak_factory_(this) {}
 
