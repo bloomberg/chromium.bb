@@ -193,18 +193,14 @@ std::vector<std::string> GetActivitiesForPackage(
   return activities;
 }
 
-// If prefs have synced and no user-set value exists at |local_path|, the value
-// from |synced_path| is copied to |local_path|.
-void MaybePropagatePrefToLocal(
+// If no user-set value exists at |local_path|, the value from |synced_path| is
+// copied to |local_path|.
+void PropagatePrefToLocalIfNotSet(
     syncable_prefs::PrefServiceSyncable* pref_service,
     const char* local_path,
     const char* synced_path) {
-  if (!pref_service->FindPreference(local_path)->HasUserSetting() &&
-      pref_service->IsSyncing()) {
-    // First time the user is using this machine, propagate from remote to
-    // local.
+  if (!pref_service->FindPreference(local_path)->HasUserSetting())
     pref_service->SetString(local_path, pref_service->GetString(synced_path));
-  }
 }
 
 }  // namespace
@@ -427,10 +423,15 @@ ChromeLauncherPrefsObserver::ChromeLauncherPrefsObserver(
 }
 
 void ChromeLauncherPrefsObserver::OnIsSyncingChanged() {
-  MaybePropagatePrefToLocal(prefs_, prefs::kShelfAlignmentLocal,
-                            prefs::kShelfAlignment);
-  MaybePropagatePrefToLocal(prefs_, prefs::kShelfAutoHideBehaviorLocal,
-                            prefs::kShelfAutoHideBehavior);
+  // If prefs have synced, copy the values from |synced_path| to |local_path|
+  // if the local values haven't already been set.
+  if (prefs_->IsSyncing()) {
+    PropagatePrefToLocalIfNotSet(prefs_, prefs::kShelfAlignmentLocal,
+                                 prefs::kShelfAlignment);
+    PropagatePrefToLocalIfNotSet(prefs_, prefs::kShelfAutoHideBehaviorLocal,
+                                 prefs::kShelfAutoHideBehavior);
+    prefs_->RemoveObserver(this);
+  }
 }
 
 }  // namespace ash
