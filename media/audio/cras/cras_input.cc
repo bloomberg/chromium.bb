@@ -225,7 +225,8 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
 }
 
 void CrasInputStream::Stop() {
-  DCHECK(client_);
+  if (!client_)
+    return;
 
   if (!callback_ || !started_)
     return;
