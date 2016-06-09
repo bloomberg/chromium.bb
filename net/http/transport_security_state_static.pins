@@ -1,14 +1,47 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-# This file contains pinned certificates to be used in conjunction with
-# hsts_preloaded.json. See the comments at the beginning of that file for
-# details.
-
-# Each entry consists of a line containing the name of the pin followed either
-# by a hash in the format "sha256/" + base64(hash), a PEM encoded certificate,
-# or a PEM encoded public key.
+#
+########################################################################
+#
+#   WARNING:
+#   This file should only be used by Chromium/Chrome. Please contact
+#   hstspreload@chromium.org before considering it for anything else.
+#
+########################################################################
+#
+# This file contains a list of Subject Public Key Information (SPKI) entries
+# to be used in conjunction with `transport_security_state_static.json`
+# See the comments at the beginning of that file for details.
+#
+# Below are the three possible ways to specify SPKI entries in this file,
+# along with guidelines for adding new ones:
+#
+# 1. PEM encoded certificate
+#    `-----BEGIN CERTIFICATE-----`
+#    ...
+#
+#   Use this for:
+#   - Root CAs.
+#   - Keys associated with a single, currently used intermediate certificate.
+#
+# 2. PEM encoded public key ("SPKI")
+#    `-----BEGIN PUBLIC KEY-----`
+#    ...
+#
+#   Use this for:
+#   - Leaf cert keys.
+#   - Intermediate certs whose keys may be reused.
+#   - Keys for backup certs (leaf or intermediate) that do not exist yet or are
+#     not public yet.
+#
+# 3. Base 64 SPKI Hash
+#    "sha256/" + base64(hash)
+#
+#   Only use this for the TestSPKI entry. In particular, other entries should
+#   not hard-code a specific hash, in case we need to change Chrome's internal
+#   hash function for preloaded entries again (we have already done so once).
+#
 
 TestSPKI
 sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
