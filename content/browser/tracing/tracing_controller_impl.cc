@@ -922,8 +922,9 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
   }
   // Abort if another dump is already in progress.
   if (pending_memory_dump_guid_) {
-    DVLOG(1) << "Requested memory dump " << args.dump_guid
-             << " while waiting for " << pending_memory_dump_guid_;
+    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
+            << " (" << args.dump_guid << ") aborted because another dump ("
+            << pending_memory_dump_guid_ << ") is in progress";
     if (!callback.is_null())
       callback.Run(args.dump_guid, false /* success */);
     return;
@@ -1001,8 +1002,9 @@ void TracingControllerImpl::OnProcessMemoryDumpResponse(
   pending_memory_dump_filters_.erase(it);
   if (!success) {
     ++failed_memory_dump_count_;
-    DLOG(WARNING) << "Global memory dump failed because of NACK from child "
-                  << trace_message_filter->peer_pid();
+    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
+            << " failed because of NACK from child "
+            << trace_message_filter->peer_pid();
   }
   FinalizeGlobalMemoryDumpIfAllProcessesReplied();
 }
@@ -1013,7 +1015,8 @@ void TracingControllerImpl::OnBrowserProcessMemoryDumpDone(uint64_t dump_guid,
   --pending_memory_dump_ack_count_;
   if (!success) {
     ++failed_memory_dump_count_;
-    DLOG(WARNING) << "Global memory dump aborted on the current process";
+    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
+            << " aborted on the current process";
   }
   FinalizeGlobalMemoryDumpIfAllProcessesReplied();
 }

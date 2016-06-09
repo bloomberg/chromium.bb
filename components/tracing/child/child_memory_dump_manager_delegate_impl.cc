@@ -75,8 +75,12 @@ void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
 
   // Bail out if we receive a dump request from the manager before the
   // ChildTraceMessageFilter has been initialized.
-  if (!ctmf_task_runner)
+  if (!ctmf_task_runner) {
+    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
+            << " failed because child trace message filter hasn't been"
+            << " initialized";
     return AbortDumpRequest(args, callback);
+  }
 
   // Make sure we access |ctmf_| only on the thread where it lives to avoid
   // races on shutdown.
@@ -92,8 +96,12 @@ void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
 
   // The ChildTraceMessageFilter could have been destroyed while hopping on the
   // right thread. If this is the case, bail out.
-  if (!ctmf_)
+  if (!ctmf_) {
+    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
+            << " failed because child trace message filter was"
+            << " destroyed while switching threads";
     return AbortDumpRequest(args, callback);
+  }
 
   // Send the request up to the browser process' MessageDumpmanager.
   ctmf_->SendGlobalMemoryDumpRequest(args, callback);
