@@ -90,7 +90,7 @@ typedef base::Callback<void(const uint64_t* total_size,
 void OnCalculateEvictableCacheSize(const GetSizeStatsCallback& callback,
                                    uint64_t total_size,
                                    uint64_t remaining_size,
-                                   uint64_t evictable_cache_size) {
+                                   int64_t evictable_cache_size) {
   // For calculating real remaining size of Download volume
   // - Adds evictable cache size since the space is available if they are
   //   evicted.

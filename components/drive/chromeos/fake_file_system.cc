@@ -253,8 +253,12 @@ void FakeFileSystem::FreeDiskSpaceIfNeededFor(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
+void FakeFileSystem::CalculateCacheSize(const CacheSizeCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
 void FakeFileSystem::CalculateEvictableCacheSize(
-    const EvictableCacheSizeCallback& callback) {
+    const CacheSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

@@ -165,8 +165,8 @@ class FileSystem : public FileSystemInterface,
                              const GetFilePathCallback& callback) override;
   void FreeDiskSpaceIfNeededFor(int64_t num_bytes,
                                 const FreeDiskSpaceCallback& callback) override;
-  void CalculateEvictableCacheSize(
-      const EvictableCacheSizeCallback& callback) override;
+  void CalculateCacheSize(const CacheSizeCallback& callback) override;
+  void CalculateEvictableCacheSize(const CacheSizeCallback& callback) override;
 
   // file_system::OperationDelegate overrides.
   void OnFileChangedByOperation(const FileChange& changed_files) override;

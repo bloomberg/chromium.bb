@@ -210,7 +210,11 @@ bool FreeDiskSpaceIfNeededForOnBlockingPool(internal::FileCache* cache,
   return cache->FreeDiskSpaceIfNeededFor(num_bytes);
 }
 
-uint64_t CalculateEvictableCacheSizeOnBlockingPool(internal::FileCache* cache) {
+int64_t CalculateCacheSizeOnBlockingPool(internal::FileCache* cache) {
+  return cache->CalculateCacheSize();
+}
+
+int64_t CalculateEvictableCacheSizeOnBlockingPool(internal::FileCache* cache) {
   return cache->CalculateEvictableCacheSize();
 }
 
@@ -1051,8 +1055,16 @@ void FileSystem::FreeDiskSpaceIfNeededFor(
       callback);
 }
 
+void FileSystem::CalculateCacheSize(const CacheSizeCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&CalculateCacheSizeOnBlockingPool, cache_), callback);
+}
+
 void FileSystem::CalculateEvictableCacheSize(
-    const EvictableCacheSizeCallback& callback) {
+    const CacheSizeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(

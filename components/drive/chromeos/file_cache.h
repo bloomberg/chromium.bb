@@ -93,8 +93,11 @@ class FileCache {
   // false.
   bool FreeDiskSpaceIfNeededFor(int64_t num_bytes);
 
+  // Calculates and returns cache size. In error case, this returns 0.
+  int64_t CalculateCacheSize();
+
   // Calculates and returns evictable cache size. In error case, this returns 0.
-  uint64_t CalculateEvictableCacheSize();
+  int64_t CalculateEvictableCacheSize();
 
   // Checks if file corresponding to |id| exists in cache, and returns
   // FILE_ERROR_OK with |cache_file_path| storing the path to the file.

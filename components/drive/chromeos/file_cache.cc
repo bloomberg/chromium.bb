@@ -124,6 +124,13 @@ class CacheInfoLatestCompare {
   }
 };
 
+// Returns true if the cache file is present.
+bool IsPresent(const ResourceEntry& entry) {
+  return entry.has_file_specific_info() &&
+         entry.file_specific_info().has_cache_state() &&
+         entry.file_specific_info().cache_state().is_present();
+}
+
 const size_t kMaxNumOfEvictedCacheFiles = 30000;
 
 }  // namespace
@@ -264,10 +271,32 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64_t num_bytes) {
   return GetAvailableSpace() >= num_bytes;
 }
 
-uint64_t FileCache::CalculateEvictableCacheSize() {
+int64_t FileCache::CalculateCacheSize() {
   AssertOnSequencedWorkerPool();
 
-  uint64_t evictable_cache_size = 0;
+  int64_t total_cache_size = 0;
+  int64_t cache_size = 0;
+
+  std::unique_ptr<ResourceMetadataStorage::Iterator> it =
+      storage_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (IsPresent(it->GetValue()) &&
+        base::GetFileSize(GetCacheFilePath(it->GetID()), &cache_size)) {
+      DCHECK_GE(cache_size, 0);
+      total_cache_size += cache_size;
+    }
+  }
+
+  if (it->HasError())
+    return 0;
+
+  return total_cache_size;
+}
+
+int64_t FileCache::CalculateEvictableCacheSize() {
+  AssertOnSequencedWorkerPool();
+
+  int64_t evictable_cache_size = 0;
   int64_t cache_size = 0;
 
   std::unique_ptr<ResourceMetadataStorage::Iterator> it =
@@ -875,7 +904,7 @@ void FileCache::CloseForWrite(const std::string& id) {
 }
 
 bool FileCache::IsEvictable(const std::string& id, const ResourceEntry& entry) {
-  return entry.file_specific_info().has_cache_state() &&
+  return IsPresent(entry) &&
          !entry.file_specific_info().cache_state().is_pinned() &&
          !entry.file_specific_info().cache_state().is_dirty() &&
          !mounted_files_.count(id);
