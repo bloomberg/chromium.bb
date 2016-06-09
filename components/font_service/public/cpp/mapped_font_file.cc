@@ -8,9 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "skia/ext/refptr.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace font_service {
@@ -26,13 +26,13 @@ bool MappedFontFile::Initialize(base::File file) {
 
 SkMemoryStream* MappedFontFile::CreateMemoryStream() {
   DCHECK(mapped_font_file_.IsValid());
-  auto data = skia::AdoptRef(
-      SkData::NewWithProc(mapped_font_file_.data(), mapped_font_file_.length(),
-                          &MappedFontFile::ReleaseProc, this));
+  sk_sp<SkData> data =
+      SkData::MakeWithProc(mapped_font_file_.data(), mapped_font_file_.length(),
+                          &MappedFontFile::ReleaseProc, this);
   if (!data)
     return nullptr;
   AddRef();
-  return new SkMemoryStream(data.get());
+  return new SkMemoryStream(std::move(data));
 }
 
 MappedFontFile::~MappedFontFile() {

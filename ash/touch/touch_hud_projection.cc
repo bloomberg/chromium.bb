@@ -6,7 +6,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"

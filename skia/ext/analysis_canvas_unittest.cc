@@ -4,10 +4,10 @@
 
 #include "base/compiler_specific.h"
 #include "skia/ext/analysis_canvas.h"
-#include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 
@@ -183,9 +183,7 @@ TEST(AnalysisCanvasTest, FilterPaint) {
   skia::AnalysisCanvas canvas(255, 255);
   SkPaint paint;
 
-  skia::RefPtr<SkImageFilter> filter =
-      skia::AdoptRef(SkOffsetImageFilter::Create(10, 10));
-  paint.setImageFilter(filter.get());
+  paint.setImageFilter(SkOffsetImageFilter::Make(10, 10, nullptr));
   canvas.drawRect(SkRect::MakeWH(255, 255), paint);
 
   SkColor outputColor;

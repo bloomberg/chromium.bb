@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "skia/ext/refptr.h"
 #include "ui/gl/gl_surface.h"
 
 namespace skia_bindings {
