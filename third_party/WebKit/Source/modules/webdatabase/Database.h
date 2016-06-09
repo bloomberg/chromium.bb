@@ -87,7 +87,7 @@ public:
     SecurityOrigin* getSecurityOrigin() const;
     String stringIdentifier() const;
     String displayName() const;
-    unsigned long estimatedSize() const;
+    unsigned estimatedSize() const;
     String fileName() const;
     SQLiteDatabase& sqliteDatabase() { return m_sqliteDatabase; }
 
@@ -117,7 +117,7 @@ private:
     class DatabaseTransactionTask;
     class DatabaseTableNamesTask;
 
-    Database(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
+    Database(DatabaseContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned estimatedSize);
     bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     void scheduleTransaction();

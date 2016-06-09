@@ -174,7 +174,7 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
 
 Database* DatabaseManager::openDatabaseInternal(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
+    unsigned estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);
 
@@ -203,7 +203,7 @@ Database* DatabaseManager::openDatabaseInternal(ExecutionContext* context,
 
 Database* DatabaseManager::openDatabase(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, DatabaseCallback* creationCallback,
+    unsigned estimatedSize, DatabaseCallback* creationCallback,
     DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);

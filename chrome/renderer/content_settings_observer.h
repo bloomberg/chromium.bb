@@ -61,7 +61,7 @@ class ContentSettingsObserver
   // blink::WebContentSettingsClient implementation.
   bool allowDatabase(const blink::WebString& name,
                      const blink::WebString& display_name,
-                     unsigned long estimated_size) override;
+                     unsigned estimated_size) override;
   void requestFileSystemAccessAsync(
       const blink::WebContentSettingCallbacks& callbacks) override;
   bool allowImage(bool enabled_per_settings,

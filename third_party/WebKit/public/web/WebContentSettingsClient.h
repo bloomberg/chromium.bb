@@ -16,7 +16,7 @@ class WebURL;
 class WebContentSettingsClient {
 public:
     // Controls whether access to Web Databases is allowed for this frame.
-    virtual bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize) { return true; }
+    virtual bool allowDatabase(const WebString& name, const WebString& displayName, unsigned estimatedSize) { return true; }
 
     // Controls whether access to File System is allowed for this frame.
     virtual bool requestFileSystemAccessSync() { return true; }

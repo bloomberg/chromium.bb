@@ -254,7 +254,7 @@ void ContentSettingsObserver::OnDestruct() {
 
 bool ContentSettingsObserver::allowDatabase(const WebString& name,
                                             const WebString& display_name,
-                                            unsigned long estimated_size) {
+                                            unsigned estimated_size) {
   WebFrame* frame = render_frame()->GetWebFrame();
   if (frame->getSecurityOrigin().isUnique() ||
       frame->top()->getSecurityOrigin().isUnique())

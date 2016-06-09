@@ -51,7 +51,7 @@ DEFINE_TRACE(DatabaseClientImpl)
     DatabaseClient::trace(visitor);
 }
 
-bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned long estimatedSize)
+bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned estimatedSize)
 {
     DCHECK(executionContext->isContextThread());
     Document* document = toDocument(executionContext);

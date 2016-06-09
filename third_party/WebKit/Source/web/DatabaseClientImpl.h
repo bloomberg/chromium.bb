@@ -44,7 +44,7 @@ public:
     ~DatabaseClientImpl() override;
     DECLARE_VIRTUAL_TRACE();
 
-    bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) override;
+    bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned estimatedSize) override;
 
 private:
     DatabaseClientImpl();

@@ -52,7 +52,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) = 0;
+    virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned estimatedSize) = 0;
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
 
