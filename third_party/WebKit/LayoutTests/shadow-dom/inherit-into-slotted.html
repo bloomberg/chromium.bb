@@ -10,7 +10,6 @@
     root.innerHTML = '<style>.p1 { color: green }</style><div id="p1"><slot name="s1"></slot></div>';
     var p1 = root.querySelector("#p1");
     var s1 = host.querySelector("[slot]");
-    host.offsetTop;
     shouldBeEqualToString("getComputedStyle(s1).color", "rgb(0, 0, 0)");
     p1.className = "p1";
     shouldBeEqualToString("getComputedStyle(s1).color", "rgb(0, 128, 0)");
