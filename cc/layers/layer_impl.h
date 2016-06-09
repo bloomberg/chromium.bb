@@ -470,9 +470,6 @@ class CC_EXPORT LayerImpl {
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
 
-  const SyncedScrollOffset* synced_scroll_offset() const;
-  SyncedScrollOffset* synced_scroll_offset();
-
   // Get the correct invalidation region instead of conservative Rect
   // for layers that provide it.
   virtual Region GetInvalidationRegionForDebugging();
