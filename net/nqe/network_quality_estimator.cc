@@ -134,9 +134,20 @@ bool GetValueForVariationParam(
     const std::map<std::string, std::string>& variation_params,
     const std::string& parameter_name,
     int32_t* variations_value) {
-  auto it = variation_params.find(parameter_name);
+  const auto it = variation_params.find(parameter_name);
   return it != variation_params.end() &&
          base::StringToInt(it->second, variations_value);
+}
+
+// Returns the algorithm that should be used for computing effective connection
+// type based on field trial params. Returns an empty string if a valid
+// algorithm paramter is not present in the field trial params.
+std::string GetEffectiveConnectionTypeAlgorithm(
+    const std::map<std::string, std::string>& variation_params) {
+  const auto it = variation_params.find("effective_connection_type_algorithm");
+  if (it == variation_params.end())
+    return std::string();
+  return it->second;
 }
 
 net::NetworkQualityObservationSource ProtocolSourceToObservationSource(
@@ -192,10 +203,20 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     const std::map<std::string, std::string>& variation_params,
     bool use_local_host_requests_for_tests,
     bool use_smaller_responses_for_tests)
-    : use_localhost_requests_(use_local_host_requests_for_tests),
+    : algorithm_name_to_enum_({{"HttpRTTAndDownstreamThroughput",
+                                EffectiveConnectionTypeAlgorithm::
+                                    HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT}}),
+      use_localhost_requests_(use_local_host_requests_for_tests),
       use_small_responses_(use_smaller_responses_for_tests),
       weight_multiplier_per_second_(
           GetWeightMultiplierPerSecond(variation_params)),
+      effective_connection_type_algorithm_(
+          algorithm_name_to_enum_.find(GetEffectiveConnectionTypeAlgorithm(
+              variation_params)) == algorithm_name_to_enum_.end()
+              ? kDefaultEffectiveConnectionTypeAlgorithm
+              : algorithm_name_to_enum_
+                    .find(GetEffectiveConnectionTypeAlgorithm(variation_params))
+                    ->second),
       tick_clock_(new base::DefaultTickClock()),
       effective_connection_type_recomputation_interval_(
           base::TimeDelta::FromSeconds(15)),
@@ -216,6 +237,16 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   // oldest cache entry is rewritten to use a doubly-linked-list LRU queue.
   static_assert(kMaximumNetworkQualityCacheSize <= 10,
                 "Size of the network quality cache must <= 10");
+  // None of the algorithms can have an empty name.
+  DCHECK(algorithm_name_to_enum_.end() ==
+         algorithm_name_to_enum_.find(std::string()));
+
+  DCHECK_EQ(algorithm_name_to_enum_.size(),
+            static_cast<size_t>(EffectiveConnectionTypeAlgorithm::
+                                    EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST));
+  DCHECK_NE(EffectiveConnectionTypeAlgorithm::
+                EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST,
+            effective_connection_type_algorithm_);
 
   ObtainOperatingParams(variation_params);
   ObtainEffectiveConnectionTypeModelParams(variation_params);
@@ -756,6 +787,21 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionType(
     const base::TimeTicks& start_time) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (effective_connection_type_algorithm_ ==
+      EffectiveConnectionTypeAlgorithm::HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT) {
+    return GetRecentEffectiveConnectionTypeHttpRTTAndDownstreamThroughput(
+        start_time);
+  }
+  // Add additional algorithms here.
+  NOTREACHED();
+  return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+}
+
+NetworkQualityEstimator::EffectiveConnectionType NetworkQualityEstimator::
+    GetRecentEffectiveConnectionTypeHttpRTTAndDownstreamThroughput(
+        const base::TimeTicks& start_time) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.
   if (GetCurrentNetworkID().type == NetworkChangeNotifier::CONNECTION_NONE)
@@ -769,7 +815,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionType(
   if (!GetRecentMedianDownlinkThroughputKbps(start_time, &kbps))
     kbps = nqe::internal::kInvalidThroughput;
 
-  if (http_rtt == nqe::internal::InvalidRTT() &&
+  if (http_rtt == nqe::internal::InvalidRTT() ||
       kbps == nqe::internal::kInvalidThroughput) {
     // Quality of the current network is unknown.
     return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;

@@ -572,6 +572,34 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 }
 
+TEST(NetworkQualityEstimatorTest, ObtainAlgorithmToUseFromParams) {
+  const struct {
+    bool set_variation_param;
+    std::string algorithm;
+    NetworkQualityEstimator::EffectiveConnectionTypeAlgorithm
+        expected_algorithm;
+  } tests[] = {
+      {false, "", NetworkQualityEstimator::EffectiveConnectionTypeAlgorithm::
+                      HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT},
+      {true, "", NetworkQualityEstimator::EffectiveConnectionTypeAlgorithm::
+                     HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT},
+      {true, "HttpRTTAndDownstreamThroughput",
+       NetworkQualityEstimator::EffectiveConnectionTypeAlgorithm::
+           HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT},
+  };
+
+  for (const auto& test : tests) {
+    std::map<std::string, std::string> variation_params;
+    if (test.set_variation_param)
+      variation_params["effective_connection_type_algorithm"] = test.algorithm;
+
+    TestNetworkQualityEstimator estimator(variation_params);
+    EXPECT_EQ(test.expected_algorithm,
+              estimator.effective_connection_type_algorithm_)
+        << test.algorithm;
+  }
+}
+
 // Tests that |GetEffectiveConnectionType| returns correct connection type when
 // no variation params are specified.
 TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
@@ -596,6 +624,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
     estimator.set_http_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_recent_http_rtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
+    estimator.set_downlink_throughput_kbps(INT32_MAX);
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -667,6 +696,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
     estimator.set_http_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_recent_http_rtt(
         base::TimeDelta::FromMilliseconds(test.rtt_msec));
+    estimator.set_downlink_throughput_kbps(INT32_MAX);
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -719,9 +749,6 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsRTTandThroughput) {
       // Set both RTT and throughput. RTT is the bottleneck.
       {3000, 25000, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
       {700, 25000, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G},
-      // Set throughput to an invalid value.
-      {3000, 0, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
-      {700, 0, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G},
   };
 
   for (const auto& test : tests) {
