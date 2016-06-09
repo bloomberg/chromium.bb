@@ -34,9 +34,6 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
   }
-  // App Info item.
-  menu_model->AddItemWithStringId(SHOW_APP_INFO,
-                                  IDS_APP_CONTEXT_MENU_SHOW_INFO);
 }
 
 void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
@@ -47,42 +44,25 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case UNINSTALL:
       UninstallPackage();
       break;
-    case SHOW_APP_INFO:
-      ShowPackageInfo();
-      break;
     default:
       AppContextMenu::ExecuteCommand(command_id, event_flags);
   }
 }
 
 void ArcAppContextMenu::UninstallPackage() {
-  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
   DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs->GetApp(app_id());
   if (!app_info) {
-    VLOG(2) << "Package being uninstalled does not exist: " << app_id() << ".";
+    LOG(ERROR) << "Package being uninstalling does not exist";
     return;
   }
   arc::UninstallPackage(app_info->package_name);
 }
 
-void ArcAppContextMenu::ShowPackageInfo() {
-  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-  DCHECK(arc_prefs);
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id());
-  if (!app_info) {
-    VLOG(2) << "Requesting AppInfo for package that does not exist: "
-            << app_id() << ".";
-    return;
-  }
-  if (arc::ShowPackageInfo(app_info->package_name))
-    controller()->DismissView();
-}
-
 bool ArcAppContextMenu::CanBeUninstalled() const {
-  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
   DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs->GetApp(app_id());

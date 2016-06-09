@@ -70,22 +70,20 @@ class FakeAppInstance : public mojom::AppInstance {
   void RefreshAppList() override;
   void LaunchApp(const mojo::String& package_name,
                  const mojo::String& activity,
-                 const gfx::Rect& dimension) override;
+                 mojom::ScreenRectPtr dimension) override;
   void RequestAppIcon(const mojo::String& package_name,
                       const mojo::String& activity,
                       mojom::ScaleFactor scale_factor) override;
   void CanHandleResolution(
       const mojo::String& package_name,
       const mojo::String& activity,
-      const gfx::Rect& dimension,
+      mojom::ScreenRectPtr dimension,
       const CanHandleResolutionCallback& callback) override;
   void UninstallPackage(const mojo::String& package_name) override;
   void GetTaskInfo(int32_t task_id,
                    const GetTaskInfoCallback& callback) override;
   void SetTaskActive(int32_t task_id) override;
   void CloseTask(int32_t task_id) override;
-  void ShowPackageInfo(const mojo::String& package_name,
-                       const gfx::Rect& dimension_on_screen) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);

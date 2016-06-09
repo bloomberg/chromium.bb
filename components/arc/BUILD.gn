@@ -118,10 +118,6 @@ mojom("arc_bindings") {
     "common/video_accelerator.mojom",
     "common/window_manager.mojom",
   ]
-
-  deps = [
-    "//ui/gfx/geometry/mojo",
-  ]
 }
 
 static_library("arc_test_support") {

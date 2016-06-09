@@ -53,9 +53,6 @@ bool CanHandleResolution(content::BrowserContext* context,
 // Uninstalls the package in ARC.
 void UninstallPackage(const std::string& package_name);
 
-// Show package info for ARC package.
-bool ShowPackageInfo(const std::string& package_name);
-
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_

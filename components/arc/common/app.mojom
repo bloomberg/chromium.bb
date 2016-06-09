@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 6
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -60,7 +60,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 10
+// Next method ID: 9
 interface AppInstance {
   Init@0(AppHost host_ptr);
 
@@ -97,10 +97,6 @@ interface AppInstance {
 
   // Activates the given task and move it to foreground.
   [MinVersion=4] SetTaskActive@7(int32 task_id);
-
-  // Send a request to ARC to show package info for given package.
-  [MinVersion=5] ShowPackageInfo@9(string package_name,
-                                   ScreenRect dimension_on_screen);
 
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.
