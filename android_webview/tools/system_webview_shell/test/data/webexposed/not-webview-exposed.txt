@@ -64,6 +64,7 @@ interface HTMLInputElement : HTMLElement
     attribute gamepadController
     attribute GCController
     attribute speechSynthesis
+    attribute chrome                   # crbug.com/618471
     method gc
     method webkitResolveLocalFileSystemURL
     method onerror
