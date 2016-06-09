@@ -521,25 +521,19 @@ TEST_F(TopControlsTest, MAYBE(StateConstraints))
     webView->resizeWithTopControls(webView->size(), 50.f, false);
     frame()->view()->getScrollableArea()->setScrollPosition(IntPoint(0, 100), ProgrammaticScroll);
 
-    // Setting permitted state should not change content offset
+    // Setting permitted state should change the content offset to match the
+    // constraint.
     webView->updateTopControlsState(WebTopControlsShown, WebTopControlsShown, false);
-    EXPECT_FLOAT_EQ(0.f, webView->topControls().contentOffset());
-
-    // Showing is permitted
-    webView->topControls().setShownRatio(1);
-    EXPECT_FLOAT_EQ(50, webView->topControls().contentOffset());
+    EXPECT_FLOAT_EQ(50.f, webView->topControls().contentOffset());
 
     // Only shown state is permitted so controls cannot hide
     verticalScroll(-20.f);
     EXPECT_FLOAT_EQ(50, webView->topControls().contentOffset());
     EXPECT_POINT_EQ(IntPoint(0, 120), frame()->view()->scrollPosition());
 
-    // Setting permitted state should not change content offset
+    // Setting permitted state should change content offset to match the
+    // constraint.
     webView->updateTopControlsState(WebTopControlsHidden, WebTopControlsHidden, false);
-    EXPECT_FLOAT_EQ(50, webView->topControls().contentOffset());
-
-    // Hiding is permitted
-    webView->topControls().setShownRatio(0);
     EXPECT_FLOAT_EQ(0, webView->topControls().contentOffset());
 
     // Only hidden state is permitted so controls cannot show
@@ -547,7 +541,7 @@ TEST_F(TopControlsTest, MAYBE(StateConstraints))
     EXPECT_FLOAT_EQ(0, webView->topControls().contentOffset());
     EXPECT_POINT_EQ(IntPoint(0, 90), frame()->view()->scrollPosition());
 
-    // Setting permitted state should not change content offset
+    // Setting permitted state to "both" should not change content offset.
     webView->updateTopControlsState(WebTopControlsBoth, WebTopControlsBoth, false);
     EXPECT_FLOAT_EQ(0, webView->topControls().contentOffset());
 
@@ -559,6 +553,12 @@ TEST_F(TopControlsTest, MAYBE(StateConstraints))
     verticalScroll(-50.f);
     EXPECT_FLOAT_EQ(0, webView->topControls().contentOffset());
     EXPECT_POINT_EQ(IntPoint(0, 90), frame()->view()->scrollPosition());
+
+    // Setting permitted state to "both" should not change an in-flight offset.
+    verticalScroll(20.f);
+    EXPECT_FLOAT_EQ(20, webView->topControls().contentOffset());
+    webView->updateTopControlsState(WebTopControlsBoth, WebTopControlsBoth, false);
+    EXPECT_FLOAT_EQ(20, webView->topControls().contentOffset());
 }
 
 // Ensure that top controls do not affect the layout by showing and hiding

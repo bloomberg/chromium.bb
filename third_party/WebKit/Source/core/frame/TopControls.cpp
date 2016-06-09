@@ -98,6 +98,11 @@ void TopControls::setShownRatio(float shownRatio)
 void TopControls::updateConstraints(WebTopControlsState constraints)
 {
     m_permittedState = constraints;
+
+    if (m_permittedState == WebTopControlsShown)
+        setShownRatio(1.f);
+    else if (m_permittedState == WebTopControlsHidden)
+        setShownRatio(0.f);
 }
 
 void TopControls::setHeight(float height, bool shrinkViewport)
