@@ -36,6 +36,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -266,8 +267,8 @@ void EntryWrapper::DoIdle() {
   state_ = NONE;
   g_data->pendig_operations--;
   DCHECK(g_data->pendig_operations);
-  base::MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
-                                                        base::Bind(&LoopTask));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&LoopTask));
 }
 
 // The task that keeps the main thread busy. Whenever an entry becomes idle this
@@ -287,8 +288,8 @@ void LoopTask() {
     g_data->entries[slot].DoOpen(key);
   }
 
-  base::MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
-                                                        base::Bind(&LoopTask));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&LoopTask));
 }
 
 // This thread will loop forever, adding and removing entries from the cache.
@@ -330,8 +331,8 @@ void StressTheCache(int iteration) {
   for (int i = 0; i < kNumKeys; i++)
     g_data->keys[i] = GenerateStressKey();
 
-  base::MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
-                                                        base::Bind(&LoopTask));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&LoopTask));
   base::RunLoop().Run();
 }
 

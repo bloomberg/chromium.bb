@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -471,7 +473,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
     // observations received over intervals of varying durations.
     for (const base::TimeDelta& measuring_delay :
          GetAccuracyRecordingIntervals()) {
-      base::MessageLoop::current()->task_runner()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&NetworkQualityEstimator::RecordAccuracyAfterMainFrame,
                      weak_ptr_factory_.GetWeakPtr(), measuring_delay),
