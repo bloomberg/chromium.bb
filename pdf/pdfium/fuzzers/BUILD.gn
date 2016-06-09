@@ -36,6 +36,41 @@ fuzzer_test("pdf_jpx_fuzzer") {
 }
 
 if (pdf_enable_xfa) {
+  fuzzer_test("pdf_codec_bmp_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_codec_bmp_fuzzer",
+    ]
+  }
+
+  fuzzer_test("pdf_codec_gif_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_codec_gif_fuzzer",
+    ]
+  }
+
+  fuzzer_test("pdf_codec_jpeg_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_codec_jpeg_fuzzer",
+    ]
+  }
+
+  fuzzer_test("pdf_codec_png_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_codec_png_fuzzer",
+    ]
+  }
+
+  fuzzer_test("pdf_codec_tiff_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_codec_tiff_fuzzer",
+    ]
+  }
+
   fuzzer_test("pdf_fm2js_fuzzer") {
     sources = []
     deps = [
@@ -50,12 +85,5 @@ if (pdf_enable_xfa) {
       "//third_party/pdfium/testing/libfuzzer:pdf_xml_fuzzer",
     ]
     dict = "dicts/pdf_xml.dict"
-  }
-
-  fuzzer_test("pdf_codec_png_fuzzer") {
-    sources = []
-    deps = [
-      "//third_party/pdfium/testing/libfuzzer:pdf_codec_png_fuzzer",
-    ]
   }
 }
