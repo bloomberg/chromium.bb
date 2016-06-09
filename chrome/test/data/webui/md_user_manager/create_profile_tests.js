@@ -69,25 +69,11 @@ cr.define('user_manager.create_profile_tests', function() {
           MockInteractions.tap(createProfileElement.$$('paper-checkbox'));
           Polymer.dom.flush();
 
-          // The dropdown menu is visible and is populated with the sentinel
-          // item as well as the signed in users.
+          // The dropdown menu is visible and is populated with signed in users.
           var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
           assertTrue(!!dropdownMenu);
           var users = dropdownMenu.querySelectorAll('paper-item');
-          assertEquals(2, users.length);
-        });
-      });
-
-      test('Sentinel item is the initially selected item', function() {
-        return browserProxy.whenCalled('getSignedInUsers').then(function() {
-          // Simulate checking the checkbox.
-          MockInteractions.tap(createProfileElement.$$('paper-checkbox'));
-          Polymer.dom.flush();
-
-          var dropdownMenu = createProfileElement.$$('paper-dropdown-menu');
-          var selector = dropdownMenu.querySelector('paper-listbox');
-          assertEquals(loadTimeData.getString('selectAnAccount'),
-                       selector.selectedItem.textContent.trim());
+          assertEquals(1, users.length);
         });
       });
 

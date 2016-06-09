@@ -71,11 +71,13 @@
 
       #nameInput,
       paper-dropdown-menu {
-        --paper-input-container-color: var(--primary-text-color);
-        --paper-input-container-focus-color: var(--google-blue-500);
         --paper-input-container-input: {
           font-size: inherit;
         };
+        --paper-input-container-label: {
+          font-size: inherit;
+        };
+        --paper-input-container-underline-focus: var(--google-blue-500);
       }
 
       #nameInput {
@@ -201,13 +203,10 @@
         <div>
         <template is="dom-if" if="[[isSupervised_]]">
           <template is="dom-if" if="[[isSignedIn_(signedInUsers_)]]">
-            <paper-dropdown-menu no-label-float>
+            <paper-dropdown-menu label="$i18n{selectAnAccount}" no-label-float>
               <paper-listbox class="dropdown-content"
                   selected="{{signedInUserIndex_}}"
                   attr-for-selected="data-user-index">
-                <paper-item data-user-index$="[[sentinelSignedInUserIndex_]]">
-                  $i18n{selectAnAccount}
-                </paper-item>
                 <template is="dom-repeat" items="[[signedInUsers_]]">
                   <paper-item data-user-index$="[[index]]">
                     [[item.username]]

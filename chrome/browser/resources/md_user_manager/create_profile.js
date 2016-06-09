@@ -107,16 +107,6 @@ Polymer({
       value: NO_USER_SELECTED
     },
 
-    /**
-     * Sentinel signed-in user's index value.
-     * @private {number}
-     */
-    sentinelSignedInUserIndex_: {
-      type: Number,
-      value: NO_USER_SELECTED,
-      readOnly: true
-    },
-
     /** @private {!signin.ProfileBrowserProxy} */
     browserProxy_: Object
   },
