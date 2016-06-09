@@ -114,11 +114,13 @@ executable("views_examples_exe") {
     "//ui/resources:ui_test_pak",
     "//ui/views",
     "//ui/views:test_support",
-    "//ui/wm",
   ]
 
   if (use_aura) {
-    deps += [ "//ui/aura" ]
+    deps += [
+      "//ui/aura",
+      "//ui/wm",
+    ]
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]

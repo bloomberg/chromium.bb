@@ -36,7 +36,6 @@ component("views_content_client") {
     "//ui/resources:ui_test_pak",
     "//ui/views",
     "//ui/views:test_support",
-    "//ui/wm",
   ]
 
   if (use_aura) {
@@ -49,7 +48,10 @@ component("views_content_client") {
       sources += [ "views_content_client_main_parts_desktop_aura.cc" ]
     }
 
-    deps += [ "//ui/aura" ]
+    deps += [
+      "//ui/aura",
+      "//ui/wm",
+    ]
   }
 
   if (is_chromeos) {

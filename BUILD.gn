@@ -258,7 +258,11 @@ group("both_gn_and_gyp") {
   }
 
   if (toolkit_views) {
-    deps += [ "//ui/views:views_unittests" ]
+    deps += [
+      "//ui/views:views_unittests",
+      "//ui/views/examples:views_examples_exe",
+      "//ui/views/examples:views_examples_with_content_exe",
+    ]
   }
 
   if (use_aura) {
@@ -534,7 +538,6 @@ group("both_gn_and_gyp") {
         "//ui/keyboard:keyboard_unittests",
         "//ui/message_center:message_center_unittests",
         "//ui/snapshot:snapshot_unittests",
-        "//ui/views/examples:views_examples_with_content_exe",
       ]
 
       if (!is_debug && !is_component_build) {
@@ -717,7 +720,6 @@ group("gn_only") {
       "//third_party/webrtc/system_wrappers:metrics_default",
       "//ui/display/types",
       "//ui/shell_dialogs:shell_dialogs_unittests",
-      "//ui/views/examples:views_examples_exe",
     ]
 
     if (target_cpu == "x86" || target_cpu == "x64") {
