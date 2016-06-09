@@ -6,6 +6,10 @@ import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
+config("headless_implementation") {
+  defines = [ "HEADLESS_IMPLEMENTATION" ]
+}
+
 group("headless") {
   deps = [
     "//headless:headless_lib",
@@ -266,6 +270,8 @@ static_library("headless_lib") {
     "//ui/ozone",
     "//url",
   ]
+
+  configs += [ ":headless_implementation" ]
 }
 
 group("headless_tests") {
