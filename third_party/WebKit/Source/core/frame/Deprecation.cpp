@@ -330,9 +330,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::PrefixedPerformanceResourceTimingBufferFull:
         return replacedBy("'Performance.onwebkitresourcetimingbufferfull'", "'Performance.onresourcetimingbufferfull'");
 
-    case UseCounter::BluetoothDeviceInstanceId:
-        return replacedBy("'BluetoothDevice.instanceID'", "'BluetoothDevice.id'");
-
     case UseCounter::BluetoothDeviceConnectGATT:
         return replacedWillBeRemoved("'BluetoothDevice.connectGATT'", "'BluetoothDevice.gatt.connect'", 52, "5264933985976320");
 

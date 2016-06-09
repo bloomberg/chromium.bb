@@ -344,7 +344,6 @@ interface BluetoothDevice : EventTarget
     attribute @@toStringTag
     getter gatt
     getter id
-    getter instanceID
     getter name
     getter ongattserverdisconnected
     getter uuids

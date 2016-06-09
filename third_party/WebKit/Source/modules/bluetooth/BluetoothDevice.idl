@@ -14,7 +14,6 @@
 // : ServiceEventHandlers
 {
 // Implement BluetoothDevice interface: http://crbug.com/421668
-    [DeprecateAs=BluetoothDeviceInstanceId, ImplementedAs=id] readonly attribute DOMString instanceID;
     readonly    attribute DOMString id;
     readonly    attribute DOMString?                 name;
     readonly    attribute BluetoothRemoteGATTServer  gatt;

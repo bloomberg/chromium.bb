@@ -800,7 +800,6 @@ public:
         ExternalAddSearchProvider = 981,
         ExternalIsSearchProviderInstalled = 982,
         V8Permissions_RequestAll_Method = 983,
-        BluetoothDeviceInstanceId = 984,
         DeviceOrientationAbsoluteInsecureOrigin = 987,
         DeviceOrientationAbsoluteSecureOrigin = 988,
         FontFaceConstructor = 989,
