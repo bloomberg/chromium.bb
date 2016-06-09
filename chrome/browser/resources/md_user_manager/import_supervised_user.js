@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'import-supervised-user' is a popup that allows user to select
+ * @fileoverview 'import-supervised-user' is a dialog that allows user to select
  * a supervised profile from a list of profiles to import on the current device.
  */
 (function() {
@@ -21,16 +21,6 @@ Polymer({
   ],
 
   properties: {
-    /**
-     * True if the element is currently hidden. The element toggles this in
-     * order to display itself or hide itself once done.
-     * @private {boolean}
-     */
-    popupHidden_: {
-      type: Boolean,
-      value: true
-    },
-
     /**
      * The currently signed in user and the custodian.
      * @private {?SignedInUser}
@@ -59,8 +49,13 @@ Polymer({
     }
   },
 
+  /** override */
+  ready: function() {
+    this.$.dialog.lastFocusableNode = this.$.cancel;
+  },
+
   /**
-   * Displays the popup.
+   * Displays the dialog.
    * @param {(!SignedInUser|undefined)} signedInUser
    * @param {!Array<!SupervisedUser>} supervisedUsers
    */
@@ -76,14 +71,7 @@ Polymer({
 
     this.signedInUser_ = signedInUser || null;
     if (this.signedInUser_)
-      this.popupHidden_ = false;
-
-    if (this.popupHidden_)
-      return;
-
-    this.async(function() {
-      this.$$('paper-listbox').focus();
-    }.bind(this));
+      this.$.dialog.open();
   },
 
   /**
@@ -99,20 +87,16 @@ Polymer({
   },
 
   /**
-   * Hides the popup.
+   * param {number} supervisedUserIndex Index of the selected supervised user.
    * @private
-   */
-  onCancelTap_: function() {
-    this.popupHidden_ = true;
-  },
-
-  /**
-   * Returns true if the 'Import' button should be enabled and false otherwise.
-   * @private
-   * @return {boolean}
+   * @return {boolean} Whether the 'Import' button should be disabled.
    */
   isImportDisabled_: function(supervisedUserIndex) {
-    return supervisedUserIndex == NO_USER_SELECTED;
+    var disabled = supervisedUserIndex == NO_USER_SELECTED;
+    if (!disabled) {
+      this.$.dialog.lastFocusableNode = this.$.import;
+    }
+    return disabled;
   },
 
   /**
@@ -123,7 +107,7 @@ Polymer({
   onImportTap_: function() {
     var supervisedUser = this.supervisedUsers_[this.supervisedUserIndex_];
     if (this.signedInUser_ && supervisedUser) {
-      this.popupHidden_ = true;
+      this.$.dialog.close();
       // Event is caught by create-profile.
       this.fire('import', {supervisedUser: supervisedUser,
                            signedInUser: this.signedInUser_});

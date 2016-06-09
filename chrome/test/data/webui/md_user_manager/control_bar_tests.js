@@ -95,7 +95,7 @@ cr.define('user_manager.control_bar_tests', function() {
           Polymer.dom.flush();
 
           // The dialog is visible.
-          assertLT(0, errorDialogElement.$$('#backdrop').offsetHeight);
+          assertTrue(errorDialogElement.$.dialog.opened);
         });
       });
 
@@ -108,7 +108,7 @@ cr.define('user_manager.control_bar_tests', function() {
           Polymer.dom.flush();
 
           // The error dialog is visible.
-          assertLT(0, errorDialogElement.$$('#backdrop').offsetHeight);
+          assertTrue(errorDialogElement.$.dialog.opened);
         });
       });
     });

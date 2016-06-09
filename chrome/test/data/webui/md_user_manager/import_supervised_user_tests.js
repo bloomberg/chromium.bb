@@ -32,18 +32,18 @@ cr.define('user_manager.import_supervised_user_tests', function() {
 
       test('Dialog does not show if no signed-in user is provided', function() {
         // The dialog is initially not visible.
-        assertFalse(!!importElement.$$('#backdrop'));
+        assertFalse(importElement.$.dialog.opened);
 
         importElement.show(undefined, []);
         Polymer.dom.flush();
 
         // The dialog is still not visible.
-        assertFalse(!!importElement.$$('#backdrop'));
+        assertFalse(importElement.$.dialog.opened);
       });
 
       test('Dialog shows when there are no supervised users', function() {
         // The dialog is initially not visible.
-        assertFalse(!!importElement.$$('#backdrop'));
+        assertFalse(importElement.$.dialog.opened);
 
         importElement.show({username: 'username',
                             profilePath: 'path/to/profile'},
@@ -51,7 +51,7 @@ cr.define('user_manager.import_supervised_user_tests', function() {
         Polymer.dom.flush();
 
         // The dialog becomes visible.
-        assertLT(0, importElement.$$('#backdrop').offsetHeight);
+        assertTrue(importElement.$.dialog.opened);
 
         // The correct message is displayed.
         assertEquals(loadTimeData.getString('noSupervisedUserImportText'),
@@ -69,7 +69,7 @@ cr.define('user_manager.import_supervised_user_tests', function() {
 
         Polymer.dom.flush();
         // The dialog is no longer visible.
-        assertEquals(0, importElement.$$('#backdrop').offsetHeight);
+        assertFalse(importElement.$.dialog.opened);
       });
 
       test('Can import supervised user', function() {
@@ -92,20 +92,20 @@ cr.define('user_manager.import_supervised_user_tests', function() {
                 event.detail.supervisedUser.name == 'supervised user 2') {
               Polymer.dom.flush();
               // The dialog is no longer visible.
-              assertEquals(0, importElement.$$('#backdrop').offsetHeight);
+              assertFalse(importElement.$.dialog.opened);
 
               resolve();
             }
           });
 
           // The dialog is initially not visible.
-          assertFalse(!!importElement.$$('#backdrop'));
+          assertFalse(importElement.$.dialog.opened);
 
           importElement.show(signedInUser, supervisedUsers);
           Polymer.dom.flush();
 
           // The dialog becomes visible.
-          assertLT(0, importElement.$$('#backdrop').offsetHeight);
+          assertTrue(importElement.$.dialog.opened);
 
           // The correct message is displayed.
           assertEquals(loadTimeData.getString('supervisedUserImportText'),

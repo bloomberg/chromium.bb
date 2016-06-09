@@ -88,6 +88,10 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
   source->AddResourcePath("supervised_user_learn_more.js",
                           IDR_MD_SUPERVISED_USER_LEARN_MORE_JS);
   source->AddResourcePath("user_manager.js", IDR_MD_USER_MANAGER_JS);
+  source->AddResourcePath("user_manager_dialog.html",
+                          IDR_MD_USER_MANAGER_DIALOG_HTML);
+  source->AddResourcePath("user_manager_dialog.js",
+                          IDR_MD_USER_MANAGER_DIALOG_JS);
   source->AddResourcePath("user_manager_pages.html",
                           IDR_MD_USER_MANAGER_PAGES_HTML);
   source->AddResourcePath("user_manager_pages.js",

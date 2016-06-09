@@ -2,10 +2,6 @@
   <template>
     <style>
       :root {
-        --error-color: var(--google-red-700);
-        --page-width: 624px;
-        --primary-text-color: var(--paper-grey-800);
-        --title-icon-color: var(--paper-grey-500);
         --action-button: {
           border-radius: 2px;
           line-height: 20px;
@@ -13,6 +9,11 @@
           min-width: 52px;
           padding: 6px 16px;
         };
+        --error-color: var(--google-red-700);
+        --page-width: 624px;
+        --primary-text-color: var(--paper-grey-800);
+        --title-icon-color: var(--paper-grey-500);
+        --user-manager-separator-line: 1px solid rgba(0, 0, 0, .12);
       }
 
       a,
@@ -61,6 +62,11 @@
         --paper-listbox: {
           padding: 0;
         };
+      }
+
+      iron-overlay-backdrop {
+        --iron-overlay-backdrop-background-color: white;
+        --iron-overlay-backdrop-opacity: .8;
       }
     </style>
   </template>
