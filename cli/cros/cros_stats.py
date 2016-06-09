@@ -11,7 +11,6 @@ import sys
 
 from chromite.cbuildbot import constants
 from chromite.lib import build_time_stats
-from chromite.lib import cidb
 from chromite.cli import command
 from chromite.lib import cros_logging as logging
 
@@ -114,6 +113,9 @@ class StatsCommand(command.CliCommand):
   def Run(self):
     """Run cros build."""
     self.options.Freeze()
+
+    # Delay import so sqlalchemy isn't pulled in until we need it.
+    from chromite.lib import cidb
 
     db = cidb.CIDBConnection(self.options.cred_dir)
 

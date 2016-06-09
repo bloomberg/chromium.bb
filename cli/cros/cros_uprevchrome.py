@@ -15,7 +15,6 @@ from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_build_lib
-from chromite.lib import cidb
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.cli import command
@@ -304,6 +303,9 @@ class UprevChromeCommand(command.CliCommand):
       Exception if UprevChrome raises exceptions.
     """
     self.options.Freeze()
+
+    # Delay import so sqlalchemy isn't pulled in until we need it.
+    from chromite.lib import cidb
 
     db = cidb.CIDBConnection(self.options.cred_dir)
 
