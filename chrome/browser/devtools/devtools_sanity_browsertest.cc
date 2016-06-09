@@ -810,7 +810,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // on another devtools.
 // Disabled because of http://crbug.com/497857
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       DISABLED_TestDevToolsOnDevTools) {
+                       TestDevToolsOnDevTools) {
   ASSERT_TRUE(spawned_test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
