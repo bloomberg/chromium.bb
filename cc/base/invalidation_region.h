@@ -5,6 +5,8 @@
 #ifndef CC_BASE_INVALIDATION_REGION_H_
 #define CC_BASE_INVALIDATION_REGION_H_
 
+#include <vector>
+
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,12 +24,13 @@ class CC_EXPORT InvalidationRegion {
   void Swap(Region* region);
   void Clear();
   void Union(const gfx::Rect& rect);
-  bool IsEmpty() const { return region_.IsEmpty(); }
+  bool IsEmpty() const { return pending_rects_.empty() && region_.IsEmpty(); }
 
  private:
-  void SimplifyIfNeeded();
+  void FinalizePendingRects();
 
   Region region_;
+  std::vector<gfx::Rect> pending_rects_;
 };
 
 }  // namespace cc
