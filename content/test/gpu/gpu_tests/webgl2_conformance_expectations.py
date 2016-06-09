@@ -46,7 +46,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
     self.Skip('deqp/functional/gles3/sync.html', bug=483282)
     self.Skip('deqp/functional/gles3/textureshadow/*.html', bug=483282)
-    self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
@@ -330,6 +329,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=606074)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
+        ['mac'], bug=618464)
 
     self.Skip('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
