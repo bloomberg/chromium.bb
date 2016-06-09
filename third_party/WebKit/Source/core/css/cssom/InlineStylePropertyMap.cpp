@@ -90,10 +90,10 @@ void InlineStylePropertyMap::append(CSSPropertyID propertyID, CSSStyleValueOrCSS
         return;
     }
 
-    CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
+    const CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
     CSSValueList* cssValueList = nullptr;
     if (cssValue->isValueList()) {
-        cssValueList = toCSSValueList(cssValue);
+        cssValueList = toCSSValueList(cssValue)->copy();
     } else {
         // TODO(meade): Figure out what the correct behaviour here is.
         exceptionState.throwTypeError("Property is not already list valued");

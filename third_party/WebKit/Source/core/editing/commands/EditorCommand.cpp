@@ -218,10 +218,10 @@ static bool executeToggleStyleInList(LocalFrame& frame, EditorCommandSource sour
     if (!selectionStyle || !selectionStyle->style())
         return false;
 
-    CSSValue* selectedCSSValue = selectionStyle->style()->getPropertyCSSValue(propertyID);
+    const CSSValue* selectedCSSValue = selectionStyle->style()->getPropertyCSSValue(propertyID);
     String newStyle("none");
     if (selectedCSSValue->isValueList()) {
-        CSSValueList* selectedCSSValueList = toCSSValueList(selectedCSSValue);
+        CSSValueList* selectedCSSValueList = toCSSValueList(selectedCSSValue)->copy();
         if (!selectedCSSValueList->removeAll(*value))
             selectedCSSValueList->append(*value);
         if (selectedCSSValueList->length())
