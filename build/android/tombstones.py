@@ -26,7 +26,9 @@ from devil.android import device_utils
 from devil.utils import run_tests_helper
 from pylib import constants
 
+
 _TZ_UTC = {'TZ': 'UTC'}
+
 
 def _ListTombstones(device):
   """List the tombstone files on the device.
@@ -40,16 +42,11 @@ def _ListTombstones(device):
   try:
     if not device.PathExists('/data/tombstones', as_root=True):
       return
-    # TODO(perezju): Introduce a DeviceUtils.Ls() method (crbug.com/552376).
-    lines = device.RunShellCommand(
-        ['ls', '-a', '-l', '/data/tombstones'],
-        as_root=True, check_return=True, env=_TZ_UTC)
-    for line in lines:
-      if 'tombstone' in line:
-        details = line.split()
-        t = datetime.datetime.strptime(details[-3] + ' ' + details[-2],
-                                       '%Y-%m-%d %H:%M')
-        yield details[-1], t
+    entries = device.StatDirectory('/data/tombstones', as_root=True)
+    for entry in entries:
+      if 'tombstone' in entry['filename']:
+        yield (entry['filename'],
+               datetime.datetime.fromtimestamp(entry['st_mtime']))
   except device_errors.CommandFailedError:
     logging.exception('Could not retrieve tombstones.')
   except device_errors.CommandTimeoutError:
@@ -203,10 +200,9 @@ def _GetTombstonesForDevice(device, args):
                'stack': args.stack,
                'data': _GetTombstoneData(device, tombstone_file)}]
   except device_errors.CommandFailedError:
-    for line in device.RunShellCommand(
-        ['ls', '-a', '-l', '/data/tombstones'],
-        as_root=True, check_return=True, env=_TZ_UTC, timeout=60):
-      logging.info('%s: %s', str(device), line)
+    for entry in device.StatDirectory(
+        '/data/tombstones', as_root=True, timeout=60):
+      logging.info('%s: %s', str(device), entry)
     raise
 
   # Erase all the tombstones if desired.

@@ -83,7 +83,7 @@ class DeviceHelper(object):
     try:
       process_name = process_name.split(':')[0]
       cmd = ['dumpsys', 'package', process_name]
-      user_id_lines = adb.RunShellCommand(' '.join(cmd), large_output=True)
+      user_id_lines = adb.RunShellCommand(cmd, large_output=True)
       user_id_lines = Utils.FindLines(user_id_lines, 'userId=')
 
       if not user_id_lines:
@@ -126,8 +126,7 @@ class DeviceHelper(object):
     intersect the two.  The returned result is sorted based on userid."""
     pids = []
     try:
-      cmd = ['ps']
-      pid_lines = adb.RunShellCommand(' '.join(cmd), large_output=True)
+      pid_lines = adb.RunShellCommand(['ps'], large_output=True)
       if default_pid:
         pid_lines = Utils.FindLines(pid_lines, str(default_pid))
       if process_filter:
@@ -177,8 +176,7 @@ class NetworkHelper(object):
       # The number of bytes sent.
       tx_idx = 7
 
-      cmd = ['cat', '/proc/net/xt_qtaguid/stats']
-      net_lines = adb.RunShellCommand(' '.join(cmd), large_output=True)
+      net_lines = adb.ReadFile('/proc/net/xt_qtaguid/stats').splitlines()
       net_lines = Utils.FindLines(net_lines, userid)
       for line in net_lines:
         data = re.split('\s+', line.strip())
@@ -211,7 +209,7 @@ class MemoryHelper(object):
     found it will return [ 0, 0, 0 ]."""
     results = [0, 0, 0]
 
-    mem_lines = adb.RunShellCommand(' '.join(['dumpsys', 'meminfo', pid]))
+    mem_lines = adb.RunShellCommand(['dumpsys', 'meminfo', pid])
     for line in mem_lines:
       match = re.split('\s+', line.strip())
 
@@ -265,7 +263,7 @@ class GraphicsHelper(object):
     represents the graphics memory usage.  Will return this as a single entry
     array of [ Graphics ].  If not found, will return [ 0 ]."""
     try:
-      mem_lines = adb.RunShellCommand(' '.join(['showmap', '-t', pid]))
+      mem_lines = adb.RunShellCommand(['showmap', '-t', pid])
       for line in mem_lines:
         match = re.split('[ ]+', line.strip())
         if match[-1] in GraphicsHelper.__SHOWMAP_KEY_MATCHES:
@@ -280,8 +278,7 @@ class GraphicsHelper(object):
     file in |self.__NV_MAP_FILE_LOCATIONS| and see if one exists.  If so, it
     will return it."""
     for nv_file in GraphicsHelper.__NV_MAP_FILE_LOCATIONS:
-      exists = adb.RunShellCommand(' '.join(['ls', nv_file]))
-      if exists[0] == nv_file.split('/')[-1]:
+      if adb.PathExists(nv_file):
         return nv_file
     return None
 
@@ -293,7 +290,7 @@ class GraphicsHelper(object):
     [ Graphics ].  If not found, will return [ 0 ]."""
     nv_file = GraphicsHelper.__NvMapPath(adb)
     if nv_file:
-      mem_lines = adb.RunShellCommand(' '.join(['cat', nv_file]))
+      mem_lines = adb.ReadFile(nv_file).splitlines()
       for line in mem_lines:
         match = re.split(' +', line.strip())
         if match[2] == pid:

@@ -426,10 +426,9 @@ def _UninstallIfMatch(device, pattern, app_to_keep):
 
 
 def _WipeUnderDirIfMatch(device, path, pattern):
-  ls_result = device.Ls(path)
-  for (content, _) in ls_result:
-    if pattern.match(content):
-      _WipeFileOrDir(device, path + content)
+  for filename in device.ListDirectory(path):
+    if pattern.match(filename):
+      _WipeFileOrDir(device, posixpath.join(path, filename))
 
 
 def _WipeFileOrDir(device, path):
