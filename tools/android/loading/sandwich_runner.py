@@ -14,6 +14,10 @@ _SRC_DIR = os.path.abspath(os.path.join(
 sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
 from devil.android import device_utils
 
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'telemetry',
+    'third_party', 'websocket-client'))
+import websocket
+
 import chrome_cache
 import controller
 import devtools_monitor
@@ -145,17 +149,17 @@ class SandwichRunner(object):
       return self.network_condition
     return None
 
-  def _RunNavigation(self, clear_cache, run_id=None):
+  def _RunNavigation(self, clear_cache, repeat_id=None):
     """Run a page navigation to the given URL.
 
     Args:
       clear_cache: Whether if the cache should be cleared before navigation.
-      run_id: Id of the run in the output directory. If it is None, then no
+      repeat_id: Id of the run in the output directory. If it is None, then no
         trace or video will be saved.
     """
     run_path = None
-    if run_id is not None:
-      run_path = os.path.join(self.output_dir, str(run_id))
+    if repeat_id is not None:
+      run_path = os.path.join(self.output_dir, str(repeat_id))
       if not os.path.isdir(run_path):
         os.makedirs(run_path)
     self._chrome_ctl.SetNetworkEmulation(
@@ -195,9 +199,27 @@ class SandwichRunner(object):
       trace_path = os.path.join(run_path, TRACE_FILENAME)
       trace.ToJsonFile(trace_path)
 
-  def _RunUrl(self, run_id):
-    for attempt_id in xrange(self._ATTEMPT_COUNT):
+  def _RunInRetryLoop(self, repeat_id, perform_dry_run_before):
+    """Attempts to run monitoring navigation.
+
+    Args:
+      repeat_id: Id of the run in the output directory.
+      perform_dry_run_before: Whether it should do a dry run attempt before the
+        actual monitoring run.
+
+    Returns:
+      Whether the device should be rebooted to continue attempting for that
+      given |repeat_id|.
+    """
+    resume_attempt_id = 0
+    if perform_dry_run_before:
+      resume_attempt_id = 1
+    for attempt_id in xrange(resume_attempt_id, self._ATTEMPT_COUNT):
       try:
+        if perform_dry_run_before:
+          logging.info('Do sandwich dry run attempt %d', attempt_id)
+        else:
+          logging.info('Do sandwich run attempt %d', attempt_id)
         self._chrome_ctl.ResetBrowserState()
         clear_cache = False
         if self.cache_operation == CacheOperation.CLEAR:
@@ -205,23 +227,64 @@ class SandwichRunner(object):
         elif self.cache_operation == CacheOperation.PUSH:
           self._chrome_ctl.PushBrowserCache(self._local_cache_directory_path)
         elif self.cache_operation == CacheOperation.SAVE:
-          clear_cache = run_id == 0
-        self._RunNavigation(clear_cache=clear_cache, run_id=run_id)
-        break
+          clear_cache = repeat_id == 0
+        self._RunNavigation(clear_cache=clear_cache, repeat_id=repeat_id)
+        if not perform_dry_run_before or attempt_id > resume_attempt_id:
+          break
       except controller.ChromeControllerError as error:
-        if error.IsIntermittent() and attempt_id + 1 != self._ATTEMPT_COUNT:
-          dump_filename = 'intermittent_failure{}'.format(attempt_id)
-          dump_path = os.path.join(self.output_dir, str(run_id), dump_filename)
+        request_reboot = False
+        is_intermittent = error.IsIntermittent()
+        if (self.android_device and
+            attempt_id == 0 and
+            error.error_type is websocket.WebSocketConnectionClosedException):
+          assert not perform_dry_run_before
+          # On Android, the first socket connection closure is likely caused by
+          # memory pressure on the device and therefore considered intermittent,
+          # and therefore request a reboot of the device to the caller.
+          request_reboot = True
+          is_intermittent = True
+        if is_intermittent and attempt_id + 1 != self._ATTEMPT_COUNT:
+          dump_filename = '{}_intermittent_failure'.format(attempt_id)
+          dump_path = os.path.join(
+              self.output_dir, str(repeat_id), dump_filename)
         else:
           dump_path = os.path.join(self.output_dir, ERROR_FILENAME)
         with open(dump_path, 'w') as dump_output:
           error.Dump(dump_output)
-        if not error.IsIntermittent():
+        if not is_intermittent:
           error.RaiseOriginal()
+        if request_reboot:
+          assert resume_attempt_id is 0
+          return True
     else:
       logging.error('Failed to navigate to %s after %d attemps' % \
                     (self.url, self._ATTEMPT_COUNT))
       error.RaiseOriginal()
+    return False
+
+  def _RunWithWpr(self, resume_repeat_id, perform_dry_run_before):
+    """Opens WPR and attempts to run repeated monitoring navigation.
+
+    Args:
+      resume_repeat_id: Id of the run to resume.
+      perform_dry_run_before: Whether the repeated run to resume should first do
+        a dry run navigation attempt.
+
+    Returns:
+      Number of repeat performed. If < self.repeat, then it means that the
+        device should be rebooted.
+    """
+    with self._chrome_ctl.OpenWprHost(self.wpr_archive_path,
+        record=self.wpr_record,
+        network_condition_name=self._GetEmulatorNetworkCondition('wpr'),
+        disable_script_injection=self.disable_wpr_script_injection,
+        out_log_path=os.path.join(self.output_dir, WPR_LOG_FILENAME)):
+      for repeat_id in xrange(resume_repeat_id, self.repeat):
+        reboot_requested = self._RunInRetryLoop(
+            repeat_id, perform_dry_run_before)
+        if reboot_requested:
+          return repeat_id
+    return self.repeat
 
   def _PullCacheFromDevice(self):
     assert self.cache_operation == CacheOperation.SAVE
@@ -253,14 +316,10 @@ class SandwichRunner(object):
         self._local_cache_directory_path = tempfile.mkdtemp(suffix='.cache')
         chrome_cache.UnzipDirectoryContent(
             self.cache_archive_path, self._local_cache_directory_path)
-
-      with self._chrome_ctl.OpenWprHost(self.wpr_archive_path,
-          record=self.wpr_record,
-          network_condition_name=self._GetEmulatorNetworkCondition('wpr'),
-          disable_script_injection=self.disable_wpr_script_injection,
-          out_log_path=os.path.join(self.output_dir, WPR_LOG_FILENAME)):
-        for repeat_id in xrange(self.repeat):
-          self._RunUrl(run_id=repeat_id)
+      times_repeated = self._RunWithWpr(0, False)
+      if times_repeated < self.repeat:
+        self._chrome_ctl.RebootDevice()
+        self._RunWithWpr(times_repeated, True)
     finally:
       if self._local_cache_directory_path:
         shutil.rmtree(self._local_cache_directory_path)

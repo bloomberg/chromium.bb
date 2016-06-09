@@ -322,11 +322,11 @@ class RemoteChromeController(ChromeControllerBase):
     assert device is not None, 'Should you be using LocalController instead?'
     super(RemoteChromeController, self).__init__()
     self._device = device
-    self._device.EnableRoot()
     self._metadata['platform'] = {
         'os': 'A-' + device.build_id,
         'product_model': device.product_model
     }
+    self._InitDevice()
 
   def GetDevice(self):
     """Overridden android device."""
@@ -415,6 +415,13 @@ class RemoteChromeController(ChromeControllerBase):
       cmd = ['rm', '-rf', '/data/data/{}/{}'.format(package, directory)]
       self._device.adb.Shell(subprocess.list2cmdline(cmd))
 
+  def RebootDevice(self):
+    """Reboot the remote device."""
+    assert self._wpr_attributes is None, 'WPR should be closed before rebooting'
+    logging.warning('Rebooting the device')
+    device_setup.Reboot(self._device)
+    self._InitDevice()
+
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
     logging.info('Push cache from %s' % cache_path)
@@ -446,6 +453,9 @@ class RemoteChromeController(ChromeControllerBase):
     for _ in xrange(10):
       if not self._device.DismissCrashDialogIfNeeded():
         break
+
+  def _InitDevice(self):
+    self._device.EnableRoot()
 
 
 class LocalChromeController(ChromeControllerBase):

@@ -78,6 +78,22 @@ def GetDeviceFromSerial(android_device_serial):
       'Device {} not found'.format(android_device_serial))
 
 
+def Reboot(device):
+  """Reboot the device.
+
+  Args:
+    device: Device to reboot, from DeviceUtils.
+  """
+  # Kills the device -> host forwarder running on the device so that
+  # forwarder.Forwarder have correct state tracking after having rebooted.
+  forwarder.Forwarder.UnmapAllDevicePorts(device)
+  # Reboot the device.
+  device.Reboot()
+  # Pass through the lock screen.
+  time.sleep(3)
+  device.RunShellCommand(['input', 'keyevent', '82'])
+
+
 def DeviceSubmitShellCommandQueue(device, command_queue):
   """Executes on the device a command queue.
 
