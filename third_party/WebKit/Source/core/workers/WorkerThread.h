@@ -62,12 +62,13 @@ enum WorkerThreadStartMode {
 // an actual task is executed on the worker thread.
 class CORE_EXPORT WorkerThread {
 public:
-    // Represents how this thread is terminated.
+    // Represents how this thread is terminated. Used for UMA. Append only.
     enum class ExitCode {
         NotTerminated,
         GracefullyTerminated,
         SyncForciblyTerminated,
         AsyncForciblyTerminated,
+        LastEnum,
     };
 
     virtual ~WorkerThread();

@@ -63616,6 +63616,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WorkerThread.ExitCode" enum="WorkerThreadExitCode">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>Records the exit code of WorkerThread.</summary>
+</histogram>
+
 <histogram name="WrenchMenu.MenuAction" enum="WrenchMenuAction">
   <owner>ainslie@chromium.org</owner>
   <owner>edwardjung@chromium.org</owner>
@@ -91939,6 +91944,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Recently Closed"/>
   <int value="1" label="Most Visited"/>
   <int value="2" label="People"/>
+</enum>
+
+<enum name="WorkerThreadExitCode" type="int">
+  <int value="0" label="NotTerminated"/>
+  <int value="1" label="GracefullyTerminated"/>
+  <int value="2" label="SyncForciblyTerminated"/>
+  <int value="3" label="AsyncForciblyTerminated"/>
 </enum>
 
 <enum name="WrenchMenuAction" type="int">

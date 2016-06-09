@@ -38,6 +38,7 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "platform/Histogram.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -48,6 +49,7 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
 #include <limits.h>
 
@@ -154,9 +156,9 @@ WorkerThread::~WorkerThread()
     DCHECK(workerThreads().contains(this));
     workerThreads().remove(this);
 
-    // TODO(nhiroki): Record how this thread is terminated (i.e. m_exitCode)
-    // in UMA.
     DCHECK_NE(ExitCode::NotTerminated, m_exitCode);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, exitCodeHistogram, new EnumerationHistogram("WorkerThread.ExitCode", static_cast<int>(ExitCode::LastEnum)));
+    exitCodeHistogram.count(static_cast<int>(m_exitCode));
 }
 
 void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
