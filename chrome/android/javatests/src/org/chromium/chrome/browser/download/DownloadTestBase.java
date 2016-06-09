@@ -269,4 +269,14 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         });
         super.tearDown();
     }
+
+    protected void deleteFilesInDownloadDirectory(String...filenames) {
+        for (String filename : filenames) {
+            final File fileToDelete = new File(DOWNLOAD_DIRECTORY, filename);
+            if (fileToDelete.exists()) {
+                assertTrue("Could not delete file that would block this test",
+                        fileToDelete.delete());
+            }
+        }
+    }
 }

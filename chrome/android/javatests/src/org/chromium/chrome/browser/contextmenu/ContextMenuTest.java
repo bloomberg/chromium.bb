@@ -47,17 +47,27 @@ public class ContextMenuTest extends DownloadTestBase {
     private EmbeddedTestServer mTestServer;
     private String mTestUrl;
 
+    private static final String FILENAME_GIF = "download.gif";
+    private static final String FILENAME_PNG = "test_image.png";
+    private static final String FILENAME_WEBM = "test.webm";
+
+    private static final String[] TEST_FILES = new String[] {
+        FILENAME_GIF, FILENAME_PNG, FILENAME_WEBM
+    };
+
     @Override
     protected void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartFileServer(
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         mTestUrl = mTestServer.getURL(TEST_PATH);
+        deleteTestFiles();
         super.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        deleteTestFiles();
         super.tearDown();
     }
 
@@ -227,14 +237,14 @@ public class ContextMenuTest extends DownloadTestBase {
     @Feature({"Browser"})
     public void testSaveDataUrl()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
-        saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, "download.gif");
+        saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, FILENAME_GIF);
     }
 
     @LargeTest
     @Feature({"Browser"})
     public void testSaveImage()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
-        saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, "test_image.png");
+        saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, FILENAME_PNG);
     }
 
     @LargeTest
@@ -243,7 +253,7 @@ public class ContextMenuTest extends DownloadTestBase {
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
         DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "videoDOMElement");
-        saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, "test.webm");
+        saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, FILENAME_WEBM);
     }
 
     /**
@@ -323,5 +333,13 @@ public class ContextMenuTest extends DownloadTestBase {
     private void assertStringContains(String subString, String superString) {
         assertTrue("String '" + superString + "' does not contain '" + subString + "'",
                 superString.contains(subString));
+    }
+
+    /**
+     * Makes sure there are no files with names identical to the ones this test uses in the
+     * downloads directory
+     */
+    private void deleteTestFiles() {
+        deleteFilesInDownloadDirectory(TEST_FILES);
     }
 }
