@@ -195,10 +195,15 @@ void RecordPermissionRequest(PermissionType permission,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     } else if (permission == PermissionType::MIDI ||
                permission == PermissionType::MIDI_SYSEX) {
+      // TODO(dominickn): remove this deprecated metric - crbug.com/605836.
       rappor::SampleDomainAndRegistryFromGURL(
           rappor_service,
           "ContentSettings.PermissionRequested.Midi.Url",
           requesting_origin);
+      rappor_service->RecordSample(
+          "ContentSettings.PermissionRequested.Midi.Url2",
+          rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
+          rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
     }
   }
 

@@ -742,6 +742,23 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.PermissionRequested.Midi.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    **DEPRECATED: replaced by ContentSettings.PermissionRequested.Midi.Url2
+    as of M53. The domain that requests using MIDI devices.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionRequested.Midi.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    The domain that requests using MIDI devices.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.PermissionRequested.Notifications.Url"
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
