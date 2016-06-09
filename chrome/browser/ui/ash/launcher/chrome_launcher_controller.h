@@ -89,12 +89,6 @@ class ChromeLauncherController
       public LauncherAppUpdater::Delegate,
       public ash::ShelfItemDelegateManagerObserver {
  public:
-  // Indicates if a shelf item is incognito or not.
-  enum IncognitoState {
-    STATE_INCOGNITO,
-    STATE_NOT_INCOGNITO,
-  };
-
   // Used to update the state of non plaform apps, as web contents change.
   enum AppState {
     APP_STATE_ACTIVE,
