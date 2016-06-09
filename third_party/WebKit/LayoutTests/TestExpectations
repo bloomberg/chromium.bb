@@ -916,7 +916,7 @@ crbug.com/612924 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-
 
 # Probably needs a rebaseline, marking as failing for now: http://crbug.com/612924#c6
 # Feature owner needs to investigate.
-crbug.com/471824 imported/wpt/pointerevents/pointerevent_button_attribute_mouse-manual.html  [ Failure ]
+crbug.com/471824 imported/wpt/pointerevents/pointerevent_button_attribute_mouse-manual.html  [ Failure Timeout ]
 
 crbug.com/612924 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_capture_mouse-manual.html  [ Skip ]
 crbug.com/612924 imported/wpt/pointerevents/pointerevent_capture_mouse-manual.html  [ Skip ]
