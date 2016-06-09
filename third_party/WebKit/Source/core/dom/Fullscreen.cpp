@@ -52,7 +52,9 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static bool fullscreenIsAllowedForAllOwners(const Document& document)
+namespace {
+
+bool fullscreenIsAllowedForAllOwners(const Document& document)
 {
     if (!document.frame())
         return false;
@@ -64,14 +66,14 @@ static bool fullscreenIsAllowedForAllOwners(const Document& document)
     return true;
 }
 
-static bool fullscreenIsSupported(const Document& document)
+bool fullscreenIsSupported(const Document& document)
 {
     // Fullscreen is supported if there is no previously-established user preference,
     // security risk, or platform limitation.
     return !document.settings() || document.settings()->fullscreenSupported();
 }
 
-static bool fullscreenElementReady(const Element& element)
+bool fullscreenElementReady(const Element& element)
 {
     // A fullscreen element ready check for an element |element| returns true if all of the
     // following are true, and false otherwise:
@@ -107,12 +109,12 @@ static bool fullscreenElementReady(const Element& element)
     return true;
 }
 
-static bool isPrefixed(const AtomicString& type)
+bool isPrefixed(const AtomicString& type)
 {
     return type == EventTypeNames::webkitfullscreenchange || type == EventTypeNames::webkitfullscreenerror;
 }
 
-static Event* createEvent(const AtomicString& type, EventTarget& target)
+Event* createEvent(const AtomicString& type, EventTarget& target)
 {
     EventInit initializer;
     initializer.setBubbles(isPrefixed(type));
@@ -120,6 +122,8 @@ static Event* createEvent(const AtomicString& type, EventTarget& target)
     event->setTarget(&target);
     return event;
 }
+
+} // anonymous namespace
 
 const char* Fullscreen::supplementName()
 {
