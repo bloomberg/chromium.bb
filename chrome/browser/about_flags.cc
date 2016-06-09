@@ -1915,6 +1915,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_FONT_CACHE_SCALING_NAME,
      IDS_FLAGS_FONT_CACHE_SCALING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontCacheScaling)},
+#if defined(OS_ANDROID)
+    {"enable-vr-shell",
+     IDS_FLAGS_ENABLE_VR_SHELL_NAME,
+     IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION, kOsAndroid,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableVrShell,
+                               switches::kDisableVrShell)},
+#endif
 
     {"enable-weak-memorycache",
      IDS_FLAGS_ENABLE_WEAK_MEMORYCACHE_NAME,

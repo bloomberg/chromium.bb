@@ -319,6 +319,11 @@ const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 // and allocates certain resources accordingly.
 const char kDisableSiteEngagementService[] = "disable-site-engagement-service";
 
+#if defined(OS_ANDROID)
+// Disable VR UI if supported.
+const char kDisableVrShell[] = "disable-vr-shell";
+#endif
+
 // Disables Web Notification custom layouts.
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
@@ -538,6 +543,11 @@ const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
 // Enables Alternate-Protocol when the port is user controlled (> 1024).
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
+
+#if defined(OS_ANDROID)
+// Enable VR UI if supported.
+const char kEnableVrShell[] = "enable-vr-shell";
+#endif
 
 // Enables a new "web app" style frame for hosted apps (including bookmark
 // apps).

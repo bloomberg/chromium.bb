@@ -97,6 +97,9 @@ extern const char kDisablePromptOnRepost[];
 extern const char kDisablePushApiBackgroundMode[];
 extern const char kDisableSessionCrashedBubble[];
 extern const char kDisableSiteEngagementService[];
+#if defined(OS_ANDROID)
+extern const char kDisableVrShell[];
+#endif
 extern const char kDisableWebNotificationCustomLayouts[];
 extern const char kDisableWebUsbSecurity[];
 extern const char kDisableZeroBrowsersOpenForTests[];
@@ -161,6 +164,9 @@ extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableUserAlternateProtocolPorts[];
+#if defined(OS_ANDROID)
+extern const char kEnableVrShell[];
+#endif
 extern const char kEnableWebAppFrame[];
 #if defined(OS_ANDROID)
 extern const char kEnableWebApk[];

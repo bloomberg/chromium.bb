@@ -14998,6 +14998,14 @@ read aloud to screenreader users to announce that a completion is available.">
         Completion available: <ph name="COMPLETION_TEXT">$1</ph>
       </message>
     </if>
+    <if expr="is_android">
+      <message name="IDS_FLAGS_ENABLE_VR_SHELL_NAME" desc="Name of the flag to enable VR shell">
+        Enable VR shell.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION" desc="Description for the flag to enable VR shell">
+        Enable VR shell if available for this device.
+      </message>
+    </if>
     </messages>
   </release>
 </grit>
