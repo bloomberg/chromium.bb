@@ -160,6 +160,11 @@ struct CrossThreadCopier<CrossThreadPersistent<T>> : public CrossThreadCopierPas
 };
 
 template<typename T>
+struct CrossThreadCopier<CrossThreadWeakPersistent<T>> : public CrossThreadCopierPassThrough<CrossThreadWeakPersistent<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
+template<typename T>
 struct CrossThreadCopier<WeakPtr<T>> : public CrossThreadCopierPassThrough<WeakPtr<T>> {
     STATIC_ONLY(CrossThreadCopier);
 };

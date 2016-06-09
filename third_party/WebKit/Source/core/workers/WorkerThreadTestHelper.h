@@ -12,6 +12,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
@@ -66,6 +67,16 @@ public:
     MOCK_METHOD0(workerGlobalScopeClosed, void());
     MOCK_METHOD0(workerThreadTerminated, void());
     MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
+};
+
+class MockWorkerThreadLifecycleObserver final : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>, public WorkerThreadLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(MockWorkerThreadLifecycleObserver);
+    WTF_MAKE_NONCOPYABLE(MockWorkerThreadLifecycleObserver);
+public:
+    explicit MockWorkerThreadLifecycleObserver(WorkerThreadContext* context)
+        : WorkerThreadLifecycleObserver(context) { }
+
+    MOCK_METHOD0(contextDestroyed, void());
 };
 
 class WorkerThreadForTest : public WorkerThread {

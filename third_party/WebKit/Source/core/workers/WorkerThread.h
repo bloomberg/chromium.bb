@@ -32,6 +32,8 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerThreadLifecycleObserver.h"
+#include "platform/LifecycleNotifier.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
@@ -51,6 +53,22 @@ class WorkerThreadStartupData;
 enum WorkerThreadStartMode {
     DontPauseWorkerGlobalScopeOnStart,
     PauseWorkerGlobalScopeOnStart
+};
+
+// Used for notifying observers on the main thread of worker thread termination.
+// The lifetime of this class is equal to that of WorkerThread. Created and
+// destructed on the main thread.
+class CORE_EXPORT WorkerThreadContext final : public GarbageCollectedFinalized<WorkerThreadContext>, public LifecycleNotifier<WorkerThreadContext, WorkerThreadLifecycleObserver> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerThreadContext);
+    WTF_MAKE_NONCOPYABLE(WorkerThreadContext);
+public:
+    WorkerThreadContext();
+    ~WorkerThreadContext() override;
+    void notifyContextDestroyed() override;
+
+private:
+    friend class WorkerThreadLifecycleObserver;
+    bool m_wasContextDestroyed = false;
 };
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
@@ -119,6 +137,10 @@ public:
     // Can be called only on the worker thread, WorkerGlobalScope is not thread
     // safe.
     WorkerGlobalScope* workerGlobalScope();
+
+    // Called for creating WorkerThreadLifecycleObserver on both the main thread
+    // and the worker thread.
+    WorkerThreadContext* workerThreadContext() const { return m_workerThreadContext; }
 
     // Returns true once one of the terminate* methods is called.
     bool terminated();
@@ -201,6 +223,8 @@ private:
     // Scheduled when termination starts with TerminationMode::Force, and
     // cancelled when the worker thread is gracefully shut down.
     OwnPtr<ForceTerminationTask> m_scheduledForceTerminationTask;
+
+    Persistent<WorkerThreadContext> m_workerThreadContext;
 };
 
 } // namespace blink

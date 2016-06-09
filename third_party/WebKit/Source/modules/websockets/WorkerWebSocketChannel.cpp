@@ -177,26 +177,29 @@ DEFINE_TRACE(WorkerWebSocketChannel)
     WebSocketChannel::trace(visitor);
 }
 
-Peer::Peer(Bridge* bridge, PassRefPtr<WorkerLoaderProxy> loaderProxy, WebSocketChannelSyncHelper* syncHelper)
-    : m_bridge(bridge)
+Peer::Peer(Bridge* bridge, PassRefPtr<WorkerLoaderProxy> loaderProxy, WebSocketChannelSyncHelper* syncHelper, WorkerThreadContext* workerThreadContext)
+    : WorkerThreadLifecycleObserver(workerThreadContext)
+    , m_bridge(bridge)
     , m_loaderProxy(loaderProxy)
     , m_mainWebSocketChannel(nullptr)
     , m_syncHelper(syncHelper)
 {
-    ASSERT(!isMainThread());
+    DCHECK(isMainThread());
 }
 
 Peer::~Peer()
 {
-    ASSERT(!isMainThread());
+    DCHECK(isMainThread());
 }
 
-void Peer::initialize(PassOwnPtr<SourceLocation> location, ExecutionContext* context)
+bool Peer::initialize(PassOwnPtr<SourceLocation> location, ExecutionContext* context)
 {
     ASSERT(isMainThread());
+    if (wasContextDestroyedBeforeObserverCreation())
+        return false;
     Document* document = toDocument(context);
     m_mainWebSocketChannel = DocumentWebSocketChannel::create(document, this, std::move(location));
-    m_syncHelper->signalWorkerThread();
+    return true;
 }
 
 void Peer::connect(const KURL& url, const String& protocol)
@@ -357,12 +360,22 @@ void Peer::didError()
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
 }
 
+void Peer::contextDestroyed()
+{
+    DCHECK(isMainThread());
+    if (m_mainWebSocketChannel) {
+        m_mainWebSocketChannel->disconnect();
+        m_mainWebSocketChannel = nullptr;
+    }
+    m_bridge = nullptr;
+}
+
 DEFINE_TRACE(Peer)
 {
-    visitor->trace(m_bridge);
     visitor->trace(m_mainWebSocketChannel);
     visitor->trace(m_syncHelper);
     WebSocketChannelClient::trace(visitor);
+    WorkerThreadLifecycleObserver::trace(visitor);
 }
 
 Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalScope)
@@ -370,7 +383,6 @@ Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalSc
     , m_workerGlobalScope(workerGlobalScope)
     , m_loaderProxy(m_workerGlobalScope->thread()->workerLoaderProxy())
     , m_syncHelper(WebSocketChannelSyncHelper::create(adoptPtr(new WaitableEvent())))
-    , m_peer(new Peer(this, m_loaderProxy, m_syncHelper))
 {
 }
 
@@ -379,9 +391,21 @@ Bridge::~Bridge()
     ASSERT(!m_peer);
 }
 
+void Bridge::createPeerOnMainThread(PassOwnPtr<SourceLocation> location, WorkerThreadContext* workerThreadContext, ExecutionContext* context)
+{
+    DCHECK(isMainThread());
+    DCHECK(!m_peer);
+    Peer* peer = new Peer(this, m_loaderProxy, m_syncHelper, workerThreadContext);
+    if (peer->initialize(std::move(location), context))
+        m_peer = peer;
+    m_syncHelper->signalWorkerThread();
+}
+
 void Bridge::initialize(PassOwnPtr<SourceLocation> location)
 {
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, wrapCrossThreadPersistent(m_peer.get()), passed(std::move(location))))) {
+    // Wait for completion of the task on the main thread because the connection
+    // must synchronously be established (see Bridge::connect).
+    if (!waitForMethodCompletion(createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(std::move(location)), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->workerThreadContext())))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -392,6 +416,8 @@ bool Bridge::connect(const KURL& url, const String& protocol)
     if (!m_peer)
         return false;
 
+    // Wait for completion of the task on the main thread because the mixed
+    // content check must synchronously be conducted.
     if (!waitForMethodCompletion(createCrossThreadTask(&Peer::connect, wrapCrossThreadPersistent(m_peer.get()), url, protocol)))
         return false;
 
@@ -442,8 +468,9 @@ void Bridge::disconnect()
     if (!m_peer)
         return;
 
+    // Wait for completion of the task on the main thread to ensure that
+    // |m_peer| does not touch this Bridge object after this point.
     waitForMethodCompletion(createCrossThreadTask(&Peer::disconnect, wrapCrossThreadPersistent(m_peer.get())));
-    // Here |m_peer| is detached from the main thread and we can delete it.
 
     m_client = nullptr;
     m_peer = nullptr;
@@ -474,7 +501,6 @@ DEFINE_TRACE(Bridge)
     visitor->trace(m_client);
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_syncHelper);
-    visitor->trace(m_peer);
 }
 
 } // namespace blink

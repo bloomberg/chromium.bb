@@ -24,6 +24,7 @@ public:
         m_workerThread = adoptPtr(new WorkerThreadForTest(
             m_mockWorkerLoaderProxyProvider.get(),
             *m_mockWorkerReportingProxy));
+        m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(m_workerThread->workerThreadContext());
     }
 
     void TearDown() override
@@ -65,6 +66,7 @@ protected:
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+        EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver, contextDestroyed()).Times(1);
     }
 
     void expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization()
@@ -73,6 +75,7 @@ protected:
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(AtMost(1));
+        EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver, contextDestroyed()).Times(1);
     }
 
     void expectReportingCallsForWorkerForciblyTerminated()
@@ -81,12 +84,14 @@ protected:
         EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(false)).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, workerThreadTerminated()).Times(1);
         EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+        EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver, contextDestroyed()).Times(1);
     }
 
     RefPtr<SecurityOrigin> m_securityOrigin;
     OwnPtr<MockWorkerLoaderProxyProvider> m_mockWorkerLoaderProxyProvider;
     OwnPtr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
     OwnPtr<WorkerThreadForTest> m_workerThread;
+    Persistent<MockWorkerThreadLifecycleObserver> m_mockWorkerThreadLifecycleObserver;
 };
 
 TEST_F(WorkerThreadTest, StartAndTerminate_AsyncTerminate)

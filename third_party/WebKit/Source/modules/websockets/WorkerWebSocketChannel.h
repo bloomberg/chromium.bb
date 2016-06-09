@@ -32,6 +32,7 @@
 #define WorkerWebSocketChannel_h
 
 #include "bindings/core/v8/SourceLocation.h"
+#include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
@@ -83,16 +84,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     class Bridge;
-    // Allocated in the worker thread, but used in the main thread.
-    class Peer final : public GarbageCollectedFinalized<Peer>, public WebSocketChannelClient {
+    // Allocated and used in the main thread.
+    class Peer final : public GarbageCollectedFinalized<Peer>, public WebSocketChannelClient, public WorkerThreadLifecycleObserver {
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
-        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*);
+        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*, WorkerThreadContext*);
         ~Peer() override;
 
         // SourceLocation parameter may be shown when the connection fails.
-        void initialize(PassOwnPtr<SourceLocation>, ExecutionContext*);
+        bool initialize(PassOwnPtr<SourceLocation>, ExecutionContext*);
 
         void connect(const KURL&, const String& protocol);
         void sendTextAsCharVector(PassOwnPtr<Vector<char>>);
@@ -113,8 +114,11 @@ public:
         void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
         void didError() override;
 
+        // WorkerThreadLifecycleObserver function.
+        void contextDestroyed() override;
+
     private:
-        Member<Bridge> m_bridge;
+        CrossThreadWeakPersistent<Bridge> m_bridge;
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannel> m_mainWebSocketChannel;
         Member<WebSocketChannelSyncHelper> m_syncHelper;
@@ -136,6 +140,8 @@ public:
         void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>);
         void disconnect();
 
+        void createPeerOnMainThread(PassOwnPtr<SourceLocation>, WorkerThreadContext*, ExecutionContext*);
+
         // Returns null when |disconnect| has already been called.
         WebSocketChannelClient* client() { return m_client; }
 
@@ -149,7 +155,7 @@ public:
         Member<WorkerGlobalScope> m_workerGlobalScope;
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannelSyncHelper> m_syncHelper;
-        Member<Peer> m_peer;
+        CrossThreadPersistent<Peer> m_peer;
     };
 
 private:

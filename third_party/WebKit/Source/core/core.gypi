@@ -2289,6 +2289,8 @@
             'workers/WorkerScriptLoader.h',
             'workers/WorkerThread.cpp',
             'workers/WorkerThread.h',
+            'workers/WorkerThreadLifecycleObserver.cpp',
+            'workers/WorkerThreadLifecycleObserver.h',
             'workers/WorkerThreadStartupData.cpp',
             'workers/WorkerThreadStartupData.h',
             'workers/WorkletGlobalScope.cpp',

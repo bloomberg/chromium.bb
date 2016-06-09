@@ -154,6 +154,24 @@ static HashSet<WorkerThread*>& workerThreads()
     return threads;
 }
 
+WorkerThreadContext::WorkerThreadContext()
+{
+    DCHECK(isMainThread());
+}
+
+WorkerThreadContext::~WorkerThreadContext()
+{
+    DCHECK(isMainThread());
+}
+
+void WorkerThreadContext::notifyContextDestroyed()
+{
+    DCHECK(isMainThread());
+    DCHECK(!m_wasContextDestroyed);
+    m_wasContextDestroyed = true;
+    LifecycleNotifier::notifyContextDestroyed();
+}
+
 WorkerThread::~WorkerThread()
 {
     DCHECK(isMainThread());
@@ -313,7 +331,9 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_shutdownEvent(adoptPtr(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
+    , m_workerThreadContext(new WorkerThreadContext)
 {
+    DCHECK(isMainThread());
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);
 }
@@ -348,6 +368,8 @@ void WorkerThread::terminateInternal(TerminationMode mode)
     // Signal the thread to notify that the thread's stopping.
     if (m_terminationEvent)
         m_terminationEvent->signal();
+
+    m_workerThreadContext->notifyContextDestroyed();
 
     // If the worker thread was never initialized, don't start another
     // shutdown, but still wait for the thread to signal when shutdown has
