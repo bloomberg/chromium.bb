@@ -9,6 +9,7 @@ struct SerializedHandle {
 
   enum Type {
     MOJO_HANDLE,
+    PLATFORM_FILE,
     WIN_HANDLE,
     MACH_PORT,
   };

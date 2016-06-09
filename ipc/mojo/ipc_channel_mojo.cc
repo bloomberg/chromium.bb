@@ -115,7 +115,7 @@ MojoResult WrapAttachmentImpl(MessageAttachment* attachment,
 
     return WrapPlatformHandle(mojo::edk::ScopedPlatformHandle(
                                   mojo::edk::PlatformHandle(file.release())),
-                              mojom::SerializedHandle::Type::MOJO_HANDLE,
+                              mojom::SerializedHandle::Type::PLATFORM_FILE,
                               serialized);
   }
 #endif
@@ -175,6 +175,14 @@ MojoResult UnwrapAttachment(mojom::SerializedHandlePtr handle,
           handle->the_handle.release().value(), &platform_handle);
   if (unwrap_result != MOJO_RESULT_OK)
     return unwrap_result;
+#if defined(OS_POSIX)
+  if (handle->type == mojom::SerializedHandle::Type::PLATFORM_FILE &&
+      platform_handle.get().type == mojo::edk::PlatformHandle::Type::POSIX) {
+    *attachment = new internal::PlatformFileAttachment(
+        platform_handle.release().handle);
+    return MOJO_RESULT_OK;
+  }
+#endif  // defined(OS_POSIX)
 #if defined(OS_MACOSX)
   if (handle->type == mojom::SerializedHandle::Type::MACH_PORT &&
       platform_handle.get().type == mojo::edk::PlatformHandle::Type::MACH) {

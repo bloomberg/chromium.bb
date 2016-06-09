@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "ipc/ipc_message_attachment_set.h"
-#include "mojo/edk/embedder/embedder.h"
 
 namespace IPC {
 namespace internal {
@@ -25,15 +23,8 @@ MessageAttachment::Type MojoHandleAttachment::GetType() const {
 
 #if defined(OS_POSIX)
 base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
-  mojo::edk::ScopedPlatformHandle platform_handle;
-  MojoResult unwrap_result = mojo::edk::PassWrappedPlatformHandle(
-      handle_.release().value(), &platform_handle);
-  if (unwrap_result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Pipe failed to covert handles. Closing: " << unwrap_result;
-    return -1;
-  }
-
-  return platform_handle.release().handle;
+  NOTREACHED();
+  return base::kInvalidPlatformFile;
 }
 #endif  // OS_POSIX
 

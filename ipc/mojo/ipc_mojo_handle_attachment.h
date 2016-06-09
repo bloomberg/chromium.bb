@@ -17,12 +17,9 @@ namespace IPC {
 namespace internal {
 
 // A MessageAttachment that holds a MojoHandle.
-// * On the sending side, every Mojo handle is a MessagePipe. This is because
-//   any platform files are wrapped by PlatformFileAttachment.
-// * On the receiving side, the handle can be either MessagePipe or wrapped
-//   platform file: All files, not only MessagePipes are wrapped as a
-//   MojoHandle. The message deserializer should know which type of the object
-//   the handle wraps.
+// This can hold any type of transferrable Mojo handle (i.e. message pipe, data
+// pipe, etc), but the receiver is expected to know what type of handle to
+// expect.
 class IPC_MOJO_EXPORT MojoHandleAttachment : public MessageAttachment {
  public:
   explicit MojoHandleAttachment(mojo::ScopedHandle handle);
@@ -30,9 +27,7 @@ class IPC_MOJO_EXPORT MojoHandleAttachment : public MessageAttachment {
   Type GetType() const override;
 
 #if defined(OS_POSIX)
-  // Returns wrapped file if it wraps a file, or
-  // an invalid fd otherwise. The ownership of handle
-  // is passed to the caller.
+  // Should not be called.
   base::PlatformFile TakePlatformFile() override;
 #endif  // OS_POSIX
 
