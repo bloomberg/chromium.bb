@@ -80,7 +80,8 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_ChangeVolumeLevel) {
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_ChangeTracks DISABLED_ChangeTracks
 #else
-#define MAYBE_ChangeTracks ChangeTracks
+// Also disable because of flakyness. http://crbug.com/618198
+#define MAYBE_ChangeTracks DISABLED_ChangeTracks
 #endif
 IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_ChangeTracks) {
   set_test_case_name("changeTracks");
