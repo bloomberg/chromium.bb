@@ -26,6 +26,7 @@
 #include "platform/graphics/Color.h"
 
 #include "platform/Decimal.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MathExtras.h"
@@ -120,6 +121,8 @@ template <typename CharacterType>
 static inline bool parseHexColorInternal(const CharacterType* name, unsigned length, RGBA32& rgb)
 {
     if (length != 3 && length != 4 && length != 6 && length != 8)
+        return false;
+    if ((length == 8 || length == 4) && !RuntimeEnabledFeatures::cssHexAlphaColorEnabled())
         return false;
     unsigned value = 0;
     for (unsigned i = 0; i < length; ++i) {
