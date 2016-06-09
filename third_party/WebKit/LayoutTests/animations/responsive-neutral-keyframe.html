@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<div id="target">Test.</div>
+<script>
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+target.animate({translate: '100px'}, 1e8);
+
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    target.style.translate = '100px';
+    requestAnimationFrame(() => {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
+  });
+});
+</script>

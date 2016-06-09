@@ -233,31 +233,27 @@ void CSSAnimations::calculateCompositorAnimationUpdate(CSSAnimationUpdate& updat
     if (!oldStyle.shouldCompositeForCurrentAnimations())
         return;
 
-    CSSAnimations& cssAnimations = elementAnimations->cssAnimations();
-    for (auto& runningAnimation : cssAnimations.m_runningAnimations) {
-        Animation& animation = *runningAnimation->animation;
-        if (animation.effect() && animation.effect()->isKeyframeEffect()) {
-            EffectModel* model = toKeyframeEffect(animation.effect())->model();
-            if (model && model->isKeyframeEffectModel()) {
-                KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
-                if (keyframeEffect->hasSyntheticKeyframes() && keyframeEffect->snapshotNeutralCompositorKeyframes(element, oldStyle, style))
-                    update.updateCompositorKeyframes(&animation);
-            }
-        }
-    }
+    bool transformZoomChanged = oldStyle.hasCurrentTransformAnimation() && oldStyle.effectiveZoom() != style.effectiveZoom();
+    for (auto& entry : elementAnimations->animations()) {
+        Animation& animation = *entry.key;
+        if (!animation.effect() || !animation.effect()->isKeyframeEffect())
+            continue;
+        EffectModel* model = toKeyframeEffect(animation.effect())->model();
+        if (!model || !model->isKeyframeEffectModel())
+            continue;
+        KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(*model);
 
-    if (oldStyle.hasCurrentTransformAnimation() && oldStyle.effectiveZoom() != style.effectiveZoom()) {
-        for (auto& entry : elementAnimations->animations()) {
-            Animation& animation = *entry.key;
-            if (animation.effect() && animation.effect()->isKeyframeEffect()) {
-                EffectModel* model = toKeyframeEffect(animation.effect())->model();
-                if (model && model->isKeyframeEffectModel()) {
-                    KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(model);
-                    if (keyframeEffect->affects(PropertyHandle(CSSPropertyTransform)) && keyframeEffect->snapshotAllCompositorKeyframes(element, &style))
-                        update.updateCompositorKeyframes(&animation);
-                }
-            }
+        bool updateCompositorKeyframes = false;
+        if (transformZoomChanged && keyframeEffect.affects(PropertyHandle(CSSPropertyTransform))
+            && keyframeEffect.snapshotAllCompositorKeyframes(element, &style)) {
+            updateCompositorKeyframes = true;
+        } else if (keyframeEffect.hasSyntheticKeyframes()
+            && keyframeEffect.snapshotNeutralCompositorKeyframes(element, oldStyle, style)) {
+            updateCompositorKeyframes = true;
         }
+
+        if (updateCompositorKeyframes)
+            update.updateCompositorKeyframes(&animation);
     }
 }
 
