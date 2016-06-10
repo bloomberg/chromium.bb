@@ -58,18 +58,17 @@ using namespace blink;
     RetainPtr<ScrollbarPainter> _scrollbarPainter;
     BOOL _visible;
 }
-- (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter;
+- (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(const RetainPtr<ScrollbarPainter>&)painter;
 @end
 
 @implementation BlinkScrollbarObserver
 
-- (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter
+- (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(const RetainPtr<ScrollbarPainter>&)painter
 {
     if (!(self = [super init]))
         return nil;
     _scrollbar = scrollbar;
     _scrollbarPainter = painter;
-
     [_scrollbarPainter.get() addObserver:self forKeyPath:@"knobAlpha" options:0 context:nil];
     return self;
 }
@@ -81,7 +80,6 @@ using namespace blink;
 
 - (void)dealloc
 {
-
     [_scrollbarPainter.get() removeObserver:self forKeyPath:@"knobAlpha"];
     [super dealloc];
 }
@@ -266,8 +264,8 @@ void ScrollbarThemeMac::registerScrollbar(ScrollbarThemeClient& scrollbar)
     scrollbarSet().add(&scrollbar);
 
     bool isHorizontal = scrollbar.orientation() == HorizontalScrollbar;
-    ScrollbarPainter scrollbarPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:(NSControlSize)scrollbar.controlSize() horizontal:isHorizontal replacingScrollerImp:nil];
-    RetainPtr<BlinkScrollbarObserver> observer = [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:scrollbarPainter];
+    RetainPtr<ScrollbarPainter> scrollbarPainter(AdoptNS, [[NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:(NSControlSize)scrollbar.controlSize() horizontal:isHorizontal replacingScrollerImp:nil] retain]);
+    RetainPtr<BlinkScrollbarObserver> observer(AdoptNS, [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:scrollbarPainter]);
 
     scrollbarPainterMap().add(&scrollbar, observer);
     updateEnabledState(scrollbar);
@@ -282,7 +280,8 @@ void ScrollbarThemeMac::unregisterScrollbar(ScrollbarThemeClient& scrollbar)
 
 void ScrollbarThemeMac::setNewPainterForScrollbar(ScrollbarThemeClient& scrollbar, ScrollbarPainter newPainter)
 {
-    RetainPtr<BlinkScrollbarObserver> observer = [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:newPainter];
+    RetainPtr<ScrollbarPainter> scrollbarPainter(AdoptNS, [newPainter retain]);
+    RetainPtr<BlinkScrollbarObserver> observer(AdoptNS, [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:scrollbarPainter]);
     scrollbarPainterMap().set(&scrollbar, observer);
     updateEnabledState(scrollbar);
     updateScrollbarOverlayStyle(scrollbar);
