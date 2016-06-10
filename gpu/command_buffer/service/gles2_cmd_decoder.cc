@@ -13801,6 +13801,8 @@ error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
     return error::kNoError;
   }
 
+  TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
+                           this);
   deschedule_until_finished_callback_.Run();
   return error::kDeferLaterCommands;
 }
@@ -13938,6 +13940,8 @@ void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
   if (!deschedule_until_finished_fence_->HasCompleted())
     return;
 
+  TRACE_EVENT_ASYNC_END0("cc", "GLES2DecoderImpl::DescheduleUntilFinished",
+                         this);
   deschedule_until_finished_fence_.reset();
   reschedule_after_finished_callback_.Run();
 }
