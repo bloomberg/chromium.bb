@@ -553,6 +553,10 @@ void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   [[web_controller_ delegate] openURLWithParams:params];
 }
 
+const NavigationManager* WebStateImpl::GetNavigationManager() const {
+  return &GetNavigationManagerImpl();
+}
+
 NavigationManager* WebStateImpl::GetNavigationManager() {
   return &GetNavigationManagerImpl();
 }

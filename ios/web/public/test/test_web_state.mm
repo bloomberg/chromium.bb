@@ -39,6 +39,10 @@ UIView* TestWebState::GetView() {
   return nullptr;
 }
 
+const NavigationManager* TestWebState::GetNavigationManager() const {
+  return nullptr;
+}
+
 NavigationManager* TestWebState::GetNavigationManager() {
   return nullptr;
 }

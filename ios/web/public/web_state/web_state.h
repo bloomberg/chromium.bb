@@ -124,6 +124,7 @@ class WebState : public base::SupportsUserData {
 
   // Gets the NavigationManager associated with this WebState. Can never return
   // null.
+  virtual const NavigationManager* GetNavigationManager() const = 0;
   virtual NavigationManager* GetNavigationManager() = 0;
 
   // Gets the CRWJSInjectionReceiver associated with this WebState.
