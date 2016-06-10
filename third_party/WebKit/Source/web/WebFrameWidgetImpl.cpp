@@ -121,6 +121,7 @@ DEFINE_TRACE(WebFrameWidgetImpl)
 {
     visitor->trace(m_localRoot);
     visitor->trace(m_mouseCaptureNode);
+    visitor->trace(m_mutator);
 }
 
 // WebWidget ------------------------------------------------------------------
