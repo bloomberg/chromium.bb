@@ -637,6 +637,8 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
 
   QuicCryptoServerStream* GetCryptoStream() override;
 
+  MockQuicServerSessionHelper* helper() { return &helper_; }
+
  private:
   MockQuicServerSessionVisitor visitor_;
   MockQuicServerSessionHelper helper_;

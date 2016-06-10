@@ -655,6 +655,13 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
       has_forward_secure_encrypter_ && level == ENCRYPTION_FORWARD_SECURE) {
     SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   }
+
+  // Once the server receives a forward secure packet, the handshake is
+  // confirmed.
+  if (FLAGS_quic_no_shlo_listener && level == ENCRYPTION_FORWARD_SECURE &&
+      perspective_ == Perspective::IS_SERVER) {
+    sent_packet_manager_->SetHandshakeConfirmed();
+  }
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {

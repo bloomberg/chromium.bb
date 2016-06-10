@@ -1346,13 +1346,9 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
   }
 
   QuicAckFrame frame = InitAckFrame(num_packets);
-  PacketNumberSet lost_packets;
   // Create an ack with 256 nacks, none adjacent to one another.
   for (QuicPacketNumber i = 1; i <= 256; ++i) {
     NackPacket(i * 2, &frame);
-    if (i < 256) {  // Last packet is nacked, but not lost.
-      lost_packets.insert(i * 2);
-    }
   }
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
   EXPECT_CALL(peer_entropy_calculator_, EntropyHash(511))
@@ -2184,8 +2180,6 @@ TEST_P(QuicConnectionTest, DoNotSendPendingRetransmissionForResetStream) {
   // Lose a packet which will trigger a pending retransmission.
   QuicAckFrame ack = InitAckFrame(last_packet);
   NackPacket(last_packet - 1, &ack);
-  PacketNumberSet lost_packets;
-  lost_packets.insert(last_packet - 1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));

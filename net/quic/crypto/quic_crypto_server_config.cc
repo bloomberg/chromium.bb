@@ -295,11 +295,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
   } else {
     msg.SetTaglist(kKEXS, kC255, 0);
   }
-  if (FLAGS_quic_crypto_server_config_default_has_chacha20) {
-    msg.SetTaglist(kAEAD, kAESG, kCC20, 0);
-  } else {
-    msg.SetTaglist(kAEAD, kAESG, 0);
-  }
+  msg.SetTaglist(kAEAD, kAESG, kCC20, 0);
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
   if (options.expiry_time.IsZero()) {
