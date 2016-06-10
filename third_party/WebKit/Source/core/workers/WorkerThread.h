@@ -58,12 +58,12 @@ enum WorkerThreadStartMode {
 // Used for notifying observers on the main thread of worker thread termination.
 // The lifetime of this class is equal to that of WorkerThread. Created and
 // destructed on the main thread.
-class CORE_EXPORT WorkerThreadContext final : public GarbageCollectedFinalized<WorkerThreadContext>, public LifecycleNotifier<WorkerThreadContext, WorkerThreadLifecycleObserver> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerThreadContext);
-    WTF_MAKE_NONCOPYABLE(WorkerThreadContext);
+class CORE_EXPORT WorkerThreadLifecycleContext final : public GarbageCollectedFinalized<WorkerThreadLifecycleContext>, public LifecycleNotifier<WorkerThreadLifecycleContext, WorkerThreadLifecycleObserver> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerThreadLifecycleContext);
+    WTF_MAKE_NONCOPYABLE(WorkerThreadLifecycleContext);
 public:
-    WorkerThreadContext();
-    ~WorkerThreadContext() override;
+    WorkerThreadLifecycleContext();
+    ~WorkerThreadLifecycleContext() override;
     void notifyContextDestroyed() override;
 
 private:
@@ -140,7 +140,7 @@ public:
 
     // Called for creating WorkerThreadLifecycleObserver on both the main thread
     // and the worker thread.
-    WorkerThreadContext* workerThreadContext() const { return m_workerThreadContext; }
+    WorkerThreadLifecycleContext* getWorkerThreadLifecycleContext() const { return m_workerThreadLifecycleContext; }
 
     // Returns true once one of the terminate* methods is called.
     bool terminated();
@@ -224,7 +224,7 @@ private:
     // cancelled when the worker thread is gracefully shut down.
     OwnPtr<ForceTerminationTask> m_scheduledForceTerminationTask;
 
-    Persistent<WorkerThreadContext> m_workerThreadContext;
+    Persistent<WorkerThreadLifecycleContext> m_workerThreadLifecycleContext;
 };
 
 } // namespace blink

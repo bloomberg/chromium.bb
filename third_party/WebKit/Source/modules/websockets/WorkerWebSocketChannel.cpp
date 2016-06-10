@@ -177,8 +177,8 @@ DEFINE_TRACE(WorkerWebSocketChannel)
     WebSocketChannel::trace(visitor);
 }
 
-Peer::Peer(Bridge* bridge, PassRefPtr<WorkerLoaderProxy> loaderProxy, WebSocketChannelSyncHelper* syncHelper, WorkerThreadContext* workerThreadContext)
-    : WorkerThreadLifecycleObserver(workerThreadContext)
+Peer::Peer(Bridge* bridge, PassRefPtr<WorkerLoaderProxy> loaderProxy, WebSocketChannelSyncHelper* syncHelper, WorkerThreadLifecycleContext* workerThreadLifecycleContext)
+    : WorkerThreadLifecycleObserver(workerThreadLifecycleContext)
     , m_bridge(bridge)
     , m_loaderProxy(loaderProxy)
     , m_mainWebSocketChannel(nullptr)
@@ -391,11 +391,11 @@ Bridge::~Bridge()
     ASSERT(!m_peer);
 }
 
-void Bridge::createPeerOnMainThread(PassOwnPtr<SourceLocation> location, WorkerThreadContext* workerThreadContext, ExecutionContext* context)
+void Bridge::createPeerOnMainThread(PassOwnPtr<SourceLocation> location, WorkerThreadLifecycleContext* workerThreadLifecycleContext, ExecutionContext* context)
 {
     DCHECK(isMainThread());
     DCHECK(!m_peer);
-    Peer* peer = new Peer(this, m_loaderProxy, m_syncHelper, workerThreadContext);
+    Peer* peer = new Peer(this, m_loaderProxy, m_syncHelper, workerThreadLifecycleContext);
     if (peer->initialize(std::move(location), context))
         m_peer = peer;
     m_syncHelper->signalWorkerThread();
@@ -405,7 +405,7 @@ void Bridge::initialize(PassOwnPtr<SourceLocation> location)
 {
     // Wait for completion of the task on the main thread because the connection
     // must synchronously be established (see Bridge::connect).
-    if (!waitForMethodCompletion(createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(std::move(location)), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->workerThreadContext())))) {
+    if (!waitForMethodCompletion(createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(std::move(location)), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext())))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }

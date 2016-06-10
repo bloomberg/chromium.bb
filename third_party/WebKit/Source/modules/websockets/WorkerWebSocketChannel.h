@@ -89,7 +89,7 @@ public:
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
-        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*, WorkerThreadContext*);
+        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*, WorkerThreadLifecycleContext*);
         ~Peer() override;
 
         // SourceLocation parameter may be shown when the connection fails.
@@ -140,7 +140,7 @@ public:
         void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>);
         void disconnect();
 
-        void createPeerOnMainThread(PassOwnPtr<SourceLocation>, WorkerThreadContext*, ExecutionContext*);
+        void createPeerOnMainThread(PassOwnPtr<SourceLocation>, WorkerThreadLifecycleContext*, ExecutionContext*);
 
         // Returns null when |disconnect| has already been called.
         WebSocketChannelClient* client() { return m_client; }

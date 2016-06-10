@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class WorkerThreadContext;
+class WorkerThreadLifecycleContext;
 
 // An interface for observing worker thread termination from the main thread.
 // This may be useful, for example, when an object living on the main thread
@@ -26,9 +26,9 @@ class WorkerThreadContext;
 // alive by wasContextDestroyedBeforeObserverCreation(). If this return true,
 // the worker thread has already been terminated before the observer is created,
 // and contextDestroyed() is never notified.
-class CORE_EXPORT WorkerThreadLifecycleObserver : public LifecycleObserver<WorkerThreadContext, WorkerThreadLifecycleObserver> {
+class CORE_EXPORT WorkerThreadLifecycleObserver : public LifecycleObserver<WorkerThreadLifecycleContext, WorkerThreadLifecycleObserver> {
 protected:
-    explicit WorkerThreadLifecycleObserver(WorkerThreadContext*);
+    explicit WorkerThreadLifecycleObserver(WorkerThreadLifecycleContext*);
 
     bool wasContextDestroyedBeforeObserverCreation() const
     {

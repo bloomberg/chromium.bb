@@ -73,7 +73,7 @@ class MockWorkerThreadLifecycleObserver final : public GarbageCollectedFinalized
     USING_GARBAGE_COLLECTED_MIXIN(MockWorkerThreadLifecycleObserver);
     WTF_MAKE_NONCOPYABLE(MockWorkerThreadLifecycleObserver);
 public:
-    explicit MockWorkerThreadLifecycleObserver(WorkerThreadContext* context)
+    explicit MockWorkerThreadLifecycleObserver(WorkerThreadLifecycleContext* context)
         : WorkerThreadLifecycleObserver(context) { }
 
     MOCK_METHOD0(contextDestroyed, void());

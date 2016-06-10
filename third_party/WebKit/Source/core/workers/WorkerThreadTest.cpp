@@ -24,7 +24,7 @@ public:
         m_workerThread = adoptPtr(new WorkerThreadForTest(
             m_mockWorkerLoaderProxyProvider.get(),
             *m_mockWorkerReportingProxy));
-        m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(m_workerThread->workerThreadContext());
+        m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(m_workerThread->getWorkerThreadLifecycleContext());
     }
 
     void TearDown() override
