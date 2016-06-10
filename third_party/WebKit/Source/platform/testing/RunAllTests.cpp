@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 
         blink::ProcessHeap::init();
         blink::ThreadState::attachMainThread();
-        blink::ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr);
+        blink::ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr, nullptr);
         blink::EventTracer::initialize();
         blink::HTTPNames::init();
 

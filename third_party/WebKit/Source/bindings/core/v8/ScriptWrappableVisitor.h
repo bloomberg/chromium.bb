@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/WrapperVisitor.h"
 #include "wtf/Deque.h"
 #include "wtf/Vector.h"
@@ -33,6 +34,11 @@ public:
     ScriptWrappableVisitor(v8::Isolate* isolate) : m_isolate(isolate) {};
     ~ScriptWrappableVisitor() override;
     /**
+     * Replace all dead objects in the marking deque with nullptr after oilpan
+     * gc.
+     */
+    static void invalidateDeadObjectsInMarkingDeque(v8::Isolate*);
+    /**
      * Mark wrappers in all worlds for the given script wrappable as alive in
      * V8.
      */
@@ -48,6 +54,7 @@ public:
 
     void TracePrologue() override;
     void RegisterV8References(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
+    void RegisterV8Reference(const std::pair<void*, void*>& internalFields);
     bool AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions) override;
     void TraceEpilogue() override;
 
@@ -68,14 +75,16 @@ public:
 
     void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
 
+    void invalidateDeadObjectsInMarkingDeque();
+
 private:
     bool markWrapperHeader(HeapObjectHeader*) const;
     bool markWrapperHeader(const ScriptWrappable*) const override;
     bool markWrapperHeader(const void* garbageCollected) const override;
     bool m_tracingInProgress = false;
     /**
-     * Collection of ScriptWrappables we need to trace from. We assume it safe
-     * to hold on to the raw pointers because:
+     * Collection of ScriptWrappables we need to trace from. We assume it is
+     * safe to hold on to the raw pointers because:
      *     * oilpan object cannot move
      *     * for the oilpan gc, this deque is part of the root set, so objects
      *       in the deque will not die

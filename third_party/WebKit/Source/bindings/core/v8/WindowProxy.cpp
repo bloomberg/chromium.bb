@@ -370,11 +370,11 @@ bool WindowProxy::setupWindowPrototypeChain()
     // The prototype object of Window interface.
     v8::Local<v8::Object> windowPrototype = windowWrapper->GetPrototype().As<v8::Object>();
     RELEASE_ASSERT(!windowPrototype.IsEmpty());
-    V8DOMWrapper::setNativeInfo(windowPrototype, wrapperTypeInfo, window);
+    V8DOMWrapper::setNativeInfo(m_isolate, windowPrototype, wrapperTypeInfo, window);
     // The named properties object of Window interface.
     v8::Local<v8::Object> windowProperties = windowPrototype->GetPrototype().As<v8::Object>();
     RELEASE_ASSERT(!windowProperties.IsEmpty());
-    V8DOMWrapper::setNativeInfo(windowProperties, wrapperTypeInfo, window);
+    V8DOMWrapper::setNativeInfo(m_isolate, windowProperties, wrapperTypeInfo, window);
 
     // TODO(keishi): Remove installPagePopupController and implement
     // PagePopupController in another way.

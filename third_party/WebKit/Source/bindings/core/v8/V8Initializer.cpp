@@ -366,7 +366,15 @@ void V8Initializer::initializeMainThread()
 
     ASSERT(ThreadState::mainThreadState());
     ThreadState::mainThreadState()->addInterruptor(adoptPtr(new V8IsolateInterruptor(isolate)));
-    ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
+    if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+        ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate,
+            V8GCController::traceDOMWrappers,
+            ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque);
+    } else {
+        ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate,
+            V8GCController::traceDOMWrappers,
+            nullptr);
+    }
 
     V8PerIsolateData::from(isolate)->setThreadDebugger(adoptPtr(new MainThreadDebugger(isolate)));
 }

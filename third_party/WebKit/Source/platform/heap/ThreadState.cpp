@@ -32,6 +32,7 @@
 
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
@@ -98,6 +99,7 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     , m_gcState(NoGCScheduled)
     , m_isolate(nullptr)
     , m_traceDOMWrappers(nullptr)
+    , m_invalidateDeadObjectsInWrappersMarkingDeque(nullptr)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
@@ -959,6 +961,11 @@ void ThreadState::preGC()
 
 void ThreadState::postGC(BlinkGC::GCType gcType)
 {
+    if (RuntimeEnabledFeatures::traceWrappablesEnabled()
+        && m_invalidateDeadObjectsInWrappersMarkingDeque) {
+        m_invalidateDeadObjectsInWrappersMarkingDeque(m_isolate);
+    }
+
     ASSERT(isInGC());
     for (int i = 0; i < BlinkGC::NumberOfArenas; i++)
         m_arenas[i]->prepareForSweep();
