@@ -1507,6 +1507,8 @@ class TestGitCl(TestCase):
     self.assertEqual('hi\n\t there\n\nman', ChangelistMock.desc)
 
   def test_archive(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+
     self.calls = \
         [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
@@ -1541,6 +1543,7 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['archive', '-f']))
 
   def test_archive_current_branch_fails(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.calls = \
         [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
           'refs/heads/master'),
