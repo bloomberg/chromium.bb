@@ -254,7 +254,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
 
 // Verify that notifications are disabled when the user clicks the action button
 // in the notification.
-IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UninstallExtension) {
+// Flaky: https://crbug.com/617801
+IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
+                       DISABLED_UninstallExtension) {
   const Extension* extension = InitWriteDataApp();
   ASSERT_TRUE(extension);
   WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
