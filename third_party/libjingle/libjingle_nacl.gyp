@@ -52,8 +52,6 @@
       'sources': [
         '<(webrtc_base)/asyncfile.cc',
         '<(webrtc_base)/asyncfile.h',
-        '<(webrtc_base)/asynchttprequest.cc',
-        '<(webrtc_base)/asynchttprequest.h',
         '<(webrtc_base)/asyncinvoker.cc',
         '<(webrtc_base)/asyncinvoker.h',
         '<(webrtc_base)/asyncinvoker-inl.h',

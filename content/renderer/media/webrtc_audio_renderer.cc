@@ -23,7 +23,6 @@
 #include "media/base/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/media/base/audiorenderer.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
