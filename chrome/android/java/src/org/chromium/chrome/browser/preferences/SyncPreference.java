@@ -21,7 +21,7 @@ import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * A preference that displays the current sync account and status (enabled, error, needs passphrase,
- * etc)."
+ * etc).
  */
 public class SyncPreference extends Preference {
     public SyncPreference(Context context, AttributeSet attrs) {
@@ -53,7 +53,7 @@ public class SyncPreference extends Preference {
      * Checks if sync error icon should be shown. Show sync error icon if sync is off because
      * of error, passphrase required or disabled in Android.
      */
-    public static boolean showSyncErrorIcon(Context context) {
+    static boolean showSyncErrorIcon(Context context) {
         if (!AndroidSyncSettings.isMasterSyncEnabled(context)) {
             return true;
         }
@@ -77,7 +77,10 @@ public class SyncPreference extends Preference {
         return false;
     }
 
-    private static String getSyncStatusSummary(Context context) {
+    /**
+     * Return a short summary of the current sync status.
+     */
+    static String getSyncStatusSummary(Context context) {
         if (!ChromeSigninController.get(context).isSignedIn()) return "";
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();

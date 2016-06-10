@@ -91,7 +91,7 @@ public class SignInPreference extends Preference
             summary = getContext().getString(R.string.sign_in_to_chrome_summary);
             fragment = null;
         } else {
-            summary = getSyncSummaryString(getContext(), account.name);
+            summary = SyncPreference.getSyncStatusSummary(getContext());
             fragment = AccountManagementFragment.class.getName();
             title = AccountManagementFragment.getCachedUserName(account.name);
             if (title == null) {
@@ -154,16 +154,6 @@ public class SignInPreference extends Preference
         } else {
             setWidgetLayoutResource(0);
         }
-    }
-
-    private static String getSyncSummaryString(Context context, String accountName) {
-        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(context);
-        if (syncEnabled) {
-            return String.format(
-                context.getString(R.string.account_management_sync_summary), accountName);
-        }
-
-        return context.getString(R.string.sync_is_disabled);
     }
 
     @Override

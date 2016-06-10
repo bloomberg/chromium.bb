@@ -929,7 +929,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Sync strings in account management dialog -->
       <message name="IDS_SYNC_ANDROID_MASTER_SYNC_DISABLED" desc="Message to show when Android master sync flag is disabled">
-        Android system sync disabled. Please re-enable and try again.
+        Android system sync disabled
       </message>
       <message name="IDS_SYNC_IS_ENABLED" desc="Message to show when Chrome sync is enabled">
         Sync is on
