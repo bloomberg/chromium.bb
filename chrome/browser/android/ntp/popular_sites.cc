@@ -25,16 +25,13 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/service/variations_service.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-
-#if !defined(OS_IOS)
-#include "components/safe_json/safe_json_parser.h"
-#endif
 
 using net::URLFetcher;
 using variations::VariationsService;
@@ -138,48 +135,6 @@ bool WriteJsonToFile(const base::FilePath& local_path,
          base::ImportantFileWriter::WriteFileAtomically(local_path,
                                                         json_string);
 }
-
-#if defined(OS_IOS)
-// Mimics SafeJsonParser API, but parses unsafely for iOS.
-class JsonUnsafeParser {
- public:
-  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
-  using ErrorCallback = base::Callback<void(const std::string&)>;
-
-  // As with SafeJsonParser, runs either success_callback or error_callback on
-  // the calling thread, but not before the call returns.
-  static void Parse(const std::string& unsafe_json,
-                    const SuccessCallback& success_callback,
-                    const ErrorCallback& error_callback) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(DoParse, unsafe_json, success_callback, error_callback));
-  }
-
-  JsonUnsafeParser() = delete;
-
- private:
-  static void DoParse(const std::string& unsafe_json,
-                      const SuccessCallback& success_callback,
-                      const ErrorCallback& error_callback) {
-    std::string error_msg;
-    int error_line, error_column;
-    std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-        unsafe_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error_msg,
-        &error_line, &error_column);
-    if (value) {
-      success_callback.Run(std::move(value));
-    } else {
-      error_callback.Run(base::StringPrintf("%s (%d:%d)", error_msg.c_str(),
-                                            error_line, error_column));
-    }
-  }
-};
-
-using UntrustedJsonParser = JsonUnsafeParser;
-#else
-using UntrustedJsonParser = safe_json::SafeJsonParser;
-#endif
 
 }  // namespace
 
@@ -370,7 +325,7 @@ void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  UntrustedJsonParser::Parse(
+  safe_json::SafeJsonParser::Parse(
       json_string,
       base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&PopularSites::OnJsonParseFailed,
