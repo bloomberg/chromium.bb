@@ -74,12 +74,14 @@ struct buffer {
 	unsigned long stride;
 };
 
+#define NUM_BUFFERS 3
+
 struct window {
 	struct display *display;
 	int width, height;
 	struct wl_surface *surface;
 	struct xdg_surface *xdg_surface;
-	struct buffer buffers[2];
+	struct buffer buffers[NUM_BUFFERS];
 	struct buffer *prev_buffer;
 	struct wl_callback *callback;
 };
@@ -341,7 +343,7 @@ create_window(struct display *display, int width, int height)
 		assert(0);
 	}
 
-	for (i = 0; i < 2; ++i) {
+	for (i = 0; i < NUM_BUFFERS; ++i) {
 		ret = create_dmabuf_buffer(display, &window->buffers[i],
 		                               width, height);
 
@@ -360,7 +362,7 @@ destroy_window(struct window *window)
 	if (window->callback)
 		wl_callback_destroy(window->callback);
 
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < NUM_BUFFERS; i++) {
 		if (!window->buffers[i].buffer)
 			continue;
 
@@ -379,16 +381,13 @@ destroy_window(struct window *window)
 static struct buffer *
 window_next_buffer(struct window *window)
 {
-	struct buffer *buffer;
+	int i;
 
-	if (!window->buffers[0].busy)
-		buffer = &window->buffers[0];
-	else if (!window->buffers[1].busy)
-		buffer = &window->buffers[1];
-	else
-		return NULL;
+	for (i = 0; i < NUM_BUFFERS; i++)
+		if (!window->buffers[i].busy)
+			return &window->buffers[i];
 
-	return buffer;
+	return NULL;
 }
 
 static const struct wl_callback_listener frame_listener;
@@ -403,7 +402,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	if (!buffer) {
 		fprintf(stderr,
 			!callback ? "Failed to create the first buffer.\n" :
-			"Both buffers busy at redraw(). Server bug?\n");
+			"All buffers busy at redraw(). Server bug?\n");
 		abort();
 	}
 
