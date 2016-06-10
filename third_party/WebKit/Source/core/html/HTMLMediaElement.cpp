@@ -3709,8 +3709,11 @@ bool HTMLMediaElement::isGestureNeededForPlayback() const
     // We want to allow muted video to autoplay if:
     // - the flag is enabled;
     // - Data Saver is not enabled;
-    if (muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()
-        && !(document().settings() && document().settings()->dataSaverEnabled())) {
+    // - Autoplay is enabled in settings;
+    if (muted()
+        && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()
+        && !(document().settings() && document().settings()->dataSaverEnabled())
+        && isAutoplayAllowedPerSettings()) {
         return false;
     }
 
@@ -3718,6 +3721,15 @@ bool HTMLMediaElement::isGestureNeededForPlayback() const
         return false;
 
     return true;
+}
+
+bool HTMLMediaElement::isAutoplayAllowedPerSettings() const
+{
+    LocalFrame* frame = document().frame();
+    if (!frame)
+        return false;
+    FrameLoaderClient* frameLoaderClient = frame->loader().client();
+    return frameLoaderClient && frameLoaderClient->allowAutoplay(false);
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state)
@@ -3959,11 +3971,7 @@ String HTMLMediaElement::AutoplayHelperClientImpl::autoplayExperimentMode() cons
 
 bool HTMLMediaElement::AutoplayHelperClientImpl::isAutoplayAllowedPerSettings() const
 {
-    LocalFrame* frame = m_element->document().frame();
-    if (!frame)
-        return false;
-    FrameLoaderClient* frameLoaderClient = frame->loader().client();
-    return frameLoaderClient && frameLoaderClient->allowAutoplay(false);
+    return m_element->isAutoplayAllowedPerSettings();
 }
 
 void HTMLMediaElement::AutoplayHelperClientImpl::setRequestPositionUpdates(bool request)

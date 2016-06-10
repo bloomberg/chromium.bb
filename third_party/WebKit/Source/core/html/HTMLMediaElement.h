@@ -468,6 +468,10 @@ private:
     // gesture is currently being processed.
     bool isGestureNeededForPlayback() const;
 
+    // Return true if and only if the settings allow autoplay of media on this
+    // frame.
+    bool isAutoplayAllowedPerSettings() const;
+
     void setNetworkState(NetworkState);
 
     void audioTracksTimerFired(Timer<HTMLMediaElement>*);

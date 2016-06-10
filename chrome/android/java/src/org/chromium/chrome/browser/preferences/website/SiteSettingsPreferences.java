@@ -10,6 +10,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
@@ -68,7 +69,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
         String autoplayTrialGroupName =
                 FieldTrialList.findFullName("MediaElementGestureOverrideExperiment");
-        mAutoplayMenuAvailable = autoplayTrialGroupName.startsWith("Enabled");
+        mAutoplayMenuAvailable = autoplayTrialGroupName.startsWith("Enabled")
+                || CommandLine.getInstance().hasSwitch("enable-autoplay-muted-videos");
 
         String category = "";
         if (getArguments() != null) {
