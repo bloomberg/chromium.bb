@@ -91,7 +91,7 @@ public class DesktopCanvas {
         return new PointF(adjustedScreenWidth, adjustedScreenHeight);
     }
 
-    /** Repositions the image by zooming it such that the complete image fits on the screen. */
+    /** Repositions the image by zooming it such that the image is displayed without borders. */
     public void resizeImageToFitScreen() {
         synchronized (mRenderData) {
             // Protect against being called before the image has been initialized.
@@ -99,31 +99,18 @@ public class DesktopCanvas {
                 return;
             }
 
-            float screenToImageScale = 1.0f;
-            float[] imageSize = {mRenderData.imageWidth, mRenderData.imageHeight};
-            mRenderData.transform.mapVectors(imageSize);
+            float widthRatio = (float) mRenderData.screenWidth / mRenderData.imageWidth;
+            float heightRatio = (float) mRenderData.screenHeight / mRenderData.imageHeight;
+            float screenToImageScale = Math.max(widthRatio, heightRatio);
 
-            // If the image is smaller than the screen in both dimensions, then we want
-            // to scale it up to fit.
-            boolean scaleImageUp = imageSize[0] < mRenderData.screenWidth
-                    && imageSize[1] < mRenderData.screenHeight;
-
-            // If the image is larger than the screen in any dimension, we want to
-            // shrink it to fit.
-            boolean scaleImageDown = imageSize[0] > mRenderData.screenWidth
-                    || imageSize[1] > mRenderData.screenHeight;
-
-            if (scaleImageUp || scaleImageDown) {
-                // Displayed image is too small or too large to fit the screen dimensions.
-                // Apply the minimum scale needed to fit both the width and height.
-                screenToImageScale =
-                        Math.min((float) mRenderData.screenWidth / mRenderData.imageWidth,
-                                 (float) mRenderData.screenHeight / mRenderData.imageHeight);
+            // If the image is smaller than the screen in either dimension, then we want to scale it
+            // up to fit both and fill the screen with the image of the remote desktop.
+            if (screenToImageScale > 1.0f) {
                 mRenderData.transform.setScale(screenToImageScale, screenToImageScale);
             }
         }
 
-        repositionImage(true);
+        repositionImage(false);
     }
 
     /**

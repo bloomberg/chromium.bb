@@ -354,12 +354,22 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     private void handleClientSizeChanged(int width, int height) {
         mPanGestureBounds = new Rect(
                 mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
-        mDesktopCanvas.repositionImageWithZoom(true);
+        resizeImageToFitScreen();
     }
 
     private void handleHostSizeChanged(int width, int height) {
-        moveViewport((float) width / 2, (float) height / 2);
+        resizeImageToFitScreen();
+    }
+
+    private void resizeImageToFitScreen() {
         mDesktopCanvas.resizeImageToFitScreen();
+        float screenCenterX;
+        float screenCenterY;
+        synchronized (mRenderData) {
+            screenCenterX = (float) mRenderData.screenWidth / 2;
+            screenCenterY = (float) mRenderData.screenHeight / 2;
+        }
+        moveCursorToScreenPoint(screenCenterX, screenCenterY);
     }
 
     private void setInputStrategy(InputStrategyInterface inputStrategy) {
