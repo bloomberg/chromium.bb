@@ -392,14 +392,15 @@ class SyncStage(generic_stages.BuilderStage):
     # from scratch on a new builder (especially GCE instances).
     if (not repository.IsARepoRoot(self._build_root) and
         self._run.options.repo_cache and
-        os.path.isdir(self._run.options.repo_cache)):
-      # If the warm cache is invalid the wrong branch, or from the wrong
+        repository.IsARepoRoot(self._run.options.repo_cache)):
+      # If the warm cache is invalid, the wrong branch, or from the wrong
       # manifest, Repository will repair it.
       logging.info('Using warm cache "%s" to populate buildroot "%s"',
                    self._run.options.repo_cache,
                    self._build_root)
-      shutil.copytree(self._run.options.repo_cache,
-                      self._build_root)
+
+      shutil.copytree(os.path.join(self._run.options.repo_cache, '.repo'),
+                      os.path.join(self._build_root, '.repo'))
 
     self.repo = self.GetRepoRepository()
 
