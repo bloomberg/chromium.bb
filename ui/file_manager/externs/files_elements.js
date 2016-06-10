@@ -42,3 +42,9 @@ FilesToast.prototype.show = function(text, opt_action) {};
  */
 FilesToast.prototype.hide = function() {};
 
+/**
+ * @constructor
+ * @struct
+ * @extends {PolymerElement}
+ */
+function FilesQuickView() {}

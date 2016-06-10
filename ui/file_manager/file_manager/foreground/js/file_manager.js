@@ -254,6 +254,12 @@ function FileManager() {
   /** @private {ColumnVisibilityController} */
   this.columnVisibilityController_ = null;
 
+  /**
+   * @type {QuickViewController}
+   * @private
+   */
+  this.quickViewController_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -509,6 +515,19 @@ FileManager.prototype = /** @struct */ {
         assert(this.folderShortcutsModel_),
         this.backgroundPage_.background.driveSyncHandler,
         this.selectionHandler_, assert(this.ui_));
+
+    /**@private {!FilesQuickView} */
+    var quickView =/** @type {!FilesQuickView} */
+        (queryRequiredElement('#quick-view'));
+    chrome.commandLinePrivate.hasSwitch(
+        'disable-files-quick-view', function(disabled) {
+          if (!disabled) {
+            this.quickViewController_ = new QuickViewController(
+                quickView,
+                assert(this.metadataModel_), assert(this.selectionHandler_),
+                assert(this.ui_.listContainer));
+          }
+        }.bind(this));
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(
@@ -815,7 +834,6 @@ FileManager.prototype = /** @struct */ {
     assert(this.volumeManager_);
     assert(this.historyLoader_);
     assert(this.dialogDom_);
-    assert(this.metadataModel_);
 
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;

@@ -129,6 +129,7 @@
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">
 //<include src="progress_center_item_group.js">
+//<include src="quick_view_controller.js">
 //<include src="scan_controller.js">
 //<include src="search_controller.js">
 //<include src="share_client.js">

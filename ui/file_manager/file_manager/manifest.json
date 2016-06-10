@@ -163,6 +163,8 @@
     "foreground/elements/files_icon_button.html",
     "foreground/elements/files_icon_button.js",
     "foreground/elements/files_ripple.html",
+    "foreground/elements/files_quick_view.html",
+    "foreground/elements/files_quick_view.js",
     "foreground/elements/files_ripple.js",
     "foreground/elements/files_toast.html",
     "foreground/elements/files_toast.js",

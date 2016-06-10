@@ -83,6 +83,9 @@ const char kDisableCloudImport[] = "disable-cloud-import";
 // Disables the ChromeOS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
 
+// Disable quick view in Files app.
+const char kDisableFilesQuickView[] = "disable-files-quick-view";
+
 // Disable HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
