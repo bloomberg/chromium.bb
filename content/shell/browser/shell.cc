@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -142,7 +143,7 @@ void Shell::CloseAllWindows() {
   std::vector<Shell*> open_windows(windows_);
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   PlatformExit();
 }
 

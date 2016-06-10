@@ -111,7 +111,7 @@ TEST(TemporaryFileStreamTest, Basic) {
 
   // Release everything. The file should be gone now.
   file_stream_waiter.Release();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The temporary should be gone now.
   EXPECT_FALSE(base::PathExists(file_path));

@@ -867,7 +867,7 @@ void BlinkTestController::OnCloseRemainingWindows() {
     if (open_windows[i] != main_window_ && open_windows[i] != devtools_shell)
       open_windows[i]->Close();
   }
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void BlinkTestController::OnResetDone() {

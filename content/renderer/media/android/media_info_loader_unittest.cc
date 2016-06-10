@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/test/mock_webframeclient.h"
 #include "content/test/mock_weburlloader.h"
@@ -84,7 +85,7 @@ class MediaInfoLoaderTest : public testing::Test {
 
     loader_->willFollowRedirect(url_loader_, new_request, redirect_response);
 
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SendResponse(

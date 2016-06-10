@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -125,9 +126,7 @@ class GestureEventQueueTest : public testing::Test,
     queue()->ProcessGestureAck(ack, type, ui::LatencyInfo());
   }
 
-  void RunUntilIdle() {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   size_t GetAndResetSentGestureEventCount() {
     size_t count = sent_gesture_event_count_;

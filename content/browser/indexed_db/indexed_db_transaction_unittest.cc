@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
@@ -198,7 +199,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
 
   // Pump the message loop so that the transaction completes all pending tasks,
   // otherwise it will defer the commit.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
   EXPECT_TRUE(transaction->task_queue_.empty());
@@ -258,7 +259,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
 
   // Pump the message loop so that the transaction completes all pending tasks,
   // otherwise it will defer the commit.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
   EXPECT_TRUE(transaction->task_queue_.empty());
@@ -301,7 +302,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
 
   // Pump the message loop so that the transaction completes all pending tasks,
   // otherwise it will defer the commit.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(observer.abort_task_called());
   transaction->Commit();

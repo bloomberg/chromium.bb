@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/run_loop.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/browser/speech/speech_recognition_engine.h"
@@ -207,7 +208,7 @@ TEST_F(SpeechRecognizerImplTest, StopNoData) {
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
   recognizer_->StopAudioCapture();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -221,7 +222,7 @@ TEST_F(SpeechRecognizerImplTest, CancelNoData) {
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
   recognizer_->AbortRecognition();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -234,7 +235,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // network callback to arrive before completion.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -246,14 +247,14 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   const size_t kNumChunks = 5;
   for (size_t i = 0; i < kNumChunks; ++i) {
     controller->event_handler()->OnData(controller, audio_bus_.get());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     EXPECT_EQ(i + 1, fetcher->upload_chunks().size());
   }
 
   recognizer_->StopAudioCapture();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(audio_started_);
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
@@ -285,7 +286,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   fetcher->SetResponseString(msg_string);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_TRUE(result_received_);
   EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
@@ -296,14 +297,14 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   // Start recording, give some data and then cancel.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller->event_handler()->OnData(controller, audio_bus_.get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   recognizer_->AbortRecognition();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
@@ -317,17 +318,17 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   // with a connection error and verify that the recognizer bubbles the error up
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller->event_handler()->OnData(controller, audio_bus_.get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   recognizer_->StopAudioCapture();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(audio_started_);
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
@@ -341,7 +342,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   fetcher->set_response_code(0);
   fetcher->SetResponseString(std::string());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
@@ -353,17 +354,17 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   // with a 500 error and verify that the recognizer bubbles the error up
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller->event_handler()->OnData(controller, audio_bus_.get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   recognizer_->StopAudioCapture();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(audio_started_);
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
@@ -376,7 +377,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   fetcher->set_response_code(500);
   fetcher->SetResponseString("Internal Server Error");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_FALSE(result_received_);
   EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
@@ -387,13 +388,13 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
   // Check if things tear down properly if AudioInputController threw an error.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller->event_handler()->OnError(controller,
       AudioInputController::UNKNOWN_ERROR);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -406,14 +407,14 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   // after giving some audio data.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
   controller->event_handler()->OnData(controller, audio_bus_.get());
   controller->event_handler()->OnError(controller,
       AudioInputController::UNKNOWN_ERROR);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(url_fetcher_factory_.GetFetcherByID(0));
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
@@ -427,7 +428,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   // This should trigger the no-speech detector and issue a callback.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -438,7 +439,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, audio_bus_.get());
   }
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
@@ -453,7 +454,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
   // triggered.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -473,13 +474,13 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
     controller->event_handler()->OnData(controller, audio_bus_.get());
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   recognizer_->AbortRecognition();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CheckFinalEventsConsistency();
 }
 
@@ -490,7 +491,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   // samples and proper volume for the loud audio.
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
@@ -504,17 +505,17 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, audio_bus_.get());
   }
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(-1.0f, volume_);  // No audio volume set yet.
 
   // The vector is already filled with zero value samples on create.
   controller->event_handler()->OnData(controller, audio_bus_.get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FLOAT_EQ(0.74939233f, volume_);
 
   FillPacketWithTestWaveform();
   controller->event_handler()->OnData(controller, audio_bus_.get());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_NEAR(0.89926866f, volume_, 0.00001f);
   EXPECT_FLOAT_EQ(0.75071919f, noise_volume_);
 
@@ -522,7 +523,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   recognizer_->AbortRecognition();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CheckFinalEventsConsistency();
 }
 

@@ -98,7 +98,7 @@ TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
     // PostTaskAndReply to the IO thread and expects the reply to process
     // on the main render thread to clean up its resources. However, the
     // QuitClosure above ends before that.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   EXPECT_EQ(1, sink.number_of_frames());
   native_track->RemoveSink(&sink);

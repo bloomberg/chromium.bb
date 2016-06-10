@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -115,7 +116,7 @@ void AddMessagesToFilter(IPC::MessageFilter* message_filter,
   for (size_t i = 0; i < events.size(); ++i)
     message_filter->OnMessageReceived(events[i]);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 template <typename T>
@@ -330,19 +331,19 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
 
   // Second event was queued; ack the first.
   filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(4u, ipc_sink_.message_count());
   EXPECT_EQ(2u, message_recorder_.message_count());
 
   // Third event won't be coalesced into the second because modifiers are
   // different.
   filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // The last events will be coalesced.
   filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::MouseWheel);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // First two messages should be identical.
@@ -408,19 +409,19 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
 
   // Second event was queued; ack the first.
   filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(4u, ipc_sink_.message_count());
   EXPECT_EQ(2u, message_recorder_.message_count());
 
   // Third event won't be coalesced into the second because modifiers are
   // different.
   filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // The last events will be coalesced.
   filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchMove);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, message_recorder_.message_count());
 
   // First two messages should be identical.
@@ -503,7 +504,7 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   {
     // Second event was queued; ack the first.
     filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchStart);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(2u, message_recorder_.message_count());
 
     const IPC::Message& message = message_recorder_.message_at(1);
@@ -524,7 +525,7 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   {
     // Third event should be put in the queue.
     filter_->NotifyInputEventHandled(kTestRoutingID, WebInputEvent::TouchEnd);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(3u, message_recorder_.message_count());
 
     const IPC::Message& message = message_recorder_.message_at(2);

@@ -729,7 +729,7 @@ const std::string kScript("script.js");
 void RunNestedUntilIdle() {
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void OnIOComplete(int* rv_out, int rv) {

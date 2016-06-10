@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_read_observer.h"
@@ -195,7 +196,7 @@ TEST_F(StreamTest, Stream) {
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
   writer.Write(stream.get(), buffer, kBufferSize);
   stream->Finalize();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(reader.completed());
 
   ASSERT_EQ(reader.buffer()->capacity(), kBufferSize);
@@ -222,7 +223,7 @@ TEST_F(StreamTest, ClosedReaderDoesNotReturnStreamEmpty) {
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
   stream->AddData(buffer, kBufferSize);
   stream->Finalize();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(reader.completed());
   EXPECT_EQ(0, reader.buffer()->capacity());
 }
@@ -308,7 +309,7 @@ TEST_F(StreamTest, MemoryExceedMemoryUsageLimit) {
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
   writer1.Write(stream1.get(), buffer, kBufferSize);
   // Make transfer happen.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   writer2.Write(stream2.get(), buffer, kBufferSize);
 
@@ -337,7 +338,7 @@ TEST_F(StreamTest, UnderMemoryUsageLimit) {
   writer.Write(stream.get(), buffer, kBufferSize);
 
   // Run loop to make |reader| consume the data.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   writer.Write(stream.get(), buffer, kBufferSize);
 
@@ -360,13 +361,13 @@ TEST_F(StreamTest, Flush) {
   writer.Write(stream.get(), buffer, kBufferSize);
 
   // Run loop to make |reader| consume the data.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, reader.buffer()->capacity());
 
   stream->Flush();
 
   // Run loop to make |reader| consume the data.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kBufferSize, reader.buffer()->capacity());
 
   EXPECT_EQ(stream.get(), registry_->GetStream(url).get());

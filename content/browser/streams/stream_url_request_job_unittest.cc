@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_registry.h"
@@ -83,7 +84,7 @@ class StreamURLRequestJobTest : public testing::Test {
       request_->SetExtraRequestHeaders(extra_headers);
     request_->Start();
 
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Verify response.
     EXPECT_TRUE(request_->status().is_success());
@@ -139,7 +140,7 @@ TEST_F(StreamURLRequestJobTest, TestGetNonExistentStreamRequest) {
   request_->set_method("GET");
   request_->Start();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify response.
   EXPECT_FALSE(request_->status().is_success());

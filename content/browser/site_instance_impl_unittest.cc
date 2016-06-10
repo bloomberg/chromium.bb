@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/browsing_instance.h"
@@ -136,7 +137,7 @@ class SiteInstanceTest : public testing::Test {
     // We don't just do this in TearDown() because we create TestBrowserContext
     // objects in each test, which will be destructed before
     // TearDown() is called.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     message_loop_.RunUntilIdle();
   }
 

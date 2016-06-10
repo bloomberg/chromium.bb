@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -161,7 +162,7 @@ class InputRouterImplTest : public testing::Test {
 
   void TearDown() override {
     // Process all pending tasks to avoid leaks.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     input_router_.reset();
     client_.reset();
@@ -718,7 +719,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   // The coalesced events can queue up a delayed ack
   // so that additional input events can be processed before
   // we turn off coalescing.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
           InputMsg_HandleInputEvent::ID));
@@ -732,7 +733,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   // Ack the second event (which had the third coalesced into it).
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
@@ -746,7 +747,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   // Ack the fourth event.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
@@ -759,7 +760,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // Ack the fifth event.
   SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
@@ -773,7 +774,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }

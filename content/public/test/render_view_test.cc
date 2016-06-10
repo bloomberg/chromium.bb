@@ -632,7 +632,7 @@ void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
     // Processing is delayed because of a Blink bug:
     // https://bugs.webkit.org/show_bug.cgi?id=16976 See
     // PasswordAutofillAgent::TextDidChangeInTextField() for details.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -655,7 +655,7 @@ void RenderViewTest::SimulateUserInputChangeForElement(
   // form.
   EXPECT_EQ(new_value, input->value().utf8().substr(0, new_value.length()));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {

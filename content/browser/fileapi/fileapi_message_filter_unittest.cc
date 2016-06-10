@@ -11,8 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/streams/stream_registry.h"
@@ -78,7 +78,7 @@ class FileAPIMessageFilterTest : public testing::Test {
         stream_context_);
 
     // Complete initialization.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -102,7 +102,7 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   filter->OnChannelConnected(0);
 
   // Complete initialization.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   int request_id = 0;
   const GURL kUrl("filesystem:http://example.com/temporary/foo");
@@ -113,7 +113,7 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   filter->OnChannelClosing();
 
   // This shouldn't cause DCHECK failure.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
@@ -137,7 +137,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   filter2->OnChannelConnected(1);
 
   // Complete initialization.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   int request_id = 0;
   const GURL kUrl("filesystem:http://example.com/temporary/foo");
@@ -148,7 +148,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   filter2->OnChannelClosing();
 
   // This shouldn't cause DCHECK failure.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
@@ -184,7 +184,7 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
   EXPECT_EQ(0, bytes_read);
 
   // Run loop to finish transfer.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(Stream::STREAM_COMPLETE,
             stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read));
@@ -214,7 +214,7 @@ TEST_F(FileAPIMessageFilterTest, BuildNonEmptyStream) {
   EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
   int bytes_read = 0;
@@ -261,7 +261,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
   int bytes_read = 0;

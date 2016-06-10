@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -55,7 +56,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
                                  browser_context_->GetSpecialStoragePolicy(),
                                  quota_manager->proxy(),
                                  task_runner_.get());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     setup_temp_dir();
   }
 
@@ -73,7 +74,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     FlushIndexedDBTaskRunner();
     idb_context_ = NULL;
     browser_context_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
@@ -86,7 +87,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
     FlushIndexedDBTaskRunner();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_GT(usage_, -1);
     return usage_;
   }
@@ -99,7 +100,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
     FlushIndexedDBTaskRunner();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
@@ -113,7 +114,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
     FlushIndexedDBTaskRunner();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return origins_;
   }
 
@@ -126,7 +127,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
                    weak_factory_.GetWeakPtr()));
     FlushIndexedDBTaskRunner();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return delete_status_;
   }
 

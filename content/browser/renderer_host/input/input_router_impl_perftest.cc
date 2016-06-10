@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
@@ -223,7 +224,7 @@ class InputRouterImplPerfTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     input_router_.reset();
     ack_handler_.reset();

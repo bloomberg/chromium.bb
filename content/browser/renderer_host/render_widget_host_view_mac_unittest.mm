@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "content/browser/browser_thread_impl.h"
@@ -268,7 +269,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   void RecycleAndWait() {
     pool_.Recycle();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     pool_.Recycle();
   }
 
@@ -913,7 +914,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   // render view receives it.
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseEnded), 0);
   [NSApp postEvent:event2 atStart:NO];
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2U, process_host->sink().message_count());
 
   // Clean up.

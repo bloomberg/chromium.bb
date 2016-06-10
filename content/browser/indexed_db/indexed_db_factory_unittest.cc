@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -483,7 +484,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
     EXPECT_TRUE(factory()->IsDatabaseOpen(origin, db_name));
 
     // Pump the message loop so the upgrade transaction can run.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(callbacks->connection());
     callbacks->connection()->database()->Commit(transaction_id);
 
