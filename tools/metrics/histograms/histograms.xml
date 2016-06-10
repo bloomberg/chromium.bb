@@ -85139,21 +85139,57 @@ To add a new entry, add it with any value and run test to compute valid value.
   <summary>
     The hash of a lower case process name generated using metrics::HashName.
   </summary>
+  <int value="-2031320757" label="naio.exe"/>
   <int value="-1975402871" label="windbg.exe"/>
   <int value="-1883802758" label="chrome.exe"/>
+  <int value="-1861811955" label="origin.exe"/>
+  <int value="-1794024814" label="avpui.exe"/>
   <int value="-1728702815" label="devenv.exe"/>
+  <int value="-1700192260" label="outlook.exe"/>
+  <int value="-1524496827" label="client.exe"/>
+  <int value="-1478451048" label="nexus.exe"/>
+  <int value="-1121730033" label="firefox.exe"/>
+  <int value="-1119614451" label="idman.exe"/>
+  <int value="-958751916" label="qq.exe"/>
   <int value="-642217101" label="new_chrome.exe"/>
+  <int value="-590220378" label="phped.exe"/>
+  <int value="-569935454" label="itype.exe"/>
   <int value="-319883659" label="perl.exe"/>
   <int value="-214303849" label="userinit.exe"/>
+  <int value="-113003297" label="launchy.exe"/>
+  <int value="-105465200" label="discord.exe"/>
   <int value="-84282901" label="cmd.exe"/>
   <int value="-46738700" label="svchost.exe"/>
+  <int value="-918169" label="wlmail.exe"/>
   <int value="0" label="Unknown"/>
   <int value="98111354" label="explorer.exe"/>
+  <int value="160270488" label="node.exe"/>
+  <int value="169714319" label="idea.exe"/>
+  <int value="179238190" label="botweb.exe"/>
+  <int value="309035343" label="mailbird.exe"/>
+  <int value="373915621" label="skype.exe"/>
+  <int value="533327338" label="raidcall.exe"/>
+  <int value="575047983" label="tween.exe"/>
+  <int value="683573237" label="dropbox.exe"/>
+  <int value="693432326" label="steam.exe"/>
+  <int value="729198307" label="excel.exe"/>
   <int value="742620152" label="python.exe"/>
+  <int value="747859312" label="courier.exe"/>
+  <int value="1000072556" label="java.exe"/>
   <int value="1408608854" label="old_chrome.exe"/>
+  <int value="1412988381" label="claunch.exe"/>
   <int value="1590408389" label="services.exe"/>
   <int value="1614875030" label="taskeng.exe"/>
+  <int value="1630952668" label="line.exe"/>
+  <int value="1641914182" label="winword.exe"/>
+  <int value="1660748446" label="acad.exe"/>
+  <int value="1775984853" label="spotify.exe"/>
+  <int value="1896894115" label="filmora.exe"/>
   <int value="1914315258" label="cdb.exe"/>
+  <int value="1941932935" label="javaw.exe"/>
+  <int value="1943061727" label="fiddler.exe"/>
+  <int value="1976535553" label="jsvmail.exe"/>
+  <int value="2011028983" label="pcman.exe"/>
 </enum>
 
 <enum name="ProcessType" type="int">
