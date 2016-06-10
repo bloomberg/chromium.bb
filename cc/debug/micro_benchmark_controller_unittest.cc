@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -143,7 +144,7 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkImplRan) {
   layer_tree_host_impl_->CommitComplete();
 
   // Make sure all posted messages run.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, run_count);
 }
