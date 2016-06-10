@@ -232,7 +232,8 @@ public class DownloadNotificationServiceTest extends
         manager.mDownloads.clear();
         DownloadManagerService.setIsNetworkMeteredForTest(false);
         resumeAllDownloads(service);
-        assertEquals(2, manager.mDownloads.size());
+        assertEquals(1, manager.mDownloads.size());
+        assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid1);
     }
 
     @SmallTest

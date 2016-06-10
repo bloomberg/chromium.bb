@@ -63,6 +63,7 @@ public class DownloadNotificationService extends Service {
     private final IBinder mBinder = new LocalBinder();
     private final List<DownloadSharedPreferenceEntry> mDownloadSharedPreferenceEntries =
             new ArrayList<DownloadSharedPreferenceEntry>();
+    private final List<String> mDownloadsInProgress = new ArrayList<String>();
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
     private Context mContext;
@@ -170,6 +171,9 @@ public class DownloadNotificationService extends Service {
                             fileName));
         }
         updateNotification(notificationId, builder.build());
+        if (!mDownloadsInProgress.contains(downloadGuid)) {
+            mDownloadsInProgress.add(downloadGuid);
+        }
     }
 
     /**
@@ -191,6 +195,7 @@ public class DownloadNotificationService extends Service {
     void cancelNotification(int notificaitonId, String downloadGuid) {
         mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificaitonId);
         removeSharedPreferenceEntry(downloadGuid);
+        mDownloadsInProgress.remove(downloadGuid);
     }
 
     /**
@@ -232,6 +237,7 @@ public class DownloadNotificationService extends Service {
         if (!entry.isResumable || !isAutoResumable) {
             removeSharedPreferenceEntry(downloadGuid);
         }
+        mDownloadsInProgress.remove(downloadGuid);
     }
 
     /**
@@ -253,6 +259,7 @@ public class DownloadNotificationService extends Service {
         }
         updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
+        mDownloadsInProgress.remove(downloadGuid);
         return notificationId;
     }
 
@@ -276,6 +283,7 @@ public class DownloadNotificationService extends Service {
                 mContext.getResources().getString(R.string.download_notification_failed));
         updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
+        mDownloadsInProgress.remove(downloadGuid);
     }
 
     /**
@@ -478,7 +486,8 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Resumes all pending downloads from |mDownloadSharedPreferenceEntries|.
+     * Resumes all pending downloads from |mDownloadSharedPreferenceEntries|. If a download is
+     * already in progress, do nothing.
      */
     public void resumeAllPendingDownloads() {
         boolean isNetworkMetered = DownloadManagerService.isActiveNetworkMetered(mContext);
@@ -488,8 +497,9 @@ public class DownloadNotificationService extends Service {
         for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
             if (!entry.canDownloadWhileMetered && isNetworkMetered) continue;
-            notifyDownloadProgress(entry.downloadGuid, entry.fileName, INVALID_DOWNLOAD_PERCENTAGE,
-                    0, 0, true, entry.canDownloadWhileMetered);
+            if (mDownloadsInProgress.contains(entry.downloadGuid)) continue;
+            notifyDownloadProgress(entry.downloadGuid, entry.fileName,
+                    INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true, entry.canDownloadWhileMetered);
             service.resumeDownload(entry.buildDownloadItem(), false);
         }
     }
