@@ -60,5 +60,18 @@
         'nfc.mojom',
       ],
     },
+    {
+      'target_name': 'device_nfc_mojo_bindings_for_blink',
+      'type': 'static_library',
+      'variables': {
+        'for_blink': 'true',
+      },
+      'includes': [
+        '../../mojo/mojom_bindings_generator.gypi',
+      ],
+      'sources': [
+        'nfc.mojom',
+      ],
+    },
   ],
 }

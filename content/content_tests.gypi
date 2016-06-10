@@ -1005,6 +1005,7 @@
       'type': 'static_library',
       'dependencies': [
         'content.gyp:content_renderer',
+        '../device/nfc/nfc.gyp:device_nfc_mojo_bindings',
         'test_support_content',
         '../components/scheduler/scheduler.gyp:scheduler_test_support',
         '../components/test_runner/test_runner.gyp:test_runner',

@@ -67,6 +67,7 @@ source_set("test_support") {
     "//content/renderer:for_content_tests",
     "//content/shell:pak",
     "//content/utility:for_content_tests",
+    "//device/nfc:mojo_bindings",
     "//ipc:test_support",
     "//ipc/mojo",
     "//media",
