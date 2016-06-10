@@ -210,7 +210,9 @@ def SplitClovisTask(task):
     task.ActionParams()['traces'] = traces
 
   # Compute the split key.
-  split_params_for_action = {'trace': ('urls', 1), 'report': ('traces', 5)}
+  # Keep the tasks small, but large enough to avoid "rate exceeded" errors when
+  # pulling them from the TaskQueue.
+  split_params_for_action = {'trace': ('urls', 3), 'report': ('traces', 5)}
   (split_key, slice_size) = split_params_for_action.get(task.Action(),
                                                         (None, 0))
   if not split_key:
