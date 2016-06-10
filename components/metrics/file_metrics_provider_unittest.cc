@@ -37,7 +37,9 @@ class HistogramFlattenerDeltaRecorder : public base::HistogramFlattener {
 
   void RecordDelta(const base::HistogramBase& histogram,
                    const base::HistogramSamples& snapshot) override {
-    recorded_delta_histogram_names_.push_back(histogram.histogram_name());
+    // Only remember locally created histograms; they have exactly 2 chars.
+    if (histogram.histogram_name().length() == 2)
+      recorded_delta_histogram_names_.push_back(histogram.histogram_name());
   }
 
   void InconsistencyDetected(base::HistogramBase::Inconsistency problem)
@@ -70,16 +72,22 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
   const size_t kSmallFileSize = 64 << 10;  // 64 KiB
   const size_t kLargeFileSize =  2 << 20;  //  2 MiB
 
+  enum : int { kMaxCreateHistograms = 10 };
+
   FileMetricsProviderTest()
       : create_large_files_(GetParam()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_),
+        statistics_recorder_(
+            base::StatisticsRecorder::CreateTemporaryForTesting()),
         prefs_(new TestingPrefServiceSimple) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     FileMetricsProvider::RegisterPrefs(prefs_->registry(), kMetricsName);
   }
 
   ~FileMetricsProviderTest() override {
+    // Clear out any final remaining tasks.
+    task_runner_->RunUntilIdle();
     // If a global histogram allocator exists at this point then it likely
     // acquired histograms that will continue to point to the released
     // memory and potentially cause use-after-free memory corruption.
@@ -98,15 +106,55 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
     return provider_.get();
   }
 
-  void OnDidCreateMetricsLog() { provider()->OnDidCreateMetricsLog(); }
+  void OnDidCreateMetricsLog() {
+    provider()->OnDidCreateMetricsLog();
+  }
 
-  void RecordHistogramSnapshots(
+  bool HasInitialStabilityMetrics() {
+    return provider()->HasInitialStabilityMetrics();
+  }
+
+  void MergeHistogramDeltas() {
+    provider()->MergeHistogramDeltas();
+  }
+
+  void RecordInitialHistogramSnapshots(
       base::HistogramSnapshotManager* snapshot_manager) {
-    provider()->RecordHistogramSnapshots(snapshot_manager);
+    provider()->RecordInitialHistogramSnapshots(snapshot_manager);
+  }
+
+  size_t GetSnapshotHistogramCount() {
+    // Merge the data from the allocator into the StatisticsRecorder.
+    provider()->MergeHistogramDeltas();
+
+    // Flatten what is known to see what has changed since the last time.
+    HistogramFlattenerDeltaRecorder flattener;
+    base::HistogramSnapshotManager snapshot_manager(&flattener);
+    // "true" to the begin() includes histograms held in persistent storage.
+    snapshot_manager.PrepareDeltas(
+        base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
+        base::Histogram::kNoFlags, base::Histogram::kNoFlags);
+    return flattener.GetRecordedDeltaHistogramNames().size();
+  }
+
+  void CreateGlobalHistograms(int histogram_count) {
+    DCHECK_GT(kMaxCreateHistograms, histogram_count);
+
+    // Create both sparse and normal histograms in the allocator.
+    created_histograms_[0] = base::SparseHistogram::FactoryGet("h0", 0);
+    created_histograms_[0]->Add(0);
+    for (int i = 1; i < histogram_count; ++i) {
+      created_histograms_[i] = base::Histogram::FactoryGet(
+          base::StringPrintf("h%d", i), 1, 100, 10, 0);
+      created_histograms_[i]->Add(i);
+    }
   }
 
   void RunTasks() {
-    task_runner_->RunUntilIdle();
+    // Run pending tasks twice: Once for IPC calls, once for replies. Don't
+    // use RunUntilIdle() because that can do more work than desired.
+    task_runner_->RunPendingTasks();
+    task_runner_->RunPendingTasks();
   }
 
   void WriteMetricsFile(const base::FilePath& path,
@@ -136,12 +184,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
         create_large_files_ ? kLargeFileSize : kSmallFileSize,
         0, kMetricsName);
 
-    // Create both sparse and normal histograms in the allocator.
-    base::SparseHistogram::FactoryGet("h0", 0)->Add(0);
-    for (int i = 1; i < histogram_count; ++i) {
-      base::Histogram::FactoryGet(base::StringPrintf("h%d", i), 1, 100, 10, 0)
-          ->Add(i);
-    }
+    CreateGlobalHistograms(histogram_count);
 
     std::unique_ptr<base::PersistentHistogramAllocator> histogram_allocator =
         base::GlobalHistogramAllocator::ReleaseForTesting();
@@ -149,15 +192,22 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
     return histogram_allocator;
   }
 
- private:
+  base::HistogramBase* GetCreatedHistogram(int index) {
+    DCHECK_GT(kMaxCreateHistograms, index);
+    return created_histograms_[index];
+  }
+
   const bool create_large_files_;
 
+ private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
+  std::unique_ptr<base::StatisticsRecorder> statistics_recorder_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<FileMetricsProvider> provider_;
+  base::HistogramBase* created_histograms_[kMaxCreateHistograms];
 
   DISALLOW_COPY_AND_ASSIGN(FileMetricsProviderTest);
 };
@@ -166,6 +216,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
 INSTANTIATE_TEST_CASE_P(SmallAndLargeFiles,
                         FileMetricsProviderTest,
                         testing::Bool());
+
 
 TEST_P(FileMetricsProviderTest, AccessMetrics) {
   ASSERT_FALSE(PathExists(metrics_file()));
@@ -185,28 +236,13 @@ TEST_P(FileMetricsProviderTest, AccessMetrics) {
   // Record embedded snapshots via snapshot-manager.
   OnDidCreateMetricsLog();
   RunTasks();
-  {
-    HistogramFlattenerDeltaRecorder flattener;
-    base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-    EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
-  }
+  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  EXPECT_FALSE(base::PathExists(metrics_file()));
 
   // Make sure a second call to the snapshot-recorder doesn't break anything.
-  {
-    HistogramFlattenerDeltaRecorder flattener;
-    base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-    EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
-  }
-  EXPECT_TRUE(base::PathExists(metrics_file()));
   OnDidCreateMetricsLog();
   RunTasks();
-  EXPECT_FALSE(base::PathExists(metrics_file()));
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
 
   // File should have been deleted but recreate it to test behavior should
   // the file not be deleteable by this process.
@@ -216,15 +252,7 @@ TEST_P(FileMetricsProviderTest, AccessMetrics) {
   // Second full run on the same file should produce nothing.
   OnDidCreateMetricsLog();
   RunTasks();
-  {
-    HistogramFlattenerDeltaRecorder flattener;
-    base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-    EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
-  }
-  RunTasks();
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
   EXPECT_FALSE(base::PathExists(metrics_file()));
 
   // Recreate the file to indicate that it is "new" and must be recorded.
@@ -235,17 +263,7 @@ TEST_P(FileMetricsProviderTest, AccessMetrics) {
   // This run should again have "new" histograms.
   OnDidCreateMetricsLog();
   RunTasks();
-  {
-    HistogramFlattenerDeltaRecorder flattener;
-    base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-    EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
-  }
-  EXPECT_TRUE(base::PathExists(metrics_file()));
-  OnDidCreateMetricsLog();
-  RunTasks();
+  EXPECT_EQ(2U, GetSnapshotHistogramCount());
   EXPECT_FALSE(base::PathExists(metrics_file()));
 }
 
@@ -318,16 +336,7 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
     // Record embedded snapshots via snapshot-manager.
     OnDidCreateMetricsLog();
     RunTasks();
-
-    HistogramFlattenerDeltaRecorder flattener;
-    base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-
-    EXPECT_EQ(expect_order[i],
-              flattener.GetRecordedDeltaHistogramNames().size())
-        << i;
+    EXPECT_EQ(expect_order[i], GetSnapshotHistogramCount()) << i;
   }
 
   EXPECT_FALSE(base::PathExists(metrics_files.path().AppendASCII("a1.pma")));
@@ -337,6 +346,52 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
   EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII(".foo.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII("_bar.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII("baz")));
+}
+
+TEST_P(FileMetricsProviderTest, AccessReadWriteMetrics) {
+  // Create a global histogram allocator that maps to a file.
+  ASSERT_FALSE(PathExists(metrics_file()));
+  base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
+  base::GlobalHistogramAllocator::CreateWithFile(
+      metrics_file(),
+      create_large_files_ ? kLargeFileSize : kSmallFileSize,
+      0, kMetricsName);
+  CreateGlobalHistograms(2);
+  ASSERT_TRUE(PathExists(metrics_file()));
+  base::HistogramBase* h0 = GetCreatedHistogram(0);
+  base::HistogramBase* h1 = GetCreatedHistogram(1);
+  DCHECK(h0);
+  DCHECK(h1);
+  std::unique_ptr<base::PersistentHistogramAllocator> histogram_allocator =
+      base::GlobalHistogramAllocator::ReleaseForTesting();
+
+  // Register the file and allow the "checker" task to run.
+  provider()->RegisterSource(metrics_file(),
+                             FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
+                             FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
+                             kMetricsName);
+
+  // Record embedded snapshots via snapshot-manager.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  EXPECT_TRUE(base::PathExists(metrics_file()));
+
+  // Make sure a second call to the snapshot-recorder doesn't break anything.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+  EXPECT_TRUE(base::PathExists(metrics_file()));
+
+  // Change a histogram and ensure that it's counted.
+  h0->Add(0);
+  EXPECT_EQ(1U, GetSnapshotHistogramCount());
+  EXPECT_TRUE(base::PathExists(metrics_file()));
+
+  // Change the other histogram and verify.
+  h1->Add(11);
+  EXPECT_EQ(1U, GetSnapshotHistogramCount());
+  EXPECT_TRUE(base::PathExists(metrics_file()));
 }
 
 TEST_P(FileMetricsProviderTest, AccessInitialMetrics) {
@@ -351,35 +406,28 @@ TEST_P(FileMetricsProviderTest, AccessInitialMetrics) {
                              kMetricsName);
 
   // Record embedded snapshots via snapshot-manager.
-  provider()->HasInitialStabilityMetrics();
+  HasInitialStabilityMetrics();
   RunTasks();
   {
     HistogramFlattenerDeltaRecorder flattener;
     base::HistogramSnapshotManager snapshot_manager(&flattener);
     snapshot_manager.StartDeltas();
-    provider()->RecordInitialHistogramSnapshots(&snapshot_manager);
+    RecordInitialHistogramSnapshots(&snapshot_manager);
     snapshot_manager.FinishDeltas();
     EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
   }
   EXPECT_TRUE(base::PathExists(metrics_file()));
-  provider()->OnDidCreateMetricsLog();
+  OnDidCreateMetricsLog();
   RunTasks();
   EXPECT_FALSE(base::PathExists(metrics_file()));
 
   // A run for normal histograms should produce nothing.
   CreateMetricsFileWithHistograms(2);
-  provider()->OnDidCreateMetricsLog();
+  OnDidCreateMetricsLog();
   RunTasks();
-  {
-    HistogramFlattenerDeltaRecorder flattener;
-    base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
-    provider()->RecordHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
-    EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
-  }
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
   EXPECT_TRUE(base::PathExists(metrics_file()));
-  provider()->OnDidCreateMetricsLog();
+  OnDidCreateMetricsLog();
   RunTasks();
   EXPECT_TRUE(base::PathExists(metrics_file()));
 }

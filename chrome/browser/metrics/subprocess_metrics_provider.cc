@@ -61,7 +61,7 @@ void SubprocessMetricsProvider::MergeHistogramDeltasFromAllocator(
     std::unique_ptr<base::HistogramBase> histogram = hist_iter.GetNext();
     if (!histogram)
       break;
-    allocator->MergeHistogramToStatisticsRecorder(histogram.get());
+    allocator->MergeHistogramDeltaToStatisticsRecorder(histogram.get());
     ++histogram_count;
   }
 

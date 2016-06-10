@@ -4,6 +4,7 @@
 
 #include "base/metrics/persistent_histogram_allocator.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/bucket_ranges.h"
@@ -126,6 +127,35 @@ TEST_F(PersistentHistogramAllocatorTest, CreateAndIterateTest) {
   EXPECT_FALSE(recovered);
 }
 
+TEST_F(PersistentHistogramAllocatorTest, CreateWithFileTest) {
+  const char temp_name[] = "CreateWithFileTest";
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath temp_file = temp_dir.path().AppendASCII(temp_name);
+  const size_t temp_size = 64 << 10;  // 64 KiB
+
+  // Test creation of a new file.
+  GlobalHistogramAllocator::ReleaseForTesting();
+  GlobalHistogramAllocator::CreateWithFile(temp_file, temp_size, 0, temp_name);
+  EXPECT_EQ(std::string(temp_name),
+            GlobalHistogramAllocator::Get()->memory_allocator()->Name());
+
+  // Test re-open of a possibly-existing file.
+  GlobalHistogramAllocator::ReleaseForTesting();
+  GlobalHistogramAllocator::CreateWithFile(temp_file, temp_size, 0, "");
+  EXPECT_EQ(std::string(temp_name),
+            GlobalHistogramAllocator::Get()->memory_allocator()->Name());
+
+  // Test re-open of an known-existing file.
+  GlobalHistogramAllocator::ReleaseForTesting();
+  GlobalHistogramAllocator::CreateWithFile(temp_file, 0, 0, "");
+  EXPECT_EQ(std::string(temp_name),
+            GlobalHistogramAllocator::Get()->memory_allocator()->Name());
+
+  // Final release so file and temp-dir can be removed.
+  GlobalHistogramAllocator::ReleaseForTesting();
+}
+
 TEST_F(PersistentHistogramAllocatorTest, StatisticsRecorderTest) {
   size_t starting_sr_count = StatisticsRecorder::GetHistogramCount();
 
@@ -160,7 +190,7 @@ TEST_F(PersistentHistogramAllocatorTest, StatisticsRecorderTest) {
   ASSERT_TRUE(recovered);
 
   // Merge the recovered histogram to the SR. It will always be a new object.
-  recovery.MergeHistogramToStatisticsRecorder(recovered.get());
+  recovery.MergeHistogramDeltaToStatisticsRecorder(recovered.get());
   EXPECT_EQ(starting_sr_count + 1, StatisticsRecorder::GetHistogramCount());
   HistogramBase* found =
       StatisticsRecorder::FindHistogram(recovered->histogram_name());
