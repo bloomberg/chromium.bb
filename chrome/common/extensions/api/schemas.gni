@@ -33,6 +33,9 @@ if (enable_app_list) {
 }
 
 uncompiled_sources = gypi_values.main_non_compiled_schema_files
+if (is_chromeos) {
+  uncompiled_sources += gypi_values.chromeos_non_compiled_schema_files
+}
 
 root_namespace = "extensions::api::%(namespace)s"
 schema_include_rules = "extensions/common/api:extensions::api::%(namespace)s"

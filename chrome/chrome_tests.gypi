@@ -2410,6 +2410,7 @@
         ['chromeos == 1', {
           'sources': [ '<@(chrome_browser_tests_chromeos_sources)' ],
           'sources!': [
+            # GN version: //chrome/test/browser_tests
             '../apps/load_and_launch_browsertest.cc',
             'browser/policy/policy_startup_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
@@ -2417,7 +2418,6 @@
             # chromeos does not support profile list avatar menu
             'browser/profiles/profile_list_desktop_browsertest.cc',
             'browser/service_process/service_process_control_browsertest.cc',
-            'browser/signin/signin_browsertest.cc',
             # bookmark sign in promo not used on chromeos
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
             # chromeos does not use cross-platform panels
@@ -2426,6 +2426,8 @@
             'browser/ui/webui/signin/inline_login_ui_browsertest.cc',
             # chromeos does not use the desktop user manager
             'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
+
+            # GN version: //chrome/test/browser_tests_js_webui
             # chromeos does not use the desktop user manager
             'test/data/webui/md_user_manager/user_manager_browsertest.js'
           ],
@@ -2438,6 +2440,7 @@
           ],
         }, {  # Non-ChromeOS
           'sources!': [
+            # GN version: //chrome/test/browser_tests
             'browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc',
             'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc',
             'browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc',

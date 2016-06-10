@@ -714,6 +714,8 @@ if (!is_android) {
         "data/webui/settings/bluetooth_page_browsertest_chromeos.js",
         "data/webui/settings/easy_unlock_browsertest_chromeos.js",
       ]
+    } else {
+      sources -= [ "data/webui/md_user_manager/user_manager_browsertest.js" ]
     }
     if (is_mac) {
       sources -= [
@@ -1110,6 +1112,7 @@ if (!is_android) {
               "//chrome")
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
+        "../browser/policy/policy_startup_browsertest.cc",
         "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
         "../browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc",
 
