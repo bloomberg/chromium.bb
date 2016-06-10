@@ -238,10 +238,7 @@ class VulkanOutputSurface : public cc::OutputSurface {
   VulkanOutputSurface(
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       std::unique_ptr<ExternalBeginFrameSource> begin_frame_source)
-      : OutputSurface(nullptr,
-                      nullptr,
-                      std::move(vulkan_context_provider),
-                      nullptr),
+      : OutputSurface(std::move(vulkan_context_provider)),
         begin_frame_source_(std::move(begin_frame_source)) {}
 
   ~VulkanOutputSurface() override { Destroy(); }
