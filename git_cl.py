@@ -2339,8 +2339,21 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     """Upload the current branch to Gerrit."""
     if options.squash and options.no_squash:
       DieWithError('Can only use one of --squash or --no-squash')
+    # TODO(tandrii): remove this by June 20.
+    if (RunGit(['config', '--bool', 'gerrit.squash-uploads'],
+               error_ok=True).strip() != 'false' and not options.squash and
+        not options.no_squash):
+        print('\n\nHi! You are using git cl upload in --no-squash mode.\n'
+              'Chrome infrastructure wants to make --squash the default.\n'
+              'To ensure that --no-squash is still the default for YOU do:\n'
+              '   git config --bool gerrit.squash-uploads false\n'
+              'See https://goo.gl/dnK2gV (use chromium.org account!) and '
+              'let us know what you think. Thanks!\n'
+              'BUG: http://crbug.com/611892\n\n')
+
     options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
                       not options.no_squash)
+
     # We assume the remote called "origin" is the one we want.
     # It is probably not worthwhile to support different workflows.
     gerrit_remote = 'origin'
@@ -2870,10 +2883,6 @@ def DownloadGerritHook(force):
       if not force:
         return
     try:
-      print(
-          'WARNING: installing Gerrit commit-msg hook.\n'
-          '         This behavior of git cl will soon be disabled.\n'
-          '         See bug http://crbug.com/579176.')
       urlretrieve(src, dst)
       if not hasSheBang(dst):
         DieWithError('Not a script: %s\n'
