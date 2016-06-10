@@ -164,16 +164,18 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
 }
 
 // Multi-process mode.
-// Flaky on win and Linux: https://crbug.com/594884.
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestMemoryInfra) {
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
   PerformDumpMemoryTestActions();
 }
 
 // Single-process mode.
-// Flaky on Windows and Linux: https://crbug.com/594884
-// Linux ASan: https://crbug.com/585026
-IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest,
-    DISABLED_TestMemoryInfra) {
+// Linux ASan: https://crbug.com/585026.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
+#else
+#define MAYBE_TestMemoryInfra TestMemoryInfra
+#endif
+IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest, MAYBE_TestMemoryInfra) {
   PerformDumpMemoryTestActions();
 }
 
