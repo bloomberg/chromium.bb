@@ -26,30 +26,17 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddDrawInterval(base::TimeDelta interval) = 0;
 
   // Latency measurements
-  virtual void AddBeginMainFrameToCommitDuration(base::TimeDelta duration,
-                                                 base::TimeDelta estimate,
-                                                 bool affects_estimate) = 0;
+  virtual void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) = 0;
+      base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) = 0;
+      base::TimeDelta duration) = 0;
   virtual void AddBeginMainFrameStartToCommitDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) = 0;
-  virtual void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
-                                                  base::TimeDelta estimate,
-                                                  bool affects_estimate) = 0;
-  virtual void AddPrepareTilesDuration(base::TimeDelta duration,
-                                       base::TimeDelta estimate,
-                                       bool affects_estimate) = 0;
-  virtual void AddActivateDuration(base::TimeDelta duration,
-                                   base::TimeDelta estimate,
-                                   bool affects_estimate) = 0;
-  virtual void AddDrawDuration(base::TimeDelta duration,
-                               base::TimeDelta estimate,
-                               bool affects_estimate) = 0;
+      base::TimeDelta duration) = 0;
+  virtual void AddCommitToReadyToActivateDuration(base::TimeDelta duration) = 0;
+  virtual void AddPrepareTilesDuration(base::TimeDelta duration) = 0;
+  virtual void AddActivateDuration(base::TimeDelta duration) = 0;
+  virtual void AddDrawDuration(base::TimeDelta duration) = 0;
   virtual void AddSwapToAckLatency(base::TimeDelta duration) = 0;
 
   // Synchronization measurements
@@ -79,69 +66,21 @@ const int kUmaDurationMinMicros = 1;
 const int64_t kUmaDurationMaxMicros = base::Time::kMicrosecondsPerSecond / 5;
 const int kUmaDurationBucketCount = 100;
 
-// Deprecated because they combine Browser and Renderer stats and have low
-// precision.
-// TODO(brianderson): Remove.
-void DeprecatedDrawDurationUMA(base::TimeDelta duration,
-                               base::TimeDelta estimate) {
-  base::TimeDelta duration_overestimate;
-  base::TimeDelta duration_underestimate;
-  if (duration > estimate)
-    duration_underestimate = duration - estimate;
-  else
-    duration_overestimate = estimate - duration;
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDuration", duration,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100), 50);
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationUnderestimate",
-                             duration_underestimate,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100), 50);
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationOverestimate",
-                             duration_overestimate,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100), 50);
-}
-
 #define UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(name, sample)                     \
   UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample.InMicroseconds(),                \
                               kUmaDurationMinMicros, kUmaDurationMaxMicros, \
                               kUmaDurationBucketCount);
 
-// Records over/under estimates.
 #define REPORT_COMPOSITOR_TIMING_HISTORY_UMA(category, subcategory)            \
   do {                                                                         \
-    base::TimeDelta duration_overestimate;                                     \
-    base::TimeDelta duration_underestimate;                                    \
-    if (duration > estimate)                                                   \
-      duration_underestimate = duration - estimate;                            \
-    else                                                                       \
-      duration_overestimate = estimate - duration;                             \
     UMA_HISTOGRAM_CUSTOM_TIMES_MICROS(                                         \
         "Scheduling." category "." subcategory "Duration", duration);          \
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling." category "." subcategory   \
-                                      "Duration.Underestimate",                \
-                                      duration_underestimate);                 \
-    UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling." category "." subcategory   \
-                                      "Duration.Overestimate",                 \
-                                      duration_overestimate);                  \
-    if (!affects_estimate) {                                                   \
-      UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling." category "." subcategory \
-                                        "Duration.NotUsedForEstimate",         \
-                                        duration);                             \
-    }                                                                          \
   } while (false)
 
-// Does not record over/under estimates.
 #define REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(category, subcategory)           \
   do {                                                                         \
     UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling." category "." subcategory,  \
                                       duration);                               \
-    if (!affects_estimate) {                                                   \
-      UMA_HISTOGRAM_CUSTOM_TIMES_MICROS("Scheduling." category "." subcategory \
-                                        ".NotUsedForEstimate",                 \
-                                        duration);                             \
-    }                                                                          \
   } while (false)
 
 class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
@@ -168,55 +107,42 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
                                       interval);
   }
 
-  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration,
-                                         base::TimeDelta estimate,
-                                         bool affects_estimate) override {
+  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "BeginMainFrameToCommit");
   }
 
   void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) override {
+      base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
         "Renderer", "BeginMainFrameQueueDurationCritical");
   }
 
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) override {
+      base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
         "Renderer", "BeginMainFrameQueueDurationNotCritical");
   }
 
-  void AddBeginMainFrameStartToCommitDuration(base::TimeDelta duration,
-                                              bool affects_estimate) override {
+  void AddBeginMainFrameStartToCommitDuration(
+      base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
         "Renderer", "BeginMainFrameStartToCommitDuration");
   }
 
-  void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
-                                          base::TimeDelta estimate,
-                                          bool affects_estimate) override {
+  void AddCommitToReadyToActivateDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "CommitToReadyToActivate");
   }
 
-  void AddPrepareTilesDuration(base::TimeDelta duration,
-                               base::TimeDelta estimate,
-                               bool affects_estimate) override {
+  void AddPrepareTilesDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "PrepareTiles");
   }
 
-  void AddActivateDuration(base::TimeDelta duration,
-                           base::TimeDelta estimate,
-                           bool affects_estimate) override {
+  void AddActivateDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "Activate");
   }
 
-  void AddDrawDuration(base::TimeDelta duration,
-                       base::TimeDelta estimate,
-                       bool affects_estimate) override {
+  void AddDrawDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Renderer", "Draw");
-    DeprecatedDrawDurationUMA(duration, estimate);
   }
 
   void AddSwapToAckLatency(base::TimeDelta duration) override {
@@ -254,55 +180,42 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
                                       interval);
   }
 
-  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration,
-                                         base::TimeDelta estimate,
-                                         bool affects_estimate) override {
+  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "BeginMainFrameToCommit");
   }
 
   void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) override {
+      base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
         "Browser", "BeginMainFrameQueueDurationCritical");
   }
 
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) override {
+      base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2(
         "Browser", "BeginMainFrameQueueDurationNotCritical");
   }
 
-  void AddBeginMainFrameStartToCommitDuration(base::TimeDelta duration,
-                                              bool affects_estimate) override {
+  void AddBeginMainFrameStartToCommitDuration(
+      base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA2("Browser",
                                           "BeginMainFrameStartToCommit");
   }
 
-  void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
-                                          base::TimeDelta estimate,
-                                          bool affects_estimate) override {
+  void AddCommitToReadyToActivateDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "CommitToReadyToActivate");
   }
 
-  void AddPrepareTilesDuration(base::TimeDelta duration,
-                               base::TimeDelta estimate,
-                               bool affects_estimate) override {
+  void AddPrepareTilesDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "PrepareTiles");
   }
 
-  void AddActivateDuration(base::TimeDelta duration,
-                           base::TimeDelta estimate,
-                           bool affects_estimate) override {
+  void AddActivateDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "Activate");
   }
 
-  void AddDrawDuration(base::TimeDelta duration,
-                       base::TimeDelta estimate,
-                       bool affects_estimate) override {
+  void AddDrawDuration(base::TimeDelta duration) override {
     REPORT_COMPOSITOR_TIMING_HISTORY_UMA("Browser", "Draw");
-    DeprecatedDrawDurationUMA(duration, estimate);
   }
 
   void AddSwapToAckLatency(base::TimeDelta duration) override {
@@ -324,29 +237,17 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   }
   void AddCommitInterval(base::TimeDelta interval) override {}
   void AddDrawInterval(base::TimeDelta interval) override {}
-  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration,
-                                         base::TimeDelta estimate,
-                                         bool affects_estimate) override {}
+  void AddBeginMainFrameToCommitDuration(base::TimeDelta duration) override {}
   void AddBeginMainFrameQueueDurationCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) override {}
+      base::TimeDelta duration) override {}
   void AddBeginMainFrameQueueDurationNotCriticalDuration(
-      base::TimeDelta duration,
-      bool affects_estimate) override {}
-  void AddBeginMainFrameStartToCommitDuration(base::TimeDelta duration,
-                                              bool affects_estimate) override {}
-  void AddCommitToReadyToActivateDuration(base::TimeDelta duration,
-                                          base::TimeDelta estimate,
-                                          bool affects_estimate) override {}
-  void AddPrepareTilesDuration(base::TimeDelta duration,
-                               base::TimeDelta estimate,
-                               bool affects_estimate) override {}
-  void AddActivateDuration(base::TimeDelta duration,
-                           base::TimeDelta estimate,
-                           bool affects_estimate) override {}
-  void AddDrawDuration(base::TimeDelta duration,
-                       base::TimeDelta estimate,
-                       bool affects_estimate) override {}
+      base::TimeDelta duration) override {}
+  void AddBeginMainFrameStartToCommitDuration(
+      base::TimeDelta duration) override {}
+  void AddCommitToReadyToActivateDuration(base::TimeDelta duration) override {}
+  void AddPrepareTilesDuration(base::TimeDelta duration) override {}
+  void AddActivateDuration(base::TimeDelta duration) override {}
+  void AddDrawDuration(base::TimeDelta duration) override {}
   void AddSwapToAckLatency(base::TimeDelta duration) override {}
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
 };
@@ -594,8 +495,7 @@ void CompositorTimingHistory::DidBeginMainFrame() {
       BeginMainFrameToCommitDurationEstimate();
   if (ShouldReportUma()) {
     uma_reporter_->AddBeginMainFrameToCommitDuration(
-        begin_main_frame_sent_to_commit_duration,
-        begin_main_frame_sent_to_commit_estimate, enabled_);
+        begin_main_frame_sent_to_commit_duration);
   }
   rendering_stats_instrumentation_->AddBeginMainFrameToCommitDuration(
       begin_main_frame_sent_to_commit_duration,
@@ -604,16 +504,16 @@ void CompositorTimingHistory::DidBeginMainFrame() {
   if (ShouldReportUma() && begin_main_frame_start_time_is_valid) {
     if (begin_main_frame_on_critical_path_) {
       uma_reporter_->AddBeginMainFrameQueueDurationCriticalDuration(
-          begin_main_frame_queue_duration, enabled_);
+          begin_main_frame_queue_duration);
     } else {
       uma_reporter_->AddBeginMainFrameQueueDurationNotCriticalDuration(
-          begin_main_frame_queue_duration, enabled_);
+          begin_main_frame_queue_duration);
     }
   }
 
   if (ShouldReportUma()) {
     uma_reporter_->AddBeginMainFrameStartToCommitDuration(
-        begin_main_frame_start_to_commit_duration, enabled_);
+        begin_main_frame_start_to_commit_duration);
   }
 
   if (enabled_) {
@@ -658,8 +558,7 @@ void CompositorTimingHistory::DidPrepareTiles() {
 
   base::TimeDelta prepare_tiles_duration = Now() - prepare_tiles_start_time_;
   if (ShouldReportUma()) {
-    uma_reporter_->AddPrepareTilesDuration(
-        prepare_tiles_duration, PrepareTilesDurationEstimate(), enabled_);
+    uma_reporter_->AddPrepareTilesDuration(prepare_tiles_duration);
   }
   if (enabled_)
     prepare_tiles_duration_history_.InsertSample(prepare_tiles_duration);
@@ -682,8 +581,7 @@ void CompositorTimingHistory::ReadyToActivate() {
   base::TimeDelta commit_to_ready_to_activate_estimate =
       CommitToReadyToActivateDurationEstimate();
   if (ShouldReportUma()) {
-    uma_reporter_->AddCommitToReadyToActivateDuration(
-        time_since_commit, commit_to_ready_to_activate_estimate, enabled_);
+    uma_reporter_->AddCommitToReadyToActivateDuration(time_since_commit);
   }
   rendering_stats_instrumentation_->AddCommitToActivateDuration(
       time_since_commit, commit_to_ready_to_activate_estimate);
@@ -706,8 +604,7 @@ void CompositorTimingHistory::DidActivate() {
   base::TimeDelta activate_duration = Now() - activate_start_time_;
 
   if (ShouldReportUma()) {
-    uma_reporter_->AddActivateDuration(activate_duration,
-                                       ActivateDurationEstimate(), enabled_);
+    uma_reporter_->AddActivateDuration(activate_duration);
   }
   if (enabled_)
     activate_duration_history_.InsertSample(activate_duration);
@@ -746,7 +643,7 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
                                                     draw_estimate);
 
   if (ShouldReportUma()) {
-    uma_reporter_->AddDrawDuration(draw_duration, draw_estimate, enabled_);
+    uma_reporter_->AddDrawDuration(draw_duration);
   }
 
   if (enabled_) {
