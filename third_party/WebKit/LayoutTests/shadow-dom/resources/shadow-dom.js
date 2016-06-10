@@ -72,7 +72,13 @@ function createTestTree(node) {
   function attachShadowFromTemplate(template) {
     let parent = template.parentNode;
     parent.removeChild(template);
-    let shadowRoot = parent.attachShadow({mode: template.getAttribute('data-mode')});
+    let shadowRoot;
+    if (template.getAttribute('data-mode') === 'v0') {
+      // For legacy Shadow DOM
+      shadowRoot = parent.createShadowRoot();
+    } else {
+      shadowRoot = parent.attachShadow({mode: template.getAttribute('data-mode')});
+    }
     let id = template.id;
     if (id) {
       shadowRoot.id = id;
@@ -156,6 +162,26 @@ function dispatchUAEventWithLog(nodes, target, eventType, callback) {
   }
   callback(target);
   return log;
+}
+
+function makeExpectedEventPathLog(path) {
+  let expectedLog = [];
+  for (let i of path) {
+    expectedLog.push([i, null, path]);
+  }
+  return expectedLog;
+}
+
+function debugEventLog(log) {
+  for (let i = 0; i < log.length; i++) {
+    console.log('[' + i + '] currentTarget: ' + log[i][0] + ' relatedTarget: ' + log[i][1] + ' composedPath(): ' + log[i][2]);
+  }
+}
+
+function debugCreateTestTree(nodes) {
+  for (let k in nodes) {
+    console.log(k + ' -> ' + nodes[k]);
+  }
 }
 
 // This function assumes that testharness.js is available.

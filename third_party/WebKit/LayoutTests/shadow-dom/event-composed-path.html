@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/shadow-dom.js"></script>
+
+<div id="test1">
+  <template id="shadowroot" data-mode="open">
+    <slot id="slot" name="slot"></slot>
+  </template>
+  <input id="input" slot="slot">
+</div>
+
+<div id="test2">
+  <template id="shadowroot" data-mode="open">
+    <slot id="slot" name="slot"></slot>
+  </template>
+  <div id="input-parent" slot="slot">
+    <input id="input">
+  </div>
+</div>
+
+<div id="test3">
+  <template id="open_shadow" data-mode="open">
+    <div id="inner_open">
+      <template id="open_shadow_in_open_shadow" data-mode="open">
+        <spen id="target_open" tabindex="0">open</spen>
+      </template>
+    </div>
+  </template>
+</div>
+
+<div id="test4">
+  <template id="closed_shadow" data-mode="closed">
+    <div id="inner_closed">
+      <template id="open_shadow_in_closed_shadow" data-mode="open">
+        <spen id="target_closed" tabindex="0">closed</spen>
+      </template>
+    </div>
+  </template>
+</div>
+
+<script>
+function makeExpectedEventPathLog(path) {
+  let expectedLog = [];
+  for (let i of path) {
+    expectedLog.push([i, null, path]);
+  }
+  return expectedLog;
+}
+
+test(() => {
+  const event = new Event('my-event');
+  let dispatched = false;
+  let target = document.createElement('div');
+  target.addEventListener('my-event', (e) => {
+    assert_array_equals(e.composedPath(), [target]);
+    dispatched = true;
+  });
+  assert_array_equals(event.composedPath(), []);
+  target.dispatchEvent(event);
+  assert_true(dispatched);
+  assert_array_equals(event.composedPath(), []);
+}, "Event.composedPath() should return an empty array before/after dispatching an event");
+
+test(() => {
+  let n = createTestTree(test1);
+  removeWhiteSpaceOnlyTextNodes(n.test1);
+  let log = dispatchEventWithLog(n, n.input, new Event('my-event', { bubbles: true, composed: true }));
+  assert_event_path_equals(log, makeExpectedEventPathLog(['input', 'slot', 'shadowroot', 'test1']));
+}, 'Triggered in a slotted element, eventPath should go through shadow tree.');
+
+test(() => {
+  let n = createTestTree(test2);
+  removeWhiteSpaceOnlyTextNodes(n.test2);
+  let log = dispatchEventWithLog(n, n.input, new Event('my-event', { bubbles: true, composed: true }));
+  assert_event_path_equals(log, makeExpectedEventPathLog(['input', 'input-parent', 'slot', 'shadowroot', 'test2']));
+}, 'EventPath works fine when event happens to a descendant of a slotted element.');
+
+test(() => {
+  let n = createTestTree(test3);
+  removeWhiteSpaceOnlyTextNodes(n.test3);
+  let log = dispatchEventWithLog(n, n.target_open, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target_open', 'open_shadow_in_open_shadow', 'inner_open', 'open_shadow', 'test3']
+  assert_event_path_equals(log, makeExpectedEventPathLog(path));
+}, 'EventPath for Open > Open');
+
+test(() => {
+  let n = createTestTree(test4);
+  removeWhiteSpaceOnlyTextNodes(n.test4);
+  let log = dispatchEventWithLog(n, n.target_closed, new Event('my-event', { bubbles: true, composed: true }));
+  let path = ['target_closed', 'open_shadow_in_closed_shadow', 'inner_closed', 'closed_shadow', 'test4']
+  assert_event_path_equals(log,
+                           [['target_closed', null, path],
+                            ['open_shadow_in_closed_shadow', null, path],
+                            ['inner_closed', null, path],
+                            ['closed_shadow', null, path],
+                            ['test4', null, ['test4']]]);
+}, 'EventPath for Closed > Open');
+</script>
