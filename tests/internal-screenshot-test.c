@@ -68,6 +68,24 @@ TEST(internal_screenshot)
 	assert(client);
 	surface = client->surface->wl_surface;
 
+	/*
+	 * We are racing our screenshooting against weston-desktop-shell
+	 * setting the cursor. If w-d-s wins, our screenshot will have a cursor
+	 * shown, which makes the image comparison fail. Our window and the
+	 * default pointer position are accidentally causing an overlap that
+	 * intersects our test clip rectangle.
+	 *
+	 * w-d-s wins very rarely though, so the race is easy to miss. You can
+	 * make it happen by putting a delay before the call to
+	 * create_client_and_test_surface().
+	 *
+	 * The weston_test_move_pointer() below makes the race irrelevant, as
+	 * the cursor won't overlap with anything we care about.
+	 */
+
+	/* Move the pointer away from the screenshot area. */
+	weston_test_move_pointer(client->test->weston_test, 0, 0);
+
 	buf = create_shm_buffer(client, 100, 100, &pixels);
 	draw_stuff(pixels, 100, 100);
 	wl_surface_attach(surface, buf, 0, 0);
