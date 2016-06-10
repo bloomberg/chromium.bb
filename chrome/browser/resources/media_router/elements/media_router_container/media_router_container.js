@@ -1178,11 +1178,11 @@ Polymer({
 
   /**
    * @param {?media_router.Route} route Route to get the sink for.
-   * @return {?media_router.Sink|undefined} Sink associated with |route| or
+   * @return {?media_router.Sink} Sink associated with |route| or
    *     undefined if we don't have data for the sink.
    */
   getSinkForRoute_: function(route) {
-    return this.sinkMap_[route.sinkId];
+    return route ? this.sinkMap_[route.sinkId] : null;
   },
 
   /**
