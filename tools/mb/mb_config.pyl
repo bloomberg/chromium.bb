@@ -379,7 +379,7 @@
       'Chromium Linux ChromeOS MSan Builder':
         'swarming_gyp_chromeos_msan_release_bot',
       'Chromium Linux MSan Builder':
-        'swarming_gyp_msan_release_bot',
+        'swarming_msan_gn_release_bot',
       'Chromium Linux TSan Builder':
         'swarming_tsan_disable_nacl_gn_release_bot',
       'Chromium Windows Builder (DrMemory x64)':
@@ -755,7 +755,7 @@
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
       'linux_chromium_gn_chromeos_variable': 'findit',
       'linux_chromium_gn_upload': 'gn_linux_upload',
-      'linux_chromium_msan_rel_ng': 'swarming_msan_gyp_release_trybot',
+      'linux_chromium_msan_rel_ng': 'swarming_msan_gn_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_tsan_rel_ng':
         'swarming_tsan_disable_nacl_gn_release_trybot',
@@ -1866,8 +1866,12 @@
       'swarming', 'tsan', 'disable_nacl', 'gn', 'release_trybot',
     ],
 
-    'swarming_msan_gyp_release_trybot': [
-      'swarming', 'msan', 'gyp', 'release_trybot',
+    'swarming_msan_gn_release_bot': [
+      'swarming', 'msan', 'gn', 'release_bot',
+    ],
+
+    'swarming_msan_gn_release_trybot': [
+      'swarming', 'msan', 'gn', 'release_trybot',
     ],
 
     'win_clang_debug_bot': [
