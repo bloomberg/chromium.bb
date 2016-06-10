@@ -13417,6 +13417,11 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
 
 void GLES2DecoderImpl::DoCommitOverlayPlanes() {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCommitOverlayPlanes");
+  if (!supports_commit_overlay_planes_) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCommitOverlayPlanes",
+                       "command not supported by surface");
+    return;
+  }
   if (supports_async_swap_) {
     surface_->CommitOverlayPlanesAsync(base::Bind(
         &GLES2DecoderImpl::FinishSwapBuffers, base::AsWeakPtr(this)));
