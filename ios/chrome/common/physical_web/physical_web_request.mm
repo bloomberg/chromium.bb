@@ -104,6 +104,14 @@ std::string GetUserAgent() {
   [request_ setValue:base::SysUTF8ToNSString(GetUserAgent())
       forHTTPHeaderField:@"User-Agent"];
 
+  // Set the Accept-Language header from the locale language code. This may
+  // cause us to fetch metadata for the wrong region in languages such as
+  // Chinese that vary significantly between regions.
+  // TODO(mattreynolds): Use the same Accept-Language string as WKWebView.
+  NSString* acceptLanguage =
+      [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
+  [request_ setValue:acceptLanguage forHTTPHeaderField:@"Acccept-Language"];
+
   startDate_.reset([[NSDate date] retain]);
   // Starts the request.
   NSURLSession* session =
