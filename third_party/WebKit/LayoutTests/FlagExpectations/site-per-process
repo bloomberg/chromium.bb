@@ -9,6 +9,7 @@ http/tests/navigation/form-targets-cross-site-frame.html [ Timeout ]
 
 # https://crbug.com/611154 - DCHECK in NavigatorImpl::DidStartProvisionalLoad.
 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+http/tests/security/upgrade-insecure-requests/iframe-upgrade-csp.https.html [ Crash ]
 
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
