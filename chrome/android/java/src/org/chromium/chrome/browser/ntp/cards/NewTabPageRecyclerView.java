@@ -46,6 +46,9 @@ public class NewTabPageRecyclerView extends RecyclerView {
      */
     private int mCompensationHeight;
 
+    /** View used to calculate the position of the cards' snap point. */
+    private View mAboveTheFoldView;
+
     /**
      * Constructor needed to inflate from XML.
      */
@@ -107,6 +110,19 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return mLayoutManager;
     }
 
+    public void setAboveTheFoldView(View aboveTheFoldView) {
+        mAboveTheFoldView = aboveTheFoldView;
+    }
+
+    /** Scroll up from the cards' current position and snap to present the first one. */
+    public void showCardsFrom(int cardCurrentScroll) {
+        // Offset the target scroll by the height of the omnibox (the top padding).
+        final int targetScroll = mAboveTheFoldView.getHeight() - mAboveTheFoldView.getPaddingTop();
+        // If (somehow) the peeking card is tapped while midway through the transition,
+        // we need to account for how much we have already scrolled.
+        smoothScrollBy(0, targetScroll - cardCurrentScroll);
+    }
+
     /**
      * Updates the space added at the end of the list to make sure the above/below the fold
      * distinction can be preserved.
@@ -137,16 +153,28 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
         ViewHolder lastContentItem = findViewHolderForAdapterPosition(lastContentItemPosition);
         ViewHolder snapItem = findViewHolderForAdapterPosition(SNAP_ITEM_ADAPTER_POSITION);
-        if (lastContentItem == null || snapItem == null) {
-            // Can happen when the list is refreshed while the NTP is not shown, for example when
-            // changing settings.
-            Log.w(TAG, "The RecyclerView items are not attached, can't determine the content "
-                            + "height: snap=%s, last=%s ", snapItem, lastContentItem);
-            return MIN_BOTTOM_SPACING;
-        }
 
-        int contentHeight = lastContentItem.itemView.getBottom() - snapItem.itemView.getTop();
-        int bottomSpacing = getHeight() - mToolbarHeight - contentHeight + mCompensationHeight;
+        int bottomSpacing = getHeight() - mToolbarHeight;
+        if (lastContentItem == null || snapItem == null) {
+            // This can happen in several cases, where some elements are not visible and the
+            // RecyclerView didn't already attach them. We handle it by just adding space to make
+            // sure that we never run out and force the UI to jump around and get stuck in a
+            // position that breaks the animations. The height will be properly adjusted at the
+            // next pass. Known cases that make it necessary:
+            //  - The card list is refreshed while the NTP is not shown, for example when changing
+            //    the sync settings.
+            //  - Dismissing a snippet and having the status card coming to take its place.
+            //  - Refresh while being below the fold, for example by tapping the status card.
+
+            if (snapItem != null) bottomSpacing -= snapItem.itemView.getTop();
+
+            Log.w(TAG, "The RecyclerView items are not attached, can't determine the content "
+                            + "height: snap=%s, last=%s. Using full height: %d ",
+                    snapItem, lastContentItem, bottomSpacing);
+        } else {
+            int contentHeight = lastContentItem.itemView.getBottom() - snapItem.itemView.getTop();
+            bottomSpacing -= contentHeight - mCompensationHeight;
+        }
 
         return Math.max(MIN_BOTTOM_SPACING, bottomSpacing);
     }
@@ -154,6 +182,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
     /** Called when an item is in the process of being removed from the view. */
     void onItemDismissStarted(View itemView) {
         mCompensationHeight += itemView.getHeight();
+        refreshBottomSpacing();
     }
 
     /** Called when an item has finished being removed from the view. */

@@ -44,12 +44,12 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
+import org.chromium.chrome.browser.ntp.cards.CardItemDecoration;
 import org.chromium.chrome.browser.ntp.cards.CardsLayoutOperations;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetItemDecoration;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -241,6 +241,11 @@ public class NewTabPageView extends FrameLayout
          * @param callback Callback to run after fetching completes (successful or not).
          */
         void fetchSnippetImage(SnippetArticle snippet, Callback<Bitmap> callback);
+
+        /**
+         * Requests new snippets.
+         */
+        void fetchSnippets();
     }
 
     /**
@@ -290,6 +295,7 @@ public class NewTabPageView extends FrameLayout
                     (NewTabPageLayout) LayoutInflater.from(getContext())
                             .inflate(R.layout.new_tab_page_layout, mRecyclerView, false);
             mNewTabPageLayout.setUseCardsUiEnabled(mUseCardsUi);
+            mRecyclerView.setAboveTheFoldView(mNewTabPageLayout);
 
             // Tailor the LayoutParams for the snippets UI, as the configuration in the XML is
             // made for the ScrollView UI.
@@ -415,7 +421,7 @@ public class NewTabPageView extends FrameLayout
                 }
             });
             initializeSearchBoxRecyclerViewScrollHandling();
-            mRecyclerView.addItemDecoration(new SnippetItemDecoration());
+            mRecyclerView.addItemDecoration(new CardItemDecoration(getContext()));
             CardsLayoutOperations.updateSnippetsHeaderDisplay(mRecyclerView,
                     mNewTabPageLayout.getPaddingTop());
         } else {
@@ -495,8 +501,7 @@ public class NewTabPageView extends FrameLayout
                     mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
                 }
                 updateSearchBoxOnScroll();
-                CardsLayoutOperations
-                        .updatePeekingCard(mRecyclerView, mNewTabPageLayout, getHeight());
+                CardsLayoutOperations.updatePeekingCard(mRecyclerView, getHeight());
                 CardsLayoutOperations.updateSnippetsHeaderDisplay(mRecyclerView,
                         mNewTabPageLayout.getPaddingTop());
             }
@@ -836,7 +841,7 @@ public class NewTabPageView extends FrameLayout
         updateSearchBoxOnScroll();
 
         if (mUseCardsUi) {
-            CardsLayoutOperations.updatePeekingCard(mRecyclerView, mNewTabPageLayout, getHeight());
+            CardsLayoutOperations.updatePeekingCard(mRecyclerView, getHeight());
         }
     }
 
@@ -1100,7 +1105,7 @@ public class NewTabPageView extends FrameLayout
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (mUseCardsUi) {
-            CardsLayoutOperations.updatePeekingCard(mRecyclerView, mNewTabPageLayout, getHeight());
+            CardsLayoutOperations.updatePeekingCard(mRecyclerView, getHeight());
         }
     }
 

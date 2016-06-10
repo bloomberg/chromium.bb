@@ -1900,6 +1900,12 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_SNIPPETS_HEADER" desc="Header for a group of content snippets">
         Articles for you
       </message>
+      <message name="IDS_NTP_STATUS_CARD_TITLE_EMPTY" desc="Title of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
+        All Read
+      </message>
+      <message name="IDS_NTP_STATUS_CARD_BODY_EMPTY" desc="Body of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
+        More cards will appear when the time is right.
+      </message>
 
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">

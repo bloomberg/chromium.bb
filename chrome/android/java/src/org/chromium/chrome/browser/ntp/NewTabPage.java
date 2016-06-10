@@ -630,6 +630,12 @@ public class NewTabPage
 
             mSnippetsBridge.fetchSnippetImage(snippet, callback);
         }
+
+        @Override
+        public void fetchSnippets() {
+            if (mIsDestroyed) return;
+            SnippetsBridge.fetchSnippets();
+        }
     };
 
     /**

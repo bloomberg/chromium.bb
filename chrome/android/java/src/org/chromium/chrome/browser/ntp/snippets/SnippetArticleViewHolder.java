@@ -16,10 +16,8 @@ import android.os.AsyncTask;
 import android.support.annotation.IntDef;
 import android.support.v4.text.BidiFormatter;
 import android.text.format.DateUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,8 +30,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ import java.net.URL;
 /**
  * A class that represents the view for a single card snippet.
  */
-public class SnippetArticleViewHolder extends NewTabPageViewHolder implements View.OnClickListener {
+public class SnippetArticleViewHolder extends CardViewHolder {
     private static final String TAG = "NtpSnippets";
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
@@ -76,40 +75,28 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
     public static final int DEFAULT_FAVICON = 3;
 
     /**
-     * Creates the CardView object to display snippets information
-     *
-     * @param parent The parent view for the card
-     * @return a CardView object for displaying snippets
-     */
-    public static View createView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.new_tab_page_snippets_card, parent, false);
-    }
-
-    /**
      * Constructs a SnippetCardItemView item used to display snippets
      *
-     * @param cardView The View for the snippet card
+     * @param parent The ViewGroup that is going to contain the newly created view.
      * @param manager The SnippetsManager object used to open an article
      */
-    public SnippetArticleViewHolder(final View cardView, NewTabPageManager manager) {
-        super(cardView);
+    public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager) {
+        super(R.layout.new_tab_page_snippets_card, parent);
 
         mNewTabPageManager = manager;
-        cardView.setOnClickListener(this);
-        mThumbnailView = (ImageView) cardView.findViewById(R.id.article_thumbnail);
-        mHeadlineTextView = (TextView) cardView.findViewById(R.id.article_headline);
-        mPublisherTextView = (TextView) cardView.findViewById(R.id.article_publisher);
-        mArticleSnippetTextView = (TextView) cardView.findViewById(R.id.article_snippet);
+        mThumbnailView = (ImageView) itemView.findViewById(R.id.article_thumbnail);
+        mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
+        mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
+        mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
 
         mPreDrawObserver = new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
                 if (mArticle != null && !mArticle.impressionTracked()) {
-                    Rect r = new Rect(0, 0, cardView.getWidth(), cardView.getHeight());
-                    cardView.getParent().getChildVisibleRect(cardView, r, null);
+                    Rect r = new Rect(0, 0, itemView.getWidth(), itemView.getHeight());
+                    itemView.getParent().getChildVisibleRect(itemView, r, null);
                     // Track impression if at least one third of the snippet is shown.
-                    if (r.height() >= cardView.getHeight() / 3) mArticle.trackImpression();
+                    if (r.height() >= itemView.getHeight() / 3) mArticle.trackImpression();
                 }
                 // Proceed with the current drawing pass.
                 return true;
@@ -117,27 +104,29 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         };
 
         // Listen to onPreDraw only if this view is potentially visible (attached to the window).
-        cardView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+        itemView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                cardView.getViewTreeObserver().addOnPreDrawListener(mPreDrawObserver);
+                itemView.getViewTreeObserver().addOnPreDrawListener(mPreDrawObserver);
             }
 
             @Override
             public void onViewDetachedFromWindow(View v) {
-                cardView.getViewTreeObserver().removeOnPreDrawListener(mPreDrawObserver);
+                itemView.getViewTreeObserver().removeOnPreDrawListener(mPreDrawObserver);
             }
         });
     }
 
     @Override
-    public void onClick(View v) {
+    public void onCardTapped() {
         mNewTabPageManager.openSnippet(mArticle.mUrl);
         mArticle.trackClick();
     }
 
     @Override
     public void onBindViewHolder(NewTabPageListItem article) {
+        super.onBindViewHolder(article);
+
         mArticle = (SnippetArticle) article;
 
         mHeadlineTextView.setText(mArticle.mTitle);

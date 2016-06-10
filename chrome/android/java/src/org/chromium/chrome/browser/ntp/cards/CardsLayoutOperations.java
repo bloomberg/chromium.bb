@@ -5,16 +5,13 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.MostVisitedLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
 
 /**
  * This is a class to organise the various layout operations of the New Tab Page while using the
@@ -22,69 +19,25 @@ import org.chromium.chrome.browser.util.MathUtils;
  * behaviour.
  */
 public class CardsLayoutOperations {
-
     /**
-     * Change the width, padding and child opacity of the first card (the peeking card) to give a
-     * smooth transition as the user scrolls. The peeking card will scroll to the Articles on touch.
-     * @param recyclerView The NewTabPageRecyclerView that contains the peeking card.
-     * @param ntpLayout The NewTabPageLayout to scroll beyond when the peeking card is tapped.
+     * Refresh the peeking state of the first card.
+     * @param recyclerView The NewTabPageRecyclerView that contains the cards.
      * @param viewportHeight The height of the containing view, to calculate when the transition
      *          should start.
      */
-    public static void updatePeekingCard(final NewTabPageRecyclerView recyclerView,
-            final NewTabPageLayout ntpLayout, int viewportHeight) {
+    public static void updatePeekingCard(
+            final NewTabPageRecyclerView recyclerView, int viewportHeight) {
         // Get the first snippet that could display to make the peeking card transition.
-        ViewGroup firstSnippet = (ViewGroup) getFirstViewMatchingViewType(recyclerView,
-                NewTabPageListItem.VIEW_TYPE_SNIPPET);
+        int firstCardIndex = 2; // 0 => above-the-fold, 1 => header, 2 => card
+        RecyclerView.ViewHolder viewHolder =
+                recyclerView.findViewHolderForAdapterPosition(firstCardIndex);
 
-        if (firstSnippet == null || !firstSnippet.isShown()) return;
-
-        // If first snippet exists change the peeking card margin and padding to change its
-        // width when scrolling.
-        // Value used for max peeking card height and padding.
-        int maxPadding = recyclerView.getResources().getDimensionPixelSize(
-                R.dimen.snippets_padding_and_peeking_card_height);
-
-        // The peeking card's resting position is |maxPadding| from the bottom of the screen hence
-        // |viewportHeight - maxPadding|, and it grows the further it gets from this.
-        // Also, make sure the |padding| is between 0 and |maxPadding|.
-        final int padding =
-                MathUtils.clamp(viewportHeight - maxPadding - firstSnippet.getTop(), 0, maxPadding);
-
-        // Modify the padding so as the margin increases, the padding decreases, keeping the card's
-        // contents in the same position. The top and bottom remain the same.
-        firstSnippet.setPadding(padding, maxPadding, padding, maxPadding);
-
-        RecyclerView.LayoutParams params =
-                (RecyclerView.LayoutParams) firstSnippet.getLayoutParams();
-        params.leftMargin = maxPadding - padding;
-        params.rightMargin = maxPadding - padding;
-
-        // Set the opacity of the card content to be 0 when peeking and 1 when full width.
-        int firstSnippetChildCount = firstSnippet.getChildCount();
-        for (int i = 0; i < firstSnippetChildCount; ++i) {
-            View snippetChild = firstSnippet.getChildAt(i);
-            snippetChild.setAlpha(padding / (float) maxPadding);
+        if (viewHolder == null || !(viewHolder instanceof CardViewHolder)
+                || !viewHolder.itemView.isShown()) {
+            return;
         }
 
-        // If the peeking card is peeking, set its onClick to scroll to the articles section.
-        // If not, reset its onClick to its ViewHolder.
-        if (padding < maxPadding) {
-            firstSnippet.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Offset the target scroll by the height of the omnibox (the top padding).
-                    final int targetScroll = ntpLayout.getHeight() - ntpLayout.getPaddingTop();
-                    // If (somehow) the peeking card is tapped while midway through the transition,
-                    // we need to account for how much we have already scrolled.
-                    recyclerView.smoothScrollBy(0, targetScroll - padding);
-                }
-            });
-        } else {
-            SnippetArticleViewHolder vh =
-                    (SnippetArticleViewHolder) recyclerView.findContainingViewHolder(firstSnippet);
-            firstSnippet.setOnClickListener(vh);
-        }
+        ((CardViewHolder) viewHolder).updatePeek(viewportHeight);
     }
 
     /**
@@ -96,46 +49,13 @@ public class CardsLayoutOperations {
      */
     public static void updateSnippetsHeaderDisplay(NewTabPageRecyclerView recyclerView,
             int omniBoxHeight) {
-        // Get the snippet header view.
-        View snippetHeader = getFirstViewMatchingViewType(recyclerView,
-                NewTabPageListItem.VIEW_TYPE_HEADER);
-
-        if (snippetHeader == null || !snippetHeader.isShown()) return;
+        // Get the snippet header view. It is always at position 1
+        ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(1);
 
         // Start doing the calculations if the snippet header is currently shown on screen.
-        RecyclerView.LayoutParams params =
-                (RecyclerView.LayoutParams) snippetHeader.getLayoutParams();
-        float headerAlpha = 0;
-        int headerHeight = 0;
+        if (viewHolder == null || !(viewHolder instanceof SnippetHeaderViewHolder)) return;
 
-        // Get the max snippet header height.
-        int maxSnippetHeaderHeight = recyclerView.getResources()
-                .getDimensionPixelSize(R.dimen.snippets_article_header_height);
-        // Measurement used to multiply the max snippet height to get a range on when to start
-        // modifying the display of article header.
-        final int numberHeaderHeight = 2;
-        // Used to indicate when to start modifying the snippet header.
-        int heightToStartChangingHeader = maxSnippetHeaderHeight * numberHeaderHeight;
-        int snippetHeaderTop = snippetHeader.getTop();
-
-        // Check if snippet header top is within range to start showing the snippet header.
-        if (snippetHeaderTop < omniBoxHeight + heightToStartChangingHeader) {
-            // The amount of space the article header has scrolled into the
-            // |heightToStartChangingHeader|.
-            int amountScrolledIntoHeaderSpace =
-                    heightToStartChangingHeader - (snippetHeaderTop - omniBoxHeight);
-
-            // Remove the |numberHeaderHeight| to get the actual header height we want to
-            // display. Never let the height be more than the |maxSnippetHeaderHeight|.
-            headerHeight = Math.min(
-                    amountScrolledIntoHeaderSpace / numberHeaderHeight, maxSnippetHeaderHeight);
-
-            // Get the alpha for the snippet header.
-            headerAlpha = (float) headerHeight / maxSnippetHeaderHeight;
-        }
-        snippetHeader.setAlpha(headerAlpha);
-        params.height = headerHeight;
-        snippetHeader.setLayoutParams(params);
+        ((SnippetHeaderViewHolder) viewHolder).onScrolled(omniBoxHeight);
 
         // Update the space at the bottom, which needs to know about the height of the header.
         recyclerView.refreshBottomSpacing();

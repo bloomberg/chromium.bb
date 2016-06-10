@@ -38,4 +38,10 @@ public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
     public boolean isDismissable() {
         return false;
     }
+
+    /**
+     * Update the wrapped view's state as it is being swiped away.
+     * @param dX The amount of horizontal displacement caused by user's action
+     */
+    public void updateViewStateForDismiss(float dX) {}
 }

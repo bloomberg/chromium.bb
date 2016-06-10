@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
  * Represents the data for a header of a group of snippets
  */
 public class SnippetHeaderListItem implements NewTabPageListItem {
+    /** Whether the header should be shown. */
+    private boolean mVisible = false;
 
     /**
      * Creates the View object for displaying the header for a group of snippets
@@ -30,5 +32,13 @@ public class SnippetHeaderListItem implements NewTabPageListItem {
     @Override
     public int getType() {
         return NewTabPageListItem.VIEW_TYPE_HEADER;
+    }
+
+    public boolean isVisible() {
+        return mVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        mVisible = visible;
     }
 }
