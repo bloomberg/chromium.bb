@@ -33,19 +33,10 @@ NSString* const kFederation = @"https://google.com/idp";
 
 class PasswordsListViewControllerTest : public ManagePasswordsControllerTest {
  public:
-  PasswordsListViewControllerTest() {}
+  PasswordsListViewControllerTest() = default;
 
-  void SetUp() override {
-    ManagePasswordsControllerTest::SetUp();
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        profile(),
-        password_manager::BuildPasswordStore<
-            content::BrowserContext, password_manager::MockPasswordStore>);
-  }
-
-  void SetUpManageState(
-      const std::vector<const autofill::PasswordForm*>& forms) {
-    ManagePasswordsControllerTest::SetUpManageState();
+  void SetUpManageState(const VectorConstFormPtr& forms) {
+    ManagePasswordsControllerTest::SetUpManageState(forms);
     controller_.reset([[PasswordsListViewController alloc]
         initWithModel:GetModelAndCreateIfNull()
                 forms:forms]);

@@ -21,28 +21,19 @@ namespace {
 class SavePendingPasswordViewControllerTest
     : public ManagePasswordsControllerTest {
  public:
-  SavePendingPasswordViewControllerTest() {}
-
-  void SetUp() override {
-    ManagePasswordsControllerTest::SetUp();
-    delegate_.reset([[ContentViewDelegateMock alloc] init]);
+  void SetUpSavePendingState(bool empty_username) {
+    ManagePasswordsControllerTest::SetUpSavePendingState(empty_username);
+    controller_.reset([[SavePendingPasswordViewController alloc]
+        initWithDelegate:delegate()]);
+    [controller_ view];
   }
 
-  ContentViewDelegateMock* delegate() { return delegate_.get(); }
-
   SavePendingPasswordViewController* controller() {
-    if (!controller_) {
-      [delegate() setModel:GetModelAndCreateIfNull()];
-      controller_.reset([[SavePendingPasswordViewController alloc]
-          initWithDelegate:delegate()]);
-      [controller_ view];
-    }
     return controller_.get();
   }
 
  private:
   base::scoped_nsobject<SavePendingPasswordViewController> controller_;
-  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
 TEST_F(SavePendingPasswordViewControllerTest,
@@ -92,7 +83,6 @@ TEST_F(SavePendingPasswordViewControllerTest, CloseBubbleAndHandleClick) {
   SetUpSavePendingState(false);
   EXPECT_CALL(*ui_controller(), SavePassword()).Times(0);
   EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
-  [controller() bubbleWillDisappear];
   [delegate() setModel:nil];
   [controller().neverButton performClick:nil];
   [controller().saveButton performClick:nil];

@@ -20,29 +20,20 @@ namespace {
 class ConfirmationPasswordSavedViewControllerTest
     : public ManagePasswordsControllerTest {
  public:
-  ConfirmationPasswordSavedViewControllerTest() : controller_(nil) {}
-
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
-    delegate_.reset([[ContentViewDelegateMock alloc] init]);
     SetUpConfirmationState();
+    controller_.reset([[ConfirmationPasswordSavedViewController alloc]
+        initWithDelegate:delegate()]);
+    [controller_ view];
   }
 
-  ContentViewDelegateMock* delegate() { return delegate_.get(); }
-
   ConfirmationPasswordSavedViewController* controller() {
-    if (!controller_) {
-      [delegate() setModel:GetModelAndCreateIfNull()];
-      controller_.reset([[ConfirmationPasswordSavedViewController alloc]
-          initWithDelegate:delegate()]);
-      [controller_ view];
-    }
     return controller_.get();
   }
 
  private:
   base::scoped_nsobject<ConfirmationPasswordSavedViewController> controller_;
-  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
 TEST_F(ConfirmationPasswordSavedViewControllerTest,
@@ -63,7 +54,6 @@ TEST_F(ConfirmationPasswordSavedViewControllerTest, CloseBubbleAndHandleClick) {
   // still sends the action.
   EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage())
       .Times(0);
-  [controller() bubbleWillDisappear];
   [delegate() setModel:nil];
   [controller().confirmationText clickedOnLink:@"about:blank" atIndex:0];
   [controller().okButton performClick:nil];

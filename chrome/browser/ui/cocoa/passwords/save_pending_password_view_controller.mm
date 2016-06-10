@@ -22,8 +22,13 @@
 
 - (void)onSaveClicked:(id)sender {
   ManagePasswordsBubbleModel* model = self.model;
-  if (model)
+  if (model) {
     model->OnSaveClicked();
+    if (model->ReplaceToShowSignInPromoIfNeeded()) {
+      [self.delegate refreshBubble];
+      return;
+    }
+  }
   [self.delegate viewShouldDismiss];
 }
 

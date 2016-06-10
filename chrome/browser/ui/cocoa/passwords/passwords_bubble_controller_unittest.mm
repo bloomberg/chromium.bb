@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -15,21 +16,25 @@
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace {
 
+using password_bubble_experiment::kChromeSignInPasswordPromoExperimentName;
+using password_bubble_experiment::kChromeSignInPasswordPromoThresholdParam;
+
 class ManagePasswordsBubbleControllerTest
     : public ManagePasswordsControllerTest {
  public:
   ManagePasswordsBubbleControllerTest() : controller_(nil) {}
-
-  void SetUp() override { ManagePasswordsControllerTest::SetUp(); }
 
   ManagePasswordsBubbleController* controller() {
     if (!controller_) {
@@ -69,7 +74,7 @@ TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
 }
 
 TEST_F(ManagePasswordsBubbleControllerTest, ManageStateShouldHaveManageView) {
-  SetUpManageState();
+  SetUpManageState(VectorConstFormPtr());
   EXPECT_EQ([ManagePasswordsViewController class],
             [[controller() currentController] class]);
 }
@@ -86,6 +91,29 @@ TEST_F(ManagePasswordsBubbleControllerTest, ClearModelOnClose) {
   EXPECT_TRUE(controller().model);
   [controller() close];
   EXPECT_FALSE(controller().model);
+}
+
+TEST_F(ManagePasswordsBubbleControllerTest, TransitionToSignInPromo) {
+  const char kFakeGroup[] = "FakeGroup";
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup));
+  variations::AssociateVariationParams(
+      kChromeSignInPasswordPromoExperimentName, kFakeGroup,
+      {{kChromeSignInPasswordPromoThresholdParam, "3"}});
+
+  SetUpSavePendingState(false);
+  [controller() showWindow:nil];
+  SavePendingPasswordViewController* saveController =
+      base::mac::ObjCCastStrict<SavePendingPasswordViewController>(
+          [controller() currentController]);
+  EXPECT_TRUE(saveController.saveButton);
+  [saveController.saveButton performClick:nil];
+  EXPECT_EQ([SignInPromoViewController class],
+            [[controller() currentController] class]);
+  EXPECT_TRUE([[controller() window] isVisible]);
+
+  variations::testing::ClearAllVariationParams();
 }
 
 }  // namespace

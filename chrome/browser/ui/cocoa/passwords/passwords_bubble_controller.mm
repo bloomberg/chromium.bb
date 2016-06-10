@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/passwords/confirmation_password_saved_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
@@ -52,7 +53,6 @@
 }
 
 - (void)close {
-  [currentController_ bubbleWillDisappear];
   // The bubble is about to be closed. It destroys the model.
   model_ = nil;
   [super close];
@@ -60,6 +60,7 @@
 
 - (void)updateState {
   // Find the next view controller.
+  [currentController_ setDelegate:nil];
   currentController_.reset();
   if (model_->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     currentController_.reset([[SavePendingPasswordViewController alloc]
@@ -77,6 +78,10 @@
   } else if (model_->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     currentController_.reset(
         [[AutoSigninViewController alloc] initWithDelegate:self]);
+  } else if (model_->state() ==
+             password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+    currentController_.reset(
+        [[SignInPromoViewController alloc] initWithDelegate:self]);
   } else {
     NOTREACHED();
   }
@@ -141,12 +146,29 @@
 
 #pragma mark BasePasswordsContentViewDelegate
 
+- (ManagePasswordsBubbleModel*)model {
+  return model_;
+}
+
 - (void)viewShouldDismiss {
   [self close];
 }
 
-- (ManagePasswordsBubbleModel*)model {
-  return model_;
+- (void)refreshBubble {
+  NSWindow* window = [self window];
+  NSRect currentFrame = [window frame];
+  CGFloat contentHeight = NSHeight([[currentController_ view] frame]);
+  [self updateState];
+  [[window contentView] setSubviews:@[ [currentController_ view] ]];
+  [window setDefaultButtonCell:[[currentController_ defaultButton] cell]];
+
+  // Set new position.
+  CGFloat delta = NSHeight([[currentController_ view] frame]) - contentHeight;
+  currentFrame.size.height += delta;
+  currentFrame.origin.y -= delta;
+  [window setFrame:currentFrame
+           display:YES
+           animate:YES];
 }
 
 @end

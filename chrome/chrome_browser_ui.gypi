@@ -1205,6 +1205,8 @@
       'browser/ui/cocoa/passwords/pending_password_view_controller.mm',
       'browser/ui/cocoa/passwords/save_pending_password_view_controller.h',
       'browser/ui/cocoa/passwords/save_pending_password_view_controller.mm',
+      'browser/ui/cocoa/passwords/signin_promo_view_controller.h',
+      'browser/ui/cocoa/passwords/signin_promo_view_controller.mm',
       'browser/ui/cocoa/passwords/update_pending_password_view_controller.h',
       'browser/ui/cocoa/passwords/update_pending_password_view_controller.mm',
       'browser/ui/cocoa/presentation_mode_controller.h',

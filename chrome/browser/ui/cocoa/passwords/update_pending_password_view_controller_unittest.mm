@@ -25,28 +25,19 @@ namespace {
 class UpdatePendingPasswordViewControllerTest
     : public ManagePasswordsControllerTest {
  public:
-  UpdatePendingPasswordViewControllerTest() {}
-
-  void SetUp() override {
-    ManagePasswordsControllerTest::SetUp();
-    delegate_.reset([[ContentViewDelegateMock alloc] init]);
+  void SetUpUpdatePendingState(bool multiple_forms) {
+    ManagePasswordsControllerTest::SetUpUpdatePendingState(multiple_forms);
+    controller_.reset([[UpdatePendingPasswordViewController alloc]
+        initWithDelegate:delegate()]);
+    [controller_ view];
   }
 
-  ContentViewDelegateMock* delegate() { return delegate_.get(); }
-
   UpdatePendingPasswordViewController* controller() {
-    if (!controller_) {
-      [delegate() setModel:GetModelAndCreateIfNull()];
-      controller_.reset([[UpdatePendingPasswordViewController alloc]
-          initWithDelegate:delegate()]);
-      [controller_ view];
-    }
     return controller_.get();
   }
 
  private:
   base::scoped_nsobject<UpdatePendingPasswordViewController> controller_;
-  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
 TEST_F(UpdatePendingPasswordViewControllerTest,
@@ -98,7 +89,6 @@ TEST_F(UpdatePendingPasswordViewControllerTest, CloseBubbleAndHandleClick) {
   SetUpUpdatePendingState(false);
   EXPECT_CALL(*ui_controller(), UpdatePassword(_)).Times(0);
   EXPECT_CALL(*ui_controller(), OnNopeUpdateClicked()).Times(0);
-  [controller() bubbleWillDisappear];
   [delegate() setModel:nil];
   [controller().updateButton performClick:nil];
   [controller().noButton performClick:nil];

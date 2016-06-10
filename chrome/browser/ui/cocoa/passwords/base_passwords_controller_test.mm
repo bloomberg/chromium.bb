@@ -38,6 +38,7 @@ void ManagePasswordsControllerTest::SetUp() {
       profile(), password_manager::BuildPasswordStore<
                      content::BrowserContext,
                      testing::NiceMock<password_manager::MockPasswordStore>>);
+  delegate_.reset([[ContentViewDelegateMock alloc] init]);
 }
 
 ManagePasswordsBubbleModel*
@@ -45,6 +46,7 @@ ManagePasswordsControllerTest::GetModelAndCreateIfNull() {
   if (!model_) {
     model_.reset(new ManagePasswordsBubbleModel(test_web_contents_.get(),
                                                 GetDisplayReason()));
+    [delegate() setModel:model_.get()];
   }
   return model_.get();
 }
@@ -92,8 +94,8 @@ void ManagePasswordsControllerTest::SetUpConfirmationState() {
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(ui_controller_));
 }
 
-void ManagePasswordsControllerTest::SetUpManageState() {
-  std::vector<const autofill::PasswordForm*> forms;
+void ManagePasswordsControllerTest::SetUpManageState(
+    const VectorConstFormPtr& forms) {
   EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
@@ -115,6 +117,9 @@ ManagePasswordsControllerTest::GetDisplayReason() const {
 
 - (void)viewShouldDismiss {
   _dismissed = YES;
+}
+
+- (void)refreshBubble {
 }
 
 @end

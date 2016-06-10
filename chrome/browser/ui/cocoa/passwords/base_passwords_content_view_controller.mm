@@ -44,9 +44,6 @@
   return label.autorelease();
 }
 
-- (void)bubbleWillDisappear {
-}
-
 - (NSButton*)defaultButton {
   return nil;
 }
