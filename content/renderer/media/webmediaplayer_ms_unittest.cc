@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/run_loop.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/media/webmediaplayer_ms_compositor.h"
@@ -362,20 +363,24 @@ class WebMediaPlayerMSTest
   WebMediaPlayerMSTest()
       : render_factory_(new MockRenderFactory(message_loop_.task_runner(),
                                               &message_loop_controller_)),
-        player_(nullptr,
-                this,
-                delegate_.AsWeakPtr(),
-                new media::MediaLog(),
-                std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
-                message_loop_.task_runner(),
-                message_loop_.task_runner(),
-                message_loop_.task_runner(),
-                nullptr,
-                blink::WebString(),
-                blink::WebSecurityOrigin()),
+        player_(new WebMediaPlayerMS(
+            nullptr,
+            this,
+            delegate_.AsWeakPtr(),
+            new media::MediaLog(),
+            std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
+            message_loop_.task_runner(),
+            message_loop_.task_runner(),
+            message_loop_.task_runner(),
+            nullptr,
+            blink::WebString(),
+            blink::WebSecurityOrigin())),
         rendering_(false),
         background_rendering_(false) {}
-  ~WebMediaPlayerMSTest() override {}
+  ~WebMediaPlayerMSTest() override {
+    player_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
 
   MockMediaStreamVideoRenderer* LoadAndGetFrameProvider(bool algorithm_enabled);
 
@@ -437,7 +442,7 @@ class WebMediaPlayerMSTest
   base::MessageLoop message_loop_;
   MockRenderFactory* render_factory_;
   FakeWebMediaPlayerDelegate delegate_;
-  WebMediaPlayerMS player_;
+  std::unique_ptr<WebMediaPlayerMS> player_;
   WebMediaPlayerMSCompositor* compositor_;
   ReusableMessageLoopEvent message_loop_controller_;
 
@@ -459,10 +464,10 @@ MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
       *this, DoNetworkStateChanged(blink::WebMediaPlayer::NetworkStateLoading));
   EXPECT_CALL(
       *this, DoReadyStateChanged(blink::WebMediaPlayer::ReadyStateHaveNothing));
-  player_.load(blink::WebMediaPlayer::LoadTypeURL,
-               blink::WebMediaPlayerSource(),
-               blink::WebMediaPlayer::CORSModeUnspecified);
-  compositor_ = player_.compositor_.get();
+  player_->load(blink::WebMediaPlayer::LoadTypeURL,
+                blink::WebMediaPlayerSource(),
+                blink::WebMediaPlayer::CORSModeUnspecified);
+  compositor_ = player_->compositor_.get();
   EXPECT_TRUE(!!compositor_);
   compositor_->SetAlgorithmEnabledForTesting(algorithm_enabled);
 
@@ -475,7 +480,7 @@ MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
 }
 
 void WebMediaPlayerMSTest::networkStateChanged() {
-  blink::WebMediaPlayer::NetworkState state = player_.getNetworkState();
+  blink::WebMediaPlayer::NetworkState state = player_->getNetworkState();
   DoNetworkStateChanged(state);
   if (state == blink::WebMediaPlayer::NetworkState::NetworkStateFormatError ||
       state == blink::WebMediaPlayer::NetworkState::NetworkStateDecodeError ||
@@ -486,10 +491,10 @@ void WebMediaPlayerMSTest::networkStateChanged() {
 }
 
 void WebMediaPlayerMSTest::readyStateChanged() {
-  blink::WebMediaPlayer::ReadyState state = player_.getReadyState();
+  blink::WebMediaPlayer::ReadyState state = player_->getReadyState();
   DoReadyStateChanged(state);
   if (state == blink::WebMediaPlayer::ReadyState::ReadyStateHaveEnoughData)
-    player_.play();
+    player_->play();
 }
 
 void WebMediaPlayerMSTest::setWebLayer(blink::WebLayer* layer) {
@@ -635,7 +640,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
 
   // Here we call pause, and expect a freezing frame.
   EXPECT_CALL(*this, DoStopRendering());
-  player_.pause();
+  player_->pause();
   auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -676,7 +681,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
 
   // Here we call pause, and expect a freezing frame.
   EXPECT_CALL(*this, DoStopRendering());
-  player_.pause();
+  player_->pause();
   auto prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -686,7 +691,7 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
 
   // We resume the player, and expect rendering can continue.
   EXPECT_CALL(*this, DoStartRendering());
-  player_.play();
+  player_->play();
   prev_frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -787,45 +792,45 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
 
   // Hidden status should not affect playback.
   delegate_.set_hidden(true);
-  player_.play();
-  EXPECT_FALSE(player_.paused());
+  player_->play();
+  EXPECT_FALSE(player_->paused());
 
   // A pause delivered via the delegate should not pause the video since these
   // calls are currently ignored.
-  player_.OnPause();
-  EXPECT_FALSE(player_.paused());
+  player_->OnPause();
+  EXPECT_FALSE(player_->paused());
 
   // A hidden player should start still be playing upon shown.
   delegate_.set_hidden(false);
-  player_.OnShown();
-  EXPECT_FALSE(player_.paused());
+  player_->OnShown();
+  EXPECT_FALSE(player_->paused());
 
   // A hidden event should not pause the player.
   delegate_.set_hidden(true);
-  player_.OnHidden();
-  EXPECT_FALSE(player_.paused());
+  player_->OnHidden();
+  EXPECT_FALSE(player_->paused());
 
   // A user generated pause() should clear the automatic resumption.
-  player_.pause();
+  player_->pause();
   delegate_.set_hidden(false);
-  player_.OnShown();
-  EXPECT_TRUE(player_.paused());
+  player_->OnShown();
+  EXPECT_TRUE(player_->paused());
 
   // A user generated play() should start playback.
-  player_.play();
-  EXPECT_FALSE(player_.paused());
+  player_->play();
+  EXPECT_FALSE(player_->paused());
 
   // An OnSuspendRequested() without forced suspension should do nothing.
-  player_.OnSuspendRequested(false);
-  EXPECT_FALSE(player_.paused());
+  player_->OnSuspendRequested(false);
+  EXPECT_FALSE(player_->paused());
 
   // An OnSuspendRequested() with forced suspension should pause playback.
-  player_.OnSuspendRequested(true);
-  EXPECT_TRUE(player_.paused());
+  player_->OnSuspendRequested(true);
+  EXPECT_TRUE(player_->paused());
 
   // OnShown() should restart after a forced suspension.
-  player_.OnShown();
-  EXPECT_FALSE(player_.paused());
+  player_->OnShown();
+  EXPECT_FALSE(player_->paused());
   EXPECT_CALL(*this, DoSetWebLayer(false));
 }
 #endif

@@ -84,7 +84,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   // Always do this before posting the |compositor_| for deletion.
   get_client()->setWebLayer(nullptr);
 
-  if (compositor_ && !compositor_task_runner_->BelongsToCurrentThread())
+  if (compositor_)
     compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_.release());
 
   if (video_frame_provider_)
