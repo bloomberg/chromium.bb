@@ -89,17 +89,10 @@ def ProvisionDevices(args):
 
 
 def ProvisionDevice(device, blacklist, options):
-  if options.reboot_timeout:
-    reboot_timeout = options.reboot_timeout
-  elif device.build_version_sdk >= version_codes.LOLLIPOP:
-    reboot_timeout = _DEFAULT_TIMEOUTS.LOLLIPOP
-  else:
-    reboot_timeout = _DEFAULT_TIMEOUTS.PRE_LOLLIPOP
-
   def should_run_phase(phase_name):
     return not options.phases or phase_name in options.phases
 
-  def run_phase(phase_func, reboot=True):
+  def run_phase(phase_func, reboot_timeout, reboot=True):
     try:
       device.WaitUntilFullyBooted(timeout=reboot_timeout, retries=0)
     except device_errors.CommandTimeoutError:
@@ -111,18 +104,25 @@ def ProvisionDevice(device, blacklist, options):
       device.adb.WaitForDevice()
 
   try:
+    if options.reboot_timeout:
+      reboot_timeout = options.reboot_timeout
+    elif device.build_version_sdk >= version_codes.LOLLIPOP:
+      reboot_timeout = _DEFAULT_TIMEOUTS.LOLLIPOP
+    else:
+      reboot_timeout = _DEFAULT_TIMEOUTS.PRE_LOLLIPOP
+
     if should_run_phase(_PHASES.WIPE):
       if (options.chrome_specific_wipe or device.IsUserBuild() or
           device.build_version_sdk >= version_codes.MARSHMALLOW):
-        run_phase(WipeChromeData)
+        run_phase(WipeChromeData, reboot_timeout)
       else:
-        run_phase(WipeDevice)
+        run_phase(WipeDevice, reboot_timeout)
 
     if should_run_phase(_PHASES.PROPERTIES):
-      run_phase(SetProperties)
+      run_phase(SetProperties, reboot_timeout)
 
     if should_run_phase(_PHASES.FINISH):
-      run_phase(FinishProvisioning, reboot=False)
+      run_phase(FinishProvisioning, reboot_timeout, reboot=False)
 
     if options.chrome_specific_wipe:
       package = "com.google.android.gms"
