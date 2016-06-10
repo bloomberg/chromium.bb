@@ -434,7 +434,6 @@ void RpcHandler::RegisterResponseHandler(
   if (completed_post) {
     size_t elements_erased = pending_posts_.erase(completed_post);
     DCHECK_GT(elements_erased, 0u);
-    delete completed_post;
   }
 
   size_t registrations_completed = pending_registrations_.erase(authenticated);
@@ -471,7 +470,6 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
   if (completed_post) {
     size_t elements_erased = pending_posts_.erase(completed_post);
     DCHECK_GT(elements_erased, 0u);
-    delete completed_post;
   }
 
   if (http_status_code != net::HTTP_OK) {

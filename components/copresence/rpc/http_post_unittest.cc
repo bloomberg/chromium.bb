@@ -29,8 +29,7 @@ namespace copresence {
 
 class HttpPostTest : public testing::Test {
  public:
-  HttpPostTest()
-      : received_response_code_(0) {
+  HttpPostTest() {
     context_getter_ = new net::TestURLRequestContextGetter(
         make_scoped_refptr(new base::TestSimpleTaskRunner));
     proto_.set_client("test_client");
@@ -38,32 +37,33 @@ class HttpPostTest : public testing::Test {
   }
   ~HttpPostTest() override {}
 
-  // Record the response sent back to the client for verification.
-  void TestResponseCallback(int response_code,
-                            const std::string& response) {
-    received_response_code_ = response_code;
-    received_response_ = response;
+  // Check that the correct response was sent.
+  void TestResponseCallback(int expected_response_code,
+                            const std::string& expected_response,
+                            int actual_response_code,
+                            const std::string& actual_response) {
+    CHECK_EQ(expected_response_code, actual_response_code);
+    CHECK_EQ(expected_response, actual_response);
   }
 
  protected:
-  bool ResponsePassedThrough(int response_code, const std::string& response) {
-    std::unique_ptr<HttpPost> post(new HttpPost(
+  void CheckPassthrough(int response_code, const std::string& response) {
+    HttpPost* post = new HttpPost(
         context_getter_.get(), std::string("http://") + kFakeServerHost,
         kRPCName, kApiKey,
         "",  // auth token
         "",  // tracing token
-        proto_));
+        proto_);
     post->Start(base::Bind(&HttpPostTest::TestResponseCallback,
-                           base::Unretained(this)));
+                           base::Unretained(this),
+                           response_code,
+                           response));
+
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(
         HttpPost::kUrlFetcherId);
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(response);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
-    return received_response_code_ == response_code &&
-           received_response_ == response &&
-           GetApiKeySent() == kApiKey &&
-           GetAuthHeaderSent().empty();
   }
 
   net::TestURLFetcher* GetFetcher() {
@@ -97,9 +97,6 @@ class HttpPostTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
 
   ClientVersion proto_;
-
-  int received_response_code_;
-  std::string received_response_;
 };
 
 TEST_F(HttpPostTest, OKResponse) {
@@ -112,7 +109,9 @@ TEST_F(HttpPostTest, OKResponse) {
                                 kTracingToken,
                                 proto_);
   post->Start(base::Bind(&HttpPostTest::TestResponseCallback,
-                         base::Unretained(this)));
+                         base::Unretained(this),
+                         net::HTTP_OK,
+                         "Hello World!"));
 
   // Verify that the data was sent to the right place.
   GURL requested_url = GetFetcher()->GetOriginalURL();
@@ -133,17 +132,12 @@ TEST_F(HttpPostTest, OKResponse) {
   GetFetcher()->set_response_code(net::HTTP_OK);
   GetFetcher()->SetResponseString("Hello World!");
   GetFetcher()->delegate()->OnURLFetchComplete(GetFetcher());
-  EXPECT_EQ(net::HTTP_OK, received_response_code_);
-  EXPECT_EQ("Hello World!", received_response_);
-  delete post;
 }
 
 TEST_F(HttpPostTest, ErrorResponse) {
-  EXPECT_TRUE(ResponsePassedThrough(
-      net::HTTP_BAD_REQUEST, "Bad client. Shame on you."));
-  EXPECT_TRUE(ResponsePassedThrough(
-      net::HTTP_INTERNAL_SERVER_ERROR, "I'm dying. Forgive me."));
-  EXPECT_TRUE(ResponsePassedThrough(-1, ""));
+  CheckPassthrough(net::HTTP_BAD_REQUEST, "Bad client. Shame on you.");
+  CheckPassthrough(net::HTTP_INTERNAL_SERVER_ERROR, "I'm dying. Forgive me.");
+  CheckPassthrough(-1, "");
 }
 
 }  // namespace copresence

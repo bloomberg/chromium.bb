@@ -104,6 +104,7 @@ void HttpPost::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Return the response.
   response_callback_.Run(response_code, response);
+  delete this;
 }
 
 }  // namespace copresence
