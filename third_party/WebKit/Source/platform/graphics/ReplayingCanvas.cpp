@@ -51,7 +51,7 @@ void ReplayingCanvas::updateInRange()
     if (m_toStep && step > m_toStep)
         m_abortDrawing = true;
     if (step == m_fromStep)
-        this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
+        this->SkCanvas::clear(SK_ColorTRANSPARENT);
 }
 
 bool ReplayingCanvas::abort()
@@ -64,7 +64,7 @@ SkCanvas::SaveLayerStrategy ReplayingCanvas::getSaveLayerStrategy(const SaveLaye
     // We're about to create a layer and we have not cleared the device yet.
     // Let's clear now, so it has effect on all layers.
     if (callCount() <= m_fromStep)
-        this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
+        this->SkCanvas::clear(SK_ColorTRANSPARENT);
 
     return this->InterceptingCanvas<ReplayingCanvas>::getSaveLayerStrategy(rec);
 }
