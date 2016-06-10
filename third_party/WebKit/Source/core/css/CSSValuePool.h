@@ -46,10 +46,11 @@ namespace blink {
 class CORE_EXPORT CSSValuePool :  public GarbageCollectedFinalized<CSSValuePool> {
     WTF_MAKE_NONCOPYABLE(CSSValuePool);
 public:
+    // TODO(sashab): Make all the value pools store const CSSValues.
     static const int maximumCacheableIntegerValue = 255;
     using ColorValueCache = HeapHashMap<unsigned, Member<CSSColorValue>>;
     static const unsigned maximumColorCacheSize = 512;
-    using FontFaceValueCache = HeapHashMap<AtomicString, Member<CSSValueList>>;
+    using FontFaceValueCache = HeapHashMap<AtomicString, Member<const CSSValueList>>;
     static const unsigned maximumFontFaceCacheSize = 128;
     using FontFamilyValueCache = HeapHashMap<String, Member<CSSFontFamilyValue>>;
 

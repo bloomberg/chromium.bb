@@ -139,11 +139,11 @@ static bool parseFontSize(const String& input, int& size)
     return parseFontSize(input.characters16(), input.length(), size);
 }
 
-static CSSValueList* createFontFaceValueWithPool(const AtomicString& string)
+static const CSSValueList* createFontFaceValueWithPool(const AtomicString& string)
 {
     CSSValuePool::FontFaceValueCache::AddResult entry = cssValuePool().getFontFaceCacheEntry(string);
     if (!entry.storedValue->value) {
-        CSSValue* parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
+        const CSSValue* parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
         if (parsedValue && parsedValue->isValueList())
             entry.storedValue->value = toCSSValueList(parsedValue);
     }
@@ -201,7 +201,7 @@ void HTMLFontElement::collectStyleForPresentationAttribute(const QualifiedName& 
     } else if (name == colorAttr) {
         addHTMLColorToStyle(style, CSSPropertyColor, value);
     } else if (name == faceAttr && !value.isEmpty()) {
-        if (CSSValueList* fontFaceValue = createFontFaceValueWithPool(value))
+        if (const CSSValueList* fontFaceValue = createFontFaceValueWithPool(value))
             style->setProperty(CSSProperty(CSSPropertyFontFamily, *fontFaceValue));
     } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
