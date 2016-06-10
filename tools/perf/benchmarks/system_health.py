@@ -46,6 +46,7 @@ class SystemHealthTop25(_SystemHealthBenchmark):
   def Name(cls):
     return 'system_health.top25'
 
+
 @benchmark.Disabled('android')  # crbug.com/601953
 @benchmark.Disabled('all')  # crbug.com/613050
 class SystemHealthKeyMobileSites(_SystemHealthBenchmark):
@@ -107,3 +108,26 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop' or (
         possible_browser.browser_type == 'reference' and
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
+@benchmark.Enabled('android-webview')
+class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
+  """Webview startup time benchmark
+
+  Benchmark that measures how long WebView takes to start up
+  and load a blank page. Since thie metric only requires the trace
+  markers recorded in atrace, Chrome tracing is not enabled for this
+  benchmark.
+  """
+  page_set = page_sets.BlankPageSet
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    options = timeline_based_measurement.Options()
+    options.SetTimelineBasedMetric('webviewStartupMetric')
+    options.config.enable_atrace_trace = True
+    options.config.enable_chrome_trace = False
+    options.config.atrace_config.app_name = 'org.chromium.webview_shell'
+    return options
+
+  @classmethod
+  def Name(cls):
+    return 'system_health.webview_startup'
