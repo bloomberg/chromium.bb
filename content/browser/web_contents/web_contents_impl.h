@@ -292,8 +292,6 @@ class CONTENT_EXPORT WebContentsImpl
   int GetCapturerCount() const override;
   bool IsAudioMuted() const override;
   void SetAudioMuted(bool mute) override;
-  void IncrementBluetoothConnectedDeviceCount();
-  void DecrementBluetoothConnectedDeviceCount();
   bool IsConnectedToBluetoothDevice() const override;
   bool IsCrashed() const override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
@@ -754,6 +752,10 @@ class CONTENT_EXPORT WebContentsImpl
                        const gfx::Rect& selection_rect,
                        int active_match_ordinal,
                        bool final_update);
+
+  // Modify the counter of connected devices for this WebContents.
+  void IncrementBluetoothConnectedDeviceCount();
+  void DecrementBluetoothConnectedDeviceCount();
 
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.

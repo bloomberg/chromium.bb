@@ -354,4 +354,14 @@ TEST_F(FrameConnectedBluetoothDevicesTest, Destruction_MultipleMaps) {
   EXPECT_FALSE(contents()->IsConnectedToBluetoothDevice());
 }
 
+TEST_F(FrameConnectedBluetoothDevicesTest,
+       DestroyedByWebContentsImplDestruction) {
+  // Tests that we don't crash when FrameConnectedBluetoothDevices contains
+  // at least one device, and it is destroyed while WebContentsImpl is being
+  // destroyed.
+
+  // TODO(ortuno): Write test.
+  // http://crbug.com/615319
+}
+
 }  // namespace content
