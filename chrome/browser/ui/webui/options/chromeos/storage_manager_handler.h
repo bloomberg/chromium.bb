@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_STORAGE_MANAGER_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace chromeos {
@@ -25,6 +26,24 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   void RegisterMessages() override;
 
  private:
+  // Handlers of JS messages.
+  void HandleUpdateStorageInfo(const base::ListValue* unused_args);
+  void HandleOpenDownloads(const base::ListValue* unused_args);
+
+  // Requests updating disk space information.
+  void UpdateSizeStat();
+
+  // Callback to update the UI about disk space information.
+  void OnGetSizeStat(int64_t* total_size, int64_t* available_size);
+
+  // Requests updating the size of Downloads directory.
+  void UpdateDownloadsSize();
+
+  // Callback to update the UI about the size of Downloads directory.
+  void OnGetDownloadsSize(int64_t size);
+
+  base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(StorageManagerHandler);
 };
 

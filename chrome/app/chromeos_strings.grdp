@@ -2545,6 +2545,18 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_STORAGE_MANAGER_TAB_TITLE" desc="Title for the storage manager tab.">
     Storage
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_CAPACITY" desc="In storage manager overlay, label for the total size of Chrome OS internal storage.">
+    Capacity
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_IN_USE" desc="In storage manager overlay, label for the used storage size of Chrome OS internal storage.">
+    In use
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_AVAILABLE" desc="In storage manager overlay, label for the available storage size of Chrome OS internal storage.">
+    Available
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DOWNLOADS" desc="In storage manager overlay, label for the size of Downloads directory.">
+    Downloads
+  </message>
   <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
     Enable Guest browsing
   </message>
