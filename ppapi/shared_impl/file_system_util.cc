@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/file_system_util.h"
 
 #include "base/logging.h"
+#include "ppapi/shared_impl/ppapi_constants.h"
 
 namespace ppapi {
 
@@ -26,7 +27,7 @@ std::string IsolatedFileSystemTypeToRootName(
     case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
       return "crxfs";
     case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE:
-      return "pluginprivate";
+      return kPluginPrivateRootName;
     default:
       NOTREACHED() << type;
       return std::string();

@@ -30,6 +30,15 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "ppapi/shared_impl/ppapi_constants.h"
+#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/isolated_context.h"
+#include "storage/common/fileapi/file_system_util.h"
+#endif  // defined(ENABLE_PLUGINS)
+
 using net::CanonicalCookie;
 
 namespace content {
@@ -43,6 +52,11 @@ const char kTestOrigin1[] = "http://host1:1/";
 const char kTestOrigin2[] = "http://host2:1/";
 const char kTestOrigin3[] = "http://host3:1/";
 const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+
+#if defined(ENABLE_PLUGINS)
+const char kWidevineCdmPluginId[] = "application_x-ppapi-widevine-cdm";
+const char kClearKeyCdmPluginId[] = "application_x-ppapi-clearkey-cdm";
+#endif  // defined(ENABLE_PLUGINS)
 
 const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
@@ -231,6 +245,199 @@ class RemoveLocalStorageTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
 };
 
+#if defined(ENABLE_PLUGINS)
+class RemovePluginPrivateDataTester {
+ public:
+  explicit RemovePluginPrivateDataTester(
+      storage::FileSystemContext* filesystem_context)
+      : filesystem_context_(filesystem_context) {}
+
+  // Add some files to the PluginPrivateFileSystem. They are created as follows:
+  //   kOrigin1 - ClearKey - 1 file - timestamp 10 days ago
+  //   kOrigin2 - Widevine - 2 files - timestamps now and 60 days ago
+  void AddPluginPrivateTestData() {
+    base::Time now = base::Time::Now();
+    base::Time ten_days_ago = now - base::TimeDelta::FromDays(10);
+    base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
+
+    // Create a PluginPrivateFileSystem for ClearKey and add a single file
+    // with a timestamp of 1 day ago.
+    std::string clearkey_fsid =
+        CreateFileSystem(kClearKeyCdmPluginId, kOrigin1);
+    clearkey_file_ = CreateFile(kOrigin1, clearkey_fsid, "foo");
+    SetFileTimestamp(clearkey_file_, ten_days_ago);
+
+    // Create a second PluginPrivateFileSystem for Widevine and add two files
+    // with different times.
+    std::string widevine_fsid =
+        CreateFileSystem(kWidevineCdmPluginId, kOrigin2);
+    storage::FileSystemURL widevine_file1 =
+        CreateFile(kOrigin2, widevine_fsid, "bar1");
+    storage::FileSystemURL widevine_file2 =
+        CreateFile(kOrigin2, widevine_fsid, "bar2");
+    SetFileTimestamp(widevine_file1, now);
+    SetFileTimestamp(widevine_file2, sixty_days_ago);
+  }
+
+  // Returns true, if the given origin exists in a PluginPrivateFileSystem.
+  bool DataExistsForOrigin(const GURL& origin) {
+    AwaitCompletionHelper await_completion;
+    bool data_exists_for_origin = false;
+    filesystem_context_->default_file_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&RemovePluginPrivateDataTester::
+                                  CheckIfDataExistsForOriginOnFileTaskRunner,
+                              base::Unretained(this), origin,
+                              &data_exists_for_origin, &await_completion));
+    await_completion.BlockUntilNotified();
+    return data_exists_for_origin;
+  }
+
+  // Opens the file created for ClearKey (in kOrigin1) for writing. Caller
+  // needs to verify if the file was opened or not.
+  base::File OpenClearKeyFileForWrite() {
+    AwaitCompletionHelper await_completion;
+    base::File file;
+    storage::AsyncFileUtil* async_file_util =
+        filesystem_context_->GetAsyncFileUtil(
+            storage::kFileSystemTypePluginPrivate);
+    std::unique_ptr<storage::FileSystemOperationContext> operation_context =
+        base::WrapUnique(
+            new storage::FileSystemOperationContext(filesystem_context_));
+    async_file_util->CreateOrOpen(
+        std::move(operation_context), clearkey_file_,
+        base::File::FLAG_OPEN | base::File::FLAG_WRITE,
+        base::Bind(&RemovePluginPrivateDataTester::OnFileOpened,
+                   base::Unretained(this), &file, &await_completion));
+    await_completion.BlockUntilNotified();
+    return file;
+  }
+
+ private:
+  // Creates a PluginPrivateFileSystem for the |plugin_name| and |origin|
+  // provided. Returns the file system ID for the created
+  // PluginPrivateFileSystem.
+  std::string CreateFileSystem(const std::string& plugin_name,
+                               const GURL& origin) {
+    AwaitCompletionHelper await_completion;
+    std::string fsid = storage::IsolatedContext::GetInstance()
+                           ->RegisterFileSystemForVirtualPath(
+                               storage::kFileSystemTypePluginPrivate,
+                               ppapi::kPluginPrivateRootName, base::FilePath());
+    EXPECT_TRUE(storage::ValidateIsolatedFileSystemId(fsid));
+    filesystem_context_->OpenPluginPrivateFileSystem(
+        origin, storage::kFileSystemTypePluginPrivate, fsid, plugin_name,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&RemovePluginPrivateDataTester::OnFileSystemOpened,
+                   base::Unretained(this), &await_completion));
+    await_completion.BlockUntilNotified();
+    return fsid;
+  }
+
+  // Creates a file named |file_name| in the PluginPrivateFileSystem identified
+  // by |origin| and |fsid|. Returns the URL for the created file. The file
+  // must not already exist or the test will fail.
+  storage::FileSystemURL CreateFile(const GURL& origin,
+                                    const std::string& fsid,
+                                    const std::string& file_name) {
+    AwaitCompletionHelper await_completion;
+    std::string root = storage::GetIsolatedFileSystemRootURIString(
+        origin, fsid, ppapi::kPluginPrivateRootName);
+    storage::FileSystemURL file_url =
+        filesystem_context_->CrackURL(GURL(root + file_name));
+    storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
+        storage::kFileSystemTypePluginPrivate);
+    std::unique_ptr<storage::FileSystemOperationContext> operation_context =
+        base::WrapUnique(
+            new storage::FileSystemOperationContext(filesystem_context_));
+    operation_context->set_allowed_bytes_growth(
+        storage::QuotaManager::kNoLimit);
+    file_util->EnsureFileExists(
+        std::move(operation_context), file_url,
+        base::Bind(&RemovePluginPrivateDataTester::OnFileCreated,
+                   base::Unretained(this), &await_completion));
+    await_completion.BlockUntilNotified();
+    return file_url;
+  }
+
+  // Sets the last_access_time and last_modified_time to |time_stamp| on the
+  // file specified by |file_url|. The file must already exist.
+  void SetFileTimestamp(const storage::FileSystemURL& file_url,
+                        const base::Time& time_stamp) {
+    AwaitCompletionHelper await_completion;
+    storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
+        storage::kFileSystemTypePluginPrivate);
+    std::unique_ptr<storage::FileSystemOperationContext> operation_context =
+        base::WrapUnique(
+            new storage::FileSystemOperationContext(filesystem_context_));
+    file_util->Touch(std::move(operation_context), file_url, time_stamp,
+                     time_stamp,
+                     base::Bind(&RemovePluginPrivateDataTester::OnFileTouched,
+                                base::Unretained(this), &await_completion));
+    await_completion.BlockUntilNotified();
+  }
+
+  void OnFileSystemOpened(AwaitCompletionHelper* await_completion,
+                          base::File::Error result) {
+    EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
+    await_completion->Notify();
+  }
+
+  void OnFileCreated(AwaitCompletionHelper* await_completion,
+                     base::File::Error result,
+                     bool created) {
+    EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
+    EXPECT_TRUE(created);
+    await_completion->Notify();
+  }
+
+  void OnFileTouched(AwaitCompletionHelper* await_completion,
+                     base::File::Error result) {
+    EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
+    await_completion->Notify();
+  }
+
+  void OnFileOpened(base::File* file_result,
+                    AwaitCompletionHelper* await_completion,
+                    base::File file,
+                    const base::Closure& on_close_callback) {
+    *file_result = std::move(file);
+    await_completion->Notify();
+  }
+
+  // If |origin| exists in the PluginPrivateFileSystem, set
+  // |data_exists_for_origin| to true, false otherwise.
+  void CheckIfDataExistsForOriginOnFileTaskRunner(
+      const GURL& origin,
+      bool* data_exists_for_origin,
+      AwaitCompletionHelper* await_completion) {
+    storage::FileSystemBackend* backend =
+        filesystem_context_->GetFileSystemBackend(
+            storage::kFileSystemTypePluginPrivate);
+    storage::FileSystemQuotaUtil* quota_util = backend->GetQuotaUtil();
+
+    // Determine the set of origins used.
+    std::set<GURL> origins;
+    quota_util->GetOriginsForTypeOnFileTaskRunner(
+        storage::kFileSystemTypePluginPrivate, &origins);
+    *data_exists_for_origin = origins.find(origin) != origins.end();
+
+    // AwaitCompletionHelper and MessageLoop don't work on a
+    // SequencedTaskRunner, so post a task on the IO thread.
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&AwaitCompletionHelper::Notify,
+                                       base::Unretained(await_completion)));
+  }
+
+  // We don't own this pointer.
+  storage::FileSystemContext* filesystem_context_;
+
+  // Keep track of the URL for the ClearKey file so that it can be written to.
+  storage::FileSystemURL clearkey_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovePluginPrivateDataTester);
+};
+#endif  // defined(ENABLE_PLUGINS)
+
 bool IsWebSafeSchemeForTest(const std::string& scheme) {
   return scheme == "http";
 }
@@ -344,14 +551,27 @@ void ClearData(content::StoragePartition* partition,
       time, time, run_loop->QuitClosure());
 }
 
+#if defined(ENABLE_PLUGINS)
+void ClearPluginPrivateData(content::StoragePartition* partition,
+                            const GURL& storage_origin,
+                            const base::Time delete_begin,
+                            const base::Time delete_end,
+                            base::RunLoop* run_loop) {
+  partition->ClearData(
+      StoragePartitionImpl::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA,
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, storage_origin,
+      StoragePartition::OriginMatcherFunction(), delete_begin, delete_end,
+      run_loop->QuitClosure());
+}
+#endif  // defined(ENABLE_PLUGINS)
+
 }  // namespace
 
 class StoragePartitionImplTest : public testing::Test {
  public:
   StoragePartitionImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        browser_context_(new TestBrowserContext()) {
-  }
+        browser_context_(new TestBrowserContext()) {}
 
   MockQuotaManager* GetMockManager() {
     if (!quota_manager_.get()) {
@@ -974,6 +1194,102 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
 }
+
+#if defined(ENABLE_PLUGINS)
+TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForever) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
+  tester.AddPluginPrivateTestData();
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearPluginPrivateData, partition, GURL(),
+                            base::Time(), base::Time::Max(), &run_loop));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
+}
+
+TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataLastWeek) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  base::Time a_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
+
+  RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
+  tester.AddPluginPrivateTestData();
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearPluginPrivateData, partition, GURL(),
+                            a_week_ago, base::Time::Max(), &run_loop));
+  run_loop.Run();
+
+  // Origin1 has 1 file from 10 days ago, so it should remain around.
+  // Origin2 has a current file, so it should be removed (even though the
+  // second file is much older).
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
+}
+
+TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForOrigin) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
+  tester.AddPluginPrivateTestData();
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearPluginPrivateData, partition, kOrigin1,
+                            base::Time(), base::Time::Max(), &run_loop));
+  run_loop.Run();
+
+  // Only Origin1 should be deleted.
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+}
+
+TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
+  tester.AddPluginPrivateTestData();
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+
+  const char test_data[] = {0, 1, 2, 3, 4, 5};
+  base::File file = tester.OpenClearKeyFileForWrite();
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_EQ(static_cast<int>(arraysize(test_data)),
+            file.Write(0, test_data, arraysize(test_data)));
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearPluginPrivateData, partition, GURL(),
+                            base::Time(), base::Time::Max(), &run_loop));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
+
+  const char more_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  EXPECT_EQ(static_cast<int>(arraysize(more_data)),
+            file.WriteAtCurrentPos(more_data, arraysize(more_data)));
+
+  base::File file2 = tester.OpenClearKeyFileForWrite();
+  EXPECT_FALSE(file2.IsValid());
+}
+#endif  // defined(ENABLE_PLUGINS)
 
 TEST(StoragePartitionImplStaticTest, CreatePredicateForHostCookies) {
   GURL url("http://www.example.com/");

@@ -1812,6 +1812,8 @@
       'browser/plugin_content_origin_whitelist.h',
       'browser/plugin_data_remover_impl.cc',
       'browser/plugin_data_remover_impl.h',
+      'browser/plugin_private_storage_helper.cc',
+      'browser/plugin_private_storage_helper.h',
       'browser/plugin_service_impl.cc',
       'browser/plugin_service_impl.h',
       'browser/ppapi_plugin_process_host.cc',

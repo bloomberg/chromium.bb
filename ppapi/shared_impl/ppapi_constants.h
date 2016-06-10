@@ -23,6 +23,9 @@ const char kPowerSaverTestPluginName[] = "power_saver_test_plugin.plugin";
 const char kPowerSaverTestPluginName[] = "libpower_saver_test_plugin.so";
 #endif
 
+// Name of the root directory in the plugin private file system.
+const char kPluginPrivateRootName[] = "pluginprivate";
+
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_PPAPI_CONSTANTS_H_

@@ -35,6 +35,10 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/plugin_private_storage_helper.h"
+#endif  // defined(ENABLE_PLUGINS)
+
 namespace content {
 
 namespace {
@@ -315,6 +319,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
       storage::QuotaManager* quota_manager,
       storage::SpecialStoragePolicy* special_storage_policy,
       WebRTCIdentityStore* webrtc_identity_store,
+      storage::FileSystemContext* filesystem_context,
       const base::Time begin,
       const base::Time end);
 
@@ -621,7 +626,8 @@ void StoragePartitionImpl::ClearDataImpl(
   helper->ClearDataOnUIThread(
       storage_origin, origin_matcher, cookie_matcher, GetPath(), rq_context,
       dom_storage_context_.get(), quota_manager_.get(),
-      special_storage_policy_.get(), webrtc_identity_store_.get(), begin, end);
+      special_storage_policy_.get(), webrtc_identity_store_.get(),
+      filesystem_context_.get(), begin, end);
 }
 
 void StoragePartitionImpl::
@@ -761,6 +767,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::QuotaManager* quota_manager,
     storage::SpecialStoragePolicy* special_storage_policy,
     WebRTCIdentityStore* webrtc_identity_store,
+    storage::FileSystemContext* filesystem_context,
     const base::Time begin,
     const base::Time end) {
   DCHECK_NE(remove_mask, 0u);
@@ -840,6 +847,16 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
                    end,
                    decrement_callback));
   }
+
+#if defined(ENABLE_PLUGINS)
+  if (remove_mask & REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA) {
+    IncrementTaskCountOnUI();
+    filesystem_context->default_file_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ClearPluginPrivateDataOnFileTaskRunner,
+                              make_scoped_refptr(filesystem_context),
+                              storage_origin, begin, end, decrement_callback));
+  }
+#endif  // defined(ENABLE_PLUGINS)
 
   DecrementTaskCountOnUI();
 }
