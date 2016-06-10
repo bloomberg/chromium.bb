@@ -55,8 +55,6 @@ public:
     uint32_t m_uniqueID;
 };
 
-bool DeferredImageDecoder::s_enabled = true;
-
 PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer& data, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
 {
     OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(data, alphaOption, colorOptions);
@@ -83,16 +81,6 @@ DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecode
 
 DeferredImageDecoder::~DeferredImageDecoder()
 {
-}
-
-void DeferredImageDecoder::setEnabled(bool enabled)
-{
-    s_enabled = enabled;
-}
-
-bool DeferredImageDecoder::enabled()
-{
-    return s_enabled;
 }
 
 String DeferredImageDecoder::filenameExtension() const
@@ -259,8 +247,7 @@ void DeferredImageDecoder::activateLazyDecoding()
 
 void DeferredImageDecoder::prepareLazyDecodedFrames()
 {
-    if (!s_enabled
-        || !m_actualDecoder
+    if (!m_actualDecoder
         || !m_actualDecoder->isSizeAvailable()
         || m_actualDecoder->filenameExtension() == "ico")
         return;

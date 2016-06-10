@@ -66,9 +66,6 @@ public:
         int m_lastDecodedSizeChangedDelta;
     };
 
-    BitmapImageTest() : BitmapImageTest(false) { }
-    BitmapImageTest(bool enableDeferredDecoding) : m_enableDeferredDecoding(enableDeferredDecoding) { }
-
     static PassRefPtr<SharedBuffer> readFile(const char* fileName)
     {
         String filePath = testing::blinkRootDir();
@@ -146,16 +143,12 @@ public:
 protected:
     void SetUp() override
     {
-        DeferredImageDecoder::setEnabled(m_enableDeferredDecoding);
         m_imageObserver = new FakeImageObserver;
         m_image = BitmapImage::create(m_imageObserver.get());
     }
 
     Persistent<FakeImageObserver> m_imageObserver;
     RefPtr<BitmapImage> m_image;
-
-private:
-    bool m_enableDeferredDecoding;
 };
 
 TEST_F(BitmapImageTest, destroyDecodedData)
@@ -260,13 +253,11 @@ TEST_F(BitmapImageTest, icoHasWrongFrameDimensions)
 
 TEST_F(BitmapImageTest, correctDecodedDataSize)
 {
-    // When requesting a frame of a multi-frame GIF causes another frame to be
-    // decoded as well, both frames' sizes should be reported by the source and
-    // thus included in the decoded size changed notification.
+    // Requesting any one frame shouldn't result in decoding any other frames.
     loadImage("/LayoutTests/fast/images/resources/anim_none.gif", false);
     frameAtIndex(1);
     int frameSize = static_cast<int>(m_image->size().area() * sizeof(ImageFrame::PixelData));
-    EXPECT_EQ(frameSize * 2, lastDecodedSizeChange());
+    EXPECT_EQ(frameSize, lastDecodedSizeChange());
 }
 
 TEST_F(BitmapImageTest, recachingFrameAfterDataChanged)
@@ -283,21 +274,6 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged)
     // Recaching the first frame also shouldn't affect decoded size.
     m_image->imageForCurrentFrame();
     EXPECT_EQ(0, lastDecodedSizeChange());
-}
-
-class BitmapImageDeferredDecodingTest : public BitmapImageTest {
-public:
-    BitmapImageDeferredDecodingTest() : BitmapImageTest(true) { }
-};
-
-TEST_F(BitmapImageDeferredDecodingTest, correctDecodedDataSize)
-{
-    // When deferred decoding is enabled, requesting any one frame shouldn't
-    // result in decoding any other frames.
-    loadImage("/LayoutTests/fast/images/resources/anim_none.gif", false);
-    frameAtIndex(1);
-    int frameSize = static_cast<int>(m_image->size().area() * sizeof(ImageFrame::PixelData));
-    EXPECT_EQ(frameSize, lastDecodedSizeChange());
 }
 
 template <typename HistogramEnumType>

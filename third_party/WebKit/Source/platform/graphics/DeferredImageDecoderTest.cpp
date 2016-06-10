@@ -97,7 +97,6 @@ public:
     void SetUp() override
     {
         ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
-        DeferredImageDecoder::setEnabled(true);
         m_data = SharedBuffer::create(whitePNG, sizeof(whitePNG));
         m_frameCount = 1;
         OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(this);

@@ -219,8 +219,6 @@ public:
 
     ImageOrientation orientation() const { return m_orientation; }
 
-    static bool deferredImageDecodingEnabled();
-
     void setIgnoreGammaAndColorProfile(bool flag) { m_ignoreGammaAndColorProfile = flag; }
     bool ignoresGammaAndColorProfile() const { return m_ignoreGammaAndColorProfile; }
 

@@ -53,9 +53,6 @@ public:
 
     ~DeferredImageDecoder();
 
-    static void setEnabled(bool);
-    static bool enabled();
-
     String filenameExtension() const;
 
     PassRefPtr<SkImage> createFrameAtIndex(size_t);
@@ -102,8 +99,6 @@ private:
     // Caches frame state information.
     Vector<DeferredFrameData> m_frameData;
     RefPtr<ImageFrameGenerator> m_frameGenerator;
-
-    static bool s_enabled;
 };
 
 } // namespace blink

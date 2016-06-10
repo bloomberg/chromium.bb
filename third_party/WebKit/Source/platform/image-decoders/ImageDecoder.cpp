@@ -21,7 +21,6 @@
 #include "platform/image-decoders/ImageDecoder.h"
 
 #include "platform/PlatformInstrumentation.h"
-#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
@@ -182,11 +181,6 @@ size_t ImageDecoder::frameBytesAtIndex(size_t index) const
     };
 
     return ImageSize(frameSizeAtIndex(index)).area * sizeof(ImageFrame::PixelData);
-}
-
-bool ImageDecoder::deferredImageDecodingEnabled()
-{
-    return DeferredImageDecoder::enabled();
 }
 
 size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
