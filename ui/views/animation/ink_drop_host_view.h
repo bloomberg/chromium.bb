@@ -25,7 +25,7 @@ class InkDropHighlight;
 // A view that provides InkDropHost functionality.
 class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
  public:
-  // Overridden from views::InkDropHost:
+  // Overridden from InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
@@ -40,6 +40,7 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   static const int kInkDropSmallCornerRadius;
 
   // View:
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnFocus() override;
   void OnBlur() override;
   void OnMouseEvent(ui::MouseEvent* event) override;

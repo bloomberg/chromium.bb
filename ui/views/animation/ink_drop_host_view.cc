@@ -143,6 +143,14 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
   return highlight;
 }
 
+void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
+  View::VisibilityChanged(starting_from, is_visible);
+  if (GetWidget() && !is_visible) {
+    ink_drop()->AnimateToState(InkDropState::HIDDEN);
+    ink_drop()->SetHovered(false);
+  }
+}
+
 void InkDropHostView::OnFocus() {
   views::View::OnFocus();
   if (ShouldShowInkDropForFocus())

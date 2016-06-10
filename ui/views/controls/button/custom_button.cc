@@ -129,14 +129,13 @@ void CustomButton::OnEnabledChanged() {
   if (enabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
     return;
 
-  if (enabled())
-    SetState(ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
-  else
+  if (enabled()) {
+    bool should_enter_hover_state = ShouldEnterHoveredState();
+    SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
+    ink_drop()->SetHovered(should_enter_hover_state);
+  } else {
     SetState(STATE_DISABLED);
-
-  // TODO(bruthig): This should only be using the hover signal only and not the
-  // focus signal as well.
-  ink_drop()->SetHovered(ShouldShowInkDropHighlight());
+  }
 }
 
 const char* CustomButton::GetClassName() const {
@@ -348,6 +347,7 @@ void CustomButton::GetAccessibleState(ui::AXViewState* state) {
 }
 
 void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
+  Button::VisibilityChanged(starting_from, visible);
   if (state_ == STATE_DISABLED)
     return;
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);

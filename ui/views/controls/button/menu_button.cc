@@ -395,7 +395,9 @@ void MenuButton::DecrementPressedLocked() {
       desired_state = STATE_HOVERED;
     }
     SetState(desired_state);
-    if (state() != STATE_PRESSED)
+    // The widget may be null during shutdown. If so, it doesn't make sense to
+    // try to add an ink drop effect.
+    if (GetWidget() && state() != STATE_PRESSED)
       AnimateInkDrop(InkDropState::DEACTIVATED);
   }
 }
