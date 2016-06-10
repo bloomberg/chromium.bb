@@ -89,4 +89,28 @@ TEST_F(RunLoopTest, QuitWhenIdleNestedLoop) {
   EXPECT_EQ(4, counter_);
 }
 
+TEST_F(RunLoopTest, QuitWhenIdleClosure) {
+  message_loop_.task_runner()->PostTask(FROM_HERE,
+                                        run_loop_.QuitWhenIdleClosure());
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, Bind(&ShouldRunTask, Unretained(&counter_)));
+  message_loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&ShouldNotRunTask), TimeDelta::FromDays(1));
+
+  run_loop_.Run();
+  EXPECT_EQ(1, counter_);
+}
+
+// Verify that the QuitWhenIdleClosure() can run after the RunLoop has been
+// deleted. It should have no effect.
+TEST_F(RunLoopTest, QuitWhenIdleClosureAfterRunLoopScope) {
+  Closure quit_when_idle_closure;
+  {
+    RunLoop run_loop;
+    quit_when_idle_closure = run_loop.QuitWhenIdleClosure();
+    run_loop.RunUntilIdle();
+  }
+  quit_when_idle_closure.Run();
+}
+
 }  // namespace base

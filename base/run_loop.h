@@ -61,14 +61,15 @@ class BASE_EXPORT RunLoop {
   void Quit();
   void QuitWhenIdle();
 
-  // Convenience method to get a closure that safely calls Quit (has no effect
-  // if the RunLoop instance is gone).
+  // Convenience methods to get a closure that safely calls Quit() or
+  // QuitWhenIdle() (has no effect if the RunLoop instance is gone).
   //
   // Example:
   //   RunLoop run_loop;
   //   PostTask(run_loop.QuitClosure());
   //   run_loop.Run();
   base::Closure QuitClosure();
+  base::Closure QuitWhenIdleClosure();
 
  private:
   friend class MessageLoop;

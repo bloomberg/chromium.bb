@@ -59,6 +59,10 @@ base::Closure RunLoop::QuitClosure() {
   return base::Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr());
 }
 
+base::Closure RunLoop::QuitWhenIdleClosure() {
+  return base::Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr());
+}
+
 bool RunLoop::BeforeRun() {
   DCHECK(!run_called_);
   run_called_ = true;
