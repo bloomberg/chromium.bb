@@ -42,6 +42,8 @@ static_library("arc") {
     "intent_helper/font_size_util.h",
     "intent_helper/link_handler_model_impl.cc",
     "intent_helper/link_handler_model_impl.h",
+    "intent_helper/local_activity_resolver.cc",
+    "intent_helper/local_activity_resolver.h",
     "metrics/arc_metrics_service.cc",
     "metrics/arc_metrics_service.h",
     "metrics/oom_kills_histogram.h",

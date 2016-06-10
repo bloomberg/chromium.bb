@@ -65,6 +65,8 @@
         'arc/intent_helper/font_size_util.h',
         'arc/intent_helper/link_handler_model_impl.cc',
         'arc/intent_helper/link_handler_model_impl.h',
+        'arc/intent_helper/local_activity_resolver.cc',
+        'arc/intent_helper/local_activity_resolver.h',
         'arc/metrics/oom_kills_histogram.h',
         'arc/metrics/oom_kills_monitor.cc',
         'arc/metrics/oom_kills_monitor.h',
