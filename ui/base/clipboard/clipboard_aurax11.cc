@@ -22,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_requestor.h"
@@ -127,6 +128,7 @@ void SelectionChangeObserver::WillProcessEvent(const ui::PlatformEvent& event) {
         reinterpret_cast<XFixesSelectionNotifyEvent*>(event);
     if (ev->selection == clipboard_atom_) {
       clipboard_sequence_number_++;
+      ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
     } else if (ev->selection == XA_PRIMARY) {
       primary_sequence_number_++;
     } else {

@@ -9,13 +9,15 @@
 #include <limits>
 #include <list>
 #include <memory>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -154,14 +156,12 @@ class AuraClipboard {
   AuraClipboard() : sequence_number_(0) {
   }
 
-  ~AuraClipboard() {
-    Clear();
-  }
+  ~AuraClipboard() {}
 
   void Clear() {
     sequence_number_++;
-    STLDeleteContainerPointers(data_list_.begin(), data_list_.end());
     data_list_.clear();
+    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
   uint64_t sequence_number() const {
@@ -173,7 +173,7 @@ class AuraClipboard {
   const ClipboardData* GetData() const {
     if (data_list_.empty())
       return NULL;
-    return data_list_.front();
+    return data_list_.front().get();
   }
 
   // Returns true if the data on top of the clipboard stack has format |format|
@@ -288,9 +288,10 @@ class AuraClipboard {
   }
 
   // Writes |data| to the top of the clipboard stack.
-  void WriteData(ClipboardData* data) {
+  void WriteData(std::unique_ptr<ClipboardData> data) {
     DCHECK(data);
-    AddToListEnsuringSize(data);
+    AddToListEnsuringSize(std::move(data));
+    ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
  private:
@@ -303,22 +304,20 @@ class AuraClipboard {
     return data->format() & format;
   }
 
-  void AddToListEnsuringSize(ClipboardData* data) {
+  void AddToListEnsuringSize(std::unique_ptr<ClipboardData> data) {
     DCHECK(data);
     sequence_number_++;
-    data_list_.push_front(data);
+    data_list_.push_front(std::move(data));
 
     // If the size of list becomes more than the maximum allowed, we delete the
     // last element.
     if (data_list_.size() > kMaxClipboardSize) {
-      ClipboardData* last = data_list_.back();
       data_list_.pop_back();
-      delete last;
     }
   }
 
   // Stack containing various versions of ClipboardData.
-  std::list<ClipboardData*> data_list_;
+  std::list<std::unique_ptr<ClipboardData>> data_list_;
 
   // Sequence number uniquely identifying clipboard state.
   uint64_t sequence_number_;
@@ -344,8 +343,10 @@ void DeleteClipboard() {
 class ClipboardDataBuilder {
  public:
   static void CommitToClipboard() {
-    GetClipboard()->WriteData(GetCurrentData());
-    current_data_ = NULL;
+    // Make sure there is always a valid ClipboardData object attached to
+    // current_data_.
+    GetCurrentData();
+    GetClipboard()->WriteData(std::move(current_data_));
   }
 
   static void WriteText(const char* text_data, size_t text_len) {
@@ -396,14 +397,14 @@ class ClipboardDataBuilder {
  private:
   static ClipboardData* GetCurrentData() {
     if (!current_data_)
-      current_data_ = new ClipboardData;
-    return current_data_;
+      current_data_.reset(new ClipboardData);
+    return current_data_.get();
   }
 
-  static ClipboardData* current_data_;
+  static std::unique_ptr<ClipboardData> current_data_;
 };
 
-ClipboardData* ClipboardDataBuilder::current_data_ = NULL;
+std::unique_ptr<ClipboardData> ClipboardDataBuilder::current_data_;
 
 }  // namespace
 
