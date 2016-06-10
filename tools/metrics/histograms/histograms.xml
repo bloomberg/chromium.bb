@@ -58451,6 +58451,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.MetricsService.RecordCurrentHistograms.Time" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent merging, taking snapshots, and
+    recording histograms for reporting to UMA.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome">
   <owner>asvitkine@chromium.org</owner>
   <summary>
