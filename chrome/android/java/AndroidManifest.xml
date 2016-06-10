@@ -108,6 +108,9 @@ by a child template that "extends" this file.
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
         {% endblock %}
         android:supportsRtl="true"
+        {% if target_sdk_version|int >= 24 %}
+        android:networkSecurityConfig="@xml/network_security_config"
+        {% endif %}
         {% block extra_application_attributes %}{% endblock %}>
 
         <!-- Samsung MultiWindow Support -->
