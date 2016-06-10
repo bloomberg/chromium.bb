@@ -305,19 +305,19 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   // Creates a remote MediaStream and adds it to the mocked native
   // peer connection.
-  scoped_refptr<webrtc::MediaStreamInterface>
-  AddRemoteMockMediaStream(const std::string& stream_label,
-                           const std::string& video_track_label,
-                           const std::string& audio_track_label) {
-    scoped_refptr<webrtc::MediaStreamInterface> stream(
-        mock_dependency_factory_->CreateLocalMediaStream(stream_label));
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> AddRemoteMockMediaStream(
+      const std::string& stream_label,
+      const std::string& video_track_label,
+      const std::string& audio_track_label) {
+    rtc::scoped_refptr<webrtc::MediaStreamInterface> stream(
+        mock_dependency_factory_->CreateLocalMediaStream(stream_label).get());
     if (!video_track_label.empty()) {
       stream->AddTrack(MockWebRtcVideoTrack::Create(video_track_label).get());
     }
     if (!audio_track_label.empty()) {
       stream->AddTrack(MockWebRtcAudioTrack::Create(audio_track_label).get());
     }
-    mock_peer_connection_->AddRemoteStream(stream.get());
+    mock_peer_connection_->AddRemoteStream(stream);
     return stream;
   }
 
@@ -376,18 +376,18 @@ TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(_)).Times(0);
   std::string remote_stream_label("remote_stream");
-  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
-  pc_handler_->observer()->OnAddStream(remote_stream.get());
+  pc_handler_->observer()->OnAddStream(remote_stream);
 
   EXPECT_CALL(*mock_client_.get(), didRemoveRemoteStream(_)).Times(0);
-  pc_handler_->observer()->OnRemoveStream(remote_stream.get());
+  pc_handler_->observer()->OnRemoveStream(remote_stream);
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteDataChannel(_)).Times(0);
   webrtc::DataChannelInit config;
-  scoped_refptr<webrtc::DataChannelInterface> remote_data_channel(
+  rtc::scoped_refptr<webrtc::DataChannelInterface> remote_data_channel(
       new rtc::RefCountedObject<MockDataChannel>("dummy", &config));
-  pc_handler_->observer()->OnDataChannel(remote_data_channel.get());
+  pc_handler_->observer()->OnDataChannel(remote_data_channel);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -599,9 +599,9 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
-  scoped_refptr<webrtc::MediaStreamInterface> stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> stream(
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
-  pc_handler_->observer()->OnAddStream(stream.get());
+  pc_handler_->observer()->OnAddStream(stream);
   base::RunLoop().RunUntilIdle();
   const blink::WebMediaStream& remote_stream = mock_client_->remote_stream();
 
@@ -781,7 +781,7 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceGatheringChange) {
 
 TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
   std::string remote_stream_label("remote_stream");
-  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
 
   testing::InSequence sequence;
@@ -803,23 +803,23 @@ TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
       testing::Property(&blink::WebMediaStream::id,
                         base::UTF8ToUTF16(remote_stream_label))));
 
-  pc_handler_->observer()->OnAddStream(remote_stream.get());
+  pc_handler_->observer()->OnAddStream(remote_stream);
   base::RunLoop().RunUntilIdle();
-  pc_handler_->observer()->OnRemoveStream(remote_stream.get());
+  pc_handler_->observer()->OnRemoveStream(remote_stream);
   base::RunLoop().RunUntilIdle();
 }
 
 // This test that WebKit is notified about remote track state changes.
 TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
   std::string remote_stream_label("remote_stream");
-  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
 
   testing::InSequence sequence;
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
       testing::Property(&blink::WebMediaStream::id,
                         base::UTF8ToUTF16(remote_stream_label))));
-  pc_handler_->observer()->OnAddStream(remote_stream.get());
+  pc_handler_->observer()->OnAddStream(remote_stream);
   base::RunLoop().RunUntilIdle();
   const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 
@@ -859,9 +859,9 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
           DoAll(SaveArg<0>(&webkit_stream),
                 ExitMessageLoop(&message_loop_, run_loop.QuitClosure())));
 
-  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
-  pc_handler_->observer()->OnAddStream(remote_stream.get());
+  pc_handler_->observer()->OnAddStream(remote_stream);
   run_loop.Run();
 
   {
@@ -907,9 +907,9 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
           DoAll(SaveArg<0>(&webkit_stream),
                 ExitMessageLoop(&message_loop_, run_loop.QuitClosure())));
 
-  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
-  pc_handler_->observer()->OnAddStream(remote_stream.get());
+  pc_handler_->observer()->OnAddStream(remote_stream);
   run_loop.Run();
 
   {
@@ -954,9 +954,9 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddTracksFromRemoteStream) {
           DoAll(SaveArg<0>(&webkit_stream),
                 ExitMessageLoop(&message_loop_, run_loop.QuitClosure())));
 
-  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+  rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
-  pc_handler_->observer()->OnAddStream(remote_stream.get());
+  pc_handler_->observer()->OnAddStream(remote_stream);
   run_loop.Run();
 
   {

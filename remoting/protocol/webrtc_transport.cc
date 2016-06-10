@@ -415,18 +415,20 @@ void WebrtcTransport::OnSignalingChange(
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void WebrtcTransport::OnAddStream(webrtc::MediaStreamInterface* stream) {
+void WebrtcTransport::OnAddStream(
+    rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnWebrtcTransportMediaStreamAdded(stream);
+  event_handler_->OnWebrtcTransportMediaStreamAdded(stream.get());
 }
 
-void WebrtcTransport::OnRemoveStream(webrtc::MediaStreamInterface* stream) {
+void WebrtcTransport::OnRemoveStream(
+    rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnWebrtcTransportMediaStreamRemoved(stream);
+  event_handler_->OnWebrtcTransportMediaStreamRemoved(stream.get());
 }
 
 void WebrtcTransport::OnDataChannel(
-    webrtc::DataChannelInterface* data_channel) {
+    rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
   incoming_data_stream_adapter_.OnIncomingDataChannel(data_channel);
 }

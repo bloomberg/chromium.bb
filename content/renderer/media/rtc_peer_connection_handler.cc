@@ -796,7 +796,7 @@ class RTCPeerConnectionHandler::Observer
     }
   }
 
-  void OnAddStream(MediaStreamInterface* stream) override {
+  void OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) override {
     DCHECK(stream);
     std::unique_ptr<RemoteMediaStreamImpl> remote_stream(
         new RemoteMediaStreamImpl(main_thread_, stream));
@@ -809,13 +809,16 @@ class RTCPeerConnectionHandler::Observer
             this, base::Passed(&remote_stream)));
   }
 
-  void OnRemoveStream(MediaStreamInterface* stream) override {
-    main_thread_->PostTask(FROM_HERE,
+  void OnRemoveStream(
+      rtc::scoped_refptr<MediaStreamInterface> stream) override {
+    main_thread_->PostTask(
+        FROM_HERE,
         base::Bind(&RTCPeerConnectionHandler::Observer::OnRemoveStreamImpl,
-            this, make_scoped_refptr(stream)));
+                   this, make_scoped_refptr(stream.get())));
   }
 
-  void OnDataChannel(DataChannelInterface* data_channel) override {
+  void OnDataChannel(
+      rtc::scoped_refptr<DataChannelInterface> data_channel) override {
     std::unique_ptr<RtcDataChannelHandler> handler(
         new RtcDataChannelHandler(main_thread_, data_channel));
     main_thread_->PostTask(FROM_HERE,
