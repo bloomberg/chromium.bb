@@ -22,6 +22,10 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     cat_filter = tracing_category_filter.TracingCategoryFilter(
         filter_string='blink.console,navigation,blink.user_timing,loading')
 
+    # Below categories are needed for first-meaningful-paint computation.
+    cat_filter.AddDisabledByDefault('disabled-by-default-blink.debug.layout')
+    cat_filter.AddIncludedCategory('devtools.timeline')
+
     tbm_options = timeline_based_measurement.Options(
         overhead_level=cat_filter)
     tbm_options.SetTimelineBasedMetric('firstPaintMetric')
