@@ -473,7 +473,10 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   scoped_refptr<media::DecoderBuffer> buffer(
       new media::DecoderBuffer(input->data_size));
 
-  buffer->CopySideDataFrom(&input->side_data.front(), input->side_data.size());
+  if (!input->side_data.empty()) {
+    buffer->CopySideDataFrom(&input->side_data.front(),
+                             input->side_data.size());
+  }
 
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input->timestamp_usec));
