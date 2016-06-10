@@ -102,9 +102,9 @@ content::ColorChooser* CustomLauncherPageContents::OpenColorChooser(
 }
 
 void CustomLauncherPageContents::RunFileChooser(
-    content::WebContents* tab,
+    content::RenderFrameHost* render_frame_host,
     const content::FileChooserParams& params) {
-  app_delegate_->RunFileChooser(tab, params);
+  app_delegate_->RunFileChooser(render_frame_host, params);
 }
 
 void CustomLauncherPageContents::RequestToLockMouse(

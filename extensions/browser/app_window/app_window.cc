@@ -927,7 +927,7 @@ content::ColorChooser* AppWindow::OpenColorChooser(
   return app_delegate_->ShowColorChooser(web_contents, initial_color);
 }
 
-void AppWindow::RunFileChooser(WebContents* tab,
+void AppWindow::RunFileChooser(content::RenderFrameHost* render_frame_host,
                                const content::FileChooserParams& params) {
   if (window_type_is_panel()) {
     // Panels can't host a file dialog, abort. TODO(stevenjb): allow file
@@ -937,7 +937,7 @@ void AppWindow::RunFileChooser(WebContents* tab,
     return;
   }
 
-  app_delegate_->RunFileChooser(tab, params);
+  app_delegate_->RunFileChooser(render_frame_host, params);
 }
 
 bool AppWindow::IsPopupOrPanel(const WebContents* source) const { return true; }

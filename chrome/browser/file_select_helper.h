@@ -48,7 +48,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
                          public content::NotificationObserver {
  public:
   // Show the file chooser dialog.
-  static void RunFileChooser(content::WebContents* tab,
+  static void RunFileChooser(content::RenderFrameHost* render_frame_host,
                              const content::FileChooserParams& params);
 
   // Enumerates all the files in directory.
@@ -89,8 +89,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
     DISALLOW_COPY_AND_ASSIGN(DirectoryListerDispatchDelegate);
   };
 
-  void RunFileChooser(content::RenderViewHost* render_view_host,
-                      content::WebContents* web_contents,
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       std::unique_ptr<content::FileChooserParams> params);
   void GetFileTypesOnFileThread(
       std::unique_ptr<content::FileChooserParams> params);
@@ -221,9 +220,9 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // Profile used to set/retrieve the last used directory.
   Profile* profile_;
 
-  // The RenderViewHost and WebContents for the page showing a file dialog
+  // The RenderFrameHost and WebContents for the page showing a file dialog
   // (may only be one such dialog).
-  content::RenderViewHost* render_view_host_;
+  content::RenderFrameHost* render_frame_host_;
   content::WebContents* web_contents_;
 
   // Dialog box used for choosing files to upload from file form fields.

@@ -30,6 +30,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -130,13 +132,12 @@ struct FileSelectHelper::ActiveDirectoryEnumeration {
 
 FileSelectHelper::FileSelectHelper(Profile* profile)
     : profile_(profile),
-      render_view_host_(NULL),
-      web_contents_(NULL),
+      render_frame_host_(nullptr),
+      web_contents_(nullptr),
       select_file_dialog_(),
       select_file_types_(),
       dialog_type_(ui::SelectFileDialog::SELECT_OPEN_FILE),
-      dialog_mode_(FileChooserParams::Open) {
-}
+      dialog_mode_(FileChooserParams::Open) {}
 
 FileSelectHelper::~FileSelectHelper() {
   // There may be pending file dialogs, we need to tell them that we've gone
@@ -176,14 +177,15 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   if (IsValidProfile(profile_))
     profile_->set_last_selected_directory(file.file_path.DirName());
 
-  if (!render_view_host_) {
+  if (!render_frame_host_) {
     RunFileChooserEnd();
     return;
   }
 
   const base::FilePath& path = file.local_path;
   if (dialog_type_ == ui::SelectFileDialog::SELECT_UPLOAD_FOLDER) {
-    StartNewEnumeration(path, kFileSelectEnumerationId, render_view_host_);
+    StartNewEnumeration(path, kFileSelectEnumerationId,
+                        render_frame_host_->GetRenderViewHost());
     return;
   }
 
@@ -286,7 +288,7 @@ void FileSelectHelper::OnListDone(int id, int error) {
 
 void FileSelectHelper::NotifyRenderViewHostAndEnd(
     const std::vector<ui::SelectedFileInfo>& files) {
-  if (!render_view_host_) {
+  if (!render_frame_host_) {
     RunFileChooserEnd();
     return;
   }
@@ -299,17 +301,15 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
     }
     // Converts |files| into FileChooserFileInfo with handling of non-native
     // files.
+    content::SiteInstance* site_instance =
+        render_frame_host_->GetSiteInstance();
     storage::FileSystemContext* file_system_context =
-        content::BrowserContext::GetStoragePartition(
-            profile_, render_view_host_->GetSiteInstance())->
-                GetFileSystemContext();
+        content::BrowserContext::GetStoragePartition(profile_, site_instance)
+            ->GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
-        file_system_context,
-        web_contents_->GetSiteInstance()->GetSiteURL(),
-        files,
-        base::Bind(
-            &FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion,
-            this));
+        file_system_context, site_instance->GetSiteURL(), files,
+        base::Bind(&FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion,
+                   this));
     return;
   }
 #endif  // defined(OS_CHROMEOS)
@@ -327,8 +327,8 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
 
 void FileSelectHelper::NotifyRenderViewHostAndEndAfterConversion(
     const std::vector<content::FileChooserFileInfo>& list) {
-  if (render_view_host_)
-    render_view_host_->FilesSelectedInChooser(list, dialog_mode_);
+  if (render_frame_host_)
+    render_frame_host_->FilesSelectedInChooser(list, dialog_mode_);
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
@@ -420,14 +420,16 @@ FileSelectHelper::GetFileTypesFromAcceptType(
 }
 
 // static
-void FileSelectHelper::RunFileChooser(content::WebContents* tab,
-                                      const FileChooserParams& params) {
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+void FileSelectHelper::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    const FileChooserParams& params) {
+  Profile* profile = Profile::FromBrowserContext(
+      render_frame_host->GetProcess()->GetBrowserContext());
   // FileSelectHelper will keep itself alive until it sends the result message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
   file_select_helper->RunFileChooser(
-      tab->GetRenderViewHost(), tab,
+      render_frame_host,
       base::WrapUnique(new content::FileChooserParams(params)));
 }
 
@@ -444,10 +446,9 @@ void FileSelectHelper::EnumerateDirectory(content::WebContents* tab,
 }
 
 void FileSelectHelper::RunFileChooser(
-    RenderViewHost* render_view_host,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     std::unique_ptr<FileChooserParams> params) {
-  DCHECK(!render_view_host_);
+  DCHECK(!render_frame_host_);
   DCHECK(!web_contents_);
   DCHECK(params->default_file_name.empty() ||
          params->mode == FileChooserParams::Save)
@@ -456,13 +457,14 @@ void FileSelectHelper::RunFileChooser(
   DCHECK(params->default_file_name == params->default_file_name.BaseName())
       << "The default_file_name parameter should not contain path separators";
 
-  render_view_host_ = render_view_host;
-  web_contents_ = web_contents;
+  render_frame_host_ = render_frame_host;
+  web_contents_ = WebContents::FromRenderFrameHost(render_frame_host);
   notification_registrar_.RemoveAll();
   content::WebContentsObserver::Observe(web_contents_);
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHost>(render_view_host_->GetWidget()));
+      content::Source<RenderWidgetHost>(
+          render_frame_host_->GetRenderViewHost()->GetWidget()));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -550,8 +552,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     const base::FilePath& default_file_path,
     std::unique_ptr<FileChooserParams> params) {
   DCHECK(params);
-  if (!render_view_host_ || !web_contents_ || !IsValidProfile(profile_) ||
-      !render_view_host_->GetWidget()->GetView()) {
+  if (!render_frame_host_ || !web_contents_ || !IsValidProfile(profile_) ||
+      !web_contents_->GetNativeView()) {
     // If the renderer was destroyed before we started, just cancel the
     // operation.
     RunFileChooserEnd();
@@ -583,8 +585,8 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       NOTREACHED();
   }
 
-  gfx::NativeWindow owning_window = platform_util::GetTopLevel(
-      render_view_host_->GetWidget()->GetView()->GetNativeView());
+  gfx::NativeWindow owning_window =
+      platform_util::GetTopLevel(web_contents_->GetNativeView());
 
 #if defined(OS_ANDROID)
   // Android needs the original MIME types and an additional capture value.
@@ -618,8 +620,8 @@ void FileSelectHelper::RunFileChooserEnd() {
   if (!temporary_files_.empty())
     return;
 
-  render_view_host_ = NULL;
-  web_contents_ = NULL;
+  render_frame_host_ = nullptr;
+  web_contents_ = nullptr;
   Release();
 }
 
@@ -649,8 +651,8 @@ void FileSelectHelper::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
       DCHECK(content::Source<RenderWidgetHost>(source).ptr() ==
-             render_view_host_->GetWidget());
-      render_view_host_ = NULL;
+             render_frame_host_->GetRenderViewHost()->GetWidget());
+      render_frame_host_ = NULL;
       break;
     }
     default:

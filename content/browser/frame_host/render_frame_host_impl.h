@@ -94,6 +94,7 @@ class WebBluetoothServiceImpl;
 struct ContentSecurityPolicyHeader;
 struct ContextMenuParams;
 struct GlobalRequestID;
+struct FileChooserParams;
 struct Referrer;
 struct ResourceResponse;
 
@@ -151,6 +152,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   blink::WebPageVisibilityState GetVisibilityState() override;
   bool IsRenderFrameLive() override;
   int GetProxyCount() override;
+  void FilesSelectedInChooser(const std::vector<FileChooserFileInfo>& files,
+                              FileChooserParams::Mode permissions) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

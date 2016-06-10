@@ -51,7 +51,7 @@ class ChromeAppDelegate : public extensions::AppDelegate,
                       bool* was_blocked) override;
   content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                           SkColor initial_color) override;
-  void RunFileChooser(content::WebContents* tab,
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       const content::FileChooserParams& params) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,

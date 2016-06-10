@@ -664,12 +664,13 @@ void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,
   guest_host_->GuestResizeDueToAutoResize(new_size);
 }
 
-void GuestViewBase::RunFileChooser(WebContents* web_contents,
+void GuestViewBase::RunFileChooser(content::RenderFrameHost* render_frame_host,
                                    const content::FileChooserParams& params) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
 
-  embedder_web_contents()->GetDelegate()->RunFileChooser(web_contents, params);
+  embedder_web_contents()->GetDelegate()->RunFileChooser(render_frame_host,
+                                                         params);
 }
 
 bool GuestViewBase::ShouldFocusPageAfterCrash() {

@@ -56,7 +56,7 @@ class CustomLauncherPageContents : public content::WebContentsDelegate {
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<content::ColorSuggestion>& suggestions) override;
-  void RunFileChooser(content::WebContents* tab,
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       const content::FileChooserParams& params) override;
   void RequestToLockMouse(content::WebContents* web_contents,
                           bool user_gesture,

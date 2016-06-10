@@ -341,7 +341,7 @@ class CONTENT_EXPORT WebContentsDelegate {
       const std::vector<ColorSuggestion>& suggestions);
 
   // Called when a file selection is to be done.
-  virtual void RunFileChooser(WebContents* web_contents,
+  virtual void RunFileChooser(RenderFrameHost* render_frame_host,
                               const FileChooserParams& params) {}
 
   // Request to enumerate a directory.  This is equivalent to running the file

@@ -1683,9 +1683,9 @@ content::ColorChooser* Browser::OpenColorChooser(
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void Browser::RunFileChooser(WebContents* web_contents,
+void Browser::RunFileChooser(content::RenderFrameHost* render_frame_host,
                              const content::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(web_contents, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 
 void Browser::EnumerateDirectory(WebContents* web_contents,

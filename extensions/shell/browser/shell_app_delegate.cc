@@ -58,7 +58,7 @@ content::ColorChooser* ShellAppDelegate::ShowColorChooser(
 }
 
 void ShellAppDelegate::RunFileChooser(
-    content::WebContents* tab,
+    content::RenderFrameHost* render_frame_host,
     const content::FileChooserParams& params) {
   NOTIMPLEMENTED();
 }

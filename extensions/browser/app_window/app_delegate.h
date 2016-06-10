@@ -13,10 +13,11 @@
 namespace content {
 class BrowserContext;
 class ColorChooser;
-struct FileChooserParams;
-struct OpenURLParams;
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
+struct FileChooserParams;
+struct OpenURLParams;
 }
 
 namespace gfx {
@@ -58,7 +59,7 @@ class AppDelegate {
   virtual content::ColorChooser* ShowColorChooser(
       content::WebContents* web_contents,
       SkColor initial_color) = 0;
-  virtual void RunFileChooser(content::WebContents* tab,
+  virtual void RunFileChooser(content::RenderFrameHost* render_frame_host,
                               const content::FileChooserParams& params) = 0;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,

@@ -1027,9 +1027,9 @@ content::ColorChooser* DevToolsWindow::OpenColorChooser(
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void DevToolsWindow::RunFileChooser(WebContents* web_contents,
+void DevToolsWindow::RunFileChooser(content::RenderFrameHost* render_frame_host,
                                     const content::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(web_contents, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 
 bool DevToolsWindow::PreHandleGestureEvent(

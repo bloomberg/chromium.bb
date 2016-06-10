@@ -76,6 +76,8 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -2620,6 +2622,12 @@ int RenderFrameHostImpl::GetProxyCount() {
   if (this != frame_tree_node_->current_frame_host())
     return 0;
   return frame_tree_node_->render_manager()->GetProxyCount();
+}
+
+void RenderFrameHostImpl::FilesSelectedInChooser(
+    const std::vector<content::FileChooserFileInfo>& files,
+    FileChooserParams::Mode permissions) {
+  render_view_host_->FilesSelectedInChooser(files, permissions);
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

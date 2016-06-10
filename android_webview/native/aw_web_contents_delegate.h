@@ -30,7 +30,7 @@ class AwWebContentsDelegate
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) override;
-  void RunFileChooser(content::WebContents* web_contents,
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       const content::FileChooserParams& params) override;
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,

@@ -117,9 +117,9 @@ void TabWebContentsDelegateAndroid::LoadingStateChanged(
 }
 
 void TabWebContentsDelegateAndroid::RunFileChooser(
-    WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(web_contents, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 
 std::unique_ptr<BluetoothChooser>

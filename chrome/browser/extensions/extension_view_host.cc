@@ -220,11 +220,11 @@ content::ColorChooser* ExtensionViewHost::OpenColorChooser(
 }
 
 void ExtensionViewHost::RunFileChooser(
-    WebContents* tab,
+    content::RenderFrameHost* render_frame_host,
     const content::FileChooserParams& params) {
   // For security reasons opening a file picker requires a visible <input>
   // element to click on, so this code only exists for extensions with a view.
-  FileSelectHelper::RunFileChooser(tab, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 
 
