@@ -2283,6 +2283,9 @@ void HTMLMediaElement::setMuted(bool muted)
 {
     DVLOG(MEDIA_LOG_LEVEL) << "setMuted(" << (void*)this << ", " << boolString(muted) << ")";
 
+    if (UserGestureIndicator::processingUserGesture())
+        unlockUserGesture();
+
     if (m_muted == muted)
         return;
 
@@ -2297,6 +2300,10 @@ void HTMLMediaElement::setMuted(bool muted)
         Platform::current()->recordAction(UserMetricsAction("Media_Playback_Mute_Off"));
 
     scheduleEvent(EventTypeNames::volumechange);
+
+    // Pause the element when unmuting if it's still locked.
+    if (!muted && isGestureNeededForPlayback())
+        pause();
 }
 
 void HTMLMediaElement::updateVolume()
