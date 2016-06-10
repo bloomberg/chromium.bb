@@ -103,8 +103,7 @@ BrowserAccessibility* OneShotAccessibilityTreeSearch::GetMatchAtIndex(
   return matches_[index];
 }
 
-void OneShotAccessibilityTreeSearch::Search()
-{
+void OneShotAccessibilityTreeSearch::Search() {
   if (immediate_descendants_only_) {
     SearchByIteratingOverChildren();
   } else {

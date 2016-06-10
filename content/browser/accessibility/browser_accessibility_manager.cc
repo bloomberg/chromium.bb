@@ -628,6 +628,7 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
 }
 
 // static
+// Next object in tree using depth-first pre-order traversal.
 BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
     const BrowserAccessibility* object) {
   if (!object)
@@ -648,6 +649,7 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
 }
 
 // static
+// Previous object in tree using depth-first pre-order traversal.
 BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
     const BrowserAccessibility* object) {
   if (!object)
@@ -718,6 +720,82 @@ bool BrowserAccessibilityManager::FindIndicesInCommonParent(
 }
 
 // static
+std::vector<const BrowserAccessibility*>
+BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
+    const BrowserAccessibility& start_object,
+    const BrowserAccessibility& end_object) {
+  std::vector<const BrowserAccessibility*> text_only_objects;
+  int child_index1 = -1;
+  int child_index2 = -1;
+  if (&start_object != &end_object) {
+    BrowserAccessibility* common_parent;
+    if (!FindIndicesInCommonParent(start_object, end_object, &common_parent,
+                                   &child_index1, &child_index2)) {
+      return text_only_objects;
+    }
+
+    DCHECK(common_parent);
+    DCHECK_GE(child_index1, 0);
+    DCHECK_GE(child_index2, 0);
+    // If the child indices are equal, one object is a descendant of the other.
+    DCHECK(child_index1 != child_index2 ||
+           start_object.IsDescendantOf(&end_object) ||
+           end_object.IsDescendantOf(&start_object));
+  }
+
+  const BrowserAccessibility* start_text_object = nullptr;
+  const BrowserAccessibility* end_text_object = nullptr;
+  if (&start_object == &end_object && start_object.IsSimpleTextControl()) {
+    // We need to get to the shadow DOM that is inside the text control in order
+    // to find the text-only objects.
+    if (!start_object.InternalChildCount())
+      return text_only_objects;
+    start_text_object = start_object.InternalGetChild(0);
+    end_text_object =
+        start_object.InternalGetChild(start_object.InternalChildCount() - 1);
+  } else if (child_index1 <= child_index2 ||
+             end_object.IsDescendantOf(&start_object)) {
+    start_text_object = &start_object;
+    end_text_object = &end_object;
+  } else if (child_index1 > child_index2 ||
+             start_object.IsDescendantOf(&end_object)) {
+    start_text_object = &end_object;
+    end_text_object = &start_object;
+  }
+
+  // Pre-order traversal might leave some text-only objects behind if we don't
+  // start from the deepest children.
+  if (!start_text_object->PlatformIsLeaf())
+    start_text_object = start_text_object->PlatformDeepestFirstChild();
+  if (!end_text_object->PlatformIsLeaf())
+    end_text_object = end_text_object->PlatformDeepestLastChild();
+
+  if (!start_text_object->IsTextOnlyObject())
+    start_text_object = NextTextOnlyObject(start_text_object);
+  if (!end_text_object->IsTextOnlyObject())
+    end_text_object = PreviousTextOnlyObject(end_text_object);
+
+  if (!start_text_object || !end_text_object)
+    return text_only_objects;
+
+  while (start_text_object && start_text_object != end_text_object) {
+    text_only_objects.push_back(start_text_object);
+    start_text_object = NextTextOnlyObject(start_text_object);
+  }
+  text_only_objects.push_back(end_text_object);
+
+  return text_only_objects;
+}
+
+// static
+base::string16 BrowserAccessibilityManager::GetTextForRange(
+    const BrowserAccessibility& start_object,
+    const BrowserAccessibility& end_object) {
+  return GetTextForRange(start_object, 0, end_object,
+                         end_object.GetText().length());
+}
+
+// static
 base::string16 BrowserAccessibilityManager::GetTextForRange(
     const BrowserAccessibility& start_object,
     int start_offset,
@@ -739,77 +817,44 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
                                           end_offset - start_offset);
   }
 
-  int child_index1 = -1;
-  int child_index2 = -1;
-  if (&start_object != &end_object) {
-    BrowserAccessibility* common_parent;
-    if (!FindIndicesInCommonParent(start_object, end_object, &common_parent,
-                                   &child_index1, &child_index2)) {
-      return base::string16();
-    }
-
-    DCHECK(common_parent);
-    DCHECK_GE(child_index1, 0);
-    DCHECK_GE(child_index2, 0);
-    // If the child indices are equal, one object is a descendant of the other.
-    DCHECK(child_index1 != child_index2 ||
-           start_object.IsDescendantOf(&end_object) ||
-           end_object.IsDescendantOf(&start_object));
-  }
-
-  const BrowserAccessibility* start_text_object = nullptr;
-  const BrowserAccessibility* end_text_object = nullptr;
-  if (child_index1 <= child_index2 ||
-      end_object.IsDescendantOf(&start_object)) {
-    start_text_object = &start_object;
-    end_text_object = &end_object;
-  } else if (child_index1 > child_index2 ||
-             start_object.IsDescendantOf(&end_object)) {
-    start_text_object = &end_object;
-    end_text_object = &start_object;
-  }
-
-  if (!start_text_object->PlatformIsLeaf())
-    start_text_object = start_text_object->PlatformDeepestFirstChild();
-  if (!end_text_object->PlatformIsLeaf())
-    end_text_object = end_text_object->PlatformDeepestLastChild();
-
-  if (!start_text_object->IsTextOnlyObject())
-    start_text_object = NextTextOnlyObject(start_text_object);
-  if (!end_text_object->IsTextOnlyObject())
-    end_text_object = PreviousTextOnlyObject(end_text_object);
-
-  if (!start_text_object || !end_text_object)
+  std::vector<const BrowserAccessibility*> text_only_objects =
+      FindTextOnlyObjectsInRange(start_object, end_object);
+  if (text_only_objects.empty())
     return base::string16();
 
-  // Be a little permissive with the start and end offsets.
-  if (start_text_object == end_text_object) {
+  if (text_only_objects.size() == 1) {
+    // Be a little permissive with the start and end offsets.
     if (start_offset > end_offset)
       std::swap(start_offset, end_offset);
 
-    if (start_offset <
-            static_cast<int>(start_text_object->GetText().length()) &&
-        end_offset <= static_cast<int>(end_text_object->GetText().length())) {
-      return start_text_object->GetText().substr(start_offset,
-                                                 end_offset - start_offset);
+    const BrowserAccessibility* text_object = text_only_objects[0];
+    if (start_offset < static_cast<int>(text_object->GetText().length()) &&
+        end_offset <= static_cast<int>(text_object->GetText().length())) {
+      return text_object->GetText().substr(start_offset,
+                                           end_offset - start_offset);
     }
-    return start_text_object->GetText();
+    return text_object->GetText();
   }
 
   base::string16 text;
-  if (start_offset < static_cast<int>(start_text_object->GetText().length()))
+  const BrowserAccessibility* start_text_object = text_only_objects[0];
+  if (start_offset < static_cast<int>(start_text_object->GetText().length())) {
     text += start_text_object->GetText().substr(start_offset);
-  else
+  } else {
     text += start_text_object->GetText();
-  start_text_object = NextTextOnlyObject(start_text_object);
-  while (start_text_object && start_text_object != end_text_object) {
-    text += start_text_object->GetText();
-    start_text_object = NextTextOnlyObject(start_text_object);
   }
-  if (end_offset <= static_cast<int>(end_text_object->GetText().length()))
+
+  for (size_t i = 1; i < text_only_objects.size() - 1; ++i) {
+    text += text_only_objects[i]->GetText();
+  }
+
+  const BrowserAccessibility* end_text_object =
+      text_only_objects[text_only_objects.size() - 1];
+  if (end_offset <= static_cast<int>(end_text_object->GetText().length())) {
     text += end_text_object->GetText().substr(0, end_offset);
-  else
+  } else {
     text += end_text_object->GetText();
+  }
 
   return text;
 }

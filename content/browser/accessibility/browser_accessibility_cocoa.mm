@@ -196,6 +196,36 @@ bool GetTextMarkerRange(AXTextMarkerRangeRef marker_range,
          GetTextMarkerData(end_marker.get(), end_object, end_offset);
 }
 
+void AddMisspelledTextAttributes(
+    const std::vector<const BrowserAccessibility*>& text_only_objects,
+    NSMutableAttributedString* attributed_string) {
+  [attributed_string beginEditing];
+  for (const BrowserAccessibility* text_object : text_only_objects) {
+    const std::vector<int32_t>& marker_types =
+        text_object->GetIntListAttribute(ui::AX_ATTR_MARKER_TYPES);
+    const std::vector<int>& marker_starts =
+        text_object->GetIntListAttribute(ui::AX_ATTR_MARKER_STARTS);
+    const std::vector<int>& marker_ends =
+        text_object->GetIntListAttribute(ui::AX_ATTR_MARKER_ENDS);
+    for (size_t i = 0; i < marker_types.size(); ++i) {
+      if (!(static_cast<ui::AXMarkerType>(marker_types[i]) &
+            ui::AX_MARKER_TYPE_SPELLING)) {
+        continue;
+      }
+
+      int misspelling_start = marker_starts[i];
+      int misspelling_end = marker_ends[i];
+      int misspelling_length = misspelling_end - misspelling_start;
+      DCHECK_GT(misspelling_length, 0);
+      [attributed_string
+          addAttribute:NSAccessibilityMarkedMisspelledTextAttribute
+                 value:@YES
+                 range:NSMakeRange(misspelling_start, misspelling_length)];
+    }
+  }
+  [attributed_string endEditing];
+}
+
 NSString* GetTextForTextMarkerRange(AXTextMarkerRangeRef marker_range) {
   BrowserAccessibility* start_object;
   BrowserAccessibility* end_object;
@@ -210,6 +240,39 @@ NSString* GetTextForTextMarkerRange(AXTextMarkerRangeRef marker_range) {
 
   return base::SysUTF16ToNSString(BrowserAccessibilityManager::GetTextForRange(
       *start_object, start_offset, *end_object, end_offset));
+}
+
+NSAttributedString* GetAttributedTextForTextMarkerRange(
+    AXTextMarkerRangeRef marker_range) {
+  BrowserAccessibility* start_object;
+  BrowserAccessibility* end_object;
+  int start_offset, end_offset;
+  if (!GetTextMarkerRange(marker_range, &start_object, &start_offset,
+                          &end_object, &end_offset)) {
+    return nil;
+  }
+  DCHECK(start_object && end_object);
+  DCHECK_GE(start_offset, 0);
+  DCHECK_GE(end_offset, 0);
+
+  NSString* text = base::SysUTF16ToNSString(
+      BrowserAccessibilityManager::GetTextForRange(*start_object, *end_object));
+
+  int end_object_trim_length = 0;
+  if (end_object->IsTextOnlyObject() &&
+      end_offset < static_cast<int>(end_object->GetText().length())) {
+    end_object_trim_length =
+        static_cast<int>(end_object->GetText().length()) - end_offset;
+  }
+  int range_length = [text length] - start_offset - end_object_trim_length;
+  NSRange range = NSMakeRange(start_offset, range_length);
+  NSMutableAttributedString* attributed_text =
+      [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
+  std::vector<const BrowserAccessibility*> text_only_objects =
+      BrowserAccessibilityManager::FindTextOnlyObjectsInRange(*start_object,
+                                                              *end_object);
+  AddMisspelledTextAttributes(text_only_objects, attributed_text);
+  return [attributed_text attributedSubstringFromRange:range];
 }
 
 // Returns an autoreleased copy of the AXNodeData's attribute.
@@ -1817,16 +1880,31 @@ bool InitializeAccessibilityTreeSearch(
   children_.swap(*other);
 }
 
-// Returns the requested text range from this object's value attribute.
 - (NSString*)valueForRange:(NSRange)range {
   if (![self instanceActive])
     return nil;
 
   base::string16 value = browserAccessibility_->GetValue();
-  if (NSMaxRange(range) > value.size())
+  if (NSMaxRange(range) > value.length())
     return nil;
 
   return base::SysUTF16ToNSString(value.substr(range.location, range.length));
+}
+
+- (NSAttributedString*)attributedValueForRange:(NSRange)range {
+  if (![self instanceActive])
+    return nil;
+
+  // We need to get the whole text because a spelling mistake might start or end
+  // outside our range.
+  NSString* value = base::SysUTF16ToNSString(browserAccessibility_->GetValue());
+  NSMutableAttributedString* attributedValue =
+      [[[NSMutableAttributedString alloc] initWithString:value] autorelease];
+  std::vector<const BrowserAccessibility*> textOnlyObjects =
+      BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
+          *browserAccessibility_, *browserAccessibility_);
+  AddMisspelledTextAttributes(textOnlyObjects, attributedValue);
+  return [attributedValue attributedSubstringFromRange:range];
 }
 
 // Returns the accessibility value for the given attribute.  If the value isn't
@@ -1864,8 +1942,7 @@ bool InitializeAccessibilityTreeSearch(
   if ([attribute
           isEqualToString:
               NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
-    NSString* value = [self valueForRange:[(NSValue*)parameter rangeValue]];
-    return [[[NSAttributedString alloc] initWithString:value] autorelease];
+    return [self attributedValueForRange:[(NSValue*)parameter rangeValue]];
   }
 
   if ([attribute isEqualToString:
@@ -1964,8 +2041,7 @@ bool InitializeAccessibilityTreeSearch(
     return GetTextForTextMarkerRange(parameter);
 
   if ([attribute isEqualToString:@"AXAttributedStringForTextMarkerRange"]) {
-    NSString* text = GetTextForTextMarkerRange(parameter);
-    return [[[NSAttributedString alloc] initWithString:text] autorelease];
+    return GetAttributedTextForTextMarkerRange(parameter);
   }
 
   if ([attribute isEqualToString:@"AXNextTextMarkerForTextMarker"]) {

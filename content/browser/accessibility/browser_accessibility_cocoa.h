@@ -61,8 +61,8 @@
 // Swap the children array with the given scoped_nsobject.
 - (void)swapChildren:(base::scoped_nsobject<NSMutableArray>*)other;
 
-// Returns the requested text range from this object's value attribute.
 - (NSString*)valueForRange:(NSRange)range;
+- (NSAttributedString*)attributedValueForRange:(NSRange)range;
 
 // Internally-used property.
 @property(nonatomic, readonly) NSPoint origin;

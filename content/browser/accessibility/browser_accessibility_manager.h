@@ -294,7 +294,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // scroll offsets separately.
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
 
-  // Walk the tree.
+  // Walk the tree using depth-first pre-order traversal.
   static BrowserAccessibility* NextInTreeOrder(
       const BrowserAccessibility* object);
   static BrowserAccessibility* PreviousInTreeOrder(
@@ -314,9 +314,16 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
                                         int* child_index1,
                                         int* child_index2);
 
-  // Returns all the text found between the given start and end locations.
+  static std::vector<const BrowserAccessibility*> FindTextOnlyObjectsInRange(
+      const BrowserAccessibility& start_object,
+      const BrowserAccessibility& end_object);
+
+  static base::string16 GetTextForRange(
+      const BrowserAccessibility& start_object,
+      const BrowserAccessibility& end_object);
+
   // If start and end offsets are greater than the text's length, returns all
-  // the text until text length.
+  // the text.
   static base::string16 GetTextForRange(
       const BrowserAccessibility& start_object,
       int start_offset,
