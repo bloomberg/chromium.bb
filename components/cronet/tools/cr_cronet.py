@@ -22,11 +22,11 @@ def build(out_dir, test_target, extra_options=''):
              extra_options)
 
 
-def install(release_arg):
-  return run('build/android/adb_install_apk.py ' + release_arg + \
-             ' --apk=CronetTest.apk') or \
-             run('build/android/adb_install_apk.py ' + release_arg + \
-             ' --apk=ChromiumNetTestSupport.apk')
+def install(out_dir, release_arg):
+  cmd = 'BUILDTYPE={0} build/android/adb_install_apk.py {1} --apk={2}'
+  build_dir = out_dir.split('/', 1)[1] # the 'Foo' part of 'out/Foo'
+  return run(cmd.format(build_dir, release_arg, 'CronetTest.apk')) or \
+    run(cmd.format(build_dir, release_arg, 'ChromiumNetTestSupport.apk'))
 
 
 def test(out_dir, extra_options):
@@ -124,20 +124,20 @@ def main():
     return build(out_dir, test_target, extra_options)
   if (not is_os):
     if (options.command=='install'):
-      return install(release_arg)
+      return install(out_dir, release_arg)
     if (options.command=='proguard'):
       return run ('ninja -C ' + out_dir + ' cronet_sample_proguard_apk')
     if (options.command=='test'):
-      return install(release_arg) or test(out_dir, extra_options)
+      return install(out_dir, release_arg) or test(out_dir, extra_options)
     if (options.command=='build-test'):
-      return build(out_dir, test_target) or install(release_arg) or \
+      return build(out_dir, test_target) or install(out_dir, release_arg) or \
           test(out_dir, extra_options)
     if (options.command=='stack'):
       return stack(out_dir)
     if (options.command=='debug'):
-      return install(release_arg) or debug(extra_options)
+      return install(out_dir, release_arg) or debug(extra_options)
     if (options.command=='build-debug'):
-      return build(out_dir, test_target) or install(release_arg) or \
+      return build(out_dir, test_target) or install(out_dir, release_arg) or \
           debug(extra_options)
   else:
     if (options.command=='test'):
