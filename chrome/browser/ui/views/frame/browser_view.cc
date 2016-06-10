@@ -958,15 +958,16 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     return;
   }
 
+  if (exclusive_access_bubble_) {
+    exclusive_access_bubble_->UpdateContent(url, bubble_type);
+    return;
+  }
+
   // Hide the backspace shortcut bubble, to avoid overlapping.
   new_back_shortcut_bubble_.reset();
 
-  if (exclusive_access_bubble_) {
-    exclusive_access_bubble_->UpdateContent(url, bubble_type);
-  } else {
-    exclusive_access_bubble_.reset(
-        new ExclusiveAccessBubbleViews(this, url, bubble_type));
-  }
+  exclusive_access_bubble_.reset(
+      new ExclusiveAccessBubbleViews(this, url, bubble_type));
 }
 
 void BrowserView::OnExclusiveAccessUserInput() {
@@ -990,14 +991,39 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
   return exclusive_access_bubble_ != nullptr;
 }
 
-void BrowserView::ShowNewBackShortcutBubble(bool forward) {
-  // Hide the exclusive access bubble, to avoid overlapping.
-  exclusive_access_bubble_.reset();
+void BrowserView::MaybeShowNewBackShortcutBubble(bool forward) {
+  if (!new_back_shortcut_bubble_ || !new_back_shortcut_bubble_->IsVisible()) {
+    // Show the bubble at most five times.
+    PrefService* prefs = browser_->profile()->GetPrefs();
+    int shown_count = prefs->GetInteger(prefs::kBackShortcutBubbleShownCount);
+    constexpr int kMaxShownCount = 5;
+    if (shown_count >= kMaxShownCount)
+      return;
 
+    // Only show the bubble when the user presses a shortcut twice within three
+    // seconds.
+    const base::TimeTicks now = base::TimeTicks::Now();
+    constexpr base::TimeDelta kRepeatWindow = base::TimeDelta::FromSeconds(3);
+    if (last_back_shortcut_press_time_.is_null() ||
+        ((now - last_back_shortcut_press_time_) > kRepeatWindow)) {
+      last_back_shortcut_press_time_ = now;
+      return;
+    }
+
+    // Hide the exclusive access bubble, to avoid overlapping.
+    exclusive_access_bubble_.reset();
+
+    new_back_shortcut_bubble_.reset(new NewBackShortcutBubble(this));
+    prefs->SetInteger(prefs::kBackShortcutBubbleShownCount, shown_count + 1);
+    last_back_shortcut_press_time_ = base::TimeTicks();
+  }
+
+  new_back_shortcut_bubble_->UpdateContent(forward);
+}
+
+void BrowserView::HideNewBackShortcutBubble() {
   if (new_back_shortcut_bubble_)
-    new_back_shortcut_bubble_->UpdateContent(forward);
-  else
-    new_back_shortcut_bubble_.reset(new NewBackShortcutBubble(this, forward));
+    new_back_shortcut_bubble_->Hide();
 }
 
 void BrowserView::RestoreFocus() {

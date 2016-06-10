@@ -434,10 +434,13 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
   return false;  // Currently only called from toolkit-views website_settings.
 }
 
-void BrowserWindowCocoa::ShowNewBackShortcutBubble(bool forward) {
-  ExclusiveAccessController* exclusive_access_controller =
-      [controller_ exclusiveAccessController];
-  exclusive_access_controller->ShowNewBackShortcutBubble(forward);
+void BrowserWindowCocoa::MaybeShowNewBackShortcutBubble(bool forward) {
+  [controller_ exclusiveAccessController]->MaybeShowNewBackShortcutBubble(
+      forward);
+}
+
+void BrowserWindowCocoa::HideNewBackShortcutBubble() {
+  [controller_ exclusiveAccessController]->HideNewBackShortcutBubble();
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {

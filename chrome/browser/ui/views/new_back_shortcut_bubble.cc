@@ -33,8 +33,7 @@ const int kShowDurationMs = 3800;
 }
 
 NewBackShortcutBubble::NewBackShortcutBubble(
-    ExclusiveAccessBubbleViewsContext* context,
-    bool forward)
+    ExclusiveAccessBubbleViewsContext* context)
     : bubble_view_context_(context),
       animation_(new gfx::SlideAnimation(this)),
       view_(new SubtleNotificationView(nullptr)),
@@ -42,7 +41,6 @@ NewBackShortcutBubble::NewBackShortcutBubble(
           bubble_view_context_->GetBubbleParentView(),
           view_,
           false)) {
-  UpdateContent(forward);
 }
 
 NewBackShortcutBubble::~NewBackShortcutBubble() {
@@ -50,6 +48,10 @@ NewBackShortcutBubble::~NewBackShortcutBubble() {
   // ~ExclusiveAccessBubbleViews.
   popup_->Close();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, popup_);
+}
+
+bool NewBackShortcutBubble::IsVisible() const {
+  return popup_->IsVisible();
 }
 
 void NewBackShortcutBubble::UpdateContent(bool forward) {
@@ -83,6 +85,11 @@ void NewBackShortcutBubble::UpdateContent(bool forward) {
   hide_timeout_.Start(FROM_HERE,
                       base::TimeDelta::FromMilliseconds(kShowDurationMs), this,
                       &NewBackShortcutBubble::OnTimerElapsed);
+}
+
+void NewBackShortcutBubble::Hide() {
+  hide_timeout_.Stop();
+  OnTimerElapsed();
 }
 
 void NewBackShortcutBubble::AnimationProgressed(

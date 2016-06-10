@@ -33,11 +33,18 @@ class Widget;
 // TODO(mgiuca): Remove this in M54 (https://crbug.com/610039).
 class NewBackShortcutBubble : public gfx::AnimationDelegate {
  public:
-  NewBackShortcutBubble(ExclusiveAccessBubbleViewsContext* context,
-                        bool forward);
+  explicit NewBackShortcutBubble(ExclusiveAccessBubbleViewsContext* context);
   ~NewBackShortcutBubble() override;
 
+  // Returns whether the UI is currently visible.
+  bool IsVisible() const;
+
+  // Ensures the UI is displaying the correct shortcut for forward/back based on
+  // |forward|, and resets the hide timer.
   void UpdateContent(bool forward);
+
+  // Fades out the UI immediately.
+  void Hide();
 
  private:
   // gfx::AnimationDelegate:

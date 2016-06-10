@@ -40,14 +40,39 @@ void ExclusiveAccessController::Show() {
   views_bubble_.reset(new ExclusiveAccessBubbleViews(this, url_, bubble_type_));
 }
 
-void ExclusiveAccessController::ShowNewBackShortcutBubble(bool forward) {
-  // Hide the exclusive access bubble, to avoid overlapping.
-  views_bubble_.reset();
+void ExclusiveAccessController::MaybeShowNewBackShortcutBubble(bool forward) {
+  if (!new_back_shortcut_bubble_ || !new_back_shortcut_bubble_->IsVisible()) {
+      // Show the bubble at most five times.
+      PrefService* prefs = GetProfile()->GetPrefs();
+      int shown_count = prefs->GetInteger(prefs::kBackShortcutBubbleShownCount);
+      constexpr int kMaxShownCount = 5;
+      if (shown_count >= kMaxShownCount)
+        return;
 
+      // Only show the bubble when the user presses a shortcut twice within
+      // three seconds.
+      const base::TimeTicks now = base::TimeTicks::Now();
+      constexpr base::TimeDelta kRepeatWindow = base::TimeDelta::FromSeconds(3);
+      if (last_back_shortcut_press_time_.is_null() ||
+          ((now - last_back_shortcut_press_time_) > kRepeatWindow)) {
+        last_back_shortcut_press_time_ = now;
+        return;
+      }
+
+      // Hide the exclusive access bubble, to avoid overlapping.
+      views_bubble_.reset();
+
+      new_back_shortcut_bubble_.reset(new NewBackShortcutBubble(this));
+      prefs->SetInteger(prefs::kBackShortcutBubbleShownCount, shown_count + 1);
+      last_back_shortcut_press_time_ = base::TimeTicks();
+  }
+
+  new_back_shortcut_bubble_->UpdateContent(forward);
+}
+
+void ExclusiveAccessController::HideNewBackShortcutBubble() {
   if (new_back_shortcut_bubble_)
-    new_back_shortcut_bubble_->UpdateContent(forward);
-  else
-    new_back_shortcut_bubble_.reset(new NewBackShortcutBubble(this, forward));
+    new_back_shortcut_bubble_->Hide();
 }
 
 void ExclusiveAccessController::Destroy() {
