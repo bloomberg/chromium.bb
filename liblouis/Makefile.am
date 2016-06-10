@@ -35,7 +35,6 @@ liblouis_la_SOURCES =				\
 	louis.h					\
 	logging.c				\
 	lou_translateString.c			\
-	transcommon.ci				\
 	wrappers.c				\
 	findTable.h				\
 	findTable.c \
