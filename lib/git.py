@@ -1209,7 +1209,7 @@ def RawDiff(path, target):
 
 
 def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
-             **kwargs):
+             reviewers=None, **kwargs):
   """Upload a CL to gerrit. The CL should be checked out currently.
 
   Args:
@@ -1218,10 +1218,14 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
     branch: Branch to upload to.
     local_branch: Branch to upload.
     draft: Whether to upload as a draft.
+    reviewers: Add the reviewers to the CL.
     kwargs: Extra options for GitPush. capture_output defaults to False so
       that the URL for new or updated CLs is shown to the user.
   """
   ref = ('refs/drafts/%s' if draft else 'refs/for/%s') % branch
+  if reviewers:
+    reviewer_list = ['r=%s' % i for i in reviewers]
+    ref = ref + '%'+ ','.join(reviewer_list)
   remote_ref = RemoteRef(remote, ref)
   kwargs.setdefault('capture_output', False)
   GitPush(git_repo, local_branch, remote_ref, **kwargs)

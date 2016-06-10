@@ -45,6 +45,9 @@ class MissingBranchException(Exception):
 class InvalidPFQBuildIdExcpetion(Exception):
   """The PFQ build_id isn't valid."""
 
+class InvalidReviewerEmailException(Exception):
+  """The reviewer email address isn't valid."""
+
 @command.CommandDecorator('uprevchrome')
 class UprevChromeCommand(command.CliCommand):
   """cros uprevchrome: Uprev chrome to a new valid version
@@ -104,6 +107,10 @@ class UprevChromeCommand(command.CliCommand):
                         help='Upload the uprev CLs to Gerrit as drafts.')
     parser.add_argument('--dry-run', action='store_true',
                         help="Prepare CLs but don't upload them to Gerrit")
+    parser.add_argument('--reviewers',
+                        action='append', default=[],
+                        help='Add reviewers to the CLs.'
+                        'ex:--reviewer x@email.com --reviewer y@email.com')
     return parser
 
   def ValidatePFQBuild(self, pfq_build, db):
@@ -206,6 +213,14 @@ class UprevChromeCommand(command.CliCommand):
 
     return '\n'.join(message)
 
+  def ValidateReviewers(self, reviewers):
+    """Raise an exception if one reviewer format isn't valid."""
+    for r in reviewers:
+      if "\'" in r or "\"" in r:
+        raise InvalidReviewerEmailException(
+            'Invalid reviewer email %s: %s' % (
+                r, 'it cannot contain \" or \''))
+
   def UprevChrome(self, work_dir, pfq_build):
     """Uprev Chrome.
 
@@ -217,6 +232,10 @@ class UprevChromeCommand(command.CliCommand):
       Exception when no commit ID is found in the public overlay CL.
       Exception when no commit ID is found in the private overlay CL.
     """
+    # Verify the format of reviewers
+    reviewers = self.options.reviewers
+    self.ValidateReviewers(reviewers)
+
     pub_overlay = os.path.join(work_dir, 'pub_overlay')
     priv_overlay = os.path.join(work_dir, 'priv_overlay')
 
@@ -290,7 +309,7 @@ class UprevChromeCommand(command.CliCommand):
       logging.info('Upload CLs to Gerrit.')
       git.UploadCL(_overlay, _overlay_url, MASTER_BRANCH,
                    skip=self.options.dry_run, draft=self.options.draft,
-                   debug_level=logging.NOTICE)
+                   debug_level=logging.NOTICE, reviewers=reviewers)
 
     print('Please review and submit the CLs together from Gerrit.')
     print('Successfully run cros uprevchrome!')
