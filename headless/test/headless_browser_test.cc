@@ -134,7 +134,7 @@ void HeadlessBrowserTest::RunTestOnMainThreadLoop() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Pump startup related events.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   SetUpOnMainThread();
   RunTestOnMainThread();
