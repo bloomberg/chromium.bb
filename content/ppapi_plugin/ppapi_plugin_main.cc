@@ -32,6 +32,7 @@
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/display/win/dpi.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/win/direct_write.h"
 #endif
 
@@ -132,6 +133,13 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   InitializeDWriteFontProxy();
 
   blink::WebFontRendering::setDeviceScaleFactor(display::win::GetDPIScale());
+
+  const gfx::FontRenderParams font_params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
+  blink::WebFontRendering::setAntialiasedTextEnabled(font_params.antialiasing);
+  blink::WebFontRendering::setLCDTextEnabled(
+      font_params.subpixel_rendering !=
+      gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
 #endif
 
   main_message_loop.Run();
