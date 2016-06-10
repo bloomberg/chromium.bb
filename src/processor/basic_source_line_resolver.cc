@@ -483,7 +483,7 @@ bool SymbolParseHelper::ParseFile(char *file_line, long *index,
   }
 
   *filename = tokens[1];
-  if (!filename) {
+  if (!*filename) {
     return false;
   }
 
