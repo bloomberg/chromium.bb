@@ -254,6 +254,7 @@ EXPERIMENT_LIST="
     dering
     ref_mv
     ext_interp
+    motion_var
 "
 CONFIG_LIST="
     dependency_tracking
