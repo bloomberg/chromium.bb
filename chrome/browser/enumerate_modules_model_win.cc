@@ -861,7 +861,7 @@ void EnumerateModulesModel::AcknowledgeConflictNotification() {
   if (!conflict_notification_acknowledged_) {
     conflict_notification_acknowledged_ = true;
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+        chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
         content::Source<EnumerateModulesModel>(this),
         content::NotificationService::NoDetails());
   }

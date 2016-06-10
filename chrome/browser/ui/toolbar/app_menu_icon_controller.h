@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_CONTROLLER_H_
+#define CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
@@ -14,26 +14,26 @@
 
 class Profile;
 
-// AppMenuBadgeController encapsulates the logic for badging the app menu icon
+// AppMenuIconController encapsulates the logic for badging the app menu icon
 // as a result of various events - such as available updates, errors, etc.
-class AppMenuBadgeController : public content::NotificationObserver {
+class AppMenuIconController : public content::NotificationObserver {
  public:
-  enum class BadgeType {
+  enum class IconType {
     NONE,
     UPGRADE_NOTIFICATION,
     GLOBAL_ERROR,
     INCOMPATIBILITY_WARNING,
   };
 
-  // Delegate interface for receiving badge update notifications.
+  // Delegate interface for receiving icon update notifications.
   class Delegate {
    public:
-    // Notifies the UI to update the badge to have the specified |severity|, as
+    // Notifies the UI to update the icon to have the specified |severity|, as
     // well as specifying whether it should |animate|. The |type| parameter
     // specifies the type of change (i.e. the source of the notification).
-    virtual void UpdateBadgeSeverity(BadgeType type,
-                                     AppMenuIconPainter::Severity severity,
-                                     bool animate) = 0;
+    virtual void UpdateSeverity(IconType type,
+                                AppMenuIconPainter::Severity severity,
+                                bool animate) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -41,8 +41,8 @@ class AppMenuBadgeController : public content::NotificationObserver {
 
   // Creates an instance of this class for the given |profile| that will notify
   // |delegate| of updates.
-  AppMenuBadgeController(Profile* profile, Delegate* delegate);
-  ~AppMenuBadgeController() override;
+  AppMenuIconController(Profile* profile, Delegate* delegate);
+  ~AppMenuIconController() override;
 
   // Forces an update of the UI based on the current state of the world. This
   // will check whether there are any current pending updates, global errors,
@@ -60,7 +60,7 @@ class AppMenuBadgeController : public content::NotificationObserver {
   Delegate* delegate_;
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppMenuBadgeController);
+  DISALLOW_COPY_AND_ASSIGN(AppMenuIconController);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_APP_MENU_BADGE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_APP_MENU_ICON_CONTROLLER_H_

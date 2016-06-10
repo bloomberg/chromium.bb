@@ -302,7 +302,7 @@ enum NotificationType {
 
   // Sent when Chrome is done scanning the module list and when the user has
   // acknowledged the module incompatibility. No details are expected.
-  NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+  NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
 
   // Content Settings --------------------------------------------------------
 

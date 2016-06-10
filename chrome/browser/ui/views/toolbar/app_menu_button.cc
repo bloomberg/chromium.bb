@@ -37,7 +37,7 @@ bool AppMenuButton::g_open_app_immediately_for_testing = false;
 AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     : views::MenuButton(base::string16(), toolbar_view, false),
       severity_(AppMenuIconPainter::SEVERITY_NONE),
-      type_(AppMenuBadgeController::BadgeType::NONE),
+      type_(AppMenuIconController::IconType::NONE),
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
@@ -50,7 +50,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
 
 AppMenuButton::~AppMenuButton() {}
 
-void AppMenuButton::SetSeverity(AppMenuBadgeController::BadgeType type,
+void AppMenuButton::SetSeverity(AppMenuIconController::IconType type,
                                 AppMenuIconPainter::Severity severity,
                                 bool animate) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
@@ -155,17 +155,17 @@ void AppMenuButton::UpdateIcon() {
 
   gfx::VectorIconId icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
   switch (type_) {
-    case AppMenuBadgeController::BadgeType::NONE:
+    case AppMenuIconController::IconType::NONE:
       icon_id = gfx::VectorIconId::BROWSER_TOOLS;
       DCHECK_EQ(severity_, AppMenuIconPainter::SEVERITY_NONE);
       break;
-    case AppMenuBadgeController::BadgeType::UPGRADE_NOTIFICATION:
+    case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
       icon_id = gfx::VectorIconId::BROWSER_TOOLS_UPDATE;
       break;
-    case AppMenuBadgeController::BadgeType::GLOBAL_ERROR:
+    case AppMenuIconController::IconType::GLOBAL_ERROR:
       icon_id = gfx::VectorIconId::BROWSER_TOOLS_ERROR;
       break;
-    case AppMenuBadgeController::BadgeType::INCOMPATIBILITY_WARNING:
+    case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
       icon_id = gfx::VectorIconId::BROWSER_TOOLS_WARNING;
       break;
   }

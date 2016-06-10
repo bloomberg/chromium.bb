@@ -50,7 +50,7 @@ ConflictingModuleView::ConflictingModuleView(views::View* anchor_view,
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
-  registrar_.Add(this, chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+  registrar_.Add(this, chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
                  content::NotificationService::AllSources());
 }
 
@@ -166,7 +166,7 @@ void ConflictingModuleView::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE);
+  DCHECK(type == chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE);
   EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
   if (!model->ShouldShowConflictWarning())
     GetWidget()->Close();

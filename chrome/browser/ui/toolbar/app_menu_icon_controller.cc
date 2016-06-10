@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
+#include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -52,7 +52,7 @@ bool ShouldAnimateUpgradeLevel(
   return should_animate;
 }
 
-// Returns true if we should show the upgrade recommended badge.
+// Returns true if we should show the upgrade recommended icon.
 bool ShouldShowUpgradeRecommended() {
 #if defined(OS_CHROMEOS)
   // In chromeos, the update recommendation is shown in the system tray. So it
@@ -76,8 +76,8 @@ bool ShouldShowIncompatibilityWarning() {
 
 }  // namespace
 
-AppMenuBadgeController::AppMenuBadgeController(Profile* profile,
-                                               Delegate* delegate)
+AppMenuIconController::AppMenuIconController(Profile* profile,
+                                             Delegate* delegate)
     : profile_(profile), delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(delegate_);
@@ -88,48 +88,42 @@ AppMenuBadgeController::AppMenuBadgeController(Profile* profile,
                  content::Source<Profile>(profile_));
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() == base::win::VERSION_XP) {
-    registrar_.Add(this, chrome::NOTIFICATION_MODULE_LIST_ENUMERATED,
-                   content::NotificationService::AllSources());
-  }
-  registrar_.Add(this, chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
+  registrar_.Add(this, chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_ICON_CHANGE,
                  content::NotificationService::AllSources());
 #endif
 }
 
-AppMenuBadgeController::~AppMenuBadgeController() {
-}
+AppMenuIconController::~AppMenuIconController() {}
 
-void AppMenuBadgeController::UpdateDelegate() {
+void AppMenuIconController::UpdateDelegate() {
   if (ShouldShowUpgradeRecommended()) {
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
         UpgradeDetector::GetInstance()->upgrade_notification_stage();
-    delegate_->UpdateBadgeSeverity(BadgeType::UPGRADE_NOTIFICATION,
-                                   SeverityFromUpgradeLevel(level),
-                                   ShouldAnimateUpgradeLevel(level));
+    delegate_->UpdateSeverity(IconType::UPGRADE_NOTIFICATION,
+                              SeverityFromUpgradeLevel(level),
+                              ShouldAnimateUpgradeLevel(level));
     return;
   }
 
   if (ShouldShowIncompatibilityWarning()) {
-    delegate_->UpdateBadgeSeverity(BadgeType::INCOMPATIBILITY_WARNING,
-                                   AppMenuIconPainter::SEVERITY_MEDIUM, true);
+    delegate_->UpdateSeverity(IconType::INCOMPATIBILITY_WARNING,
+                              AppMenuIconPainter::SEVERITY_MEDIUM, true);
     return;
   }
 
-  if (GlobalErrorServiceFactory::GetForProfile(profile_)->
-          GetHighestSeverityGlobalErrorWithAppMenuItem()) {
+  if (GlobalErrorServiceFactory::GetForProfile(profile_)
+          ->GetHighestSeverityGlobalErrorWithAppMenuItem()) {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
-    delegate_->UpdateBadgeSeverity(BadgeType::GLOBAL_ERROR,
-                                   AppMenuIconPainter::SEVERITY_MEDIUM, true);
+    delegate_->UpdateSeverity(IconType::GLOBAL_ERROR,
+                              AppMenuIconPainter::SEVERITY_MEDIUM, true);
     return;
   }
 
-  delegate_->UpdateBadgeSeverity(BadgeType::NONE,
-                                 AppMenuIconPainter::SEVERITY_NONE, true);
+  delegate_->UpdateSeverity(IconType::NONE,
+                            AppMenuIconPainter::SEVERITY_NONE, true);
 }
-
-void AppMenuBadgeController::Observe(
+void AppMenuIconController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

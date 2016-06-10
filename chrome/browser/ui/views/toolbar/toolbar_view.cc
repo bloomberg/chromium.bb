@@ -129,7 +129,7 @@ ToolbarView::ToolbarView(Browser* browser)
       browser_actions_(nullptr),
       app_menu_button_(nullptr),
       browser_(browser),
-      badge_controller_(browser->profile(), this),
+      app_menu_icon_controller_(browser->profile(), this),
       display_mode_(browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)
                         ? DISPLAYMODE_NORMAL
                         : DISPLAYMODE_LOCATION) {
@@ -239,7 +239,7 @@ void ToolbarView::Init() {
 
   LoadImages();
 
-  // Start global error services now so we badge the menu correctly.
+  // Start global error services now so we set the icon on the menu correctly.
 #if !defined(OS_CHROMEOS)
   if (!HasAshShell()) {
     SigninGlobalErrorFactory::GetForProfile(browser_->profile());
@@ -253,11 +253,10 @@ void ToolbarView::Init() {
 #endif
 #endif  // OS_CHROMEOS
 
-  // Add any necessary badges to the menu item based on the system state.
-  // Do this after |app_menu_button_| has been added as a bubble may be shown
-  // that needs the widget (widget found by way of app_menu_button_->
-  // GetWidget()).
-  badge_controller_.UpdateDelegate();
+  // Set the button icon based on the system state. Do this after
+  // |app_menu_button_| has been added as a bubble may be shown that needs
+  // the widget (widget found by way of app_menu_button_->GetWidget()).
+  app_menu_icon_controller_.UpdateDelegate();
 
   location_bar_->Init();
 
@@ -646,9 +645,10 @@ bool ToolbarView::DoesIntersectRect(const views::View* target,
   return ViewTargeterDelegate::DoesIntersectRect(this, rect);
 }
 
-void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
-                                      AppMenuIconPainter::Severity severity,
-                                      bool animate) {
+// AppMenuIconController::Delegate:
+void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
+                                 AppMenuIconPainter::Severity severity,
+                                 bool animate) {
   // There's no app menu in tabless windows.
   if (!app_menu_button_)
     return;
@@ -658,28 +658,29 @@ void ToolbarView::UpdateBadgeSeverity(AppMenuBadgeController::BadgeType type,
   DCHECK(app_menu_button_->GetWidget());
 
   base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
-  if (type == AppMenuBadgeController::BadgeType::UPGRADE_NOTIFICATION) {
+  if (type == AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
   }
   app_menu_button_->SetAccessibleName(accname_app);
   app_menu_button_->SetSeverity(type, severity, animate);
 
-  // Keep track of whether we were showing the badge before, so we don't send
-  // multiple UMA events for example when multiple Chrome windows are open.
-  static bool incompatibility_badge_showing = false;
+  // Keep track of whether we were showing the incompatibility icon before,
+  // so we don't send multiple UMA events for example when multiple Chrome
+  // windows are open.
+  static bool incompatibility_warning_showing = false;
   // Save the old value before resetting it.
-  bool was_showing = incompatibility_badge_showing;
-  incompatibility_badge_showing = false;
+  bool was_showing = incompatibility_warning_showing;
+  incompatibility_warning_showing = false;
 
-  if (type == AppMenuBadgeController::BadgeType::INCOMPATIBILITY_WARNING) {
+  if (type == AppMenuIconController::IconType::INCOMPATIBILITY_WARNING) {
     if (!was_showing) {
       content::RecordAction(UserMetricsAction("ConflictBadge"));
 #if defined(OS_WIN)
       ConflictingModuleView::MaybeShow(browser_, app_menu_button_);
 #endif
     }
-    incompatibility_badge_showing = true;
+    incompatibility_warning_showing = true;
     return;
   }
 }
