@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/power_monitor_test_base.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -145,7 +146,7 @@ class EndToEndFrameChecker
         base::Bind(&SaveDecoderInitResult, &decoder_init_result),
         base::Bind(&EndToEndFrameChecker::CompareFrameWithExpected,
                    base::Unretained(this)));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(decoder_init_result);
   }
 
@@ -205,11 +206,11 @@ class TestPowerSource : public base::PowerMonitorSource {
  public:
   void GenerateSuspendEvent() {
     ProcessPowerEvent(SUSPEND_EVENT);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   void GenerateResumeEvent() {
     ProcessPowerEvent(RESUME_EVENT);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

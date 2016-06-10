@@ -192,7 +192,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
     video_capture_device_factory_->EnumerateDeviceNames(
         base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
                    device_enumeration_listener_));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return std::unique_ptr<VideoCaptureDevice::Names>(names);
   }
 

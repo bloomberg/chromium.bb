@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -1230,7 +1231,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     do {
       stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
                               base::Unretained(this), status, &buffer));
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       if (*status == DemuxerStream::kOk && !buffer->end_of_stream())
         *last_timestamp = buffer->timestamp();
     } while (*status == DemuxerStream::kOk && !buffer->end_of_stream());
@@ -1271,7 +1272,7 @@ class ChunkDemuxerTest : public ::testing::Test {
       scoped_refptr<DecoderBuffer> buffer;
       stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
                               base::Unretained(this), &status, &buffer));
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       if (status != DemuxerStream::kOk || buffer->end_of_stream())
         break;
 
@@ -2002,13 +2003,13 @@ class EndOfStreamHelper {
 
     audio->Read(base::Bind(&OnEndOfStreamReadDone, &audio_read_done_));
     video->Read(base::Bind(&OnEndOfStreamReadDone, &video_read_done_));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Check to see if |audio_read_done_| and |video_read_done_| variables
   // match |expected|.
   void CheckIfReadDonesWereCalled(bool expected) {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(expected, audio_read_done_);
     EXPECT_EQ(expected, video_read_done_);
   }
