@@ -2511,6 +2511,8 @@
       'browser/ui/views/extensions/bookmark_app_confirmation_view.h',
       'browser/ui/views/extensions/browser_action_drag_data.cc',
       'browser/ui/views/extensions/browser_action_drag_data.h',
+      'browser/ui/views/extensions/chooser_dialog_view.cc',
+      'browser/ui/views/extensions/chooser_dialog_view.h',
       'browser/ui/views/extensions/extension_action_platform_delegate_views.cc',
       'browser/ui/views/extensions/extension_action_platform_delegate_views.h',
       'browser/ui/views/extensions/extension_dialog.cc',

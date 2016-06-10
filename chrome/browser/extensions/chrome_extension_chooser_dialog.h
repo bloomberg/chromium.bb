@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_CHOOSER_DIALOG_H_
 
 #include "base/macros.h"
-#include "build/build_config.h"
 
 class ChooserController;
 
@@ -25,6 +24,8 @@ class ChromeExtensionChooserDialog {
   void ShowDialog(ChooserController* chooser_controller) const;
 
  private:
+  void ShowDialogImpl(ChooserController* chooser_controller) const;
+
   content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionChooserDialog);

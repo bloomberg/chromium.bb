@@ -46,6 +46,7 @@ void ChromeDevicePermissionsPrompt::ShowDialog() {
 // dialog when it is implemented.
 void ChromeExtensionChooserDialog::ShowDialog(
     ChooserController* chooser_controller) const {
+  ShowDialogImpl(chooser_controller);
 }
 
 namespace chrome {
