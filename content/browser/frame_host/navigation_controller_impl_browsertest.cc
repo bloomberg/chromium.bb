@@ -727,6 +727,87 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
   EXPECT_EQ(grandchild_url, new_root->child_at(0)->child_at(0)->current_url());
 }
 
+// Test that the renderer is not killed after an auto subframe navigation if the
+// main frame appears to change its origin due to a document.write on an
+// about:blank page.  See https://crbug.com/613732.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       OriginChangeAfterDocumentWrite) {
+  GURL url1 = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Pop open a new window to about:blank.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(root, "var w = window.open('about:blank')"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  GURL blank_url(url::kAboutBlankURL);
+  EXPECT_EQ(blank_url, new_root->current_url());
+
+  // Make a new iframe in it using document.write from the opener.
+  {
+    LoadCommittedCapturer capturer(new_shell->web_contents());
+    std::string script = "w.document.write("
+                         "\"<iframe src='" + url1.spec() + "'></iframe>\");"
+                         "w.document.close();";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+  }
+  ASSERT_EQ(1U, new_root->child_count());
+  EXPECT_EQ(blank_url, new_root->current_url());
+  EXPECT_EQ(url1, new_root->child_at(0)->current_url());
+
+  // Navigate the subframe.
+  GURL url2 = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html");
+  {
+    LoadCommittedCapturer capturer(new_root->child_at(0));
+    std::string script = "location.href = '" + url2.spec() + "';";
+    EXPECT_TRUE(ExecuteScript(new_root->child_at(0), script));
+    capturer.Wait();
+  }
+  EXPECT_EQ(blank_url, new_root->current_url());
+  EXPECT_EQ(url2, new_root->child_at(0)->current_url());
+  EXPECT_EQ(2, new_shell->web_contents()->GetController().GetEntryCount());
+
+  // Do a replace state in the main frame, which changes the URL from
+  // about:blank to the opener's origin, due to the document.write() call.
+  {
+    LoadCommittedCapturer capturer(new_root);
+    std::string script = "history.replaceState({}, 'foo', 'foo');";
+    EXPECT_TRUE(ExecuteScript(new_root, script));
+    capturer.Wait();
+  }
+  EXPECT_EQ(embedded_test_server()->GetURL("/navigation_controller/foo"),
+            new_root->current_url());
+  EXPECT_EQ(url2, new_root->child_at(0)->current_url());
+
+  // Go back in the subframe.  Note that the main frame's URL looks like a
+  // cross-origin change from a web URL to about:blank.
+  {
+    TestNavigationObserver observer(new_shell->web_contents(), 1);
+    new_shell->web_contents()->GetController().GoBack();
+    observer.Wait();
+  }
+  EXPECT_TRUE(new_root->current_frame_host()->IsRenderFrameLive());
+
+  // Go forward in the subframe.  Note that the main frame's URL looks like a
+  // cross-origin change from about:blank to a web URL.
+  {
+    TestNavigationObserver observer(new_shell->web_contents(), 1);
+    new_shell->web_contents()->GetController().GoForward();
+    observer.Wait();
+  }
+  EXPECT_TRUE(new_root->current_frame_host()->IsRenderFrameLive());
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();

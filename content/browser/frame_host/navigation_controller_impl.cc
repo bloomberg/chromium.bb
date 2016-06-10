@@ -1306,8 +1306,15 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
       // origin. Otherwise the renderer process may be confused, leading to a
       // URL spoof. We can't check the path since that may change
       // (https://crbug.com/373041).
-      if (GetLastCommittedEntry()->GetURL().GetOrigin() !=
-          GetEntryAtIndex(entry_index)->GetURL().GetOrigin()) {
+      // TODO(creis): For now, restrict this check to HTTP(S) origins, because
+      // about:blank, file, and unique origins are more subtle to get right.
+      // We'll abstract out the relevant checks from IsURLInPageNavigation and
+      // share them here.  See https://crbug.com/618104.
+      const GURL& dest_top_url = GetEntryAtIndex(entry_index)->GetURL();
+      const GURL& current_top_url = GetLastCommittedEntry()->GetURL();
+      if (current_top_url.SchemeIsHTTPOrHTTPS() &&
+          dest_top_url.SchemeIsHTTPOrHTTPS() &&
+          current_top_url.GetOrigin() != dest_top_url.GetOrigin()) {
         bad_message::ReceivedBadMessage(rfh->GetProcess(),
                                         bad_message::NC_AUTO_SUBFRAME);
       }
