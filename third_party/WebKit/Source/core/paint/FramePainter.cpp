@@ -123,7 +123,7 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
         return;
     }
 
-    RELEASE_ASSERT(!frameView().needsLayout());
+    frameView().checkDoesNotNeedLayout();
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));

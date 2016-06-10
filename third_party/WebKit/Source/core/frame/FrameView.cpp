@@ -1044,11 +1044,11 @@ void FrameView::layout()
 
         ASSERT(m_layoutSubtreeRootList.isEmpty());
     } // Reset m_layoutSchedulingEnabled to its previous value.
+    checkDoesNotNeedLayout();
 
     if (!inSubtreeLayout && !document->printing())
         adjustViewSizeAndLayout();
-
-    RELEASE_ASSERT(!needsLayout());
+    checkDoesNotNeedLayout();
 
     m_frameTimingRequestsDirty = true;
 
@@ -1068,10 +1068,10 @@ void FrameView::layout()
             cache->handleLayoutComplete(document);
     }
     updateDocumentAnnotatedRegions();
-    RELEASE_ASSERT(!needsLayout());
+    checkDoesNotNeedLayout();
 
     scheduleOrPerformPostLayoutTasks();
-    RELEASE_ASSERT(!needsLayout());
+    checkDoesNotNeedLayout();
 
     // FIXME: The notion of a single root for layout is no longer applicable. Remove or update this code. crbug.com/460596
     TRACE_EVENT_END1("devtools.timeline", "Layout", "endData", InspectorLayoutEvent::endData(rootForThisLayout));
@@ -1087,7 +1087,7 @@ void FrameView::layout()
 #endif
 
     frame().document()->layoutUpdated();
-    RELEASE_ASSERT(!needsLayout());
+    checkDoesNotNeedLayout();
 }
 
 void FrameView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
@@ -1879,6 +1879,13 @@ bool FrameView::needsLayout() const
         || isSubtreeLayout();
 }
 
+void FrameView::checkDoesNotNeedLayout() const
+{
+    CHECK(!layoutPending());
+    CHECK(layoutViewItem().isNull() || !layoutViewItem().needsLayout());
+    CHECK(!isSubtreeLayout());
+}
+
 void FrameView::setNeedsLayout()
 {
     LayoutReplaced* box = embeddedReplacedContent();
@@ -2655,7 +2662,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     }
 
     // These asserts ensure that parent frames are clean, when child frames finished updating layout and style.
-    RELEASE_ASSERT(!needsLayout());
+    checkDoesNotNeedLayout();
     ASSERT(!m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate());
 #if ENABLE(ASSERT)
     m_frame->document()->layoutView()->assertLaidOut();

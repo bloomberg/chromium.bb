@@ -138,6 +138,7 @@ public:
     void countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isPartial);
 
     bool needsLayout() const;
+    void checkDoesNotNeedLayout() const;
     void setNeedsLayout();
 
     void setNeedsUpdateWidgetGeometries() { m_needsUpdateWidgetGeometries = true; }
