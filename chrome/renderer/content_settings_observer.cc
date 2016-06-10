@@ -4,8 +4,7 @@
 
 #include "chrome/renderer/content_settings_observer.h"
 
-#include "base/command_line.h"
-#include "base/metrics/histogram.h"
+#include "chrome/common/ssl_insecure_content.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
@@ -43,53 +42,6 @@ using content::DocumentState;
 using content::NavigationState;
 
 namespace {
-
-// This enum is histogrammed, so do not add, reorder, or remove values.
-enum {
-  INSECURE_CONTENT_DISPLAY = 0,
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,      // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_WWW_GOOGLE,  // deprecated
-  INSECURE_CONTENT_DISPLAY_HTML,
-  INSECURE_CONTENT_RUN,
-  INSECURE_CONTENT_RUN_HOST_GOOGLE,      // deprecated
-  INSECURE_CONTENT_RUN_HOST_WWW_GOOGLE,  // deprecated
-  INSECURE_CONTENT_RUN_TARGET_YOUTUBE,   // deprecated
-  INSECURE_CONTENT_RUN_JS,
-  INSECURE_CONTENT_RUN_CSS,
-  INSECURE_CONTENT_RUN_SWF,
-  INSECURE_CONTENT_DISPLAY_HOST_YOUTUBE,           // deprecated
-  INSECURE_CONTENT_RUN_HOST_YOUTUBE,               // deprecated
-  INSECURE_CONTENT_RUN_HOST_GOOGLEUSERCONTENT,     // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_MAIL_GOOGLE,       // deprecated
-  INSECURE_CONTENT_RUN_HOST_MAIL_GOOGLE,           // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_PLUS_GOOGLE,       // deprecated
-  INSECURE_CONTENT_RUN_HOST_PLUS_GOOGLE,           // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_DOCS_GOOGLE,       // deprecated
-  INSECURE_CONTENT_RUN_HOST_DOCS_GOOGLE,           // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_SITES_GOOGLE,      // deprecated
-  INSECURE_CONTENT_RUN_HOST_SITES_GOOGLE,          // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_PICASAWEB_GOOGLE,  // deprecated
-  INSECURE_CONTENT_RUN_HOST_PICASAWEB_GOOGLE,      // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_READER,     // deprecated
-  INSECURE_CONTENT_RUN_HOST_GOOGLE_READER,         // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_CODE_GOOGLE,       // deprecated
-  INSECURE_CONTENT_RUN_HOST_CODE_GOOGLE,           // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_GROUPS_GOOGLE,     // deprecated
-  INSECURE_CONTENT_RUN_HOST_GROUPS_GOOGLE,         // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_MAPS_GOOGLE,       // deprecated
-  INSECURE_CONTENT_RUN_HOST_MAPS_GOOGLE,           // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_SUPPORT,    // deprecated
-  INSECURE_CONTENT_RUN_HOST_GOOGLE_SUPPORT,        // deprecated
-  INSECURE_CONTENT_DISPLAY_HOST_GOOGLE_INTL,       // deprecated
-  INSECURE_CONTENT_RUN_HOST_GOOGLE_INTL,           // deprecated
-  INSECURE_CONTENT_NUM_EVENTS
-};
-
-// Constants for UMA statistic collection.
-static const char kDotJS[] = ".js";
-static const char kDotCSS[] = ".css";
-static const char kDotSWF[] = ".swf";
-static const char kDotHTML[] = ".html";
 
 GURL GetOriginOrURL(const WebFrame* frame) {
   WebString top_origin = frame->top()->getSecurityOrigin().toString();
@@ -444,20 +396,11 @@ bool ContentSettingsObserver::allowMutationEvents(bool default_value) {
   return IsPlatformApp() ? false : default_value;
 }
 
-static void SendInsecureContentSignal(int signal) {
-  UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,
-                            INSECURE_CONTENT_NUM_EVENTS);
-}
-
 bool ContentSettingsObserver::allowDisplayingInsecureContent(
     bool allowed_per_settings,
     const blink::WebURL& resource_url) {
-  SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY);
-
-  GURL resource_gurl(resource_url);
-  if (base::EndsWith(resource_gurl.path(), kDotHTML,
-                     base::CompareCase::INSENSITIVE_ASCII))
-    SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY_HTML);
+  ReportInsecureContent(SslInsecureContentType::DISPLAY);
+  FilteredReportInsecureContentDisplayed(GURL(resource_url));
 
   if (allowed_per_settings || allow_displaying_insecure_content_)
     return true;
@@ -471,16 +414,7 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
     bool allowed_per_settings,
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& resource_url) {
-  GURL resource_gurl(resource_url);
-  if (base::EndsWith(resource_gurl.path(), kDotJS,
-                     base::CompareCase::INSENSITIVE_ASCII))
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_JS);
-  else if (base::EndsWith(resource_gurl.path(), kDotCSS,
-                          base::CompareCase::INSENSITIVE_ASCII))
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_CSS);
-  else if (base::EndsWith(resource_gurl.path(), kDotSWF,
-                          base::CompareCase::INSENSITIVE_ASCII))
-    SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
+  FilteredReportInsecureContentRan(GURL(resource_url));
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
     DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, origin.host());

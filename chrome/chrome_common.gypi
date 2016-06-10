@@ -91,6 +91,8 @@
       'common/spellcheck_marker.h',
       'common/spellcheck_messages.h',
       'common/spellcheck_result.h',
+      'common/ssl_insecure_content.cc',
+      'common/ssl_insecure_content.h',
       'common/switch_utils.cc',
       'common/switch_utils.h',
       'common/trace_event_args_whitelist.cc',
