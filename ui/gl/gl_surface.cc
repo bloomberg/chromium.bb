@@ -333,4 +333,10 @@ bool GLSurfaceAdapter::BuffersFlipped() const {
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
 
+scoped_refptr<GLSurface> InitializeGLSurface(scoped_refptr<GLSurface> surface) {
+  if (!surface->Initialize())
+    return nullptr;
+  return surface;
+}
+
 }  // namespace gl

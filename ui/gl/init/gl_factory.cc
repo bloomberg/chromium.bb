@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_initializer.h"
@@ -82,26 +81,6 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
       InitializeNullDrawGLBindings();
   }
   return initialized;
-}
-
-// TODO(kylechar): The functions below should be replaced with a platform
-// specific version for X11, Ozone, Windows, Mac and Android. The implementation
-// of each function should be moved into a platform specific file and the
-// original static functions should be removed from GLSurface and GLContext.
-
-scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
-  return GLSurface::CreateViewGLSurface(window);
-}
-
-#if defined(USE_OZONE)
-scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
-    gfx::AcceleratedWidget window) {
-  return GLSurface::CreateSurfacelessViewGLSurface(window);
-}
-#endif  // defined(USE_OZONE)
-
-scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
-  return GLSurface::CreateOffscreenGLSurface(size);
 }
 
 }  // namespace init

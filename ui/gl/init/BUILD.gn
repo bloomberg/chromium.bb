@@ -54,5 +54,7 @@ component("init") {
       "gl_factory_ozone.cc",
       "gl_initializer_ozone.cc",
     ]
+
+    deps += [ "//ui/ozone" ]
   }
 }

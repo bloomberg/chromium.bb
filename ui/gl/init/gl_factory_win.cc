@@ -14,6 +14,12 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_osmesa.h"
+#include "ui/gl/gl_surface_osmesa_win.h"
+#include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/gl_surface_wgl.h"
+#include "ui/gl/vsync_provider_win.h"
 
 namespace gl {
 namespace init {
@@ -34,6 +40,50 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                  compatible_surface, gpu_preference);
     case kGLImplementationMockGL:
       return new GLContextStub(share_group);
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
+  TRACE_EVENT0("gpu", "gl::init::CreateViewGLSurface");
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(new GLSurfaceOSMesaWin(window));
+    case kGLImplementationEGLGLES2: {
+      DCHECK(window != gfx::kNullAcceleratedWidget);
+      scoped_refptr<NativeViewGLSurfaceEGL> surface(
+          new NativeViewGLSurfaceEGL(window));
+      std::unique_ptr<gfx::VSyncProvider> sync_provider;
+      sync_provider.reset(new VSyncProviderWin(window));
+      if (!surface->Initialize(std::move(sync_provider)))
+        return nullptr;
+
+      return surface;
+    }
+    case kGLImplementationDesktopGL:
+      return InitializeGLSurface(new NativeViewGLSurfaceWGL(window));
+    case kGLImplementationMockGL:
+      return new GLSurfaceStub;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+  TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(
+          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_RGBA, size));
+    case kGLImplementationEGLGLES2:
+      return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
+    case kGLImplementationDesktopGL:
+      return InitializeGLSurface(new PbufferGLSurfaceWGL(size));
+    case kGLImplementationMockGL:
+      return new GLSurfaceStub;
     default:
       NOTREACHED();
       return nullptr;

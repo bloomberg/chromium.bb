@@ -14,6 +14,9 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_osmesa.h"
+#include "ui/gl/gl_surface_stub.h"
 
 namespace gl {
 namespace init {
@@ -69,7 +72,7 @@ std::string GLNonOwnedContext::GetExtensions() {
   return GLContext::GetExtensions() + " " + extensions;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
@@ -89,6 +92,49 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
         return InitializeGLContext(new GLNonOwnedContext(share_group),
                                    compatible_surface, gpu_preference);
       }
+  }
+}
+
+scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
+  TRACE_EVENT0("gpu", "gl::init::CreateViewGLSurface");
+  CHECK_NE(kGLImplementationNone, GetGLImplementation());
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(new GLSurfaceOSMesaHeadless());
+    case kGLImplementationEGLGLES2:
+      if (window != gfx::kNullAcceleratedWidget) {
+        return InitializeGLSurface(new NativeViewGLSurfaceEGL(window));
+      } else {
+        return InitializeGLSurface(new GLSurfaceStub());
+      }
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+  TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
+  CHECK_NE(kGLImplementationNone, GetGLImplementation());
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL: {
+      return InitializeGLSurface(
+          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_BGRA, size));
+    }
+    case kGLImplementationEGLGLES2: {
+      scoped_refptr<GLSurface> surface;
+      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
+          (size.width() == 0 && size.height() == 0)) {
+        return InitializeGLSurface(new SurfacelessEGL(size));
+      } else {
+        return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
+      }
+    }
+    case kGLImplementationMockGL:
+      return new GLSurfaceStub;
+    default:
+      NOTREACHED();
+      return nullptr;
   }
 }
 

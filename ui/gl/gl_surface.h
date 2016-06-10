@@ -193,28 +193,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // the next buffer may be 2 frames old.
   virtual bool BuffersFlipped() const;
 
-  // Create a GL surface that renders directly to a view.
-  // DEPRECATED(kylechar): Use gl::init::CreateViewGLSurface from gl_factory.h.
-  static scoped_refptr<GLSurface> CreateViewGLSurface(
-      gfx::AcceleratedWidget window);
-
-#if defined(USE_OZONE)
-  // Create a GL surface that renders directly into a window with surfaceless
-  // semantics - there is no default framebuffer and the primary surface must
-  // be presented as an overlay. If surfaceless mode is not supported or
-  // enabled it will return a null pointer.
-  // DEPRECATED(kylechar): Use gl::init::CreateSurfacelessViewGLSurface from
-  // gl_factory.h.
-  static scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
-      gfx::AcceleratedWidget window);
-#endif  // defined(USE_OZONE)
-
-  // Create a GL surface used for offscreen rendering.
-  // DEPRECATED(kylechar): Use gl::init::CreateOffscreenGLSurface from
-  // gl_factory.h.
-  static scoped_refptr<GLSurface> CreateOffscreenGLSurface(
-      const gfx::Size& size);
-
   static GLSurface* GetCurrent();
 
   // Called when the swap interval for the associated context changes.
@@ -292,6 +270,12 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceAdapter);
 };
+
+// Wraps GLSurface in scoped_refptr and tries to initializes it. Returns a
+// scoped_refptr containing the initialized GLSurface or nullptr if
+// initialization fails.
+GL_EXPORT scoped_refptr<GLSurface> InitializeGLSurface(
+    scoped_refptr<GLSurface> surface);
 
 }  // namespace gl
 

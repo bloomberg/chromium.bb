@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_ozone.h"
 
 #include <stddef.h>
+
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/worker_pool.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -652,6 +652,8 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
   return true;
 }
 
+}  // namespace
+
 scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
     gfx::AcceleratedWidget window) {
   std::unique_ptr<ui::SurfaceOzoneEGL> surface_ozone =
@@ -660,11 +662,20 @@ scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
           ->CreateEGLSurfaceForWidget(window);
   if (!surface_ozone)
     return nullptr;
-  scoped_refptr<GLSurface> surface =
-      new GLSurfaceOzoneEGL(std::move(surface_ozone), window);
-  if (!surface->Initialize())
+  return InitializeGLSurface(
+      new GLSurfaceOzoneEGL(std::move(surface_ozone), window));
+}
+
+scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfaceless(
+    gfx::AcceleratedWidget window) {
+  std::unique_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreateSurfacelessEGLSurfaceForWidget(window);
+  if (!surface_ozone)
     return nullptr;
-  return surface;
+  return InitializeGLSurface(
+      new GLSurfaceOzoneSurfaceless(std::move(surface_ozone), window));
 }
 
 scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
@@ -675,93 +686,8 @@ scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
           ->CreateSurfacelessEGLSurfaceForWidget(window);
   if (!surface_ozone)
     return nullptr;
-  scoped_refptr<GLSurface> surface = new GLSurfaceOzoneSurfacelessSurfaceImpl(
-      std::move(surface_ozone), window);
-  if (!surface->Initialize())
-    return nullptr;
-  return surface;
-}
-
-}  // namespace
-
-// static
-scoped_refptr<GLSurface> GLSurface::CreateSurfacelessViewGLSurface(
-    gfx::AcceleratedWidget window) {
-  if (GetGLImplementation() == kGLImplementationEGLGLES2 &&
-      window != gfx::kNullAcceleratedWidget &&
-      GLSurfaceEGL::IsEGLSurfacelessContextSupported()) {
-    std::unique_ptr<ui::SurfaceOzoneEGL> surface_ozone =
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
-            ->CreateSurfacelessEGLSurfaceForWidget(window);
-    if (!surface_ozone)
-      return nullptr;
-    scoped_refptr<GLSurface> surface;
-    surface = new GLSurfaceOzoneSurfaceless(std::move(surface_ozone), window);
-    if (surface->Initialize())
-      return surface;
-  }
-
-  return nullptr;
-}
-
-// static
-scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
-    gfx::AcceleratedWidget window) {
-  if (GetGLImplementation() == kGLImplementationOSMesaGL) {
-    scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless());
-    if (!surface->Initialize())
-      return nullptr;
-    return surface;
-  }
-  if ((window != gfx::kNullAcceleratedWidget) &&
-      (GetGLImplementation() == kGLImplementationEGLGLES2)) {
-    scoped_refptr<GLSurface> surface;
-    if (GLSurfaceEGL::IsEGLSurfacelessContextSupported())
-      surface = CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(window);
-    if (!surface)
-      surface = CreateViewGLSurfaceOzone(window);
-    return surface;
-  } else {
-    DCHECK_EQ(GetGLImplementation(), kGLImplementationMockGL);
-    scoped_refptr<GLSurface> surface = new GLSurfaceStub();
-    if (surface->Initialize())
-      return surface;
-  }
-  return nullptr;
-}
-
-// static
-scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
-  switch (GetGLImplementation()) {
-    case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(
-          new GLSurfaceOSMesa(SURFACE_OSMESA_BGRA, size));
-      if (!surface->Initialize())
-        return nullptr;
-
-      return surface;
-    }
-    case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface;
-      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-          (size.width() == 0 && size.height() == 0)) {
-        surface = new SurfacelessEGL(size);
-      } else {
-        surface = new PbufferGLSurfaceEGL(size);
-      }
-
-      if (!surface->Initialize())
-        return nullptr;
-      return surface;
-    }
-    case kGLImplementationMockGL:
-      return new GLSurfaceStub;
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
+  return InitializeGLSurface(new GLSurfaceOzoneSurfacelessSurfaceImpl(
+      std::move(surface_ozone), window));
 }
 
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {

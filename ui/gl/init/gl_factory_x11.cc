@@ -13,6 +13,12 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_egl_x11.h"
+#include "ui/gl/gl_surface_glx.h"
+#include "ui/gl/gl_surface_osmesa.h"
+#include "ui/gl/gl_surface_osmesa_x11.h"
+#include "ui/gl/gl_surface_stub.h"
 
 namespace gl {
 namespace init {
@@ -33,6 +39,42 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                  compatible_surface, gpu_preference);
     case kGLImplementationMockGL:
       return new GLContextStub(share_group);
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
+  TRACE_EVENT0("gpu", "gl::init::CreateViewGLSurface");
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(new GLSurfaceOSMesaX11(window));
+    case kGLImplementationDesktopGL:
+      return InitializeGLSurface(new NativeViewGLSurfaceGLX(window));
+    case kGLImplementationEGLGLES2:
+      DCHECK(window != gfx::kNullAcceleratedWidget);
+      return InitializeGLSurface(new NativeViewGLSurfaceEGLX11(window));
+    case kGLImplementationMockGL:
+      return new GLSurfaceStub;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+  TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
+  switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLSurface(
+          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_RGBA, size));
+    case kGLImplementationDesktopGL:
+      return InitializeGLSurface(new UnmappedNativeViewGLSurfaceGLX(size));
+    case kGLImplementationEGLGLES2:
+      return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
+    case kGLImplementationMockGL:
+      return new GLSurfaceStub;
     default:
       NOTREACHED();
       return nullptr;

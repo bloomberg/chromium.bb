@@ -49,9 +49,9 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
 // A thin subclass of |GLSurfaceOSMesa| that can be used in place
 // of a native hardware-provided surface when a native surface
 // provider is not available.
-class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
+class GL_EXPORT GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
  public:
-  explicit GLSurfaceOSMesaHeadless();
+  GLSurfaceOSMesaHeadless();
 
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;

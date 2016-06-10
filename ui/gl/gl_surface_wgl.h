@@ -32,7 +32,7 @@ class GL_EXPORT GLSurfaceWGL : public GLSurface {
 };
 
 // A surface used to render to a view.
-class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
+class GL_EXPORT NativeViewGLSurfaceWGL : public GLSurfaceWGL {
  public:
   explicit NativeViewGLSurfaceWGL(gfx::AcceleratedWidget window);
 
@@ -62,7 +62,7 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
 
 
 // A surface used to render to an offscreen pbuffer.
-class PbufferGLSurfaceWGL : public GLSurfaceWGL {
+class GL_EXPORT PbufferGLSurfaceWGL : public GLSurfaceWGL {
  public:
   explicit PbufferGLSurfaceWGL(const gfx::Size& size);
 
