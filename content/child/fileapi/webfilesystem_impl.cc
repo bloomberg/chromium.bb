@@ -26,7 +26,6 @@
 #include "third_party/WebKit/public/platform/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
 #include "url/gurl.h"
 
 using blink::WebFileInfo;
@@ -53,10 +52,7 @@ class WebFileSystemImpl::WaitableCallbackResults
   }
 
   void WaitAndRun() {
-    {
-      blink::WebHeap::SafePointScope safe_point;
-      results_available_event_.Wait();
-    }
+    results_available_event_.Wait();
     Run();
   }
 
