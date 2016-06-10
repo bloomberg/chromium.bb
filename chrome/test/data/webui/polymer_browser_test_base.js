@@ -116,6 +116,10 @@ PolymerTest.prototype = {
 
   /** @override */
   tearDown: function() {
+    // Note: We do this in tearDown() so that we have a chance to stamp all the
+    // dom-if templates, add elements through interaction, etc.
+    PolymerTest.testIronIcons(document.body);
+
     var endTime = window.performance.now();
     var delta = this.runTime - this.preloadTime;
     console.log('Page load time: ' + delta.toFixed(0) + " ms");
@@ -125,6 +129,27 @@ PolymerTest.prototype = {
     console.log('Total time: ' + delta.toFixed(0) + " ms");
     testing.Test.prototype.tearDown.call(this);
   }
+};
+
+/**
+ * Tests that any iron-icon child of an HTML element has a corresponding
+ * non-empty svg element.
+ * @param {!HTMLElement} e The element to check the iron icons in.
+ */
+PolymerTest.testIronIcons = function(e) {
+  e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
+    // If the icon isn't set (or is set to ''), then don't test this. Having no
+    // set icon is valid for cases when we don't want to display anything.
+    if (!icon.icon) {
+      var rect = icon.getBoundingClientRect();
+      expectFalse(rect.width * rect.height > 0,
+                  'iron-icon with undefined "icon" is visible in the DOM.');
+      return;
+    }
+    var svg = icon.$$('svg');
+    expectTrue(!!svg && svg.innerHTML != '',
+               'icon "' + icon.icon + '" is not present');
+  });
 };
 
 /**
