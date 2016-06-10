@@ -47,8 +47,8 @@ emphclass underline
 emphclass bold
 emphclass transnote
 
-begemph italic 46-3
-endemph italic 46-36
+begemphword italic 46-3
+endemphword italic 46-36
 emphletter italic 46-25
 
 begemphphrase bold 456-46-46

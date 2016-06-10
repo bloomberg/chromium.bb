@@ -42,22 +42,22 @@ emphclass bold
 
 lenemphphrase italic 3
 endemphphrase italic before 456
-begemph italic 456
-endemph italic 6
+begemphword italic 456
+endemphword italic 6
 begemphphrase italic 456-456
 
 # vet
 lenemphphrase bold 3
 endemphphrase bold before 456
-begemph bold 456
-endemph bold 6
+begemphword bold 456
+endemphword bold 6
 begemphphrase bold 456-456
 
 # onderstreept
 lenemphphrase underline 3
 endemphphrase underline before 456
-begemph underline 456
-endemph underline 6
+begemphword underline 456
+endemphword underline 6
 begemphphrase underline 456-456
 
 # ----------------------------------------------------------------------------------------------

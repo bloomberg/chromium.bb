@@ -229,7 +229,7 @@ emphclass underline
 emphclass bold
 begemphphrase italic 456-456
 endemphphrase italic before 456
-begemph italic 456
+begemphword italic 456
 emphletter italic 456
 begemphphrase bold 456-456
 endemphphrase bold before 456
