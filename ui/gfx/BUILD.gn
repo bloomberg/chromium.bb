@@ -433,6 +433,8 @@ action("aggregate_vector_icons") {
     "vector_icons/checkbox_normal.icon",
     "vector_icons/chrome_product.icon",
     "vector_icons/code.icon",
+    "vector_icons/combobox_arrow_mac_disabled.icon",
+    "vector_icons/combobox_arrow_mac_enabled.icon",
     "vector_icons/cookie.icon",
     "vector_icons/crashed_tab.icon",
     "vector_icons/credit_card.1x.icon",
@@ -472,6 +474,7 @@ action("aggregate_vector_icons") {
     "vector_icons/location_bar_star.icon",
     "vector_icons/location_bar_star_active.icon",
     "vector_icons/location_on.icon",
+    "vector_icons/lock.icon",
     "vector_icons/menu_check.1x.icon",
     "vector_icons/menu_check.icon",
     "vector_icons/menu_radio_empty.icon",
@@ -545,6 +548,7 @@ action("aggregate_vector_icons") {
     "vector_icons/tablet.icon",
     "vector_icons/translate.icon",
     "vector_icons/upgrade_menu_item.icon",
+    "vector_icons/videocam.icon",
     "vector_icons/warning.icon",
     "vector_icons/warning_badge.icon",
     "vector_icons/web.icon",
@@ -553,6 +557,7 @@ action("aggregate_vector_icons") {
     "vector_icons/window_control_close.1x.icon",
     "vector_icons/window_control_close.icon",
     "vector_icons/window_control_left_snapped.1x.icon",
+    "vector_icons/window_control_left_snapped.icon",
     "vector_icons/window_control_maximize.1x.icon",
     "vector_icons/window_control_maximize.icon",
     "vector_icons/window_control_minimize.1x.icon",
@@ -580,13 +585,6 @@ action("aggregate_vector_icons") {
     "--output_cc=" + rebase_path(vector_icons_cc_file, root_build_dir),
     "--output_h=" + rebase_path(vector_icons_h_file, root_build_dir),
   ]
-
-  if (is_mac) {
-    sources += [
-      "vector_icons/combobox_arrow_mac_disabled.icon",
-      "vector_icons/combobox_arrow_mac_enabled.icon",
-    ]
-  }
 }
 
 # Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
