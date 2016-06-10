@@ -19,8 +19,6 @@ class ChromeExtensionChooserDialog {
       : web_contents_(web_contents) {}
   ~ChromeExtensionChooserDialog() {}
 
-  content::WebContents* web_contents() const { return web_contents_; }
-
   void ShowDialog(ChooserController* chooser_controller) const;
 
  private:

@@ -65,11 +65,11 @@ void ChooserDialogCocoa::Dismissed() {
 void ChromeExtensionChooserDialog::ShowDialog(
     ChooserController* chooser_controller) const {
   web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents());
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   if (manager) {
     // These objects will delete themselves when the dialog closes.
     ChooserDialogCocoa* chooser_dialog =
-        new ChooserDialogCocoa(web_contents(), chooser_controller);
+        new ChooserDialogCocoa(web_contents_, chooser_controller);
     chooser_dialog->ShowDialog();
   }
 }
