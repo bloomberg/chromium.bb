@@ -3917,7 +3917,6 @@ interface Navigator
     method getBattery
     method getGamepads
     method getInstalledRelatedApps
-    method getVRDisplays
     method isProtocolHandlerRegistered
     method javaEnabled
     method registerProtocolHandler
@@ -6328,67 +6327,6 @@ interface USBOutTransferResult
     attribute @@toStringTag
     getter bytesWritten
     getter status
-    method constructor
-interface VRDisplay
-    attribute @@toStringTag
-    getter capabilities
-    getter displayId
-    getter displayName
-    getter isConnected
-    getter isPresenting
-    getter stageParameters
-    method cancelAnimationFrame
-    method constructor
-    method exitPresent
-    method getEyeParameters
-    method getImmediatePose
-    method getLayers
-    method getPose
-    method requestAnimationFrame
-    method requestPresent
-    method resetPose
-    method submitFrame
-interface VRDisplayCapabilities
-    attribute @@toStringTag
-    getter canPresent
-    getter hasExternalDisplay
-    getter hasOrientation
-    getter hasPosition
-    getter maxLayers
-    method constructor
-interface VREyeParameters
-    attribute @@toStringTag
-    getter fieldOfView
-    getter offset
-    getter renderHeight
-    getter renderWidth
-    method constructor
-interface VRFieldOfView
-    attribute @@toStringTag
-    getter downDegrees
-    getter leftDegrees
-    getter rightDegrees
-    getter upDegrees
-    method constructor
-    setter downDegrees
-    setter leftDegrees
-    setter rightDegrees
-    setter upDegrees
-interface VRPose
-    attribute @@toStringTag
-    getter angularAcceleration
-    getter angularVelocity
-    getter linearAcceleration
-    getter linearVelocity
-    getter orientation
-    getter position
-    getter timeStamp
-    method constructor
-interface VRStageParameters
-    attribute @@toStringTag
-    getter sittingToStandingTransform
-    getter sizeX
-    getter sizeZ
     method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag

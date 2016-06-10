@@ -224,7 +224,7 @@ WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
 WebUSB status=experimental
-WebVR status=experimental
+WebVR
 WebVTTRegions status=experimental
 V8IdleTasks
 VisibilityChangeOnUnload status=experimental
