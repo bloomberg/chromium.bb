@@ -261,6 +261,7 @@ void ThreadHeap::attach(ThreadState* thread)
 void ThreadHeap::detach(ThreadState* thread)
 {
     ASSERT(ThreadState::current() == thread);
+    bool isLastThread = false;
     {
         // Grab the threadAttachMutex to ensure only one thread can shutdown at
         // a time and that no other thread can do a global GC. It also allows
@@ -272,12 +273,16 @@ void ThreadHeap::detach(ThreadState* thread)
         thread->runTerminationGC();
         ASSERT(m_threads.contains(thread));
         m_threads.remove(thread);
+        isLastThread = m_threads.isEmpty();
     }
-    // The main thread must be the last thread that gets detached.
-    ASSERT(!thread->isMainThread() || m_threads.isEmpty());
+    // The last thread begin detached should be the owning thread, which would
+    // be the main thread for the mainThreadHeap and a per thread heap enabled
+    // thread otherwise.
+    if (isLastThread)
+        DCHECK(thread->perThreadHeapEnabled() || thread->isMainThread());
     if (thread->isMainThread())
         DCHECK_EQ(heapStats().allocatedSpace(), 0u);
-    if (m_threads.isEmpty())
+    if (isLastThread)
         delete this;
 }
 
