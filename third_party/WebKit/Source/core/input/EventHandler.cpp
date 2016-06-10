@@ -853,7 +853,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     m_clickCount = mouseEvent.clickCount();
     m_clickNode = mev.innerNode()->isTextNode() ?  FlatTreeTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
-    m_frame->selection().setCaretBlinkingSuspended(true);
+    if (!mouseEvent.fromTouch())
+        m_frame->selection().setCaretBlinkingSuspended(true);
 
     WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mev.event());
 
@@ -1108,7 +1109,8 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     if (mouseEvent.button() == NoButton)
         return WebInputEventResult::HandledSuppressed;
 
-    m_frame->selection().setCaretBlinkingSuspended(false);
+    if (!mouseEvent.fromTouch())
+        m_frame->selection().setCaretBlinkingSuspended(false);
 
     OwnPtr<UserGestureIndicator> gestureIndicator;
 

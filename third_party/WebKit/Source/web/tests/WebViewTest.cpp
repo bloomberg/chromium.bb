@@ -1787,7 +1787,7 @@ TEST_F(WebViewTest, LongPressImageTextarea)
     EXPECT_EQ(1UL, length);
 }
 
-TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
+TEST_F(WebViewTest, BlinkCaretAfterLongPress)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("blink_caret_on_typing_after_long_press.html"));
 
@@ -1800,13 +1800,6 @@ TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webView->mainFrame());
 
     EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, target));
-    EXPECT_TRUE(mainFrame->frame()->selection().isCaretBlinkingSuspended());
-
-    WebKeyboardEvent keyEvent;
-    keyEvent.type = WebInputEvent::RawKeyDown;
-    webView->handleInputEvent(keyEvent);
-    keyEvent.type = WebInputEvent::KeyUp;
-    webView->handleInputEvent(keyEvent);
     EXPECT_FALSE(mainFrame->frame()->selection().isCaretBlinkingSuspended());
 }
 
