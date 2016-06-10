@@ -165,6 +165,7 @@ class SiteEngagementService::Helper
 
   InputTracker input_tracker_;
   MediaTracker media_tracker_;
+  SiteEngagementService* service_;
   bool record_engagement_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);

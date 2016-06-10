@@ -23,6 +23,10 @@ class DictionaryValue;
 class Clock;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace history {
 class HistoryService;
 }
@@ -144,17 +148,19 @@ class SiteEngagementService : public KeyedService,
   // Returns the median engagement score of all recorded origins.
   double GetMedianEngagement(const std::map<GURL, double>& score_map) const;
 
-  // Update the engagement score of the origin matching |url| for media playing.
-  // The points awarded are discounted if the media is being played in a non-
-  // visible tab.
-  void HandleMediaPlaying(const GURL& url, bool is_hidden);
+  // Update the engagement score of the origin loaded in |web_contents| for
+  // media playing. The points awarded are discounted if the media is being
+  // played in a non-visible tab.
+  void HandleMediaPlaying(content::WebContents* web_contents, bool is_hidden);
 
-  // Update the engagement score of the origin matching |url| for navigation.
-  void HandleNavigation(const GURL& url, ui::PageTransition transition);
+  // Update the engagement score of the origin loaded in |web_contents| for
+  // navigation.
+  void HandleNavigation(content::WebContents* web_contents,
+                        ui::PageTransition transition);
 
-  // Update the engagement score of the origin matching |url| for time-on-site,
-  // based on user input.
-  void HandleUserInput(const GURL& url,
+  // Update the engagement score of the origin loaded in |web_contents| for
+  // time-on-site, based on user input.
+  void HandleUserInput(content::WebContents* web_contents,
                        SiteEngagementMetrics::EngagementType type);
 
   // Overridden from history::HistoryServiceObserver:

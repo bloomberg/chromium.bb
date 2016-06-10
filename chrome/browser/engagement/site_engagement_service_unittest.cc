@@ -234,25 +234,30 @@ TEST_F(SiteEngagementServiceTest, GetTotalNavigationPoints) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_EQ(0, service->GetScore(url3));
 
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+  NavigateAndCommit(url1);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0.5, service->GetTotalEngagementPoints());
 
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  NavigateAndCommit(url2);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
+  service->HandleNavigation(web_contents(),
+                            ui::PAGE_TRANSITION_KEYWORD_GENERATED);
   EXPECT_EQ(1, service->GetScore(url2));
   EXPECT_EQ(1.5, service->GetTotalEngagementPoints());
 
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   EXPECT_EQ(1.5, service->GetScore(url2));
   EXPECT_EQ(2, service->GetTotalEngagementPoints());
 
-  service->HandleNavigation(url3, ui::PAGE_TRANSITION_TYPED);
+  NavigateAndCommit(url3);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(0.5, service->GetScore(url3));
   EXPECT_EQ(2.5, service->GetTotalEngagementPoints());
 
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+  NavigateAndCommit(url1);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(1.5, service->GetScore(url1));
   EXPECT_EQ(3.5, service->GetTotalEngagementPoints());
 }
@@ -270,26 +275,39 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_EQ(0, service->GetScore(url3));
 
-  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  NavigateAndCommit(url1);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   EXPECT_DOUBLE_EQ(0.05, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.05, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  NavigateAndCommit(url2);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   EXPECT_DOUBLE_EQ(0.1, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(0.15, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  NavigateAndCommit(url3);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   EXPECT_DOUBLE_EQ(0.05, service->GetScore(url3));
   EXPECT_DOUBLE_EQ(0.2, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
-  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  NavigateAndCommit(url1);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.3, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_SCROLL);
-  service->HandleUserInput(url3,
+  NavigateAndCommit(url2);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_SCROLL);
+  NavigateAndCommit(url3);
+  service->HandleUserInput(web_contents(),
                            SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(0.1, service->GetScore(url3));
@@ -432,10 +450,14 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   GURL url2("http://www.google.com/");
   GURL url3("http://drive.google.com/");
 
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
-  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
-  service->HandleMediaPlaying(url2, true);
+  NavigateAndCommit(url1);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  NavigateAndCommit(url2);
+  service->HandleMediaPlaying(web_contents(), true);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               2);
@@ -481,8 +503,9 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   // Navigations are still logged within the 1 hour refresh period
   clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(59));
 
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  NavigateAndCommit(url2);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               8);
@@ -502,10 +525,12 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   // Update the hourly histograms again.
   clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(1));
 
-  service->HandleNavigation(url3, ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(url2,
+  NavigateAndCommit(url3);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  service->HandleMediaPlaying(web_contents(), false);
+  NavigateAndCommit(url2);
+  service->HandleUserInput(web_contents(),
                            SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
-  service->HandleMediaPlaying(url3, false);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               3);
@@ -555,11 +580,18 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
       SiteEngagementMetrics::kEngagementTypeHistogram,
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 3);
 
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_SCROLL);
-  service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
-  service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  NavigateAndCommit(url1);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_GENERATED);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  NavigateAndCommit(url2);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_SCROLL);
+  NavigateAndCommit(url1);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  NavigateAndCommit(url3);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               17);
@@ -580,11 +612,12 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
 
   // Advance an origin to the max for a day and advance the clock an hour before
   // the last increment before max. Expect the histogram to be updated.
+  NavigateAndCommit(url1);
   for (int i = 0; i < 6; ++i)
-    service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+    service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
 
   clock->SetNow(clock->Now() + base::TimeDelta::FromMinutes(60));
-  service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
 
   histograms.ExpectTotalCount(SiteEngagementMetrics::kTotalEngagementHistogram,
                               4);

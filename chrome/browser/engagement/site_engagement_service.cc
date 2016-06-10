@@ -30,6 +30,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace {
@@ -319,31 +320,34 @@ double SiteEngagementService::GetMedianEngagement(
     return (scores[mid - 1] + scores[mid]) / 2;
 }
 
-void SiteEngagementService::HandleMediaPlaying(const GURL& url,
-                                               bool is_hidden) {
+void SiteEngagementService::HandleMediaPlaying(
+    content::WebContents* web_contents, bool is_hidden) {
   SiteEngagementMetrics::RecordEngagement(
       is_hidden ? SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN
                 : SiteEngagementMetrics::ENGAGEMENT_MEDIA_VISIBLE);
-  AddPoints(url, is_hidden ? SiteEngagementScore::GetHiddenMediaPoints()
-                           : SiteEngagementScore::GetVisibleMediaPoints());
+  AddPoints(web_contents->GetVisibleURL(),
+            is_hidden ? SiteEngagementScore::GetHiddenMediaPoints()
+                      : SiteEngagementScore::GetVisibleMediaPoints());
   RecordMetrics();
 }
 
-void SiteEngagementService::HandleNavigation(const GURL& url,
+void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
                                              ui::PageTransition transition) {
   if (IsEngagementNavigation(transition)) {
     SiteEngagementMetrics::RecordEngagement(
         SiteEngagementMetrics::ENGAGEMENT_NAVIGATION);
-    AddPoints(url, SiteEngagementScore::GetNavigationPoints());
+    AddPoints(web_contents->GetLastCommittedURL(),
+              SiteEngagementScore::GetNavigationPoints());
     RecordMetrics();
   }
 }
 
 void SiteEngagementService::HandleUserInput(
-    const GURL& url,
+    content::WebContents* web_contents,
     SiteEngagementMetrics::EngagementType type) {
   SiteEngagementMetrics::RecordEngagement(type);
-  AddPoints(url, SiteEngagementScore::GetUserInputPoints());
+  AddPoints(web_contents->GetVisibleURL(),
+            SiteEngagementScore::GetUserInputPoints());
   RecordMetrics();
 }
 
