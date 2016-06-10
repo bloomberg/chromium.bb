@@ -24,11 +24,6 @@ class OfflinePageUtils {
   static bool MightBeOfflineURL(const GURL& url);
 
   // Gets an offline URL of an offline page with |online_url| if one exists.
-  // Deprecated.  Use |GetOfflineURLForOnlineURL|.
-  static GURL MaybeGetOfflineURLForOnlineURL(
-      content::BrowserContext* browser_context,
-      const GURL& online_url);
-
   static void GetOfflineURLForOnlineURL(
       content::BrowserContext* browser_context,
       const GURL& online_url,

@@ -92,18 +92,6 @@ bool OfflinePageUtils::MightBeOfflineURL(const GURL& url) {
 }
 
 // static
-GURL OfflinePageUtils::MaybeGetOfflineURLForOnlineURL(
-    content::BrowserContext* browser_context,
-    const GURL& online_url) {
-  const OfflinePageItem* offline_page =
-      MaybeGetBestOfflinePageForOnlineURL(browser_context, online_url);
-  if (!offline_page)
-    return GURL();
-
-  return offline_page->GetOfflineURL();
-}
-
-// static
 void OfflinePageUtils::GetOfflineURLForOnlineURL(
     content::BrowserContext* browser_context,
     const GURL& online_url,
