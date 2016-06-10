@@ -210,9 +210,7 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
 void X11EventSource::PostDispatchEvent(XEvent* xevent) {
   if (xevent->type == GenericEvent &&
       (xevent->xgeneric.evtype == XI_HierarchyChanged ||
-       (xevent->xgeneric.evtype == XI_DeviceChanged &&
-        static_cast<XIDeviceChangedEvent*>(xevent->xcookie.data)->reason ==
-            XIDeviceChange))) {
+       xevent->xgeneric.evtype == XI_DeviceChanged)) {
     UpdateDeviceList();
     hotplug_event_handler_->OnHotplugEvent();
   }
