@@ -1508,6 +1508,24 @@
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD" desc="In Device Settings > Displays, the label for standard orientation (0 rotation).">
       Standard
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE" desc="Name of the settings subpage which adjusts display overscan.">
+      Overscan
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS" desc="Instructions for changing the overscan calibration.">
+      Use arrow keys to adjust picture size and alignment.
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE" desc="Label for resizing overscan calibration.">
+      Shrink/expand
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_POSITION" desc="Label for positioning overscan calibration.">
+      Move
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_RESET" desc="Label for resetting overscan calibration.">
+      Reset
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_SAVE" desc="Label for saving overscan calibration.">
+      Save
+    </message>
   </if>
 
   <!-- System Page -->

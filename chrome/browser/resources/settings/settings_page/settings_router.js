@@ -555,7 +555,7 @@ Polymer({
       subpage: ['keyboard'],
     },
     {
-      url: '/display-overlay',
+      url: '/display',
       page: 'basic',
       section: 'device',
       subpage: ['display'],

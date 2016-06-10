@@ -440,6 +440,13 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE},
       {"displayOrientation", IDS_SETTINGS_DISPLAY_ORIENTATION},
       {"displayOrientationStandard", IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD},
+      {"displayOverscanPageTitle", IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE},
+      {"displayOverscanInstructions",
+       IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS},
+      {"displayOverscanResize", IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE},
+      {"displayOverscanPosition", IDS_SETTINGS_DISPLAY_OVERSCAN_POSITION},
+      {"displayOverscanReset", IDS_SETTINGS_DISPLAY_OVERSCAN_RESET},
+      {"displayOverscanSave", IDS_SETTINGS_DISPLAY_OVERSCAN_SAVE},
   };
   AddLocalizedStringsBulk(html_source, display_strings,
                           arraysize(display_strings));

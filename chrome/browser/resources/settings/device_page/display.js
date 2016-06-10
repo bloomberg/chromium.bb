@@ -31,14 +31,23 @@ Polymer({
      */
     displays: Array,
 
+    /**
+     * String listing the ids in displays. Used to observe changes to the
+     * display configuration (i.e. when a display is added or removed).
+     */
+    displayIds: {type: String, observer: 'onDisplayIdsChanged_'},
+
     /** Primary display id */
     primaryDisplayId: String,
 
-    /**
-     * Selected display
-     * @type {!chrome.system.display.DisplayUnitInfo|undefined}
-     */
+    /** @type {!chrome.system.display.DisplayUnitInfo|undefined} */
     selectedDisplay: {type: Object, observer: 'selectedDisplayChanged_'},
+
+    /** Id passed to the overscan dialog. */
+    overscanDisplayId: {
+      type: String,
+      notify: true,
+    },
 
     /** Maximum mode index value for slider. */
     maxModeIndex_: {type: Number, value: 0},
@@ -71,6 +80,27 @@ Polymer({
       settings.display.systemDisplayApi.onDisplayChanged.removeListener(
           this.displayChangedListener_);
     }
+  },
+
+  /**
+   * Shows or hides the overscan dialog.
+   * @param {boolean} showOverscan
+   * @private
+   */
+  showOverscanDialog_: function(showOverscan) {
+    if (showOverscan) {
+      this.$.displayOverscan.open();
+      this.$.displayOverscan.focus();
+    } else {
+      this.$.displayOverscan.close();
+    }
+  },
+
+  /** @private */
+  onDisplayIdsChanged_: function() {
+    // Close any overscan dialog (which will cancel any overscan operation)
+    // if displayIds changes.
+    this.showOverscanDialog_(false);
   },
 
   /** @private */
@@ -253,20 +283,31 @@ Polymer({
         id, properties, this.setPropertiesCallback_.bind(this));
   },
 
+  /** @private */
+  onOverscanTap_: function() {
+    this.overscanDisplayId = this.selectedDisplay.id;
+    this.showOverscanDialog_(true);
+  },
+
   /**
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @private
    */
   updateDisplayInfo_(displays) {
     this.displays = displays;
+    var displayIds = '';
     var primaryDisplay = undefined;
     var selectedDisplay = undefined;
     for (var display of this.displays) {
+      if (displayIds)
+        displayIds += ',';
+      displayIds += display.id;
       if (display.isPrimary && !primaryDisplay)
         primaryDisplay = display;
       if (this.selectedDisplay && display.id == this.selectedDisplay.id)
         selectedDisplay = display;
     }
+    this.displayIds = displayIds;
     this.primaryDisplayId = (primaryDisplay && primaryDisplay.id) || '';
     this.selectedDisplay = selectedDisplay || primaryDisplay ||
         (this.displays && this.displays[0]);

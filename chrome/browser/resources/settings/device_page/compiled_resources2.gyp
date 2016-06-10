@@ -25,6 +25,16 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'display_overscan_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):system_display',
+        '<(INTERFACES_GYP):system_display_interface',
+        'display'
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'keyboard',
       'dependencies': [
         '../prefs/compiled_resources2.gyp:prefs_types',
