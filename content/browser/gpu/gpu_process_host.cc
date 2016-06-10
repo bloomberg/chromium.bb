@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -35,6 +36,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/establish_channel_params.h"
 #include "content/common/gpu_host_messages.h"
+#include "content/common/gpu_watchdog_utils.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -262,6 +264,17 @@ class GpuSandboxedProcessLauncherDelegate
         if (result != sandbox::SBOX_ALL_OK)
           return false;
       }
+    }
+
+    // Enable GPU watchdog to write to a temp file to delay crashing when
+    // there is a high I/O activitiy.
+    base::FilePath temp_file_path;
+    if (content::GetGpuWatchdogTempFile(&temp_file_path)) {
+      result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                               sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                               temp_file_path.value().c_str());
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
     }
 
     return true;

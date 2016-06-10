@@ -338,6 +338,8 @@
       'common/gpu/client/context_provider_command_buffer.h',
       'common/gpu_host_messages.h',
       'common/gpu_process_launch_causes.h',
+      'common/gpu_watchdog_utils.cc',
+      'common/gpu_watchdog_utils.h',
       'common/host_discardable_shared_memory_manager.cc',
       'common/host_discardable_shared_memory_manager.h',
       'common/host_shared_bitmap_manager.cc',

@@ -5,6 +5,7 @@
 #ifndef CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
 #define CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -74,6 +75,7 @@ class GpuWatchdogThread : public base::Thread,
 
   void OnAcknowledge();
   void OnCheck(bool after_suspend);
+  void BeginTerminating();
   void DeliberatelyTerminateToRecoverFromHang();
 #if defined(USE_X11)
   void SetupXServer();
@@ -130,6 +132,14 @@ class GpuWatchdogThread : public base::Thread,
   // This is the time the last check was sent.
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
+
+#if defined(OS_WIN)
+  // Writing to this temp file is used as an additional step before crashing the
+  // process. That should help to distinguish true hangs from the cases when the
+  // watched thread is running slow being blocked on hard faults or other I/O.
+  base::File temp_file_for_io_checking_;
+  base::TimeDelta io_check_duration_;
+#endif
 
 #if defined(USE_X11)
   XDisplay* display_;
