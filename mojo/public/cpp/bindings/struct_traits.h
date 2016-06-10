@@ -28,7 +28,7 @@ namespace mojo {
 //
 //        - array:
 //          Value or reference of any type that has an ArrayTraits defined.
-//          Supported by default: std::vector, WTF::Vector (in blink).
+//          Supported by default: std::vector, WTF::Vector (in blink), CArray.
 //
 //        - map:
 //          Value or reference of any type that has a MapTraits defined.
@@ -37,9 +37,16 @@ namespace mojo {
 //        - struct:
 //          Value or reference of any type that has a StructTraits defined.
 //
+//        - enum:
+//          Value of any type that has an EnumTraits defined.
+//
 //      During serialization, getters for string/struct/array/map/union fields
 //      are called twice (one for size calculation and one for actual
-//      serialization); while the others are called once.
+//      serialization). If you want to return a value (as opposed to a
+//      reference) from these getters, you have to be sure that constructing and
+//      copying the returned object is really cheap.
+//
+//      Getters for fields of other types are called once.
 //
 //   2. A static Read() method to set the contents of a |T| instance from a
 //      |MojomType|DataView (e.g., if |MojomType| is test::Example, the data

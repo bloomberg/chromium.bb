@@ -26,7 +26,8 @@ namespace internal {
 
 enum class ArraySerializerType {
   BOOLEAN,
-  // Except boolean.
+  ENUM,
+  // Except boolean and enum.
   POD,
   HANDLE,
   // String, array, map and struct.
@@ -34,17 +35,25 @@ enum class ArraySerializerType {
   UNION
 };
 
+// TODO(yzshen): Consider reuse this type check, e.g., with
+// GetDataTypeAsArrayElement.
 template <typename T>
 struct GetArraySerializerType {
+  using DataElement = typename T::Data_::Element;
+  using Element = typename T::Element;
+
   static const ArraySerializerType value =
-      IsUnionDataType<T>::value
+      IsUnionDataType<DataElement>::value
           ? ArraySerializerType::UNION
-          : (std::is_pointer<T>::value
+          : (std::is_pointer<DataElement>::value
                  ? ArraySerializerType::POINTER
-                 : (IsHandle<T>::value ? ArraySerializerType::HANDLE
-                                       : (std::is_same<T, bool>::value
-                                              ? ArraySerializerType::BOOLEAN
-                                              : ArraySerializerType::POD)));
+                 : (IsHandle<DataElement>::value
+                        ? ArraySerializerType::HANDLE
+                        : (std::is_same<Element, bool>::value
+                               ? ArraySerializerType::BOOLEAN
+                               : (std::is_enum<Element>::value
+                                      ? ArraySerializerType::ENUM
+                                      : ArraySerializerType::POD))));
 };
 
 // Used as the UserTypeReader template parameter of ArraySerializer.
@@ -83,8 +92,7 @@ class ArrayReader {
 template <typename MojomType,
           typename MaybeConstUserType,
           typename UserTypeReader,
-          ArraySerializerType type =
-              GetArraySerializerType<typename MojomType::Data_::Element>::value>
+          ArraySerializerType type = GetArraySerializerType<MojomType>::value>
 struct ArraySerializer;
 
 // Handles serialization and deserialization of arrays of pod types.
@@ -101,7 +109,7 @@ struct ArraySerializer<MojomType,
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
 
-  static_assert(sizeof(Element) == sizeof(DataElement),
+  static_assert(std::is_same<Element, DataElement>::value,
                 "Incorrect array serializer");
   static_assert(std::is_same<Element, typename Traits::Element>::value,
                 "Incorrect array serializer");
@@ -130,7 +138,7 @@ struct ArraySerializer<MojomType,
       memcpy(output->storage(), data, size * sizeof(DataElement));
     } else {
       for (size_t i = 0; i < size; ++i)
-        output->at(i) = static_cast<DataElement>(input->GetNext());
+        output->at(i) = input->GetNext();
     }
   }
 
@@ -145,8 +153,58 @@ struct ArraySerializer<MojomType,
         memcpy(data, input->storage(), input->size() * sizeof(DataElement));
       } else {
         for (size_t i = 0; i < input->size(); ++i)
-          Traits::GetAt(*output, i) = static_cast<Element>(input->at(i));
+          Traits::GetAt(*output, i) = input->at(i);
       }
+    }
+    return true;
+  }
+};
+
+// Handles serialization and deserialization of arrays of enum types.
+template <typename MojomType,
+          typename MaybeConstUserType,
+          typename UserTypeReader>
+struct ArraySerializer<MojomType,
+                       MaybeConstUserType,
+                       UserTypeReader,
+                       ArraySerializerType::ENUM> {
+  using UserType = typename std::remove_const<MaybeConstUserType>::type;
+  using Data = typename MojomType::Data_;
+  using DataElement = typename Data::Element;
+  using Element = typename MojomType::Element;
+  using Traits = ArrayTraits<UserType>;
+
+  static_assert(sizeof(Element) == sizeof(DataElement),
+                "Incorrect array serializer");
+
+  static size_t GetSerializedSize(UserTypeReader* input,
+                                  SerializationContext* context) {
+    return sizeof(Data) + Align(input->GetSize() * sizeof(DataElement));
+  }
+
+  static void SerializeElements(UserTypeReader* input,
+                                Buffer* buf,
+                                Data* output,
+                                const ContainerValidateParams* validate_params,
+                                SerializationContext* context) {
+    DCHECK(!validate_params->element_is_nullable)
+        << "Primitive type should be non-nullable";
+    DCHECK(!validate_params->element_validate_params)
+        << "Primitive type should not have array validate params";
+
+    size_t size = input->GetSize();
+    for (size_t i = 0; i < size; ++i)
+      Serialize<Element>(input->GetNext(), output->storage() + i);
+  }
+
+  static bool DeserializeElements(Data* input,
+                                  UserType* output,
+                                  SerializationContext* context) {
+    if (!Traits::Resize(*output, input->size()))
+      return false;
+    for (size_t i = 0; i < input->size(); ++i) {
+      if (!Deserialize<Element>(input->at(i), &Traits::GetAt(*output, i)))
+        return false;
     }
     return true;
   }

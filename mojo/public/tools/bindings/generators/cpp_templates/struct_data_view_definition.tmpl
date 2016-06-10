@@ -12,6 +12,15 @@
          kind|is_map_kind %}
 {#-     Does nothing. They are already defined in the class declaration. #}
 
+{%-   elif kind|is_enum_kind %}
+{{kind|get_qualified_name_for_kind}} {{struct.name}}DataView::{{name}}() const {
+{%-     if pf.min_version != 0 %}
+  if (data_->header_.version < {{pf.min_version}})
+    return {{kind|get_qualified_name_for_kind}}{};
+{%-     endif %}
+  return static_cast<{{kind|get_qualified_name_for_kind}}>(data_->{{name}});
+}
+
 {%-   elif kind|is_union_kind %}
 bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
     {{kind|cpp_wrapper_type}}* value) {
@@ -89,7 +98,7 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
   if (data_->header_.version < {{pf.min_version}})
     return {{kind|cpp_wrapper_type}}{};
 {%-     endif %}
-  return static_cast<{{kind|cpp_wrapper_type}}>(data_->{{name}});
+  return data_->{{name}};
 }
 {%-   endif %}
 {%- endfor %}

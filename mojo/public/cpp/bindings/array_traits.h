@@ -32,8 +32,8 @@ namespace mojo {
 //     static T& GetAt(CustomArray<T>& input, size_t index);
 //     static const T& GetAt(const CustomArray<T>& input, size_t index);
 //
-//     Returning false results in deserialization failure and causes the message
-//     pipe receiving it to be disconnected.
+//     // Returning false results in deserialization failure and causes the
+//     // message pipe receiving it to be disconnected.
 //     static bool Resize(CustomArray<T>& input, size_t size);
 //   };
 //

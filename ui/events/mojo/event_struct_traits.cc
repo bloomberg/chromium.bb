@@ -118,9 +118,9 @@ static_assert(mus::mojom::kEventFlagForwardMouseButton ==
                   static_cast<int32_t>(ui::EF_FORWARD_MOUSE_BUTTON),
               "EVENT_FLAGS must match");
 
-int32_t StructTraits<mus::mojom::Event, EventUniquePtr>::action(
+mus::mojom::EventType StructTraits<mus::mojom::Event, EventUniquePtr>::action(
     const EventUniquePtr& event) {
-  return static_cast<int32_t>(UIEventTypeToMojo(event->type()));
+  return UIEventTypeToMojo(event->type());
 }
 
 int32_t StructTraits<mus::mojom::Event, EventUniquePtr>::flags(

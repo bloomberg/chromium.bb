@@ -83,8 +83,9 @@ void UnionSerializerImpl<{{mojom_type}}Ptr>::Serialize(
 {%-   elif field.kind|is_associated_kind %}
         // TODO(yzshen): add seralization logic for associated kinds.
 {%    elif field.kind|is_enum_kind %}
-        result->data.f_{{field.name}} =
-            static_cast<int32_t>(input_acc.data()->{{field.name}});
+{%-     set serializer_type = field.kind|unmapped_type_for_serializer %}
+        mojo::internal::Serialize<{{serializer_type}}>(
+            input_acc.data()->{{field.name}}, &result->data.f_{{field.name}});
 {%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
@@ -134,9 +135,13 @@ bool UnionSerializerImpl<{{mojom_type}}Ptr>::Deserialize(
 {%-   elif field.kind|is_associated_kind %}
         // TODO(yzshen): add deserialization logic for associated kinds.
 {%    elif field.kind|is_enum_kind %}
-        result->set_{{field.name}}(
-            static_cast<{{field.kind|get_qualified_name_for_kind}}>(
-                input->data.f_{{field.name}}));
+{%-     set serializer_type = field.kind|unmapped_type_for_serializer %}
+        decltype(result->get_{{field.name}}()) result_{{field.name}};
+        if (!mojo::internal::Deserialize<{{serializer_type}}>(
+                input->data.f_{{field.name}}, &result_{{field.name}}))
+           success = false;
+        else
+           result->set_{{field.name}}(result_{{field.name}});
 {%    else %}
         result->set_{{field.name}}(input->data.f_{{field.name}});
 {%-   endif %}

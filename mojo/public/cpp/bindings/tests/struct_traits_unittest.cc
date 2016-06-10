@@ -139,6 +139,11 @@ class StructTraitsTest : public testing::Test,
     callback.Run(std::move(s));
   }
 
+  void EchoEnumWithTraits(EnumWithTraitsImpl e,
+                          const EchoEnumWithTraitsCallback& callback) override {
+    callback.Run(e);
+  }
+
   base::MessageLoop loop_;
 
   ChromiumRectServiceImpl chromium_service_;
@@ -216,6 +221,7 @@ TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
 
 TEST_F(StructTraitsTest, EchoStructWithTraits) {
   StructWithTraitsImpl input;
+  input.set_enum(EnumWithTraitsImpl::CUSTOM_VALUE_1);
   input.set_bool(true);
   input.set_uint32(7);
   input.set_uint64(42);
@@ -232,6 +238,7 @@ TEST_F(StructTraitsTest, EchoStructWithTraits) {
   TraitsTestServicePtr proxy = GetTraitsTestProxy();
 
   proxy->EchoStructWithTraits(input, [&](const StructWithTraitsImpl& passed) {
+    EXPECT_EQ(input.get_enum(), passed.get_enum());
     EXPECT_EQ(input.get_bool(), passed.get_bool());
     EXPECT_EQ(input.get_uint32(), passed.get_uint32());
     EXPECT_EQ(input.get_uint64(), passed.get_uint64());
@@ -290,6 +297,18 @@ TEST_F(StructTraitsTest, EchoPassByValueStructWithTraits) {
                            nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(kHelloSize, buffer_size);
   EXPECT_STREQ(kHello, buffer);
+}
+
+TEST_F(StructTraitsTest, EchoEnumWithTraits) {
+  base::RunLoop loop;
+  TraitsTestServicePtr proxy = GetTraitsTestProxy();
+
+  proxy->EchoEnumWithTraits(
+      EnumWithTraitsImpl::CUSTOM_VALUE_1, [&](EnumWithTraitsImpl passed) {
+        EXPECT_EQ(EnumWithTraitsImpl::CUSTOM_VALUE_1, passed);
+        loop.Quit();
+      });
+  loop.Run();
 }
 
 }  // namespace test

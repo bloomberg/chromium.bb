@@ -20,11 +20,29 @@ class {{struct.name}}DataView {
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         pointer, value, context_);
   }
+
+{%-   elif kind|is_enum_kind %}
+  template <typename UserType>
+  bool Read{{name|under_to_camel}}(UserType* value) const {
+{%-     if pf.min_version != 0 %}
+    auto data_value = data_->header_.version >= {{pf.min_version}}
+                      ? data_->{{name}} : 0;
+{%-     else %}
+    auto data_value = data_->{{name}};
+{%-     endif %}
+    return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
+        data_value, value);
+  }
+
+  {{kind|get_qualified_name_for_kind}} {{name}}() const;
+
 {%-   elif kind|is_union_kind %}
   bool Read{{name|under_to_camel}}({{kind|cpp_wrapper_type}}* value);
+
 {%-   elif kind|is_interface_kind or kind|is_any_handle_kind or
            kind|is_associated_kind %}
   {{kind|cpp_wrapper_type}} Take{{name|under_to_camel}}();
+
 {%-   else %}
   {{kind|cpp_wrapper_type}} {{name}}() const;
 {%-   endif %}

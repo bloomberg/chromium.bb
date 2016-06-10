@@ -16,6 +16,7 @@
           'inputs': [
             '<@(mojom_bindings_generator_sources)',
             'generators/cpp_templates/enum_macros.tmpl',
+            'generators/cpp_templates/enum_serialization_declaration.tmpl',
             'generators/cpp_templates/interface_declaration.tmpl',
             'generators/cpp_templates/interface_definition.tmpl',
             'generators/cpp_templates/interface_macros.tmpl',

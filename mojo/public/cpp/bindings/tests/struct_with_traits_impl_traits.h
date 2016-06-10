@@ -32,6 +32,13 @@ struct StructTraits<test::NestedStructWithTraits,
 };
 
 template <>
+struct EnumTraits<test::EnumWithTraits, test::EnumWithTraitsImpl> {
+  static test::EnumWithTraits ToMojom(test::EnumWithTraitsImpl input);
+  static bool FromMojom(test::EnumWithTraits input,
+                        test::EnumWithTraitsImpl* output);
+};
+
+template <>
 struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   // Deserialization to test::StructTraitsImpl.
   static bool Read(test::StructWithTraits::DataView data,
@@ -39,6 +46,11 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
 
   // Fields in test::StructWithTraits.
   // See src/mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.
+  static test::EnumWithTraitsImpl f_enum(
+      const test::StructWithTraitsImpl& value) {
+    return value.get_enum();
+  }
+
   static bool f_bool(const test::StructWithTraitsImpl& value) {
     return value.get_bool();
   }

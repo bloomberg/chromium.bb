@@ -105,6 +105,7 @@
         'public/cpp/bindings/binding.h',
         'public/cpp/bindings/binding_set.h',
         'public/cpp/bindings/callback.h',
+        'public/cpp/bindings/enum_traits.h',
         'public/cpp/bindings/interface_ptr.h',
         'public/cpp/bindings/interface_ptr_set.h',
         'public/cpp/bindings/interface_request.h',
@@ -198,6 +199,7 @@
         'public/cpp/bindings/string_traits_string_piece.h',
         'public/cpp/bindings/strong_binding.h',
         'public/cpp/bindings/struct_ptr.h',
+        'public/cpp/bindings/struct_traits.h',
         'public/cpp/bindings/type_converter.h',
         # This comes from the mojo_interface_bindings_cpp_sources dependency.
         '>@(mojom_generated_sources)',

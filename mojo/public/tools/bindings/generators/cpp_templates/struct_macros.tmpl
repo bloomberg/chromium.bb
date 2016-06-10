@@ -126,7 +126,9 @@
   {{output}}->{{name}} = {{input_field}}.PassHandle().release();
 {%-     endif %}
 {%-   elif kind|is_enum_kind %}
-  {{output}}->{{name}} = static_cast<int32_t>({{input_field}});
+{%-     set serializer_type = kind|unmapped_type_for_serializer %}
+  mojo::internal::Serialize<{{serializer_type}}>(
+      {{input_field}}, &{{output}}->{{name}});
 {%-   else %}
   {{output}}->{{name}} = {{input_field}};
 {%-   endif %}
@@ -152,7 +154,7 @@
 {%-     set output_field = output_field_pattern|format(pf.field.name) %}
 {%-     set name = pf.field.name %}
 {%-     set kind = pf.field.kind %}
-{%-     if kind|is_object_kind %}
+{%-     if kind|is_object_kind  or kind|is_enum_kind %}
   if (!{{input}}.Read{{name|under_to_camel}}(&{{output_field}}))
     {{success}} = false;
 {%-     elif kind|is_interface_kind or kind|is_any_handle_kind or

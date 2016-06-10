@@ -16,6 +16,7 @@ deps = [
 ]
 
 type_mappings = [
+  "mojo.test.EnumWithTraits=mojo::test::EnumWithTraitsImpl",
   "mojo.test.StructWithTraits=mojo::test::StructWithTraitsImpl",
   "mojo.test.NestedStructWithTraits=mojo::test::NestedStructWithTraitsImpl",
   "mojo.test.PassByValueStructWithTraits=mojo::test::PassByValueStructWithTraitsImpl(pass_by_value)"

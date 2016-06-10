@@ -226,6 +226,23 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 
 namespace mojo {
 
+{#--- Enum Serialization Helpers -#}
+{%- for enum in enums %}
+{%    include "enum_serialization_declaration.tmpl" %}
+{%- endfor %}
+
+{%- for struct in structs %}
+{%-   for enum in struct.enums %}
+{%      include "enum_serialization_declaration.tmpl" %}
+{%-   endfor %}
+{%- endfor %}
+
+{%- for interface in interfaces %}
+{%-   for enum in interface.enums %}
+{%      include "enum_serialization_declaration.tmpl" %}
+{%-   endfor %}
+{%- endfor %}
+
 {#--- Struct Serialization Helpers -#}
 {%  for struct in structs %}
 {%-   if not struct|is_native_only_kind %}

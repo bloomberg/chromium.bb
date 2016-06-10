@@ -29,6 +29,8 @@ struct NestedStructWithTraitsImpl {
   int32_t value = 0;
 };
 
+enum class EnumWithTraitsImpl { CUSTOM_VALUE_0 = 10, CUSTOM_VALUE_1 = 11 };
+
 // A type which knows how to look like a mojo::test::StructWithTraits mojom type
 // by way of mojo::StructTraits.
 class StructWithTraitsImpl {
@@ -37,6 +39,9 @@ class StructWithTraitsImpl {
   ~StructWithTraitsImpl();
 
   StructWithTraitsImpl(const StructWithTraitsImpl& other);
+
+  void set_enum(EnumWithTraitsImpl value) { enum_ = value; }
+  EnumWithTraitsImpl get_enum() const { return enum_; }
 
   void set_bool(bool value) { bool_ = value; }
   bool get_bool() const { return bool_; }
@@ -75,6 +80,7 @@ class StructWithTraitsImpl {
   }
 
  private:
+  EnumWithTraitsImpl enum_ = EnumWithTraitsImpl::CUSTOM_VALUE_0;
   bool bool_ = false;
   uint32_t uint32_ = 0;
   uint64_t uint64_ = 0;

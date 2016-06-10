@@ -17,7 +17,7 @@ using EventUniquePtr = std::unique_ptr<ui::Event>;
 
 template <>
 struct StructTraits<mus::mojom::Event, EventUniquePtr> {
-  static int32_t action(const EventUniquePtr& event);
+  static mus::mojom::EventType action(const EventUniquePtr& event);
   static int32_t flags(const EventUniquePtr& event);
   static int64_t time_stamp(const EventUniquePtr& event);
   static mus::mojom::KeyDataPtr key_data(const EventUniquePtr& event);

@@ -247,6 +247,8 @@ def GetCppWrapperType(kind):
 
 def ShouldPassParamByValue(kind):
   if IsTypemappedKind(kind):
+    if mojom.IsEnumKind(kind):
+      return True
     return _current_typemap[GetFullMojomNameForKind(kind)]["pass_by_value"]
   return not mojom.IsStringKind(kind)
 
