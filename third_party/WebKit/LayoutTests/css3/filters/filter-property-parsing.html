@@ -14,6 +14,8 @@ assert_valid_value("webkitFilter", "grayscale(50%)"); // Percentage value
 assert_valid_value("webkitFilter", "grayscale(1.0)", "grayscale(1)"); // Float value converts to integer
 assert_valid_value("webkitFilter", "grayscale(0)"); // Zero value
 assert_valid_value("webkitFilter", "grayscale()"); // No arguments
+assert_valid_value("webkitFilter", "grayscale(1.5)", "grayscale(1)"); // Parameter greater than 1
+assert_valid_value("webkitFilter", "grayscale(150%)", "grayscale(100%)"); // Parameter greater than 100%
 assert_valid_value("webkitFilter", "grayscale(0.5) grayscale(0.25)"); // Multiple values
 
 assert_valid_value("webkitFilter", "sepia(1)"); // Integer value
@@ -21,6 +23,8 @@ assert_valid_value("webkitFilter", "sepia(50%)"); // Percentage value
 assert_valid_value("webkitFilter", "sepia(1.0)", "sepia(1)"); // Float value converts to integer
 assert_valid_value("webkitFilter", "sepia(0)"); // Zero value
 assert_valid_value("webkitFilter", "sepia()"); // No arguments
+assert_valid_value("webkitFilter", "sepia(10000)", "sepia(1)"); // Parameter greater than 1
+assert_valid_value("webkitFilter", "sepia(1000%)", "sepia(100%)"); // Parameter greater than 100%
 assert_valid_value("webkitFilter", "sepia(0.5) sepia(0.25)"); // Multiple values
 
 assert_valid_value("webkitFilter", "saturate(1)"); // Integer value
@@ -45,6 +49,8 @@ assert_valid_value("webkitFilter", "invert(50%)"); // Percentage value
 assert_valid_value("webkitFilter", "invert(1.0)", "invert(1)"); // Float value converts to integer
 assert_valid_value("webkitFilter", "invert(0)"); // Zero value
 assert_valid_value("webkitFilter", "invert()"); // No arguments
+assert_valid_value("webkitFilter", "invert(1.5)", "invert(1)"); // Parameter greater than 1
+assert_valid_value("webkitFilter", "invert(150%)", "invert(100%)"); // Parameter greater than 100%
 assert_valid_value("webkitFilter", "invert(0.5) invert(0.25)"); // Multiple values
 
 assert_valid_value("webkitFilter", "opacity(1)"); // Integer value
@@ -52,6 +58,8 @@ assert_valid_value("webkitFilter", "opacity(50%)"); // Percentage value
 assert_valid_value("webkitFilter", "opacity(1.0)", "opacity(1)"); // Float value converts to integer
 assert_valid_value("webkitFilter", "opacity(0)"); // Zero value
 assert_valid_value("webkitFilter", "opacity()"); // No arguments
+assert_valid_value("webkitFilter", "opacity(1.5)", "opacity(1)"); // Parameter greater than 1
+assert_valid_value("webkitFilter", "opacity(150%)", "opacity(100%)"); // Parameter greater than 100%
 assert_valid_value("webkitFilter", "opacity(0.5) opacity(0.25)"); // Multiple values
 
 assert_valid_value("webkitFilter", "brightness(1)"); // Integer value

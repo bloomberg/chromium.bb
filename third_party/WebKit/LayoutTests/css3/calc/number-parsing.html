@@ -22,7 +22,7 @@ test(function() {
   assertParsedValue('font-weight', 'calc(100 + 200)', '');
   assertParsedValue('flex', 'calc(1 + 2) calc(3 + 4)', '3 7 0%');
   assertParsedValue('-webkit-filter', 'saturate(calc(4 / 2))', 'saturate(2)');
-  assertParsedValue('-webkit-filter', 'invert(calc(4 / 2))', '');
+  assertParsedValue('-webkit-filter', 'invert(calc(4 / 2))', 'invert(1)');
   assertParsedValue('-webkit-filter', 'invert(calc(2 / 4))', 'invert(0.5)');
   assertParsedValue('-webkit-filter', 'brightness(calc(4 / 2))', 'brightness(2)');
 }, 'Ensure using calc() for CSS numbers does not crash or produce incorrect values.');

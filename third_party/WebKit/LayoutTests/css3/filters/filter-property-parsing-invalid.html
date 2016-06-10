@@ -12,14 +12,12 @@ assert_invalid_value("webkitFilter", "grayscale(0.5, 0.5)"); // Too many paramet
 assert_invalid_value("webkitFilter", "grayscale(0.5,)"); // Trailing comma
 assert_invalid_value("webkitFilter", "grayscale(-0.5)"); // Negative parameter
 assert_invalid_value("webkitFilter", "grayscale(-10%)"); // Negative percent
-assert_invalid_value("webkitFilter", "grayscale(1.5)"); // Parameter out of bounds
 
 assert_invalid_value("webkitFilter", "sepia(0.5 0.5 3.0)"); // Too many parameters
 assert_invalid_value("webkitFilter", "sepia(0.1, 0.1)"); // Too many parameters and commas
 assert_invalid_value("webkitFilter", "sepia(0.5,)"); // Trailing comma
 assert_invalid_value("webkitFilter", "sepia(-0.01)"); // Negative parameter
 assert_invalid_value("webkitFilter", "sepia(-10%)"); // Negative percent
-assert_invalid_value("webkitFilter", "sepia(10000)"); // Parameter out of bounds
 
 assert_invalid_value("webkitFilter", "saturate(10px)"); // Length instead of number
 assert_invalid_value("webkitFilter", "saturate(0.5 0.5)"); // Too many parameters
@@ -39,7 +37,6 @@ assert_invalid_value("webkitFilter", "invert(0.5 0.5)"); // Too many parameters
 assert_invalid_value("webkitFilter", "invert(0.5, 0.5)"); // Too many parameters and commas
 assert_invalid_value("webkitFilter", "invert(0.5,)"); // Trailing comma
 assert_invalid_value("webkitFilter", "invert(-0.5)"); // Negative parameter
-assert_invalid_value("webkitFilter", "invert(1.5)"); // Parameter out of bounds
 
 assert_invalid_value("webkitFilter", "opacity(10px)"); // Length instead of number
 assert_invalid_value("webkitFilter", "opacity(0.5 0.5)"); // Too many parameters
@@ -47,7 +44,6 @@ assert_invalid_value("webkitFilter", "opacity(0.5, 0.5)"); // Too many parameter
 assert_invalid_value("webkitFilter", "opacity(0.5,)"); // Trailing comma
 assert_invalid_value("webkitFilter", "opacity(-0.5)"); // Negative parameter
 assert_invalid_value("webkitFilter", "opacity(-10%)"); // Negative percent
-assert_invalid_value("webkitFilter", "opacity(1.5)"); // Parameter out of bounds
 
 assert_invalid_value("webkitFilter", "brightness(10px)"); // Length instead of number
 assert_invalid_value("webkitFilter", "brightness(0.5 0.5)"); // Too many parameters

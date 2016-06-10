@@ -1426,9 +1426,13 @@ static CSSFunctionValue* consumeFilterFunction(CSSParserTokenRange& range, CSSPa
             if (!parsedValue)
                 parsedValue = consumeNumber(args, ValueRangeNonNegative);
             if (parsedValue && filterType != CSSValueSaturate && filterType != CSSValueContrast) {
-                double maxAllowed = toCSSPrimitiveValue(parsedValue)->isPercentage() ? 100.0 : 1.0;
-                if (toCSSPrimitiveValue(parsedValue)->getDoubleValue() > maxAllowed)
-                    return nullptr;
+                bool isPercentage = toCSSPrimitiveValue(parsedValue)->isPercentage();
+                double maxAllowed = isPercentage ? 100.0 : 1.0;
+                if (toCSSPrimitiveValue(parsedValue)->getDoubleValue() > maxAllowed) {
+                    parsedValue = CSSPrimitiveValue::create(
+                        maxAllowed,
+                        isPercentage ? CSSPrimitiveValue::UnitType::Percentage : CSSPrimitiveValue::UnitType::Number);
+                }
             }
         }
     }
