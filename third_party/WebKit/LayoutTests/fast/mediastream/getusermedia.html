@@ -27,6 +27,7 @@ function gotStream5(s) {
     testPassed('Stream generated.');
     shouldBe('stream.getAudioTracks().length', '1');
     shouldBe('stream.getVideoTracks().length', '1');
+
     finishJSTest();
 }
 
@@ -36,7 +37,7 @@ function error1(e) {
     shouldBeEqualToString('errorArg.name', 'ConstraintNotSatisfiedError');
     shouldBeEqualToString('errorArg.constraintName', 'valid_but_unsupported_1');
 
-    shouldNotThrow("navigator.webkitGetUserMedia({audio:{mandatory:{'valid_and_supported_1':1}, optional:[{'valid_but_unsupported_1':0}]}, video:true}, gotStream5, error);");
+    shouldNotThrow("navigator.getUserMedia({audio:{mandatory:{'valid_and_supported_1':1}, optional:[{'valid_but_unsupported_1':0}]}, video:true}, gotStream5, error);");
 }
 
 function gotStream4(s) {
@@ -45,7 +46,7 @@ function gotStream4(s) {
     shouldBe('stream.getAudioTracks().length', '1');
     shouldBe('stream.getVideoTracks().length', '1');
 
-    shouldNotThrow("navigator.webkitGetUserMedia({audio:{mandatory:{'valid_but_unsupported_1':0}, optional:[]}, video:true}, gotStreamInError, error1);");
+    shouldNotThrow("navigator.getUserMedia({audio:{mandatory:{'valid_but_unsupported_1':0}, optional:[]}, video:true}, gotStreamInError, error1);");
 }
 
 function gotStream3(s) {
@@ -54,7 +55,7 @@ function gotStream3(s) {
     shouldBe('stream.getAudioTracks().length', '1');
     shouldBe('stream.getVideoTracks().length', '1');
 
-    shouldNotThrow("navigator.webkitGetUserMedia({audio:{mandatory:{}, optional:[]}, video:true}, gotStream4, error);");
+    shouldNotThrow("navigator.getUserMedia({audio:{mandatory:{}, optional:[]}, video:true}, gotStream4, error);");
 }
 
 function gotStream2(s) {
@@ -63,7 +64,7 @@ function gotStream2(s) {
     shouldBe('stream.getAudioTracks().length', '0');
     shouldBe('stream.getVideoTracks().length', '1');
 
-    shouldNotThrow("navigator.webkitGetUserMedia({audio:true, video:true}, gotStream3, error);");
+    shouldNotThrow("navigator.getUserMedia({audio:true, video:true}, gotStream3, error);");
 }
 
 function gotStream1(s) {
@@ -72,11 +73,37 @@ function gotStream1(s) {
     shouldBe('stream.getAudioTracks().length', '1');
     shouldBe('stream.getVideoTracks().length', '0');
 
-    shouldNotThrow("navigator.webkitGetUserMedia({video:true}, gotStream2, error);")
+    shouldNotThrow("navigator.getUserMedia({video:true}, gotStream2, error);")
 }
 
+function gotStreamNoMore(s) {
+    stream = s;
+    testPassed('Stream generated.');
+    shouldBe('stream.getAudioTracks().length', '1');
+    shouldBe('stream.getVideoTracks().length', '0');
+}
+
+var GetUserMediaPrefixed = 1400;
+var GetUserMediaLegacy = 1401;
+var GetUserMediaPromise = 1402;
+
+if (window.internals) {
+  shouldBeFalse('window.internals.isUseCounted(document, GetUserMediaPrefixed)');
+  shouldBeFalse('window.internals.isUseCounted(document, GetUserMediaLegacy)');
+}
+
+// Prefixed version
 shouldThrow("navigator.webkitGetUserMedia({audio:false, video:false}, error, error);")
-shouldNotThrow("navigator.webkitGetUserMedia({audio:true}, gotStream1, error);");
+shouldNotThrow("navigator.webkitGetUserMedia({audio:true}, gotStreamNoMore, error);");
+// Unprefixed version
+shouldThrow("navigator.getUserMedia({audio:false, video:false}, error, error);")
+shouldNotThrow("navigator.getUserMedia({audio:true}, gotStream1, error);");
+
+if (window.internals) {
+  shouldBeTrue('window.internals.isUseCounted(document, GetUserMediaPrefixed)');
+  shouldBeTrue('window.internals.isUseCounted(document, GetUserMediaLegacy)');
+  shouldBeFalse('window.internals.isUseCounted(document, GetUserMediaPromise)');
+}
 
 window.jsTestIsAsync = true;
 window.successfullyParsed = true;

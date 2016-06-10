@@ -38,7 +38,7 @@ class NavigatorUserMediaSuccessCallback;
 class NavigatorMediaStream {
     STATIC_ONLY(NavigatorMediaStream);
 public:
-    static void webkitGetUserMedia(Navigator&, const MediaStreamConstraints&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
+    static void getUserMedia(Navigator&, const MediaStreamConstraints&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
 
     static void getMediaDevices(Navigator&, MediaDeviceInfoCallback*, ExceptionState&);
 };

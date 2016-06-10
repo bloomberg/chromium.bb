@@ -1205,6 +1205,9 @@ public:
         V8RegExpPrototypeOldFlagGetter = 1397,
         V8DecimalWithLeadingZeroInStrictMode = 1398,
         FormSubmissionNotInDocumentTree = 1399,
+        GetUserMediaPrefixed = 1400,
+        GetUserMediaLegacy = 1401,
+        GetUserMediaPromise = 1402,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

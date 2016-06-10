@@ -3917,6 +3917,7 @@ interface Navigator
     method getBattery
     method getGamepads
     method getInstalledRelatedApps
+    method getUserMedia
     method isProtocolHandlerRegistered
     method javaEnabled
     method registerProtocolHandler

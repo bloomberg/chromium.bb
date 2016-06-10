@@ -18,7 +18,16 @@
  */
 
 partial interface Navigator {
-    [RaisesException] void webkitGetUserMedia(MediaStreamConstraints options,
+    [RaisesException,
+     ImplementedAs=getUserMedia,
+     MeasureAs=GetUserMediaPrefixed
+    ] void webkitGetUserMedia(MediaStreamConstraints options,
+                                              NavigatorUserMediaSuccessCallback successCallback,
+                                              NavigatorUserMediaErrorCallback errorCallback);
+    [RaisesException,
+     RuntimeEnabled=GetUserMedia,
+     MeasureAs=GetUserMediaLegacy,
+    ] void getUserMedia(MediaStreamConstraints options,
                                               NavigatorUserMediaSuccessCallback successCallback,
                                               NavigatorUserMediaErrorCallback errorCallback);
 };
