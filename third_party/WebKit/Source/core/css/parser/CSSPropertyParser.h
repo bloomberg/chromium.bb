@@ -47,10 +47,6 @@ public:
     // Parses a non-shorthand CSS property
     static CSSValue* parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
 
-    // TODO(timloh): This doesn't seem like the right place for these
-    static bool isSystemColor(CSSValueID);
-    static bool isValidNumericValue(double);
-
 private:
     CSSPropertyParser(const CSSParserTokenRange&, const CSSParserContext&,
         HeapVector<CSSProperty, 256>*);

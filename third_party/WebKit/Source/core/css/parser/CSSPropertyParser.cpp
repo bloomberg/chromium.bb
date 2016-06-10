@@ -94,7 +94,7 @@ static bool hasInvalidNumericValues(const CSSParserTokenRange& range)
     for (const CSSParserToken& token : range) {
         CSSParserTokenType type = token.type();
         if ((type == NumberToken || type == DimensionToken || type == PercentageToken)
-            && !CSSPropertyParser::isValidNumericValue(token.numericValue()))
+            && !token.isValidNumericValue())
             return true;
     }
     return false;
@@ -143,13 +143,6 @@ CSSValue* CSSPropertyParser::parseSingleValue(
     return value;
 }
 
-bool CSSPropertyParser::isValidNumericValue(double value)
-{
-    return std::isfinite(value)
-        && value >= -std::numeric_limits<float>::max()
-        && value <= std::numeric_limits<float>::max();
-}
-
 bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool important)
 {
     if (consumeCSSWideKeyword(unresolvedProperty, important))
@@ -178,11 +171,6 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     }
 
     return false;
-}
-
-bool CSSPropertyParser::isSystemColor(CSSValueID id)
-{
-    return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
 }
 
 template <typename CharacterType>

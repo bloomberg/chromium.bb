@@ -119,6 +119,9 @@ public:
 
     CSSParserToken copyWithUpdatedString(const StringView&) const;
 
+    static bool isValidNumericValue(double);
+    bool isValidNumericValue() const;
+
 private:
     void initValueFromStringView(StringView string)
     {

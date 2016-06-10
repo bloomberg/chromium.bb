@@ -290,4 +290,15 @@ void CSSParserToken::serialize(StringBuilder& builder) const
     }
 }
 
+bool CSSParserToken::isValidNumericValue(double value)
+{
+    return value >= -std::numeric_limits<float>::max()
+        && value <= std::numeric_limits<float>::max();
+}
+
+bool CSSParserToken::isValidNumericValue() const
+{
+    return isValidNumericValue(numericValue());
+}
+
 } // namespace blink

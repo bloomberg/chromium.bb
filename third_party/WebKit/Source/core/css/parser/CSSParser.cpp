@@ -159,7 +159,7 @@ bool CSSParser::parseColor(Color& color, const String& string, bool strict)
 bool CSSParser::parseSystemColor(Color& color, const String& colorString)
 {
     CSSValueID id = cssValueKeywordID(colorString);
-    if (!CSSPropertyParser::isSystemColor(id))
+    if (!StyleColor::isSystemColor(id))
         return false;
 
     color = LayoutTheme::theme().systemColor(id);

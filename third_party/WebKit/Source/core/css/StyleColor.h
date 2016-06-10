@@ -51,6 +51,7 @@ public:
 
     static Color colorFromKeyword(CSSValueID);
     static bool isColorKeyword(CSSValueID);
+    static bool isSystemColor(CSSValueID);
 
 private:
     Color m_color;
