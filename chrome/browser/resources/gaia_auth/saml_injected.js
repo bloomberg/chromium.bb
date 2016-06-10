@@ -143,8 +143,9 @@
         return;
 
       var index = this.passwordFields_.length;
+      var fieldId = passwordField.id || passwordField.name || '';
       passwordField.addEventListener(
-          'input', this.onPasswordChanged_.bind(this, index));
+          'input', this.onPasswordChanged_.bind(this, index, fieldId));
       this.passwordFields_.push(passwordField);
       this.passwordValues_.push(passwordField.value);
     },
@@ -153,16 +154,18 @@
      * Check if the password field at |index| has changed. If so, sends back
      * the updated value.
      */
-    maybeSendUpdatedPassword: function(index) {
+    maybeSendUpdatedPassword: function(index, fieldId) {
       var newValue = this.passwordFields_[index].value;
       if (newValue == this.passwordValues_[index])
         return;
 
       this.passwordValues_[index] = newValue;
 
-      // Use an invalid char for URL as delimiter to concatenate page url and
-      // password field index to construct a unique ID for the password field.
-      var passwordId = this.pageURL_.split('#')[0].split('?')[0] + '|' + index;
+      // Use an invalid char for URL as delimiter to concatenate page url,
+      // password field index and id to construct a unique ID for the password
+      // field.
+      var passwordId = this.pageURL_.split('#')[0].split('?')[0] +
+          '|' + index + '|' + fieldId;
       this.channel_.send({
         name: 'updatePassword',
         id: passwordId,
@@ -174,9 +177,10 @@
      * Handles 'change' event in the scraped password fields.
      * @param {number} index The index of the password fields in
      *     |passwordFields_|.
+     * @param {string} fieldId The id or name of the password field or blank.
      */
-    onPasswordChanged_: function(index) {
-      this.maybeSendUpdatedPassword(index);
+    onPasswordChanged_: function(index, fieldId) {
+      this.maybeSendUpdatedPassword(index, fieldId);
     }
   };
 
