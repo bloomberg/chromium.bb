@@ -467,6 +467,7 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
 
 MouseEvent::MouseEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
+      changed_button_flags_(0),
       pointer_details_(pointer_event.pointer_details()) {
   DCHECK(pointer_event.IsMousePointerEvent());
   switch (pointer_event.type()) {
