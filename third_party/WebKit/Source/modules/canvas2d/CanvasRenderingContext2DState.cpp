@@ -428,7 +428,7 @@ void CanvasRenderingContext2DState::setShadowColor(SkColor shadowColor)
     shadowParameterChanged();
 }
 
-void CanvasRenderingContext2DState::setFilter(CSSValue* filterValue)
+void CanvasRenderingContext2DState::setFilter(const CSSValue* filterValue)
 {
     m_filterValue = filterValue;
     m_resolvedFilter.reset();

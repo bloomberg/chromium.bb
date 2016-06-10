@@ -84,7 +84,7 @@ public:
 
     void setFontForFilter(const Font& font) { m_fontForFilter = font; }
 
-    void setFilter(CSSValue*);
+    void setFilter(const CSSValue*);
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
     SkImageFilter* getFilter(Element*, IntSize canvasSize, CanvasRenderingContext2D*) const;
@@ -210,7 +210,7 @@ private:
     Font m_fontForFilter;
 
     String m_unparsedFilter;
-    Member<CSSValue> m_filterValue;
+    Member<const CSSValue> m_filterValue;
     mutable sk_sp<SkImageFilter> m_resolvedFilter;
 
     // Text state.
