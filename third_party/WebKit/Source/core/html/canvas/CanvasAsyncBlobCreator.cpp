@@ -256,20 +256,12 @@ void CanvasAsyncBlobCreator::createBlobAndInvokeCallback()
     ASSERT(isMainThread());
     Blob* resultBlob = Blob::create(m_encodedImage->data(), m_encodedImage->size(), convertMimeTypeEnumToString(m_mimeType));
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, resultBlob));
-    // Since toBlob is done, timeout events are no longer needed. So we clear
-    // non-GC members to allow teardown of CanvasAsyncBlobCreator.
-    m_data.clear();
-    m_callback.clear();
 }
 
 void CanvasAsyncBlobCreator::createNullAndInvokeCallback()
 {
     ASSERT(isMainThread());
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
-    // Since toBlob is done (failed), timeout events are no longer needed. So we
-    // clear non-GC members to allow teardown of CanvasAsyncBlobCreator.
-    m_data.clear();
-    m_callback.clear();
 }
 
 void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)

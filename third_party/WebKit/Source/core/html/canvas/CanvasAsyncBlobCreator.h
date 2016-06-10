@@ -42,6 +42,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_data);
+        visitor->trace(m_callback);
     }
 
 protected:
@@ -72,7 +73,7 @@ private:
     const IntSize m_size;
     size_t m_pixelRowStride;
     const MimeType m_mimeType;
-    CrossThreadPersistent<BlobCallback> m_callback;
+    Member<BlobCallback> m_callback;
 
     // PNG
     bool initializePngStruct();
