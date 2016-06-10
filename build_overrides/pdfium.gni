@@ -6,7 +6,7 @@
 pdf_enable_v8_override = true
 
 # Disable XFA forms in Chromium builds.
-pdf_enable_xfa_override = !is_android && !is_ios
+pdf_enable_xfa_override = false
 
 # Disable use of Skia backend.
 pdf_use_skia_override = false
