@@ -38,7 +38,8 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"
@@ -333,7 +334,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
         return 0;
     AXObjectCache* cache = document->axObjectCache();
     DCHECK(cache);
-    return toAXObjectCacheImpl(cache)->getOrCreate(document->layoutView());
+    return toAXObjectCacheImpl(cache)->getOrCreate(toLayoutView(LayoutAPIShim::layoutObjectFrom(document->layoutViewItem())));
 }
 
 void WebPagePopupImpl::setWindowRect(const IntRect& rectInScreen)
