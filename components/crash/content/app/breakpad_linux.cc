@@ -603,6 +603,10 @@ bool FinalizeCrashDoneAndroid(bool is_browser_process) {
                       android_build_info->package_version_name());
   __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
                       android_build_info->package_version_code());
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      "Google Play services app version:");
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      android_build_info->gms_version_code());
   AndroidLogWriteHorizontalRule();
 
   if (!is_browser_process &&

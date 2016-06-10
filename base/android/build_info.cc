@@ -51,6 +51,8 @@ BuildInfo::BuildInfo(JNIEnv* env)
       android_build_id_(StrDupJString(Java_BuildInfo_getAndroidBuildId(env))),
       android_build_fp_(StrDupJString(
           Java_BuildInfo_getAndroidBuildFingerprint(env))),
+      gms_version_code_(StrDupJString(Java_BuildInfo_getGMSVersionCode(
+          env, GetApplicationContext()))),
       package_version_code_(StrDupJString(Java_BuildInfo_getPackageVersionCode(
           env, GetApplicationContext()))),
       package_version_name_(StrDupJString(Java_BuildInfo_getPackageVersionName(

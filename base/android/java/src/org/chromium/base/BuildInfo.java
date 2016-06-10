@@ -10,7 +10,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
-import android.util.Log;
 
 import org.chromium.base.annotations.CalledByNative;
 
@@ -64,6 +63,19 @@ public class BuildInfo {
     @CalledByNative
     public static String getDeviceModel() {
         return Build.MODEL;
+    }
+
+    @CalledByNative
+    public static String getGMSVersionCode(Context context) {
+        String msg = "gms versionCode not available.";
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo("com.google.android.gms", 0);
+            msg = Integer.toString(packageInfo.versionCode);
+        } catch (NameNotFoundException e) {
+            Log.d(TAG, "GMS package is not found: %s", e);
+        }
+        return msg;
     }
 
     @CalledByNative
