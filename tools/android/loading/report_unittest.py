@@ -169,8 +169,8 @@ class LoadingReportTestCase(unittest.TestCase):
         loading_report['contentful_predicted_no_state_prefetch_ms'])
     self.assertEqual(74,
         loading_report['significant_predicted_no_state_prefetch_ms'])
-    self.assertIsNone(loading_report['contentful_inversion'])
-    self.assertIsNone(loading_report['significant_inversion'])
+    self.assertEqual('', loading_report['contentful_inversion'])
+    self.assertEqual('', loading_report['significant_inversion'])
     self.assertIsNone(loading_report['ad_requests'])
     self.assertIsNone(loading_report['ad_or_tracking_requests'])
     self.assertIsNone(loading_report['ad_or_tracking_initiated_requests'])
@@ -200,7 +200,7 @@ class LoadingReportTestCase(unittest.TestCase):
     loading_report = report.LoadingReport(self._MakeTrace()).GenerateReport()
     self.assertEqual(self.requests[0].url,
                      loading_report['contentful_inversion'])
-    self.assertEqual(None, loading_report['significant_inversion'])
+    self.assertEqual('', loading_report['significant_inversion'])
 
   def testPltNoLoadEvents(self):
     trace = self._MakeTrace()

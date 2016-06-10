@@ -85,7 +85,7 @@ class PerUserLensReport(object):
     report['predicted_no_state_prefetch_ms'] = self._no_state_prefetch_ms
 
     # Take the first (earliest) inversion.
-    report['inversion'] = self._inversions[0].url if self._inversions else None
+    report['inversion'] = self._inversions[0].url if self._inversions else ''
 
     report.update(self._cpu_busyness)
     return report
@@ -212,10 +212,13 @@ class LoadingReport(object):
     total_loading_msec = 0
     num_blocking_requests = []
     for queue_info in queuing_info.itervalues():
-      total_blocked_msec += max(0, queue_info.ready_msec -
-                                queue_info.start_msec)
-      total_loading_msec += max(0, queue_info.end_msec -
-                                queue_info.start_msec)
+      try:
+        total_blocked_msec += max(0, queue_info.ready_msec -
+                                  queue_info.start_msec)
+        total_loading_msec += max(0, queue_info.end_msec -
+                                  queue_info.start_msec)
+      except TypeError:
+        pass  # Invalid queue info timings.
       num_blocking_requests.append(len(queue_info.blocking))
     if num_blocking_requests:
       num_blocking_requests.sort()
@@ -231,8 +234,8 @@ class LoadingReport(object):
       avg_blocking = 0
       median_blocking = 0
     return {
-        'total_queuing_blocked_msec': total_blocked_msec,
-        'total_queuing_load_msec': total_loading_msec,
+        'total_queuing_blocked_msec': int(total_blocked_msec),
+        'total_queuing_load_msec': int(total_loading_msec),
         'average_blocking_request_count': avg_blocking,
         'median_blocking_request_count': median_blocking,
     }
