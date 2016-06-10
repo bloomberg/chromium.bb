@@ -4020,13 +4020,13 @@ doOpcode:
       compileError (nested, "emphclass must be followed by a valid class name.");
       ok = 0;
       break;
-    case CTO_SingleLetterEmph:
-    case CTO_EmphWord:
-    case CTO_EmphWordStop:
-    case CTO_FirstLetterEmph:
-    case CTO_LastLetterEmph:
-    case CTO_FirstWordEmph:
-    case CTO_LastWordEmph:
+    case CTO_EmphLetter:
+    case CTO_BegEmphWord:
+    case CTO_EndEmphWord:
+    case CTO_BegEmph:
+    case CTO_EndEmph:
+    case CTO_BegEmphPhrase:
+    case CTO_EndEmphPhrase:
     case CTO_LenEmphPhrase:
       ok = 0;
       if (getToken(nested, &token, "emphasis class"))
@@ -4047,37 +4047,37 @@ doOpcode:
 		break;
 	      }
 		i++; // in table->emphRules the first index is used for caps
-		if (opcode == CTO_SingleLetterEmph) {
+		if (opcode == CTO_EmphLetter) {
 			ok = compileBrailleIndicator (nested, "single letter",
 				CTO_SingleLetterItalRule + singleLetterOffset + (8 * i),
 				&table->emphRules[i][singleLetterOffset]);
 		}
-		else if (opcode == CTO_EmphWord) {
+		else if (opcode == CTO_BegEmphWord) {
 			ok = compileBrailleIndicator (nested, "word",
 				CTO_SingleLetterItalRule + wordOffset + (8 * i),
 				&table->emphRules[i][wordOffset]);
 		}
-		else if (opcode == CTO_EmphWordStop) {
+		else if (opcode == CTO_EndEmphWord) {
 			ok = compileBrailleIndicator(nested, "word stop",
 				CTO_SingleLetterItalRule + wordStopOffset + (8 * i),
 				&table->emphRules[i][wordStopOffset]);
 		}
-		else if (opcode == CTO_FirstLetterEmph) {
+		else if (opcode == CTO_BegEmph) {
 			ok = compileBrailleIndicator (nested, "first letter",
 				CTO_SingleLetterItalRule + firstLetterOffset + (8 * i),
 				&table->emphRules[i][firstLetterOffset]);
 		}
-		else if (opcode == CTO_LastLetterEmph) {
+		else if (opcode == CTO_EndEmph) {
 			ok = compileBrailleIndicator (nested, "last letter",
 				CTO_SingleLetterItalRule + lastLetterOffset + (8 * i),
 				&table->emphRules[i][lastLetterOffset]);
 		}
-		else if (opcode == CTO_FirstWordEmph) {
+		else if (opcode == CTO_BegEmphPhrase) {
 			ok = compileBrailleIndicator (nested, "first word",
 				CTO_SingleLetterItalRule + firstWordOffset + (8 * i),
 				&table->emphRules[i][firstWordOffset]);
 		}
-		else if (opcode == CTO_LastWordEmph)
+		else if (opcode == CTO_EndEmphPhrase)
 			switch (compileBeforeAfter(nested)) {
 				case 1: // before
 					if (table->emphRules[i][lastWordAfterOffset]) {
