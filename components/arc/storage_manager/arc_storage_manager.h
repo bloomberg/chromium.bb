@@ -36,10 +36,7 @@ class ArcStorageManager : public ArcService,
 
   // Gets storage usage of all application's APK, data, and cache size.
   using GetApplicationsSizeCallback = base::Callback<
-      void(bool succeeded,
-           uint64_t total_code_bytes,
-           uint64_t total_data_bytes,
-           uint64_t total_cache_bytes)>;
+      void(bool succeeded, arc::mojom::ApplicationsSizePtr)>;
   bool GetApplicationsSize(const GetApplicationsSizeCallback& callback);
 
  private:
