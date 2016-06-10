@@ -7,4 +7,5 @@
 ] interface CustomElementsRegistry {
     [CallWith=ScriptState, CEReactions, CustomElementCallbacks, RaisesException] void define(DOMString name, Function constructor, optional ElementRegistrationOptions options);
     any get(DOMString name);
+    [CallWith=ScriptState,RaisesException] Promise<void> whenDefined(DOMString name);
 };

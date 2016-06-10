@@ -6,6 +6,7 @@
 #define CustomElementsRegistry_h
 
 #include "base/gtest_prod_util.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -23,6 +24,7 @@ class Document;
 class Element;
 class ElementRegistrationOptions;
 class ExceptionState;
+class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
 class V0CustomElementRegistrationContext;
@@ -57,6 +59,10 @@ public:
     // TODO(dominicc): Consider broadening this API when type extensions are
     // implemented.
     void addCandidate(Element*);
+    ScriptPromise whenDefined(
+        ScriptState*,
+        const AtomicString& name,
+        ExceptionState&);
 
     DECLARE_TRACE();
 
@@ -86,6 +92,10 @@ private:
         AtomicString,
         Member<UpgradeCandidateSet>>;
     Member<UpgradeCandidateMap> m_upgradeCandidates;
+
+    using WhenDefinedPromiseMap =
+        HeapHashMap<AtomicString, Member<ScriptPromiseResolver>>;
+    WhenDefinedPromiseMap m_whenDefinedPromiseMap;
 };
 
 } // namespace blink

@@ -6,6 +6,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCustomElementDefinitionBuilder.h"
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRegistrationOptions.h"
@@ -21,6 +23,20 @@
 #include "wtf/Allocator.h"
 
 namespace blink {
+
+// Returns true if |name| is invalid.
+static bool throwIfInvalidName(
+    const AtomicString& name,
+    ExceptionState& exceptionState)
+{
+    if (CustomElement::isValidName(name))
+        return false;
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "\"" + name + "\" is not a valid custom element name");
+    return true;
+}
+
 
 class CustomElementsRegistry::NameIsBeingDefined final {
     STACK_ALLOCATED();
@@ -66,6 +82,7 @@ DEFINE_TRACE(CustomElementsRegistry)
     visitor->trace(m_definitions);
     visitor->trace(m_document);
     visitor->trace(m_upgradeCandidates);
+    visitor->trace(m_whenDefinedPromiseMap);
 }
 
 void CustomElementsRegistry::define(
@@ -93,12 +110,8 @@ void CustomElementsRegistry::define(
     if (!builder.checkConstructorIntrinsics())
         return;
 
-    if (!CustomElement::isValidName(name)) {
-        exceptionState.throwDOMException(
-            SyntaxError,
-            "\"" + name + "\" is not a valid custom element name");
+    if (throwIfInvalidName(name, exceptionState))
         return;
-    }
 
     if (m_namesBeingDefined.contains(name)) {
         exceptionState.throwDOMException(
@@ -156,8 +169,12 @@ void CustomElementsRegistry::define(
     for (Element* candidate : candidates)
         CustomElement::enqueueUpgradeReaction(candidate, definition);
 
-    // TODO(dominicc): Implement steps:
-    // 20: when-defined promise processing
+    // 19: when-defined promise processing
+    const auto& entry = m_whenDefinedPromiseMap.find(name);
+    if (entry == m_whenDefinedPromiseMap.end())
+        return;
+    entry->value->resolve();
+    m_whenDefinedPromiseMap.remove(entry);
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-get
@@ -210,6 +227,26 @@ void CustomElementsRegistry::addCandidate(Element* candidate)
             ->value;
     }
     set->add(candidate);
+}
+
+// https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
+ScriptPromise CustomElementsRegistry::whenDefined(
+    ScriptState* scriptState,
+    const AtomicString& name,
+    ExceptionState& exceptionState)
+{
+    if (throwIfInvalidName(name, exceptionState))
+        return ScriptPromise();
+    CustomElementDefinition* definition = definitionForName(name);
+    if (definition)
+        return ScriptPromise::castUndefined(scriptState);
+    ScriptPromiseResolver* resolver = m_whenDefinedPromiseMap.get(name);
+    if (resolver)
+        return resolver->promise();
+    ScriptPromiseResolver* newResolver =
+        ScriptPromiseResolver::create(scriptState);
+    m_whenDefinedPromiseMap.add(name, newResolver);
+    return newResolver->promise();
 }
 
 void CustomElementsRegistry::collectCandidates(

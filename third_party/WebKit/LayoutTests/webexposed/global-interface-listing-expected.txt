@@ -861,6 +861,7 @@ interface CustomElementsRegistry
     method constructor
     method define
     method get
+    method whenDefined
 interface CustomEvent : Event
     attribute @@toStringTag
     getter detail
