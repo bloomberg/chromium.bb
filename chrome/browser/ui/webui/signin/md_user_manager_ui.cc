@@ -96,8 +96,6 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
                           IDR_MD_USER_MANAGER_PAGES_HTML);
   source->AddResourcePath("user_manager_pages.js",
                           IDR_MD_USER_MANAGER_PAGES_JS);
-  source->AddResourcePath("user_manager_styles.html",
-                          IDR_MD_USER_MANAGER_STYLES_HTML);
   source->AddResourcePath("user_manager_tutorial.html",
                           IDR_MD_USER_MANAGER_TUTORIAL_HTML);
   source->AddResourcePath("user_manager_tutorial.js",

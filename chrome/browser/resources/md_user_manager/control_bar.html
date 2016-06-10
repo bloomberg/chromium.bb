@@ -1,13 +1,13 @@
-<link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
-<link rel="import" href="chrome://md-user-manager/shared_styles.html">
+<link rel="import" href="/profile_browser_proxy.html">
+<link rel="import" href="/shared_styles.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="control-bar">
   <template>
-    <style include="shared-styles">
+    <style include="shared-styles iron-flex iron-flex-alignment">
       #container {
         -webkit-padding-end: 8px;
         -webkit-padding-start: 24px;
@@ -19,14 +19,10 @@
 
       #logo {
         -webkit-margin-end: auto;
-        content: -webkit-image-set(
-            url(../../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo_name_22.png) 1x,
-            url(../../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo_name_22.png) 2x);
-        height: 22px;
       }
     </style>
     <div id="container" class="layout horizontal end-justified">
-      <div id="logo" alt=""></div>
+      <div id="logo" class="product-logo" alt=""></div>
       <paper-button id="launchGuest" class="action secondary"
           on-tap="onLaunchGuestTap_"
           i18n-content="browseAsGuest" hidden="[[!showGuest]]"></paper-button>
@@ -34,5 +30,5 @@
           i18n-content="addUser" hidden="[[!showAddPerson]]"></paper-button>
     </div>
   </template>
-  <script src="chrome://md-user-manager/control_bar.js"></script>
+  <script src="control_bar.js"></script>
 </dom-module>

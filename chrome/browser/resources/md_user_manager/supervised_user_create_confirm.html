@@ -1,14 +1,14 @@
-<link rel="import" href="chrome://md-user-manager/icons.html">
-<link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
-<link rel="import" href="chrome://md-user-manager/shared_styles.html">
+<link rel="import" href="/icons.html">
+<link rel="import" href="/profile_browser_proxy.html">
+<link rel="import" href="/shared_styles.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/util.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="supervised-user-create-confirm">
   <template>
-    <style include="shared-styles">
+    <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         align-self: center;
       }
@@ -67,5 +67,5 @@
       </div>
     </div>
   </template>
-  <script src="chrome://md-user-manager/supervised_user_create_confirm.js"></script>
+  <script src="supervised_user_create_confirm.js"></script>
 </dom-module>

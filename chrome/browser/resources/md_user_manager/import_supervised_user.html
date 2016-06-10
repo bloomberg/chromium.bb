@@ -1,15 +1,15 @@
-<link rel="import" href="chrome://md-user-manager/shared_styles.html">
-<link rel="import" href="chrome://md-user-manager/user_manager_dialog.html">
+<link rel="import" href="/shared_styles.html">
+<link rel="import" href="/user_manager_dialog.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 
 <dom-module id="import-supervised-user">
   <template>
-    <style include="shared-styles">
+    <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         --item-height: 52px;
         --items-container-max-height: calc(var(--item-height) * 4);
@@ -93,5 +93,5 @@
       </div>
     </user-manager-dialog>
   </template>
-  <script src="chrome://md-user-manager/import_supervised_user.js"></script>
+  <script src="import_supervised_user.js"></script>
 </dom-module>
