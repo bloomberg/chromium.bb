@@ -788,7 +788,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   pending_layer()->AddChild(std::move(pending_child));
 
   FakePictureLayerImpl* pending_child_layer =
-      static_cast<FakePictureLayerImpl*>(pending_layer()->children()[0]);
+      static_cast<FakePictureLayerImpl*>(
+          pending_layer()->test_properties()->children[0]);
   pending_child_layer->SetDrawsContent(true);
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));

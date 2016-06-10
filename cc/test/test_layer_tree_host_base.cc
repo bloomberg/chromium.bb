@@ -120,7 +120,9 @@ void TestLayerTreeHostBase::SetupPendingTree(
     pending_tree->SetRootLayer(std::move(new_pending_root));
   } else {
     pending_layer.reset(static_cast<FakePictureLayerImpl*>(
-        pending_root->RemoveChildForTesting(pending_root->children()[0])
+        pending_root
+            ->RemoveChildForTesting(
+                pending_root->test_properties()->children[0])
             .release()));
     if (!tile_size.IsEmpty())
       pending_layer->set_fixed_tile_size(tile_size);

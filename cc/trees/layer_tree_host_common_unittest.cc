@@ -3713,8 +3713,12 @@ TEST_F(LayerTreeHostCommonTest,
   bool update_lcd_text = false;
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 
-  LayerImpl* grand_child_ptr =
-      host_impl.active_tree()->root_layer()->children()[0]->children()[0];
+  LayerImpl* grand_child_ptr = host_impl.active_tree()
+                                   ->root_layer()
+                                   ->test_properties()
+                                   ->children[0]
+                                   ->test_properties()
+                                   ->children[0];
 
   // Though all layers have invertible transforms, matrix multiplication using
   // floating-point math makes the draw transform uninvertible.
@@ -8059,7 +8063,7 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
 
   root->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
 
-  LayerImpl* sublayer = root->child_at(0);
+  LayerImpl* sublayer = root->test_properties()->children[0];
   SetLayerPropertiesForTesting(sublayer,
                                identity_matrix,
                                gfx::Point3F(),

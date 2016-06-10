@@ -205,8 +205,8 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
 
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
 
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
   gfx::Rect child_damage_rect =
       child1->render_surface()->damage_tracker()->current_damage_rect();
   gfx::Rect root_damage_rect =
@@ -226,7 +226,7 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   // CASE 1: Setting the update rect should cause the corresponding damage to
   //         the surface.
@@ -269,7 +269,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   // CASE 1: Adding the layer damage rect should cause the corresponding damage
   // to the surface.
@@ -325,7 +325,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   // CASE 1: Adding the layer damage rect and update rect should cause the
   // corresponding damage to the surface.
@@ -370,7 +370,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   // CASE 1: The layer's property changed flag takes priority over update rect.
   //
@@ -419,8 +419,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
 
 TEST_F(DamageTrackerTest, VerifyDamageWhenSurfaceRemoved) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* surface = root->children()[0];
-  LayerImpl* child = surface->children()[0];
+  LayerImpl* surface = root->test_properties()->children[0];
+  LayerImpl* child = surface->test_properties()->children[0];
   child->SetDrawsContent(true);
   EmulateDrawingOneFrame(root);
   ClearDamageForAllSurfaces(root);
@@ -440,7 +440,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   // transformed layer.
 
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
   child->test_properties()->force_render_surface = true;
 
   gfx::Transform rotation;
@@ -493,7 +493,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
   //
 
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   gfx::Transform transform;
   transform.Translate3d(500.0, 500.0, 0.0);
@@ -534,8 +534,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* surface = root->children()[0];
-  LayerImpl* child = surface->children()[0];
+  LayerImpl* surface = root->test_properties()->children[0];
+  LayerImpl* child = surface->test_properties()->children[0];
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(5.f));
@@ -570,7 +570,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
   gfx::Rect root_damage_rect, child_damage_rect;
 
   // Allow us to set damage on child too.
@@ -624,7 +624,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
   gfx::Rect root_damage_rect, child_damage_rect;
 
   // Allow us to set damage on child too.
@@ -684,8 +684,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
 
   // Allow us to set damage on child1 too.
   child1->SetDrawsContent(true);
@@ -816,7 +816,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child1 = root->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
 
   // CASE 1: Adding a new layer should cause the appropriate damage.
   //
@@ -902,7 +902,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child1 = root->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
 
   // In this test we don't want the above tree manipulation to be considered
   // part of the same frame.
@@ -915,7 +915,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
     child2->SetDrawsContent(true);
     root->AddChild(std::move(child2));
   }
-  LayerImpl* child2 = root->children()[1];
+  LayerImpl* child2 = root->test_properties()->children[1];
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
@@ -935,9 +935,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
-  LayerImpl* grand_child1 = root->children()[0]->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
+  LayerImpl* grand_child1 =
+      root->test_properties()->children[0]->test_properties()->children[0];
   child2->test_properties()->force_render_surface = true;
   grand_child1->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -985,8 +986,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantLayer) {
   // entire surface should be marked dirty.
 
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* grand_child1 = root->children()[0]->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grand_child1 =
+      root->test_properties()->children[0]->test_properties()->children[0];
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
@@ -1024,9 +1026,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   // transforming it, while the root surface would be damaged appropriately.
 
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* grand_child1 = child1->children()[0];
-  LayerImpl* grand_child2 = child1->children()[1];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grand_child1 = child1->test_properties()->children[0];
+  LayerImpl* grand_child2 = child1->test_properties()->children[1];
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
@@ -1056,7 +1058,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
@@ -1112,7 +1114,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
 
 TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
@@ -1144,7 +1146,7 @@ TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
 
 TEST_F(DamageTrackerTest, VerifyNoDamageForUpdateRectThatDoesNotDrawContent) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
@@ -1164,9 +1166,9 @@ TEST_F(DamageTrackerTest, VerifyNoDamageForUpdateRectThatDoesNotDrawContent) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* grand_child1 = child1->children()[0];
-  LayerImpl* grand_child2 = child1->children()[1];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grand_child1 = child1->test_properties()->children[0];
+  LayerImpl* grand_child2 = child1->test_properties()->children[1];
 
   // Damage on a surface that has a reflection should cause the target surface
   // to receive the surface's damage and the surface's reflected damage.
@@ -1275,7 +1277,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   // In the current implementation of the damage tracker, changes to mask
   // layers should damage the entire corresponding surface.
@@ -1368,8 +1370,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* grand_child1 = child1->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grand_child1 = child1->test_properties()->children[0];
 
   // Changes to a replica's mask should not damage the original surface,
   // because it is not masked. But it does damage the ancestor target surface.
@@ -1440,8 +1442,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
 
 TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* grand_child1 = child1->children()[0];
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grand_child1 = child1->test_properties()->children[0];
 
   // Verify that the correct replica_origin_transform is used for the
   // replica_mask.
@@ -1503,7 +1505,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
 
 TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   // Case 1: This test ensures that when the tracker is given damage, that
   //         it is included with any other partial damage.
@@ -1561,7 +1563,7 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
   // If damage is not cleared, it should accumulate.
 
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
-  LayerImpl* child = root->children()[0];
+  LayerImpl* child = root->test_properties()->children[0];
 
   ClearDamageForAllSurfaces(root);
   child->SetUpdateRect(gfx::Rect(10.f, 11.f, 1.f, 2.f));
@@ -1608,7 +1610,7 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
 
   for (int i = 0; i < kRange; ++i) {
     LayerImpl* root = CreateTestTreeWithOneSurface();
-    LayerImpl* child = root->children()[0];
+    LayerImpl* child = root->test_properties()->children[0];
 
     gfx::Transform transform;
     transform.Translate(-kBigNumber, -kBigNumber);

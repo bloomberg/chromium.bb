@@ -140,8 +140,8 @@ static void PreCalculateMetaInformationInternalForTesting(
   if (layer->test_properties()->clip_parent)
     recursive_data->num_unclipped_descendants++;
 
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    LayerImpl* child_layer = layer->child_at(i);
+  for (size_t i = 0; i < layer->test_properties()->children.size(); ++i) {
+    LayerImpl* child_layer = layer->test_properties()->children[i];
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformationInternalForTesting(child_layer, &data_for_child);
@@ -163,6 +163,22 @@ static void PreCalculateMetaInformationInternalForTesting(
 
   if (layer->DrawsContent())
     recursive_data->num_descendants_that_draw_content++;
+}
+
+static LayerImplList& Children(LayerImpl* layer) {
+  return layer->test_properties()->children;
+}
+
+static const LayerList& Children(Layer* layer) {
+  return layer->children();
+}
+
+static LayerImpl* ChildAt(LayerImpl* layer, int index) {
+  return layer->test_properties()->children[index];
+}
+
+static Layer* ChildAt(Layer* layer, int index) {
+  return layer->child_at(index);
 }
 
 static Layer* ScrollParent(Layer* layer) {
@@ -1082,18 +1098,18 @@ void BuildPropertyTreesInternal(
   SetBackfaceVisibilityTransform(layer, created_transform_node);
   SetSafeOpaqueBackgroundColor(data_from_parent, layer, &data_for_children);
 
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    SetLayerPropertyChangedForChild(layer, layer->child_at(i));
-    if (!ScrollParent(layer->child_at(i))) {
+  for (size_t i = 0; i < Children(layer).size(); ++i) {
+    LayerType* current_child = ChildAt(layer, i);
+    SetLayerPropertyChangedForChild(layer, current_child);
+    if (!ScrollParent(current_child)) {
       DataForRecursionFromChild<LayerType> data_from_child;
-      BuildPropertyTreesInternal(layer->child_at(i), data_for_children,
+      BuildPropertyTreesInternal(current_child, data_for_children,
                                  &data_from_child);
       data_to_parent->Merge(data_from_child);
     } else {
       // The child should be included in its scroll parent's list of scroll
       // children.
-      DCHECK(ScrollChildren(ScrollParent(layer->child_at(i)))
-                 ->count(layer->child_at(i)));
+      DCHECK(ScrollChildren(ScrollParent(current_child))->count(current_child));
     }
   }
 

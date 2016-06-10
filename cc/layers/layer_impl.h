@@ -103,8 +103,6 @@ class CC_EXPORT LayerImpl {
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
-  LayerImplList& children() { return children_; }
-  LayerImpl* child_at(size_t index) const { return children_[index]; }
   void AddChild(std::unique_ptr<LayerImpl> child);
   std::unique_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
   void SetParent(LayerImpl* parent);
@@ -423,7 +421,7 @@ class CC_EXPORT LayerImpl {
   void AddDamageRect(const gfx::Rect& damage_rect);
   const gfx::Rect& damage_rect() const { return damage_rect_; }
 
-  virtual std::unique_ptr<base::DictionaryValue> LayerTreeAsJson() const;
+  virtual std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
 
   bool LayerPropertyChanged() const;
 
@@ -538,7 +536,6 @@ class CC_EXPORT LayerImpl {
 
   // Properties internal to LayerImpl
   LayerImpl* parent_;
-  LayerImplList children_;
 
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one

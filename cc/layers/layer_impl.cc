@@ -109,20 +109,20 @@ LayerImpl::~LayerImpl() {
     DCHECK(!layer_tree_impl_->RemoveLayer(mask_layer_id_));
   if (replica_layer_)
     DCHECK(!layer_tree_impl_->RemoveLayer(replica_layer_id_));
-  children_.clear();
 }
 
 void LayerImpl::AddChild(std::unique_ptr<LayerImpl> child) {
   child->SetParent(this);
   DCHECK_EQ(layer_tree_impl(), child->layer_tree_impl());
-  children_.push_back(child.get());
+  test_properties()->children.push_back(child.get());
   layer_tree_impl_->AddLayer(std::move(child));
 }
 
 std::unique_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
-  auto it = std::find(children_.begin(), children_.end(), child);
-  if (it != children_.end())
-    children_.erase(it);
+  auto it = std::find(test_properties()->children.begin(),
+                      test_properties()->children.end(), child);
+  if (it != test_properties()->children.end())
+    test_properties()->children.erase(it);
   layer_tree_impl()->property_trees()->RemoveIdFromIdToIndexMaps(child->id());
   return layer_tree_impl_->RemoveLayer(child->id());
 }
@@ -132,7 +132,6 @@ void LayerImpl::SetParent(LayerImpl* parent) {
 }
 
 void LayerImpl::ClearLinksToOtherLayers() {
-  children_.clear();
   mask_layer_ = nullptr;
   replica_layer_ = nullptr;
 }
@@ -433,7 +432,7 @@ gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   return scroll_clip_layer->bounds_delta();
 }
 
-std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() const {
+std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetInteger("LayerId", id());
   result->SetString("LayerType", LayerTypeAsString());
@@ -470,8 +469,8 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() const {
   }
 
   list = new base::ListValue;
-  for (size_t i = 0; i < children_.size(); ++i)
-    list->Append(children_[i]->LayerTreeAsJson());
+  for (size_t i = 0; i < test_properties()->children.size(); ++i)
+    list->Append(test_properties()->children[i]->LayerTreeAsJson());
   result->Set("Children", list);
 
   return result;

@@ -89,9 +89,9 @@ void FakeLayerTreeHostImpl::AdvanceToNextFrame(base::TimeDelta advance_by) {
 
 int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
   int num_children_that_draw_content = 0;
-  for (size_t i = 0; i < layer->children().size(); ++i) {
+  for (size_t i = 0; i < layer->test_properties()->children.size(); ++i) {
     num_children_that_draw_content +=
-        RecursiveUpdateNumChildren(layer->children()[i]);
+        RecursiveUpdateNumChildren(layer->test_properties()->children[i]);
   }
   layer->test_properties()->num_descendants_that_draw_content =
       num_children_that_draw_content;

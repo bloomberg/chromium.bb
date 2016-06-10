@@ -99,8 +99,11 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   impl.host_impl()->active_tree()->UpdateDrawProperties(false);
 
-  LayerImpl* surface_raw =
-      impl.host_impl()->active_tree()->root_layer()->children()[0];
+  LayerImpl* surface_raw = impl.host_impl()
+                               ->active_tree()
+                               ->root_layer()
+                               ->test_properties()
+                               ->children[0];
   RenderSurfaceImpl* render_surface_impl = surface_raw->render_surface();
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;

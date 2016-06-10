@@ -32,12 +32,12 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_(CreateTwoForkTree(&host_impl_)),
-        parent1_(root_->children()[0]),
-        parent2_(root_->children()[1]),
-        child1_(parent1_->children()[0]),
-        child2_(parent2_->children()[0]),
-        grand_child_(child2_->children()[0]),
-        great_grand_child_(grand_child_->children()[0]) {
+        parent1_(root_->test_properties()->children[0]),
+        parent2_(root_->test_properties()->children[1]),
+        child1_(parent1_->test_properties()->children[0]),
+        child2_(parent2_->test_properties()->children[0]),
+        grand_child_(child2_->test_properties()->children[0]),
+        great_grand_child_(grand_child_->test_properties()->children[0]) {
     timeline_ =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
     host_impl_.animation_host()->AddAnimationTimeline(timeline_);
@@ -60,15 +60,23 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
         LayerImpl::Create(host_impl->active_tree(), 1);
     LayerImpl* root_ptr = root.get();
     root->AddChild(LayerImpl::Create(host_impl->active_tree(), 2));
-    root->children()[0]->AddChild(
+    root->test_properties()->children[0]->AddChild(
         LayerImpl::Create(host_impl->active_tree(), 3));
     root->AddChild(LayerImpl::Create(host_impl->active_tree(), 4));
-    root->children()[1]->AddChild(
+    root->test_properties()->children[1]->AddChild(
         LayerImpl::Create(host_impl->active_tree(), 5));
-    root->children()[1]->children()[0]->AddChild(
-        LayerImpl::Create(host_impl->active_tree(), 6));
-    root->children()[1]->children()[0]->children()[0]->AddChild(
-        LayerImpl::Create(host_impl->active_tree(), 7));
+    root->test_properties()
+        ->children[1]
+        ->test_properties()
+        ->children[0]
+        ->AddChild(LayerImpl::Create(host_impl->active_tree(), 6));
+    root->test_properties()
+        ->children[1]
+        ->test_properties()
+        ->children[0]
+        ->test_properties()
+        ->children[0]
+        ->AddChild(LayerImpl::Create(host_impl->active_tree(), 7));
     host_impl->active_tree()->SetRootLayer(std::move(root));
     return root_ptr;
   }

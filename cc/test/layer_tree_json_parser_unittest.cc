@@ -28,8 +28,9 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
       return false; \
   } while (0)
 
-  RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->children().size(),
-                                        layer->children().size()));
+  RETURN_IF_EXPECTATION_FAILS(
+      EXPECT_EQ(layer_impl->test_properties()->children.size(),
+                layer->children().size()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->bounds(), layer->bounds()));
   RETURN_IF_EXPECTATION_FAILS(
       EXPECT_EQ(layer_impl->position(), layer->position()));
@@ -45,9 +46,10 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
       EXPECT_EQ(layer_impl->touch_event_handler_region(),
                 layer->touch_event_handler_region()));
 
-  for (size_t i = 0; i < layer_impl->children().size(); ++i) {
-    RETURN_IF_EXPECTATION_FAILS(EXPECT_TRUE(LayerTreesMatch(
-        layer_impl->children()[i], layer->children()[i].get())));
+  for (size_t i = 0; i < layer_impl->test_properties()->children.size(); ++i) {
+    RETURN_IF_EXPECTATION_FAILS(
+        EXPECT_TRUE(LayerTreesMatch(layer_impl->test_properties()->children[i],
+                                    layer->children()[i].get())));
   }
 
   return true;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "ui/gfx/geometry/point3_f.h"
 
@@ -37,6 +38,7 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerImpl* clip_parent;
   std::unique_ptr<std::set<LayerImpl*>> clip_children;
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
+  LayerImplList children;
 };
 
 }  // namespace cc

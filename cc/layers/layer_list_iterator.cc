@@ -16,6 +16,22 @@ LayerListIterator<LayerType>::LayerListIterator(LayerType* root_layer)
   list_indices_.push_back(0);
 }
 
+static LayerImplList& Children(LayerImpl* layer) {
+  return layer->test_properties()->children;
+}
+
+static const LayerList& Children(Layer* layer) {
+  return layer->children();
+}
+
+static LayerImpl* ChildAt(LayerImpl* layer, int index) {
+  return layer->test_properties()->children[index];
+}
+
+static Layer* ChildAt(Layer* layer, int index) {
+  return layer->child_at(index);
+}
+
 template <typename LayerType>
 LayerListIterator<LayerType>::LayerListIterator(
     const LayerListIterator<LayerType>& other) = default;
@@ -30,8 +46,8 @@ LayerListIterator<LayerType>& LayerListIterator<LayerType>::operator++() {
     return *this;
 
   // case 1: descend.
-  if (!current_layer_->children().empty()) {
-    current_layer_ = current_layer_->child_at(0);
+  if (!Children(current_layer_).empty()) {
+    current_layer_ = ChildAt(current_layer_, 0);
     list_indices_.push_back(0);
     return *this;
   }
@@ -40,9 +56,9 @@ LayerListIterator<LayerType>& LayerListIterator<LayerType>::operator++() {
        parent = parent->parent()) {
     // We now try and advance in some list of siblings.
     // case 2: Advance to a sibling.
-    if (list_indices_.back() + 1 < parent->children().size()) {
+    if (list_indices_.back() + 1 < Children(parent).size()) {
       ++list_indices_.back();
-      current_layer_ = parent->child_at(list_indices_.back());
+      current_layer_ = ChildAt(parent, list_indices_.back());
       return *this;
     }
 
@@ -84,7 +100,7 @@ operator++() {
   CHECK(current_layer()->parent());
   --list_indices().back();
   this->current_layer_ =
-      current_layer()->parent()->child_at(list_indices().back());
+      ChildAt(current_layer()->parent(), list_indices().back());
   DescendToRightmostInSubtree();
   return *this;
 }
@@ -94,11 +110,11 @@ void LayerListReverseIterator<LayerType>::DescendToRightmostInSubtree() {
   if (!current_layer())
     return;
 
-  if (current_layer()->children().empty())
+  if (Children(current_layer()).empty())
     return;
 
-  size_t last_index = current_layer()->children().size() - 1;
-  this->current_layer_ = current_layer()->child_at(last_index);
+  size_t last_index = Children(current_layer()).size() - 1;
+  this->current_layer_ = ChildAt(current_layer(), last_index);
   list_indices().push_back(last_index);
   DescendToRightmostInSubtree();
 }
