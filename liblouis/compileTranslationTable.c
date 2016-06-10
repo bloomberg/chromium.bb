@@ -4063,11 +4063,22 @@ doOpcode:
 				&table->emphRules[i][wordStopOffset]);
 		}
 		else if (opcode == CTO_FirstLetterEmph) {
+		  /* fail if both begemph and any of begemphphrase or begemphword are defined */
+		  if (table->emphRules[i][wordOffset] || table->emphRules[i][firstWordOffset]) {
+		    compileError (nested, "Cannot define emphasis for both no context and word or phrase context, i.e. cannot have both begemph and begemphword or begemphphrase.");
+		    ok = 0;
+		    break;
+		  }
 			ok = compileBrailleIndicator (nested, "first letter",
 				CTO_SingleLetterItalRule + firstLetterOffset + (8 * i),
 				&table->emphRules[i][firstLetterOffset]);
 		}
 		else if (opcode == CTO_LastLetterEmph) {
+		  if (table->emphRules[i][wordStopOffset] || table->emphRules[i][lastWordBeforeOffset] || table->emphRules[i][lastWordAfterOffset]) {
+		    compileError (nested, "Cannot define emphasis for both no context and word or phrase context, i.e. cannot have both endemph and endemphword or endemphphrase.");
+		    ok = 0;
+		    break;
+		  }
 			ok = compileBrailleIndicator (nested, "last letter",
 				CTO_SingleLetterItalRule + lastLetterOffset + (8 * i),
 				&table->emphRules[i][lastLetterOffset]);
