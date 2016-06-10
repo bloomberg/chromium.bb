@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -69,13 +70,50 @@ class MdFeedbackDialogDelegate : public ui::WebDialogDelegate {
 
 }  // namespace
 
+namespace {
+
+content::WebUIDataSource* CreateMdFeedbackUIHTMLSource(Profile* profile) {
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::Create(chrome::kChromeUIFeedbackHost);
+
+  // General strings.
+  html_source->AddLocalizedString("headingText",
+                                  IDS_MD_FEEDBACK_HEADING);
+
+  // Input labels.
+  html_source->AddLocalizedString("emailLabel",
+                                  IDS_MD_FEEDBACK_USER_EMAIL_LABEL);
+  html_source->AddLocalizedString("openEndedLabel",
+                                  IDS_MD_FEEDBACK_OPEN_ENDED_LABEL);
+  html_source->AddLocalizedString("urlLabel",
+                                  IDS_MD_FEEDBACK_URL_LABEL);
+
+  // Buttons.
+  html_source->AddLocalizedString("cancelButton",
+                                  IDS_MD_FEEDBACK_CANCEL_BUTTON);
+  html_source->AddLocalizedString("sendReportButton",
+                                  IDS_MD_FEEDBACK_SEND_REPORT_BUTTON);
+
+  // Polymer resources.
+  html_source->AddResourcePath("feedback_container.html",
+        IDR_MD_FEEDBACK_FEEDBACK_CONTAINER_HTML);
+  html_source->AddResourcePath("feedback_container.js",
+        IDR_MD_FEEDBACK_FEEDBACK_CONTAINER_JS);
+
+  html_source->SetJsonPath("strings.js");
+  html_source->SetDefaultResource(IDR_MD_FEEDBACK_FEEDBACK_HTML);
+  return html_source;
+}
+
+}  // namespace
+
 MdFeedbackUI::MdFeedbackUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Set up the chrome://feedback data html_source.
+  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUIFeedbackHost);
-  html_source->SetDefaultResource(IDR_MD_FEEDBACK_FEEDBACK_HTML);
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+      CreateMdFeedbackUIHTMLSource(profile);
+  content::WebUIDataSource::Add(profile, html_source);
 }
 
 MdFeedbackUI::~MdFeedbackUI() {}
