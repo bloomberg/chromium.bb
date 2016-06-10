@@ -70,7 +70,6 @@ class WebrtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
   base::Lock lock_;
   bool key_frame_request_ = false;
   uint32_t target_bitrate_kbps_;
-  int last_quantizer_;
 
   bool received_first_frame_request_ = false;
 

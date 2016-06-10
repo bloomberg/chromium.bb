@@ -44,6 +44,9 @@ const int kVp9AqModeCyclicRefresh = 3;
 
 const int kDefaultTargetBitrateKbps = 1000;
 
+// Target quantizer at which stop the encoding top-off.
+const int kTargetQuantizerForVp8TopOff = 30;
+
 void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
                               const webrtc::DesktopSize& size) {
   // Use millisecond granularity time base.
@@ -296,10 +299,9 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
-  // VP8: Encode top-off is controlled at the call site.
-  // VP9: Based on information fetching active map, we return here if there is
+  // Based on information fetching active map, we return here if there is
   // nothing to top-off.
-  if (use_vp9_ && frame.updated_region().is_empty() && !encode_unchanged_frame_)
+  if (frame.updated_region().is_empty() && !encode_unchanged_frame_)
     return nullptr;
 
   // Create or reconfigure the codec to match the size of |frame|.
@@ -340,15 +342,24 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
       << "Details: " << vpx_codec_error(codec_.get()) << "\n"
       << vpx_codec_error_detail(codec_.get());
 
-  if (use_vp9_ && !lossless_encode_) {
-    ret = vpx_codec_control(codec_.get(), VP9E_GET_ACTIVEMAP, &act_map);
-    DCHECK_EQ(ret, VPX_CODEC_OK)
-        << "Failed to fetch active map: " << vpx_codec_err_to_string(ret)
-        << "\n";
-    UpdateRegionFromActiveMap(&updated_region);
+  if (!lossless_encode_) {
+    // VP8 doesn't return active map, so we assume it's the same on the output
+    // as on the input.
+    if (use_vp9_) {
+      ret = vpx_codec_control(codec_.get(), VP9E_GET_ACTIVEMAP, &act_map);
+      DCHECK_EQ(ret, VPX_CODEC_OK)
+          << "Failed to fetch active map: " << vpx_codec_err_to_string(ret)
+          << "\n";
 
-    // If the encoder output no changes then there's nothing left to top-off.
-    encode_unchanged_frame_ = !updated_region.is_empty();
+      // If the encoder output no changes then there's nothing left to top-off.
+      encode_unchanged_frame_ = !updated_region.is_empty();
+    } else {
+      // Always set |encode_unchanged_frame_| when using VP8. It will be reset
+      // below once the target quantizer value is reached.
+      encode_unchanged_frame_ = true;
+    }
+
+    UpdateRegionFromActiveMap(&updated_region);
   }
 
   // Read the encoded data.
@@ -367,17 +378,20 @@ std::unique_ptr<VideoPacket> WebrtcVideoEncoderVpx::Encode(
     if (!vpx_packet)
       continue;
 
-    int quantizer = -1;
     switch (vpx_packet->kind) {
-      case VPX_CODEC_CX_FRAME_PKT:
+      case VPX_CODEC_CX_FRAME_PKT: {
         got_data = true;
         packet->set_data(vpx_packet->data.frame.buf, vpx_packet->data.frame.sz);
         packet->set_key_frame(vpx_packet->data.frame.flags & VPX_FRAME_IS_KEY);
+        int quantizer = -1;
         CHECK_EQ(vpx_codec_control(codec_.get(), VP8E_GET_LAST_QUANTIZER_64,
                                    &quantizer),
                  VPX_CODEC_OK);
-        packet->set_quantizer(quantizer);
+        // VP8: Stop top-off as soon as the target quantizer value is reached.
+        if (!use_vp9_ && quantizer <= kTargetQuantizerForVp8TopOff)
+          encode_unchanged_frame_ = false;
         break;
+      }
       default:
         break;
     }

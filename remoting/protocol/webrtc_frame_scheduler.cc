@@ -19,12 +19,6 @@ namespace protocol {
 
 namespace {
 
-// Target quantizer at which stop the encoding top-off.
-const int kTargetQuantizerForTopOff = 30;
-
-// Max Quantizer value.
-const int kMaxQuantizer = 63;
-
 // Default target bitrate in kbps
 const int kDefaultTargetBitrateKbps = 1000;
 
@@ -40,7 +34,6 @@ WebrtcFrameScheduler::WebrtcFrameScheduler(
     WebrtcTransport* webrtc_transport,
     std::unique_ptr<VideoEncoder> encoder)
     : target_bitrate_kbps_(kDefaultTargetBitrateKbps),
-      last_quantizer_(kMaxQuantizer),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encode_task_runner_(encode_task_runner),
       capturer_(std::move(capturer)),
@@ -141,12 +134,6 @@ void WebrtcFrameScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
     return;
   }
 
-  // If unchanged and does not need top-off, return.
-  if (!frame || (frame->updated_region().is_empty() &&
-                 last_quantizer_ <= kTargetQuantizerForTopOff)) {
-    return;
-  }
-
   last_capture_completed_ticks_ = captured_ticks;
 
   webrtc::DesktopVector dpi =
@@ -208,8 +195,7 @@ std::unique_ptr<VideoPacket> WebrtcFrameScheduler::EncodeFrame(
 
   VLOG(1) << "Encode duration "
           << (base::TimeTicks::Now() - current).InMilliseconds()
-          << " payload size " << packet->data().size() << " quantizer "
-          << packet->quantizer();
+          << " payload size " << packet->data().size();
   return packet;
 }
 
@@ -218,9 +204,8 @@ void WebrtcFrameScheduler::OnFrameEncoded(std::unique_ptr<VideoPacket> packet) {
   encode_pending_ = false;
   if (!packet)
     return;
-  last_quantizer_ = packet->quantizer();
   base::TimeTicks current = base::TimeTicks::Now();
-  uint32_t encoded_bits = packet->data().size() * 8.0;
+  float encoded_bits = packet->data().size() * 8.0;
 
   // Simplistic adaptation of frame polling in the range 5 FPS to 30 FPS.
   uint32_t next_sched_ms = std::max(

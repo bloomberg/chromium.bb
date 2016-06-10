@@ -83,9 +83,6 @@ message VideoPacket {
 
   // Indicates whether the encoded frame is a key frame.
   optional bool key_frame = 18;
-
-  // Quantizer value on the encoded frame.
-  optional int32 quantizer = 19;
 }
 
 // VideoAck acknowledges that the frame in the VideoPacket with the same
