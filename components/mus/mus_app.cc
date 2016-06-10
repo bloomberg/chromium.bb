@@ -195,7 +195,6 @@ void MusApp::Initialize(shell::Connector* connector,
 }
 
 bool MusApp::AcceptConnection(Connection* connection) {
-  connection->AddInterface<Gpu>(this);
   connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
