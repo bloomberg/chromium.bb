@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "media/base/media_export.h"
 #include "media/base/video_frame.h"
-#include "media/capture/capture_export.h"
 #include "media/capture/content/video_capture_oracle.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -27,7 +27,7 @@ class VideoFrame;
 // the VideoCaptureOracle, which decides which frames to capture, and a
 // VideoCaptureDevice::Client, which allocates and receives the captured
 // frames, in a lock to synchronize state between the two.
-class CAPTURE_EXPORT ThreadSafeCaptureOracle
+class MEDIA_EXPORT ThreadSafeCaptureOracle
     : public base::RefCountedThreadSafe<ThreadSafeCaptureOracle> {
  public:
   ThreadSafeCaptureOracle(std::unique_ptr<VideoCaptureDevice::Client> client,
