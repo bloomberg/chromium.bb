@@ -8,6 +8,7 @@
 #define TOOLS_CLANG_VALUE_CLEANUP_LIST_VALUE_REWRITER_H_
 
 #include <memory>
+#include <unordered_set>
 
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/Tooling/Refactoring.h"
@@ -72,8 +73,21 @@ class ListValueRewriter {
     void run(
         const clang::ast_matchers::MatchFinder::MatchResult& result) override;
 
-   protected:
+   private:
     clang::tooling::Replacements* const replacements_;
+  };
+
+  class AppendRawPtrCallback
+      : public clang::ast_matchers::MatchFinder::MatchCallback {
+   public:
+    explicit AppendRawPtrCallback(clang::tooling::Replacements* replacements);
+
+    void run(
+        const clang::ast_matchers::MatchFinder::MatchResult& result) override;
+
+   private:
+    clang::tooling::Replacements* const replacements_;
+    std::unordered_set<const clang::VarDecl*> visited_;
   };
 
   AppendBooleanCallback append_boolean_callback_;
@@ -81,6 +95,7 @@ class ListValueRewriter {
   AppendDoubleCallback append_double_callback_;
   AppendStringCallback append_string_callback_;
   AppendReleasedUniquePtrCallback append_released_unique_ptr_callback_;
+  AppendRawPtrCallback append_raw_ptr_callback_;
 };
 
 #endif  // TOOLS_CLANG_VALUE_CLEANUP_LIST_VALUE_REWRITER_H_
