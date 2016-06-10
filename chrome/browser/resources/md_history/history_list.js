@@ -94,6 +94,7 @@ Polymer({
       this.resultLoadingDisabled_ = false;
       if (this.historyData_)
         this.splice('historyData_', 0, this.historyData_.length);
+      this.fire('unselect-all');
       this.lastSearchedTerm_ = this.searchedTerm;
     }
 
