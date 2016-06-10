@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -181,4 +182,6 @@ void BrowserCloseManager::CloseBrowsers() {
                        BrowserList::GetInstance()->end(), browser));
     }
   }
+
+  g_browser_process->notification_ui_manager()->CancelAll();
 }

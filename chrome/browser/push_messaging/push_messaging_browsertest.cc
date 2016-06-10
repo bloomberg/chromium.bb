@@ -24,6 +24,8 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -156,6 +158,21 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     PushMessagingServiceFactory::GetInstance()->RestoreFactoryForTests(profile);
     PushMessagingServiceImpl::InitializeForProfile(profile);
     push_service_ = PushMessagingServiceFactory::GetForProfile(profile);
+  }
+
+  // Helper function to test if a Keep Alive is registered while avoiding the
+  // platform checks. Returns a boolean so that assertion failures are reported
+  // at the right line.
+  // Returns true when KeepAlives are not supported by the platform, or when
+  // the registration state is equal to the expectation.
+  bool IsRegisteredKeepAliveEqualTo(bool expectation) {
+#if BUILDFLAG(ENABLE_BACKGROUND)
+    return expectation ==
+           KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+               KeepAliveOrigin::IN_FLIGHT_PUSH_MESSAGE);
+#else
+    return true;
+#endif
   }
 
   // InProcessBrowserTest:
@@ -637,11 +654,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
   gcm::IncomingMessage message;
   message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "testdata";
   message.decrypted = true;
   push_service()->OnMessage(app_identifier.app_id(), message);
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(true));
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
   EXPECT_EQ("testdata", script_result);
 }
@@ -707,9 +726,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "testdata";
   message.decrypted = true;
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
   push_service()->OnMessage(app_identifier.app_id(), message);
-
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(true));
   callback.WaitUntilSatisfied();
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
   EXPECT_EQ(app_identifier.app_id(), callback.app_id());
 
   // No push data should have been received.
@@ -1007,12 +1028,15 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "shownotification-without-waituntil";
   message.decrypted = true;
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
   push_service()->OnMessage(app_identifier.app_id(), message);
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(true));
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("immediate:shownotification-without-waituntil", script_result);
 
   message_loop_runner->Run();
 
+  EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
   ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   EXPECT_EQ("push_test_tag",
             notification_manager()->GetNotificationAt(0).tag());

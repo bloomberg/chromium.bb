@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "ui/message_center/message_center.h"
 
 #if defined(OS_WIN)
 #include "components/metrics/metrics_pref_names.h"
@@ -182,7 +183,10 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
 #endif
   testing_pref_service.registry()->RegisterListPref(
       prefs::kProfilesLastActive);
+  testing_pref_service.registry()->RegisterDictionaryPref(
+      prefs::kProfileInfoCache);
 
+  message_center::MessageCenter::Initialize();
   TestingBrowserProcess* testing_browser_process =
       TestingBrowserProcess::GetGlobal();
   testing_browser_process->SetLocalState(&testing_pref_service);

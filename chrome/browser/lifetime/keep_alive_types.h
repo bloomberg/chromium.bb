@@ -27,6 +27,13 @@ enum class KeepAliveOrigin {
   // c/b/chromeos
   LOGIN_DISPLAY_HOST_IMPL,
 
+  // c/b/notifications
+  NOTIFICATION,
+  PENDING_NOTIFICATION_CLICK_EVENT,
+
+  // c/b/push_messaging
+  IN_FLIGHT_PUSH_MESSAGE,
+
   // c/b/ui
   APP_LIST_SERVICE_VIEWS,
   APP_LIST_SHOWER,

@@ -32,6 +32,11 @@
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+#include "chrome/browser/lifetime/keep_alive_registry.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#endif
+
 // -----------------------------------------------------------------------------
 
 // Dimensions of the icon.png resource in the notification test data directory.
@@ -220,11 +225,26 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  ASSERT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT));
+#endif
+
   const Notification& notification = ui_manager()->GetNotificationAt(0);
   notification.delegate()->Click();
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  ASSERT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT));
+#endif
+
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("action_none", script_result);
+
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  ASSERT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT));
+#endif
 
   ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
 }

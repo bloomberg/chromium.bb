@@ -61,6 +61,11 @@
 #include "extensions/common/permissions/permissions_data.h"
 #endif
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::PlatformNotificationContext;
@@ -73,24 +78,6 @@ namespace {
 // Invalid id for a renderer process. Used in cases where we need to check for
 // permission without having an associated renderer process yet.
 const int kInvalidRenderProcessId = -1;
-
-// Persistent notifications fired through the delegate do not care about the
-// lifetime of the Service Worker responsible for executing the event.
-void OnClickEventDispatchComplete(
-    content::PersistentNotificationStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Notifications.PersistentWebNotificationClickResult", status,
-      content::PersistentNotificationStatus::
-          PERSISTENT_NOTIFICATION_STATUS_MAX);
-}
-
-void OnCloseEventDispatchComplete(
-    content::PersistentNotificationStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Notifications.PersistentWebNotificationCloseResult", status,
-      content::PersistentNotificationStatus::
-          PERSISTENT_NOTIFICATION_STATUS_MAX);
-}
 
 void OnCloseNonPersistentNotificationProfileLoaded(
     const std::string& notification_id,
@@ -153,7 +140,11 @@ PlatformNotificationServiceImpl::GetInstance() {
 }
 
 PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
-    : test_display_service_(nullptr) {}
+    : test_display_service_(nullptr) {
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  pending_click_dispatch_events_ = 0;
+#endif
+}
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 
@@ -199,10 +190,21 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
         "Notifications.Persistent.ClickedActionButton"));
   }
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  // Ensure the browser stays alive while the event is processed.
+  if (pending_click_dispatch_events_++ == 0) {
+    click_dispatch_keep_alive_.reset(
+        new ScopedKeepAlive(KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT,
+                            KeepAliveRestartOption::DISABLED));
+  }
+#endif
+
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
           browser_context, persistent_notification_id, origin, action_index,
-          base::Bind(&OnClickEventDispatchComplete));
+          base::Bind(
+              &PlatformNotificationServiceImpl::OnClickEventDispatchComplete,
+              base::Unretained(this)));
 }
 
 void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
@@ -226,7 +228,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationCloseEvent(
           browser_context, persistent_notification_id, origin, by_user,
-          base::Bind(&OnCloseEventDispatchComplete));
+          base::Bind(
+              &PlatformNotificationServiceImpl::OnCloseEventDispatchComplete,
+              base::Unretained(this)));
 }
 
 blink::mojom::PermissionStatus
@@ -435,6 +439,28 @@ bool PlatformNotificationServiceImpl::GetDisplayedPersistentNotifications(
   // TODO(peter): Filter for persistent notifications only.
   return GetNotificationDisplayService(profile)->GetDisplayed(
       displayed_notifications);
+}
+
+void PlatformNotificationServiceImpl::OnClickEventDispatchComplete(
+    content::PersistentNotificationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.PersistentWebNotificationClickResult", status,
+      content::PersistentNotificationStatus::
+          PERSISTENT_NOTIFICATION_STATUS_MAX);
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  DCHECK_GT(pending_click_dispatch_events_, 0);
+  if (--pending_click_dispatch_events_ == 0) {
+    click_dispatch_keep_alive_.reset();
+  }
+#endif
+}
+
+void PlatformNotificationServiceImpl::OnCloseEventDispatchComplete(
+    content::PersistentNotificationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.PersistentWebNotificationCloseResult", status,
+      content::PersistentNotificationStatus::
+          PERSISTENT_NOTIFICATION_STATUS_MAX);
 }
 
 Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
