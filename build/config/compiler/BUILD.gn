@@ -1376,7 +1376,7 @@ config("optimize_max") {
         ]
       }
     } else {
-      cflags = [ "-O3" ] + common_optimize_on_cflags
+      cflags = [ "-O2" ] + common_optimize_on_cflags
     }
   }
 }
