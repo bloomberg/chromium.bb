@@ -526,6 +526,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       signature_result_(kNoPendingResult),
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.ct_policy_enforcer),
+      pkp_bypassed_(false),
       net_log_(transport_->socket()->NetLog()),
       weak_factory_(this) {
   DCHECK(cert_verifier_);
@@ -799,6 +800,7 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->cert_status = server_cert_verify_result_.cert_status;
   ssl_info->is_issued_by_known_root =
       server_cert_verify_result_.is_issued_by_known_root;
+  ssl_info->pkp_bypassed = pkp_bypassed_;
   ssl_info->public_key_hashes = server_cert_verify_result_.public_key_hashes;
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
@@ -1352,7 +1354,10 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
           server_cert_verify_result_.public_key_hashes, server_cert_.get(),
           server_cert_verify_result_.verified_cert.get(),
           TransportSecurityState::ENABLE_PIN_REPORTS, &pinning_failure_log_)) {
-    result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+    if (server_cert_verify_result_.is_issued_by_known_root)
+      result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+    else
+      pkp_bypassed_ = true;
   }
 
   if (result == OK) {

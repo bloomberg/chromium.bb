@@ -6216,6 +6216,64 @@ TEST_F(URLRequestTestHTTP, PKPNotProcessedOnIP) {
       security_state->GetDynamicPKPState(test_server_hostname, &pkp_state));
 }
 
+TEST_F(URLRequestTestHTTP, PKPBypassRecorded) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Set up a MockCertVerifier to be a local root that violates the pin
+  scoped_refptr<X509Certificate> cert = https_test_server.GetCertificate();
+  ASSERT_TRUE(cert);
+
+  MockCertVerifier cert_verifier;
+  CertVerifyResult verify_result;
+  verify_result.verified_cert = cert;
+  verify_result.is_issued_by_known_root = false;
+  HashValue hash;
+  ASSERT_TRUE(
+      hash.FromString("sha256/1111111111111111111111111111111111111111111="));
+  verify_result.public_key_hashes.push_back(hash);
+  cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
+  cert_verifier.set_default_result(OK);
+
+  std::string test_server_hostname = https_test_server.GetURL("/").host();
+
+  // Set up HPKP
+  base::Time current_time = base::Time::Now();
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(10000);
+  HashValue pin;
+  ASSERT_TRUE(
+      pin.FromString("sha256/2222222222222222222222222222222222222222222="));
+  HashValueVector hashes;
+  hashes.push_back(pin);
+  GURL report_uri(kHPKPReportUri);
+  TransportSecurityState security_state;
+  security_state.AddHPKP(test_server_hostname, expiry,
+                         false, /* include subdomains */
+                         hashes, report_uri);
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_transport_security_state(&security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      https_test_server.GetURL("/hpkp-headers.html"), DEFAULT_PRIORITY, &d));
+  request->Start();
+  base::RunLoop().Run();
+
+  TransportSecurityState::PKPState pkp_state;
+  EXPECT_TRUE(
+      security_state.GetDynamicPKPState(test_server_hostname, &pkp_state));
+  EXPECT_TRUE(request->ssl_info().pkp_bypassed);
+}
+
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(

@@ -34,6 +34,14 @@ using std::vector;
 
 namespace net {
 
+ProofVerifyDetailsChromium::ProofVerifyDetailsChromium()
+    : pkp_bypassed(false) {}
+
+ProofVerifyDetailsChromium::~ProofVerifyDetailsChromium() {}
+
+ProofVerifyDetailsChromium::ProofVerifyDetailsChromium(
+    const ProofVerifyDetailsChromium&) = default;
+
 ProofVerifyDetails* ProofVerifyDetailsChromium::Clone() const {
   ProofVerifyDetailsChromium* other = new ProofVerifyDetailsChromium;
   other->cert_verify_result = cert_verify_result;
@@ -336,7 +344,10 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
           cert_verify_result.verified_cert.get(),
           TransportSecurityState::ENABLE_PIN_REPORTS,
           &verify_details_->pinning_failure_log)) {
-    result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+    if (cert_verify_result.is_issued_by_known_root)
+      result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+    else
+      verify_details_->pkp_bypassed = true;
   }
 
   if (result != OK) {

@@ -3260,4 +3260,80 @@ TEST_F(SSLClientSocketTest, SendGoodCert) {
   EXPECT_FALSE(sock_->IsConnected());
 }
 
+HashValueVector MakeHashValueVector(uint8_t value) {
+  HashValueVector out;
+  HashValue hash(HASH_VALUE_SHA256);
+  memset(hash.data(), value, hash.size());
+  out.push_back(hash);
+  return out;
+}
+
+// Test that |ssl_info.pkp_bypassed| is set when a local trust anchor causes
+// pinning to be bypassed.
+TEST_F(SSLClientSocketTest, PKPBypassedSet) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // The certificate needs to be trusted, but chain to a local root with
+  // different public key hashes than specified in the pin.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = false;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes = MakeHashValueVector(0);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up HPKP
+  HashValueVector expected_hashes = MakeHashValueVector(1);
+  context_.transport_security_state->AddHPKP(
+      spawned_test_server()->host_port_pair().host(),
+      base::Time::Now() + base::TimeDelta::FromSeconds(10000), true,
+      expected_hashes, GURL());
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock_->IsConnected());
+
+  EXPECT_TRUE(ssl_info.pkp_bypassed);
+}
+
+TEST_F(SSLClientSocketTest, PKPEnforced) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted, but chains to a public root that doesn't match the
+  // pin hashes.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes = MakeHashValueVector(0);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up HPKP
+  HashValueVector expected_hashes = MakeHashValueVector(1);
+  context_.transport_security_state->AddHPKP(
+      spawned_test_server()->host_port_pair().host(),
+      base::Time::Now() + base::TimeDelta::FromSeconds(10000), true,
+      expected_hashes, GURL());
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  EXPECT_EQ(ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, rv);
+  EXPECT_TRUE(sock_->IsConnected());
+
+  EXPECT_FALSE(ssl_info.pkp_bypassed);
+}
+
 }  // namespace net

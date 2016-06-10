@@ -52,6 +52,20 @@ TEST_F(HttpResponseInfoTest, UnusedSincePrefetchPersistTrue) {
   EXPECT_TRUE(restored_response_info.unused_since_prefetch);
 }
 
+TEST_F(HttpResponseInfoTest, PKPBypassPersistTrue) {
+  response_info_.ssl_info.pkp_bypassed = true;
+  HttpResponseInfo restored_response_info;
+  PickleAndRestore(response_info_, &restored_response_info);
+  EXPECT_TRUE(restored_response_info.ssl_info.pkp_bypassed);
+}
+
+TEST_F(HttpResponseInfoTest, PKPBypassPersistFalse) {
+  response_info_.ssl_info.pkp_bypassed = false;
+  HttpResponseInfo restored_response_info;
+  PickleAndRestore(response_info_, &restored_response_info);
+  EXPECT_FALSE(restored_response_info.ssl_info.pkp_bypassed);
+}
+
 TEST_F(HttpResponseInfoTest, AsyncRevalidationRequiredDefault) {
   EXPECT_FALSE(response_info_.async_revalidation_required);
 }

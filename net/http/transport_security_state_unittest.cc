@@ -1288,6 +1288,24 @@ TEST_F(TransportSecurityStateTest, HPKPReporting) {
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 
   EXPECT_FALSE(state.CheckPublicKeyPins(
+      host_port_pair, false, bad_hashes, cert1.get(), cert2.get(),
+      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+
+  // No report should have been sent because the certificate chained to a
+  // non-public root.
+  EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
+  EXPECT_EQ(std::string(), mock_report_sender.latest_report());
+
+  EXPECT_TRUE(state.CheckPublicKeyPins(
+      host_port_pair, false, good_hashes, cert1.get(), cert2.get(),
+      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+
+  // No report should have been sent because there was no violation, even though
+  // the certificate chained to a local trust anchor.
+  EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
+  EXPECT_EQ(std::string(), mock_report_sender.latest_report());
+
+  EXPECT_FALSE(state.CheckPublicKeyPins(
       host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
       TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
 
