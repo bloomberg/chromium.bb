@@ -84,8 +84,9 @@ inline bool DocumentMarkerController::possiblyHasMarkers(DocumentMarker::MarkerT
     return m_possiblyExistingMarkerTypes.intersects(types);
 }
 
-DocumentMarkerController::DocumentMarkerController()
+DocumentMarkerController::DocumentMarkerController(const Document& document)
     : m_possiblyExistingMarkerTypes(0)
+    , m_document(&document)
 {
 }
 
@@ -187,17 +188,17 @@ static bool doesNotInclude(const Member<RenderedDocumentMarker>& marker, size_t 
     return marker->endOffset() < startOffset;
 }
 
-static bool updateMarkerRenderedRect(Node* node, RenderedDocumentMarker& marker)
+static bool updateMarkerRenderedRect(const Node& node, RenderedDocumentMarker& marker)
 {
-    Range* range = Range::create(node->document());
+    Range* range = Range::create(node.document());
     // The offsets of the marker may be out-dated, so check for exceptions.
     TrackExceptionState exceptionState;
-    range->setStart(node, marker.startOffset(), exceptionState);
+    range->setStart(&const_cast<Node&>(node), marker.startOffset(), exceptionState);
     if (!exceptionState.hadException())
-        range->setEnd(node, marker.endOffset(), IGNORE_EXCEPTION);
+        range->setEnd(&const_cast<Node&>(node), marker.endOffset(), IGNORE_EXCEPTION);
     if (exceptionState.hadException()) {
         range->dispose();
-        return marker.invalidateRenderedRect();
+        return marker.nullifyRenderedRect();
     }
     // TODO(yosin): Once we have a |EphemeralRange| version of |boundingBox()|,
     // we should use it instead of |Range| version.
@@ -230,7 +231,7 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
 
     Member<MarkerList>& list = markers->at(markerListIndex);
     RenderedDocumentMarker* newRenderedMarker = RenderedDocumentMarker::create(newMarker);
-    updateMarkerRenderedRect(node, *newRenderedMarker);
+    updateMarkerRenderedRect(*node, *newRenderedMarker);
     if (list->isEmpty() || list->last()->endOffset() < newMarker.startOffset()) {
         list->append(newRenderedMarker);
     } else {
@@ -396,14 +397,12 @@ DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoin
     DCHECK(!(m_markers.isEmpty()));
 
     // outer loop: process each node that contains any markers
-    MarkerMap::iterator end = m_markers.end();
-    for (MarkerMap::iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
+    for (auto& nodeMarkers : m_markers) {
+        const Node& node = *nodeMarkers.key;
         // inner loop; process each marker in this node
-        MarkerLists* markers = nodeIterator->value.get();
-        Member<MarkerList>& list = (*markers)[MarkerTypeToMarkerIndex(markerType)];
-        unsigned markerCount = list.get() ? list->size() : 0;
-        for (unsigned markerIndex = 0; markerIndex < markerCount; ++markerIndex) {
-            RenderedDocumentMarker* marker = list->at(markerIndex).get();
+        Member<MarkerList>& markerList = (*nodeMarkers.value)[MarkerTypeToMarkerIndex(markerType)];
+        for (auto& marker : *markerList) {
+            updateMarkerRenderedRectIfNeeded(node, *marker);
             if (marker->contains(point))
                 return marker;
         }
@@ -489,6 +488,7 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
     MarkerMap::iterator end = m_markers.end();
     for (MarkerMap::iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
         // inner loop; process each marker in this node
+        const Node& node = *nodeIterator->key;
         MarkerLists* markers = nodeIterator->value.get();
         for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
             Member<MarkerList>& list = (*markers)[markerListIndex];
@@ -496,6 +496,7 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
                 continue;
             for (unsigned markerIndex = 0; markerIndex < list->size(); ++markerIndex) {
                 RenderedDocumentMarker* marker = list->at(markerIndex).get();
+                updateMarkerRenderedRectIfNeeded(node, *marker);
                 if (!marker->isRendered())
                     continue;
                 result.append(marker->renderedRect());
@@ -512,19 +513,43 @@ static void invalidatePaintForTickmarks(const Node& node)
         frameView->invalidatePaintForTickmarks();
 }
 
-void DocumentMarkerController::updateRenderedRectsForMarkers()
+void DocumentMarkerController::updateMarkerRenderedRectIfNeeded(const Node& node, RenderedDocumentMarker& marker)
+{
+    DCHECK(!m_document->view() || !m_document->view()->needsLayout());
+    DCHECK(!m_document->needsLayoutTreeUpdate());
+    if (!marker.isValid())
+        updateMarkerRenderedRect(node, marker);
+}
+
+void DocumentMarkerController::invalidateRectsForMarkersInNode(const Node& node)
+{
+    MarkerLists* markers = m_markers.get(&node);
+
+    for (auto& markerList : *markers) {
+        if (!markerList)
+            continue;
+
+        for (auto& marker : *markerList)
+            marker->invalidate();
+
+        if (markerList->first()->type() == DocumentMarker::TextMatch)
+            invalidatePaintForTickmarks(node);
+    }
+}
+
+void DocumentMarkerController::invalidateRectsForAllMarkers()
 {
     for (auto& nodeMarkers : m_markers) {
-        const Node* node = nodeMarkers.key;
+        const Node& node = *nodeMarkers.key;
         for (auto& markerList : *nodeMarkers.value) {
             if (!markerList)
                 continue;
-            bool markersChanged = false;
-            for (auto& marker : *markerList)
-                markersChanged |= updateMarkerRenderedRect(const_cast<Node*>(node), *marker);
 
-            if (markersChanged && markerList->first()->type() == DocumentMarker::TextMatch)
-                invalidatePaintForTickmarks(*node);
+            for (auto& marker : *markerList)
+                marker->invalidate();
+
+            if (markerList->first()->type() == DocumentMarker::TextMatch)
+                invalidatePaintForTickmarks(node);
         }
     }
 }
@@ -532,6 +557,7 @@ void DocumentMarkerController::updateRenderedRectsForMarkers()
 DEFINE_TRACE(DocumentMarkerController)
 {
     visitor->trace(m_markers);
+    visitor->trace(m_document);
 }
 
 void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerTypes markerTypes)
@@ -669,7 +695,7 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
     if (!markers)
         return;
 
-    bool docDirty = false;
+    bool didShiftMarker = false;
     for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
         Member<MarkerList>& list = (*markers)[markerListIndex];
         if (!list)
@@ -681,15 +707,16 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
             DCHECK_GE(startOffset + delta, 0);
 #endif
             (*marker)->shiftOffsets(delta);
-            docDirty = true;
-
-            updateMarkerRenderedRect(node, **marker);
+            didShiftMarker = true;
         }
     }
 
-    // repaint the affected node
-    if (docDirty && node->layoutObject())
-        node->layoutObject()->setShouldDoFullPaintInvalidation();
+    if (didShiftMarker) {
+        invalidateRectsForMarkersInNode(*node);
+        // repaint the affected node
+        if (node->layoutObject())
+            node->layoutObject()->setShouldDoFullPaintInvalidation();
+    }
 }
 
 bool DocumentMarkerController::setMarkersActive(Range* range, bool active)

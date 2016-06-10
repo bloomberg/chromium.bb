@@ -57,7 +57,7 @@ class CORE_EXPORT DocumentMarkerController final : public GarbageCollected<Docum
     WTF_MAKE_NONCOPYABLE(DocumentMarkerController);
 public:
 
-    DocumentMarkerController();
+    explicit DocumentMarkerController(const Document&);
 
     void clear();
     void addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType, const String& description = emptyString(), uint32_t hash = 0);
@@ -90,7 +90,9 @@ public:
     DocumentMarkerVector markersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
     DocumentMarkerVector markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
-    void updateRenderedRectsForMarkers();
+    void updateMarkerRenderedRectIfNeeded(const Node&, RenderedDocumentMarker&);
+    void invalidateRectsForAllMarkers();
+    void invalidateRectsForMarkersInNode(const Node&);
 
     DECLARE_TRACE();
 
@@ -112,6 +114,7 @@ private:
     MarkerMap m_markers;
     // Provide a quick way to determine whether a particular marker type is absent without going through the map.
     DocumentMarker::MarkerTypes m_possiblyExistingMarkerTypes;
+    const Member<const Document> m_document;
 };
 
 } // namespace blink

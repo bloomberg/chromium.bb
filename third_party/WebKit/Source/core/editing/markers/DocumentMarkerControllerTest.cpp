@@ -205,14 +205,11 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML)
 
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
 {
-    IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
-
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
     Element* div = toElement(document().body()->firstChild());
     markNodeContents(div);
     Vector<IntRect> renderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Spelling);
     EXPECT_EQ(1u, renderedRects.size());
-    EXPECT_NE(invalidRect, renderedRects[0]);
 
     div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
     document().updateStyleAndLayout();
@@ -223,14 +220,11 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
 
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRectsForComposition)
 {
-    IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
-
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
     Element* div = toElement(document().body()->firstChild());
     markNodeContentsWithComposition(div);
     Vector<IntRect> renderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Composition);
     EXPECT_EQ(1u, renderedRects.size());
-    EXPECT_NE(invalidRect, renderedRects[0]);
 
     div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
     document().updateStyleAndLayout();
@@ -241,8 +235,6 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRectsForComposition)
 
 TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
 {
-    IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
-
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
     Node* text = document().body()->firstChild()->firstChild();
     document().updateStyleAndLayout();

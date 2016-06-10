@@ -425,7 +425,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_containsPlugins(false)
     , m_updateFocusAppearanceSelectionBahavior(SelectionBehaviorOnFocus::Reset)
     , m_ignoreDestructiveWriteCount(0)
-    , m_markers(new DocumentMarkerController)
+    , m_markers(new DocumentMarkerController(*this))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_cssTarget(nullptr)
     , m_loadEventProgress(LoadEventNotRun)
@@ -1898,7 +1898,7 @@ void Document::layoutUpdated()
     if (frame() && frame()->page())
         frame()->page()->chromeClient().layoutUpdated(frame());
 
-    markers().updateRenderedRectsForMarkers();
+    markers().invalidateRectsForAllMarkers();
 
     // The layout system may perform layouts with pending stylesheets. When
     // recording first layout time, we ignore these layouts, since painting is

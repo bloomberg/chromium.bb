@@ -33,41 +33,54 @@
 namespace blink {
 
 class RenderedDocumentMarker final : public DocumentMarker {
+private:
+    enum class State {
+        Invalid,
+        ValidNull,
+        ValidNotNull
+    };
 public:
     static RenderedDocumentMarker* create(const DocumentMarker& marker)
     {
         return new RenderedDocumentMarker(marker);
     }
 
-    bool isRendered() const { return invalidMarkerRect() != m_renderedRect; }
-    bool contains(const LayoutPoint& point) const { return isRendered() && m_renderedRect.contains(point); }
-    bool setRenderedRect(const LayoutRect& r)
+    bool isRendered() const { return m_state == State::ValidNotNull; }
+    bool contains(const LayoutPoint& point) const
     {
-        const LayoutRect& rect = r.isEmpty() ? invalidMarkerRect() : r;
-        if (rect == m_renderedRect)
+        DCHECK_EQ(m_state, State::ValidNotNull);
+        return m_renderedRect.contains(point);
+    }
+    bool setRenderedRect(const LayoutRect& rect)
+    {
+        if (m_state == State::ValidNotNull && rect == m_renderedRect)
             return false;
+        m_state = State::ValidNotNull;
         m_renderedRect = rect;
         return true;
     }
 
-    const LayoutRect& renderedRect() const { return m_renderedRect; }
-
-    bool invalidateRenderedRect() { return setRenderedRect(invalidMarkerRect()); }
-
-private:
-    explicit RenderedDocumentMarker(const DocumentMarker& marker)
-        : DocumentMarker(marker)
-        , m_renderedRect(invalidMarkerRect())
+    const LayoutRect& renderedRect() const
     {
+        DCHECK_EQ(m_state, State::ValidNotNull);
+        return m_renderedRect;
     }
 
-    static const LayoutRect& invalidMarkerRect()
+    bool nullifyRenderedRect() { return m_state == State::ValidNull; }
+
+    void invalidate() { m_state = State::Invalid; }
+    bool isValid() const { return m_state != State::Invalid; }
+
+private:
+
+    explicit RenderedDocumentMarker(const DocumentMarker& marker)
+        : DocumentMarker(marker)
+        , m_state(State::Invalid)
     {
-        static const LayoutRect rect = LayoutRect(-1, -1, -1, -1);
-        return rect;
     }
 
     LayoutRect m_renderedRect;
+    State m_state;
 };
 
 DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);
