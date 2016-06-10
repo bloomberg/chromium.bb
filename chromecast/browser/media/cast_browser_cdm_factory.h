@@ -18,7 +18,7 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 
-class BrowserCdmCast;
+class CastCdm;
 
 class CastBrowserCdmFactory : public ::media::CdmFactory {
  public:
@@ -40,7 +40,7 @@ class CastBrowserCdmFactory : public ::media::CdmFactory {
       const ::media::CdmCreatedCB& cdm_created_cb) override;
 
   // Provides a platform-specific BrowserCdm instance.
-  virtual scoped_refptr<BrowserCdmCast> CreatePlatformBrowserCdm(
+  virtual scoped_refptr<CastCdm> CreatePlatformBrowserCdm(
       const CastKeySystem& cast_key_system);
 
  protected:

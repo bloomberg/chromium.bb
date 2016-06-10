@@ -29,7 +29,7 @@ class VideoDecoderConfig;
 
 namespace chromecast {
 namespace media {
-class BrowserCdmCast;
+class CastCdmContext;
 class BufferingFrameProvider;
 class BufferingState;
 class CodedFrameProvider;
@@ -41,7 +41,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
                  const AvPipelineClient& client);
   ~AvPipelineImpl() override;
 
-  void SetCdm(BrowserCdmCast* media_keys);
+  void SetCdm(CastCdmContext* cast_cdm_context);
 
   // Setup the pipeline and ensure samples are available for the given media
   // time, then start rendering samples.
@@ -97,10 +97,6 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
                           CastKeyStatus key_status,
                           uint32_t system_code) override;
   void OnVideoResolutionChanged(const Size& size) override;
-
-  // Callback invoked when the CDM state has changed in a way that might
-  // impact media playback.
-  void OnCdmStateChange();
 
   // Feed the pipeline, getting the frames from |frame_provider_|.
   void FetchBuffer();
@@ -165,14 +161,9 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
   // Buffer that has been pushed to the device but not processed yet.
   scoped_refptr<DecoderBufferBase> pushed_buffer_;
 
-  // The media time is retrieved at regular intervals.
-  // Indicate whether time update is enabled.
-  bool enable_time_update_;
-  bool pending_time_update_task_;
-
-  // Decryption keys, if available.
-  BrowserCdmCast* media_keys_;
-  int media_keys_callback_id_;
+  // CdmContext, if available.
+  CastCdmContext* cast_cdm_context_;
+  int player_tracker_callback_id_;
 
   base::WeakPtr<AvPipelineImpl> weak_this_;
   base::WeakPtrFactory<AvPipelineImpl> weak_factory_;

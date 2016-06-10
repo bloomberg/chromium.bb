@@ -6,10 +6,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "chromecast/browser/media/cast_renderer.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 
 namespace {
+
 class CastRendererFactory : public media::RendererFactory {
  public:
   CastRendererFactory(
@@ -34,14 +36,17 @@ class CastRendererFactory : public media::RendererFactory {
   scoped_refptr<media::MediaLog> media_log_;
   DISALLOW_COPY_AND_ASSIGN(CastRendererFactory);
 };
+
 }  // namespace
 
 namespace chromecast {
 namespace media {
 
 CastMojoMediaClient::CastMojoMediaClient(
-    const CreateMediaPipelineBackendCB& create_backend_cb)
-    : create_backend_cb_(create_backend_cb) {}
+    const CreateMediaPipelineBackendCB& create_backend_cb,
+    const CreateCdmFactoryCB& create_cdm_factory_cb)
+    : create_backend_cb_(create_backend_cb),
+      create_cdm_factory_cb_(create_cdm_factory_cb) {}
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
@@ -50,6 +55,11 @@ CastMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<::media::MediaLog>& media_log) {
   return base::WrapUnique(
       new CastRendererFactory(create_backend_cb_, media_log));
+}
+
+std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(
+    ::shell::mojom::InterfaceProvider* interface_provider) {
+  return create_cdm_factory_cb_.Run();
 }
 
 }  // namespace media

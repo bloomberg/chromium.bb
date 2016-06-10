@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
-#include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"

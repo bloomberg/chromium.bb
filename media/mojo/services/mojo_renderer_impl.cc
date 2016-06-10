@@ -44,23 +44,6 @@ void MojoRendererImpl::Initialize(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
 
-  // Bind |remote_renderer_| to the |task_runner_|.
-  remote_renderer_.Bind(std::move(remote_renderer_info_));
-
-  // If connection error has happened, fail immediately.
-  if (remote_renderer_.encountered_error()) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(init_cb, PIPELINE_ERROR_INITIALIZATION_FAILED));
-    return;
-  }
-
-  // Otherwise, set an error handler to catch the connection error.
-  // Using base::Unretained(this) is safe because |this| owns
-  // |remote_renderer_|, and the error handler can't be invoked once
-  // |remote_renderer_| is destroyed.
-  remote_renderer_.set_connection_error_handler(
-      base::Bind(&MojoRendererImpl::OnConnectionError, base::Unretained(this)));
-
   demuxer_stream_provider_ = demuxer_stream_provider;
   client_ = client;
   init_cb_ = init_cb;
@@ -80,6 +63,8 @@ void MojoRendererImpl::Initialize(
   if (video)
     new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
 
+  BindRemoteRendererIfNeeded();
+
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
@@ -93,6 +78,7 @@ void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
                               const CdmAttachedCB& cdm_attached_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(cdm_context);
 
   int32_t cdm_id = cdm_context->GetCdmId();
   if (cdm_id == CdmContext::kInvalidCdmId) {
@@ -102,18 +88,21 @@ void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
     return;
   }
 
+  BindRemoteRendererIfNeeded();
   remote_renderer_->SetCdm(cdm_id, cdm_attached_cb);
 }
 
 void MojoRendererImpl::Flush(const base::Closure& flush_cb) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(remote_renderer_.is_bound());
   remote_renderer_->Flush(flush_cb);
 }
 
 void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(remote_renderer_.is_bound());
 
   {
     base::AutoLock auto_lock(lock_);
@@ -126,12 +115,14 @@ void MojoRendererImpl::StartPlayingFrom(base::TimeDelta time) {
 void MojoRendererImpl::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(remote_renderer_.is_bound());
   remote_renderer_->SetPlaybackRate(playback_rate);
 }
 
 void MojoRendererImpl::SetVolume(float volume) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(remote_renderer_.is_bound());
   remote_renderer_->SetVolume(volume);
 }
 
@@ -209,6 +200,25 @@ void MojoRendererImpl::OnConnectionError() {
   }
 
   client_->OnError(PIPELINE_ERROR_DECODE);
+}
+
+void MojoRendererImpl::BindRemoteRendererIfNeeded() {
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // If |remote_renderer_| has already been bound, do nothing.
+  if (remote_renderer_.is_bound())
+    return;
+
+  // Bind |remote_renderer_| to the |task_runner_|.
+  remote_renderer_.Bind(std::move(remote_renderer_info_));
+
+  // Otherwise, set an error handler to catch the connection error.
+  // Using base::Unretained(this) is safe because |this| owns
+  // |remote_renderer_|, and the error handler can't be invoked once
+  // |remote_renderer_| is destroyed.
+  remote_renderer_.set_connection_error_handler(
+      base::Bind(&MojoRendererImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void MojoRendererImpl::OnInitialized(bool success) {

@@ -33,9 +33,9 @@ class TaskRunnerImpl;
 
 namespace media {
 struct AvPipelineClient;
-class BrowserCdmCast;
 struct MediaPipelineClient;
 struct VideoPipelineClient;
+class CastCdmContext;
 class CodedFrameProvider;
 class MediaPipelineImpl;
 
@@ -66,7 +66,7 @@ class MediaPipelineHost {
 
   void SetPlaybackRate(double playback_rate);
   void SetVolume(TrackId track_id, float playback_rate);
-  void SetCdm(BrowserCdmCast* cdm);
+  void SetCdm(CastCdmContext* cdm);
 
   void NotifyPipeWrite(TrackId track_id);
 

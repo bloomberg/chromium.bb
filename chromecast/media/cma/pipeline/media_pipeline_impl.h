@@ -27,8 +27,8 @@ namespace chromecast {
 namespace media {
 class AudioDecoderSoftwareWrapper;
 class AudioPipelineImpl;
-class BrowserCdmCast;
 class BufferingController;
+class CastCdmContext;
 class CodedFrameProvider;
 class VideoPipelineImpl;
 struct AvPipelineClient;
@@ -64,7 +64,7 @@ class MediaPipelineImpl {
   bool HasAudio() const;
   bool HasVideo() const;
 
-  void SetCdm(BrowserCdmCast* cdm);
+  void SetCdm(CastCdmContext* cdm);
 
  private:
   enum BackendState {
@@ -91,7 +91,7 @@ class MediaPipelineImpl {
   base::ThreadChecker thread_checker_;
   MediaPipelineClient client_;
   std::unique_ptr<BufferingController> buffering_controller_;
-  BrowserCdmCast* cdm_;
+  CastCdmContext* cdm_context_;
 
   // Interface with the underlying hardware media pipeline.
   BackendState backend_state_;

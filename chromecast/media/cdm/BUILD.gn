@@ -7,11 +7,17 @@ import("//chromecast/chromecast.gni")
 # GYP target: chromecast/media.gyp:media_cdm
 source_set("cdm") {
   sources = [
-    "browser_cdm_cast.cc",
-    "browser_cdm_cast.h",
+    "cast_cdm.cc",
+    "cast_cdm.h",
+    "cast_cdm_context.cc",
+    "cast_cdm_context.h",
+    "cast_cdm_proxy.cc",
+    "cast_cdm_proxy.h",
     "chromecast_init_data.cc",
     "chromecast_init_data.h",
   ]
+
+  configs += [ "//media/mojo/services:mojo_media_config" ]
 
   deps = [
     "//base",

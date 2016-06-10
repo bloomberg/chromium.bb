@@ -17,6 +17,7 @@
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/common/media/shared_memory_chunk.h"
 #include "chromecast/media/base/media_caps.h"
+#include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/ipc/media_message_fifo.h"
 #include "chromecast/media/cma/ipc_streamer/coded_frame_provider_host.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
@@ -159,7 +160,7 @@ void MediaPipelineHost::SetVolume(TrackId track_id, float volume) {
   media_pipeline_->SetVolume(volume);
 }
 
-void MediaPipelineHost::SetCdm(BrowserCdmCast* cdm) {
+void MediaPipelineHost::SetCdm(CastCdmContext* cdm) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_->SetCdm(cdm);
 }

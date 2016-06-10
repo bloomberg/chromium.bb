@@ -33,14 +33,12 @@ class Size;
 
 namespace media {
 class AudioDecoderConfig;
-class BrowserCdm;
 class VideoDecoderConfig;
 }
 
 namespace chromecast {
 namespace media {
 
-class BrowserCdmCast;
 class MediaPipelineHost;
 
 class CmaMessageFilterHost

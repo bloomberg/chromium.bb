@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/demuxer_stream_adapter.h"
@@ -33,6 +34,7 @@ CastRenderer::CastRenderer(
     : create_backend_cb_(create_backend_cb),
       task_runner_(task_runner),
       client_(nullptr),
+      cast_cdm_context_(nullptr),
       media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
       weak_factory_(this) {
@@ -69,7 +71,7 @@ void CastRenderer::Initialize(
       base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
   pipeline_client.buffering_state_cb = base::Bind(
       &CastRenderer::OnBufferingStateChange, weak_factory_.GetWeakPtr());
-  pipeline_.reset(new MediaPipelineImpl);
+  pipeline_.reset(new MediaPipelineImpl());
   pipeline_->SetClient(pipeline_client);
   pipeline_->Initialize(load_type, std::move(backend));
 
@@ -88,6 +90,7 @@ void CastRenderer::Initialize(
                                             weak_factory_.GetWeakPtr());
     std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
         task_runner_, media_task_runner_factory_, audio_stream));
+
     ::media::PipelineStatus status =
         pipeline_->InitializeAudio(audio_stream->audio_decoder_config(),
                                    audio_client, std::move(frame_provider));
@@ -119,6 +122,7 @@ void CastRenderer::Initialize(
     video_configs.push_back(video_stream->video_decoder_config());
     std::unique_ptr<CodedFrameProvider> frame_provider(new DemuxerStreamAdapter(
         task_runner_, media_task_runner_factory_, video_stream));
+
     ::media::PipelineStatus status = pipeline_->InitializeVideo(
         video_configs, video_client, std::move(frame_provider));
     if (status != ::media::PIPELINE_OK) {
@@ -128,6 +132,11 @@ void CastRenderer::Initialize(
     video_stream->EnableBitstreamConverter();
   }
 
+  if (cast_cdm_context_) {
+    pipeline_->SetCdm(cast_cdm_context_);
+    cast_cdm_context_ = nullptr;
+  }
+
   client_ = client;
   init_cb.Run(::media::PIPELINE_OK);
 }
@@ -135,7 +144,19 @@ void CastRenderer::Initialize(
 void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
                           const ::media::CdmAttachedCB& cdm_attached_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
+  DCHECK(cdm_context);
+
+  auto cast_cdm_context = static_cast<CastCdmContext*>(cdm_context);
+
+  if (!pipeline_) {
+    // If the pipeline has not yet been created in Initialize(), cache
+    // |cast_cdm_context| and pass it in when Initialize() is called.
+    cast_cdm_context_ = cast_cdm_context;
+  } else {
+    pipeline_->SetCdm(cast_cdm_context);
+  }
+
+  cdm_attached_cb.Run(true);
 }
 
 void CastRenderer::Flush(const base::Closure& flush_cb) {

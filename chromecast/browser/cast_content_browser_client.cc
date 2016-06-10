@@ -75,12 +75,14 @@ static std::unique_ptr<::shell::ShellClient> CreateMojoMediaApplication(
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
+                     base::Unretained(browser_client)),
+          base::Bind(&CastContentBrowserClient::CreateCdmFactory,
                      base::Unretained(browser_client))));
   return std::unique_ptr<::shell::ShellClient>(
       new ::media::MojoMediaApplication(std::move(mojo_media_client),
                                         quit_closure));
 }
-#endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
+#endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 }  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient()
@@ -439,13 +441,19 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
 std::unique_ptr<::media::CdmFactory>
 CastContentBrowserClient::CreateCdmFactory() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCmaMediaPipeline)) {
-    return base::WrapUnique(new media::CastBrowserCdmFactory(
-        GetMediaTaskRunner(), media_resource_tracker()));
-  }
+// This should return a CdmFactory when either of the following conditions is
+// true:
+//  (1) When we are using the CMA pipeline (by setting the cmdline switch).
+//  (2) When we are using Mojo browser-side CDM (by setting GN args)
+// If neither of these are true, this function should return nullptr.
+#if !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCmaMediaPipeline))
+    return nullptr;
+#endif  // !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
-  return nullptr;
+  return base::WrapUnique(new media::CastBrowserCdmFactory(
+      GetMediaTaskRunner(), media_resource_tracker()));
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(

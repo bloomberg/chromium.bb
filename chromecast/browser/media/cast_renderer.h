@@ -20,6 +20,7 @@ class TaskRunnerImpl;
 
 namespace media {
 class BalancedMediaTaskRunnerFactory;
+class CastCdmContext;
 class MediaPipelineImpl;
 
 class CastRenderer : public ::media::Renderer {
@@ -55,6 +56,7 @@ class CastRenderer : public ::media::Renderer {
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ::media::RendererClient* client_;
+  CastCdmContext* cast_cdm_context_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
   std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
   std::unique_ptr<MediaPipelineImpl> pipeline_;

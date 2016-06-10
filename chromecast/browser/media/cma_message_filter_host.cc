@@ -15,7 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "chromecast/browser/media/media_pipeline_host.h"
 #include "chromecast/common/media/cma_messages.h"
-#include "chromecast/media/cdm/browser_cdm_cast.h"
+#include "chromecast/media/cdm/cast_cdm_proxy.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
@@ -83,9 +83,7 @@ class MediaPipelineCmaMap {
 base::LazyInstance<MediaPipelineCmaMap> g_pipeline_map =
     LAZY_INSTANCE_INITIALIZER;
 
-void SetCdmOnCmaThread(int render_process_id,
-                       int media_id,
-                       BrowserCdmCast* cdm) {
+void SetCdmOnCmaThread(int render_process_id, int media_id, CastCdm* cdm) {
   MediaPipelineHost* pipeline =
       g_pipeline_map.Get().GetMediaPipeline(render_process_id, media_id);
   if (!pipeline) {
@@ -93,7 +91,8 @@ void SetCdmOnCmaThread(int render_process_id,
                  << media_id;
     return;
   }
-  pipeline->SetCdm(cdm);
+
+  pipeline->SetCdm(static_cast<CastCdmContext*>(cdm->GetCdmContext()));
 }
 
 // BrowserCdm instance must be retrieved/accessed on the UI thread, then
@@ -120,11 +119,13 @@ void SetCdmOnUiThread(
     return;
   }
 
-  BrowserCdmCast* browser_cdm_cast =
-      static_cast<BrowserCdmCastUi*>(cdm.get())->browser_cdm_cast();
+  CastCdm* cast_cdm = static_cast<CastCdmProxy*>(cdm.get())->cast_cdm();
+
+  // base::Unretained is safe to use here, as all calls on |cast_cdm|,
+  // including the destructor, will happen on the CMA thread.
   cma_task_runner->PostTask(
       FROM_HERE, base::Bind(&SetCdmOnCmaThread, render_process_id, media_id,
-                            base::Unretained(browser_cdm_cast)));
+                            base::Unretained(cast_cdm)));
 }
 
 }  // namespace

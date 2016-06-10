@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CDM_BROWSER_CDM_CAST_H_
-#define CHROMECAST_MEDIA_CDM_BROWSER_CDM_CAST_H_
+#ifndef CHROMECAST_MEDIA_CDM_cast_cdm_H_
+#define CHROMECAST_MEDIA_CDM_cast_cdm_H_
 
 #include <stdint.h>
 
@@ -17,7 +17,9 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/base/media_resource_tracker.h"
+#include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/public/media/cast_key_status.h"
+#include "media/base/cdm_context.h"
 #include "media/base/media_keys.h"
 #include "media/base/player_tracker.h"
 #include "media/cdm/json_web_key.h"
@@ -34,17 +36,16 @@ namespace chromecast {
 namespace media {
 class DecryptContextImpl;
 
-// BrowserCdmCast is an extension of MediaKeys that provides common
+// CastCdm is an extension of MediaKeys that provides common
 // functionality across CDM implementations.
 // All these additional functions are synchronous so:
 // - either both the CDM and the media pipeline must be running on the same
 //   thread,
-// - or BrowserCdmCast implementations must use some locks.
+// - or CastCdm implementations must use some locks.
 //
-class BrowserCdmCast : public ::media::MediaKeys,
-                       public ::media::PlayerTracker {
+class CastCdm : public ::media::MediaKeys {
  public:
-  explicit BrowserCdmCast(MediaResourceTracker* media_resource_tracker);
+  explicit CastCdm(MediaResourceTracker* media_resource_tracker);
 
   void Initialize(
       const ::media::SessionMessageCB& session_message_cb,
@@ -53,14 +54,12 @@ class BrowserCdmCast : public ::media::MediaKeys,
       const ::media::SessionKeysChangeCB& session_keys_change_cb,
       const ::media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
-  // ::media::PlayerTracker implementation.
   int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override;
-  void UnregisterPlayer(int registration_id) override;
+                     const base::Closure& cdm_unset_cb);
+  void UnregisterPlayer(int registration_id);
 
   // Returns the decryption context needed to decrypt frames encrypted with
-  // |key_id|.
-  // Returns null if |key_id| is not available.
+  // |key_id|. Returns null if |key_id| is not available.
   virtual std::unique_ptr<DecryptContextImpl> GetDecryptContext(
       const std::string& key_id) const = 0;
 
@@ -70,8 +69,11 @@ class BrowserCdmCast : public ::media::MediaKeys,
                             CastKeyStatus key_status,
                             uint32_t system_code) = 0;
 
+  // ::media::MediaKeys implementation.
+  ::media::CdmContext* GetCdmContext() override;
+
  protected:
-  ~BrowserCdmCast() override;
+  ~CastCdm() override;
 
   void OnSessionMessage(const std::string& session_id,
                         const std::vector<uint8_t>& message,
@@ -86,8 +88,6 @@ class BrowserCdmCast : public ::media::MediaKeys,
                               ::media::CdmKeysInfo* key_info);
 
  private:
-  friend class BrowserCdmCastUi;
-
   // Allow subclasses to override to provide key sysytem specific
   // initialization.
   virtual void InitializeInternal();
@@ -100,59 +100,14 @@ class BrowserCdmCast : public ::media::MediaKeys,
 
   MediaResourceTracker* media_resource_tracker_;
   std::unique_ptr<::media::PlayerTrackerImpl> player_tracker_impl_;
+  std::unique_ptr<CastCdmContext> cast_cdm_context_;
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserCdmCast);
-};
-
-// MediaKeys implementation that lives on the UI thread and forwards all calls
-// to a BrowserCdmCast instance on the CMA thread. This is used to simplify the
-// UI-CMA threading interaction.
-class BrowserCdmCastUi : public ::media::MediaKeys {
- public:
-  BrowserCdmCastUi(
-      const scoped_refptr<BrowserCdmCast>& browser_cdm_cast,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
-  BrowserCdmCast* browser_cdm_cast() const;
-
- private:
-  ~BrowserCdmCastUi() override;
-
-  // ::media::MediaKeys implementation:
-  void SetServerCertificate(
-      const std::vector<uint8_t>& certificate,
-      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
-  void CreateSessionAndGenerateRequest(
-      ::media::MediaKeys::SessionType session_type,
-      ::media::EmeInitDataType init_data_type,
-      const std::vector<uint8_t>& init_data,
-      std::unique_ptr<::media::NewSessionCdmPromise> promise) override;
-  void LoadSession(
-      ::media::MediaKeys::SessionType session_type,
-      const std::string& session_id,
-      std::unique_ptr<::media::NewSessionCdmPromise> promise) override;
-  void UpdateSession(
-      const std::string& session_id,
-      const std::vector<uint8_t>& response,
-      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
-  void CloseSession(
-      const std::string& session_id,
-      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
-  void RemoveSession(
-      const std::string& session_id,
-      std::unique_ptr<::media::SimpleCdmPromise> promise) override;
-
-  scoped_refptr<BrowserCdmCast> browser_cdm_cast_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserCdmCastUi);
+  DISALLOW_COPY_AND_ASSIGN(CastCdm);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CDM_BROWSER_CDM_CAST_H_
+#endif  // CHROMECAST_MEDIA_CDM_cast_cdm_H_

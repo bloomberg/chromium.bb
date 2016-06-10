@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
-#include "chromecast/media/cdm/browser_cdm_cast.h"
+#include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "chromecast/media/cma/base/cma_logging.h"
@@ -81,7 +81,7 @@ struct MediaPipelineImpl::FlushTask {
 };
 
 MediaPipelineImpl::MediaPipelineImpl()
-    : cdm_(nullptr),
+    : cdm_context_(nullptr),
       backend_state_(BACKEND_STATE_UNINITIALIZED),
       playback_rate_(1.0f),
       audio_decoder_(nullptr),
@@ -160,14 +160,14 @@ void MediaPipelineImpl::SetCdm(int cdm_id) {
   // One possibility would be a GetCdmByIdCB that's passed in.
 }
 
-void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
+void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  cdm_ = cdm;
+  cdm_context_ = cdm_context;
   if (audio_pipeline_)
-    audio_pipeline_->SetCdm(cdm);
+    audio_pipeline_->SetCdm(cdm_context);
   if (video_pipeline_)
-    video_pipeline_->SetCdm(cdm);
+    video_pipeline_->SetCdm(cdm_context);
 }
 
 ::media::PipelineStatus MediaPipelineImpl::InitializeAudio(
@@ -184,8 +184,8 @@ void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   }
   audio_decoder_.reset(new AudioDecoderSoftwareWrapper(backend_audio_decoder));
   audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_.get(), client));
-  if (cdm_)
-    audio_pipeline_->SetCdm(cdm_);
+  if (cdm_context_)
+    audio_pipeline_->SetCdm(cdm_context_);
   return audio_pipeline_->Initialize(config, std::move(frame_provider));
 }
 
@@ -201,8 +201,8 @@ void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
     return ::media::PIPELINE_ERROR_ABORT;
   }
   video_pipeline_.reset(new VideoPipelineImpl(video_decoder_, client));
-  if (cdm_)
-    video_pipeline_->SetCdm(cdm_);
+  if (cdm_context_)
+    video_pipeline_->SetCdm(cdm_context_);
   return video_pipeline_->Initialize(configs, std::move(frame_provider));
 }
 
