@@ -106,7 +106,7 @@ class HistoryNoticeUtilsTest : public ::testing::Test {
 
     // Process the DeleteSoon() called on MergeBooleanCallbacks, otherwise
     // this it will be considered to be leaked.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(expected_test_case_result, result_);
   }

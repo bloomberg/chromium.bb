@@ -6,6 +6,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "components/safe_browsing_db/v4_store.h"
@@ -136,7 +137,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithNoStores) {
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 }
 
@@ -157,7 +158,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStores) {
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 }
 
@@ -178,7 +179,7 @@ TEST_F(SafeBrowsingV4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 }
 

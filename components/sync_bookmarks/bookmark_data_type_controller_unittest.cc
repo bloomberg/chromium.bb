@@ -128,7 +128,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     bookmark_dtc_->StartAssociating(
         base::Bind(&StartCallbackMock::Run,
                    base::Unretained(&start_callback_)));
-     base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void NotifyHistoryServiceLoaded() {
@@ -180,8 +180,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
   bookmark_dtc_->StartAssociating(
       base::Bind(&StartCallbackMock::Run,
                  base::Unretained(&start_callback_)));
-  base::MessageLoop::current()->RunUntilIdle();
-
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
 }

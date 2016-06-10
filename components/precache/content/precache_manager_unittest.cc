@@ -160,7 +160,7 @@ class PrecacheManagerTest : public testing::Test {
     // which will assert in debug builds because the directory passed to it is
     // deleted. So manually ensure that the task is run before browser_context_
     // is destructed.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -186,7 +186,7 @@ class PrecacheManagerTest : public testing::Test {
         new PrecacheManagerUnderTest(
             &browser_context_, nullptr /* sync_service */,
             &history_service_, db_path, std::move(precache_database)));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Must be declared first so that it is destroyed last.
@@ -213,12 +213,12 @@ TEST_F(PrecacheManagerTest, StartAndFinishPrecaching) {
                            net::URLRequestStatus::SUCCESS);
 
   precache_manager_->StartPrecaching(precache_callback_.GetCallback());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(precache_manager_->IsPrecaching());
 
   top_hosts_callback.Run(
       history::TopHostsList(1, std::make_pair("good-manifest.com", 1)));
-  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
+  base::RunLoop().RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   EXPECT_TRUE(precache_callback_.was_on_done_called());
 
@@ -244,7 +244,7 @@ TEST_F(PrecacheManagerTest, StartAndFinishPrecachingWithUnfinishedHosts) {
   precache_manager_->StartPrecaching(precache_callback_.GetCallback());
   EXPECT_TRUE(precache_manager_->IsPrecaching());
 
-  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
+  base::RunLoop().RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   EXPECT_TRUE(precache_callback_.was_on_done_called());
 
@@ -263,7 +263,7 @@ TEST_F(PrecacheManagerTest,
   precache_manager_->CancelPrecaching();
   EXPECT_FALSE(precache_manager_->IsPrecaching());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(precache_callback_.was_on_done_called());
 }
 
@@ -279,11 +279,11 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingBeforeTopHostsCompleted) {
 
   precache_manager_->CancelPrecaching();
   EXPECT_FALSE(precache_manager_->IsPrecaching());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   top_hosts_callback.Run(
       history::TopHostsList(1, std::make_pair("starting-url.com", 1)));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   EXPECT_FALSE(precache_callback_.was_on_done_called());
 }
@@ -299,11 +299,11 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingBeforeURLsReceived) {
   EXPECT_TRUE(precache_manager_->IsPrecaching());
 
   precache_manager_->CancelPrecaching();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   top_hosts_callback.Run(
       history::TopHostsList(1, std::make_pair("starting-url.com", 1)));
-  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
+  base::RunLoop().RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   EXPECT_FALSE(precache_callback_.was_on_done_called());
   EXPECT_TRUE(url_callback_.requested_urls().empty());
@@ -328,11 +328,11 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingAfterURLsReceived) {
     base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
-  //base::MessageLoop::current()->RunUntilIdle();
+  // base::RunLoop().RunUntilIdle();
   precache_manager_->CancelPrecaching();
   EXPECT_FALSE(precache_manager_->IsPrecaching());
 
-  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
+  base::RunLoop().RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_->IsPrecaching());
   EXPECT_FALSE(precache_callback_.was_on_done_called());
 
@@ -346,7 +346,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchWithSizeZero) {
   precache_manager_->RecordStatsForFetch(GURL("http://url.com"), GURL(),
                                         base::TimeDelta(), base::Time(), 0,
                                         false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."), IsEmpty());
 }
 
@@ -355,7 +355,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchWithNonHTTP) {
   precache_manager_->RecordStatsForFetch(GURL("ftp://ftp.com"), GURL(),
                                         base::TimeDelta(), base::Time(), 1000,
                                         false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."), IsEmpty());
 }
 
@@ -363,7 +363,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchWithEmptyURL) {
   // Fetches for empty URLs should be ignored.
   precache_manager_->RecordStatsForFetch(GURL(), GURL(), base::TimeDelta(),
                                         base::Time(), 1000, false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."), IsEmpty());
 }
 
@@ -377,11 +377,11 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
   precache_manager_->RecordStatsForFetch(GURL("http://url.com"), GURL(),
                                         base::TimeDelta(), base::Time(), 1000,
                                         false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   precache_manager_->CancelPrecaching();
 
   // For PrecacheFetcher and RecordURLPrecached.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ElementsAre(Pair("Precache.DownloadedPrecacheMotivated", 1),
                           Pair("Precache.Fetch.PercentCompleted", 1),
@@ -395,7 +395,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchHTTP) {
   precache_manager_->RecordStatsForFetch(GURL("http://http-url.com"), GURL(),
                                         base::TimeDelta(), base::Time(), 1000,
                                         false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
@@ -407,7 +407,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchHTTPS) {
   precache_manager_->RecordStatsForFetch(GURL("https://https-url.com"), GURL(),
                                         base::TimeDelta(), base::Time(), 1000,
                                         false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
@@ -425,7 +425,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchInTopHosts) {
   precache_manager_->RecordStatsForFetch(
       GURL("http://http-url.com"), GURL("http://referrer.com"),
       base::TimeDelta(), base::Time(), 1000, false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ElementsAre(Pair("Precache.DownloadedNonPrecache", 1),
@@ -462,24 +462,24 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Total"]++;
   expected_histogram_count_map["Precache.Fetch.TimeToComplete"]++;
   expected_histogram_count_map["Precache.Latency.Prefetch"] += 3;
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   precache_manager_->CancelPrecaching();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Disable pause-resume.
   precache_database_->DeleteUnfinishedWork();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // For PrecacheFetcher and RecordURLPrecached.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ContainerEq(expected_histogram_count_map));
 
   // The expired precache will be deleted during precaching this time.
   precache_manager_->StartPrecaching(precache_callback_.GetCallback());
   EXPECT_TRUE(precache_manager_->IsPrecaching());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The precache fetcher runs until done, which records these histograms,
   // and then cancels precaching, which records these histograms again.
@@ -488,7 +488,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Network"]++;
   expected_histogram_count_map["Precache.Fetch.ResponseBytes.Total"]++;
   // For PrecacheFetcher and RecordURLPrecached.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(precache_manager_->IsPrecaching());
 
   // A fetch for the same URL as the expired precache was served from the cache,
@@ -501,7 +501,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Latency.NonPrefetch"]++;
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"]++;
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ContainerEq(expected_histogram_count_map));
 
@@ -517,7 +517,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.Latency.NonPrefetch.NonTopHosts"] += 2;
   expected_histogram_count_map["Precache.Saved"] += 2;
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ContainerEq(expected_histogram_count_map));
 }

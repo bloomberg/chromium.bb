@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -422,7 +423,7 @@ TEST_F(DataUseAggregatorTest, ReportOffTheRecordDataUse) {
 
   // Off the record data use should not be reported to observers.
   data_use_aggregator()->ReportOffTheRecordDataUse(1000, 1000);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(static_cast<size_t>(0),
             test_observer()->observed_data_use().size());
 }

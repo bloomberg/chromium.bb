@@ -4,7 +4,7 @@
 
 #include "components/omnibox/browser/shortcuts_provider_test_util.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
@@ -70,7 +70,7 @@ void RunShortcutsProviderTest(
     const std::vector<ExpectedURLAndAllowedToBeDefault>& expected_urls,
     std::string expected_top_result,
     base::string16 top_result_inline_autocompletion) {
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   AutocompleteInput input(text, base::string16::npos, std::string(), GURL(),
                           metrics::OmniboxEventProto::INVALID_SPEC,
                           prevent_inline_autocomplete, false, true, true, false,

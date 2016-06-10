@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
@@ -47,7 +48,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
     connection_type_to_return_ = type;
     net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
         connection_type_to_return_);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SimulateOffline() {

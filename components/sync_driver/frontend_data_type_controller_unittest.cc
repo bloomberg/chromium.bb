@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
@@ -149,7 +150,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test,
     PumpLoop();
   }
 
-  void PumpLoop() { base::MessageLoop::current()->RunUntilIdle(); }
+  void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
   base::MessageLoop message_loop_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;

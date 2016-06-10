@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -175,7 +176,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
     all_forms.push_back(CreatePasswordFormFromDataForTesting(form_data[i]));
     store->AddLogin(*all_forms.back());
   }
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We expect to get back only the "recent" www.google.com login.
   // Theoretically these should never actually exist since there are no longer
@@ -221,10 +222,10 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   store->GetLogins(accounts_google, &consumer);
   store->GetLogins(bar_example, &consumer);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordStoreTest, StartSyncFlare) {
@@ -240,10 +241,10 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
     form.signon_realm = "http://accounts.google.com/";
     EXPECT_CALL(mock, StartSyncFlare(syncer::PASSWORDS));
     store->AddLogin(form);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordStoreTest, GetLoginImpl) {
@@ -288,17 +289,17 @@ TEST_F(PasswordStoreTest, GetLoginImpl) {
   store->AddLogin(*mismatching_form_3);
   store->AddLogin(*mismatching_form_4);
   store->AddLogin(*mismatching_form_5);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(store->GetLoginImpl(*test_form));
 
   store->AddLogin(*test_form);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::unique_ptr<PasswordForm> returned_form = store->GetLoginImpl(*test_form);
   ASSERT_TRUE(returned_form);
   EXPECT_EQ(*test_form, *returned_form);
 
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
@@ -328,7 +329,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   std::unique_ptr<PasswordForm> old_form(
       CreatePasswordFormFromDataForTesting(kTestCredentials[0]));
   store->AddLogin(*old_form);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   MockPasswordStoreObserver mock_observer;
   store->AddObserver(&mock_observer);
@@ -343,7 +344,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   old_primary_key.username_value = old_form->username_value;
   old_primary_key.password_element = old_form->password_element;
   store->UpdateLoginWithPrimaryKey(*new_form, old_primary_key);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   MockPasswordStoreConsumer mock_consumer;
   ScopedVector<autofill::PasswordForm> expected_forms;
@@ -352,11 +353,11 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_forms.get())));
   store->GetAutofillableLogins(&mock_consumer);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   store->RemoveObserver(&mock_observer);
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that RemoveLoginsCreatedBetween() fires the completion callback after
@@ -381,7 +382,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   std::unique_ptr<PasswordForm> test_form(
       CreatePasswordFormFromDataForTesting(kTestCredential));
   store->AddLogin(*test_form);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   MockPasswordStoreObserver mock_observer;
   store->AddObserver(&mock_observer);
@@ -395,7 +396,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
 
   store->RemoveObserver(&mock_observer);
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // When no Android applications are actually affiliated with the realm of the
@@ -439,7 +440,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
     all_credentials.push_back(
         CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
     store->AddLogin(*all_credentials.back());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   PasswordForm observed_form;
@@ -466,7 +467,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
                   UnorderedPasswordFormElementsAre(expected_results.get())));
   store->GetLogins(observed_form, &mock_consumer);
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // There are 3 Android applications affiliated with the realm of the observed
@@ -546,7 +547,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
     all_credentials.push_back(
         CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
     store->AddLogin(*all_credentials.back());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   PasswordForm observed_form;
@@ -584,7 +585,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
 
   store->GetLogins(observed_form, &mock_consumer);
   store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // This test must use passwords, which are not stored on Mac, therefore the test
@@ -736,7 +737,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
         all_credentials.back()->date_synced =
             all_credentials.back()->date_created;
         store->AddLogin(*all_credentials.back());
-        base::MessageLoop::current()->RunUntilIdle();
+        base::RunLoop().RunUntilIdle();
       }
 
       // The helper must be injected after the initial test data is set up,
@@ -791,7 +792,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
       } else {
         store->UpdateLoginSync(*expected_credentials_after_update[0]);
       }
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       store->RemoveObserver(&mock_observer);
 
       MockPasswordStoreConsumer mock_consumer;
@@ -801,7 +802,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
               expected_credentials_after_update.get())));
       store->GetAutofillableLogins(&mock_consumer);
       store->ShutdownOnUIThread();
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 }
@@ -844,7 +845,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
       if (blacklisted)
         all_credentials.back()->blacklisted_by_user = true;
       store->AddLogin(*all_credentials.back());
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
 
     MockPasswordStoreConsumer mock_consumer;
@@ -874,9 +875,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
     // Since GetAutofillableLoginsWithAffiliatedRealms schedules a request for
     // affiliated realms to UI thread, don't shutdown UI thread until there are
     // no tasks in the UI queue.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     store->ShutdownOnUIThread();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 }
 

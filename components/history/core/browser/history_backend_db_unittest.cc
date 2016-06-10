@@ -26,6 +26,7 @@
 
 #include "base/format_macros.h"
 #include "base/guid.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -982,7 +983,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
 
   // Allow the update to propagate, shut down the DB, and confirm that
   // the query updated the on disk database as well.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   DeleteBackend();
   {
     sql::Connection db;

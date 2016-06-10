@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -82,7 +83,7 @@ TEST_F(LogUploaderTest, Success) {
                            net::URLRequestStatus::SUCCESS);
 
   uploader.QueueLog("log1");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Log should be discarded instead of retransmitted.
   EXPECT_EQ(uploader.last_interval_set(), base::TimeDelta());
 }
@@ -96,7 +97,7 @@ TEST_F(LogUploaderTest, Rejection) {
                            net::URLRequestStatus::SUCCESS);
 
   uploader.QueueLog("log1");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Log should be discarded instead of retransmitted.
   EXPECT_EQ(uploader.last_interval_set(), base::TimeDelta());
 }
@@ -110,7 +111,7 @@ TEST_F(LogUploaderTest, Failure) {
                            net::URLRequestStatus::SUCCESS);
 
   uploader.QueueLog("log1");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Log should be scheduled for retransmission.
   base::TimeDelta error_interval = uploader.last_interval_set();
   EXPECT_GT(error_interval, base::TimeDelta());
@@ -122,7 +123,7 @@ TEST_F(LogUploaderTest, Failure) {
   // A second failure should lead to a longer interval, and the log should
   // be discarded due to full queue.
   uploader.StartUpload();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_GT(uploader.last_interval_set(), error_interval);
 
   factory_.SetFakeResponse(GURL(kTestServerURL),
@@ -133,13 +134,13 @@ TEST_F(LogUploaderTest, Failure) {
   // A success should revert to base interval while queue is not empty.
   for (int i = 0; i < 9; i++) {
     uploader.StartUpload();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_LT(uploader.last_interval_set(), error_interval);
   }
 
   // Queue should be empty.
   uploader.StartUpload();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(uploader.last_interval_set(), base::TimeDelta());
 }
 

@@ -17,6 +17,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -155,7 +156,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
     top_sites_ = nullptr;
 
     if (base::MessageLoop::current())
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
     pref_service_.reset();
   }

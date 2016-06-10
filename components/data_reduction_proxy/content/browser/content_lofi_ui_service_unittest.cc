@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -110,7 +109,7 @@ TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
       base::Bind(&ContentLoFiUIServiceTest::RunTestOnIOThread,
                  base::Unretained(this), &ui_run_loop, false));
   ui_run_loop.Run();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   VerifyOnLoFiResponseReceivedCallback(false);
 }
 
@@ -121,7 +120,7 @@ TEST_F(ContentLoFiUIServiceTest, OnLoFiPreviewResponseReceived) {
       base::Bind(&ContentLoFiUIServiceTest::RunTestOnIOThread,
                  base::Unretained(this), &ui_run_loop, true));
   ui_run_loop.Run();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   VerifyOnLoFiResponseReceivedCallback(true);
 }
 

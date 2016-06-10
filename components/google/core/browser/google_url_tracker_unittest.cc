@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
@@ -200,7 +201,7 @@ void GoogleURLTrackerTest::NotifyNetworkChanged() {
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   // For thread safety, the NCN queues tasks to do the actual notifications, so
   // we need to spin the message loop so the tracker will actually be notified.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests ----------------------------------------------------------------------

@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
@@ -509,9 +510,9 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
   // for future execution (note how both the SuggestionsService's scheduling
   // delay and the BlacklistStore's candidacy delay are zero). Then wait on
   // the blacklist request, then again on the next blacklist scheduling task.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   io_message_loop_.RunUntilIdle();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, suggestions_data_callback_count_);
   EXPECT_FALSE(blacklisting_failed_);
@@ -589,11 +590,11 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
   // second request and the third scheduling. Again, note that calling
   // RunUntilIdle on the MessageLoop only works when the task is not posted for
   // the future.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   io_message_loop_.RunUntilIdle();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   io_message_loop_.RunUntilIdle();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CheckSuggestionsData();
 }
 

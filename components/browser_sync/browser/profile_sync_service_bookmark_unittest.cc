@@ -467,7 +467,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     // This noticeably speeds up the unit tests that request it.
     if (save == DONT_SAVE_TO_STORAGE)
       model_->ClearStore();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   int GetSyncBookmarkCount() {
@@ -2446,7 +2446,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();
   WriteTestDataToBookmarkModel();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   BookmarkNodeVersionMap initial_versions;
 
@@ -2471,7 +2471,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   // the same.
   const BookmarkNode* bookmark_bar = model()->bookmark_bar_node();
   model()->Remove(bookmark_bar->GetChild(0));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   BookmarkNodeVersionMap new_versions;
   GetTransactionVersions(model()->root_node(), &new_versions);
   EXPECT_EQ(initial_versions[model()->root_node()->id()] + 1,
@@ -2485,7 +2485,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   const BookmarkNode* changed_bookmark =
       model()->bookmark_bar_node()->GetChild(0);
   model()->SetTitle(changed_bookmark, base::ASCIIToUTF16("test"));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   GetTransactionVersions(model()->root_node(), &new_versions);
   EXPECT_EQ(initial_versions[model()->root_node()->id()] + 2,
             new_versions[model()->root_node()->id()]);
@@ -2503,7 +2503,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, PersistenceError) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();
   WriteTestDataToBookmarkModel();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   BookmarkNodeVersionMap initial_versions;
 
