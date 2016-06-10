@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -68,9 +69,14 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/one_shot_event.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+namespace content {
+class BrowserContext;
+}
 
 using base::UserMetricsAction;
 
@@ -125,8 +131,8 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
 // chrome infrastructure to be up and running before they can be attempted.
 class FirstRunDelayedTasks : public content::NotificationObserver {
  public:
-  FirstRunDelayedTasks() {
-    registrar_.Add(this, extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
+  FirstRunDelayedTasks() : weak_ptr_factory_(this) {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                    content::NotificationService::AllSources());
@@ -135,29 +141,43 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    // After processing the notification we always delete ourselves.
-    if (type == extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED) {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      ExtensionService* service =
-          extensions::ExtensionSystem::Get(profile)->extension_service();
-      DoExtensionWork(service);
+    switch (type) {
+      case chrome::NOTIFICATION_PROFILE_CREATED: {
+        content::BrowserContext* context =
+            content::Source<Profile>(source).ptr();
+        extensions::ExtensionSystem::Get(context)->ready().Post(
+            FROM_HERE, base::Bind(&FirstRunDelayedTasks::OnExtensionSystemReady,
+                                  weak_ptr_factory_.GetWeakPtr(), context));
+        break;
+      }
+      case chrome::NOTIFICATION_BROWSER_CLOSED: {
+        delete this;
+        break;
+      }
+      default:
+        NOTREACHED();
     }
-    delete this;
   }
 
  private:
   // Private ctor forces it to be created only in the heap.
   ~FirstRunDelayedTasks() override {}
 
-  // The extension work is to basically trigger an extension update check.
-  // If the extension specified in the master pref is older than the live
-  // extension it will get updated which is the same as get it installed.
-  void DoExtensionWork(ExtensionService* service) {
-    if (service)
+  void OnExtensionSystemReady(content::BrowserContext* context) {
+    // Process the notification and delete this.
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(context)->extension_service();
+    if (service) {
+      // Trigger an extension update check. If the extension specified in the
+      // master pref is older than the live extension it will get updated which
+      // is the same as get it installed.
       service->updater()->CheckNow(extensions::ExtensionUpdater::CheckParams());
+    }
+    delete this;
   }
 
   content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<FirstRunDelayedTasks> weak_ptr_factory_;
 };
 
 // Installs a task to do an extensions update check once the extensions system
