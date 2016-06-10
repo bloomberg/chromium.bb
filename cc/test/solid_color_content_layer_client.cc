@@ -29,13 +29,25 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
   sk_sp<SkCanvas> canvas =
       sk_ref_sp(recorder.beginRecording(gfx::RectToSkRect(clip)));
 
+  canvas->clear(SK_ColorTRANSPARENT);
+
+  if (border_size_ != 0) {
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(border_color_);
+    canvas->drawRect(
+        SkRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()),
+        paint);
+  }
+
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(color_);
-
-  canvas->clear(SK_ColorTRANSPARENT);
   canvas->drawRect(
-      SkRect::MakeXYWH(clip.x(), clip.y(), clip.width(), clip.height()), paint);
+      SkRect::MakeXYWH(clip.x() + border_size_, clip.y() + border_size_,
+                       clip.width() - 2 * border_size_,
+                       clip.height() - 2 * border_size_),
+      paint);
 
   DisplayItemListSettings settings;
   settings.use_cached_picture = false;

@@ -5,9 +5,11 @@
 #include <stddef.h>
 
 #include "build/build_config.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/pixel_comparator.h"
+#include "cc/test/solid_color_content_layer_client.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
@@ -585,8 +587,14 @@ class RotatedDropShadowFilterTest : public LayerTreeHostFiltersPixelTest {
 
     gfx::Rect rect(50, 50, 100, 100);
 
-    scoped_refptr<SolidColorLayer> child =
-        CreateSolidColorLayer(rect, SK_ColorBLUE);
+    // Use a border to defeat solid color detection to force a tile quad.
+    // This is intended to test render pass removal optimizations.
+    SolidColorContentLayerClient blue_client(SK_ColorBLUE, rect.size(), 1,
+                                             SK_ColorBLACK);
+    scoped_refptr<PictureLayer> child = PictureLayer::Create(&blue_client);
+    child->SetBounds(rect.size());
+    child->SetPosition(gfx::PointF(rect.origin()));
+    child->SetIsDrawable(true);
 
     gfx::Transform transform;
     transform.Translate(50.0f, 50.0f);
