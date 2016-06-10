@@ -7,7 +7,8 @@ struct NativeMessageResultMojo {
 };
 
 interface TestUIHandlerMojo {
-  HandleJsMessage(string message, TestPage page);
+  SetClientPage(TestPage page);
+  HandleJsMessage(string message);
 };
 
 interface TestPage {

@@ -45,7 +45,8 @@ class TestUIHandler : public TestUIHandlerMojo,
   bool IsFinReceived() { return fin_received_; }
 
   // TestUIHandlerMojo overrides.
-  void HandleJsMessage(const mojo::String& message, TestPagePtr page) override {
+  void SetClientPage(TestPagePtr page) override { page_ = std::move(page); }
+  void HandleJsMessage(const mojo::String& message) override {
     if (message.get() == "syn") {
       // Received "syn" message from WebUI page, send "ack" as reply.
       DCHECK(!syn_received_);
@@ -53,7 +54,7 @@ class TestUIHandler : public TestUIHandlerMojo,
       syn_received_ = true;
       NativeMessageResultMojoPtr result(NativeMessageResultMojo::New());
       result->message = mojo::String::From("ack");
-      page->HandleNativeMessage(std::move(result));
+      page_->HandleNativeMessage(std::move(result));
     } else if (message.get() == "fin") {
       // Received "fin" from the WebUI page in response to "ack".
       DCHECK(syn_received_);
@@ -72,6 +73,7 @@ class TestUIHandler : public TestUIHandlerMojo,
   }
 
   mojo::BindingSet<TestUIHandlerMojo> bindings_;
+  TestPagePtr page_ = nullptr;
   // |true| if "syn" has been received.
   bool syn_received_ = false;
   // |true| if "fin" has been received.
