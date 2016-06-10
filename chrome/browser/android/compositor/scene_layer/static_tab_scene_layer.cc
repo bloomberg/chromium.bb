@@ -27,8 +27,8 @@ StaticTabSceneLayer::~StaticTabSceneLayer() {
 }
 
 bool StaticTabSceneLayer::ShouldShowBackground() {
-  scoped_refptr<cc::Layer> parent = layer_->parent();
-  return parent.get() && parent->bounds() != layer_->bounds();
+  scoped_refptr<cc::Layer> root = layer_->RootLayer();
+  return root && root->bounds() != layer_->bounds();
 }
 
 SkColor StaticTabSceneLayer::GetBackgroundColor() {
