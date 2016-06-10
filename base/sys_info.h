@@ -50,6 +50,10 @@ class BASE_EXPORT SysInfo {
   // or -1 on failure.
   static int64_t AmountOfFreeDiskSpace(const FilePath& path);
 
+  // Return the total disk space in bytes on the volume containing |path|, or -1
+  // on failure.
+  static int64_t AmountOfTotalDiskSpace(const FilePath& path);
+
   // Returns system uptime.
   static TimeDelta Uptime();
 

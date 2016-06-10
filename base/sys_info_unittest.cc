@@ -33,7 +33,15 @@ TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(base::GetTempDir(&tmp_path));
-  EXPECT_GT(base::SysInfo::AmountOfFreeDiskSpace(tmp_path), 0)
+  EXPECT_GE(base::SysInfo::AmountOfFreeDiskSpace(tmp_path), 0)
+            << tmp_path.value();
+}
+
+TEST_F(SysInfoTest, AmountOfTotalDiskSpace) {
+  // We aren't actually testing that it's correct, just that it's sane.
+  FilePath tmp_path;
+  ASSERT_TRUE(base::GetTempDir(&tmp_path));
+  EXPECT_GT(base::SysInfo::AmountOfTotalDiskSpace(tmp_path), 0)
             << tmp_path.value();
 }
 
