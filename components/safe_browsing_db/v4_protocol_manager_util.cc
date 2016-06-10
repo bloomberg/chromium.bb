@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
+#include "net/http/http_request_headers.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -77,34 +78,39 @@ void V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
 }
 
 // static
-// The API hash call uses the pver4 Safe Browsing server.
-GURL V4ProtocolManagerUtil::GetRequestUrl(const std::string& request_base64,
-                                          const std::string& method_name,
-                                          const V4ProtocolConfig& config) {
-  std::string url =
-      ComposeUrl(kSbV4UrlPrefix, method_name, request_base64,
-                 config.client_name, config.version, config.key_param);
-  return GURL(url);
+void V4ProtocolManagerUtil::GetRequestUrlAndHeaders(
+    const std::string& request_base64,
+    const std::string& method_name,
+    const V4ProtocolConfig& config,
+    GURL* gurl,
+    net::HttpRequestHeaders* headers) {
+  *gurl = GURL(ComposeUrl(kSbV4UrlPrefix, method_name, request_base64,
+                          config.key_param));
+  UpdateHeaders(headers);
 }
 
 // static
 std::string V4ProtocolManagerUtil::ComposeUrl(const std::string& prefix,
                                               const std::string& method,
                                               const std::string& request_base64,
-                                              const std::string& client_id,
-                                              const std::string& version,
                                               const std::string& key_param) {
-  DCHECK(!prefix.empty() && !method.empty() && !client_id.empty() &&
-         !version.empty());
-  std::string url =
-      base::StringPrintf("%s/%s/%s?alt=proto&client_id=%s&client_version=%s",
-                         prefix.c_str(), method.c_str(), request_base64.c_str(),
-                         client_id.c_str(), version.c_str());
+  DCHECK(!prefix.empty() && !method.empty());
+  std::string url = base::StringPrintf(
+      "%s/%s?$req=%s&$ct=application/x-protobuf", prefix.c_str(),
+      method.c_str(), request_base64.c_str());
   if (!key_param.empty()) {
     base::StringAppendF(&url, "&key=%s",
                         net::EscapeQueryParamValue(key_param, true).c_str());
   }
   return url;
+}
+
+// static
+void V4ProtocolManagerUtil::UpdateHeaders(net::HttpRequestHeaders* headers) {
+  // NOTE(vakh): The following header informs the envelope server (which sits in
+  // front of Google's stubby server) that the received GET request should be
+  // interpreted as a POST.
+  headers->SetHeaderIfMissing("X-HTTP-Method-Override", "POST");
 }
 
 }  // namespace safe_browsing

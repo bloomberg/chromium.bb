@@ -16,6 +16,10 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
+namespace net {
+class HttpRequestHeaders;
+}  // namespace net
+
 namespace safe_browsing {
 // Config passed to the constructor of a V4 protocol manager.
 struct V4ProtocolConfig {
@@ -93,14 +97,18 @@ class V4ProtocolManagerUtil {
                                             const net::URLRequestStatus& status,
                                             int response_code);
 
-  // Generates a Pver4 request URL.
+  // Generates a Pver4 request URL and sets the appropriate header values.
   // |request_base64| is the serialized request protocol buffer encoded in
   // base 64.
   // |method_name| is the name of the method to call, as specified in the proto,
-  // |config| is an instance of V4ProtocolConfig that stores the client config.
-  static GURL GetRequestUrl(const std::string& request_base64,
-                            const std::string& method_name,
-                            const V4ProtocolConfig& config);
+  // |config| is an instance of V4ProtocolConfig that stores the client config,
+  // |gurl| is set to the value of the PVer4 request URL,
+  // |headers| is populated with the appropriate header values.
+  static void GetRequestUrlAndHeaders(const std::string& request_base64,
+                                            const std::string& method_name,
+                                            const V4ProtocolConfig& config,
+                                            GURL* gurl,
+                                            net::HttpRequestHeaders* headers);
 
   // Worker function for calculating the backoff times.
   // |multiplier| is doubled for each consecutive error after the
@@ -113,7 +121,7 @@ class V4ProtocolManagerUtil {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerUtilTest,
                            TestBackOffLogic);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerUtilTest,
-                           TestGetRequestUrl);
+                           TestGetRequestUrlAndUpdateHeaders);
 
   // Composes a URL using |prefix|, |method| (e.g.: encodedFullHashes).
   // |request_base64|, |client_id|, |version| and |key_param|. |prefix|
@@ -121,9 +129,10 @@ class V4ProtocolManagerUtil {
   static std::string ComposeUrl(const std::string& prefix,
                                 const std::string& method,
                                 const std::string& request_base64,
-                                const std::string& client_id,
-                                const std::string& version,
                                 const std::string& key_param);
+
+  // Sets the HTTP headers expected by a standard PVer4 request.
+  static void UpdateHeaders(net::HttpRequestHeaders* headers);
 
   DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerUtil);
 };

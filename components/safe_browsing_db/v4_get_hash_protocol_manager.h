@@ -26,7 +26,8 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace net {
 class URLFetcher;
@@ -85,9 +86,8 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
  protected:
   // Constructs a V4GetHashProtocolManager that issues
   // network requests using |request_context_getter|.
-  V4GetHashProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config);
+  V4GetHashProtocolManager(net::URLRequestContextGetter* request_context_getter,
+                           const V4ProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
@@ -110,7 +110,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
                            TestGetHashErrorHandlingResponseCode);
   friend class V4GetHashProtocolManagerFactoryImpl;
 
-  GURL GetHashUrl(const std::string& request_base64) const;
+  void GetHashUrlAndHeaders(const std::string& request_base64,
+                            GURL* gurl,
+                            net::HttpRequestHeaders* headers) const;
 
   // Fills a FindFullHashesRequest protocol buffer for a request.
   // Returns the serialized and base 64 encoded request as a string.

@@ -25,7 +25,8 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace net {
 class URLFetcher;
@@ -94,10 +95,13 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
                            TestGetUpdatesWithOneBackoff);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
-  // The method to generate the URL for the request to be sent to the server.
+  // The method to populate |gurl| with the URL to be sent to the server.
   // |request_base64| is the base64 encoded form of an instance of the protobuf
-  // FetchThreatListUpdatesRequest.
-  GURL GetUpdateUrl(const std::string& request_base64) const;
+  // FetchThreatListUpdatesRequest. Also sets the appropriate header values for
+  // sending PVer4 requests in |headers|.
+  void GetUpdateUrlAndHeaders(const std::string& request_base64,
+                              GURL* gurl,
+                              net::HttpRequestHeaders* headers) const;
 
   // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
   // Returns the serialized and base 64 encoded request as a string.

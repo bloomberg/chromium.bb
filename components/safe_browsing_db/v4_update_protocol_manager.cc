@@ -278,11 +278,15 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
 
   std::string req_base64 =
       GetBase64SerializedUpdateRequestProto(current_list_states_);
-  GURL update_url = GetUpdateUrl(req_base64);
+  GURL update_url;
+  net::HttpRequestHeaders headers;
+  GetUpdateUrlAndHeaders(req_base64, &update_url, &headers);
 
-  request_.reset(net::URLFetcher::Create(url_fetcher_id_++, update_url,
-                                         net::URLFetcher::GET, this)
-                     .release());
+  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
+      url_fetcher_id_++, update_url, net::URLFetcher::GET, this);
+  fetcher->SetExtraRequestHeaders(headers.ToString());
+
+  request_.reset(fetcher.release());
 
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
@@ -339,13 +343,12 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
   }
 }
 
-GURL V4UpdateProtocolManager::GetUpdateUrl(
-    const std::string& req_base64) const {
-  GURL url = V4ProtocolManagerUtil::GetRequestUrl(req_base64, "encodedUpdates",
-                                                  config_);
-  DVLOG(1) << "V4UpdateProtocolManager::GetUpdateUrl: "
-           << "url: " << url;
-  return url;
+void V4UpdateProtocolManager::GetUpdateUrlAndHeaders(
+    const std::string& req_base64,
+    GURL* gurl,
+    net::HttpRequestHeaders* headers) const {
+  V4ProtocolManagerUtil::GetRequestUrlAndHeaders(
+      req_base64, "threatListUpdates:fetch", config_, gurl, headers);
 }
 
 }  // namespace safe_browsing
