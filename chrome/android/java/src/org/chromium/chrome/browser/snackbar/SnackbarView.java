@@ -39,6 +39,8 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
  * has a fixed width and is anchored at the start-bottom corner of the current window.
  */
 class SnackbarView {
+    private static final int MAX_LINES = 5;
+
     private final Activity mActivity;
     private final ViewGroup mView;
     private final TemplatePreservingTextView mMessageView;
@@ -211,7 +213,7 @@ class SnackbarView {
     private boolean updateInternal(Snackbar snackbar, boolean animate) {
         if (mSnackbar == snackbar) return false;
         mSnackbar = snackbar;
-        mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : Integer.MAX_VALUE);
+        mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : MAX_LINES);
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
         String actionText = snackbar.getActionText();
