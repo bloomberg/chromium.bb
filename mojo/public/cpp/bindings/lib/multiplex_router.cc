@@ -9,11 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_controller.h"
@@ -284,8 +285,7 @@ MultiplexRouter::MultiplexRouter(
     bool set_interface_id_namesapce_bit,
     ScopedMessagePipeHandle message_pipe,
     scoped_refptr<base::SingleThreadTaskRunner> runner)
-    : RefCountedDeleteOnMessageLoop(
-          base::MessageLoop::current()->task_runner()),
+    : RefCountedDeleteOnMessageLoop(base::ThreadTaskRunnerHandle::Get()),
       set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       header_validator_(this),
       connector_(std::move(message_pipe),
