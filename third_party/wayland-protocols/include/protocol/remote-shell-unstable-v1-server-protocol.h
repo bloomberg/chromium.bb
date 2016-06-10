@@ -133,6 +133,9 @@ zwp_remote_shell_v1_send_activated(struct wl_resource *resource_, struct wl_reso
  * @maximize: maximize
  * @minimize: minimize
  * @restore: restore
+ * @pin: pin
+ * @unpin: unpin
+ * @unfullscreen: unfullscreen
  *
  * An interface that may be implemented by a wl_surface, for
  * implementations that provide a desktop-style user interface and allows
@@ -266,6 +269,45 @@ struct zwp_remote_surface_v1_interface {
 	 */
 	void (*restore)(struct wl_client *client,
 			struct wl_resource *resource);
+	/**
+	 * pin - pin
+	 *
+	 * Request that surface is pinned.
+	 *
+	 * This is only a request that the window should be pinned. The
+	 * compositor may choose to ignore this request. The client should
+	 * listen to set_pinned events to determine if the window was
+	 * pinned or not.
+	 * @since: 3
+	 */
+	void (*pin)(struct wl_client *client,
+		    struct wl_resource *resource);
+	/**
+	 * unpin - unpin
+	 *
+	 * Request that surface is unpinned.
+	 *
+	 * This is only a request that the window should be unpinned. The
+	 * compositor may choose to ignore this request. The client should
+	 * listen to unset_pinned events to determine if the window was
+	 * unpinned or not.
+	 * @since: 3
+	 */
+	void (*unpin)(struct wl_client *client,
+		      struct wl_resource *resource);
+	/**
+	 * unfullscreen - unfullscreen
+	 *
+	 * Request that surface is made unfullscreen.
+	 *
+	 * This is only a request that the window should be made
+	 * unfullscreen. The compositor may choose to ignore this request.
+	 * The client should listen to unset_fullscreen events to determine
+	 * if the window was made unfullscreen or not.
+	 * @since: 3
+	 */
+	void (*unfullscreen)(struct wl_client *client,
+			     struct wl_resource *resource);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0
@@ -275,6 +317,10 @@ struct zwp_remote_surface_v1_interface {
 #define ZWP_REMOTE_SURFACE_V1_UNSET_MAXIMIZED	4
 #define ZWP_REMOTE_SURFACE_V1_SET_MINIMIZED	5
 #define ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED	6
+#define ZWP_REMOTE_SURFACE_V1_SET_PIN	7
+#define ZWP_REMOTE_SURFACE_V1_UNSET_PIN	8
+#define ZWP_REMOTE_SURFACE_V1_SET_PINNED	9
+#define ZWP_REMOTE_SURFACE_V1_UNSET_PINNED	10
 
 static inline void
 zwp_remote_surface_v1_send_set_fullscreen(struct wl_resource *resource_)
@@ -316,6 +362,30 @@ static inline void
 zwp_remote_surface_v1_send_unset_minimized(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_MINIMIZED);
+}
+
+static inline void
+zwp_remote_surface_v1_send_set_pin(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_SET_PIN);
+}
+
+static inline void
+zwp_remote_surface_v1_send_unset_pin(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_PIN);
+}
+
+static inline void
+zwp_remote_surface_v1_send_set_pinned(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_SET_PINNED);
+}
+
+static inline void
+zwp_remote_surface_v1_send_unset_pinned(struct wl_resource *resource_)
+{
+	wl_resource_post_event(resource_, ZWP_REMOTE_SURFACE_V1_UNSET_PINNED);
 }
 
 #ifdef  __cplusplus

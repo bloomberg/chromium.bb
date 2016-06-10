@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zwp_remote_shell_v1" version="2">
+  <interface name="zwp_remote_shell_v1" version="3">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -105,7 +105,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_remote_surface_v1" version="2">
+  <interface name="zwp_remote_surface_v1" version="3">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -289,6 +289,81 @@
 
 	This is only a request that the user intends to make your
 	window visible. The client may choose to ignore this request.
+      </description>
+    </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="pin" since="3">
+      <description summary="pin">
+	Request that surface is pinned.
+
+	This is only a request that the window should be pinned.
+	The compositor may choose to ignore this request. The client should
+	listen to set_pinned events to determine if the window was
+	pinned or not.
+      </description>
+    </request>
+
+    <request name="unpin" since="3">
+      <description summary="unpin">
+	Request that surface is unpinned.
+
+	This is only a request that the window should be unpinned.
+	The compositor may choose to ignore this request. The client should
+	listen to unset_pinned events to determine if the window was
+	unpinned or not.
+      </description>
+    </request>
+
+    <request name="unfullscreen" since="3">
+      <description summary="unfullscreen">
+	Request that surface is made unfullscreen.
+
+	This is only a request that the window should be made unfullscreen.
+	The compositor may choose to ignore this request. The client should
+	listen to unset_fullscreen events to determine if the window was
+	made unfullscreen or not.
+      </description>
+    </request>
+
+    <event name="set_pin" since="3">
+      <description summary="surface wants to be pinned">
+	The set_pin event is sent by the compositor when the user
+	wants the surface to be pinned.
+
+	This is only a request that the user intends to make your
+	window pinned. The client may choose to ignore this request.
+      </description>
+    </event>
+
+    <event name="unset_pin" since="3">
+      <description summary="surface wants to be unpinned">
+	The unset_pin event is sent by the compositor when the user
+	wants the surface to be unpinned.
+
+	This is only a request that the user intends to make your
+	window unpinned. The client may choose to ignore this request.
+      </description>
+    </event>
+
+    <event name="set_pinned" since="3">
+      <description summary="surface was pinned">
+	The set_pinned event is sent by the compositor when the surface
+	was pinned.
+
+	This is only an event that the pin request was successfully
+	done. The client may choose to ignore this event.
+      </description>
+    </event>
+
+    <event name="unset_pinned" since="3">
+      <description summary="surface was unpinned">
+	The unset_pinned event is sent by the compositor when the surface
+	was unpinned.
+
+	This is only an event that the unpin request was successfully
+	done. The client may choose to ignore this event.
       </description>
     </event>
   </interface>

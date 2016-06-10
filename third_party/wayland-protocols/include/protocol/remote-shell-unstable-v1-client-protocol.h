@@ -158,6 +158,10 @@ zwp_remote_shell_v1_get_remote_surface(struct zwp_remote_shell_v1 *zwp_remote_sh
  * @unset_maximized: surface wants to be restored
  * @set_minimized: surface wants to be minimized
  * @unset_minimized: surface wants to be restored
+ * @set_pin: surface wants to be pinned
+ * @unset_pin: surface wants to be unpinned
+ * @set_pinned: surface was pinned
+ * @unset_pinned: surface was unpinned
  *
  * An interface that may be implemented by a wl_surface, for
  * implementations that provide a desktop-style user interface and allows
@@ -257,6 +261,54 @@ struct zwp_remote_surface_v1_listener {
 	 */
 	void (*unset_minimized)(void *data,
 				struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * set_pin - surface wants to be pinned
+	 *
+	 * The set_pin event is sent by the compositor when the user
+	 * wants the surface to be pinned.
+	 *
+	 * This is only a request that the user intends to make your window
+	 * pinned. The client may choose to ignore this request.
+	 * @since: 3
+	 */
+	void (*set_pin)(void *data,
+			struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * unset_pin - surface wants to be unpinned
+	 *
+	 * The unset_pin event is sent by the compositor when the user
+	 * wants the surface to be unpinned.
+	 *
+	 * This is only a request that the user intends to make your window
+	 * unpinned. The client may choose to ignore this request.
+	 * @since: 3
+	 */
+	void (*unset_pin)(void *data,
+			  struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * set_pinned - surface was pinned
+	 *
+	 * The set_pinned event is sent by the compositor when the
+	 * surface was pinned.
+	 *
+	 * This is only an event that the pin request was successfully
+	 * done. The client may choose to ignore this event.
+	 * @since: 3
+	 */
+	void (*set_pinned)(void *data,
+			   struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
+	/**
+	 * unset_pinned - surface was unpinned
+	 *
+	 * The unset_pinned event is sent by the compositor when the
+	 * surface was unpinned.
+	 *
+	 * This is only an event that the unpin request was successfully
+	 * done. The client may choose to ignore this event.
+	 * @since: 3
+	 */
+	void (*unset_pinned)(void *data,
+			     struct zwp_remote_surface_v1 *zwp_remote_surface_v1);
 };
 
 static inline int
@@ -275,6 +327,9 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_MAXIMIZE	5
 #define ZWP_REMOTE_SURFACE_V1_MINIMIZE	6
 #define ZWP_REMOTE_SURFACE_V1_RESTORE	7
+#define ZWP_REMOTE_SURFACE_V1_PIN	8
+#define ZWP_REMOTE_SURFACE_V1_UNPIN	9
+#define ZWP_REMOTE_SURFACE_V1_UNFULLSCREEN	10
 
 static inline void
 zwp_remote_surface_v1_set_user_data(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, void *user_data)
@@ -344,6 +399,27 @@ zwp_remote_surface_v1_restore(struct zwp_remote_surface_v1 *zwp_remote_surface_v
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_RESTORE);
+}
+
+static inline void
+zwp_remote_surface_v1_pin(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_PIN);
+}
+
+static inline void
+zwp_remote_surface_v1_unpin(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_UNPIN);
+}
+
+static inline void
+zwp_remote_surface_v1_unfullscreen(struct zwp_remote_surface_v1 *zwp_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_UNFULLSCREEN);
 }
 
 #ifdef  __cplusplus
