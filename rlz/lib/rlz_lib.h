@@ -177,28 +177,6 @@ bool RLZ_LIB_API FormFinancialPingRequest(Product product,
                                           char* request,
                                           size_t request_buffer_size);
 
-// Pings the financial server and returns the HTTP response. This will fail
-// if it is too early to ping the server since the last ping.
-//
-// If RLZ_NETWORK_IMPLEMENTATION_CHROME_NET is set, SetURLRequestContext() needs
-// to be called before calling this function.
-//
-// product              : The product to ping for.
-// request              : The HTTP request (for example, returned by
-//                        FormFinancialPingRequest).
-// response             : The buffer in which the HTTP response is returned.
-// response_buffer_size : The size of the response buffer in bytes. The buffer
-//                        size (kMaxPingResponseLength+1) is enough for all
-//                        legitimate server responses (any response that is
-//                        bigger should be considered the same way as a general
-//                        network problem).
-//
-// Access: HKCU read.
-bool RLZ_LIB_API PingFinancialServer(Product product,
-                                     const char* request,
-                                     char* response,
-                                     size_t response_buffer_size);
-
 // Checks if a ping response is valid - ie. it has a checksum line which
 // is the CRC-32 checksum of the message uptil the checksum. If
 // checksum_idx is not NULL, it will get the index of the checksum, i.e. -
