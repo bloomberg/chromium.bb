@@ -73,6 +73,10 @@ class FileID {
   static std::string ConvertIdentifierToUUIDString(
       const wasteful_vector<uint8_t>& identifier);
 
+  // Convert the entire |identifier| data to a hex string.
+  static std::string ConvertIdentifierToString(
+      const wasteful_vector<uint8_t>& identifier);
+
  private:
   // Storage for the path specified
   std::string path_;

@@ -319,3 +319,20 @@ TYPED_TEST(FileIDTest, UniqueHashes) {
 
   EXPECT_NE(identifier_string_1, identifier_string_2);
 }
+
+TYPED_TEST(FileIDTest, ConvertIdentifierToString) {
+  const uint8_t kIdentifierBytes[] =
+    {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+     0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
+  const char* kExpected =
+    "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F";
+
+  id_vector identifier(this->make_vector());
+  identifier.insert(identifier.end(),
+                    kIdentifierBytes,
+                    kIdentifierBytes + sizeof(kIdentifierBytes));
+  ASSERT_EQ(kExpected,
+            FileID::ConvertIdentifierToString(identifier));
+}

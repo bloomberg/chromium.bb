@@ -926,8 +926,10 @@ bool InitModuleForElfClass(const typename ElfClass::Ehdr* elf_header,
   // number appended to the end of the file identifier; this isn't
   // really used or necessary on other platforms, but be consistent.
   string id = FileID::ConvertIdentifierToUUIDString(identifier) + "0";
+  // This is just the raw Build ID in hex.
+  string code_id = FileID::ConvertIdentifierToString(identifier);
 
-  module.reset(new Module(name, os, architecture, id));
+  module.reset(new Module(name, os, architecture, id, code_id));
 
   return true;
 }
