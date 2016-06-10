@@ -1088,7 +1088,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setShouldReuseGlobalForUnownedMainFrame(
       prefs.resue_global_for_unowned_main_frame);
   settings->setPreferHiddenVolumeControls(true);
-  settings->setShrinksViewportContentToFit(true);
   WebRuntimeFeatures::enableAutoplayMutedVideos(
       prefs.autoplay_muted_videos_enabled);
 #endif
@@ -1098,6 +1097,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setViewportEnabled(prefs.viewport_enabled);
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
+  settings->setShrinksViewportContentToFit(
+        prefs.shrinks_viewport_contents_to_fit);
   settings->setViewportStyle(
       static_cast<blink::WebViewportStyle>(prefs.viewport_style));
 

@@ -147,10 +147,12 @@ WebPreferences::WebPreferences()
       viewport_enabled(false),
 #if defined(OS_ANDROID)
       viewport_meta_enabled(true),
+      shrinks_viewport_contents_to_fit(true),
       viewport_style(ViewportStyle::MOBILE),
       always_show_context_menu_on_touch(false),
 #else
       viewport_meta_enabled(false),
+      shrinks_viewport_contents_to_fit(false),
       viewport_style(ViewportStyle::DEFAULT),
       always_show_context_menu_on_touch(true),
 #endif

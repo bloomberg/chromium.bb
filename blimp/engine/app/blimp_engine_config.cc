@@ -24,6 +24,7 @@ namespace engine {
 
 void SetCommandLineDefaults(base::CommandLine* command_line) {
   command_line->AppendSwitch(::switches::kEnableOverlayScrollbar);
+  command_line->AppendSwitch(::switches::kEnableViewport);
   command_line->AppendSwitch(cc::switches::kDisableCachedPictureRaster);
   command_line->AppendSwitch(::switches::kDisableGpu);
   command_line->AppendSwitch(

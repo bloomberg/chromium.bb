@@ -24,6 +24,13 @@ void SettingsManager::RemoveObserver(Observer* observer) {
 void SettingsManager::UpdateWebkitPreferences(content::WebPreferences* prefs) {
   prefs->record_whole_document = settings_.record_whole_document;
   prefs->animation_policy = settings_.animation_policy;
+  prefs->viewport_meta_enabled = settings_.viewport_meta_enabled;
+  prefs->default_minimum_page_scale_factor =
+      settings_.default_minimum_page_scale_factor;
+  prefs->default_maximum_page_scale_factor =
+      settings_.default_maximum_page_scale_factor;
+  prefs->shrinks_viewport_contents_to_fit =
+      settings_.shrinks_viewport_contents_to_fit;
 }
 
 const EngineSettings& SettingsManager::GetEngineSettings() const {

@@ -25,6 +25,11 @@ struct EngineSettings {
   // Disable animation in images by default.
   content::ImageAnimationPolicy animation_policy =
       content::ImageAnimationPolicy::IMAGE_ANIMATION_POLICY_NO_ANIMATION;
+
+  bool viewport_meta_enabled = true;
+  bool shrinks_viewport_contents_to_fit = true;
+  float default_minimum_page_scale_factor = 0.25f;
+  float default_maximum_page_scale_factor = 5.f;
 };
 
 }  // namespace engine

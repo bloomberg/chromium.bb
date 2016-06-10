@@ -168,6 +168,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool supports_multiple_windows;
   bool viewport_enabled;
   bool viewport_meta_enabled;
+  bool shrinks_viewport_contents_to_fit;
   ViewportStyle viewport_style;
   bool always_show_context_menu_on_touch;
   bool main_frame_resizes_are_orientation_changes;

@@ -57,6 +57,10 @@ TEST_F(SettingsManagerTest, UpdatesSettingsCorrectly) {
   EXPECT_EQ(
       prefs.animation_policy,
       content::ImageAnimationPolicy::IMAGE_ANIMATION_POLICY_ANIMATION_ONCE);
+  EXPECT_TRUE(prefs.viewport_meta_enabled);
+  EXPECT_EQ(prefs.default_minimum_page_scale_factor, 0.25f);
+  EXPECT_EQ(prefs.default_maximum_page_scale_factor, 5.f);
+  EXPECT_TRUE(prefs.shrinks_viewport_contents_to_fit);
 }
 
 }  // namespace
