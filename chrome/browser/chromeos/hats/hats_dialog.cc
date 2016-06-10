@@ -46,8 +46,7 @@ base::string16 HatsDialog::GetDialogTitle() const {
 }
 
 GURL HatsDialog::GetDialogContentURL() const {
-  // TODO(malaykeshav): Return a valid GURL.
-  return GURL();
+  return GURL(chrome::kChromeUIHatsURL);
 }
 
 void HatsDialog::GetWebUIMessageHandlers(
