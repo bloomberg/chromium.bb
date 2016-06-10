@@ -1420,8 +1420,7 @@ bool Texture::ClearLevel(
     GLES2Decoder* decoder, GLenum target, GLint level) {
   DCHECK(decoder);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  if (face_index >= face_infos_.size() ||
-      level < base_level_ ||
+  if (face_index >= face_infos_.size() || level < 0 ||
       level >= static_cast<GLint>(face_infos_[face_index].level_infos.size())) {
     return true;
   }
