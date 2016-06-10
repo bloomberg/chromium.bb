@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -86,7 +87,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
                  GetBackgroundHostForExtension(extension_id));
 
     // Wait for extension crash balloon to appear.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CheckExtensionConsistency(const std::string& extension_id) {
@@ -485,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
   ASSERT_EQ(1U, CountBalloons());
   UninstallExtension(first_extension_id_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   SCOPED_TRACE("after uninstalling");
   ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());

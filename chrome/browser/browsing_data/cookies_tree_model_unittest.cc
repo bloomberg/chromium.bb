@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cache_storage_helper.h"
@@ -52,7 +52,7 @@ class CookiesTreeModelTest : public testing::Test {
     special_storage_policy_ = nullptr;
 #endif
     profile_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() override {
@@ -106,7 +106,7 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_local_storage_helper_ = nullptr;
     mock_browsing_data_database_helper_ = nullptr;
     mock_browsing_data_flash_lso_helper_ = nullptr;
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   std::unique_ptr<CookiesTreeModel> CreateCookiesTreeModelWithInitialSample() {

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,7 +121,7 @@ CancelCallback FakeDriveUploader::UploadNewFile(
       title,
       false,  // shared_with_me
       base::Bind(&DidAddFileForUploadNew, callback));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   return CancelCallback();
 }

@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
                                test_server_->GetURL("/doc_path.doc"));
 
   // Wait for the response from the test server.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // There should be no downloads started by the navigation.
   DownloadManager* download_manager = GetDownloadManager();
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
                                test_server_->GetURL("/doc_path.doc"));
 
   // Wait for the response from the test server.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // There should be no downloads started by the navigation.
   DownloadManager* download_manager = GetDownloadManager();
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Headers) {
                                test_server_->GetURL("/spreadsheet_path.xls"));
 
   // Wait for the response from the test server.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // There should be no downloads started by the navigation.
   DownloadManager* download_manager = GetDownloadManager();
@@ -445,12 +445,12 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Abort) {
   ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(),
                                test_server_->GetURL("/no_abort.rtf"));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(catcher.GetNextResult());
 
   ui_test_utils::NavigateToURL(browser(),
                                test_server_->GetURL("/abort.rtf"));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(catcher.GetNextResult());
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -62,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   // Hide the bubble manually. In the browser this would normally happen during
   // the event processing.
   BookmarkBubbleView::Hide();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMouseReleased(released_event);
   EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -64,12 +64,12 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   void WaitForFrameLoad() {
     // PermissionBubbleManager ignores all parameters. Yay?
     manager_->DocumentLoadedInFrame(NULL);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void WaitForCoalescing() {
     manager_->DocumentOnLoadCompletedInMainFrame();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void MockTabSwitchAway() { manager_->HideBubble(); }
@@ -449,7 +449,7 @@ TEST_F(PermissionBubbleManagerTest, RequestsDontNeedUserGesture) {
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&iframe_request_other_domain_);
   manager_->AddRequest(&request2_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(view_factory_->is_visible());
 }

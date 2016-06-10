@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/json/json_writer.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -55,7 +56,7 @@ class AudioWaitingExtensionTest : public ExtensionApiTest {
     for (size_t remaining_tries = 50; remaining_tries > 0; --remaining_tries) {
       tab->GetRenderProcessHost()->GetAudioOutputControllers(
           base::Bind(OnAudioControllers, &audio_playing));
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       if (audio_playing)
         break;
 

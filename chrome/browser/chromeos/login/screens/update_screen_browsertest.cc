@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
@@ -179,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
   // Check that OOBE will resume back at this screen.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_EQ(update_screen_->GetName(),
       g_browser_process->local_state()->GetString(prefs::kOobeScreenPending));
@@ -355,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
               MockSetErrorState(NetworkError::ERROR_STATE_OFFLINE,
                                 std::string())).Times(1);
   EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   NotifyPortalDetectionCompleted();
 }
 
@@ -403,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
                      _)).Times(1);
 
   update_screen_->OnConnectRequested();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

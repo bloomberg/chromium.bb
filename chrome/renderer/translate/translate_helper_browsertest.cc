@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/test/base/chrome_render_view_test.h"
@@ -114,7 +115,7 @@ TEST_F(TranslateHelperBrowserTest, TranslateLibNeverReady) {
       .WillRepeatedly(Return(false));
 
   translate_helper_->TranslatePage("en", "fr", std::string());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(NULL, NULL, &error));
@@ -151,7 +152,7 @@ TEST_F(TranslateHelperBrowserTest, TranslateSuccess) {
   std::string original_lang("en");
   std::string target_lang("fr");
   translate_helper_->TranslatePage(original_lang, target_lang, std::string());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string received_original_lang;
   std::string received_target_lang;
@@ -194,7 +195,7 @@ TEST_F(TranslateHelperBrowserTest, TranslateFailure) {
               ExecuteScriptAndGetDoubleResult(_)).Times(2);
 
   translate_helper_->TranslatePage("en", "fr", std::string());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(NULL, NULL, &error));
@@ -230,7 +231,7 @@ TEST_F(TranslateHelperBrowserTest, UndefinedSourceLang) {
   translate_helper_->TranslatePage(translate::kUnknownLanguageCode,
                                    "fr",
                                    std::string());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   translate::TranslateErrors::Type error;
   std::string original_lang;
@@ -269,7 +270,7 @@ TEST_F(TranslateHelperBrowserTest, MultipleSimilarTranslations) {
   // While this is running call again TranslatePage to make sure noting bad
   // happens.
   translate_helper_->TranslatePage(original_lang, target_lang, std::string());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string received_original_lang;
   std::string received_target_lang;
@@ -307,7 +308,7 @@ TEST_F(TranslateHelperBrowserTest, MultipleDifferentTranslations) {
   std::string new_target_lang("de");
   translate_helper_->TranslatePage(
       original_lang, new_target_lang, std::string());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string received_original_lang;
   std::string received_target_lang;

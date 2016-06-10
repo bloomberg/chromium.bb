@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -417,7 +418,7 @@ TEST_F(DeviceSettingsServiceTest, IsCurrentUserOwnerAsyncWithLoadedCerts) {
   service->IsOwnerAsync(base::Bind(&DeviceSettingsServiceTest::OnIsOwner,
                                    base::Unretained(this)));
   // The callback should be called immediately.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());
   ASSERT_TRUE(device_settings_service_.GetPublicKey().get());

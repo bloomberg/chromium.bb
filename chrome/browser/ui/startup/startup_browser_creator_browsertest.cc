@@ -857,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   while (SessionRestore::IsRestoring(profile1) ||
          SessionRestore::IsRestoring(profile2))
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
   // The startup URLs are ignored, and instead the last open sessions are
   // restored.
@@ -953,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
          SessionRestore::IsRestoring(profile_home2) ||
          SessionRestore::IsRestoring(profile_last) ||
          SessionRestore::IsRestoring(profile_urls))
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
   Browser* new_browser = NULL;
   // The last open profile (the profile_home1 in this case) will always be

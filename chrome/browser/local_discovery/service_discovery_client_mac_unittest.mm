@@ -5,13 +5,13 @@
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/sockaddr_storage.h"
@@ -146,7 +146,7 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   resolver_impl->GetContainerForTesting()->OnResolveUpdate(
       ServiceResolver::STATUS_SUCCESS);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, num_resolves_);
   EXPECT_EQ(2u, last_service_description_.metadata.size());

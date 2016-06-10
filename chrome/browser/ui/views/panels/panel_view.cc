@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -159,7 +159,7 @@ void NativePanelTestingViews::FinishDragTitlebar() {
 }
 
 bool NativePanelTestingViews::VerifyDrawingAttention() const {
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   return panel_view_->GetFrameView()->GetPaintState() ==
          PanelFrameView::PAINT_FOR_ATTENTION;
 }

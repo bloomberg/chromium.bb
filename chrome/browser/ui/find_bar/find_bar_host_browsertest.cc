@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -956,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   chrome::ShowFindBar(browser());
 
   // This is needed on GTK because the reposition operation is asynchronous.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   gfx::Point start_position;
   gfx::Point position;
@@ -1392,12 +1393,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
   popup->window()->Show();
 
   // On GTK, bounds change is asynchronous.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EnsureFindBoxOpenForBrowser(popup);
 
   // GTK adjusts FindBar size asynchronously.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_LE(GetFindBarWidthForBrowser(popup),
             popup->window()->GetBounds().width());

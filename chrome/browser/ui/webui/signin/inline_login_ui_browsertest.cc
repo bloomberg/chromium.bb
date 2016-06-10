@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -595,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                         OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test signin helper creates sync starter with correct confirmation when
@@ -629,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test signin helper creates sync starter with correct confirmation when
@@ -664,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                         OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test signin helper creates sync starter with correct confirmation during
@@ -701,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test signin helper does not create sync starter when reauthenticating.
@@ -727,7 +728,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             false);  // confirm untrusted signin
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
   ASSERT_EQ(1ul, token_service()->GetAccounts().size());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test signin helper does not create sync starter when adding another account
@@ -754,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             false);  // confirm untrusted signin
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
   ASSERT_EQ(1ul, token_service()->GetAccounts().size());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
@@ -885,6 +886,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 
   ExecuteJsToSigninInSigninFrame(browser(), "email@gmail.com", "password");
   run_loop.Run();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 #endif  // OS_WIN

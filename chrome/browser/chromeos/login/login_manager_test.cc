@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -95,7 +96,7 @@ void LoginManagerTest::TearDownOnMainThread() {
   MixinBasedBrowserTest::TearDownOnMainThread();
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->Finalize();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 

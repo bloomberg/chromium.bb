@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -97,7 +97,7 @@ TEST_F(ReloadButtonTest, DoubleClickTimer) {
              false);
 
   // Now fire the timer.  This should complete the mode change.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CheckState(true, ReloadButton::MODE_STOP, ReloadButton::MODE_STOP, false,
              false);
 }
@@ -150,7 +150,7 @@ TEST_F(ReloadButtonTest, ResetOnTimer) {
   reload_.ChangeMode(ReloadButton::MODE_RELOAD, false);
 
   // Now fire the stop-to-reload timer.  This should reset the button.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
              false);
 }

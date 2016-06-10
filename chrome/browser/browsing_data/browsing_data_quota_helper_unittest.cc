@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/test/mock_storage_client.h"
 #include "content/public/test/test_browser_thread.h"
@@ -46,7 +46,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     helper_ = nullptr;
     quota_manager_ = nullptr;
     quota_info_.clear();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -124,7 +124,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
 TEST_F(BrowsingDataQuotaHelperTest, Empty) {
   StartFetching();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fetching_completed());
   EXPECT_TRUE(quota_info().empty());
 }
@@ -140,7 +140,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
 
   RegisterClient(kOrigins, arraysize(kOrigins));
   StartFetching();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fetching_completed());
 
   std::set<QuotaInfo> expected, actual;
@@ -169,7 +169,7 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
 
   RegisterClient(kOrigins, arraysize(kOrigins));
   StartFetching();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fetching_completed());
 
   std::set<QuotaInfo> expected, actual;
@@ -185,16 +185,16 @@ TEST_F(BrowsingDataQuotaHelperTest, RevokeHostQuota) {
 
   SetPersistentHostQuota(kHost1, 1);
   SetPersistentHostQuota(kHost2, 10);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   RevokeHostQuota(kHost1);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   GetPersistentHostQuota(kHost1);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, quota());
 
   GetPersistentHostQuota(kHost2);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(10, quota());
 }

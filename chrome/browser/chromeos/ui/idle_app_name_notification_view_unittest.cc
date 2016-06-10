@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -63,7 +64,7 @@ class IdleAppNameNotificationViewTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     // The destruction of the widget might be a delayed task.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -100,7 +101,7 @@ TEST_F(IdleAppNameNotificationViewTest, CheckSelfDestruction) {
   // Wait now for some time and see that it closes itself again.
   for (int i = 0; i < 50 && message->IsVisible(); i++) {
     sleep(1);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   EXPECT_FALSE(message->IsVisible());
 }

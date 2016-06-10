@@ -343,7 +343,7 @@ PasswordStoreXTestDelegate::~PasswordStoreXTestDelegate() {
 }
 
 void PasswordStoreXTestDelegate::FinishAsyncProcessing() {
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void PasswordStoreXTestDelegate::SetupTempDir() {

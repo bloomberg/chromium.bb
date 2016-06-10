@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_job.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
@@ -95,12 +96,12 @@ TEST(PrintJobTest, SimplePrint) {
   job->Initialize(owner.get(), &source, 1);
   job->Stop();
   while (job->document()) {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   EXPECT_FALSE(job->document());
   job = NULL;
   while (!check) {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   EXPECT_TRUE(check);
 }

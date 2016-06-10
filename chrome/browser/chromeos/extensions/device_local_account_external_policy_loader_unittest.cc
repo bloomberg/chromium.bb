@@ -244,7 +244,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   net::TestURLFetcherFactory factory;
   EXPECT_CALL(visitor_, OnExternalProviderReady(provider_.get()))
       .Times(1);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that a downloader has started and is attempting to download an
   // update manifest.

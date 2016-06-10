@@ -243,7 +243,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
 
   // Artificially trigger and then stop the timer.
   activity_db->SetTimerForTesting(0);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1, CountActions(&activity_db->db_, "brewster"));
 
   activity_db->Close();

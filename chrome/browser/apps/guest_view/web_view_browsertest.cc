@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -3235,7 +3236,7 @@ class ScrollWaiter {
 
   void WaitForScrollChange(gfx::Vector2dF target_offset) {
     while (target_offset != host_view_->GetLastScrollOffset())
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   }
 
  private:

@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -112,7 +112,7 @@ void AddWifiCredentialToProfileChromeOs(
       base::Bind(LogCreateConfigurationFailure,
                  base::StringPrintf("Failed to add credential %s",
                                     credential.ToString().c_str())));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 WifiCredentialSet GetWifiCredentialsForProfileChromeOs(

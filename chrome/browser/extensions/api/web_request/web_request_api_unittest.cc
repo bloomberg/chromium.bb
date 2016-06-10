@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -640,7 +641,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
   // We inspect the result in the message list of |ipc_sender_| later.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension_id, kEventName + "/1", 0, 0);
@@ -673,7 +674,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   // Now send a PUT request with the same body as above.
   FireURLRequestWithData(kMethodPut, NULL /*no header*/, plain_1, plain_2);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Clean-up.
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
@@ -750,7 +751,7 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
   const std::vector<char> part_of_body(1);
   FireURLRequestWithData("POST", nullptr, part_of_body, part_of_body);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Clean-up
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
@@ -813,7 +814,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   }
 
   // We inspect the result in the message list of |ipc_sender_| later.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension_id, kEventName + "/1", 0, 0);

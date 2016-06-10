@@ -750,7 +750,7 @@ TEST_F(NetworkPortalDetectorImplTest,
   disable_error_screen_strategy();
 
   // To run CaptivePortalDetector::DetectCaptivePortal().
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(MakeResultHistogramChecker()->Check());
 }

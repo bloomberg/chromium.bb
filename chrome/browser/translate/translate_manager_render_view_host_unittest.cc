@@ -13,6 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -342,7 +343,7 @@ class TranslateManagerRenderViewHostTest
 
     // The TranslateManager class processes the navigation entry committed
     // notification in a posted task; process that task.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   TestRenderViewContextMenu* CreateContextMenu() {
@@ -940,7 +941,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
 
   // The TranslateManager class processes the navigation entry committed
   // notification in a posted task; process that task.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CloseTranslateUi());
 }
 
@@ -1630,7 +1631,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
   SimulateOnPageTranslated("fr", "en");
 
   // A task should have been posted to clear the script, run it.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Do another navigation and translation.
   SimulateNavigation(GURL("http://www.google.es"), "es", true);

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -1010,7 +1011,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithEmptyString) {
 
   spell_check()->RequestTextChecking(base::string16(), &completion);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
 }
@@ -1022,7 +1023,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithoutMisspelling) {
   const base::string16 text = base::ASCIIToUTF16("hello");
   spell_check()->RequestTextChecking(text, &completion);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
 }
@@ -1034,7 +1035,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithSingleMisspelling) {
   const base::string16 text = base::ASCIIToUTF16("apple, zz");
   spell_check()->RequestTextChecking(text, &completion);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.last_results_.size(), 1U);
@@ -1049,7 +1050,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMisspellings) {
   const base::string16 text = base::ASCIIToUTF16("apple, zz, orange, zz");
   spell_check()->RequestTextChecking(text, &completion);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.last_results_.size(), 2U);
@@ -1073,7 +1074,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithMultipleRequests) {
   for (int i = 0; i < 3; ++i)
     spell_check()->RequestTextChecking(text[i], &completion[i]);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ(completion[i].completion_count_, 1U);
@@ -1094,7 +1095,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckWithoutInitialization) {
   spell_check()->RequestTextChecking(text, &completion);
 
   // The task will not be posted yet.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(completion.completion_count_, 0U);
 }
 
@@ -1116,7 +1117,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
 
   // The last task will be posted after initialization, however the other
   // requests should be pressed without spellchecking.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   for (int i = 0; i < 2; ++i)
     EXPECT_EQ(completion[i].completion_count_, 1U);
   EXPECT_EQ(completion[2].completion_count_, 0U);
@@ -1127,7 +1128,7 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
   // Calls PostDelayedSpellCheckTask instead of OnInit here for simplicity.
   spell_check()->PostDelayedSpellCheckTask(
       spell_check()->pending_request_param_.release());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(completion[i].completion_count_, 1U);
 }

@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -281,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
 
   // Ensure that the layout message can get a chance to be processed so that
   // the button visibility can be updated.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3, panel_manager->num_panels());
   EXPECT_TRUE(docked_collection->HasPanel(panel1));
@@ -1357,12 +1358,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
 
   panel1->SetExpansionState(Panel::MINIMIZED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
 
   panel2->SetExpansionState(Panel::MINIMIZED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   WaitForPanelActiveState(panel2, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
 

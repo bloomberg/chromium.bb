@@ -1094,7 +1094,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest10::Step2));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -2283,7 +2283,7 @@ class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(
         button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest25::Step2));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -2326,7 +2326,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(
         button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest26::Step2));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

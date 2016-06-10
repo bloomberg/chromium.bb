@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
@@ -139,7 +140,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
     button->OnMouseReleased(e);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(ProfileChooserView::IsShowing());
 
     // Create this observer before lock is pressed to avoid a race condition.
@@ -192,7 +193,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     current_profile_bubble()->ShowView(
         profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
         current_profile_bubble()->avatar_menu_.get());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

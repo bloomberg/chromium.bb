@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "base/run_loop.h"
 #include "base/test/thread_test_helper.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -188,7 +188,7 @@ TEST_F(EventRouterForwarderTest, BroadcastRendererIO) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
   ASSERT_TRUE(helper->Run());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(EventRouterForwarderTest, UnicastRendererUIRestricted) {

@@ -297,7 +297,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   void RunResolve(CryptohomeAuthenticator* auth) {
     auth->Resolve();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetAttemptState(CryptohomeAuthenticator* auth, TestAttemptState* state) {

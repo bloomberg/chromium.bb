@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -125,7 +126,7 @@ class CloudPrintURLFetcherTest : public testing::Test,
     // Deleting the fetcher causes a task to be posted to the IO thread to
     // release references to the URLRequestContextGetter. We need to run all
     // pending tasks to execute that (this is the IO thread).
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(0, g_request_context_getter_instances);
   }
 

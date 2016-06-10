@@ -436,7 +436,7 @@ class ExistingUserControllerPublicSessionTest
 
     if (LoginDisplayHost::default_host())
       LoginDisplayHost::default_host()->Finalize();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ExpectSuccessfulLogin(const UserContext& user_context) {

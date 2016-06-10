@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
@@ -327,7 +328,7 @@ class EnterprisePlatformKeysTest
 
     if (chromeos::LoginDisplayHost::default_host())
       chromeos::LoginDisplayHost::default_host()->Finalize();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
       base::RunLoop loop;

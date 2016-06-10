@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -92,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
 
   // RunUntilIdle() (racily) isn't sufficient to ensure browser creation, so
   // listen for the notification.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   browser_creation_observer.Wait();
   EXPECT_EQ(2U, BrowserList::GetInstance()->size());
 

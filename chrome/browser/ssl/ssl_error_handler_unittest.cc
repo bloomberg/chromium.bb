@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -176,7 +175,7 @@ TEST_F(SSLErrorHandlerTest,
   EXPECT_FALSE(error_handler()->captive_portal_interstitial_shown());
 
   error_handler()->ClearSeenOperations();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunning());
   EXPECT_FALSE(error_handler()->captive_portal_checked());
@@ -197,7 +196,7 @@ TEST_F(SSLErrorHandlerTest,
   error_handler()->ClearSeenOperations();
   error_handler()->SendCaptivePortalNotification(
       captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunning());
   EXPECT_FALSE(error_handler()->captive_portal_checked());
@@ -220,7 +219,7 @@ TEST_F(SSLErrorHandlerTest,
   error_handler()->ClearSeenOperations();
   error_handler()->SendCaptivePortalNotification(
       captive_portal::RESULT_INTERNET_CONNECTED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunning());
   EXPECT_FALSE(error_handler()->captive_portal_checked());

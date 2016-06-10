@@ -70,7 +70,7 @@ class TaskManagerClient
         base::ThreadTaskRunnerHandle::Get(),
         nullptr /* worker_pool */));
     task_manager_->Initialize(SYNC_STATUS_OK);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     maybe_schedule_next_task_count_ = 0;
   }
   ~TaskManagerClient() override {}

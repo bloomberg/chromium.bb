@@ -21,6 +21,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -139,7 +140,7 @@ void ClickAllAppsButtonFromStartPage(ui::test::EventGenerator* generator,
   generator->MoveMouseTo(all_apps_rect.CenterPoint().x(),
                          all_apps_rect.CenterPoint().y());
   generator->ClickLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Run Layout() to effectively complete the animation to the apps page.
   service_test.LayoutContentsView();
 }
@@ -344,15 +345,15 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
     gfx::Point rip_off_point(start_point.x(), 0);
     generator->MoveMouseTo(start_point.x(), start_point.y());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     generator->PressLeftButton();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     generator->MoveMouseTo(rip_off_point.x(), rip_off_point.y());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     test->RunMessageLoopUntilAnimationsDone();
     if (command == RIP_OFF_ITEM_AND_RETURN) {
       generator->MoveMouseTo(start_point.x(), start_point.y());
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       test->RunMessageLoopUntilAnimationsDone();
     } else if (command == RIP_OFF_ITEM_AND_CANCEL) {
       // This triggers an internal cancel. Using VKEY_ESCAPE was too unreliable.
@@ -360,7 +361,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     }
     if (command != RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE) {
       generator->ReleaseLeftButton();
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       test->RunMessageLoopUntilAnimationsDone();
     }
   }
@@ -1654,7 +1655,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
       test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
   generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
                         app_list_bounds.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   generator.ClickLeftButton();
 
   EXPECT_TRUE(service->IsAppListVisible());
@@ -1677,7 +1678,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   gfx::Rect bounds_grid_1 = item1->GetBoundsInScreen();
   generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
                         bounds_grid_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   generator.PressLeftButton();
 
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
@@ -1688,7 +1689,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   gfx::Rect bounds_shelf_1 = shelf1->GetBoundsInScreen();
   generator.MoveMouseTo(bounds_shelf_1.CenterPoint().x(),
                         bounds_shelf_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Check that a new item got created.
   EXPECT_EQ(3, model_->item_count());
@@ -1697,13 +1698,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   // Move it where the item originally was and check that it disappears again.
   generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
                         bounds_grid_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
 
   // Dropping it should keep the launcher as it originally was.
   generator.ReleaseLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   // There are a few animations which need finishing before we can continue.
   test.RunMessageLoopUntilAnimationsDone();
@@ -1717,11 +1718,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   generator.PressLeftButton();
   generator.MoveMouseTo(bounds_shelf_1.CenterPoint().x(),
                         bounds_shelf_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, model_->item_count());
   EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   generator.ReleaseLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   EXPECT_EQ(3, model_->item_count());  // It should be still there.
   test.RunMessageLoopUntilAnimationsDone();
@@ -1733,11 +1734,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   generator.PressLeftButton();
   generator.MoveMouseTo(bounds_shelf_1.CenterPoint().x(),
                         bounds_shelf_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, model_->item_count());  // No new item got added.
   EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   generator.ReleaseLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
 
@@ -1747,7 +1748,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   generator.PressLeftButton();
   generator.MoveMouseTo(bounds_shelf_1.CenterPoint().x(),
                         bounds_shelf_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Issue an ESC and see that the operation gets cancelled.
   generator.PressKey(ui::VKEY_ESCAPE, 0);
   generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
@@ -1805,7 +1806,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
                         app_list_bounds.CenterPoint().y());
   generator.ClickLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(service->IsAppListVisible());
 
   // Click the "all apps" button on the start page.
@@ -1832,7 +1833,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   bounds_grid_1.Offset(-origin.x(), -origin.y());
   generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
                         bounds_grid_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   generator.PressLeftButton();
 
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
@@ -1844,7 +1845,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   bounds_shelf_1.Offset(-origin.x(), -origin.y());
   generator.MoveMouseTo(bounds_shelf_1.CenterPoint().x(),
                         bounds_shelf_1.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Check that a new item got created.
   EXPECT_EQ(3, model_->item_count());
@@ -1855,13 +1856,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   empty_slot_rect.Offset(0, grid_view->GetTotalTileSize().height());
   generator.MoveMouseTo(empty_slot_rect.CenterPoint().x(),
                         empty_slot_rect.CenterPoint().y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
 
   // Dropping it should keep the shelf as it originally was.
   generator.ReleaseLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
 }
 
@@ -1928,7 +1929,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   test.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(2, model_->item_count());  // The item should now be gone.
   generator.ReleaseLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());  // And it remains that way.
   EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
 
@@ -1986,7 +1987,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
                         app_list_bounds.CenterPoint().y());
   generator.ClickLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(service->IsAppListVisible());
 
   // Click the "all apps" button on the start page.
@@ -2007,7 +2008,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
                         bounds_grid_1.CenterPoint().y());
   generator.ClickLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(tab_count + 1, tab_strip->count());
 }
 
@@ -2138,12 +2139,12 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   ui_test_utils::NavigateToURL(app_browser,
                                GURL("http://www.foo.com/bar.html"));
   // Make sure the navigation was entirely performed.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(id)->status);
   app_browser->tab_strip_model()->CloseWebContentsAt(0,
                                                      TabStripModel::CLOSE_NONE);
   // Make sure that the app is really gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
 }
 

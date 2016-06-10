@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -142,14 +142,14 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
 
     InitializeEmptyExtensionService();
     service_->Init();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     listener_ = new UserScriptListener();
   }
 
   void TearDown() override {
     listener_ = NULL;
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ExtensionServiceTestBase::TearDown();
   }
 
@@ -206,7 +206,7 @@ namespace {
 
 TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   LoadTestExtension();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
@@ -218,13 +218,13 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
 TEST_F(UserScriptListenerTest, DelayAndUnload) {
   LoadTestExtension();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
@@ -233,7 +233,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
   ASSERT_FALSE(request->is_pending());
 
   UnloadTestExtension();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // This is still not enough to start delayed requests. We have to notify the
   // listener that the user scripts have been updated.
@@ -243,7 +243,7 @@ TEST_F(UserScriptListenerTest, DelayAndUnload) {
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
@@ -256,13 +256,13 @@ TEST_F(UserScriptListenerTest, NoDelayNoExtension) {
   // The request should be started immediately.
   ASSERT_TRUE(request->is_pending());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
 TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
   LoadTestExtension();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
@@ -272,13 +272,13 @@ TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
   // The request should be started immediately.
   ASSERT_TRUE(request->is_pending());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
 TEST_F(UserScriptListenerTest, MultiProfile) {
   LoadTestExtension();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Fire up a second profile and have it load an extension with a content
   // script.
@@ -307,7 +307,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(request->is_pending());
   EXPECT_TRUE(delegate.data_received().empty());
 
@@ -316,7 +316,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(&profile2),
       content::NotificationService::NoDetails());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kTestData, delegate.data_received());
 }
 
@@ -325,7 +325,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 // throttles.
 TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   LoadTestExtension();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
   GURL url(kMatchingUrl);
@@ -343,7 +343,7 @@ TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   bool defer = false;
   throttle->WillStartRequest(&defer);

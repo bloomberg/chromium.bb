@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -225,7 +226,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   // Gets the syncer::SyncableService for the given sync type.
   syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     SyncValueStoreCache* sync_cache = static_cast<SyncValueStoreCache*>(
         frontend_->GetValueStoreCache(settings_namespace::SYNC));
     return sync_cache->GetSyncableService(model_type);
@@ -1413,7 +1414,7 @@ TEST_F(ExtensionSettingsSyncTest, MAYBE_UnlimitedStorageForLocalButNotSync) {
                             settings_namespace::LOCAL,
                             base::Bind(&UnlimitedLocalStorageTestCallback));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace extensions

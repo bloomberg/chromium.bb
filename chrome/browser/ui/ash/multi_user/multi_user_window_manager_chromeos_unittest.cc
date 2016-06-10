@@ -25,6 +25,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -146,7 +147,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
     while (multi_user_window_manager_->IsAnimationRunningForTest()) {
       // This should never take longer then a second.
       ASSERT_GE(1000, (base::TimeTicks::Now() - now).InMilliseconds());
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 

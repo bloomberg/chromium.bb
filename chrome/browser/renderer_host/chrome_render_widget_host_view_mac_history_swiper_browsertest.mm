@@ -9,7 +9,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -348,7 +348,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
       [[NSRunLoop currentRunLoop]
           runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.001]];
       // The renderer process returns an IPC, which needs to be handled.
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 
