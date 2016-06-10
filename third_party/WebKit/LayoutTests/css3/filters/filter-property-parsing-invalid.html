@@ -1,11 +1,82 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
-<script src="script-tests/filter-property-parsing-invalid.js"></script>
-</body>
-</html>
+<!DOCTYPE html>
+<title>Parsing of the -webkit-filter property; invalid values</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../css-parser/resources/property-parsing-test.js"></script>
+<script>
+assert_invalid_value("webkitFilter", "url(#a #b)"); // Too many parameters
+
+assert_invalid_value("webkitFilter", "grayscale(10px)"); // Length instead of number
+assert_invalid_value("webkitFilter", "grayscale(0.5 0.5)"); // Too many parameters
+assert_invalid_value("webkitFilter", "grayscale(0.5, 0.5)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "grayscale(0.5,)"); // Trailing comma
+assert_invalid_value("webkitFilter", "grayscale(-0.5)"); // Negative parameter
+assert_invalid_value("webkitFilter", "grayscale(-10%)"); // Negative percent
+assert_invalid_value("webkitFilter", "grayscale(1.5)"); // Parameter out of bounds
+
+assert_invalid_value("webkitFilter", "sepia(0.5 0.5 3.0)"); // Too many parameters
+assert_invalid_value("webkitFilter", "sepia(0.1, 0.1)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "sepia(0.5,)"); // Trailing comma
+assert_invalid_value("webkitFilter", "sepia(-0.01)"); // Negative parameter
+assert_invalid_value("webkitFilter", "sepia(-10%)"); // Negative percent
+assert_invalid_value("webkitFilter", "sepia(10000)"); // Parameter out of bounds
+
+assert_invalid_value("webkitFilter", "saturate(10px)"); // Length instead of number
+assert_invalid_value("webkitFilter", "saturate(0.5 0.5)"); // Too many parameters
+assert_invalid_value("webkitFilter", "saturate(0.5, 0.5)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "saturate(0.5,)"); // Trailing comma
+assert_invalid_value("webkitFilter", "saturate(-0.5)"); // Negative parameter
+assert_invalid_value("webkitFilter", "saturate(-10%)"); // Negative percent
+
+assert_invalid_value("webkitFilter", "hue-rotate(10)"); // Bare number
+assert_invalid_value("webkitFilter", "hue-rotate(10px)"); // Length
+assert_invalid_value("webkitFilter", "hue-rotate(10deg 4)"); // Too many parameters
+assert_invalid_value("webkitFilter", "hue-rotate(10deg, 5deg)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "hue-rotate(10deg,)"); // Trailing comma
+
+assert_invalid_value("webkitFilter", "invert(10px)"); // Length instead of number
+assert_invalid_value("webkitFilter", "invert(0.5 0.5)"); // Too many parameters
+assert_invalid_value("webkitFilter", "invert(0.5, 0.5)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "invert(0.5,)"); // Trailing comma
+assert_invalid_value("webkitFilter", "invert(-0.5)"); // Negative parameter
+assert_invalid_value("webkitFilter", "invert(1.5)"); // Parameter out of bounds
+
+assert_invalid_value("webkitFilter", "opacity(10px)"); // Length instead of number
+assert_invalid_value("webkitFilter", "opacity(0.5 0.5)"); // Too many parameters
+assert_invalid_value("webkitFilter", "opacity(0.5, 0.5)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "opacity(0.5,)"); // Trailing comma
+assert_invalid_value("webkitFilter", "opacity(-0.5)"); // Negative parameter
+assert_invalid_value("webkitFilter", "opacity(-10%)"); // Negative percent
+assert_invalid_value("webkitFilter", "opacity(1.5)"); // Parameter out of bounds
+
+assert_invalid_value("webkitFilter", "brightness(10px)"); // Length instead of number
+assert_invalid_value("webkitFilter", "brightness(0.5 0.5)"); // Too many parameters
+assert_invalid_value("webkitFilter", "brightness(0.5, 0.5)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "brightness(0.5,)"); // Trailing comma
+
+assert_invalid_value("webkitFilter", "contrast(10px)"); // Length instead of number
+assert_invalid_value("webkitFilter", "contrast(0.5 0.5)"); // Too many parameters
+assert_invalid_value("webkitFilter", "contrast(0.5, 0.5)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "contrast(0.5,)"); // Trailing comma
+assert_invalid_value("webkitFilter", "contrast(-0.5)"); // Negative parameter
+assert_invalid_value("webkitFilter", "contrast(-10%)"); // Negative percent
+
+assert_invalid_value("webkitFilter", "blur(1)"); // Bare number
+assert_invalid_value("webkitFilter", "blur(-1px)"); // Negative number
+assert_invalid_value("webkitFilter", "blur(10%)"); // Percentage
+assert_invalid_value("webkitFilter", "blur(1px 1px)"); // Too many parameters
+assert_invalid_value("webkitFilter", "blur(1em, 1em)"); // Too many parameters and commas
+assert_invalid_value("webkitFilter", "blur(10px, 10px)"); // Commas
+assert_invalid_value("webkitFilter", "blur(1em,)"); // Trailing comma
+
+assert_invalid_value("webkitFilter", "drop-shadow()"); // No values
+assert_invalid_value("webkitFilter", "drop-shadow(red)"); // Missing lengths
+assert_invalid_value("webkitFilter", "drop-shadow(red 1px)"); // Not enough lengths
+assert_invalid_value("webkitFilter", "drop-shadow(red 1 2 3)"); // Missing units
+assert_invalid_value("webkitFilter", "drop-shadow(red 1px 2px 3px inset)"); // Inset
+assert_invalid_value("webkitFilter", "drop-shadow(red 1px 2px 3px 4px)"); // Too many parameters
+assert_invalid_value("webkitFilter", "drop-shadow(red, 1px, 2px, 3px)"); // Commas
+assert_invalid_value("webkitFilter", "drop-shadow(10px 10px -1px red)"); // Negative radius
+
+assert_invalid_value("webkitFilter", "fancify(150%)"); // Unknown function
+</script>
