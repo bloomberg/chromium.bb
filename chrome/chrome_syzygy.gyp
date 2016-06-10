@@ -41,6 +41,7 @@
             'dll_name': 'chrome',
           },
           'targets': [
+            # GN version: //chrome/tools/build/win/syzygy:chrome_dll_syzygy
             {
               'target_name': 'chrome_dll_syzygy',
               'type': 'none',
@@ -58,6 +59,7 @@
                 'dll_name': 'chrome_child',
               },
               'targets': [
+                # GN version: //chrome/tools/build/win/syzygy:chrome_child_dll_syzygy
                 {
                   'target_name': 'chrome_child_dll_syzygy',
                   'type': 'none',

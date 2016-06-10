@@ -66,6 +66,7 @@
         ],
       },
     },
+    # GN version: //build/sanitizers:copy_llvm_symbolizer
     {
       # Copy llvm-symbolizer to the product dir so that LKGR bots can package it.
       'target_name': 'llvm-symbolizer',

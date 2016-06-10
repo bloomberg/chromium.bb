@@ -708,6 +708,7 @@
                 '../third_party/pdfium/samples/samples.gyp:pdfium_test',
               ],
             }],
+            # TODO(thakis): Remove this block, nothing ever sets this.
             ['internal_filter_fuzzer==1', {
               'dependencies': [
                 '../skia/tools/clusterfuzz-data/fuzzers/filter_fuzzer/filter_fuzzer.gyp:filter_fuzzer',

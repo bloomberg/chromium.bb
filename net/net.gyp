@@ -1036,6 +1036,7 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
         },
+        # GN version: //net:dns_fuzz_stub
         {
           'target_name': 'dns_fuzz_stub',
           'type': 'executable',
@@ -1102,6 +1103,7 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
         },
+        # GN version: //net:hpack_fuzz_wrapper
         {
           'target_name': 'hpack_fuzz_wrapper',
           'type': 'executable',
