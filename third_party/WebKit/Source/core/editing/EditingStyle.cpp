@@ -272,7 +272,7 @@ public:
     bool hasAttribute() const override { return true; }
     bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const override;
     void addToStyle(Element*, EditingStyle*) const override;
-    virtual CSSValue* attributeValueAsCSSValue(Element*) const;
+    virtual const CSSValue* attributeValueAsCSSValue(Element*) const;
     inline const QualifiedName& attributeName() const { return m_attrName; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { HTMLElementEquivalent::trace(visitor); }
@@ -297,7 +297,7 @@ HTMLAttributeEquivalent::HTMLAttributeEquivalent(CSSPropertyID id, const Qualifi
 
 bool HTMLAttributeEquivalent::valueIsPresentInStyle(HTMLElement* element, StylePropertySet* style) const
 {
-    CSSValue* value = attributeValueAsCSSValue(element);
+    const CSSValue* value = attributeValueAsCSSValue(element);
     const CSSValue* styleValue = style->getPropertyCSSValue(m_propertyID);
 
     return compareCSSValuePtr(value, styleValue);
@@ -305,11 +305,11 @@ bool HTMLAttributeEquivalent::valueIsPresentInStyle(HTMLElement* element, StyleP
 
 void HTMLAttributeEquivalent::addToStyle(Element* element, EditingStyle* style) const
 {
-    if (CSSValue* value = attributeValueAsCSSValue(element))
+    if (const CSSValue* value = attributeValueAsCSSValue(element))
         style->setProperty(m_propertyID, value->cssText());
 }
 
-CSSValue* HTMLAttributeEquivalent::attributeValueAsCSSValue(Element* element) const
+const CSSValue* HTMLAttributeEquivalent::attributeValueAsCSSValue(Element* element) const
 {
     DCHECK(element);
     const AtomicString& value = element->getAttribute(m_attrName);
@@ -328,7 +328,7 @@ public:
     {
         return new HTMLFontSizeEquivalent();
     }
-    CSSValue* attributeValueAsCSSValue(Element*) const override;
+    const CSSValue* attributeValueAsCSSValue(Element*) const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { HTMLAttributeEquivalent::trace(visitor); }
 
@@ -341,7 +341,7 @@ HTMLFontSizeEquivalent::HTMLFontSizeEquivalent()
 {
 }
 
-CSSValue* HTMLFontSizeEquivalent::attributeValueAsCSSValue(Element* element) const
+const CSSValue* HTMLFontSizeEquivalent::attributeValueAsCSSValue(Element* element) const
 {
     DCHECK(element);
     const AtomicString& value = element->getAttribute(m_attrName);
