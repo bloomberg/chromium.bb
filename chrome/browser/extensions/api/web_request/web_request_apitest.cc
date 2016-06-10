@@ -161,8 +161,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTypes) {
 
 // Test that the webRequest events are dispatched with the expected details when
 // a frame or tab is removed while a response is being received.
+// Flaky: https://crbug.com/617865
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestUnloadAfterRequest) {
+                       DISABLED_WebRequestUnloadAfterRequest) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_unload.html?1")) <<
       message_;
