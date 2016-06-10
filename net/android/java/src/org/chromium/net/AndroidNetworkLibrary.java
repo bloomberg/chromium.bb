@@ -226,6 +226,7 @@ class AndroidNetworkLibrary {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo == null) return false; // No active network.
         return networkInfo.isRoaming();
     }
 }
