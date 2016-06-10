@@ -172,13 +172,27 @@ Polymer({
   },
 
   /**
-   * Makes sure the visibility is correct for this widget (e.g. hidden if the
-   * block list is empty).
+   * Makes sure the visibility is correct for this widget.
    * @private
    */
   updateCategoryVisibility_: function() {
-    this.$.category.hidden =
-        !this.showSiteList_(this.sites, this.categoryEnabled);
+    this.$.category.hidden = !this.showSiteList_(this.categoryEnabled);
+  },
+
+  /**
+   * A handler for the Add Site button.
+   * @private
+   */
+  onAddSiteTap_: function() {
+    var dialog = document.createElement('add-site-dialog');
+    dialog.category = this.category;
+    this.shadowRoot.appendChild(dialog);
+
+    dialog.open(this.categorySubtype);
+
+    dialog.addEventListener('iron-overlay-closed', function() {
+      dialog.remove();
+    });
   },
 
   /**
@@ -434,16 +448,11 @@ Polymer({
 
   /**
    * Returns whether to show the site list.
-   * @param {Array} siteList The list of all sites to display for this category
-   *     subtype.
    * @param {boolean} toggleState The state of the global toggle for this
    *     category.
    * @private
    */
-  showSiteList_: function(siteList, toggleState) {
-    if (siteList.length == 0)
-      return false;
-
+  showSiteList_: function(toggleState) {
     // The Block list is only shown when the category is set to Allow since it
     // is redundant to also list all the sites that are blocked.
     if (this.isAllowList_())

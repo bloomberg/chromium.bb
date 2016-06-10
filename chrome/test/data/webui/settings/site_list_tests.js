@@ -320,14 +320,12 @@ cr.define('site_list', function() {
                 settings.PermissionValues.ALLOW, testElement.categorySubtype);
             assertEquals('Allow - 0', testElement.$.header.innerText.trim());
 
-            // Site list should not show, no matter what category default is set
-            // to.
-            assertTrue(testElement.$.category.hidden);
+            assertFalse(testElement.$.category.hidden);
             browserProxy.resetResolver('getExceptionList');
             testElement.categoryEnabled = false;
             return browserProxy.whenCalled('getExceptionList').then(
               function(contentType) {
-                assertTrue(testElement.$.category.hidden);
+                assertFalse(testElement.$.category.hidden);
                 assertEquals('Exceptions - 0',
                     testElement.$.header.innerText.trim());
             });
@@ -477,7 +475,7 @@ cr.define('site_list', function() {
         });
       });
 
-      test('Block list hidden when empty', function() {
+      test('Block list not hidden when empty', function() {
         // Prefs: One item in Allow list, nothing in Block list.
         setupLocationCategory(
             settings.PermissionValues.BLOCK, prefsOneEnabled);
@@ -486,11 +484,11 @@ cr.define('site_list', function() {
             assertEquals(
                 settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
-            assertTrue(testElement.$.category.hidden);
+            assertFalse(testElement.$.category.hidden);
         });
       });
 
-      test('Allow list hidden when empty', function() {
+      test('Allow list not hidden when empty', function() {
         // Prefs: One item in Block list, nothing in Allow list.
         setupLocationCategory(settings.PermissionValues.ALLOW,
                               prefsOneDisabled);
@@ -499,7 +497,7 @@ cr.define('site_list', function() {
             assertEquals(
                 settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
-            assertTrue(testElement.$.category.hidden);
+            assertFalse(testElement.$.category.hidden);
         });
       });
 

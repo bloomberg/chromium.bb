@@ -18,10 +18,20 @@ Polymer({
      * @private
      */
     site_: String,
+
+    /**
+     * Whether this is an allow exception this dialog is adding.
+     */
+     allowException: Boolean,
   },
 
-  /** Opens the dialog. */
-  open: function() {
+  /**
+   * Opens the dialog.
+   * @param {string} type Whether this was launched from an Allow list or a
+   *     Block list.
+   */
+  open: function(type) {
+    this.allowException = type == settings.PermissionValues.ALLOW;
     this.$.dialog.open();
   },
 
@@ -41,10 +51,13 @@ Polymer({
    * the dialog).
    * @private
    */
-  onAddTap_: function() {
+  onSubmit_: function() {
+    if (this.$.add.disabled)
+      return;  // Can happen when Enter is pressed.
     var pattern = this.addPatternWildcard_(this.site_);
     this.setCategoryPermissionForOrigin(
-        pattern, '', this.category, settings.PermissionValues.ALLOW);
+        pattern, '', this.category, this.allowException ?
+            settings.PermissionValues.ALLOW : settings.PermissionValues.BLOCK);
     this.$.dialog.close();
   },
 });

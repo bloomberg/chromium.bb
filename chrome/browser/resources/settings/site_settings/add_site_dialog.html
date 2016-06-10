@@ -1,9 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/settings_dialog.html">
 <link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="/site_settings/constants.html">
+<link rel="import" href="/site_settings/site_settings_behavior.html">
 
 <dom-module id="add-site-dialog">
   <template>
@@ -12,6 +15,8 @@
       <div class="title">$i18n{addSiteHeader}</div>
       <div class="body">
         <span class="start">$i18n{addSite}</span>
+        <iron-a11y-keys id="keys" keys="enter"
+            on-keys-pressed="onSubmit_"></iron-a11y-keys>
         <paper-input type="text" id="site" autofocus
             value="{{site_}}" on-input="validate_"></paper-input>
       </div>
@@ -20,7 +25,7 @@
             $i18n{cancel}
         </paper-button>
         <paper-button class="action-button" id="add"
-            on-tap="onAddTap_" disabled>
+            on-tap="onSubmit_" disabled>
           $i18n{add}
         </paper-button>
       </div>

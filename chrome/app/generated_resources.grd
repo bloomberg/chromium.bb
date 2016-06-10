@@ -7948,7 +7948,7 @@ I don't think this site should be blocked!
         Reload
       </message>
       <message name="IDS_SETTINGS_ADD_SITE_LINK" desc="Link text to show (to open the Add Site dialog)">
-        Add site
+        Add site exception
       </message>
       <message name="IDS_SETTINGS_ADD_SITE_HEADER" desc="Header for the Add Site dialog">
         Add an exception for a site
