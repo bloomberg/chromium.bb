@@ -284,6 +284,13 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     /**
+     * @return True if the container has any InfoBars.
+     */
+    public boolean hasInfoBars() {
+        return !mInfoBars.isEmpty();
+    }
+
+    /**
      * Tells this class that a View with higher priority is occupying the same space.
      *
      * Causes this View to hide itself until the obscuring View goes away.
