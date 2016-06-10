@@ -51,10 +51,12 @@ class Display {
 
 #if defined(USE_OZONE)
   // Creates a buffer for a Linux DMA-buf file descriptor.
-  std::unique_ptr<Buffer> CreateLinuxDMABufBuffer(base::ScopedFD fd,
-                                                  const gfx::Size& size,
-                                                  gfx::BufferFormat format,
-                                                  int stride);
+  std::unique_ptr<Buffer> CreateLinuxDMABufBuffer(
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      const std::vector<int>& strides,
+      const std::vector<int>& offsets,
+      std::vector<base::ScopedFD>&& fds);
 #endif
 
   // Creates a shell surface for an existing surface.

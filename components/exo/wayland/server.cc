@@ -56,6 +56,8 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -450,7 +452,8 @@ const struct drm_supported_format {
     {WL_DRM_FORMAT_XBGR8888, gfx::BufferFormat::RGBX_8888},
     {WL_DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
     {WL_DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
-    {WL_DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888}};
+    {WL_DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888},
+    {WL_DRM_FORMAT_YVU420, gfx::BufferFormat::YVU_420}};
 
 void drm_authenticate(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_drm_send_authenticated(resource);
@@ -511,10 +514,20 @@ void drm_create_prime_buffer(wl_client* client,
     return;
   }
 
+  std::vector<int> strides{stride0, stride1, stride2};
+  std::vector<int> offsets{offset0, offset1, offset2};
+  std::vector<base::ScopedFD> fds;
+
+  int planes =
+      gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
+  strides.resize(planes);
+  offsets.resize(planes);
+  fds.push_back(base::ScopedFD(name));
+
   std::unique_ptr<Buffer> buffer =
       GetUserDataAs<Display>(resource)->CreateLinuxDMABufBuffer(
-          base::ScopedFD(name), gfx::Size(width, height),
-          supported_format->buffer_format, stride0);
+          gfx::Size(width, height), supported_format->buffer_format, strides,
+          offsets, std::move(fds));
   if (!buffer) {
     wl_resource_post_no_memory(resource);
     return;
@@ -559,16 +572,20 @@ const struct dmabuf_supported_format {
     {DRM_FORMAT_XBGR8888, gfx::BufferFormat::RGBX_8888},
     {DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
     {DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
-    {DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888}};
+    {DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888},
+    {DRM_FORMAT_YVU420, gfx::BufferFormat::YVU_420}};
 
 struct LinuxBufferParams {
-  explicit LinuxBufferParams(Display* display)
-      : display(display), stride(0), offset(0) {}
+  struct Plane {
+    base::ScopedFD fd;
+    uint32_t stride;
+    uint32_t offset;
+  };
+
+  explicit LinuxBufferParams(Display* display) : display(display) {}
 
   Display* const display;
-  base::ScopedFD fd;
-  uint32_t stride;
-  uint32_t offset;
+  std::map<uint32_t, Plane> planes;
 };
 
 void linux_buffer_params_destroy(wl_client* client, wl_resource* resource) {
@@ -583,23 +600,19 @@ void linux_buffer_params_add(wl_client* client,
                              uint32_t stride,
                              uint32_t modifier_hi,
                              uint32_t modifier_lo) {
-  if (plane_idx) {
-    wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
-                           "plane_idx too large");
-    return;
-  }
-
   LinuxBufferParams* linux_buffer_params =
       GetUserDataAs<LinuxBufferParams>(resource);
-  if (linux_buffer_params->fd.is_valid()) {
+
+  LinuxBufferParams::Plane plane{base::ScopedFD(fd), stride, offset};
+
+  const auto& inserted = linux_buffer_params->planes.insert(
+      std::pair<uint32_t, LinuxBufferParams::Plane>(plane_idx,
+                                                    std::move(plane)));
+  if (!inserted.second) {  // The plane was already there.
     wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET,
                            "plane already set");
     return;
   }
-
-  linux_buffer_params->fd.reset(fd);
-  linux_buffer_params->stride = stride;
-  linux_buffer_params->offset = offset;
 }
 
 void linux_buffer_params_create(wl_client* client,
@@ -637,17 +650,39 @@ void linux_buffer_params_create(wl_client* client,
 
   LinuxBufferParams* linux_buffer_params =
       GetUserDataAs<LinuxBufferParams>(resource);
-  if (linux_buffer_params->offset) {
-    wl_resource_post_error(resource,
-                           ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_OUT_OF_BOUNDS,
-                           "offset not supported");
+
+  size_t num_planes =
+      gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
+
+  if (linux_buffer_params->planes.size() != num_planes) {
+    wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_IDX,
+                           "plane idx out of bounds");
     return;
+  }
+
+  std::vector<int> strides;
+  std::vector<int> offsets;
+  std::vector<base::ScopedFD> fds;
+
+  for (uint32_t i = 0; i < num_planes; ++i) {
+    auto plane_it = linux_buffer_params->planes.find(i);
+    if (plane_it == linux_buffer_params->planes.end()) {
+      wl_resource_post_error(resource,
+                             ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE,
+                             "missing a plane");
+      return;
+    }
+    LinuxBufferParams::Plane& plane = plane_it->second;
+    strides.push_back(plane.stride);
+    offsets.push_back(plane.offset);
+    if (plane.fd.is_valid())
+      fds.push_back(std::move(plane.fd));
   }
 
   std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
-          std::move(linux_buffer_params->fd), gfx::Size(width, height),
-          supported_format->buffer_format, linux_buffer_params->stride);
+          gfx::Size(width, height), supported_format->buffer_format, strides,
+          offsets, std::move(fds));
   if (!buffer) {
     zwp_linux_buffer_params_v1_send_failed(resource);
     return;

@@ -68,17 +68,30 @@ TEST_F(DisplayTest, CreateLinuxDMABufBuffer) {
                                gfx::BufferFormat::RGBA_8888,
                                gfx::BufferUsage::GPU_READ);
   gfx::NativePixmapHandle native_pixmap_handle = pixmap->ExportHandle();
+  std::vector<int> strides;
+  std::vector<int> offsets;
+  std::vector<base::ScopedFD> fds;
+  strides.push_back(native_pixmap_handle.strides_and_offsets[0].first);
+  offsets.push_back(native_pixmap_handle.strides_and_offsets[0].second);
+  fds.push_back(base::ScopedFD(native_pixmap_handle.fds[0].fd));
+
   std::unique_ptr<Buffer> buffer1 = display->CreateLinuxDMABufBuffer(
-      base::ScopedFD(native_pixmap_handle.fd.fd), buffer_size,
-      gfx::BufferFormat::RGBA_8888, native_pixmap_handle.stride);
+      buffer_size, gfx::BufferFormat::RGBA_8888, strides, offsets,
+      std::move(fds));
   EXPECT_TRUE(buffer1);
 
+  std::vector<base::ScopedFD> invalid_fds;
+  invalid_fds.push_back(base::ScopedFD());
   // Creating a prime buffer using an invalid fd should fail.
   std::unique_ptr<Buffer> buffer2 = display->CreateLinuxDMABufBuffer(
-      base::ScopedFD(), buffer_size, gfx::BufferFormat::RGBA_8888,
-      buffer_size.width() * 4);
+      buffer_size, gfx::BufferFormat::RGBA_8888, strides, offsets,
+      std::move(invalid_fds));
   EXPECT_FALSE(buffer2);
 }
+
+// TODO(dcastagna): Add YV12 unittest once we can allocate the buffer
+// via Ozone. crbug.com/618516
+
 #endif
 
 TEST_F(DisplayTest, CreateShellSurface) {
