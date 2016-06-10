@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -41,7 +42,7 @@ TEST_F(URLFetcherBlockAdapterTest, FetchTextResource) {
                                    net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
   fake_fetcher.Start();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests that URLFetcherBlockAdapter calls its completion handler with the
@@ -64,7 +65,7 @@ TEST_F(URLFetcherBlockAdapterTest, FetchPNGResource) {
                                    net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
   fake_fetcher.Start();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace web
