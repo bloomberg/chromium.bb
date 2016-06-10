@@ -16,7 +16,7 @@ namespace media {
 
 // Extension of VideoCaptureDeviceFactory to create and manipulate Linux
 // devices.
-class MEDIA_EXPORT VideoCaptureDeviceFactoryLinux
+class CAPTURE_EXPORT VideoCaptureDeviceFactoryLinux
     : public VideoCaptureDeviceFactory {
  public:
   explicit VideoCaptureDeviceFactoryLinux(

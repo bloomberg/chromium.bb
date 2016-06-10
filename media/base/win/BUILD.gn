@@ -4,19 +4,27 @@
 
 assert(is_win)
 
-source_set("win") {
+component("win") {
+  defines = [ "MF_INITIALIZER_IMPLEMENTATION" ]
   set_sources_assignment_filter([])
   sources = [
     "mf_initializer.cc",
     "mf_initializer.h",
   ]
   set_sources_assignment_filter(sources_assignment_filter)
-  configs += [
-    "//media:media_config",
-    "//media:media_implementation",
-  ]
+  configs += [ "//media:media_config" ]
   deps = [
     "//base",
     "//media:shared_memory_support",
+  ]
+  libs = [
+    "mf.lib",
+    "mfplat.lib",
+    "mfreadwrite.lib",
+  ]
+  ldflags = [
+    "/DELAYLOAD:mf.dll",
+    "/DELAYLOAD:mfplat.dll",
+    "/DELAYLOAD:mfreadwrite.dll",
   ]
 }

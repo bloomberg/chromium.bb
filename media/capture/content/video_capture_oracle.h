@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
-#include "media/base/media_export.h"
+#include "media/capture/capture_export.h"
 #include "media/capture/content/animated_content_sampler.h"
 #include "media/capture/content/capture_resolution_chooser.h"
 #include "media/capture/content/feedback_signal_accumulator.h"
@@ -20,7 +20,7 @@ namespace media {
 // from a video capture device.  It is informed of every update by the device;
 // this empowers it to look into the future and decide if a particular frame
 // ought to be captured in order to achieve its target frame rate.
-class MEDIA_EXPORT VideoCaptureOracle {
+class CAPTURE_EXPORT VideoCaptureOracle {
  public:
   enum Event {
     kCompositorUpdate,

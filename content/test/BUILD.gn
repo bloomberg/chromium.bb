@@ -70,6 +70,7 @@ source_set("test_support") {
     "//ipc:test_support",
     "//ipc/mojo",
     "//media",
+    "//media/capture",
     "//mojo/edk/test:test_support",
     "//net:test_support",
     "//services/shell/public/cpp",
@@ -180,6 +181,7 @@ source_set("test_support") {
 
   if (is_android) {
     deps += [
+      "//media/capture/video/android:android",
       "//ui/android",
       "//ui/shell_dialogs",
     ]
@@ -668,6 +670,7 @@ test("content_unittests") {
     "//media:test_support",
     "//media/audio:test_support",
     "//media/base:test_support",
+    "//media/capture",
     "//media/midi:midi",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings",
