@@ -57,45 +57,45 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
   // Returns the latest active tree delta and also makes a note that this value
   // was sent to the main thread.
   typename T::ValueType PullDeltaForMainThread() {
-    sent_delta_ = active_delta_;
-    return active_delta_.get();
+    reflected_delta_in_main_tree_ = PendingDelta();
+    return reflected_delta_in_main_tree_.get();
   }
 
   // Push the latest value from the main thread onto pending tree-associated
   // state.  Returns true if this had any effect.
   bool PushFromMainThread(typename T::ValueType main_thread_value) {
-    if (pending_base_.get() == main_thread_value)
-      return false;
+    bool changed = pending_base_.get() != main_thread_value;
 
+    reflected_delta_in_pending_tree_ = reflected_delta_in_main_tree_;
+    reflected_delta_in_main_tree_ = T::Identity();
     pending_base_ = T(main_thread_value);
 
-    return true;
+    return changed;
   }
 
   // Push the value associated with the pending tree to be the active base
-  // value.  As part of this, subtract the last sent value from the active tree
-  // delta (which will make the delta zero at steady state, or make it contain
-  // only the difference since the last send).
+  // value.  As part of this, subtract the delta reflected in the pending tree
+  // from the active tree delta (which will make the delta zero at steady state,
+  // or make it contain only the difference since the last send).
   bool PushPendingToActive() {
-    if (active_base_.get() == pending_base_.get() &&
-        sent_delta_.get() == T::Identity().get())
-      return false;
+    bool changed = active_base_.get() != pending_base_.get() ||
+                   active_delta_.get() != PendingDelta().get();
 
     active_base_ = pending_base_;
     active_delta_ = PendingDelta();
-    sent_delta_ = T::Identity();
+    reflected_delta_in_pending_tree_ = T::Identity();
     clobber_active_value_ = false;
 
-    return true;
+    return changed;
   }
 
   // This simulates the consequences of the sent value getting committed and
-  // activated.  The value sent to the main thread ends up combined with the
-  // active value, and the sent_delta is subtracted from the delta.
+  // activated.
   void AbortCommit() {
-    active_base_ = active_base_.Combine(sent_delta_);
-    active_delta_ = PendingDelta();
-    sent_delta_ = T::Identity();
+    pending_base_ = pending_base_.Combine(reflected_delta_in_main_tree_);
+    active_base_ = active_base_.Combine(reflected_delta_in_main_tree_);
+    active_delta_ = active_delta_.InverseCombine(reflected_delta_in_main_tree_);
+    reflected_delta_in_main_tree_ = T::Identity();
   }
 
   // Values as last pushed to the pending or active tree respectively, with no
@@ -104,12 +104,11 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
   typename T::ValueType ActiveBase() const { return active_base_.get(); }
 
   // The new delta we would use if we decide to activate now.  This delta
-  // excludes the amount that we expect the main thread to reflect back at the
-  // impl thread during the commit.
+  // excludes the amount that we know is reflected in the pending tree.
   T PendingDelta() const {
     if (clobber_active_value_)
       return T::Identity();
-    return active_delta_.InverseCombine(sent_delta_);
+    return active_delta_.InverseCombine(reflected_delta_in_pending_tree_);
   }
 
   void set_clobber_active_value() { clobber_active_value_ = true; }
@@ -118,13 +117,17 @@ class SyncedProperty : public base::RefCounted<SyncedProperty<T>> {
  private:
   // Value last committed to the pending tree.
   T pending_base_;
-  // Value last committed to the active tree (on the last activation).
+  // Value last committed to the active tree on the last activation.
   T active_base_;
-  // The difference between the active_base_ and the user-perceived value.
+  // The difference between |active_base_| and the user-perceived value.
   T active_delta_;
-  // The value sent to the main thread (on the last BeginFrame); this is always
-  // identity outside of the BeginFrame-to-activation interval.
-  T sent_delta_;
+  // The value sent to the main thread on the last BeginMainFrame.  This is
+  // always identity outside of the BeginMainFrame to (aborted)commit interval.
+  T reflected_delta_in_main_tree_;
+  // The value that was sent to the main thread for BeginMainFrame for the
+  // current pending tree.  This is always identity outside of the
+  // BeginMainFrame to activation interval.
+  T reflected_delta_in_pending_tree_;
   // When true the pending delta is always identity so that it does not change
   // and will clobber the active value on push.
   bool clobber_active_value_;
