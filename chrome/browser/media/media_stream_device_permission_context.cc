@@ -35,33 +35,6 @@ void MediaStreamDevicePermissionContext::RequestPermission(
 ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
-  return GetPermissionStatusInternal(requesting_origin, embedding_origin,
-                                     false);
-}
-
-ContentSetting MediaStreamDevicePermissionContext::
-    GetPermissionStatusAllowingInsecureForPepper(
-        const GURL& requesting_origin,
-        const GURL& embedding_origin) const {
-  return GetPermissionStatusInternal(requesting_origin, embedding_origin, true);
-}
-
-void MediaStreamDevicePermissionContext::ResetPermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
-  NOTREACHED() << "ResetPermission is not implemented";
-}
-
-void MediaStreamDevicePermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  NOTREACHED() << "CancelPermissionRequest is not implemented";
-}
-
-ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    bool is_pepper_request) const {
   // TODO(raymes): Merge this policy check into content settings
   // crbug.com/244389.
   const char* policy_name = nullptr;
@@ -95,21 +68,19 @@ ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(
   if (setting == CONTENT_SETTING_DEFAULT)
     setting = CONTENT_SETTING_ASK;
 
-  // TODO(raymes): This is here for safety to ensure that we always ask the user
-  // even if a content setting is set to "allow" if the origin is insecure. In
-  // reality we shouldn't really need to check this here as we should respect
-  // the user's content setting. The problem is that pepper requests allow
-  // insecure origins to be persisted. We should remove this after
-  // crbug.com/526324 is fixed.
-  if (!ShouldPersistContentSetting(setting, requesting_origin,
-                                   is_pepper_request) &&
-      !requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
-      !requesting_origin.SchemeIs(content::kChromeUIScheme) &&
-      !requesting_origin.SchemeIs(content::kChromeDevToolsScheme)) {
-    return CONTENT_SETTING_ASK;
-  }
-
   return setting;
+}
+
+void MediaStreamDevicePermissionContext::ResetPermission(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  NOTREACHED() << "ResetPermission is not implemented";
+}
+
+void MediaStreamDevicePermissionContext::CancelPermissionRequest(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id) {
+  NOTREACHED() << "CancelPermissionRequest is not implemented";
 }
 
 bool MediaStreamDevicePermissionContext::IsRestrictedToSecureOrigins() const {

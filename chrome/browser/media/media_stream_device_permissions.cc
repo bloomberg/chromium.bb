@@ -16,29 +16,6 @@
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 
-bool ShouldPersistContentSetting(ContentSetting setting,
-                                 const GURL& origin,
-                                 bool is_pepper_request) {
-  // When the request is from an invalid scheme we don't persist it.
-  if (!ContentSettingsPattern::FromURLNoWildcard(origin).IsValid())
-    return false;
-
-  // It's safe to persist block settings all the time.
-  if (setting == CONTENT_SETTING_BLOCK)
-    return true;
-
-  // Pepper requests should always be persisted to prevent annoying users of
-  // plugins.
-  if (is_pepper_request)
-    return true;
-
-  // We persist requests from secure origins.
-  if (content::IsOriginSecure(origin))
-    return true;
-
-  return false;
-}
-
 MediaStreamDevicePolicy GetDevicePolicy(const Profile* profile,
                                         const GURL& security_origin,
                                         const char* policy_name,

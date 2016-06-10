@@ -19,10 +19,7 @@ class Profile;
 // Represents a permission for microphone/camera access.
 class MediaPermission {
  public:
-  // TODO(raymes): After crbug.com/526324 has been fixed, remove
-  // |is_insecure_pepper_request| from the constructor.
   MediaPermission(ContentSettingsType content_type,
-                  bool is_insecure_pepper_request,
                   const GURL& requesting_origin,
                   const GURL& embedding_origin,
                   Profile* profile);
@@ -46,7 +43,6 @@ class MediaPermission {
   bool HasAvailableDevices(const std::string& device_id) const;
 
   const ContentSettingsType content_type_;
-  bool is_insecure_pepper_request_;
   const GURL requesting_origin_;
   const GURL embedding_origin_;
   const std::string device_id_;

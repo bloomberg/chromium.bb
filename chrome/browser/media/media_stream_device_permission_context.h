@@ -34,13 +34,6 @@ class MediaStreamDevicePermissionContext : public PermissionContextBase {
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
 
-  // For Pepper request, insecure origins are allowed to be persisted, hence we
-  // can't just call GetPermissionStatus when the requesting origin is insecure.
-  // TODO(raymes): Remove this after crbug.com/526324 is fixed.
-  ContentSetting GetPermissionStatusAllowingInsecureForPepper(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const;
-
   void ResetPermission(const GURL& requesting_origin,
                        const GURL& embedding_origin) override;
 
@@ -48,10 +41,6 @@ class MediaStreamDevicePermissionContext : public PermissionContextBase {
                                const PermissionRequestID& id) override;
 
  private:
-  ContentSetting GetPermissionStatusInternal(const GURL& requesting_origin,
-                                             const GURL& embedding_origin,
-                                             bool is_pepper_request) const;
-
   // PermissionContextBase:
   bool IsRestrictedToSecureOrigins() const override;
 

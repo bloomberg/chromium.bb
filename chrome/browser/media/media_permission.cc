@@ -31,12 +31,10 @@ content::PermissionType ContentSettingsTypeToPermission(
 }  // namespace
 
 MediaPermission::MediaPermission(ContentSettingsType content_type,
-                                 bool is_insecure_pepper_request,
                                  const GURL& requesting_origin,
                                  const GURL& embedding_origin,
                                  Profile* profile)
     : content_type_(content_type),
-      is_insecure_pepper_request_(is_insecure_pepper_request),
       requesting_origin_(requesting_origin),
       embedding_origin_(embedding_origin),
       profile_(profile) {}
@@ -97,14 +95,8 @@ ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(
 
 ContentSetting MediaPermission::GetStoredContentSetting(
     MediaStreamDevicePermissionContext* media_device_permission_context) const {
-  if (is_insecure_pepper_request_) {
-    return media_device_permission_context
-        ->GetPermissionStatusAllowingInsecureForPepper(requesting_origin_,
-                                                       embedding_origin_);
-  } else {
-    return media_device_permission_context->GetPermissionStatus(
-        requesting_origin_, embedding_origin_);
-  }
+  return media_device_permission_context->GetPermissionStatus(
+      requesting_origin_, embedding_origin_);
 }
 
 bool MediaPermission::HasAvailableDevices(const std::string& device_id) const {

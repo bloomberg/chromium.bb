@@ -3292,7 +3292,7 @@ class MediaStreamDevicesControllerBrowserTest
  public:
   MediaStreamDevicesControllerBrowserTest()
       : request_url_allowed_via_whitelist_(false),
-        request_url_("http://www.example.com/foo") {
+        request_url_("https://www.example.com/foo") {
     policy_value_ = GetParam();
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
@@ -3385,7 +3385,7 @@ class MediaStreamDevicesControllerBrowserTest
 
 // static
 const char MediaStreamDevicesControllerBrowserTest::kExampleRequestPattern[] =
-    "http://[*.]example.com/";
+    "https://[*.]example.com/";
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowed) {

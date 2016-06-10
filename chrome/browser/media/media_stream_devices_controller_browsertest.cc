@@ -703,21 +703,6 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   ASSERT_FALSE(controller.IsAskingForVideo());
 }
 
-// For non-Pepper request from insecure origin, if it's ALLOW, it will be
-// changed to ASK.
-IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
-                       NonPepperRequestInsecure) {
-  InitWithUrl(GURL("http://www.example.com"));
-  SetContentSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ALLOW);
-
-  MediaStreamDevicesController controller(
-      GetWebContents(), CreateRequest(example_audio_id(), example_video_id()),
-      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                 this));
-  ASSERT_TRUE(controller.IsAskingForAudio());
-  ASSERT_TRUE(controller.IsAskingForVideo());
-}
-
 // Request and block microphone and camera access with kill switch.
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                        RequestAndKillSwitchMicCam) {

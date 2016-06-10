@@ -489,28 +489,21 @@ void MediaStreamDevicesController::StorePermission(
     ContentSetting new_audio_setting,
     ContentSetting new_video_setting) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  bool is_pepper_request =
-      request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY;
+  DCHECK(content::IsOriginSecure(request_.security_origin) ||
+         request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
 
   if (IsAskingForAudio() && new_audio_setting != CONTENT_SETTING_ASK) {
-    if (ShouldPersistContentSetting(new_audio_setting, request_.security_origin,
-                                    is_pepper_request)) {
-      HostContentSettingsMapFactory::GetForProfile(profile_)
-          ->SetContentSettingDefaultScope(request_.security_origin, GURL(),
-                                          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                          std::string(), new_audio_setting);
-    }
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->SetContentSettingDefaultScope(request_.security_origin, GURL(),
+                                        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                                        std::string(), new_audio_setting);
   }
   if (IsAskingForVideo() && new_video_setting != CONTENT_SETTING_ASK) {
-    if (ShouldPersistContentSetting(new_video_setting, request_.security_origin,
-                                    is_pepper_request)) {
-      HostContentSettingsMapFactory::GetForProfile(profile_)
-          ->SetContentSettingDefaultScope(
-              request_.security_origin, GURL(),
-              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
-              new_video_setting);
-    }
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->SetContentSettingDefaultScope(
+            request_.security_origin, GURL(),
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
+            new_video_setting);
   }
 }
 
@@ -587,11 +580,9 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   }
 
   if (ContentTypeIsRequested(permission_type, request)) {
-    bool is_insecure_pepper_request =
-        request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY &&
-        request.security_origin.SchemeIs(url::kHttpScheme);
-    MediaPermission permission(
-        content_type, is_insecure_pepper_request, request.security_origin,
+    DCHECK(content::IsOriginSecure(request_.security_origin) ||
+           request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
+    MediaPermission permission(content_type, request.security_origin,
         web_contents_->GetLastCommittedURL().GetOrigin(), profile_);
     return permission.GetPermissionStatusWithDeviceRequired(requested_device_id,
                                                             denial_reason);
