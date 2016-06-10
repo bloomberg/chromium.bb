@@ -101,9 +101,12 @@ tests:
     - ⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎
     - typeform:
         italic: '       +++    '
-  - # Emphasis only at the end of a word
+  - # Emphasis only at the end of a word. Accroding to a Finish
+    # braille expert this case is not specified, i.e. whether an
+    # indicator is needed if the emphasis ends at word end. So we
+    # assume no indicator is needed
     - valtionpäämies
-    - ⠧⠁⠇⠞⠊⠕⠝⠏⠜⠜⠨⠍⠊⠑⠎⠨
+    - ⠧⠁⠇⠞⠊⠕⠝⠏⠜⠜⠨⠍⠊⠑⠎
     - typeform:
         italic: '          ++++'
   - # Emphasis at the beginning and the end of a word, but not in the middle
