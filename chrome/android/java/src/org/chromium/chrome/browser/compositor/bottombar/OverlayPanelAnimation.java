@@ -57,9 +57,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     /** The {@link LayoutUpdateHost} used to request a new frame to be updated and rendered. */
     private final LayoutUpdateHost mUpdateHost;
 
-    /** Whether there are animations in progress. */
-    private boolean mAnimationInProgress = false;
-
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -378,7 +375,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      */
     public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
         boolean finished = true;
-        if (mLayoutAnimations != null && mAnimationInProgress) {
+        if (mLayoutAnimations != null) {
             if (jumpToEnd) {
                 finished = mLayoutAnimations.finished();
                 mLayoutAnimations.updateAndFinish();
@@ -391,8 +388,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
                 onAnimationFinished();
             }
             requestUpdate();
-
-            mAnimationInProgress = !finished;
         }
         return finished;
     }
@@ -413,7 +408,9 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
         // is cancelled (which can happen by a subsequent gesture while
         // an animation is happening). That's why the actual height should
         // be checked.
-        if (mAnimatingState != PanelState.UNDEFINED
+        // TODO(mdjones): Move animations not directly related to the panel's state into their
+        // own animation handler (i.e. peek promo, G sprite, etc.). See https://crbug.com/617307.
+        if (mAnimatingState != null && mAnimatingState != PanelState.UNDEFINED
                 && getHeight() == getPanelHeightFromState(mAnimatingState)) {
             setPanelState(mAnimatingState, mAnimatingStateReason);
         }
@@ -469,7 +466,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * already finished or doesn't exist, the animation set is also started.
      */
     protected void addToAnimation(ChromeAnimation.Animation<Animatable<?>> component) {
-        mAnimationInProgress = true;
         if (mLayoutAnimations == null || mLayoutAnimations.finished()) {
             onAnimationStarted();
             mLayoutAnimations = new ChromeAnimation<Animatable<?>>();
