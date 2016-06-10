@@ -526,6 +526,9 @@
                   '|chrome/utility/itunes*'\
                   '|chrome/utility/picasa*',
     },
+    'media_mojo': {
+      'filepath': 'media/mojo/*'
+    },
     'media_router': {
       'filepath': 'chrome/browser/media/router/*' \
                   '|chrome/app/theme/*/common/media_router*' \
@@ -1522,6 +1525,7 @@
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'media_galleries': ['thestig@chromium.org', 'tommycli@chromium.org'],
+    'media_mojo': ['alokp+watch@chromium.org'],
     'media_router': ['media-router+watch@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
