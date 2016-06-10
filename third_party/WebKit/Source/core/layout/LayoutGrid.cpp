@@ -749,13 +749,15 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
     GridLength maxTrackBreadth = trackSize.maxTrackBreadth();
 
     // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto>.
-    // For the inline axis this only happens when we're computing the intrinsic sizes (AvailableSpaceIndefinite).
-    // For the block axis we check that the percentage height is resolvable on the first in-flow child.
-    if ((sizingOperation == IntrinsicSizeComputation) || (direction == ForRows && firstInFlowChildBox() && !firstInFlowChildBox()->percentageLogicalHeightIsResolvable())) {
-        if (minTrackBreadth.hasPercentage())
-            minTrackBreadth = Length(Auto);
-        if (maxTrackBreadth.hasPercentage())
-            maxTrackBreadth = Length(Auto);
+    if (minTrackBreadth.hasPercentage() || maxTrackBreadth.hasPercentage()) {
+        // For the inline axis this only happens when we're computing the intrinsic sizes (AvailableSpaceIndefinite).
+        // For the block axis we check that the percentage height is resolvable on the first in-flow child.
+        if ((sizingOperation == IntrinsicSizeComputation) || (direction == ForRows && firstInFlowChildBox() && !firstInFlowChildBox()->percentageLogicalHeightIsResolvable())) {
+            if (minTrackBreadth.hasPercentage())
+                minTrackBreadth = Length(Auto);
+            if (maxTrackBreadth.hasPercentage())
+                maxTrackBreadth = Length(Auto);
+        }
     }
 
     // Flex sizes are invalid as a min sizing function. However we still can have a flexible |minTrackBreadth|
