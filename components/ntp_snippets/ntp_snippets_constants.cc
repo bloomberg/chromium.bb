@@ -6,6 +6,7 @@
 
 namespace ntp_snippets {
 
+// Also defined in SnippetArticleViewHolder.java
 const char kStudyName[] = "NTPSnippets";
 
 const base::FilePath::CharType kDatabaseFolder[] =
