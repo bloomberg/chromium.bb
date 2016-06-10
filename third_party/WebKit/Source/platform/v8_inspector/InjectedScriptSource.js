@@ -580,7 +580,12 @@ InjectedScript.prototype = {
             return toString(obj);
 
         if (subtype === "node") {
-            var description = obj.nodeName.toLowerCase();
+            var description = "";
+            if (obj.nodeName)
+                description = obj.nodeName.toLowerCase();
+            else if (obj.constructor)
+                description = obj.constructor.name.toLowerCase();
+
             switch (obj.nodeType) {
             case 1 /* Node.ELEMENT_NODE */:
                 description += obj.id ? "#" + obj.id : "";
