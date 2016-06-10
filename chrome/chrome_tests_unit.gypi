@@ -1244,6 +1244,7 @@
       'browser/ui/cocoa/first_run_bubble_controller_unittest.mm',
       'browser/ui/cocoa/floating_bar_backing_view_unittest.mm',
       'browser/ui/cocoa/framed_browser_window_unittest.mm',
+      'browser/ui/cocoa/fullscreen_low_power_coordinator_unittest.mm',
       'browser/ui/cocoa/fullscreen_window_unittest.mm',
       'browser/ui/cocoa/gradient_button_cell_unittest.mm',
       'browser/ui/cocoa/history_menu_bridge_unittest.mm',

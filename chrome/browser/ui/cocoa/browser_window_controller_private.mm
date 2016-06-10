@@ -1195,14 +1195,20 @@ willPositionSheet:(NSWindow*)sheet
   if (![self shouldUseCustomAppKitFullscreenTransition:YES])
     return nil;
 
-  WebContents* webContents = [self webContents];
   NSWindow* lowPowerWindow = nil;
-  if (webContents) {
-    fullscreenLowPowerCoordinator_.reset(new FullscreenLowPowerCoordinatorCocoa(
-        [self window],
-        webContents->GetRenderWidgetHostView()->GetAcceleratedWidgetMac()));
-    lowPowerWindow =
-        fullscreenLowPowerCoordinator_->GetFullscreenLowPowerWindow();
+  static const bool fullscreen_low_power_enabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFullscreenLowPowerMode);
+  if (fullscreen_low_power_enabled_at_command_line) {
+    WebContents* webContents = [self webContents];
+    if (webContents && webContents->GetRenderWidgetHostView()) {
+      fullscreenLowPowerCoordinator_.reset(
+          new FullscreenLowPowerCoordinatorCocoa(
+              [self window], webContents->GetRenderWidgetHostView()
+                                 ->GetAcceleratedWidgetMac()));
+      lowPowerWindow =
+          fullscreenLowPowerCoordinator_->GetFullscreenLowPowerWindow();
+    }
   }
 
   fullscreenTransition_.reset(

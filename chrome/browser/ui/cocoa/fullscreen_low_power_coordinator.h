@@ -61,9 +61,11 @@ class FullscreenLowPowerCoordinatorCocoa
   // transitioned to low power mode.
   bool allowed_by_fullscreen_transition_ = false;
 
-  // Set by the AcceleratedWidgetHost with each frame. This must be true to
-  // enter low power mode.
-  bool low_power_layer_valid_ = false;
+  // Set by the AcceleratedWidgetHost with each frame. This must be true for
+  // 15 consecutive frames to enter low power mode (this is to ensure that the
+  // low power window has actually updated to the correct content before it
+  // appears).
+  uint64_t low_power_layer_valid_frame_count_ = 0;
 
   // Set if the NSView hierarchy allows low power mode. Low power mode is only
   // allowed when nothing but the web contents is on-screen.

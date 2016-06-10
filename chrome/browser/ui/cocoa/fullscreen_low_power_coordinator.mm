@@ -4,8 +4,13 @@
 
 #include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+namespace {
+
+// The minimum number of frames with valid low power contents that we need to
+// receive in a row before showing the low power window.
+const uint64_t kMinValidFrames = 15;
+
+}  // namespace
 
 @interface FullscreenLowPowerWindow : NSWindow {
   base::scoped_nsobject<NSWindow> eventTargetWindow_;
@@ -127,12 +132,17 @@ void FullscreenLowPowerCoordinatorCocoa::ChildWindowsChanged() {
 
     // Don't make any assumptions about other child windows.
     allowed_by_child_windows_ = false;
-    return;
+    break;
   }
+
+  EnterOrExitLowPowerModeIfNeeded();
 }
 
 void FullscreenLowPowerCoordinatorCocoa::SetLowPowerLayerValid(bool valid) {
-  low_power_layer_valid_ = valid;
+  if (valid)
+    low_power_layer_valid_frame_count_ += 1;
+  else
+    low_power_layer_valid_frame_count_ = 0;
   EnterOrExitLowPowerModeIfNeeded();
 }
 
@@ -144,15 +154,11 @@ void FullscreenLowPowerCoordinatorCocoa::WillLoseAcceleratedWidget() {
 }
 
 void FullscreenLowPowerCoordinatorCocoa::EnterOrExitLowPowerModeIfNeeded() {
-  static bool enabled_at_command_line =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFullscreenLowPowerMode);
-
   bool new_in_low_power_mode =
-      widget_ && low_power_window_ && low_power_layer_valid_ &&
-      allowed_by_fullscreen_transition_ &&
-      allowed_by_nsview_layout_ && allowed_by_child_windows_ &&
-      allowed_by_active_sheet_ && enabled_at_command_line;
+      widget_ && low_power_window_ &&
+      low_power_layer_valid_frame_count_ > kMinValidFrames &&
+      allowed_by_fullscreen_transition_ && allowed_by_nsview_layout_ &&
+      allowed_by_child_windows_ && allowed_by_active_sheet_;
 
   if (new_in_low_power_mode) {
     // Update whether or not we are in low power mode based on whether or not
