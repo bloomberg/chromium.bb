@@ -15,6 +15,7 @@
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/test/wm_test_base.h"
+#include "base/run_loop.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "ui/display/display.h"
 
@@ -797,7 +798,7 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
     GetWorkspaceLayoutManager(default_container_)
         ->SetMaximizeBackdropDelegate(std::move(backdrop));
     // Closing and / or opening can be a delayed operation.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Return the default container.

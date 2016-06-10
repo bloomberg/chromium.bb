@@ -32,6 +32,7 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/user_action_tester.h"
@@ -1627,11 +1628,11 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
   gfx::Point rip_off_point(start_point.x(), 0);
   generator.MoveMouseTo(start_point.x(), start_point.y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   generator.PressLeftButton();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   generator.MoveMouseTo(rip_off_point.x(), rip_off_point.y());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
 
   // Check the overflow bubble size when an item is ripped off.
