@@ -34,6 +34,9 @@ def GetBigQueryTableID(clovis_report_task):
   # Name the table after the last path component of the trace bucket.
   trace_bucket = clovis_report_task.ActionParams()['trace_bucket']
   table_id = os.path.basename(os.path.normpath(trace_bucket))
+  task_name = clovis_report_task.BackendParams().get('task_name')
+  if task_name is not None:
+    table_id += '_' + task_name
   # BigQuery table names can contain only alpha numeric characters and
   # underscores.
   return ''.join(c for c in table_id if c.isalnum() or c == '_')
