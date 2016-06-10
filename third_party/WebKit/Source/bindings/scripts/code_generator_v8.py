@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# pylint: disable=import-error,print-statement,relative-import
+
 """Generate Blink V8 bindings (.h and .cpp files).
 
 If run itself, caches Jinja templates (and creates dummy file for build,
@@ -80,8 +82,8 @@ from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 import v8_union
-from v8_utilities import capitalize, cpp_name, unique_by, v8_class_name
-from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency, is_testing_target, shorten_union_name
+from v8_utilities import capitalize, cpp_name, unique_by
+from utilities import idl_filename_to_component, is_valid_component_dependency, is_testing_target, shorten_union_name
 
 
 def normalize_and_sort_includes(include_paths):
@@ -149,6 +151,8 @@ def depending_union_type(idl_type):
 class TypedefResolver(Visitor):
     def __init__(self, info_provider):
         self.info_provider = info_provider
+        self.additional_header_includes = set()
+        self.typedefs = {}
 
     def resolve(self, definitions, definition_name):
         """Traverse definitions and resolves typedefs with the actual types."""
@@ -287,6 +291,7 @@ class CodeGeneratorV8(CodeGeneratorBase):
 
     def generate_dictionary_code(self, definitions, dictionary_name,
                                  dictionary):
+        # pylint: disable=unused-argument
         interfaces_info = self.info_provider.interfaces_info
         header_template = self.jinja_env.get_template('dictionary_v8.h')
         cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
@@ -424,6 +429,7 @@ def initialize_jinja_env(cache_dir):
         'unique_by': unique_by,
         })
     jinja_env.filters.update(attribute_filters())
+    jinja_env.filters.update(v8_interface.constant_filters())
     return jinja_env
 
 
@@ -456,7 +462,7 @@ def main(argv):
     try:
         cache_dir = argv[1]
         dummy_filename = argv[2]
-    except IndexError as err:
+    except IndexError:
         print 'Usage: %s CACHE_DIR DUMMY_FILENAME' % argv[0]
         return 1
 

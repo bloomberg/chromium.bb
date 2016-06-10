@@ -48,7 +48,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {# Constants #}
 {% from 'constants.cpp' import constant_getter_callback
        with context %}
-{% for constant in special_getter_constants %}
+{% for constant in constants | has_special_getter %}
 {{constant_getter_callback(constant)}}
 {% endfor %}
 {# Attributes #}
