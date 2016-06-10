@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSPrimitiveValueUnitTrie.h"
+#include "core/css/CSSPrimitiveValue.h"
 
 namespace blink {
 
@@ -21,12 +21,12 @@ CSSPrimitiveValue::UnitType cssPrimitiveValueUnitFromTrie(const CharacterType* d
 
 } // namespace
 
-CSSPrimitiveValue::UnitType lookupCSSPrimitiveValueUnit(const LChar* characters8, unsigned length)
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(const LChar* characters8, unsigned length)
 {
     return cssPrimitiveValueUnitFromTrie(characters8, length);
 }
 
-CSSPrimitiveValue::UnitType lookupCSSPrimitiveValueUnit(const UChar* characters16, unsigned length)
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(const UChar* characters16, unsigned length)
 {
     return cssPrimitiveValueUnitFromTrie(characters16, length);
 }

@@ -5,7 +5,7 @@
 #include "core/css/parser/CSSParserToken.h"
 
 #include "core/css/CSSMarkup.h"
-#include "core/css/CSSPrimitiveValueUnitTrie.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"
@@ -69,11 +69,7 @@ void CSSParserToken::convertToDimensionWithUnit(StringView unit)
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;
     initValueFromStringView(unit);
-
-    if (unit.is8Bit())
-        m_unit = static_cast<unsigned>(lookupCSSPrimitiveValueUnit(unit.characters8(), unit.length()));
-    else
-        m_unit = static_cast<unsigned>(lookupCSSPrimitiveValueUnit(unit.characters16(), unit.length()));
+    m_unit = static_cast<unsigned>(CSSPrimitiveValue::stringToUnitType(unit));
 }
 
 void CSSParserToken::convertToPercentage()

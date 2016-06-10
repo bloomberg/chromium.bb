@@ -1200,7 +1200,6 @@
             'css/CSSPrimitiveValue.cpp',
             'css/CSSPrimitiveValue.h',
             'css/CSSPrimitiveValueMappings.h',
-            'css/CSSPrimitiveValueUnitTrie.h',
             'css/CSSProperty.cpp',
             'css/CSSPropertyEquality.cpp',
             'css/CSSPropertyEquality.h',

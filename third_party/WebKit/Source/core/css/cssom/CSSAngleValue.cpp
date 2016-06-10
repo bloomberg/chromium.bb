@@ -6,18 +6,13 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPrimitiveValueUnitTrie.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
 
 CSSAngleValue* CSSAngleValue::create(double value, const String& unit, ExceptionState& exceptionState)
 {
-    CSSPrimitiveValue::UnitType primitiveUnit;
-    if (unit.is8Bit())
-        primitiveUnit = lookupCSSPrimitiveValueUnit(unit.characters8(), unit.length());
-    else
-        primitiveUnit = lookupCSSPrimitiveValueUnit(unit.characters16(), unit.length());
+    CSSPrimitiveValue::UnitType primitiveUnit = CSSPrimitiveValue::stringToUnitType(unit);
     DCHECK(CSSPrimitiveValue::isAngle(primitiveUnit));
     return new CSSAngleValue(value, primitiveUnit);
 }
