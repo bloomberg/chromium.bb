@@ -62,6 +62,7 @@ private:
     bool hasControlClip() const override { return true; }
 
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
@@ -80,8 +81,9 @@ private:
     void adjustInnerStyle();
     void setText(const String&);
     void setTextFromOption(int optionIndex);
-    void updateOptionsWidth();
-    float computeTextWidth(const String&) const;
+    void updateOptionsHeightWidth();
+    float computeTextHeight(const TextRun&, const ComputedStyle&) const;
+    float computeTextWidth(const TextRun&, const ComputedStyle&) const;
     void updateText();
     void setIndexToSelectOnCancel(int listIndex);
 
@@ -93,6 +95,7 @@ private:
     bool m_optionsChanged : 1;
     bool m_isEmpty : 1;
     bool m_hasUpdatedActiveOption : 1;
+    int m_optionsHeight;
     int m_optionsWidth;
 
     int m_lastActiveIndex;

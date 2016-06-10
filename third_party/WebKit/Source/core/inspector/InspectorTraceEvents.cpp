@@ -370,6 +370,7 @@ const char SvgResourceInvalidated[] = "SVG resource invalidated";
 const char FloatDescendantChanged[] = "Floating descendant changed";
 const char CountersChanged[] = "Counters changed";
 const char GridChanged[] = "Grid changed";
+const char MenuHeightChanged[] = "Menu height changed";
 const char MenuWidthChanged[] = "Menu width changed";
 const char RemovedFromLayout[] = "Removed from layout";
 const char AddedToLayout[] = "Added to layout";

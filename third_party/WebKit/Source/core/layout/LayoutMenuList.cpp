@@ -35,6 +35,10 @@
 
 namespace blink {
 
+// Vertical padding that is added to the element's logical height.
+// This is needed so that the select's layout is consistent with other browsers, e.g. Gecko.
+const int cInnerBlockVerticalPaddingEm = 1;
+
 LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element)
     , m_buttonText(nullptr)
@@ -42,6 +46,7 @@ LayoutMenuList::LayoutMenuList(Element* element)
     , m_optionsChanged(true)
     , m_isEmpty(false)
     , m_hasUpdatedActiveOption(false)
+    , m_optionsHeight(0)
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
 {
@@ -148,11 +153,12 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
 
     bool fontChanged = !oldStyle || oldStyle->font() != style()->font();
     if (fontChanged)
-        updateOptionsWidth();
+        updateOptionsHeightWidth();
 }
 
-void LayoutMenuList::updateOptionsWidth()
+void LayoutMenuList::updateOptionsHeightWidth()
 {
+    float maxOptionHeight = 0;
     float maxOptionWidth = 0;
     const HeapVector<Member<HTMLElement>>& listItems = selectElement()->listItems();
     int size = listItems.size();
@@ -163,38 +169,64 @@ void LayoutMenuList::updateOptionsWidth()
             continue;
 
         String text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-        applyTextTransform(style(), text, ' ');
+
+        const ComputedStyle* itemStyle = element->computedStyle() ? element->computedStyle() : style();
+        applyTextTransform(itemStyle, text, ' ');
+        TextRun textRun = constructTextRun(itemStyle->font(), text, *itemStyle);
+
+        maxOptionHeight = std::max(maxOptionHeight, computeTextHeight(textRun, *itemStyle));
+
         if (LayoutTheme::theme().popupOptionSupportsTextIndent()) {
             // Add in the option's text indent.  We can't calculate percentage values for now.
             float optionWidth = 0;
             if (const ComputedStyle* optionStyle = element->computedStyle())
                 optionWidth += minimumValueForLength(optionStyle->textIndent(), LayoutUnit());
-            if (!text.isEmpty())
-                optionWidth += computeTextWidth(text);
+            if (!text.isEmpty()) {
+                TextRun textRun = constructTextRun(itemStyle->font(), text, styleRef());
+                optionWidth += computeTextWidth(textRun, *itemStyle);
+            }
             maxOptionWidth = std::max(maxOptionWidth, optionWidth);
         } else if (!text.isEmpty()) {
-            maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(text));
+            maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(textRun, *itemStyle));
         }
     }
 
+    int height = static_cast<int>(ceilf(maxOptionHeight));
     int width = static_cast<int>(ceilf(maxOptionWidth));
-    if (m_optionsWidth == width)
+    if (m_optionsWidth == width && m_optionsHeight == height)
         return;
 
-    m_optionsWidth = width;
+    auto invalidationReason = LayoutInvalidationReason::Unknown;
+    if (m_optionsWidth != width) {
+        m_optionsWidth = width;
+        invalidationReason = LayoutInvalidationReason::MenuWidthChanged;
+    }
+
+    if (m_optionsHeight != height) {
+        m_optionsHeight = height;
+        invalidationReason = LayoutInvalidationReason::MenuHeightChanged;
+    }
+
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::MenuWidthChanged);
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(invalidationReason);
 }
 
-float LayoutMenuList::computeTextWidth(const String& text) const
+float LayoutMenuList::computeTextHeight(const TextRun& textRun, const ComputedStyle& computedStyle) const
 {
-    return style()->font().width(constructTextRun(style()->font(), text, styleRef()));
+    FloatRect glyphBounds;
+    computedStyle.font().width(textRun, nullptr /* fallbackFonts */, &glyphBounds);
+    return glyphBounds.height();
+}
+
+float LayoutMenuList::computeTextWidth(const TextRun& textRun, const ComputedStyle& computedStyle) const
+{
+    return computedStyle.font().width(textRun);
 }
 
 void LayoutMenuList::updateFromElement()
 {
     if (m_optionsChanged) {
-        updateOptionsWidth();
+        updateOptionsHeightWidth();
         m_optionsChanged = false;
     }
 
@@ -300,6 +332,14 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
     maxLogicalWidth = std::max(m_optionsWidth, LayoutTheme::theme().minimumMenuListSize(styleRef())) + m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
     if (!style()->width().hasPercent())
         minLogicalWidth = maxLogicalWidth;
+}
+
+void LayoutMenuList::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop,
+    LogicalExtentComputedValues& computedValues) const
+{
+    logicalHeight = LayoutUnit(m_optionsHeight) + borderAndPaddingHeight()
+        + LayoutUnit(cInnerBlockVerticalPaddingEm * style()->computedFontSize());
+    LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }
 
 void LayoutMenuList::didSetSelectedIndex(int optionIndex)
