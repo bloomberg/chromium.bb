@@ -25,7 +25,8 @@ var requirejs, define;
       hasOwn = op.hasOwnProperty,
       defContextName = '_',
       contexts = {},
-      globalDefQueue = [];
+      globalDefQueue = [],
+      anonymousModuleId = 0;
 
   // Could match something like ')//comment', do not lose the prefix to
   // comment.
@@ -994,12 +995,16 @@ var requirejs, define;
   define = function(name, deps, callback) {
     var node, context;
 
-    // Allow for anonymous modules
+    // Allow for anonymous modules, which load automatically
     if (typeof name !== 'string') {
       // Adjust args appropriately
       callback = deps;
       deps = name;
-      name = null;
+      name = 'ios.chrome.anonymous' + (anonymousModuleId++);
+
+      requirejs([name], null, function(error) {
+        throw error;
+      });
     }
 
     // This module may not have dependencies
