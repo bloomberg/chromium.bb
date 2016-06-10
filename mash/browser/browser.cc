@@ -18,6 +18,9 @@
 #include "mash/browser/debug_view.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/c/system/main.h"
+#include "services/navigation/public/cpp/view.h"
+#include "services/navigation/public/cpp/view_delegate.h"
+#include "services/navigation/public/cpp/view_observer.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
@@ -55,18 +58,8 @@ class NavMenuModel : public ui::MenuModel {
     virtual void NavigateToOffset(int offset) = 0;
   };
 
-  struct Entry {
-    Entry(const base::string16& title, int offset)
-        : title(title), offset(offset) {}
-    ~Entry() {}
-
-    // Title of the entry in the menu.
-    base::string16 title;
-    // Offset from the currently visible page to navigate to this item.
-    int offset;
-  };
-
-  NavMenuModel(const std::vector<Entry>& entries, Delegate* delegate)
+  NavMenuModel(const std::vector<navigation::NavigationListItem>& entries,
+               Delegate* delegate)
       : navigation_delegate_(delegate), entries_(entries) {}
   ~NavMenuModel() override {}
 
@@ -123,7 +116,7 @@ class NavMenuModel : public ui::MenuModel {
 
   ui::MenuModelDelegate* delegate_ = nullptr;
   Delegate* navigation_delegate_;
-  std::vector<Entry> entries_;
+  std::vector<navigation::NavigationListItem> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(NavMenuModel);
 };
@@ -289,32 +282,32 @@ class Throbber : public views::View {
 class UI : public views::WidgetDelegateView,
            public views::ButtonListener,
            public views::TextfieldController,
-           public navigation::mojom::ViewClient,
+           public navigation::ViewDelegate,
+           public navigation::ViewObserver,
            public NavButton::ModelProvider,
            public NavMenuModel::Delegate {
  public:
   enum class Type { WINDOW, POPUP };
 
-  UI(Browser* browser,
-     Type type,
-     navigation::mojom::ViewPtr view,
-     navigation::mojom::ViewClientRequest request)
+  UI(Browser* browser, Type type, std::unique_ptr<navigation::View> view)
       : browser_(browser),
         type_(type),
-        back_button_(new NavButton(NavButton::Type::BACK, this, this,
+        back_button_(new NavButton(NavButton::Type::BACK,
+                                   this,
+                                   this,
                                    base::ASCIIToUTF16("Back"))),
-        forward_button_(new NavButton(NavButton::Type::FORWARD, this, this,
+        forward_button_(new NavButton(NavButton::Type::FORWARD,
+                                      this,
+                                      this,
                                       base::ASCIIToUTF16("Forward"))),
         reload_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Reload"))),
         prompt_(new views::Textfield),
-        debug_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("DV"))),
+        debug_button_(new views::LabelButton(this, base::ASCIIToUTF16("DV"))),
         throbber_(new Throbber),
         progress_bar_(new ProgressBar),
         debug_view_(new DebugView),
-        view_(std::move(view)),
-        view_client_binding_(this, std::move(request)) {
+        view_(std::move(view)) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     back_button_->set_request_focus_on_press(false);
@@ -329,22 +322,28 @@ class UI : public views::WidgetDelegateView,
     AddChildView(progress_bar_);
     AddChildView(debug_view_);
     debug_view_->set_view(view_.get());
+    view_->set_delegate(this);
+    view_->AddObserver(this);
     view_->SetResizerSize(gfx::Size(16, 16));
   }
-  ~UI() override { browser_->RemoveWindow(GetWidget()); }
+  ~UI() override {
+    view_->RemoveObserver(this);
+    view_->set_delegate(nullptr);
+    browser_->RemoveWindow(GetWidget());
+  }
 
-  void NavigateTo(const GURL& url) { view_->NavigateTo(url); }
+  void NavigateTo(const GURL& url) { view_->NavigateToURL(url); }
 
  private:
   // Overridden from views::WidgetDelegate:
   views::View* GetContentsView() override { return this; }
   base::string16 GetWindowTitle() const override {
     // TODO(beng): use resources.
-    if (current_title_.empty())
+    if (view_->title().empty())
       return base::ASCIIToUTF16("Browser");
     base::string16 format = base::ASCIIToUTF16("%s - Browser");
     base::ReplaceFirstSubstringAfterOffset(&format, 0, base::ASCIIToUTF16("%s"),
-                                           current_title_);
+                                           view_->title());
     return format;
   }
   bool CanResize() const override { return true; }
@@ -358,7 +357,7 @@ class UI : public views::WidgetDelegateView,
     } else if (sender == forward_button_) {
       view_->GoForward();
     } else if (sender == reload_button_) {
-      if (is_loading_)
+      if (view_->is_loading())
         view_->Stop();
       else
         view_->Reload(false);
@@ -433,10 +432,7 @@ class UI : public views::WidgetDelegateView,
       mus::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
       content_area_ = window->window_tree()->NewWindow(nullptr);
       window->AddChild(content_area_);
-
-      mus::mojom::WindowTreeClientPtr client;
-      view_->GetWindowTreeClient(GetProxy(&client));
-      content_area_->Embed(std::move(client));
+      view_->EmbedInWindow(content_area_);
     }
   }
 
@@ -445,7 +441,7 @@ class UI : public views::WidgetDelegateView,
                       const ui::KeyEvent& key_event) override {
     switch (key_event.key_code()) {
       case ui::VKEY_RETURN: {
-        view_->NavigateTo(GURL(prompt_->text()));
+        view_->NavigateToURL(GURL(prompt_->text()));
       } break;
       default:
         break;
@@ -453,10 +449,23 @@ class UI : public views::WidgetDelegateView,
     return false;
   }
 
-  // navigation::mojom::ViewClient:
-  void LoadingStateChanged(bool is_loading) override {
-    is_loading_ = is_loading;
-    if (is_loading_) {
+  // navigation::ViewDelegate:
+  void ViewCreated(std::unique_ptr<navigation::View> view,
+                   bool is_popup,
+                   const gfx::Rect& initial_rect,
+                   bool user_gesture) override {
+    views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
+        new UI(browser_, is_popup ? UI::Type::POPUP : UI::Type::WINDOW,
+               std::move(view)),
+        nullptr, initial_rect);
+    window->Show();
+    browser_->AddWindow(window);
+  }
+  void Close() override { GetWidget()->Close(); }
+
+  // navigation::ViewObserver:
+  void LoadingStateChanged(navigation::View* view) override {
+    if (view->is_loading()) {
       reload_button_->SetText(base::ASCIIToUTF16("Stop"));
       throbber_->Start();
     } else {
@@ -465,91 +474,30 @@ class UI : public views::WidgetDelegateView,
       progress_bar_->SetProgress(0.f);
     }
   }
-  void NavigationStateChanged(const GURL& url,
-                              const mojo::String& title,
-                              bool can_go_back,
-                              bool can_go_forward) override {
-    EnableButton(back_button_, can_go_back);
-    EnableButton(forward_button_, can_go_forward);
-    current_url_ = url;
-    prompt_->SetText(base::UTF8ToUTF16(current_url_.spec()));
-    current_title_ = base::UTF8ToUTF16(title.get());
-    GetWidget()->UpdateWindowTitle();
-  }
-  void LoadProgressChanged(double progress) override {
+  void LoadProgressChanged(navigation::View* view, double progress) override {
     progress_bar_->SetProgress(progress);
   }
-  void UpdateHoverURL(const GURL& url) override {
+  void NavigationStateChanged(navigation::View* view) override {
+    EnableButton(back_button_, view->can_go_back());
+    EnableButton(forward_button_, view->can_go_forward());
+    prompt_->SetText(base::UTF8ToUTF16(view->url().spec()));
+    GetWidget()->UpdateWindowTitle();
+  }
+  void HoverTargetURLChanged(navigation::View* view, const GURL& url) override {
     if (url.is_valid())
       prompt_->SetText(base::UTF8ToUTF16(url.spec()));
     else
-      prompt_->SetText(base::UTF8ToUTF16(current_url_.spec()));
-  }
-  void ViewCreated(navigation::mojom::ViewPtr view,
-                   navigation::mojom::ViewClientRequest request,
-                   bool is_popup,
-                   const gfx::Rect& initial_rect,
-                   bool user_gesture) override {
-    views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-        new UI(browser_, is_popup ? UI::Type::POPUP : UI::Type::WINDOW,
-               std::move(view), std::move(request)),
-        nullptr, initial_rect);
-    window->Show();
-    browser_->AddWindow(window);
-  }
-  void Close() override { GetWidget()->Close(); }
-  void NavigationPending(navigation::mojom::NavigationEntryPtr entry) override {
-    pending_nav_ = std::move(entry);
-  }
-  void NavigationCommitted(
-      navigation::mojom::NavigationCommittedDetailsPtr details,
-      int current_index) override {
-    switch (details->type) {
-      case navigation::mojom::NavigationType::NEW_PAGE: {
-        navigation_list_.push_back(std::move(pending_nav_));
-        navigation_list_position_ = current_index;
-        break;
-      }
-      case navigation::mojom::NavigationType::EXISTING_PAGE:
-        navigation_list_position_ = current_index;
-        break;
-      default:
-        break;
-    }
-  }
-  void NavigationEntryChanged(navigation::mojom::NavigationEntryPtr entry,
-                              int entry_index) override {
-    navigation_list_[entry_index] = std::move(entry);
-  }
-  void NavigationListPruned(bool from_front, int count) override {
-    DCHECK(count < static_cast<int>(navigation_list_.size()));
-    if (from_front) {
-      auto it = navigation_list_.begin() + count;
-      navigation_list_.erase(navigation_list_.begin(), it);
-    } else {
-      auto it = navigation_list_.end() - count;
-      navigation_list_.erase(it, navigation_list_.end());
-    }
+      prompt_->SetText(base::UTF8ToUTF16(view_->url().spec()));
   }
 
   // NavButton::ModelProvider:
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
       NavButton::Type type) override {
-    std::vector<NavMenuModel::Entry> entries;
+    std::vector<navigation::NavigationListItem> entries;
     if (type == NavButton::Type::BACK) {
-      for (int i = navigation_list_position_ - 1, offset = -1;
-           i >= 0; --i, --offset) {
-        std::string title = navigation_list_[i]->title;
-        entries.push_back(
-            NavMenuModel::Entry(base::UTF8ToUTF16(title), offset));
-      }
+      view_->GetBackMenuItems(&entries);
     } else {
-      for (int i = navigation_list_position_ + 1, offset = 1;
-           i < static_cast<int>(navigation_list_.size()); ++i, ++offset) {
-        std::string title = navigation_list_[i]->title;
-        entries.push_back(
-            NavMenuModel::Entry(base::UTF8ToUTF16(title), offset));
-      }
+      view_->GetForwardMenuItems(&entries);
     }
     return base::WrapUnique(new NavMenuModel(entries, this));
   }
@@ -580,16 +528,7 @@ class UI : public views::WidgetDelegateView,
 
   DebugView* debug_view_;
 
-  navigation::mojom::ViewPtr view_;
-  mojo::Binding<navigation::mojom::ViewClient> view_client_binding_;
-
-  bool is_loading_ = false;
-  base::string16 current_title_;
-  GURL current_url_;
-
-  navigation::mojom::NavigationEntryPtr pending_nav_;
-  std::vector<navigation::mojom::NavigationEntryPtr> navigation_list_;
-  int navigation_list_position_ = 0;
+  std::unique_ptr<navigation::View> view_;
 
   bool showing_debug_view_ = false;
 
@@ -635,15 +574,10 @@ void Browser::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
 
-  navigation::mojom::ViewFactoryPtr view_factory;
-  connector_->ConnectToInterface("exe:navigation", &view_factory);
-  navigation::mojom::ViewPtr view;
-  navigation::mojom::ViewClientPtr view_client;
-  navigation::mojom::ViewClientRequest view_client_request =
-      GetProxy(&view_client);
-  view_factory->CreateView(std::move(view_client), GetProxy(&view));
-  UI* ui = new UI(this, UI::Type::WINDOW, std::move(view),
-                  std::move(view_client_request));
+  navigation::mojom::ViewFactoryPtr factory;
+  connector_->ConnectToInterface("exe:navigation", &factory);
+  UI* ui = new UI(this, UI::Type::WINDOW,
+                  base::WrapUnique(new navigation::View(std::move(factory))));
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       ui, nullptr, gfx::Rect(10, 10, 1024, 600));
   ui->NavigateTo(GURL("http://www.google.com/"));

@@ -23,6 +23,7 @@ source_set("lib") {
     "//mash/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/interfaces",
+    "//services/navigation/public/cpp",
     "//services/navigation/public/interfaces",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",

@@ -5,7 +5,7 @@
 #ifndef MASH_BROWSER_DEBUG_VIEW_H_
 #define MASH_BROWSER_DEBUG_VIEW_H_
 
-#include "services/navigation/public/interfaces/view.mojom.h"
+#include "services/navigation/public/cpp/view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -28,7 +28,7 @@ class DebugView : public views::View,
   DebugView(const DebugView&) = delete;
   void operator=(const DebugView&) = delete;
 
-  void set_view(navigation::mojom::View* view) { view_ = view; }
+  void set_view(navigation::View* view) { view_ = view; }
 
   gfx::Size GetPreferredSize() const override;
 
@@ -36,7 +36,7 @@ class DebugView : public views::View,
   void OnPaint(gfx::Canvas* canvas) override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  navigation::mojom::View* view_ = nullptr;
+  navigation::View* view_ = nullptr;
 
   views::View* interstitial_container_;
   views::Label* interstitial_label_;
