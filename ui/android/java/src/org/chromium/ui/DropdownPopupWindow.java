@@ -35,6 +35,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private float mAnchorX;
     private float mAnchorY;
     private boolean mRtl;
+    private int mInitialSelection = -1;
     private OnLayoutChangeListener mLayoutChangeListener;
     private PopupWindow.OnDismissListener mOnDismissListener;
     private CharSequence mDescription;
@@ -107,6 +108,11 @@ public class DropdownPopupWindow extends ListPopupWindow {
         super.setAdapter(adapter);
     }
 
+
+    public void setInitialSelection(int initialSelection) {
+        mInitialSelection = initialSelection;
+    }
+
     /**
      * Shows the popup. The adapter should be set before calling this method.
      */
@@ -140,6 +146,10 @@ public class DropdownPopupWindow extends ListPopupWindow {
         if (!wasShowing) {
             getListView().setContentDescription(mDescription);
             getListView().sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
+        }
+        if (mInitialSelection >= 0) {
+            getListView().setSelection(mInitialSelection);
+            mInitialSelection = -1;
         }
     }
 

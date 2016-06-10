@@ -26,7 +26,6 @@ public class SelectPopupDropdown implements SelectPopup {
     private final Context mContext;
     private final DropdownPopupWindow mDropdownPopupWindow;
 
-    private int mInitialSelection = -1;
     private boolean mSelectionNotified;
 
     public SelectPopupDropdown(ContentViewCore contentViewCore, List<SelectPopupItem> items,
@@ -42,9 +41,12 @@ public class SelectPopupDropdown implements SelectPopup {
                 hide(false);
             }
         });
+
+        int initialSelection = -1;
         if (selected.length > 0) {
-            mInitialSelection = selected[0];
+            initialSelection = selected[0];
         }
+        mDropdownPopupWindow.setInitialSelection(initialSelection);
         mDropdownPopupWindow.setAdapter(new DropdownAdapter(mContext, items, null));
         mDropdownPopupWindow.setRtl(rightAligned);
         RenderCoordinates renderCoordinates = mContentViewCore.getRenderCoordinates();
@@ -74,10 +76,9 @@ public class SelectPopupDropdown implements SelectPopup {
 
     @Override
     public void show() {
-        mDropdownPopupWindow.show();
-        if (mInitialSelection >= 0) {
-            mDropdownPopupWindow.getListView().setSelection(mInitialSelection);
-        }
+        // postShow() to make sure show() happens after the layout of the anchor view has been
+        // changed.
+        mDropdownPopupWindow.postShow();
     }
 
     @Override
