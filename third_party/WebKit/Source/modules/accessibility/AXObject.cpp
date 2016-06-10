@@ -1349,6 +1349,13 @@ void AXObject::setScrollOffset(const IntPoint& offset) const
     area->setScrollPosition(DoublePoint(offset.x(), offset.y()), ProgrammaticScroll);
 }
 
+void AXObject::getRelativeBounds(AXObject** container, FloatRect& boundsInContainer, SkMatrix44& containerTransform) const
+{
+    *container = nullptr;
+    boundsInContainer = FloatRect();
+    containerTransform.setIdentity();
+}
+
 //
 // Modify or take an action on an object.
 //

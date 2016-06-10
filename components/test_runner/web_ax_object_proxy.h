@@ -124,6 +124,10 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int32_t ColumnHeadersCount();
   bool IsClickable();
   bool IsButtonStateMixed();
+  float BoundsX();
+  float BoundsY();
+  float BoundsWidth();
+  float BoundsHeight();
 
   // Bound methods.
   v8::Local<v8::Object> AriaControlsElementAtIndex(unsigned index);
@@ -161,11 +165,19 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   void ScrollToMakeVisible();
   void ScrollToMakeVisibleWithSubFocus(int x, int y, int width, int height);
   void ScrollToGlobalPoint(int x, int y);
+  int ScrollX();
+  int ScrollY();
   int WordStart(int character_index);
   int WordEnd(int character_index);
   v8::Local<v8::Object> NextOnLine();
   v8::Local<v8::Object> PreviousOnLine();
   std::string MisspellingAtIndex(int index);
+  v8::Local<v8::Object> OffsetContainer();
+  float BoundsInContainerX();
+  float BoundsInContainerY();
+  float BoundsInContainerWidth();
+  float BoundsInContainerHeight();
+  bool HasNonIdentityTransform();
 
   std::string Name();
   std::string NameFrom();

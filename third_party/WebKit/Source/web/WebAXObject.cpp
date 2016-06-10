@@ -48,6 +48,7 @@
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableRow.h"
 #include "platform/PlatformKeyboardEvent.h"
+#include "public/platform/WebFloatRect.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
@@ -1524,6 +1525,22 @@ void WebAXObject::setScrollOffset(const WebPoint& offset) const
         return;
 
     m_private->setScrollOffset(offset);
+}
+
+void WebAXObject::getRelativeBounds(WebAXObject& offsetContainer, WebFloatRect& boundsInContainer, SkMatrix44& containerTransform) const
+{
+    if (isDetached())
+        return;
+
+#if DCHECK_IS_ON()
+    DCHECK(isLayoutClean(m_private->getDocument()));
+#endif
+
+    AXObject* container = nullptr;
+    FloatRect bounds;
+    m_private->getRelativeBounds(&container, bounds, containerTransform);
+    offsetContainer = WebAXObject(container);
+    boundsInContainer = WebFloatRect(bounds);
 }
 
 void WebAXObject::scrollToMakeVisible() const

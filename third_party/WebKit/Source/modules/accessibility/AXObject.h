@@ -820,14 +820,26 @@ public:
     bool containerLiveRegionAtomic() const;
     bool containerLiveRegionBusy() const;
 
-    // Location and click point in frame-relative coordinates.
+    // Location and click point in frame-relative coordinates. DEPRECATED, to be
+    // replaced by getRelativeBounds.
     virtual LayoutRect elementRect() const { return m_explicitElementRect; }
     void setElementRect(LayoutRect r) { m_explicitElementRect = r; }
     virtual void markCachedElementRectDirty() const;
     virtual IntPoint clickPoint();
 
     // Transformation relative to the parent frame, if local (otherwise returns identity).
+    // DEPRECATED, to be replaced by getRelativeBounds.
     virtual SkMatrix44 transformFromLocalParentFrame() const;
+
+    // NEW bounds calculation interface. Every object's bounding box is returned
+    // relative to a container object (which is guaranteed to be an ancestor) and
+    // optionally a transformation matrix that needs to be applied too.
+    // To compute the absolute bounding box of an element, start with its
+    // boundsInContainer and apply the transform. Then as long as its container is
+    // not null, walk up to its container and offset by the container's offset from
+    // origin, the container's scroll position if any, and apply the container's transform.
+    // Do this until you reach the root of the tree.
+    virtual void getRelativeBounds(AXObject** container, FloatRect& boundsInContainer, SkMatrix44& containerTransform) const;
 
     // Hit testing.
     // Called on the root AX object to return the deepest available element.

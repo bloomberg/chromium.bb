@@ -257,6 +257,70 @@ ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
     return box->getScrollableArea();
 }
 
+void AXLayoutObject::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
+{
+    *outContainer = nullptr;
+    outBoundsInContainer = FloatRect();
+    outContainerTransform.setIdentity();
+
+    if (!m_layoutObject)
+        return;
+
+    // First compute the container. The container must be an ancestor in the accessibility tree, and
+    // its LayoutObject must be an ancestor in the layout tree. Get the first such ancestor that's
+    // either scrollable or has a paint layer.
+    AXObject* container = parentObjectUnignored();
+    LayoutObject* containerLayoutObject = nullptr;
+    while (container) {
+        containerLayoutObject = container->getLayoutObject();
+        if (containerLayoutObject && containerLayoutObject->isBoxModelObject() && m_layoutObject->isDescendantOf(containerLayoutObject)) {
+            if (container->isScrollableContainer() || containerLayoutObject->hasLayer())
+                break;
+        }
+
+        container = container->parentObjectUnignored();
+    }
+
+    if (!container)
+        return;
+    *outContainer = container;
+
+    // Next get the local bounds of this LayoutObject, which is typically
+    // a rect at point (0, 0) with the width and height of the LayoutObject.
+    LayoutRect localBounds;
+    if (m_layoutObject->isText()) {
+        localBounds = toLayoutText(m_layoutObject)->linesBoundingBox();
+    } else if (m_layoutObject->isLayoutInline()) {
+        localBounds = toLayoutInline(m_layoutObject)->linesBoundingBox();
+    } else if (m_layoutObject->isBox()) {
+        localBounds = LayoutRect(LayoutPoint(), toLayoutBox(m_layoutObject)->size());
+    } else if (m_layoutObject->isSVG()) {
+        localBounds = LayoutRect(m_layoutObject->strokeBoundingBox());
+    } else {
+        DCHECK(false);
+    }
+    outBoundsInContainer = FloatRect(localBounds);
+
+    // If the container has a scroll offset, subtract that out because we want our
+    // bounds to be relative to the *unscrolled* position of the container object.
+    ScrollableArea* scrollableArea = container->getScrollableAreaIfScrollable();
+    if (scrollableArea) {
+        IntPoint scrollPosition = scrollableArea->scrollPosition();
+        outBoundsInContainer.move(FloatSize(scrollPosition.x(), scrollPosition.y()));
+    }
+
+    // Compute the transform between the container's coordinate space and this object.
+    // If the transform is just a simple translation, apply that to the bounding box, but
+    // if it's a non-trivial transformation like a rotation, scaling, etc. then return
+    // the full matrix instead.
+    TransformationMatrix transform = m_layoutObject->localToAncestorTransform(toLayoutBoxModelObject(containerLayoutObject));
+    if (transform.isIdentityOr2DTranslation()) {
+        outBoundsInContainer.move(transform.to2DTranslation());
+    } else {
+        outContainerTransform = TransformationMatrix::toSkMatrix44(transform);
+    }
+}
+
 static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
 {
     if (box && box->isImage())

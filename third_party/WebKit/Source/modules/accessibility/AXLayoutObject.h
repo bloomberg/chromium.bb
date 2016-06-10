@@ -61,6 +61,7 @@ public:
     LayoutBoxModelObject* getLayoutBoxModelObject() const;
     SkMatrix44 transformFromLocalParentFrame() const override;
     ScrollableArea* getScrollableAreaIfScrollable() const final;
+    void getRelativeBounds(AXObject** container, FloatRect& boundsInContainer, SkMatrix44& containerTransform) const override;
     AccessibilityRole determineAccessibilityRole() override;
     AccessibilityRole nativeAccessibilityRoleIgnoringAria() const override;
     void checkCachedElementRect() const;
