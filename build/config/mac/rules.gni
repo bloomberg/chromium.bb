@@ -243,6 +243,22 @@ template("mac_app_bundle") {
                            ])
   }
 
+  _pkg_info_target = target_name + "_pkg_info"
+
+  action(_pkg_info_target) {
+    forward_variables_from(invoker, [ "testonly" ])
+    script = "//build/config/mac/write_pkg_info.py"
+    sources = get_target_outputs(":$_info_plist_target")
+    outputs = [
+      "$target_gen_dir/$_pkg_info_target",
+    ]
+    args = [ "--plist" ] + rebase_path(sources, root_build_dir) +
+           [ "--output" ] + rebase_path(outputs, root_build_dir)
+    deps = [
+      ":$_info_plist_target",
+    ]
+  }
+
   executable(_executable_target) {
     visibility = [ ":$_executable_bundle_data" ]
     forward_variables_from(invoker,
@@ -292,6 +308,20 @@ template("mac_app_bundle") {
     ]
   }
 
+  _pkg_info_bundle_data = _pkg_info_target + "_bundle_data"
+
+  bundle_data(_pkg_info_bundle_data) {
+    forward_variables_from(invoker, [ "testonly" ])
+    visibility = [ ":$_target_name" ]
+    sources = get_target_outputs(":$_pkg_info_target")
+    outputs = [
+      "{{bundle_root_dir}}/PkgInfo",
+    ]
+    public_deps = [
+      ":$_pkg_info_target",
+    ]
+  }
+
   create_bundle(_target_name) {
     forward_variables_from(invoker,
                            [
@@ -306,6 +336,7 @@ template("mac_app_bundle") {
     deps += [
       ":$_executable_bundle_data",
       ":$_info_plist_bundle_data",
+      ":$_pkg_info_bundle_data",
     ]
 
     bundle_root_dir = "$root_out_dir/${_output_name}.app/Contents"
