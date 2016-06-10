@@ -34,6 +34,7 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
  private:
   void IsAppOpen();
   void UninstallPackage();
+  void ShowPackageInfo();
 
   bool CanBeUninstalled() const;
 

@@ -113,9 +113,11 @@
       # GN version: //components/arc:mojo_bindings
       'target_name': 'arc_mojo_bindings',
       'type': 'static_library',
-      'includes': [
-        '../mojo/mojom_bindings_generator.gypi',
-      ],
+      'variables': {
+        'mojom_typemaps': [
+          'arc/common/app.typemap',
+        ],
+      },
       'sources': [
         'arc/common/app.mojom',
         'arc/common/arc_bridge.mojom',
@@ -140,7 +142,10 @@
         'arc/common/video.mojom',
         'arc/common/video_accelerator.mojom',
         'arc/common/window_manager.mojom',
+        'arc/common/app_struct_traits.cc',
       ],
+      'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
+      'dependencies': [ '../ui/gfx/gfx.gyp:gfx_geometry' ],
     },
     {
       # GN version: //components/arc:arc_standalone_service
