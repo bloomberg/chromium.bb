@@ -433,23 +433,6 @@ SelectorChecker::Match SelectorChecker::matchForPseudoContent(const SelectorChec
     return SelectorFailsLocally;
 }
 
-template<typename CharType>
-static inline bool containsHTMLSpaceTemplate(const CharType* string, unsigned length)
-{
-    for (unsigned i = 0; i < length; ++i) {
-        if (isHTMLSpace<CharType>(string[i]))
-            return true;
-    }
-    return false;
-}
-
-static inline bool containsHTMLSpace(const AtomicString& string)
-{
-    if (LIKELY(string.is8Bit()))
-        return containsHTMLSpaceTemplate<LChar>(string.characters8(), string.length());
-    return containsHTMLSpaceTemplate<UChar>(string.characters16(), string.length());
-}
-
 static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::MatchType match, const AtomicString& selectorValue, TextCaseSensitivity caseSensitivity)
 {
     // TODO(esprehn): How do we get here with a null value?
@@ -467,7 +450,7 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
     case CSSSelector::AttributeList:
         {
             // Ignore empty selectors or selectors containing HTML spaces
-            if (selectorValue.isEmpty() || containsHTMLSpace(selectorValue))
+            if (selectorValue.isEmpty() || selectorValue.find(&isHTMLSpace<UChar>) != kNotFound)
                 return false;
 
             unsigned startSearchAt = 0;

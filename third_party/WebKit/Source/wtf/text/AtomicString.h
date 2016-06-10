@@ -85,6 +85,8 @@ public:
         { return m_string.contains(s, caseSensitivity); }
 
     size_t find(UChar c, size_t start = 0) const { return m_string.find(c, start); }
+    size_t find(CharacterMatchFunctionPtr matchFunction, unsigned start = 0) const
+        { return m_string.find(matchFunction, start); }
     size_t find(const LChar* s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.find(s, start, caseSensitivity); }
     size_t find(const String& s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
