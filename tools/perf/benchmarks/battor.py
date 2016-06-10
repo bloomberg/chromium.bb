@@ -13,8 +13,8 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options()
     options.config.enable_battor_trace = True
-    # TODO(rnephew): Enable chrome trace when clock syncs work well with it.
-    options.config.enable_chrome_trace = False
+    options.config.enable_chrome_trace = True
+    options.config.SetMinimalOverheadFilter()
     options.SetTimelineBasedMetric('powerMetric')
     return options
 
@@ -41,4 +41,3 @@ class BattOrPowerMobileSites(_BattOrBenchmark):
   @classmethod
   def Name(cls):
     return 'BattOr.BattOrCases'
-
