@@ -181,10 +181,7 @@
     ],
     "NTPPopularSites": [
         {
-            "group_name": "Enabled5",
-            "params": {
-                "version": "5"
-            }
+            "group_name": "Enabled"
         }
     ],
     "NetworkQualityEstimator": [
