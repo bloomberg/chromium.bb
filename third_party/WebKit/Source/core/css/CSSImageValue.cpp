@@ -125,7 +125,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSImageValue)
     CSSValue::traceAfterDispatch(visitor);
 }
 
-void CSSImageValue::reResolveURL(const Document& document)
+void CSSImageValue::reResolveURL(const Document& document) const
 {
     KURL url = document.completeURL(m_relativeURL);
     AtomicString urlString(url.getString());

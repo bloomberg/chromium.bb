@@ -63,7 +63,7 @@ public:
     void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
     const Referrer& referrer() const { return m_referrer; }
 
-    void reResolveURL(const Document&);
+    void reResolveURL(const Document&) const;
 
     String customCSSText() const;
 
@@ -88,11 +88,13 @@ private:
     CSSImageValue(const AtomicString& absoluteURL);
 
     AtomicString m_relativeURL;
-    AtomicString m_absoluteURL;
     Referrer m_referrer;
-    bool m_isCachePending;
-    Member<StyleImage> m_cachedImage;
     AtomicString m_initiatorName;
+
+    // Cached image data.
+    mutable AtomicString m_absoluteURL;
+    mutable bool m_isCachePending;
+    mutable Member<StyleImage> m_cachedImage;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, isImageValue());
