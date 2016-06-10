@@ -32,6 +32,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -51,8 +52,12 @@ static const int kWindowMarginMD = 10;
 // Foreground label color.
 static const SkColor kLabelColor = SK_ColorWHITE;
 
+// Background label color. Matches background of IDR_AURA_WINDOW_OVERVIEW_CLOSE.
+// TODO(varkha): Make background color conform to window header.
+static const SkColor kLabelBackgroundColor = SkColorSetARGB(179, 0, 0, 0);
+
 // Label shadow color.
-static const SkColor kLabelShadow = 0xB0000000;
+static const SkColor kLabelShadow = SkColorSetARGB(176, 0, 0, 0);
 
 // Vertical padding for the label, on top of it.
 static const int kVerticalLabelPadding = 20;
@@ -85,10 +90,9 @@ gfx::Rect GetTransformedBounds(WmWindow* window, int title_height) {
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     gfx::RectF header_bounds(bounds);
     header_bounds.set_height(
-        std::min(window->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET),
-                 title_height));
+        window->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET));
     new_transform.TransformRect(&header_bounds);
-    bounds.Inset(0, header_bounds.height(), 0, 0);
+    bounds.Inset(0, gfx::ToCeiledInt(header_bounds.height()), 0, 0);
   }
   return ToEnclosingRect(bounds);
 }
@@ -145,6 +149,11 @@ WindowSelectorItem::OverviewLabelButton::OverviewLabelButton(
 WindowSelectorItem::OverviewLabelButton::~OverviewLabelButton() {
 }
 
+void WindowSelectorItem::OverviewLabelButton::SetBackgroundColor(
+    SkColor color) {
+  label()->SetBackgroundColor(color);
+}
+
 gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
   gfx::Rect bounds = GetLocalBounds();
   if (ash::MaterialDesignController::IsOverviewMaterial())
@@ -153,6 +162,30 @@ gfx::Rect WindowSelectorItem::OverviewLabelButton::GetChildAreaBounds() {
     bounds.Inset(0, top_padding_, 0, 0);
   return bounds;
 }
+
+class WindowSelectorItem::CaptionContainerView : public views::View {
+ public:
+  explicit CaptionContainerView(WindowSelectorItem::OverviewLabelButton* child)
+      : child_(child) {
+    AddChildView(child);
+  }
+
+  void SetBackgroundColor(SkColor background_color) {
+    child_->SetBackgroundColor(background_color);
+    set_background(views::Background::CreateSolidBackground(background_color));
+  }
+
+ protected:
+  // views::View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    child_->SetBoundsRect(GetLocalBounds());
+  }
+
+ private:
+  WindowSelectorItem::OverviewLabelButton* child_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
+};
 
 WindowSelectorItem::WindowSelectorItem(WmWindow* window,
                                        WindowSelector* window_selector)
@@ -168,8 +201,7 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = material ? views::Widget::InitParams::OPAQUE_WINDOW
-                            : views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   close_button_widget_.set_focus_on_creation(false);
   window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       &close_button_widget_, kShellWindowId_OverlayContainer, &params);
@@ -339,7 +371,9 @@ void WindowSelectorItem::UpdateWindowLabel(
               animation_type,
               WmLookup::Get()->GetWindowForWidget(window_label_.get()));
 
-  window_label_->SetBounds(label_bounds);
+  WmWindow* window_label_window =
+      WmLookup::Get()->GetWindowForWidget(window_label_.get());
+  window_label_window->SetBounds(label_bounds);
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
@@ -348,8 +382,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = material ? views::Widget::InitParams::OPAQUE_WINDOW
-                            : views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.visible_on_all_workspaces = true;
   window_label_->set_focus_on_creation(false);
   root_window_->GetRootWindowController()
@@ -371,10 +404,15 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   window_label_button_view_->SetFontList(
       bundle.GetFontList(ui::ResourceBundle::BoldFont));
-  window_label_->SetContentsView(window_label_button_view_);
   if (material) {
+    caption_container_view_ =
+        new CaptionContainerView(window_label_button_view_);
+    caption_container_view_->SetBackgroundColor(kLabelBackgroundColor);
+    window_label_->SetContentsView(caption_container_view_);
     window_label_button_view_->SetVisible(false);
     window_label_->Show();
+  } else {
+    window_label_->SetContentsView(window_label_button_view_);
   }
 }
 
@@ -402,14 +440,11 @@ void WindowSelectorItem::UpdateHeaderLayout(
     close_button_widget_window->SetTransform(close_button_transform);
   }
 
-  // TODO(varkha): Figure out how to draw |window_label_| opaquely over the
-  // occluded header or truly hide the headers in overview mode.
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     gfx::Rect label_rect(close_button_->GetPreferredSize());
     label_rect.set_y(-label_rect.height());
     label_rect.set_width(transformed_window_bounds.width() -
                          label_rect.width());
-    window_label_->SetBounds(label_rect);
 
     if (!window_label_button_view_->visible()) {
       window_label_button_view_->SetVisible(true);
@@ -417,6 +452,7 @@ void WindowSelectorItem::UpdateHeaderLayout(
     }
     WmWindow* window_label_window =
         WmLookup::Get()->GetWindowForWidget(window_label_.get());
+    window_label_window->SetBounds(label_rect);
     std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
         ScopedOverviewAnimationSettingsFactory::Get()
             ->CreateOverviewAnimationSettings(animation_type,

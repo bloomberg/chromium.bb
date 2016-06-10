@@ -7,12 +7,17 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/macros.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform_util.h"
 
@@ -24,6 +29,9 @@ namespace {
 
 // The opacity level that windows will be set to when they are restored.
 const float kRestoreWindowOpacity = 1.0f;
+
+// Alpha value used to paint mask layer that masks the original window header.
+const int kOverviewContentMaskAlpha = 255;
 
 WmWindow* GetTransientRoot(WmWindow* window) {
   while (window->GetTransientParent())
@@ -158,6 +166,59 @@ TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
 
 }  // namespace
 
+// Mask layer that clips the window's original header in overview mode.
+class ScopedTransformOverviewWindow::OverviewContentMask
+    : public ui::LayerDelegate {
+ public:
+  explicit OverviewContentMask(int inset);
+  ~OverviewContentMask() override;
+
+  ui::Layer* layer() { return &layer_; }
+
+  // Overridden from LayerDelegate.
+  void OnPaintLayer(const ui::PaintContext& context) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  base::Closure PrepareForLayerBoundsChange() override;
+
+ private:
+  ui::Layer layer_;
+  int inset_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewContentMask);
+};
+
+ScopedTransformOverviewWindow::OverviewContentMask::OverviewContentMask(
+    int inset)
+    : layer_(ui::LAYER_TEXTURED), inset_(inset) {
+  layer_.set_delegate(this);
+}
+
+ScopedTransformOverviewWindow::OverviewContentMask::~OverviewContentMask() {
+  layer_.set_delegate(nullptr);
+}
+
+void ScopedTransformOverviewWindow::OverviewContentMask::OnPaintLayer(
+    const ui::PaintContext& context) {
+  ui::PaintRecorder recorder(context, layer()->size());
+  SkPaint paint;
+  paint.setAlpha(kOverviewContentMaskAlpha);
+  paint.setStyle(SkPaint::kFill_Style);
+  gfx::Rect rect(layer()->bounds().size());
+  rect.Inset(0, inset_, 0, 0);
+  recorder.canvas()->DrawRect(rect, paint);
+}
+
+void ScopedTransformOverviewWindow::OverviewContentMask::
+    OnDeviceScaleFactorChanged(float device_scale_factor) {
+  // Redrawing will take care of scale factor change.
+}
+
+base::Closure ScopedTransformOverviewWindow::OverviewContentMask::
+    PrepareForLayerBoundsChange() {
+  return base::Closure();
+}
+
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
     : window_(window),
       minimized_(window->GetShowState() == ui::SHOW_STATE_MINIMIZED),
@@ -170,6 +231,11 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
 }
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    window()->GetLayer()->SetMaskLayer(nullptr);
+    mask_.reset();
+  }
+
   ScopedAnimationSettings animation_settings_list;
   BeginScopedAnimation(
       OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
@@ -281,6 +347,13 @@ void ScopedTransformOverviewWindow::SetTransform(
     WmWindow* root_window,
     const gfx::Transform& transform) {
   DCHECK(overview_started_);
+
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    mask_.reset(new OverviewContentMask(
+        window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET)));
+    mask_->layer()->SetBounds(GetTargetBoundsInScreen());
+    window()->GetLayer()->SetMaskLayer(mask_->layer());
+  }
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
 

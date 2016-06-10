@@ -105,11 +105,16 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   void Close();
 
  private:
+  class OverviewContentMask;
+
   // Shows the window if it was minimized.
   void ShowWindowIfMinimized();
 
   // A weak pointer to the real window in the overview.
   WmWindow* window_;
+
+  // Mask layer that hides the original window header.
+  std::unique_ptr<OverviewContentMask> mask_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.

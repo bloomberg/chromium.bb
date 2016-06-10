@@ -36,6 +36,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
     ~OverviewLabelButton() override;
 
+    // Makes sure that text is readable with |background_color|.
+    void SetBackgroundColor(SkColor background_color);
+
     void set_top_padding(int top_padding) { top_padding_ = top_padding; }
 
    protected:
@@ -101,6 +104,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void OnWindowTitleChanged(WmWindow* window) override;
 
  private:
+  class CaptionContainerView;
   friend class WindowSelectorTest;
 
   // Sets the bounds of this selector's items to |target_bounds| in
@@ -152,6 +156,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // TODO(varkha): We should be able to use one widget for both the label and
   // the close button with material design.
   OverviewLabelButton* window_label_button_view_;
+
+  // Container view used as a background for |window_label_button_view_|.
+  CaptionContainerView* caption_container_view_;
 
   // The close buttons widget container.
   views::Widget close_button_widget_;
