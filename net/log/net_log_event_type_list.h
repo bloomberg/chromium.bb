@@ -677,6 +677,9 @@ EVENT_TYPE(EV_CERT_CT_COMPLIANCE_CHECKED)
 //
 //   {
 //     "address": <Remote address being connected to>,
+//     "bound_to_network": <optional; network handle for the network that this
+//                          socket is bound to.  Only present when this socket
+//                          is bound to a network.>
 //   }
 //
 // And the END event will contain the following parameter:
@@ -690,6 +693,9 @@ EVENT_TYPE(UDP_CONNECT)
 // The following parameters are attached:
 //   {
 //     "address": <Local address bound to the socket>,
+//     "bound_to_network": <optional; network handle for the network that this
+//                          socket is bound to.  Only present when this socket
+//                          is bound to a network.>
 //   }
 EVENT_TYPE(UDP_LOCAL_ADDRESS)
 
