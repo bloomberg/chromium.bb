@@ -15,7 +15,6 @@ component("mojo") {
   deps = [
     ":interfaces",
     "//base",
-    "//mojo/public/c/system:for_component",
     "//ui/platform_window",
   ]
 

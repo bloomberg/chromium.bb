@@ -52,7 +52,6 @@ component("modules") {
     "//device/vibration:mojo_bindings_blink",
     "//device/vr:mojo_bindings_blink",
     "//media/mojo/interfaces:image_capture_blink",
-    "//mojo/public/c/system:for_component",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/public:mojo_bindings",
     "//third_party/WebKit/public:mojo_bindings_blink",

@@ -17,20 +17,18 @@ component("surfaces") {
   defines = [ "MOJO_SURFACES_IMPLEMENTATION" ]
 
   public_deps = [
-    "//ui/gfx",
-    "//ui/gfx/geometry/mojo",
+    "//cc/ipc:interfaces",
+    "//components/mus/public/interfaces",
+    "//gpu",
+    "//skia",
   ]
 
   deps = [
     "//base",
     "//cc",
-    "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/mus/public/interfaces",
-    "//gpu",
-    "//mojo/public/c/system:for_component",
-    "//skia",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 }

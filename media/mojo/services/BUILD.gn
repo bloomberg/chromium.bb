@@ -72,16 +72,19 @@ source_set("proxy") {
 
   public_configs = [ ":mojo_media_config" ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//media",
-    "//media/mojo/common",
     "//media/mojo/interfaces",
-    "//mojo/common",
-    "//mojo/public/c/system:for_component",
-    "//services/shell/public/cpp:sources",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
     "//services/shell/public/interfaces",
-    "//ui/gfx/geometry/mojo",
+  ]
+
+  deps = [
+    "//media/mojo/common",
+    "//mojo/common",
+    "//services/shell/public/cpp",
   ]
 }
 
@@ -126,20 +129,22 @@ component("services") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":mojo_media_config" ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//media",
+    "//media/mojo/interfaces",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
+    "//services/shell/public/cpp",
+    "//url",
+  ]
+
+  deps = [
     "//media:cdm_api",
     "//media:shared_memory_support",
     "//media/mojo/common",
-    "//media/mojo/interfaces",
     "//mojo/common",
-    "//mojo/public/c/system:for_component",
-    "//services/shell/public/cpp",
-    "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
-    "//ui/gfx/geometry/mojo",
-    "//url",
   ]
 
   if (is_android) {
@@ -177,12 +182,15 @@ mojo_native_application("media") {
     "test_mojo_media_client.h",
   ]
 
-  deps = [
+  public_deps = [
     ":services",
     "//base",
     "//media",
-    "//mojo/public/c/system:for_shared_library",
-    "//services/shell/public/cpp:sources",
+  ]
+
+  deps = [
+    "//mojo/public/c/system",
+    "//services/shell/public/cpp",
   ]
 }
 

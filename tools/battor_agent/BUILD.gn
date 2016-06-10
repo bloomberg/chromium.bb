@@ -16,7 +16,6 @@ executable("battor_agent") {
     "//base",
     "//build/win:default_exe_manifest",
     "//device/serial",
-    "//mojo/public/c/system:for_shared_library",
   ]
 }
 
@@ -40,6 +39,7 @@ source_set("battor_agent_lib") {
   deps = [
     "//base",
     "//device/serial",
+    "//mojo/public/cpp/bindings",
     "//net",
   ]
 }
@@ -59,7 +59,6 @@ test("battor_agent_unittests") {
     "//base/test:test_support",
     "//device/serial",
     "//device/serial:test_support",
-    "//mojo/public/c/system:for_shared_library",
     "//testing/gmock",
     "//testing/gtest",
   ]

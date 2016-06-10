@@ -6,13 +6,8 @@ component("mojo") {
   output_name = "mojo_display_lib"
 
   public_deps = [
-    "//ui/display",
-  ]
-  deps = [
     "//components/mus/public/interfaces",
-    "//mojo/public/c/system:for_component",
     "//ui/display",
-    "//ui/gfx/geometry/mojo",
   ]
 
   defines = [ "MOJO_DISPLAY_IMPLEMENTATION" ]

@@ -24,6 +24,5 @@ component("message_pump") {
 
   deps = [
     "//base/third_party/dynamic_annotations",
-    "//mojo/public/c/system:for_component",
   ]
 }

@@ -15,10 +15,12 @@ component("blink") {
 
   defines = [ "MOJO_CONVERTERS_BLINK_IMPLEMENTATION" ]
 
+  public_deps = [
+    "//mojo/public/cpp/bindings",
+  ]
+
   deps = [
     "//base",
-    "//mojo/public/c/system:for_component",
-    "//mojo/public/cpp/bindings:bindings",
     "//third_party/WebKit/public:blink",
     "//ui/events",
     "//ui/events:dom_keycode_converter",

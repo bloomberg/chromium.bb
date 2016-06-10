@@ -35,17 +35,3 @@ source_set("set_thunks_for_app") {
     ":system",
   ]
 }
-
-# TODO(rockot): Delete these deprecated aliases.
-
-group("for_shared_library") {
-  public_deps = [
-    ":system",
-  ]
-}
-
-group("for_component") {
-  public_deps = [
-    ":system",
-  ]
-}

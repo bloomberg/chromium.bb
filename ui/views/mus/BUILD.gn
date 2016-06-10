@@ -65,7 +65,6 @@ component("mus") {
     "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
     "//mojo/common",
-    "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/cpp",
     "//services/shell/public/cpp",
@@ -116,12 +115,6 @@ repack("resources") {
 }
 
 group("for_mojo_application") {
-  public_deps = [
-    ":mus",
-  ]
-}
-
-group("for_shared_library") {
   public_deps = [
     ":mus",
   ]
@@ -317,10 +310,4 @@ mojo_application_manifest("interactive_ui_tests_manifest") {
   type = "exe"
   application_name = "views_mus_interactive_ui_tests"
   source = "interactive_ui_tests_manifest.json"
-}
-
-group("for_component") {
-  public_deps = [
-    ":mus",
-  ]
 }

@@ -617,7 +617,7 @@ source_set("browser") {
       "//content/public/common",
       "//ui/aura",
       "//ui/compositor",
-      "//ui/views/mus:for_component",
+      "//ui/views/mus",
     ]
     defines += [ "MOJO_SHELL_CLIENT" ]
     data_deps += [ "//ash/mus" ]

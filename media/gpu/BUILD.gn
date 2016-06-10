@@ -387,7 +387,6 @@ if (is_win || is_android || is_chromeos) {
         "//media/base/android",
         "//media/base/android:media_java",
         "//media/capture/video/android:capture_java",
-        "//mojo/public/c/system:for_shared_library",
         "//testing/gmock",
         "//ui/android:ui_java",
       ]

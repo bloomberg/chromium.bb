@@ -22,10 +22,6 @@ group("blink") {
     ":blink_minimal",
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/web",
-
-    # public/platform/Platform.h in ':blink_headers' depends on Mojo APIs, and
-    # the dependent of this target needs to link Mojo.
-    "//mojo/public/c/system:for_component",
   ]
 }
 
