@@ -493,6 +493,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback.html',
         ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['mac', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturesize.html',
@@ -604,9 +606,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'opengl'], bug=618408)
     self.Fail('deqp/functional/gles3/transformfeedback.html',
         ['linux', 'nvidia', 'opengl'], bug=618408)
-
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['linux', 'nvidia', 'opengl'], bug=618408)
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance2/buffers/bound-buffer-size-change-test.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
 
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
@@ -663,6 +672,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/negativebufferapi.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
+        ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['linux', 'amd'], bug=483282)
@@ -675,7 +688,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['linux', 'amd', 'no_angle'], bug=483282)
+        ['linux', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_cube_00.html',
