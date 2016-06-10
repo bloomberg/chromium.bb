@@ -42,8 +42,14 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
 
 }  // namespace
 
+// TODO(hcarmona): Investigate converting these tests to unittests.
+
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, SaveAddress) {
   EXPECT_TRUE(RunAutofillSubtest("saveAddress")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetCountryList) {
+  EXPECT_TRUE(RunAutofillSubtest("getCountryList")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetAddressComponents) {

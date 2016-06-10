@@ -14,8 +14,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -115,6 +117,20 @@ autofill_private::AddressEntry ProfileToAddressEntry(
   return address;
 }
 
+autofill_private::CountryEntry CountryToCountryEntry(
+    autofill::AutofillCountry* country) {
+  autofill_private::CountryEntry entry;
+
+  // A null |country| means "insert a space here", so we add a country w/o a
+  // |name| or |country_code| to the list and let the UI handle it.
+  if (country) {
+    entry.name.reset(new std::string(base::UTF16ToUTF8(country->name())));
+    entry.country_code.reset(new std::string(country->country_code()));
+  }
+
+  return entry;
+}
+
 autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
     const autofill::CreditCard& credit_card) {
   autofill_private::CreditCardEntry card;
@@ -167,6 +183,20 @@ AddressEntryList GenerateAddressList(
   AddressEntryList list;
   for (size_t i = 0; i < profiles.size(); ++i)
     list.push_back(ProfileToAddressEntry(*profiles[i], labels[i]));
+
+  return list;
+}
+
+CountryEntryList GenerateCountryList(
+    const autofill::PersonalDataManager& personal_data) {
+  autofill::CountryComboboxModel model;
+  model.SetCountries(personal_data, base::Callback<bool(const std::string&)>());
+  const std::vector<autofill::AutofillCountry*>& countries = model.countries();
+
+  CountryEntryList list;
+
+  for (size_t i = 0; i < countries.size(); ++i)
+    list.push_back(CountryToCountryEntry(countries[i]));
 
   return list;
 }

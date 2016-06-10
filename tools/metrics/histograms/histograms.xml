@@ -72862,6 +72862,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1133" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONADJUST"/>
   <int value="1134" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONRESET"/>
   <int value="1135" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE"/>
+  <int value="1136" label="AUTOFILLPRIVATE_GETCOUNTRYLIST"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

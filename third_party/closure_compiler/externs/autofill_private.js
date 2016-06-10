@@ -66,6 +66,15 @@ chrome.autofillPrivate.AddressEntry;
 
 /**
  * @typedef {{
+ *   name: (string|undefined),
+ *   countryCode: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/autofillPrivate#type-CountryEntry
+ */
+chrome.autofillPrivate.CountryEntry;
+
+/**
+ * @typedef {{
  *   field: !chrome.autofillPrivate.AddressField,
  *   fieldName: string,
  *   isLongField: boolean,
@@ -123,6 +132,14 @@ chrome.autofillPrivate.ValidatePhoneParams;
  * @see https://developer.chrome.com/extensions/autofillPrivate#method-saveAddress
  */
 chrome.autofillPrivate.saveAddress = function(address) {};
+
+/**
+ * Gets the list of all countries.
+ * @param {function(!Array<!chrome.autofillPrivate.CountryEntry>):void} callback
+ *     Callback which will be called with the countries.
+ * @see https://developer.chrome.com/extensions/autofillPrivate#method-getCountryList
+ */
+chrome.autofillPrivate.getCountryList = function(callback) {};
 
 /**
  * Gets the address components for a given country code.
@@ -188,7 +205,7 @@ chrome.autofillPrivate.maskCreditCard = function(guid) {};
 
 /**
  * Fired when the address list has changed, meaning that an entry has been
- * added, removed, or changed.  |entries| The updated list of entries.
+ * added, removed, or changed. |entries| The updated list of entries.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/autofillPrivate#event-onAddressListChanged
  */
@@ -196,7 +213,7 @@ chrome.autofillPrivate.onAddressListChanged;
 
 /**
  * Fired when the credit card list has changed, meaning that an entry has been
- * added, removed, or changed.  |entries| The updated list of entries.
+ * added, removed, or changed. |entries| The updated list of entries.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/autofillPrivate#event-onCreditCardListChanged
  */

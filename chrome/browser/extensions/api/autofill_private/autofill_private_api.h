@@ -31,6 +31,24 @@ class AutofillPrivateSaveAddressFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateSaveAddressFunction);
 };
 
+class AutofillPrivateGetCountryListFunction : public UIThreadExtensionFunction {
+ public:
+  AutofillPrivateGetCountryListFunction();
+  DECLARE_EXTENSION_FUNCTION("autofillPrivate.getCountryList",
+                             AUTOFILLPRIVATE_GETCOUNTRYLIST);
+
+ protected:
+  ~AutofillPrivateGetCountryListFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetCountryListFunction);
+};
+
 class AutofillPrivateGetAddressComponentsFunction :
     public UIThreadExtensionFunction {
  public:

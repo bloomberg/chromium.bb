@@ -29,6 +29,43 @@ var availableTests = [
     chrome.autofillPrivate.saveAddress({fullNames: [NAME]});
   },
 
+  function getCountryList() {
+    var handler = function(countries) {
+      var numSeparators = 0;
+      var countBeforeSeparator = 0;
+      var countAfterSeparator = 0;
+
+      var beforeSeparator = true;
+
+      chrome.test.assertTrue(countries.length > 1,
+          'Expected more than one country');
+
+      countries.forEach(function(country) {
+        // Expecting to have both |name| and |countryCode| or neither.
+        chrome.test.assertEq(!!country.name, !!country.countryCode);
+
+        if (country.name) {
+          if (beforeSeparator)
+            ++countBeforeSeparator;
+          else
+            ++countAfterSeparator;
+        } else {
+          beforeSeparator = false;
+          ++numSeparators;
+        }
+      });
+
+      chrome.test.assertEq(1, numSeparators);
+      chrome.test.assertEq(1, countBeforeSeparator);
+      chrome.test.assertTrue(countAfterSeparator > 1,
+          'Expected more than one country after the separator');
+
+      chrome.test.succeed();
+    };
+
+    chrome.autofillPrivate.getCountryList(handler);
+  },
+
   function getAddressComponents() {
     var COUNTRY_CODE = 'US';
 

@@ -93,6 +93,15 @@ namespace autofillPrivate {
     AutofillMetadata? metadata;
   };
 
+  // An entry representing a country and its code.
+  dictionary CountryEntry {
+    // The internationalized name of the country.
+    DOMString? name;
+
+    // A two-character string representing the country.
+    DOMString? countryCode;
+  };
+
   // A component to be shown in an address editor. Different countries have
   // different components to their addresses.
   dictionary AddressComponent {
@@ -165,6 +174,7 @@ namespace autofillPrivate {
     DOMString countryCode;
   };
 
+  callback GetCountryListCallback = void(CountryEntry[] countries);
   callback GetAddressComponentsCallback = void(AddressComponents components);
   callback GetAddressListCallback = void(AddressEntry[] entries);
   callback ValidatePhoneNumbersCallback =
@@ -174,12 +184,14 @@ namespace autofillPrivate {
   interface Functions {
     // Saves the given address. If |address| has an empty string as its ID, it
     // will be assigned a new one and added as a new entry.
-    //
     // |address|: The address entry to save.
     static void saveAddress(AddressEntry address);
 
+    // Gets the list of all countries.
+    // |callback|: Callback which will be called with the countries.
+    static void getCountryList(GetCountryListCallback callback);
+
     // Gets the address components for a given country code.
-    //
     // |countryCode|: A two-character string representing the address' country
     //     whose components should be returned. See autofill_country.cc for a
     //     list of valid codes.
@@ -193,19 +205,16 @@ namespace autofillPrivate {
 
     // Saves the given credit card. If |card| has an empty string as its
     // ID, it will be assigned a new one and added as a new entry.
-    //
     // |card|: The card entry to save.
     static void saveCreditCard(CreditCardEntry card);
 
     // Removes the entry (address or credit card) with the given ID.
-    //
     // |guid|: ID of the entry to remove. 
     static void removeEntry(DOMString guid);
 
     // Validates a newly-added phone number and invokes the callback with a list
     // of validated numbers. Note that if the newly-added number was invalid, it
     // will not be returned in the list of valid numbers.
-    //
     // |params|: The parameters to this function.
     // |callback|: Callback which will be called with validated phone numbers.
     static void validatePhoneNumbers(ValidatePhoneParams params,
@@ -218,7 +227,6 @@ namespace autofillPrivate {
     // Clears the data associated with a wallet card which was saved
     // locally so that the saved copy is masked (e.g., "Card ending
     // in 1234").
-    //
     // |guid|: GUID of the credit card to mask.
     static void maskCreditCard(DOMString guid);
   };
@@ -226,13 +234,11 @@ namespace autofillPrivate {
   interface Events {
     // Fired when the address list has changed, meaning that an entry has been
     // added, removed, or changed.
-    // 
     // |entries| The updated list of entries.
     static void onAddressListChanged(AddressEntry[] entries);
 
     // Fired when the credit card list has changed, meaning that an entry has
     // been added, removed, or changed.
-    // 
     // |entries| The updated list of entries.
     static void onCreditCardListChanged(CreditCardEntry[] entries);
   };

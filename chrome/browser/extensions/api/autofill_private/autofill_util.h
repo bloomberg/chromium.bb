@@ -23,10 +23,15 @@ namespace extensions {
 namespace autofill_util {
 
 using AddressEntryList = std::vector<api::autofill_private::AddressEntry>;
+using CountryEntryList = std::vector<api::autofill_private::CountryEntry>;
 using CreditCardEntryList = std::vector<api::autofill_private::CreditCardEntry>;
 
 // Uses |personal_data| to generate a list of up-to-date AddressEntry objects.
 AddressEntryList GenerateAddressList(
+    const autofill::PersonalDataManager& personal_data);
+
+// Uses |personal_data| to generate a list of up-to-date CountryEntry objects.
+CountryEntryList GenerateCountryList(
     const autofill::PersonalDataManager& personal_data);
 
 // Uses |personal_data| to generate a list of up-to-date CreditCardEntry

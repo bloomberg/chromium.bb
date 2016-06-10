@@ -279,6 +279,34 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateGetCountryListFunction
+
+AutofillPrivateGetCountryListFunction::AutofillPrivateGetCountryListFunction()
+    : chrome_details_(this) {}
+
+AutofillPrivateGetCountryListFunction::
+    ~AutofillPrivateGetCountryListFunction() {}
+
+ExtensionFunction::ResponseAction AutofillPrivateGetCountryListFunction::Run() {
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          chrome_details_.GetProfile());
+
+  // Return an empty list if data is not loaded.
+  if (!(personal_data && personal_data->IsDataLoaded())) {
+    autofill_util::CountryEntryList empty_list;
+    return RespondNow(ArgumentList(
+        api::autofill_private::GetCountryList::Results::Create(empty_list)));
+  }
+
+  autofill_util::CountryEntryList country_list =
+      autofill_util::GenerateCountryList(*personal_data);
+
+  return RespondNow(ArgumentList(
+      api::autofill_private::GetCountryList::Results::Create(country_list)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AutofillPrivateGetAddressComponentsFunction
 
 AutofillPrivateGetAddressComponentsFunction::
@@ -316,11 +344,11 @@ ExtensionFunction::ResponseAction AutofillPrivateGetAddressListFunction::Run() {
 
   DCHECK(personal_data && personal_data->IsDataLoaded());
 
-  autofill_util::AddressEntryList addressList =
-      extensions::autofill_util::GenerateAddressList(*personal_data);
+  autofill_util::AddressEntryList address_list =
+      autofill_util::GenerateAddressList(*personal_data);
 
   return RespondNow(ArgumentList(
-      api::autofill_private::GetAddressList::Results::Create(addressList)));
+      api::autofill_private::GetAddressList::Results::Create(address_list)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,13 +453,13 @@ ExtensionFunction::ResponseAction
   api::autofill_private::ValidatePhoneParams* params = &parameters->params;
 
   // Extract the phone numbers into a ListValue.
-  std::unique_ptr<base::ListValue> phoneNumbers(new base::ListValue);
-  phoneNumbers->AppendStrings(params->phone_numbers);
+  std::unique_ptr<base::ListValue> phone_numbers(new base::ListValue);
+  phone_numbers->AppendStrings(params->phone_numbers);
 
-  RemoveDuplicatePhoneNumberAtIndex(
-      params->index_of_new_number, params->country_code, phoneNumbers.get());
+  RemoveDuplicatePhoneNumberAtIndex(params->index_of_new_number,
+                                    params->country_code, phone_numbers.get());
 
-  return RespondNow(OneArgument(std::move(phoneNumbers)));
+  return RespondNow(OneArgument(std::move(phone_numbers)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,12 +507,12 @@ AutofillPrivateGetCreditCardListFunction::Run() {
 
   DCHECK(personal_data && personal_data->IsDataLoaded());
 
-  autofill_util::CreditCardEntryList creditCardList =
-      extensions::autofill_util::GenerateCreditCardList(*personal_data);
+  autofill_util::CreditCardEntryList credit_card_list =
+      autofill_util::GenerateCreditCardList(*personal_data);
 
   return RespondNow(
       ArgumentList(api::autofill_private::GetCreditCardList::Results::Create(
-          creditCardList)));
+          credit_card_list)));
 }
 
 }  // namespace extensions
