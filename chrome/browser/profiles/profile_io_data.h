@@ -72,7 +72,6 @@ class InfoMap;
 }
 
 namespace net {
-class CertificateReportSender;
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
@@ -81,6 +80,7 @@ class HttpServerProperties;
 class HttpTransactionFactory;
 class ProxyConfigService;
 class ProxyService;
+class ReportSender;
 class SSLConfigService;
 class TransportSecurityPersister;
 class TransportSecurityState;
@@ -578,8 +578,7 @@ class ProfileIOData {
 
   mutable std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
-  mutable std::unique_ptr<net::CertificateReportSender>
-      certificate_report_sender_;
+  mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.

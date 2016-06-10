@@ -11,7 +11,7 @@
 #include "net/http/transport_security_state.h"
 
 namespace net {
-class CertificateReportSender;
+class ReportSender;
 class URLRequestContext;
 }  // namespace net
 
@@ -35,7 +35,7 @@ class ChromeExpectCTReporter
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, EmptyReportURI);
   FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, SendReport);
 
-  std::unique_ptr<net::CertificateReportSender> report_sender_;
+  std::unique_ptr<net::ReportSender> report_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporter);
 };

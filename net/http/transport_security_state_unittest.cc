@@ -78,10 +78,10 @@ const char* const kBadPath[] = {
     nullptr,
 };
 
-// A mock ReportSender that just remembers the latest report
+// A mock ReportSenderInterface that just remembers the latest report
 // URI and report to be sent.
 class MockCertificateReportSender
-    : public TransportSecurityState::ReportSender {
+    : public TransportSecurityState::ReportSenderInterface {
  public:
   MockCertificateReportSender() {}
   ~MockCertificateReportSender() override {}
@@ -107,16 +107,16 @@ class MockCertificateReportSender
   std::string latest_report_;
 };
 
-// A mock ReportSender that simulates a net error on every report sent.
+// A mock ReportSenderInterface that simulates a net error on every report sent.
 class MockFailingCertificateReportSender
-    : public TransportSecurityState::ReportSender {
+    : public TransportSecurityState::ReportSenderInterface {
  public:
   MockFailingCertificateReportSender() : net_error_(ERR_CONNECTION_FAILED) {}
   ~MockFailingCertificateReportSender() override {}
 
   int net_error() { return net_error_; }
 
-  // TransportSecurityState::ReportSender:
+  // TransportSecurityState::ReportSenderInterface:
   void Send(const GURL& report_uri, const std::string& report) override {
     ASSERT_FALSE(error_callback_.is_null());
     error_callback_.Run(report_uri, net_error_);

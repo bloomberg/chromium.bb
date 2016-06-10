@@ -17,7 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
-#include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/report_sender.h"
 
 namespace {
 
@@ -114,10 +114,10 @@ void RecordUMAOnFailure(const GURL& report_uri, int net_error) {
 
 ChromeExpectCTReporter::ChromeExpectCTReporter(
     net::URLRequestContext* request_context)
-    : report_sender_(new net::CertificateReportSender(
-          request_context,
-          net::CertificateReportSender::DO_NOT_SEND_COOKIES,
-          base::Bind(RecordUMAOnFailure))) {}
+    : report_sender_(
+          new net::ReportSender(request_context,
+                                net::ReportSender::DO_NOT_SEND_COOKIES,
+                                base::Bind(RecordUMAOnFailure))) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 

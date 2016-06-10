@@ -16,7 +16,7 @@
 #include "crypto/curve25519.h"
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
-#include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/report_sender.h"
 
 namespace certificate_reporting {
 
@@ -103,19 +103,19 @@ bool EncryptSerializedReport(const uint8_t* server_public_key,
 ErrorReporter::ErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
-    net::CertificateReportSender::CookiesPreference cookies_preference)
-    : ErrorReporter(upload_url,
-                    kServerPublicKey,
-                    kServerPublicKeyVersion,
-                    base::WrapUnique(new net::CertificateReportSender(
-                        request_context,
-                        cookies_preference))) {}
+    net::ReportSender::CookiesPreference cookies_preference)
+    : ErrorReporter(
+          upload_url,
+          kServerPublicKey,
+          kServerPublicKeyVersion,
+          base::WrapUnique(
+              new net::ReportSender(request_context, cookies_preference))) {}
 
 ErrorReporter::ErrorReporter(
     const GURL& upload_url,
     const uint8_t server_public_key[/* 32 */],
     const uint32_t server_public_key_version,
-    std::unique_ptr<net::CertificateReportSender> certificate_report_sender)
+    std::unique_ptr<net::ReportSender> certificate_report_sender)
     : certificate_report_sender_(std::move(certificate_report_sender)),
       upload_url_(upload_url),
       server_public_key_(server_public_key),

@@ -25,7 +25,7 @@
 #include "components/certificate_reporting/error_reporter.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -88,10 +88,9 @@ namespace certificate_reporting_test_utils {
 class CertificateReportingTest::MockReporter
     : public certificate_reporting::ErrorReporter {
  public:
-  MockReporter(
-      net::URLRequestContext* request_context,
-      const GURL& upload_url,
-      net::CertificateReportSender::CookiesPreference cookies_preference);
+  MockReporter(net::URLRequestContext* request_context,
+               const GURL& upload_url,
+               net::ReportSender::CookiesPreference cookies_preference);
 
   // ErrorReporter implementation.
   void SendExtendedReportingReport(
@@ -112,7 +111,7 @@ class CertificateReportingTest::MockReporter
 CertificateReportingTest::MockReporter::MockReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
-    net::CertificateReportSender::CookiesPreference cookies_preference)
+    net::ReportSender::CookiesPreference cookies_preference)
     : certificate_reporting::ErrorReporter(request_context,
                                            upload_url,
                                            cookies_preference) {}
@@ -132,7 +131,7 @@ void CertificateReportingTest::SetUpMockReporter() {
   // reporter would have to be constructed on the IO thread.)
   reporter_ = new CertificateReportingTest::MockReporter(
       nullptr, GURL("http://example.test"),
-      net::CertificateReportSender::DO_NOT_SEND_COOKIES);
+      net::ReportSender::DO_NOT_SEND_COOKIES);
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service =
       g_browser_process->safe_browsing_service();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/report_sender.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -54,13 +54,13 @@ void ErrorCallback(bool* called, const GURL& report_uri, int net_error) {
   *called = true;
 }
 
-// A network delegate that lets tests check that a certificate report
+// A network delegate that lets tests check that a report
 // was sent. It counts the number of requests and lets tests register a
 // callback to run when the request is destroyed. It also checks that
 // the uploaded data is as expected.
-class TestCertificateReportSenderNetworkDelegate : public NetworkDelegateImpl {
+class TestReportSenderNetworkDelegate : public NetworkDelegateImpl {
  public:
-  TestCertificateReportSenderNetworkDelegate()
+  TestReportSenderNetworkDelegate()
       : url_request_destroyed_callback_(base::Bind(&base::DoNothing)),
         all_url_requests_destroyed_callback_(base::Bind(&base::DoNothing)),
         num_requests_(0),
@@ -124,12 +124,12 @@ class TestCertificateReportSenderNetworkDelegate : public NetworkDelegateImpl {
   std::set<std::string> expect_reports_;
   bool expect_cookies_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestCertificateReportSenderNetworkDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestReportSenderNetworkDelegate);
 };
 
-class CertificateReportSenderTest : public ::testing::Test {
+class ReportSenderTest : public ::testing::Test {
  public:
-  CertificateReportSenderTest() : context_(true) {
+  ReportSenderTest() : context_(true) {
     context_.set_network_delegate(&network_delegate_);
     context_.Init();
   }
@@ -144,7 +144,7 @@ class CertificateReportSenderTest : public ::testing::Test {
   TestURLRequestContext* context() { return &context_; }
 
  protected:
-  void SendReport(CertificateReportSender* reporter,
+  void SendReport(ReportSender* reporter,
                   const std::string& report,
                   const GURL& url,
                   size_t request_sequence_number) {
@@ -167,30 +167,28 @@ class CertificateReportSenderTest : public ::testing::Test {
     EXPECT_EQ(request_sequence_number + 1, network_delegate_.num_requests());
   }
 
-  TestCertificateReportSenderNetworkDelegate network_delegate_;
+  TestReportSenderNetworkDelegate network_delegate_;
 
  private:
   TestURLRequestContext context_;
 };
 
-// Test that CertificateReportSender::Send creates a URLRequest for the
+// Test that ReportSender::Send creates a URLRequest for the
 // endpoint and sends the expected data.
-TEST_F(CertificateReportSenderTest, SendsRequest) {
+TEST_F(ReportSenderTest, SendsRequest) {
   GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES);
   SendReport(&reporter, kDummyReport, url, 0);
 }
 
-TEST_F(CertificateReportSenderTest, SendMultipleReportsSequentially) {
+TEST_F(ReportSenderTest, SendMultipleReportsSequentially) {
   GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES);
   SendReport(&reporter, kDummyReport, url, 0);
   SendReport(&reporter, kDummyReport, url, 1);
 }
 
-TEST_F(CertificateReportSenderTest, SendMultipleReportsSimultaneously) {
+TEST_F(ReportSenderTest, SendMultipleReportsSimultaneously) {
   base::RunLoop run_loop;
   network_delegate_.set_all_url_requests_destroyed_callback(
       run_loop.QuitClosure());
@@ -200,8 +198,7 @@ TEST_F(CertificateReportSenderTest, SendMultipleReportsSimultaneously) {
   network_delegate_.ExpectReport(kDummyReport);
   network_delegate_.ExpectReport(kSecondDummyReport);
 
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES);
 
   EXPECT_EQ(0u, network_delegate_.num_requests());
 
@@ -215,7 +212,7 @@ TEST_F(CertificateReportSenderTest, SendMultipleReportsSimultaneously) {
 
 // Test that pending URLRequests get cleaned up when the report sender
 // is deleted.
-TEST_F(CertificateReportSenderTest, PendingRequestGetsDeleted) {
+TEST_F(ReportSenderTest, PendingRequestGetsDeleted) {
   bool url_request_destroyed = false;
   network_delegate_.set_url_request_destroyed_callback(base::Bind(
       &MarkURLRequestDestroyed, base::Unretained(&url_request_destroyed)));
@@ -227,8 +224,8 @@ TEST_F(CertificateReportSenderTest, PendingRequestGetsDeleted) {
 
   EXPECT_EQ(0u, network_delegate_.num_requests());
 
-  std::unique_ptr<CertificateReportSender> reporter(new CertificateReportSender(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES));
+  std::unique_ptr<ReportSender> reporter(
+      new ReportSender(context(), ReportSender::DO_NOT_SEND_COOKIES));
   reporter->Send(url, kDummyReport);
   reporter.reset();
 
@@ -237,22 +234,20 @@ TEST_F(CertificateReportSenderTest, PendingRequestGetsDeleted) {
 }
 
 // Test that a request that returns an error gets cleaned up.
-TEST_F(CertificateReportSenderTest, ErroredRequestGetsDeleted) {
+TEST_F(ReportSenderTest, ErroredRequestGetsDeleted) {
   GURL url = URLRequestFailedJob::GetMockHttpsUrl(ERR_FAILED);
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES);
   // SendReport will block until the URLRequest is destroyed.
   SendReport(&reporter, kDummyReport, url, 0);
 }
 
 // Test that the error callback, if provided, gets called when a request
 // returns an error.
-TEST_F(CertificateReportSenderTest, ErroredRequestCallsCallback) {
+TEST_F(ReportSenderTest, ErroredRequestCallsCallback) {
   bool error_callback_called = false;
   GURL url = URLRequestFailedJob::GetMockHttpsUrl(ERR_FAILED);
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES,
-      base::Bind(ErrorCallback, &error_callback_called));
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES,
+                        base::Bind(ErrorCallback, &error_callback_called));
   // SendReport will block until the URLRequest is destroyed.
   SendReport(&reporter, kDummyReport, url, 0);
   EXPECT_TRUE(error_callback_called);
@@ -260,12 +255,11 @@ TEST_F(CertificateReportSenderTest, ErroredRequestCallsCallback) {
 
 // Test that the error callback does not get called when a request
 // does not return an error.
-TEST_F(CertificateReportSenderTest, SuccessfulRequestDoesNotCallErrorCallback) {
+TEST_F(ReportSenderTest, SuccessfulRequestDoesNotCallErrorCallback) {
   bool error_callback_called = false;
   GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES,
-      base::Bind(ErrorCallback, &error_callback_called));
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES,
+                        base::Bind(ErrorCallback, &error_callback_called));
   SendReport(&reporter, kDummyReport, url, 0);
   EXPECT_FALSE(error_callback_called);
 }
@@ -273,19 +267,17 @@ TEST_F(CertificateReportSenderTest, SuccessfulRequestDoesNotCallErrorCallback) {
 // Test that cookies are sent or not sent according to the error
 // reporter's cookies preference.
 
-TEST_F(CertificateReportSenderTest, SendCookiesPreference) {
+TEST_F(ReportSenderTest, SendCookiesPreference) {
   GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateReportSender reporter(context(),
-                                   CertificateReportSender::SEND_COOKIES);
+  ReportSender reporter(context(), ReportSender::SEND_COOKIES);
 
   network_delegate_.set_expect_cookies(true);
   SendReport(&reporter, kDummyReport, url, 0);
 }
 
-TEST_F(CertificateReportSenderTest, DoNotSendCookiesPreference) {
+TEST_F(ReportSenderTest, DoNotSendCookiesPreference) {
   GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateReportSender reporter(
-      context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
+  ReportSender reporter(context(), ReportSender::DO_NOT_SEND_COOKIES);
 
   network_delegate_.set_expect_cookies(false);
   SendReport(&reporter, kDummyReport, url, 0);

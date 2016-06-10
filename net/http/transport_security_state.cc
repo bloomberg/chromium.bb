@@ -707,7 +707,7 @@ void TransportSecurityState::SetDelegate(
 }
 
 void TransportSecurityState::SetReportSender(
-    TransportSecurityState::ReportSender* report_sender) {
+    TransportSecurityState::ReportSenderInterface* report_sender) {
   DCHECK(CalledOnValidThread());
   report_sender_ = report_sender;
   if (report_sender_)

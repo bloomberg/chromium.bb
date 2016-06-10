@@ -95,10 +95,10 @@
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/url_request/certificate_report_sender.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
+#include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -1077,9 +1077,8 @@ void ProfileIOData::Init(
               base::SequencedWorkerPool::BLOCK_SHUTDOWN),
           IsOffTheRecord()));
 
-  certificate_report_sender_.reset(new net::CertificateReportSender(
-      main_request_context_.get(),
-      net::CertificateReportSender::DO_NOT_SEND_COOKIES));
+  certificate_report_sender_.reset(new net::ReportSender(
+      main_request_context_.get(), net::ReportSender::DO_NOT_SEND_COOKIES));
   transport_security_state_->SetReportSender(certificate_report_sender_.get());
 
   expect_ct_reporter_.reset(

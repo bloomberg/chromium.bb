@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/report_sender.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -32,19 +32,17 @@ class ErrorReporter {
   // error reports to |upload_url|, using |request_context| as the
   // context for the reports. |cookies_preference| controls whether
   // cookies will be sent along with the reports.
-  ErrorReporter(
-      net::URLRequestContext* request_context,
-      const GURL& upload_url,
-      net::CertificateReportSender::CookiesPreference cookies_preference);
+  ErrorReporter(net::URLRequestContext* request_context,
+                const GURL& upload_url,
+                net::ReportSender::CookiesPreference cookies_preference);
 
   // Allows tests to use a server public key with known private key and
-  // a mock CertificateReportSender. |server_public_key| must outlive
+  // a mock ReportSender. |server_public_key| must outlive
   // the ErrorReporter.
-  ErrorReporter(
-      const GURL& upload_url,
-      const uint8_t server_public_key[/* 32 */],
-      const uint32_t server_public_key_version,
-      std::unique_ptr<net::CertificateReportSender> certificate_report_sender);
+  ErrorReporter(const GURL& upload_url,
+                const uint8_t server_public_key[/* 32 */],
+                const uint32_t server_public_key_version,
+                std::unique_ptr<net::ReportSender> certificate_report_sender);
 
   virtual ~ErrorReporter();
 
@@ -75,7 +73,7 @@ class ErrorReporter {
       std::string* decrypted_serialized_report);
 
  private:
-  std::unique_ptr<net::CertificateReportSender> certificate_report_sender_;
+  std::unique_ptr<net::ReportSender> certificate_report_sender_;
 
   const GURL upload_url_;
 

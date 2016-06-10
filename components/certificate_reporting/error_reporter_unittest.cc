@@ -16,7 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "crypto/curve25519.h"
-#include "net/url_request/certificate_report_sender.h"
+#include "net/url_request/report_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace certificate_reporting {
@@ -28,12 +28,12 @@ const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
 const uint32_t kServerPublicKeyTestVersion = 16;
 
-// A mock CertificateReportSender that keeps track of the last report
+// A mock ReportSender that keeps track of the last report
 // sent.
-class MockCertificateReportSender : public net::CertificateReportSender {
+class MockCertificateReportSender : public net::ReportSender {
  public:
   MockCertificateReportSender()
-      : net::CertificateReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
+      : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
   ~MockCertificateReportSender() override {}
 
   void Send(const GURL& report_uri, const std::string& report) override {

@@ -216,7 +216,7 @@ class NET_EXPORT TransportSecurityState
   };
 
   // An interface for asynchronously sending HPKP violation reports.
-  class NET_EXPORT ReportSender {
+  class NET_EXPORT ReportSenderInterface {
    public:
     // Sends the given serialized |report| to |report_uri|.
     virtual void Send(const GURL& report_uri, const std::string& report) = 0;
@@ -226,7 +226,7 @@ class NET_EXPORT TransportSecurityState
         const base::Callback<void(const GURL&, int)>& error_callback) = 0;
 
    protected:
-    virtual ~ReportSender() {}
+    virtual ~ReportSenderInterface() {}
   };
 
   // An interface for building and asynchronously sending reports when a
@@ -274,7 +274,7 @@ class NET_EXPORT TransportSecurityState
   // TransportSecurityState.
   void SetDelegate(Delegate* delegate);
 
-  void SetReportSender(ReportSender* report_sender);
+  void SetReportSender(ReportSenderInterface* report_sender);
 
   void SetExpectCTReporter(ExpectCTReporter* expect_ct_reporter);
 
@@ -482,7 +482,7 @@ class NET_EXPORT TransportSecurityState
 
   Delegate* delegate_;
 
-  ReportSender* report_sender_;
+  ReportSenderInterface* report_sender_;
 
   // True if static pins should be used.
   bool enable_static_pins_;
