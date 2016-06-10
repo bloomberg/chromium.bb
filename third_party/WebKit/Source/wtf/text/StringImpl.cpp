@@ -35,6 +35,7 @@
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
+#include "wtf/text/StringToNumber.h"
 #include <algorithm>
 #include <unicode/translit.h>
 #include <unicode/unistr.h>

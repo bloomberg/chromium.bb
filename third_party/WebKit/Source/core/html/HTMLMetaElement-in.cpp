@@ -33,6 +33,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/HttpEquiv.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/text/StringToNumber.h"
 
 namespace blink {
 

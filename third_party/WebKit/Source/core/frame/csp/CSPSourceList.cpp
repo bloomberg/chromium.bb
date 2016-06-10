@@ -11,6 +11,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/Base64.h"
+#include "wtf/text/StringToNumber.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

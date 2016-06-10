@@ -153,6 +153,8 @@
             'text/StringMac.mm',
             'text/StringOperators.h',
             'text/StringStatics.cpp',
+            'text/StringToNumber.cpp',
+            'text/StringToNumber.h',
             'text/StringUTF8Adaptor.h',
             'text/StringView.h',
             'text/StringView.cpp',

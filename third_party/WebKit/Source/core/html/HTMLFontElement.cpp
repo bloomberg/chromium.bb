@@ -31,6 +31,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringToNumber.h"
 
 using namespace WTF;
 

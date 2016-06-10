@@ -56,6 +56,7 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/StringToNumber.h"
 
 namespace blink {
 

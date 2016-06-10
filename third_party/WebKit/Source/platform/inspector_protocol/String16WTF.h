@@ -10,6 +10,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringConcatenate.h"
 #include "wtf/text/StringHash.h"
+#include "wtf/text/StringToNumber.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

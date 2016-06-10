@@ -29,6 +29,8 @@
 
 #include "core/html/track/vtt/VTTScanner.h"
 
+#include "wtf/text/StringToNumber.h"
+
 namespace blink {
 
 VTTScanner::VTTScanner(const String& line) : m_is8Bit(line.is8Bit())

@@ -40,6 +40,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/ParsingUtilities.h"
+#include "wtf/text/StringToNumber.h"
 #include <algorithm>
 
 namespace blink {

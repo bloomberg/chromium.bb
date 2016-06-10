@@ -30,6 +30,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
+#include "wtf/text/StringToNumber.h"
 #include "wtf/text/TextEncoding.h"
 
 #include <limits>
