@@ -626,11 +626,11 @@ static void
 paramLetters (void)
 {
   printf ("Press one of the letters in parentheses, then enter.\n");
-  printf
-    ("show-(f)orward-rules, show-(b)ackward-rules, show-(c)haracters, \n");
+  printf ("show-(f)orward-rules, show-(b)ackward-rules, show-(c)haracters, \n");
   printf ("show-(d)ot-patterns, show-(C)har-to-dots, show-(D)ots-tochar\n");
   printf ("show-(m)isc, show-(z)-compdots\n");
-  printf ("show-(p)articulars, (h)elp, (q)uit\n");
+  printf ("show-braille(i)ndicators, show-(p)articulars\n");
+  printf ("(h)elp, (q)uit\n");
 }
 
 static void
