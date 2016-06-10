@@ -64,6 +64,10 @@ const char kAlsaOutputAvailMin[] = "alsa-output-avail-min";
 // remain. Assumed to be 0 if --accept-resource-provider is present.
 const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 
+// Flag that enables resampling audio with sample rate below 32kHz up to 48kHz.
+// Should be set to true for internal audio products.
+const char kAlsaEnableUpsampling[] = "alsa-enable-upsampling";
+
 // Optional flag to set a fixed sample rate for the alsa device.
 const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 

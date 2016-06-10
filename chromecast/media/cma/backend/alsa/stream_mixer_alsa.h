@@ -196,6 +196,7 @@ class StreamMixerAlsa {
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
 
   unsigned int fixed_output_samples_per_second_;
+  unsigned int low_sample_rate_cutoff_;
   int requested_output_samples_per_second_;
   int output_samples_per_second_;
   snd_pcm_t* pcm_;

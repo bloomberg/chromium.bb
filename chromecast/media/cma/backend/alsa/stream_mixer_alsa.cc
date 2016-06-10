@@ -230,6 +230,11 @@ StreamMixerAlsa::StreamMixerAlsa()
 
   fixed_output_samples_per_second_ = fixed_samples_per_second;
 
+  low_sample_rate_cutoff_ =
+      chromecast::GetSwitchValueBoolean(switches::kAlsaEnableUpsampling, false)
+          ? kLowSampleRateCutoff
+          : 0;
+
   // Create filters
   pre_loopback_filter_ = AudioFilterFactory::MakeAudioFilter(
       AudioFilterFactory::PRE_LOOPBACK_FILTER);
@@ -320,7 +325,7 @@ unsigned int StreamMixerAlsa::DetermineOutputRate(unsigned int requested_rate) {
   // because some common AV receivers don't support optical out at these
   // frequencies. See b/26385501
   unsigned int first_choice_sample_rate = requested_rate;
-  if (requested_rate < kLowSampleRateCutoff) {
+  if (requested_rate < low_sample_rate_cutoff_) {
     first_choice_sample_rate = output_samples_per_second_ != kInvalidSampleRate
                                    ? output_samples_per_second_
                                    : kFallbackSampleRate;
@@ -643,7 +648,7 @@ void StreamMixerAlsa::CheckChangeOutputRate(int input_samples_per_second) {
   if (!pcm_ ||
       input_samples_per_second == requested_output_samples_per_second_ ||
       input_samples_per_second == output_samples_per_second_ ||
-      input_samples_per_second < static_cast<int>(kLowSampleRateCutoff)) {
+      input_samples_per_second < static_cast<int>(low_sample_rate_cutoff_)) {
     return;
   }
 
