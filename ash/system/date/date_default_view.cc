@@ -7,6 +7,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
@@ -95,7 +96,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
     view->AddButton(lock_button_);
   }
   SystemTrayDelegate* system_tray_delegate =
-      Shell::GetInstance()->system_tray_delegate();
+      WmShell::Get()->system_tray_delegate();
   system_tray_delegate->AddShutdownPolicyObserver(this);
   system_tray_delegate->ShouldRebootOnShutdown(base::Bind(
       &DateDefaultView::OnShutdownPolicyChanged, weak_factory_.GetWeakPtr()));
@@ -105,7 +106,7 @@ DateDefaultView::DateDefaultView(LoginStatus login)
 DateDefaultView::~DateDefaultView() {
   // We need the check as on shell destruction, the delegate is destroyed first.
   SystemTrayDelegate* system_tray_delegate =
-      Shell::GetInstance()->system_tray_delegate();
+      WmShell::Get()->system_tray_delegate();
   if (system_tray_delegate)
     system_tray_delegate->RemoveShutdownPolicyObserver(this);
 }
@@ -128,14 +129,14 @@ const tray::DateView* DateDefaultView::GetDateView() const {
 
 void DateDefaultView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  ash::SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
+  Shell* shell = Shell::GetInstance();
+  SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
   if (sender == help_button_) {
     shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_HELP);
     tray_delegate->ShowHelp();
   } else if (sender == shutdown_button_) {
     shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_SHUT_DOWN);
-    ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
+    shell->lock_state_controller()->RequestShutdown();
   } else if (sender == lock_button_) {
     shell->metrics()->RecordUserMetricsAction(ash::UMA_TRAY_LOCK_SCREEN);
     tray_delegate->RequestLockScreen();

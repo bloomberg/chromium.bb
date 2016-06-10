@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_default_view.h"
 #include "ash/system/date/date_view.h"
@@ -66,7 +67,7 @@ class SystemUse24HourClockPolicyTest
   static bool GetSystemTrayDelegateShouldUse24HourClock() {
     chromeos::SystemTrayDelegateChromeOS* tray_delegate =
         static_cast<chromeos::SystemTrayDelegateChromeOS*>(
-            ash::Shell::GetInstance()->system_tray_delegate());
+            ash::WmShell::Get()->system_tray_delegate());
     return tray_delegate->GetShouldUse24HourClockForTesting();
   }
 

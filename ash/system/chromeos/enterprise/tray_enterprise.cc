@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -28,8 +29,8 @@ TrayEnterprise::~TrayEnterprise() {
 }
 
 void TrayEnterprise::UpdateEnterpriseMessage() {
-  base::string16 message = Shell::GetInstance()->system_tray_delegate()->
-      GetEnterpriseMessage();
+  base::string16 message =
+      WmShell::Get()->system_tray_delegate()->GetEnterpriseMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
 }
@@ -54,7 +55,7 @@ void TrayEnterprise::OnEnterpriseDomainChanged() {
 }
 
 void TrayEnterprise::OnViewClicked(views::View* sender) {
-  Shell::GetInstance()->system_tray_delegate()->ShowEnterpriseInfo();
+  WmShell::Get()->system_tray_delegate()->ShowEnterpriseInfo();
 }
 
 } // namespace ash

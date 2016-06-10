@@ -20,6 +20,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/debug.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/focus_cycler.h"
@@ -732,21 +733,21 @@ void HandleTouchHudModeChange() {
 
 void HandleVolumeDown(const ui::Accelerator& accelerator) {
   VolumeControlDelegate* volume_delegate =
-      Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate();
+      WmShell::Get()->system_tray_delegate()->GetVolumeControlDelegate();
   if (volume_delegate)
     volume_delegate->HandleVolumeDown(accelerator);
 }
 
 void HandleVolumeMute(const ui::Accelerator& accelerator) {
   VolumeControlDelegate* volume_delegate =
-      Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate();
+      WmShell::Get()->system_tray_delegate()->GetVolumeControlDelegate();
   if (volume_delegate)
     volume_delegate->HandleVolumeMute(accelerator);
 }
 
 void HandleVolumeUp(const ui::Accelerator& accelerator) {
   VolumeControlDelegate* volume_delegate =
-      Shell::GetInstance()->system_tray_delegate()->GetVolumeControlDelegate();
+      WmShell::Get()->system_tray_delegate()->GetVolumeControlDelegate();
   if (volume_delegate)
     volume_delegate->HandleVolumeUp(accelerator);
 }

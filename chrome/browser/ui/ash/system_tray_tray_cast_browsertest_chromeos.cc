@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/tray/system_tray.h"
@@ -158,9 +159,8 @@ namespace chromeos {
 // recognizes the cast extension.
 IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastChromeOSTest,
                        CastTraySanityCheckTestExtensionGetsRecognized) {
-  ash::CastConfigDelegate* cast_config_delegate = ash::Shell::GetInstance()
-                                                      ->system_tray_delegate()
-                                                      ->GetCastConfigDelegate();
+  ash::CastConfigDelegate* cast_config_delegate =
+      ash::WmShell::Get()->system_tray_delegate()->GetCastConfigDelegate();
 
   EXPECT_FALSE(cast_config_delegate->HasCastExtension());
   const extensions::Extension* extension = LoadCastTestExtension();
@@ -283,9 +283,8 @@ IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastChromeOSTest,
 IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastChromeOSTest, CastTrayOpenOptions) {
   const extensions::Extension* extension = LoadCastTestExtension();
 
-  ash::CastConfigDelegate* cast_config_delegate = ash::Shell::GetInstance()
-                                                      ->system_tray_delegate()
-                                                      ->GetCastConfigDelegate();
+  ash::CastConfigDelegate* cast_config_delegate =
+      ash::WmShell::Get()->system_tray_delegate()->GetCastConfigDelegate();
   cast_config_delegate->LaunchCastOptions();
 
   const GURL url =

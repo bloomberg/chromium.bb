@@ -443,9 +443,7 @@ TEST_F(TrayDisplayTest, UpdateDuringDisplayConfigurationChange) {
 }
 
 TEST_F(TrayDisplayTest, DisplayNotifications) {
-  test::TestSystemTrayDelegate* tray_delegate =
-      static_cast<test::TestSystemTrayDelegate*>(
-          Shell::GetInstance()->system_tray_delegate());
+  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
   tray_delegate->set_should_show_display_notification(true);
 
   UpdateDisplay("400x400");
@@ -554,9 +552,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
 }
 
 TEST_F(TrayDisplayTest, DisplayConfigurationChangedTwice) {
-  test::TestSystemTrayDelegate* tray_delegate =
-      static_cast<test::TestSystemTrayDelegate*>(
-          Shell::GetInstance()->system_tray_delegate());
+  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
   tray_delegate->set_should_show_display_notification(true);
 
   UpdateDisplay("400x400,200x200");
@@ -583,9 +579,7 @@ TEST_F(TrayDisplayTest, DisplayConfigurationChangedTwice) {
 TEST_F(TrayDisplayTest, UpdateAfterSuppressDisplayNotification) {
   UpdateDisplay("400x400,200x200");
 
-  test::TestSystemTrayDelegate* tray_delegate =
-      static_cast<test::TestSystemTrayDelegate*>(
-          Shell::GetInstance()->system_tray_delegate());
+  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
   tray_delegate->set_should_show_display_notification(true);
 
   // rotate the second.

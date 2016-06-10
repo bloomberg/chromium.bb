@@ -15,6 +15,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/focus_cycler.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -677,11 +678,11 @@ bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
 
 // static
 bool ShelfWidget::ShelfAlignmentAllowed() {
-  if (Shell::GetInstance()->system_tray_delegate()->IsUserSupervised())
+  if (WmShell::Get()->system_tray_delegate()->IsUserSupervised())
     return false;
 
   LoginStatus login_status =
-      Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
+      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
 
   switch (login_status) {
     case LoginStatus::LOCKED:

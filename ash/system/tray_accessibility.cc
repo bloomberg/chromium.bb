@@ -8,6 +8,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -63,7 +64,7 @@ uint32_t GetAccessibilityState() {
 }
 
 LoginStatus GetCurrentLoginStatus() {
-  return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
+  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
 }
 
 }  // namespace
@@ -292,8 +293,7 @@ void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
 
 void AccessibilityDetailedView::ButtonPressed(views::Button* sender,
                                               const ui::Event& event) {
-  SystemTrayDelegate* tray_delegate =
-      Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
   if (sender == help_view_)
     tray_delegate->ShowAccessibilityHelp();
   else if (sender == settings_view_)

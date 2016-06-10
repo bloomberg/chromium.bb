@@ -11,6 +11,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_user_metrics_action.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_delegate.h"
@@ -73,14 +74,14 @@ ActiveWindowStateType GetActiveWindowState() {
 
 // Returns true if kiosk mode is active.
 bool IsKioskModeActive() {
-  return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() ==
+  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
          LoginStatus::KIOSK_APP;
 }
 
 // Returns true if there is an active user and their session isn't currently
 // locked.
 bool IsUserActive() {
-  switch (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus()) {
+  switch (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
     case LoginStatus::NOT_LOGGED_IN:
     case LoginStatus::LOCKED:
       return false;

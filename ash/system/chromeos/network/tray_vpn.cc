@@ -7,6 +7,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
@@ -47,7 +48,7 @@ class VpnDefaultView : public TrayItemMore,
   static bool ShouldShow() {
     // Show the VPN entry in the ash tray bubble if at least one third-party VPN
     // provider is installed.
-    if (Shell::GetInstance()
+    if (WmShell::Get()
             ->system_tray_delegate()
             ->GetVPNDelegate()
             ->HaveThirdPartyVPNProviders()) {

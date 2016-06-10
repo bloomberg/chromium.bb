@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -138,7 +139,7 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
   DCHECK_EQ(sender, button_);
   if (dialog_duration_ <= base::TimeDelta()) {
     // Sign out immediately if |dialog_duration_| is non-positive.
-    Shell::GetInstance()->system_tray_delegate()->SignOut();
+    WmShell::Get()->system_tray_delegate()->SignOut();
   } else if (Shell::GetInstance()->logout_confirmation_controller()) {
     Shell::GetInstance()->logout_confirmation_controller()->ConfirmLogout(
         base::TimeTicks::Now() + dialog_duration_);

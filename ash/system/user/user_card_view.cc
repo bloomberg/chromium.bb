@@ -10,6 +10,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_utils.h"
@@ -169,7 +170,7 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
   base::string16 domain = base::UTF8ToUTF16(
-      Shell::GetInstance()->system_tray_delegate()->GetEnterpriseDomain());
+      WmShell::Get()->system_tray_delegate()->GetEnterpriseDomain());
   base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.
@@ -274,7 +275,7 @@ void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
 void PublicAccountUserDetails::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, learn_more_);
-  Shell::GetInstance()->system_tray_delegate()->ShowPublicAccountInfo();
+  WmShell::Get()->system_tray_delegate()->ShowPublicAccountInfo();
 }
 
 void PublicAccountUserDetails::CalculatePreferredSize(int max_allowed_width) {
@@ -381,8 +382,7 @@ void UserCardView::AddUserContent(LoginStatus login_status, int user_index) {
 
   views::Label* user_email = NULL;
   if (login_status != LoginStatus::GUEST) {
-    SystemTrayDelegate* tray_delegate =
-        Shell::GetInstance()->system_tray_delegate();
+    SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
     base::string16 user_email_string =
         tray_delegate->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)

@@ -9,6 +9,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
@@ -129,7 +130,7 @@ void TrayUser::UpdateAfterLoginStatusChange(LoginStatus status) {
     return;
   bool need_label = false;
   bool need_avatar = false;
-  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   if (delegate->IsUserSupervised())
     need_label =  true;
   switch (status) {
@@ -233,8 +234,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayUser::OnUserUpdate() {
-  UpdateAvatarImage(Shell::GetInstance()->system_tray_delegate()->
-      GetUserLoginStatus());
+  UpdateAvatarImage(
+      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
 }
 
 void TrayUser::OnUserAddedToSession() {
@@ -249,7 +250,7 @@ void TrayUser::OnUserAddedToSession() {
 
   // Update the user item.
   UpdateAvatarImage(
-      Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus());
+      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
 }
 
 void TrayUser::UpdateAvatarImage(LoginStatus status) {

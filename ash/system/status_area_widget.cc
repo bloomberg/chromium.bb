@@ -7,6 +7,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -63,8 +64,7 @@ void StatusAreaWidget::CreateTrayViews() {
   AddVirtualKeyboardTray();
 #endif
 
-  SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   DCHECK(delegate);
   // Initialize after all trays have been created.
   system_tray_->InitializeTrayItems(delegate);

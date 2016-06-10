@@ -7,7 +7,7 @@
 #include <set>
 
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/system_notifier.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +37,7 @@ class DualRoleNotificationDelegate
 
   // Overridden from message_center::NotificationDelegate.
   void Click() override {
-    Shell::GetInstance()->system_tray_delegate()->ShowPowerSettings();
+    WmShell::Get()->system_tray_delegate()->ShowPowerSettings();
   }
 
  private:

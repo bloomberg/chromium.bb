@@ -45,9 +45,7 @@ const int kStopButtonRightPadding = 18;
 
 // Returns the active CastConfigDelegate instance.
 ash::CastConfigDelegate* GetCastConfigDelegate() {
-  return ash::Shell::GetInstance()
-      ->system_tray_delegate()
-      ->GetCastConfigDelegate();
+  return WmShell::Get()->system_tray_delegate()->GetCastConfigDelegate();
 }
 
 // Helper method to elide the given string to the maximum length. If a string is

@@ -286,9 +286,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupShownOnBothDisplays) {
     return;
 
   // Enables to appear the notification for display changes.
-  test::TestSystemTrayDelegate* tray_delegate =
-      static_cast<test::TestSystemTrayDelegate*>(
-          Shell::GetInstance()->system_tray_delegate());
+  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
   tray_delegate->set_should_show_display_notification(true);
 
   UpdateDisplay("400x400,200x200");

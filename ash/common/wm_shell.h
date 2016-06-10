@@ -21,7 +21,9 @@ namespace ash {
 class AccessibilityDelegate;
 class MruWindowTracker;
 class SessionStateDelegate;
+class Shell;
 class ShellObserver;
+class SystemTrayDelegate;
 class WindowResizer;
 class WmActivationObserver;
 class WmDisplayObserver;
@@ -42,6 +44,10 @@ class ASH_EXPORT WmShell {
   static void Set(WmShell* instance);
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
+
+  SystemTrayDelegate* system_tray_delegate() {
+    return system_tray_delegate_.get();
+  }
 
   virtual MruWindowTracker* GetMruWindowTracker() = 0;
 
@@ -115,10 +121,19 @@ class ASH_EXPORT WmShell {
   virtual void RemoveShellObserver(ShellObserver* observer) = 0;
 
  protected:
-  virtual ~WmShell() {}
+  WmShell();
+  virtual ~WmShell();
+
+  // If |delegate| is not null, sets and initializes the delegate. If |delegate|
+  // is null, shuts down and destroys the delegate.
+  void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
 
  private:
+  friend class Shell;
+
   static WmShell* instance_;
+
+  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
 };
 
 }  // namespace ash

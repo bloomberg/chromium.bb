@@ -6,7 +6,7 @@
 
 #include "ash/cast_config_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ui/views/view.h"
 
@@ -51,9 +51,8 @@ void TrayCastTestAPI::OnCastingSessionStartedOrStopped(bool is_casting) {
 void TrayCastTestAPI::ReleaseConfigCallbacks() {
   tray_cast_->added_observer_ = false;
 
-  if (ash::Shell::GetInstance() &&
-      ash::Shell::GetInstance()->system_tray_delegate()) {
-    ash::Shell::GetInstance()
+  if (WmShell::Get() && WmShell::Get()->system_tray_delegate()) {
+    WmShell::Get()
         ->system_tray_delegate()
         ->GetCastConfigDelegate()
         ->RemoveObserver(tray_cast_);

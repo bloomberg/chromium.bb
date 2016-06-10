@@ -146,7 +146,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
       !session_state_delegate->IsScreenLocked() &&
       session_state_delegate->GetSessionState() ==
           SessionStateDelegate::SESSION_STATE_ACTIVE &&
-      shell->system_tray_delegate()->GetUserLoginStatus() !=
+      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::KIOSK_APP);
 }
 

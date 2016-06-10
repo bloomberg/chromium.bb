@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -27,7 +28,7 @@ LastWindowClosedLogoutReminder::~LastWindowClosedLogoutReminder() {
 }
 
 void LastWindowClosedLogoutReminder::OnLastWindowClosed() {
-  if (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() !=
+  if (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
       LoginStatus::PUBLIC) {
     return;
   }

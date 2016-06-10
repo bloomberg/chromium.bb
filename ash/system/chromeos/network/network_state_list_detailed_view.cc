@@ -14,6 +14,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -374,7 +375,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->system_tray_delegate();
+      ash::WmShell::Get()->system_tray_delegate();
   if (sender == button_wifi_) {
     bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
     handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
@@ -427,7 +428,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
         list_type_ == LIST_TYPE_VPN
             ? ash::UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
             : ash::UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
-    Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettingsForGuid(
+    WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid(
         network ? network->guid() : "");
   } else {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
@@ -717,7 +718,7 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
 void NetworkStateListDetailedView::CreateSettingsEntry() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool show_settings =
-      ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings();
+      WmShell::Get()->system_tray_delegate()->ShouldShowSettings();
   if (login_ != LoginStatus::NOT_LOGGED_IN) {
     // Allow user access settings only if user is logged in
     // and showing settings is allowed. There're situations (supervised user
@@ -835,9 +836,7 @@ NetworkStateListDetailedView::GetControlledByExtensionIcon() {
 views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
     const ui::NetworkInfo& info) {
   NetworkingConfigDelegate* networking_config_delegate =
-      Shell::GetInstance()
-          ->system_tray_delegate()
-          ->GetNetworkingConfigDelegate();
+      WmShell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
   if (!networking_config_delegate)
     return nullptr;
   std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>

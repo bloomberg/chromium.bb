@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/power_status_view.h"
@@ -72,15 +73,16 @@ class SettingsDefaultView : public ActionableView,
 
   // Overridden from ash::ActionableView.
   bool PerformAction(const ui::Event& event) override {
-    bool userAddingRunning = ash::Shell::GetInstance()
-                                 ->session_state_delegate()
-                                 ->IsInSecondaryLoginScreen();
+    bool adding_user = Shell::GetInstance()
+                           ->session_state_delegate()
+                           ->IsInSecondaryLoginScreen();
 
     if (login_status_ == LoginStatus::NOT_LOGGED_IN ||
-        login_status_ == LoginStatus::LOCKED || userAddingRunning)
+        login_status_ == LoginStatus::LOCKED || adding_user) {
       return false;
+    }
 
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowSettings();
+    WmShell::Get()->system_tray_delegate()->ShowSettings();
     return true;
   }
 
@@ -143,7 +145,7 @@ views::View* TraySettings::CreateDefaultView(LoginStatus status) {
   if ((status == LoginStatus::NOT_LOGGED_IN || status == LoginStatus::LOCKED) &&
       !PowerStatus::Get()->IsBatteryPresent())
     return NULL;
-  if (!ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings())
+  if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
     return NULL;
   CHECK(default_view_ == NULL);
   default_view_ =  new tray::SettingsDefaultView(status);

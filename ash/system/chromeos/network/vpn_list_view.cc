@@ -10,6 +10,7 @@
 
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/vpn_delegate.h"
@@ -233,14 +234,13 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 
 VPNListView::VPNListView(ui::NetworkListDelegate* delegate)
     : delegate_(delegate) {
-  Shell::GetInstance()->system_tray_delegate()->GetVPNDelegate()->AddObserver(
-      this);
+  WmShell::Get()->system_tray_delegate()->GetVPNDelegate()->AddObserver(this);
 }
 
 VPNListView::~VPNListView() {
   // We need the check as on shell destruction, the delegate is destroyed first.
   SystemTrayDelegate* const system_tray_delegate =
-      Shell::GetInstance()->system_tray_delegate();
+      WmShell::Get()->system_tray_delegate();
   if (system_tray_delegate) {
     VPNDelegate* const vpn_delegate = system_tray_delegate->GetVPNDelegate();
     if (vpn_delegate)
@@ -345,11 +345,10 @@ void VPNListView::OnViewClicked(views::View* sender) {
     // If the user clicks on a provider entry, request that the "add network"
     // dialog for this provider be shown.
     const VPNProvider::Key& key = provider->second;
-    Shell* shell = Shell::GetInstance();
-    shell->metrics()->RecordUserMetricsAction(
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         key.third_party ? UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED
                         : UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
-    shell->system_tray_delegate()->GetVPNDelegate()->ShowAddPage(key);
+    WmShell::Get()->system_tray_delegate()->GetVPNDelegate()->ShowAddPage(key);
     return;
   }
 
@@ -394,7 +393,7 @@ void VPNListView::AddProviderAndNetworks(
 void VPNListView::AddProvidersAndNetworks(
     const chromeos::NetworkStateHandler::NetworkStateList& networks) {
   // Get the list of VPN providers enabled in the primary user's profile.
-  std::vector<VPNProvider> providers = Shell::GetInstance()
+  std::vector<VPNProvider> providers = WmShell::Get()
                                            ->system_tray_delegate()
                                            ->GetVPNDelegate()
                                            ->GetVPNProviders();

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/tray_cast_test_api.h"
@@ -96,9 +97,8 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 // Sanity check to make sure that the media router delegate is getting used.
 IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastMediaRouterChromeOSTest,
                        VerifyThatMediaRouterIsBeingUsed) {
-  ash::CastConfigDelegate* cast_config_delegate = ash::Shell::GetInstance()
-                                                      ->system_tray_delegate()
-                                                      ->GetCastConfigDelegate();
+  ash::CastConfigDelegate* cast_config_delegate =
+      ash::WmShell::Get()->system_tray_delegate()->GetCastConfigDelegate();
 
   // The media router always reports false for HasOptions(); the extension
   // always reports true.

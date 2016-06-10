@@ -9,6 +9,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
@@ -94,7 +95,7 @@ class SystemBubbleWrapper {
                 bool is_persistent) {
     DCHECK(anchor);
     LoginStatus login_status =
-        Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
+        WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
     bubble_->InitView(anchor, login_status, init_params);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_->bubble_view()));
     // The system bubble should not have an arrow.
@@ -216,14 +217,15 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_date_);
 #endif
 
-  SetVisible(ash::Shell::GetInstance()->system_tray_delegate()->
-      GetTrayVisibilityOnStartup());
+  SetVisible(ash::WmShell::Get()
+                 ->system_tray_delegate()
+                 ->GetTrayVisibilityOnStartup());
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
   items_.push_back(item);
 
-  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
   item->UpdateAfterShelfAlignmentChange(shelf_alignment());
 
@@ -452,7 +454,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            int arrow_offset,
                            bool persistent) {
   // No system tray bubbles in kiosk mode.
-  if (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() ==
+  if (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
       LoginStatus::KIOSK_APP) {
     return;
   }
@@ -485,8 +487,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // (like network) replaces most of the menu.
     full_system_tray_menu_ = items.size() > 1;
     // The menu width is fixed, and it is a per language setting.
-    int menu_width = std::max(kMinimumSystemTrayMenuWidth,
-        Shell::GetInstance()->system_tray_delegate()->GetSystemTrayMenuWidth());
+    int menu_width = std::max(
+        kMinimumSystemTrayMenuWidth,
+        WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
 
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(),
@@ -608,7 +611,7 @@ void SystemTray::UpdateWebNotifications() {
 base::string16 SystemTray::GetAccessibleTimeString(
     const base::Time& now) const {
   base::HourClockType hour_type =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetHourClockType();
+      ash::WmShell::Get()->system_tray_delegate()->GetHourClockType();
   return base::TimeFormatTimeOfDayWithHourClockType(
       now, hour_type, base::kKeepAmPm);
 }

@@ -7,6 +7,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/user/login_status.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
@@ -26,7 +27,7 @@ gfx::NativeWindow GetNativeWindow() {
                              ->session_state_delegate()
                              ->IsActiveUserSessionStarted();
   ash::LoginStatus login_status =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
+      ash::WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
   bool isUserAddingRunning = ash::Shell::GetInstance()
                                  ->session_state_delegate()
                                  ->IsInSecondaryLoginScreen();
@@ -61,7 +62,7 @@ void NetworkConnectDelegateChromeOS::ShowNetworkSettingsForGuid(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettingsForGuid(
+  ash::WmShell::Get()->system_tray_delegate()->ShowNetworkSettingsForGuid(
       network_id);
 }
 

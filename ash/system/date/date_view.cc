@@ -6,7 +6,7 @@
 
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -99,9 +99,7 @@ void BaseDateTimeView::GetAccessibleState(ui::AXViewState* state) {
 }
 
 BaseDateTimeView::BaseDateTimeView()
-    : hour_type_(ash::Shell::GetInstance()
-                     ->system_tray_delegate()
-                     ->GetHourClockType()) {
+    : hour_type_(WmShell::Get()->system_tray_delegate()->GetHourClockType()) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
 }
@@ -174,8 +172,7 @@ void DateView::SetAction(TrayDate::DateAction action) {
 }
 
 void DateView::UpdateTimeFormat() {
-  hour_type_ =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetHourClockType();
+  hour_type_ = WmShell::Get()->system_tray_delegate()->GetHourClockType();
   UpdateText();
 }
 
@@ -200,9 +197,9 @@ bool DateView::PerformAction(const ui::Event& event) {
   if (action_ == TrayDate::NONE)
     return false;
   if (action_ == TrayDate::SHOW_DATE_SETTINGS)
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowDateSettings();
+    WmShell::Get()->system_tray_delegate()->ShowDateSettings();
   else if (action_ == TrayDate::SET_SYSTEM_TIME)
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowSetTimeDialog();
+    WmShell::Get()->system_tray_delegate()->ShowSetTimeDialog();
   return true;
 }
 
@@ -242,8 +239,7 @@ TimeView::~TimeView() {
 }
 
 void TimeView::UpdateTimeFormat() {
-  hour_type_ =
-      ash::Shell::GetInstance()->system_tray_delegate()->GetHourClockType();
+  hour_type_ = WmShell::Get()->system_tray_delegate()->GetHourClockType();
   UpdateText();
 }
 

@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
@@ -298,7 +299,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_SIGN_OUT);
     RemoveAddUserMenuOption();
-    Shell::GetInstance()->system_tray_delegate()->SignOut();
+    WmShell::Get()->system_tray_delegate()->SignOut();
   } else if (sender == user_card_view_ &&
              IsMultiProfileSupportedAndUserActive()) {
     if (!user_index_) {
@@ -315,7 +316,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     RemoveAddUserMenuOption();
     // Let the user add another account to the session.
     MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
-    Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
+    WmShell::Get()->system_tray_delegate()->ShowUserLogin();
     owner_->system_tray()->CloseSystemBubble();
   } else {
     NOTREACHED();

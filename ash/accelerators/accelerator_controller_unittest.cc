@@ -15,6 +15,7 @@
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/screen_util.h"
@@ -866,7 +867,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
     TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
-    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
+    ash::WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
         std::unique_ptr<VolumeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -1426,7 +1427,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessInController(volume_down));
     EXPECT_TRUE(ProcessInController(volume_up));
     TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
-    ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
+    ash::WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
         std::unique_ptr<VolumeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessInController(volume_mute));

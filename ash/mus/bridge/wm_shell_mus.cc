@@ -8,6 +8,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
@@ -98,9 +99,11 @@ WmShellMus::WmShellMus(::mus::WindowTreeClient* client)
   wm_shell_common_->CreateMruWindowTracker();
 
   accessibility_delegate_.reset(new DefaultAccessibilityDelegate);
+  SetSystemTrayDelegate(base::WrapUnique(new DefaultSystemTrayDelegate));
 }
 
 WmShellMus::~WmShellMus() {
+  SetSystemTrayDelegate(nullptr);
   wm_shell_common_->DeleteMruWindowTracker();
   RemoveClientObserver();
   WmShell::Set(nullptr);

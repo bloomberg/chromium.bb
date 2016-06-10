@@ -7,6 +7,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
@@ -72,8 +73,8 @@ class CapsLockDefaultView : public ActionableView {
     text_label_->SetText(bundle.GetLocalizedString(text_string_id));
 
     int shortcut_string_id = 0;
-    bool search_mapped_to_caps_lock = Shell::GetInstance()->
-        system_tray_delegate()->IsSearchKeyMappedToCapsLock();
+    bool search_mapped_to_caps_lock =
+        WmShell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock();
     if (caps_lock_enabled) {
       shortcut_string_id = search_mapped_to_caps_lock ?
           IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT :
@@ -197,10 +198,10 @@ views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
 
   detailed_->AddChildView(image);
 
-  const int string_id = Shell::GetInstance()->system_tray_delegate()->
-                            IsSearchKeyMappedToCapsLock() ?
-      IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH :
-      IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
+  const int string_id =
+      WmShell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
+          ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
+          : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   views::Label* label = new views::Label(bundle.GetLocalizedString(string_id));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

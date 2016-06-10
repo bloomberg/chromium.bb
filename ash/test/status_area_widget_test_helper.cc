@@ -5,6 +5,7 @@
 #include "ash/test/status_area_widget_test_helper.h"
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -13,7 +14,7 @@
 namespace ash {
 
 LoginStatus StatusAreaWidgetTestHelper::GetUserLoginStatus() {
-  return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
+  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
 }
 
 StatusAreaWidget* StatusAreaWidgetTestHelper::GetStatusAreaWidget() {

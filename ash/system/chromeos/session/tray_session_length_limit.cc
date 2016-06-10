@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/system_notifier.h"
@@ -91,7 +92,7 @@ void TraySessionLengthLimit::Update() {
 }
 
 void TraySessionLengthLimit::UpdateState() {
-  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   if (delegate->GetSessionStartTime(&session_start_time_) &&
       delegate->GetSessionLengthLimit(&time_limit_)) {
     const base::TimeDelta expiring_soon_threshold(

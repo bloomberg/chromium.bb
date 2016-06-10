@@ -12,6 +12,7 @@
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
@@ -1009,7 +1010,7 @@ void ChromeLauncherController::ActiveUserChanged(
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
   // Inform the system tray of the change.
-  ash::Shell::GetInstance()->system_tray_delegate()->ActiveUserWasChanged();
+  ash::WmShell::Get()->system_tray_delegate()->ActiveUserWasChanged();
   // Force on-screen keyboard to reset.
   if (keyboard::IsKeyboardEnabled())
     ash::Shell::GetInstance()->CreateKeyboard();

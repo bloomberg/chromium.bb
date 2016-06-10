@@ -11,6 +11,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -117,7 +118,7 @@ base::string16 GetAllDisplayInfo() {
 void OpenSettings() {
   // switch is intentionally introduced without default, to cause an error when
   // a new type of login status is introduced.
-  switch (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus()) {
+  switch (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
     case LoginStatus::NOT_LOGGED_IN:
     case LoginStatus::LOCKED:
       return;
@@ -128,8 +129,7 @@ void OpenSettings() {
     case LoginStatus::PUBLIC:
     case LoginStatus::SUPERVISED:
     case LoginStatus::KIOSK_APP:
-      ash::SystemTrayDelegate* delegate =
-          Shell::GetInstance()->system_tray_delegate();
+      SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
       if (delegate->ShouldShowSettings())
         delegate->ShowDisplaySettings();
   }
@@ -432,8 +432,9 @@ void TrayDisplay::OnDisplayConfigurationChanged() {
   if (default_)
     default_->Update();
 
-  if (!Shell::GetInstance()->system_tray_delegate()->
-          ShouldShowDisplayNotification()) {
+  if (!WmShell::Get()
+           ->system_tray_delegate()
+           ->ShouldShowDisplayNotification()) {
     return;
   }
 

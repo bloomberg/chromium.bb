@@ -24,6 +24,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_shell_common.h"
 #include "ash/container_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -727,8 +728,8 @@ Shell::~Shell() {
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
   ShutdownShelf();
-  system_tray_delegate_->Shutdown();
-  system_tray_delegate_.reset();
+  wm_shell_->system_tray_delegate()->Shutdown();
+  wm_shell_->SetSystemTrayDelegate(nullptr);
 
   locale_notification_controller_.reset();
 
@@ -1079,14 +1080,12 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Create system_tray_notifier_ before the delegate.
   system_tray_notifier_.reset(new SystemTrayNotifier());
 
-  // Initialize system_tray_delegate_ before initializing StatusAreaWidget.
-  system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
-  DCHECK(system_tray_delegate_.get());
+  SystemTrayDelegate* system_tray_delegate =
+      delegate()->CreateSystemTrayDelegate();
+  DCHECK(system_tray_delegate);
+  wm_shell_->SetSystemTrayDelegate(base::WrapUnique(system_tray_delegate));
 
   locale_notification_controller_.reset(new LocaleNotificationController);
-
-  // Initialize system_tray_delegate_ after StatusAreaWidget is created.
-  system_tray_delegate_->Initialize();
 
   // Initialize toast manager
   toast_manager_.reset(new ToastManager);
@@ -1095,7 +1094,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Create the LogoutConfirmationController after the SystemTrayDelegate.
   logout_confirmation_controller_.reset(new LogoutConfirmationController(
       base::Bind(&SystemTrayDelegate::SignOut,
-                 base::Unretained(system_tray_delegate_.get()))));
+                 base::Unretained(system_tray_delegate))));
 
   // Create TouchTransformerController before
   // WindowTreeHostManager::InitDisplays()

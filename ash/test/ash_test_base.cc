@@ -9,6 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
@@ -273,7 +274,7 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
 
 TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
   return static_cast<TestSystemTrayDelegate*>(
-      Shell::GetInstance()->system_tray_delegate());
+      WmShell::Get()->system_tray_delegate());
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {

@@ -9,6 +9,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
@@ -94,7 +95,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
                   LoginStatus login,
                   bool show_keyboard_toggle)
       : TrayDetailsView(owner), login_(login) {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
     IMEPropertyInfoList property_list;
@@ -188,7 +189,7 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
 
   // Overridden from ViewClickListener.
   void OnViewClicked(views::View* sender) override {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (sender == footer()->content()) {
       TransitionToDefaultView();
     } else if (sender == settings_) {
@@ -300,7 +301,7 @@ bool TrayIME::ShouldShowKeyboardToggle() {
 base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
   if (show_ime_label) {
     IMEInfo current;
-    Shell::GetInstance()->system_tray_delegate()->GetCurrentIME(&current);
+    WmShell::Get()->system_tray_delegate()->GetCurrentIME(&current);
     return current.name;
   } else {
     // Display virtual keyboard status instead.
@@ -358,7 +359,7 @@ void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 
 void TrayIME::OnIMERefresh() {
   // Caches the current ime state.
-  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   ime_list_.clear();
   property_list_.clear();
   delegate->GetCurrentIME(&current_ime_);

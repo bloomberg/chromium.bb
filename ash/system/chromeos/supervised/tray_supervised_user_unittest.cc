@@ -4,7 +4,6 @@
 
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 
-#include "ash/shell.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
@@ -63,9 +62,7 @@ void TraySupervisedUserInitialTest::TearDown() {
 }
 
 TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
-  test::TestSystemTrayDelegate* delegate =
-      static_cast<test::TestSystemTrayDelegate*>(
-          ash::Shell::GetInstance()->system_tray_delegate());
+  test::TestSystemTrayDelegate* delegate = GetSystemTrayDelegate();
   delegate->SetLoginStatus(LoginStatus::SUPERVISED);
 
   message_center::Notification* notification = GetPopup();
@@ -83,4 +80,4 @@ TEST_F(TraySupervisedUserInitialTest, SupervisedUserNoCrash) {
             notification->rich_notification_data().priority);
 }
 
-}  // namespace
+}  // namespace ash

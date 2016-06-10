@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/profiles/avatar_menu_actions_chromeos.h"
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/multi_profile_uma.h"
-#include "ash/shell.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,7 +29,7 @@ void AvatarMenuActionsChromeOS::AddNewProfile(ProfileMetrics::ProfileAdd type) {
   // Let the user add another account to the session.
   ash::MultiProfileUMA::RecordSigninUser(
       ash::MultiProfileUMA::SIGNIN_USER_BY_BROWSER_FRAME);
-  ash::Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
+  ash::WmShell::Get()->system_tray_delegate()->ShowUserLogin();
 }
 
 void AvatarMenuActionsChromeOS::EditProfile(Profile* profile) {

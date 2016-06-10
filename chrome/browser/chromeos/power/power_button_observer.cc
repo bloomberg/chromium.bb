@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/power_button_controller.h"
@@ -24,10 +25,10 @@ namespace chromeos {
 namespace {
 
 ash::LoginStatus GetCurrentLoginStatus() {
-  if (!ash::Shell::GetInstance()->system_tray_delegate())
-    return ash::LoginStatus::NOT_LOGGED_IN;
-  return ash::Shell::GetInstance()->system_tray_delegate()->
-      GetUserLoginStatus();
+  if (ash::WmShell::Get()->system_tray_delegate())
+    return ash::WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+
+  return ash::LoginStatus::NOT_LOGGED_IN;
 }
 
 }  // namespace

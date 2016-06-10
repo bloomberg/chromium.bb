@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
@@ -416,9 +417,7 @@ TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
 // triggered by the accelerometer.
 TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   EnableMaximizeMode(true);
-  test::TestSystemTrayDelegate* tray_delegate =
-      static_cast<test::TestSystemTrayDelegate*>(
-          Shell::GetInstance()->system_tray_delegate());
+  test::TestSystemTrayDelegate* tray_delegate = GetSystemTrayDelegate();
   tray_delegate->set_should_show_display_notification(true);
   test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 

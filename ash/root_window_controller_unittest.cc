@@ -10,6 +10,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -370,9 +371,10 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
 TEST_F(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
+  WmShell* wm_shell = WmShell::Get();
   RootWindowController* controller = shell->GetPrimaryRootWindowController();
   EXPECT_EQ(LoginStatus::USER,
-            shell->system_tray_delegate()->GetUserLoginStatus());
+            wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)
                 ->layout_manager(),
             controller->GetSystemModalLayoutManager(NULL));
@@ -386,7 +388,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
 
   shell->session_state_delegate()->LockScreen();
   EXPECT_EQ(LoginStatus::LOCKED,
-            shell->system_tray_delegate()->GetUserLoginStatus());
+            wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_LockSystemModalContainer)
                 ->layout_manager(),
             controller->GetSystemModalLayoutManager(NULL));
@@ -410,11 +412,12 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
 TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
+  WmShell* wm_shell = WmShell::Get();
 
   // Configure login screen environment.
   SetUserLoggedIn(false);
   EXPECT_EQ(LoginStatus::NOT_LOGGED_IN,
-            shell->system_tray_delegate()->GetUserLoginStatus());
+            wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(0, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_FALSE(shell->session_state_delegate()->IsActiveUserSessionStarted());
 
@@ -437,7 +440,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetUserLoggedIn(true);
   SetSessionStarted(true);
   EXPECT_EQ(LoginStatus::USER,
-            shell->system_tray_delegate()->GetUserLoginStatus());
+            wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(1, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_TRUE(shell->session_state_delegate()->IsActiveUserSessionStarted());
   EXPECT_EQ(controller->GetContainer(kShellWindowId_SystemModalContainer)

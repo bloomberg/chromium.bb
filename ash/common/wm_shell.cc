@@ -4,6 +4,9 @@
 
 #include "ash/common/wm_shell.h"
 
+#include "ash/common/system/tray/system_tray_delegate.h"
+#include "base/logging.h"
+
 namespace ash {
 
 // static
@@ -17,6 +20,24 @@ void WmShell::Set(WmShell* instance) {
 // static
 WmShell* WmShell::Get() {
   return instance_;
+}
+
+WmShell::WmShell() {}
+
+WmShell::~WmShell() {}
+
+void WmShell::SetSystemTrayDelegate(
+    std::unique_ptr<SystemTrayDelegate> delegate) {
+  if (delegate) {
+    DCHECK(!system_tray_delegate_);
+    // TODO(jamescook): Create via ShellDelegate once it moves to //ash/common.
+    system_tray_delegate_ = std::move(delegate);
+    system_tray_delegate_->Initialize();
+  } else {
+    DCHECK(system_tray_delegate_);
+    system_tray_delegate_->Shutdown();
+    system_tray_delegate_.reset();
+  }
 }
 
 }  // namespace ash

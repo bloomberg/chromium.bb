@@ -7,6 +7,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -48,7 +49,7 @@ class DefaultTracingView : public ActionableView {
  private:
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override {
-    Shell::GetInstance()->system_tray_delegate()->ShowChromeSlow();
+    WmShell::Get()->system_tray_delegate()->ShowChromeSlow();
     return true;
   }
 
