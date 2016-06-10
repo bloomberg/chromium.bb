@@ -7,7 +7,13 @@ RUN apt-get update && \
   apt-get install -yq libdrm2 libfontconfig1 libfreetype6 libgraphite2-3 \
   libharfbuzz0b libnspr4 libnss3 libstdc++6
 
+# stunnel4 is needed for incoming TLS connections.
+# wget is needed for crash reporting.
 RUN apt-get update && apt-get install -yq stunnel4 wget
+
+# gdb and strace are not strictly required, but having them around makes
+# debugging easier.
+RUN apt-get update && apt-get install -yq gdb strace
 
 RUN mkdir /engine
 
