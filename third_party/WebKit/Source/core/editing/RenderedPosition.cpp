@@ -39,7 +39,8 @@
 
 namespace blink {
 
-static inline LayoutObject* layoutObjectFromPosition(const Position& position)
+template <typename Strategy>
+static inline LayoutObject* layoutObjectFromPosition(const PositionTemplate<Strategy>& position)
 {
     DCHECK(position.isNotNull());
     Node* layoutObjectNode = nullptr;
@@ -55,10 +56,10 @@ static inline LayoutObject* layoutObjectFromPosition(const Position& position)
         break;
 
     case PositionAnchorType::BeforeChildren:
-        layoutObjectNode = position.anchorNode()->firstChild();
+        layoutObjectNode = Strategy::firstChild(*position.anchorNode());
         break;
     case PositionAnchorType::AfterChildren:
-        layoutObjectNode = position.anchorNode()->lastChild();
+        layoutObjectNode = Strategy::lastChild(*position.anchorNode());
         break;
     }
     if (!layoutObjectNode || !layoutObjectNode->layoutObject())
@@ -95,8 +96,21 @@ RenderedPosition::RenderedPosition(const Position& position, TextAffinity affini
 }
 
 RenderedPosition::RenderedPosition(const PositionInFlatTree& position, TextAffinity affinity)
-    : RenderedPosition(toPositionInDOMTree(position), affinity)
+    : m_layoutObject(nullptr)
+    , m_inlineBox(nullptr)
+    , m_offset(0)
+    , m_prevLeafChild(uncachedInlineBox())
+    , m_nextLeafChild(uncachedInlineBox())
 {
+    if (position.isNull())
+        return;
+    InlineBoxPosition boxPosition = computeInlineBoxPosition(position, affinity);
+    m_inlineBox = boxPosition.inlineBox;
+    m_offset = boxPosition.offsetInBox;
+    if (m_inlineBox)
+        m_layoutObject = LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->getLineLayoutItem());
+    else
+        m_layoutObject = layoutObjectFromPosition(position);
 }
 
 InlineBox* RenderedPosition::prevLeafChild() const
