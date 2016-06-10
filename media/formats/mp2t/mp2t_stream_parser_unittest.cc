@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"

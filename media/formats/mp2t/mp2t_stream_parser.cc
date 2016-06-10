@@ -512,10 +512,10 @@ std::unique_ptr<MediaTracks> GenerateMediaTrackInfo(
   // TODO(servolk): Implement proper sourcing of media track info as described
   // in crbug.com/590085
   if (audio_config.IsValidConfig()) {
-    media_tracks->AddAudioTrack(audio_config, "audio", "main", "", "");
+    media_tracks->AddAudioTrack(audio_config, 1, "main", "", "");
   }
   if (video_config.IsValidConfig()) {
-    media_tracks->AddVideoTrack(video_config, "video", "main", "", "");
+    media_tracks->AddVideoTrack(video_config, 2, "main", "", "");
   }
   return media_tracks;
 }

@@ -1205,14 +1205,14 @@ TEST_F(FFmpegDemuxerTest, Read_Mp4_Media_Track_Info) {
 
   const MediaTrack& audio_track = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
-  EXPECT_EQ(audio_track.id(), "1");
+  EXPECT_EQ(audio_track.bytestream_track_id(), 1);
   EXPECT_EQ(audio_track.kind(), "main");
   EXPECT_EQ(audio_track.label(), "GPAC ISO Audio Handler");
   EXPECT_EQ(audio_track.language(), "und");
 
   const MediaTrack& video_track = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(video_track.type(), MediaTrack::Video);
-  EXPECT_EQ(video_track.id(), "2");
+  EXPECT_EQ(video_track.bytestream_track_id(), 2);
   EXPECT_EQ(video_track.kind(), "main");
   EXPECT_EQ(video_track.label(), "GPAC ISO Video Handler");
   EXPECT_EQ(video_track.language(), "und");
@@ -1228,14 +1228,14 @@ TEST_F(FFmpegDemuxerTest, Read_Webm_Media_Track_Info) {
 
   const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
   EXPECT_EQ(video_track.type(), MediaTrack::Video);
-  EXPECT_EQ(video_track.id(), "1");
+  EXPECT_EQ(video_track.bytestream_track_id(), 1);
   EXPECT_EQ(video_track.kind(), "main");
   EXPECT_EQ(video_track.label(), "");
   EXPECT_EQ(video_track.language(), "");
 
   const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
   EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
-  EXPECT_EQ(audio_track.id(), "2");
+  EXPECT_EQ(audio_track.bytestream_track_id(), 2);
   EXPECT_EQ(audio_track.kind(), "main");
   EXPECT_EQ(audio_track.label(), "");
   EXPECT_EQ(audio_track.language(), "");

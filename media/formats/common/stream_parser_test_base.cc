@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "media/base/media_log.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
 #include "media/base/test_data_util.h"

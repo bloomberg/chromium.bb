@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -844,7 +845,8 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   for (const auto& track : tracks->tracks()) {
     if (track->type() == MediaTrack::Audio) {
       auto track_id = client_->addAudioTrack(
-          blink::WebString::fromUTF8(track->id()),
+          blink::WebString::fromUTF8(
+              base::UintToString(track->bytestream_track_id())),
           blink::WebMediaPlayerClient::AudioTrackKindMain,
           blink::WebString::fromUTF8(track->label()),
           blink::WebString::fromUTF8(track->language()),
@@ -852,7 +854,8 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
       (void)track_id;
     } else if (track->type() == MediaTrack::Video) {
       auto track_id = client_->addVideoTrack(
-          blink::WebString::fromUTF8(track->id()),
+          blink::WebString::fromUTF8(
+              base::UintToString(track->bytestream_track_id())),
           blink::WebMediaPlayerClient::VideoTrackKindMain,
           blink::WebString::fromUTF8(track->label()),
           blink::WebString::fromUTF8(track->language()),

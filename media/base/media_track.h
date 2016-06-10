@@ -8,6 +8,7 @@
 #include <string>
 
 #include "media/base/media_export.h"
+#include "media/base/stream_parser.h"
 
 namespace media {
 
@@ -15,7 +16,7 @@ class MEDIA_EXPORT MediaTrack {
  public:
   enum Type { Text, Audio, Video };
   MediaTrack(Type type,
-             const std::string& id,
+             StreamParser::TrackId bytestream_track_id,
              const std::string& kind,
              const std::string& label,
              const std::string& lang);
@@ -23,14 +24,16 @@ class MEDIA_EXPORT MediaTrack {
 
   Type type() const { return type_; }
 
-  const std::string& id() const { return id_; }
+  StreamParser::TrackId bytestream_track_id() const {
+    return bytestream_track_id_;
+  }
   const std::string& kind() const { return kind_; }
   const std::string& label() const { return label_; }
   const std::string& language() const { return language_; }
 
  private:
   Type type_;
-  std::string id_;
+  StreamParser::TrackId bytestream_track_id_;
   std::string kind_;
   std::string label_;
   std::string language_;

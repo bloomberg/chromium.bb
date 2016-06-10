@@ -26,23 +26,27 @@ class MEDIA_EXPORT MediaTracks {
   MediaTracks();
   ~MediaTracks();
 
-  // Callers need to ensure that track id is unique.
+  // Adds a new audio track. The |bytestreamTrackId| must uniquely identify the
+  // track within the bytestream.
   void AddAudioTrack(const AudioDecoderConfig& config,
-                     const std::string& id,
+                     StreamParser::TrackId bytestream_track_id,
                      const std::string& kind,
                      const std::string& label,
                      const std::string& language);
-  // Callers need to ensure that track id is unique.
+  // Adds a new video track. The |bytestreamTrackId| must uniquely identify the
+  // track within the bytestream.
   void AddVideoTrack(const VideoDecoderConfig& config,
-                     const std::string& id,
+                     StreamParser::TrackId bytestream_track_id,
                      const std::string& kind,
                      const std::string& label,
                      const std::string& language);
 
   const MediaTracksCollection& tracks() const { return tracks_; }
 
-  const AudioDecoderConfig& getAudioConfig(const std::string& id) const;
-  const VideoDecoderConfig& getVideoConfig(const std::string& id) const;
+  const AudioDecoderConfig& getAudioConfig(
+      StreamParser::TrackId bytestream_track_id) const;
+  const VideoDecoderConfig& getVideoConfig(
+      StreamParser::TrackId bytestream_track_id) const;
 
   // TODO(servolk): These are temporary helpers useful until all code paths are
   // converted to properly handle multiple media tracks.
@@ -51,8 +55,8 @@ class MEDIA_EXPORT MediaTracks {
 
  private:
   MediaTracksCollection tracks_;
-  std::map<std::string, AudioDecoderConfig> audio_configs_;
-  std::map<std::string, VideoDecoderConfig> video_configs_;
+  std::map<StreamParser::TrackId, AudioDecoderConfig> audio_configs_;
+  std::map<StreamParser::TrackId, VideoDecoderConfig> video_configs_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTracks);
 };

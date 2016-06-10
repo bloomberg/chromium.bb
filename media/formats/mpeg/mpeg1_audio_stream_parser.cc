@@ -4,6 +4,8 @@
 
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
 
+#include "media/base/media_log.h"
+
 namespace media {
 
 static const uint32_t kMPEG1StartCodeMask = 0xffe00000;

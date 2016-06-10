@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
+#include "media/base/media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
 

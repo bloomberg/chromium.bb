@@ -1207,7 +1207,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       continue;
     }
 
-    std::string track_id = base::IntToString(stream->id);
+    StreamParser::TrackId track_id = stream->id;
     std::string track_label = streams_[i]->GetMetadata("handler_name");
     std::string track_language = streams_[i]->GetMetadata("language");
 
@@ -1216,7 +1216,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
         strstr(format_context->iformat->name, "matroska")) {
       // TODO(servolk): FFmpeg doesn't set stream->id correctly for webm files.
       // Need to fix that and use it as track id. crbug.com/323183
-      track_id = base::UintToString(media_tracks->tracks().size() + 1);
+      track_id =
+          static_cast<StreamParser::TrackId>(media_tracks->tracks().size() + 1);
       track_label = streams_[i]->GetMetadata("title");
     }
 

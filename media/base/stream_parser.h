@@ -21,10 +21,10 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
-#include "media/base/media_log.h"
 
 namespace media {
 
+class MediaLog;
 class MediaTracks;
 class StreamParserBuffer;
 class TextTrackConfig;

@@ -480,6 +480,7 @@ bool MediaSourceState::OnNewConfigs(
     const StreamParser::TextTrackConfigMap& text_configs) {
   DCHECK_GE(state_, PENDING_PARSER_CONFIG);
   DCHECK(tracks.get());
+
   media_tracks_ = std::move(tracks);
   const AudioDecoderConfig& audio_config = media_tracks_->getFirstAudioConfig();
   const VideoDecoderConfig& video_config = media_tracks_->getFirstVideoConfig();

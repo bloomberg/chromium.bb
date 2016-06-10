@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
@@ -182,7 +183,8 @@ void WebSourceBufferImpl::InitSegmentReceived(
   for (const auto& track : tracks->tracks()) {
     blink::WebSourceBufferClient::MediaTrackInfo trackInfo;
     trackInfo.trackType = mediaTrackTypeToBlink(track->type());
-    trackInfo.byteStreamTrackId = blink::WebString::fromUTF8(track->id());
+    trackInfo.byteStreamTrackId = blink::WebString::fromUTF8(
+        base::UintToString(track->bytestream_track_id()));
     trackInfo.kind = blink::WebString::fromUTF8(track->kind());
     trackInfo.label = blink::WebString::fromUTF8(track->label());
     trackInfo.language = blink::WebString::fromUTF8(track->language());

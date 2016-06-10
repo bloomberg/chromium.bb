@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
 #include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
@@ -221,7 +222,7 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
 
     std::unique_ptr<MediaTracks> media_tracks(new MediaTracks());
     if (config_.IsValidConfig()) {
-      media_tracks->AddAudioTrack(config_, "audio", "", "", "");
+      media_tracks->AddAudioTrack(config_, 1, "main", "", "");
     }
     if (!config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()))
       return -1;

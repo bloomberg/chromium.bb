@@ -320,9 +320,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           base::TimeDelta(), 0);
       has_audio_ = true;
       audio_track_id_ = track->header.track_id;
-      media_tracks->AddAudioTrack(
-          audio_config, base::UintToString(audio_track_id_), "main",
-          track->media.handler.name, track->media.header.language());
+      media_tracks->AddAudioTrack(audio_config, audio_track_id_, "main",
+                                  track->media.handler.name,
+                                  track->media.header.language());
       continue;
     }
 
@@ -371,9 +371,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           is_video_track_encrypted_ ? AesCtrEncryptionScheme() : Unencrypted());
       has_video_ = true;
       video_track_id_ = track->header.track_id;
-      media_tracks->AddVideoTrack(
-          video_config, base::UintToString(video_track_id_), "main",
-          track->media.handler.name, track->media.header.language());
+      media_tracks->AddVideoTrack(video_config, video_track_id_, "main",
+                                  track->media.handler.name,
+                                  track->media.header.language());
       continue;
     }
 

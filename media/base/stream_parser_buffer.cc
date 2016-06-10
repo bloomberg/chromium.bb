@@ -4,6 +4,8 @@
 
 #include "media/base/stream_parser_buffer.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/timestamp_constants.h"
