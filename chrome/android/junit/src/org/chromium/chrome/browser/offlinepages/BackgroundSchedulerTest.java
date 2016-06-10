@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import android.content.Context;
@@ -22,7 +23,8 @@ import org.robolectric.annotation.Config;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class)
+        application = BaseChromiumApplication.class,
+        shadows = {ShadowGcmNetworkManager.class})
 public class BackgroundSchedulerTest {
     private Context mContext;
 
@@ -32,14 +34,13 @@ public class BackgroundSchedulerTest {
     }
 
     @Test
-    @Config(shadows = {ShadowGcmNetworkManager.class})
     @Feature({"OfflinePages"})
     public void testSchedule() {
         BackgroundScheduler scheduler = new BackgroundScheduler();
         assertNull(ShadowGcmNetworkManager.getScheduledTask());
-
-        // TODO(petewil): Re-enable the test when I track down why the GCMNetworkManager shadow is
-        // flaky.  I will need to call schedule, then assert that the shadow saw the scheduled task.
+        scheduler.schedule(mContext);
+        // Check with gcmNetworkManagerShadow that schedule got called.
+        assertNotNull(ShadowGcmNetworkManager.getScheduledTask());
 
         // TODO(petewil): Also assert that the date we see is what we expected
     }

@@ -20,7 +20,7 @@ public class ShadowGcmNetworkManager {
     private static Task sTask;
 
     @Implementation
-    public void schedule(Task task) {
+    public static void schedule(Task task) {
         // Capture the string part divisions so we can check them.
         sTask = task;
     }
