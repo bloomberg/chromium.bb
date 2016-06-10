@@ -608,6 +608,10 @@ main(int argc, char *argv[]) {
   tables_list[0] = '\0';
   read_tables(&parser, tables_list);
 
+  if (!lou_getTable(tables_list)) {
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "Table %s not valid", tables_list);
+  }
   if (!yaml_parser_parse(&parser, &event) ||
       (event.type != YAML_SCALAR_EVENT)) {
     yaml_error(YAML_SCALAR_EVENT, &event);
