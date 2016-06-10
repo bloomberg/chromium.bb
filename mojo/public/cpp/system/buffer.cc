@@ -6,6 +6,15 @@
 
 namespace mojo {
 
+// static
+ScopedSharedBufferHandle SharedBufferHandle::Create(uint64_t num_bytes) {
+  MojoCreateSharedBufferOptions options = {
+      sizeof(options), MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE};
+  SharedBufferHandle handle;
+  MojoCreateSharedBuffer(&options, num_bytes, handle.mutable_value());
+  return MakeScopedHandle(handle);
+}
+
 ScopedSharedBufferHandle SharedBufferHandle::Clone(
     SharedBufferHandle::AccessMode access_mode) const {
   ScopedSharedBufferHandle result;

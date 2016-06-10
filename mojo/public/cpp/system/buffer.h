@@ -53,6 +53,9 @@ class SharedBufferHandle : public Handle {
 
   // Copying and assignment allowed.
 
+  // Creates a new SharedBufferHandle. Returns an invalid handle on failure.
+  static ScopedSharedBufferHandle Create(uint64_t num_bytes);
+
   // Clones this shared buffer handle. If |access_mode| is READ_ONLY or this is
   // a read-only handle, the new handle will be read-only. On failure, this will
   // return an empty result.
@@ -131,35 +134,6 @@ inline MojoResult MapBuffer(BufferHandleType buffer,
 inline MojoResult UnmapBuffer(void* pointer) {
   DCHECK(pointer);
   return MojoUnmapBuffer(pointer);
-}
-
-// A wrapper class that automatically creates a shared buffer and owns the
-// handle.
-class SharedBuffer {
- public:
-  explicit SharedBuffer(uint64_t num_bytes);
-  SharedBuffer(uint64_t num_bytes,
-               const MojoCreateSharedBufferOptions& options);
-  ~SharedBuffer();
-
-  ScopedSharedBufferHandle handle;
-};
-
-inline SharedBuffer::SharedBuffer(uint64_t num_bytes) {
-  MojoResult result = CreateSharedBuffer(nullptr, num_bytes, &handle);
-  ALLOW_UNUSED_LOCAL(result);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-}
-
-inline SharedBuffer::SharedBuffer(
-    uint64_t num_bytes,
-    const MojoCreateSharedBufferOptions& options) {
-  MojoResult result = CreateSharedBuffer(&options, num_bytes, &handle);
-  ALLOW_UNUSED_LOCAL(result);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-}
-
-inline SharedBuffer::~SharedBuffer() {
 }
 
 }  // namespace mojo

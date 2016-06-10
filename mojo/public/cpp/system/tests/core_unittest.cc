@@ -465,12 +465,10 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
 }
 
 TEST(CoreCppTest, ScopedHandleMoveCtor) {
-  ScopedSharedBufferHandle buffer1;
-  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(nullptr, 1024, &buffer1));
+  ScopedSharedBufferHandle buffer1 = SharedBufferHandle::Create(1024);
   EXPECT_TRUE(buffer1.is_valid());
 
-  ScopedSharedBufferHandle buffer2;
-  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(nullptr, 1024, &buffer2));
+  ScopedSharedBufferHandle buffer2 = SharedBufferHandle::Create(1024);
   EXPECT_TRUE(buffer2.is_valid());
 
   // If this fails to close buffer1, ScopedHandleBase::CloseIfNecessary() will
@@ -482,13 +480,8 @@ TEST(CoreCppTest, ScopedHandleMoveCtor) {
 }
 
 TEST(CoreCppTest, BasicSharedBuffer) {
-  ScopedSharedBufferHandle h0;
-
-  // Create a shared buffer (|h0|).
-  {
-    SharedBuffer buffer(100);
-    h0 = std::move(buffer.handle);
-  }
+  ScopedSharedBufferHandle h0 = SharedBufferHandle::Create(100);
+  ASSERT_TRUE(h0.is_valid());
 
   // Map everything.
   ScopedSharedBufferMapping mapping = h0->Map(100);
@@ -520,6 +513,9 @@ TEST(CoreCppTest, BasicSharedBuffer) {
   // Unmap it.
   mapping.reset();
   h1.reset();
+
+  // Creating a 1 EB shared buffer should fail without crashing.
+  EXPECT_FALSE(SharedBufferHandle::Create(1ULL << 60).is_valid());
 }
 
 // TODO(vtl): Write data pipe tests.
