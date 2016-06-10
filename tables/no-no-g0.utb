@@ -20,21 +20,12 @@ emphclass italic
 emphclass underline
 emphclass bold
 
-lenemphphrase italic 1
-lenemphphrase bold 1
-
-begemphphrase italic 23
 begemph italic 23
-begemphphrase bold 6-3
 begemph bold 6-3
-begemphphrase underline 456
 begemph underline 456
 
-endemphphrase italic after 56
 endemph italic 56
-endemphphrase bold after 6-3
 endemph bold 6-3
-endemphphrase underline after 456
 endemph underline 456
 
 midnum , 2
