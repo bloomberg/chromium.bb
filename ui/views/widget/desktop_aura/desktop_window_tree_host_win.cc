@@ -527,7 +527,6 @@ void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   // If the window bounds have to be expanded we need to subtract the
   // window_expansion_top_left_delta_ from the origin and add the
   // window_expansion_bottom_right_delta_ to the width and height
-  gfx::Size old_hwnd_size(message_handler_->GetClientAreaBounds().size());
   gfx::Size old_content_size = GetBounds().size();
 
   gfx::Rect expanded(

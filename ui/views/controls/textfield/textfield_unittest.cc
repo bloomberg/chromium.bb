@@ -2271,7 +2271,6 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
 
   // Make sure GetCompositionCharacterBounds never fails for index.
   gfx::Rect rects[kUtf16CharsCount];
-  gfx::Rect prev_cursor = GetCursorBounds();
   for (uint32_t i = 0; i < kUtf16CharsCount; ++i)
     EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &rects[i]));
 

@@ -2196,8 +2196,6 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 // Tests the mouse events seen by WindowDelegates in a Window hierarchy when
 // changing the properties of a leaf Window.
 TEST_F(WindowTest, MouseEventsOnLeafWindowChange) {
-  gfx::Size size = host()->GetBounds().size();
-
   ui::test::EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);
 
@@ -2297,8 +2295,6 @@ TEST_F(WindowTest, MouseEventsOnLeafWindowChange) {
 // Tests the mouse events seen by WindowDelegates in a Window hierarchy when
 // deleting a non-leaf Window.
 TEST_F(WindowTest, MouseEventsOnNonLeafWindowDelete) {
-  gfx::Size size = host()->GetBounds().size();
-
   ui::test::EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);
 

@@ -315,12 +315,9 @@ class SynchronousDrag : public ui::DragSourceWin {
 
   void SetupExchangeData(ui::OSExchangeData* data) {
     data->SetFilename(shortcut_path_);
-    gfx::ImageSkia image(drag_view_->GetDragImage());
-    gfx::Size image_size(image.size());
     drag_utils::SetDragImageOnDataObject(
-        image,
-        drag_view_offset_ - drag_view_->GetDragImageOffset(),
-        data);
+        drag_view_->GetDragImage(),
+        drag_view_offset_ - drag_view_->GetDragImageOffset(), data);
   }
 
   HWND GetGridViewHWND() {

@@ -239,7 +239,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsMirroringFails) {
   TestBubbleFrameView frame(this);
   frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
-  gfx::Rect window_bounds = frame.GetUpdatedWindowBounds(
+  frame.GetUpdatedWindowBounds(
       gfx::Rect(400, 100, 50, 50),  // |anchor_rect|
       gfx::Size(500, 700),          // |client_size|
       true);                        // |adjust_if_offscreen|
@@ -251,7 +251,7 @@ TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
 
   // Test bubble not fitting above the anchor.
   frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
-  gfx::Rect window_bounds = frame.GetUpdatedWindowBounds(
+  frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 100, 50, 50),  // |anchor_rect|
       gfx::Size(500, 700),          // |client_size|
       true);                        // |adjust_if_offscreen|
@@ -259,7 +259,7 @@ TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
 
   // Test bubble not fitting below the anchor.
   frame.bubble_border()->set_arrow(BubbleBorder::TOP_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
+  frame.GetUpdatedWindowBounds(
       gfx::Rect(300, 800, 50, 50),  // |anchor_rect|
       gfx::Size(500, 200),          // |client_size|
       true);                        // |adjust_if_offscreen|
@@ -267,7 +267,7 @@ TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
 
   // Test bubble not fitting to the right of the anchor.
   frame.bubble_border()->set_arrow(BubbleBorder::LEFT_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
+  frame.GetUpdatedWindowBounds(
       gfx::Rect(800, 300, 50, 50),  // |anchor_rect|
       gfx::Size(200, 500),          // |client_size|
       true);                        // |adjust_if_offscreen|
@@ -275,7 +275,7 @@ TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
 
   // Test bubble not fitting to the left of the anchor.
   frame.bubble_border()->set_arrow(BubbleBorder::RIGHT_CENTER);
-  window_bounds = frame.GetUpdatedWindowBounds(
+  frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 300, 50, 50),  // |anchor_rect|
       gfx::Size(500, 500),          // |client_size|
       true);                        // |adjust_if_offscreen|

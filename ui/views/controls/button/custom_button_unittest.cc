@@ -347,7 +347,6 @@ TEST_F(CustomButtonTest, AsCustomButton) {
 // Note: Ink drop is not hidden upon release because CustomButton descendants
 // may enter a different ink drop state.
 TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
-  gfx::Point old_cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 
@@ -363,7 +362,6 @@ TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
 // Tests that pressing a button shows and releasing capture hides ink drop.
 // Releasing capture should also reset PRESSED button state to NORMAL.
 TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
-  gfx::Point old_cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop));
 

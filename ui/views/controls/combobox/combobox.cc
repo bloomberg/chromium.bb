@@ -471,7 +471,6 @@ void Combobox::SetInvalid(bool invalid) {
 void Combobox::Layout() {
   PrefixDelegate::Layout();
 
-  gfx::Insets insets = GetInsets();
   int text_button_width = 0;
   int arrow_button_width = 0;
 
@@ -736,7 +735,6 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     selected_index_ = 0;
   base::string16 text = model()->GetItemAt(selected_index_);
 
-  gfx::Size arrow_size = ArrowSize();
   int disclosure_arrow_offset = width() - GetArrowContainerWidth();
 
   const gfx::FontList& font_list = Combobox::GetFontList();

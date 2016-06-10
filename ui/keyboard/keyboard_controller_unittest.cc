@@ -305,7 +305,6 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
 TEST_F(KeyboardControllerTest, FloatingKeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetKeyboardWindow());
-  gfx::Rect screen_bounds = root_window()->bounds();
   root_window()->AddChild(container);
   controller()->SetKeyboardMode(FLOATING);
   container->AddChild(keyboard);

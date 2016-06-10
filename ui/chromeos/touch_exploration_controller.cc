@@ -507,7 +507,6 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     const ui::TouchEvent& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   ui::EventType type = event.type();
-  gfx::PointF location = event.location_f();
   if (type == ui::ET_TOUCH_PRESSED) {
     // A third finger being pressed means that a split tap can no longer go
     // through. The user enters the wait state, Since there has already been
