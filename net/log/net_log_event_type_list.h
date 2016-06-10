@@ -1179,6 +1179,13 @@ EVENT_TYPE(HTTP_TRANSACTION_RESTART_AFTER_ERROR)
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_ALIVE)
 
+// Marks the beginning/end of buffers sent in a net::BidirectionalStream.
+// The following parameters are attached:
+//   {
+//      "num_buffers_coalesced": <number of buffers that were sent together>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED)
+
 // The specified number of bytes were sent on the stream.  Depending on the
 // source of the event, may be logged either once the data is sent, or when it
 // is queued to be sent.
@@ -1212,6 +1219,21 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_RECV_HEADERS)
 //     "headers": <The list of header:value pairs>,
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_RECV_TRAILERS)
+
+// This event is used when stream is successfully negotiated and is ready for
+// sending data and reading data.
+// The following parameters are attached:
+//   {
+//     "request_headers_sent": <boolean>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_READY)
+
+// This event is used when stream has failed.
+// The following parameters are attached:
+//   {
+//     "net_error": <Net error code for the failure>,
+//   }
+EVENT_TYPE(BIDIRECTIONAL_STREAM_FAILED)
 
 // ------------------------------------------------------------------------
 // SpdySession

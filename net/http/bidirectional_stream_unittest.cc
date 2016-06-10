@@ -597,6 +597,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   delegate.reset();
   TestNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
+
   size_t index = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE, NetLog::PHASE_BEGIN);
   // HTTP_STREAM_REQUEST is nested inside in BIDIRECTIONAL_STREAM_ALIVE.
@@ -809,6 +810,37 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
             delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             delegate->GetTotalReceivedBytes());
+
+  TestNetLogEntry::List entries;
+  net_log_.GetEntries(&entries);
+  size_t index = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED,
+      NetLog::PHASE_BEGIN);
+  TestNetLogEntry entry = entries[index];
+  int num_buffers_coalesced = 0;
+  EXPECT_TRUE(entry.params->GetInteger("num_buffers_coalesced",
+                                       &num_buffers_coalesced));
+  EXPECT_EQ(2, num_buffers_coalesced);
+
+  index = ExpectLogContainsSomewhereAfter(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+      NetLog::PHASE_NONE);
+  entry = entries[index];
+  int byte_count = 0;
+  EXPECT_TRUE(entry.params->GetInteger("byte_count", &byte_count));
+  EXPECT_EQ(buf->size(), byte_count);
+
+  index = ExpectLogContainsSomewhereAfter(
+      entries, index + 1, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+      NetLog::PHASE_NONE);
+  entry = entries[index];
+  byte_count = 0;
+  EXPECT_TRUE(entry.params->GetInteger("byte_count", &byte_count));
+  EXPECT_EQ(buf2->size(), byte_count);
+
+  ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED,
+      NetLog::PHASE_END);
 }
 
 // Tests that BidirectionalStreamSpdyImpl::OnClose will complete any remaining
@@ -1225,6 +1257,25 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   EXPECT_EQ(CountWriteBytes(writes, 1), delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             delegate->GetTotalReceivedBytes());
+
+  TestNetLogEntry::List entries;
+  net_log_.GetEntries(&entries);
+
+  size_t index = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_READY, NetLog::PHASE_NONE);
+  TestNetLogEntry entry = entries[index];
+  bool request_headers_sent = false;
+  EXPECT_TRUE(
+      entry.params->GetBoolean("request_headers_sent", &request_headers_sent));
+  EXPECT_TRUE(request_headers_sent);
+
+  index = ExpectLogContainsSomewhere(entries, index,
+                                     NetLog::TYPE_BIDIRECTIONAL_STREAM_FAILED,
+                                     NetLog::PHASE_NONE);
+  entry = entries[index];
+  int net_error = OK;
+  EXPECT_TRUE(entry.params->GetInteger("net_error", &net_error));
+  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, net_error);
 }
 
 INSTANTIATE_TEST_CASE_P(CancelOrDeleteTests,

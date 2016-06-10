@@ -213,6 +213,11 @@ int64_t BidirectionalStream::GetTotalSentBytes() const {
 
 void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
   request_headers_sent_ = request_headers_sent;
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(
+        NetLog::TYPE_BIDIRECTIONAL_STREAM_READY,
+        NetLog::BoolCallback("request_headers_sent", request_headers_sent));
+  }
   delegate_->OnStreamReady(request_headers_sent);
 }
 
@@ -251,10 +256,19 @@ void BidirectionalStream::OnDataSent() {
   DCHECK_EQ(write_buffer_list_.size(), write_buffer_len_list_.size());
 
   if (net_log_.IsCapturing()) {
+    if (write_buffer_list_.size() > 1) {
+      net_log_.BeginEvent(
+          NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED,
+          NetLog::IntCallback("num_buffers_coalesced",
+                              write_buffer_list_.size()));
+    }
     for (size_t i = 0; i < write_buffer_list_.size(); ++i) {
       net_log_.AddByteTransferEvent(
           NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
           write_buffer_len_list_[i], write_buffer_list_[i]->data());
+    }
+    if (write_buffer_list_.size() > 1) {
+      net_log_.EndEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED);
     }
   }
   write_buffer_list_.clear();
@@ -271,6 +285,10 @@ void BidirectionalStream::OnTrailersReceived(const SpdyHeaderBlock& trailers) {
 }
 
 void BidirectionalStream::OnFailed(int status) {
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_FAILED,
+                      NetLog::IntCallback("net_error", status));
+  }
   NotifyFailed(status);
 }
 
