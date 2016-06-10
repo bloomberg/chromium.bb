@@ -1276,7 +1276,7 @@ if (is_chrome_branded) {
       ]
     } else {
       outputs = [
-        "{{bundle_root_dir}}/Deafult Apps/{{source_file_part}}",
+        "{{bundle_root_dir}}/Default Apps/{{source_file_part}}",
       ]
     }
 
