@@ -288,12 +288,15 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
     m_gl->ProduceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, frontColorBufferMailbox->textureInfo.parameters.target, frontColorBufferMailbox->mailbox.name);
     const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
+    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+        m_gl->DescheduleUntilFinishedCHROMIUM();
     m_gl->Flush();
     m_gl->GenSyncTokenCHROMIUM(fenceSync, frontColorBufferMailbox->mailbox.syncToken);
     frontColorBufferMailbox->mailbox.validSyncToken = true;
     frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
     frontColorBufferMailbox->mailbox.textureTarget = frontColorBufferMailbox->textureInfo.parameters.target;
     frontColorBufferMailbox->mailbox.textureSize = WebSize(m_size.width(), m_size.height());
+    frontColorBufferMailbox->mailbox.gpuMemoryBufferId = frontColorBufferMailbox->textureInfo.gpuMemoryBufferId;
     setBufferClearNeeded(true);
 
     // set m_parentDrawingBuffer to make sure 'this' stays alive as long as it has live mailboxes

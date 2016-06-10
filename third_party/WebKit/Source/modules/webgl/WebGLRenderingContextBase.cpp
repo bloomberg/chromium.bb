@@ -1247,6 +1247,7 @@ WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposit
         contextGL()->StencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
     }
 
+    contextGL()->ColorMask(true, true, true, !drawingBuffer()->defaultBufferRequiresAlphaChannelToBePreserved());
     drawingBuffer()->clearFramebuffers(clearMask);
 
     restoreStateAfterClear();

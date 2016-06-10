@@ -188,6 +188,10 @@ public:
     // operations must use a color mask with alpha=GL_FALSE.
     bool requiresAlphaChannelToBePreserved();
 
+    // Similar to requiresAlphaChannelToBePreserved(), but always targets the
+    // default framebuffer.
+    bool defaultBufferRequiresAlphaChannelToBePreserved();
+
     WebLayer* platformLayer();
 
     gpu::gles2::GLES2Interface* contextGL();
@@ -353,10 +357,6 @@ private:
 
     // The format to use when creating a multisampled renderbuffer.
     GLenum getMultisampledRenderbufferFormat();
-
-    // Similar to requiresAlphaChannelToBePreserved(), but always targets the
-    // default framebuffer.
-    bool defaultBufferRequiresAlphaChannelToBePreserved();
 
     const PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled = false;
