@@ -303,9 +303,9 @@ void MessageLoop::RunUntilIdle() {
 void MessageLoop::QuitWhenIdle() {
   DCHECK_EQ(this, current());
   if (run_loop_) {
-    run_loop_->quit_when_idle_received_ = true;
+    run_loop_->QuitWhenIdle();
   } else {
-    NOTREACHED() << "Must be inside Run to call Quit";
+    NOTREACHED() << "Must be inside Run to call QuitWhenIdle";
   }
 }
 

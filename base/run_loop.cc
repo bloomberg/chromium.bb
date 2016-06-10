@@ -51,6 +51,10 @@ void RunLoop::Quit() {
   }
 }
 
+void RunLoop::QuitWhenIdle() {
+  quit_when_idle_received_ = true;
+}
+
 base::Closure RunLoop::QuitClosure() {
   return base::Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr());
 }
