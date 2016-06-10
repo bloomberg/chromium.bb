@@ -40,8 +40,7 @@
 
 namespace extensions {
 
-using content::BrowserThread;
-using content::SocketPermissionRequest;
+namespace {
 
 const char kAddressKey[] = "address";
 const char kPortKey[] = "port";
@@ -53,6 +52,7 @@ const char kSocketIdKey[] = "socketId";
 const char kSocketNotFoundError[] = "Socket not found";
 const char kDnsLookupFailedError[] = "DNS resolution failed";
 const char kPermissionError[] = "App does not have permission";
+const char kPortInvalidError[] = "Port must be a value between 0 and 65535.";
 const char kNetworkListError[] = "Network lookup failed or unsupported";
 const char kTCPSocketBindError[] =
     "TCP socket does not support bind. For TCP server please use listen.";
@@ -65,6 +65,15 @@ const uint16_t kWildcardPort = 0;
 #if defined(OS_CHROMEOS)
 const char kFirewallFailure[] = "Failed to open firewall port";
 #endif  // OS_CHROMEOS
+
+bool IsPortValid(int port) {
+  return port >= 0 && port <= 65535;
+}
+
+}  // namespace
+
+using content::BrowserThread;
+using content::SocketPermissionRequest;
 
 SocketAsyncApiFunction::SocketAsyncApiFunction() {}
 
@@ -271,8 +280,11 @@ bool SocketConnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &hostname_));
   int port;
-  EXTENSION_FUNCTION_VALIDATE(
-      args_->GetInteger(2, &port) && port >= 0 && port <= 65535);
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port));
+  if (!IsPortValid(port)) {
+    error_ = kPortInvalidError;
+    return false;
+  }
   port_ = static_cast<uint16_t>(port);
   return true;
 }
@@ -359,8 +371,11 @@ bool SocketBindFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &address_));
   int port;
-  EXTENSION_FUNCTION_VALIDATE(
-      args_->GetInteger(2, &port) && port >= 0 && port <= 65535);
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port));
+  if (!IsPortValid(port)) {
+    error_ = kPortInvalidError;
+    return false;
+  }
   port_ = static_cast<uint16_t>(port);
   return true;
 }
@@ -607,8 +622,11 @@ bool SocketSendToFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &hostname_));
   int port;
-  EXTENSION_FUNCTION_VALIDATE(
-      args_->GetInteger(3, &port) && port >= 0 && port <= 65535);
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &port));
+  if (!IsPortValid(port)) {
+    error_ = kPortInvalidError;
+    return false;
+  }
   port_ = static_cast<uint16_t>(port);
 
   io_buffer_size_ = data->GetSize();

@@ -49,4 +49,15 @@ TEST_F(SocketUnitTest, Create) {
   ASSERT_TRUE(result.get());
 }
 
+TEST_F(SocketUnitTest, InvalidPort) {
+  const std::string kError = "Port must be a value between 0 and 65535.";
+
+  SocketConnectFunction* connect_function = new SocketConnectFunction();
+  EXPECT_EQ(kError,
+            RunFunctionAndReturnError(connect_function, "[1, \"foo\", -1]"));
+  SocketBindFunction* bind_function = new SocketBindFunction();
+  EXPECT_EQ(kError,
+            RunFunctionAndReturnError(bind_function, "[1, \"foo\", -1]"));
+}
+
 }  // namespace extensions
