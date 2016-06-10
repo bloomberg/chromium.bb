@@ -115,146 +115,11 @@ Frame* MixedContentChecker::inWhichFrameIsContentMixed(Frame* frame, WebURLReque
 }
 
 // static
-MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(WebURLRequest::RequestContext context, Frame* frame)
-{
-    switch (context) {
-    // "Optionally-blockable" mixed content
-    case WebURLRequest::RequestContextAudio:
-    case WebURLRequest::RequestContextFavicon:
-    case WebURLRequest::RequestContextImage:
-    case WebURLRequest::RequestContextVideo:
-        return ContextTypeOptionallyBlockable;
-
-    // Plugins! Oh how dearly we love plugin-loaded content!
-    case WebURLRequest::RequestContextPlugin: {
-        Settings* settings = frame->settings();
-        return settings && settings->strictMixedContentCheckingForPlugin() ? ContextTypeBlockable : ContextTypeOptionallyBlockable;
-    }
-
-    // "Blockable" mixed content
-    case WebURLRequest::RequestContextBeacon:
-    case WebURLRequest::RequestContextCSPReport:
-    case WebURLRequest::RequestContextEmbed:
-    case WebURLRequest::RequestContextEventSource:
-    case WebURLRequest::RequestContextFetch:
-    case WebURLRequest::RequestContextFont:
-    case WebURLRequest::RequestContextForm:
-    case WebURLRequest::RequestContextFrame:
-    case WebURLRequest::RequestContextHyperlink:
-    case WebURLRequest::RequestContextIframe:
-    case WebURLRequest::RequestContextImageSet:
-    case WebURLRequest::RequestContextImport:
-    case WebURLRequest::RequestContextLocation:
-    case WebURLRequest::RequestContextManifest:
-    case WebURLRequest::RequestContextObject:
-    case WebURLRequest::RequestContextPing:
-    case WebURLRequest::RequestContextScript:
-    case WebURLRequest::RequestContextServiceWorker:
-    case WebURLRequest::RequestContextSharedWorker:
-    case WebURLRequest::RequestContextStyle:
-    case WebURLRequest::RequestContextSubresource:
-    case WebURLRequest::RequestContextTrack:
-    case WebURLRequest::RequestContextWorker:
-    case WebURLRequest::RequestContextXMLHttpRequest:
-    case WebURLRequest::RequestContextXSLT:
-        return ContextTypeBlockable;
-
-    // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
-    case WebURLRequest::RequestContextDownload:
-    case WebURLRequest::RequestContextInternal:
-    case WebURLRequest::RequestContextPrefetch:
-        return ContextTypeShouldBeBlockable;
-
-    case WebURLRequest::RequestContextUnspecified:
-        ASSERT_NOT_REACHED();
-    }
-    ASSERT_NOT_REACHED();
-    return ContextTypeBlockable;
-}
-
-// static
-const char* MixedContentChecker::typeNameFromContext(WebURLRequest::RequestContext context)
-{
-    switch (context) {
-    case WebURLRequest::RequestContextAudio:
-        return "audio file";
-    case WebURLRequest::RequestContextBeacon:
-        return "Beacon endpoint";
-    case WebURLRequest::RequestContextCSPReport:
-        return "Content Security Policy reporting endpoint";
-    case WebURLRequest::RequestContextDownload:
-        return "download";
-    case WebURLRequest::RequestContextEmbed:
-        return "plugin resource";
-    case WebURLRequest::RequestContextEventSource:
-        return "EventSource endpoint";
-    case WebURLRequest::RequestContextFavicon:
-        return "favicon";
-    case WebURLRequest::RequestContextFetch:
-        return "resource";
-    case WebURLRequest::RequestContextFont:
-        return "font";
-    case WebURLRequest::RequestContextForm:
-        return "form action";
-    case WebURLRequest::RequestContextFrame:
-        return "frame";
-    case WebURLRequest::RequestContextHyperlink:
-        return "resource";
-    case WebURLRequest::RequestContextIframe:
-        return "frame";
-    case WebURLRequest::RequestContextImage:
-        return "image";
-    case WebURLRequest::RequestContextImageSet:
-        return "image";
-    case WebURLRequest::RequestContextImport:
-        return "HTML Import";
-    case WebURLRequest::RequestContextInternal:
-        return "resource";
-    case WebURLRequest::RequestContextLocation:
-        return "resource";
-    case WebURLRequest::RequestContextManifest:
-        return "manifest";
-    case WebURLRequest::RequestContextObject:
-        return "plugin resource";
-    case WebURLRequest::RequestContextPing:
-        return "hyperlink auditing endpoint";
-    case WebURLRequest::RequestContextPlugin:
-        return "plugin data";
-    case WebURLRequest::RequestContextPrefetch:
-        return "prefetch resource";
-    case WebURLRequest::RequestContextScript:
-        return "script";
-    case WebURLRequest::RequestContextServiceWorker:
-        return "Service Worker script";
-    case WebURLRequest::RequestContextSharedWorker:
-        return "Shared Worker script";
-    case WebURLRequest::RequestContextStyle:
-        return "stylesheet";
-    case WebURLRequest::RequestContextSubresource:
-        return "resource";
-    case WebURLRequest::RequestContextTrack:
-        return "Text Track";
-    case WebURLRequest::RequestContextUnspecified:
-        return "resource";
-    case WebURLRequest::RequestContextVideo:
-        return "video";
-    case WebURLRequest::RequestContextWorker:
-        return "Worker script";
-    case WebURLRequest::RequestContextXMLHttpRequest:
-        return "XMLHttpRequest endpoint";
-    case WebURLRequest::RequestContextXSLT:
-        return "XSLT";
-    }
-    ASSERT_NOT_REACHED();
-    return "resource";
-}
-
-// static
 void MixedContentChecker::logToConsoleAboutFetch(LocalFrame* frame, const KURL& mainResourceUrl, const KURL& url, WebURLRequest::RequestContext requestContext, bool allowed)
 {
     String message = String::format(
         "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an insecure %s '%s'. %s",
-        mainResourceUrl.elidedString().utf8().data(), typeNameFromContext(requestContext), url.elidedString().utf8().data(),
+        mainResourceUrl.elidedString().utf8().data(), WebMixedContent::requestContextName(requestContext), url.elidedString().utf8().data(),
         allowed ? "This content should also be served over HTTPS." : "This request has been blocked; the content must be served over HTTPS.");
     MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
     frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
@@ -267,8 +132,8 @@ void MixedContentChecker::count(Frame* frame, WebURLRequest::RequestContext requ
 
     // Roll blockable content up into a single counter, count unblocked types individually so we
     // can determine when they can be safely moved to the blockable category:
-    ContextType contextType = contextTypeFromContext(requestContext, frame);
-    if (contextType == ContextTypeBlockable) {
+    WebMixedContent::ContextType contextType = WebMixedContent::contextTypeFromRequestContext(requestContext, frame->settings()->strictMixedContentCheckingForPlugin());
+    if (contextType == WebMixedContent::ContextType::Blockable) {
         UseCounter::count(frame, UseCounter::MixedContentBlockable);
         return;
     }
@@ -301,7 +166,7 @@ void MixedContentChecker::count(Frame* frame, WebURLRequest::RequestContext requ
         break;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
     UseCounter::count(frame, feature);
@@ -331,7 +196,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
     // the client checks in order to prevent degrading the site's security UI.
     bool strictMode = mixedFrame->securityContext()->getInsecureRequestPolicy() & kBlockAllMixedContent || settings->strictMixedContentChecking();
 
-    ContextType contextType = contextTypeFromContext(requestContext, mixedFrame);
+    WebMixedContent::ContextType contextType = WebMixedContent::contextTypeFromRequestContext(requestContext, settings->strictMixedContentCheckingForPlugin());
 
     // If we're loading the main resource of a subframe, we need to take a close look at the loaded URL.
     // If we're dealing with a CORS-enabled scheme, then block mixed frames as active content. Otherwise,
@@ -340,16 +205,16 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
     // FIXME: Remove this temporary hack once we have a reasonable API for launching external applications
     // via URLs. http://crbug.com/318788 and https://crbug.com/393481
     if (frameType == WebURLRequest::FrameTypeNested && !SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(url.protocol()))
-        contextType = ContextTypeOptionallyBlockable;
+        contextType = WebMixedContent::ContextType::OptionallyBlockable;
 
     switch (contextType) {
-    case ContextTypeOptionallyBlockable:
+    case WebMixedContent::ContextType::OptionallyBlockable:
         allowed = !strictMode && client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), url);
         if (allowed)
             client->didDisplayInsecureContent();
         break;
 
-    case ContextTypeBlockable: {
+    case WebMixedContent::ContextType::Blockable: {
         // Strictly block subresources that are mixed with respect to
         // their subframes, unless all insecure content is allowed. This
         // is to avoid the following situation: https://a.com embeds
@@ -373,13 +238,13 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         break;
     }
 
-    case ContextTypeShouldBeBlockable:
+    case WebMixedContent::ContextType::ShouldBeBlockable:
         allowed = !strictMode;
         if (allowed)
             client->didDisplayInsecureContent();
         break;
-    case ContextTypeNotMixedContent:
-        ASSERT_NOT_REACHED();
+    case WebMixedContent::ContextType::NotMixedContent:
+        NOTREACHED();
         break;
     };
 
@@ -482,7 +347,7 @@ Frame* MixedContentChecker::effectiveFrameForFrameType(LocalFrame* frame, WebURL
         return frame;
 
     Frame* parentFrame = frame->tree().parent();
-    ASSERT(parentFrame);
+    DCHECK(parentFrame);
     return parentFrame;
 }
 
@@ -496,32 +361,34 @@ void MixedContentChecker::handleCertificateError(LocalFrame* frame, const Resour
     // distinguish mixed content signals from different frames on the
     // same page.
     FrameLoaderClient* client = frame->loader().client();
-    ContextType contextType = MixedContentChecker::contextTypeFromContext(requestContext, effectiveFrame);
-    if (contextType == ContextTypeBlockable) {
+    bool strictMixedContentCheckingForPlugin = effectiveFrame->settings() && effectiveFrame->settings()->strictMixedContentCheckingForPlugin();
+    WebMixedContent::ContextType contextType = WebMixedContent::contextTypeFromRequestContext(requestContext, strictMixedContentCheckingForPlugin);
+    if (contextType == WebMixedContent::ContextType::Blockable) {
         client->didRunContentWithCertificateErrors(response.url(), response.getSecurityInfo());
     } else {
-        // contextTypeFromContext() never returns NotMixedContent (it
+        // contextTypeFromRequestContext() never returns NotMixedContent (it
         // computes the type of mixed content, given that the content is
         // mixed).
-        ASSERT(contextType != ContextTypeNotMixedContent);
+        DCHECK(contextType != WebMixedContent::ContextType::NotMixedContent);
         client->didDisplayContentWithCertificateErrors(response.url(), response.getSecurityInfo());
     }
 }
 
-MixedContentChecker::ContextType MixedContentChecker::contextTypeForInspector(LocalFrame* frame, const ResourceRequest& request)
+WebMixedContent::ContextType MixedContentChecker::contextTypeForInspector(LocalFrame* frame, const ResourceRequest& request)
 {
     Frame* effectiveFrame = effectiveFrameForFrameType(frame, request.frameType());
 
     Frame* mixedFrame = inWhichFrameIsContentMixed(effectiveFrame, request.frameType(), request.url());
     if (!mixedFrame)
-        return ContextTypeNotMixedContent;
+        return WebMixedContent::ContextType::NotMixedContent;
 
     // See comment in shouldBlockFetch() about loading the main resource of a subframe.
     if (request.frameType() == WebURLRequest::FrameTypeNested && !SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())) {
-        return ContextTypeOptionallyBlockable;
+        return WebMixedContent::ContextType::OptionallyBlockable;
     }
 
-    return contextTypeFromContext(request.requestContext(), mixedFrame);
+    bool strictMixedContentCheckingForPlugin = mixedFrame->settings() && mixedFrame->settings()->strictMixedContentCheckingForPlugin();
+    return WebMixedContent::contextTypeFromRequestContext(request.requestContext(), strictMixedContentCheckingForPlugin);
 }
 
 } // namespace blink

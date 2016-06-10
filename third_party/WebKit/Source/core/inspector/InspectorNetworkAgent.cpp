@@ -69,6 +69,7 @@
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebMixedContent.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
@@ -193,15 +194,15 @@ KURL urlWithoutFragment(const KURL& url)
     return result;
 }
 
-String mixedContentTypeForContextType(MixedContentChecker::ContextType contextType)
+String mixedContentTypeForContextType(WebMixedContent::ContextType contextType)
 {
     switch (contextType) {
-    case MixedContentChecker::ContextTypeNotMixedContent:
+    case WebMixedContent::ContextType::NotMixedContent:
         return protocol::Network::Request::MixedContentTypeEnum::None;
-    case MixedContentChecker::ContextTypeBlockable:
+    case WebMixedContent::ContextType::Blockable:
         return protocol::Network::Request::MixedContentTypeEnum::Blockable;
-    case MixedContentChecker::ContextTypeOptionallyBlockable:
-    case MixedContentChecker::ContextTypeShouldBeBlockable:
+    case WebMixedContent::ContextType::OptionallyBlockable:
+    case WebMixedContent::ContextType::ShouldBeBlockable:
         return protocol::Network::Request::MixedContentTypeEnum::OptionallyBlockable;
     }
 
