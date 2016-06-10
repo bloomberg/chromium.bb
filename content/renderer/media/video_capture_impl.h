@@ -120,14 +120,13 @@ class CONTENT_EXPORT VideoCaptureImpl
                         const gfx::Size& size,
                         int buffer_id) override;
   void OnBufferDestroyed(int buffer_id) override;
-  void OnBufferReceived(
-      int buffer_id,
-      base::TimeTicks timestamp,
-      const base::DictionaryValue& metadata,
-      media::VideoPixelFormat pixel_format,
-      media::VideoFrame::StorageType storage_type,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect) override;
+  void OnBufferReceived(int buffer_id,
+                        base::TimeDelta timestamp,
+                        const base::DictionaryValue& metadata,
+                        media::VideoPixelFormat pixel_format,
+                        media::VideoFrame::StorageType storage_type,
+                        const gfx::Size& coded_size,
+                        const gfx::Rect& visible_rect) override;
   void OnStateChanged(VideoCaptureState state) override;
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) override;
@@ -189,8 +188,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   // client to this class via StartCapture().
   media::VideoCaptureParams params_;
 
-  // The device's first captured frame timestamp sent from browser process side.
-  base::TimeTicks first_frame_timestamp_;
+  // The device's first captured frame referecne time sent from browser process
+  // side.
+  base::TimeTicks first_frame_ref_time_;
 
   bool suspended_;
   VideoCaptureState state_;

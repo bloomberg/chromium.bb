@@ -54,8 +54,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
 
   typedef base::Callback<void(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>,
-      const scoped_refptr<media::VideoFrame>&,
-      const base::TimeTicks&)>
+      const scoped_refptr<media::VideoFrame>&)>
       DecodeDoneCB;
 
   // |decode_done_cb| is called on the IO thread when decode succeed. This can
@@ -75,7 +74,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       const uint8_t* data,
       size_t in_buffer_size,
       const media::VideoCaptureFormat& frame_format,
-      const base::TimeTicks& timestamp,
+      base::TimeTicks reference_time,
+      base::TimeDelta timestamp,
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer);
 
   // JpegDecodeAccelerator::Client implementation.

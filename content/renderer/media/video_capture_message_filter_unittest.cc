@@ -43,7 +43,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
   MOCK_METHOD7(OnBufferReceived,
                void(int buffer_id,
-                    base::TimeTicks timestamp,
+                    base::TimeDelta timestamp,
                     const base::DictionaryValue& metadata,
                     media::VideoPixelFormat pixel_format,
                     media::VideoFrame::StorageType storage_type,
@@ -122,8 +122,12 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   VideoCaptureMsg_BufferReady_Params params;
   params.device_id = delegate.device_id();
   params.buffer_id = 22;
-  params.timestamp = base::TimeTicks::FromInternalValue(1);
+  params.timestamp = base::TimeDelta::FromMicroseconds(1);
   params.metadata.SetString("foo", "bar");
+  media::VideoFrameMetadata frame_metadata;
+  frame_metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                              base::TimeTicks::FromInternalValue(1));
+  frame_metadata.MergeInternalValuesInto(&params.metadata);
   params.pixel_format = media::PIXEL_FORMAT_I420;
   params.storage_type = media::VideoFrame::STORAGE_SHMEM;
   params.coded_size = gfx::Size(234, 512);

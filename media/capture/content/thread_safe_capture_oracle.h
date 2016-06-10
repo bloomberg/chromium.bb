@@ -101,7 +101,7 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
       base::TimeTicks capture_begin_time,
       base::TimeDelta estimated_frame_duration,
       const scoped_refptr<VideoFrame>& frame,
-      base::TimeTicks timestamp,
+      base::TimeTicks reference_time,
       bool success);
 
   // Callback invoked once all consumers have finished with a delivered video

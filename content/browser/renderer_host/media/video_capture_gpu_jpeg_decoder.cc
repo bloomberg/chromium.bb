@@ -79,7 +79,8 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     const uint8_t* data,
     size_t in_buffer_size,
     const media::VideoCaptureFormat& frame_format,
-    const base::TimeTicks& timestamp,
+    base::TimeTicks reference_time,
+    base::TimeDelta timestamp,
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(decoder_);
@@ -133,7 +134,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
           out_buffer->mapped_size(),                  // data_size
           out_handle,                                 // handle
           0,                                          // shared_memory_offset
-          base::TimeDelta());                         // timestamp
+          timestamp);                                 // timestamp
   if (!out_frame) {
     base::AutoLock lock(lock_);
     decoder_status_ = FAILED;
@@ -143,10 +144,13 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
   out_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                    frame_format.frame_rate);
 
+  out_frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                                      reference_time);
+
   {
     base::AutoLock lock(lock_);
-    decode_done_closure_ = base::Bind(
-        decode_done_cb_, base::Passed(&out_buffer), out_frame, timestamp);
+    decode_done_closure_ =
+        base::Bind(decode_done_cb_, base::Passed(&out_buffer), out_frame);
   }
   decoder_->Decode(in_buffer, out_frame);
 #else

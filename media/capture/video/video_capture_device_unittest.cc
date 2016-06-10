@@ -112,9 +112,9 @@ class MockClient : public VideoCaptureDevice::Client {
                                 base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
-  void OnIncomingCapturedVideoFrame(std::unique_ptr<Buffer> buffer,
-                                    const scoped_refptr<VideoFrame>& frame,
-                                    base::TimeTicks reference_time) override {
+  void OnIncomingCapturedVideoFrame(
+      std::unique_ptr<Buffer> buffer,
+      const scoped_refptr<VideoFrame>& frame) override {
     DoOnIncomingCapturedVideoFrame();
   }
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(

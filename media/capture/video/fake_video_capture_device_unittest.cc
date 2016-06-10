@@ -101,8 +101,7 @@ class MockClient : public VideoCaptureDevice::Client {
   }
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks reference_time) {
+      const scoped_refptr<media::VideoFrame>& frame) {
     VideoCaptureFormat format(frame->natural_size(), 30.0,
                               PIXEL_FORMAT_I420);
     frame_cb_.Run(format);

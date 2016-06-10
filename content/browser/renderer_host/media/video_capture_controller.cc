@@ -356,8 +356,7 @@ VideoCaptureController::~VideoCaptureController() {
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-    const scoped_refptr<VideoFrame>& frame,
-    const base::TimeTicks& timestamp) {
+    const scoped_refptr<VideoFrame>& frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const int buffer_id = buffer->id();
   DCHECK_NE(buffer_id, VideoCaptureBufferPool::kInvalidId);
@@ -396,10 +395,8 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       if (is_new_buffer)
         DoNewBufferOnIOThread(client, buffer.get(), frame);
 
-      client->event_handler->OnBufferReady(client->controller_id,
-                                           buffer_id,
-                                           frame,
-                                           timestamp);
+      client->event_handler->OnBufferReady(client->controller_id, buffer_id,
+                                           frame);
       const bool inserted =
           client->active_buffers.insert(std::make_pair(buffer_id, frame))
               .second;

@@ -168,10 +168,18 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void BufferReceived(int buffer_id, const gfx::Size& size) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeDelta timestamp = now - base::TimeTicks();
+
+    media::VideoFrameMetadata frame_metadata;
+    frame_metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                                now);
+    base::DictionaryValue metadata;
+    frame_metadata.MergeInternalValuesInto(&metadata);
+
     video_capture_impl_->OnBufferReceived(
-        buffer_id, base::TimeTicks::Now(), base::DictionaryValue(),
-        media::PIXEL_FORMAT_I420, media::VideoFrame::STORAGE_SHMEM, size,
-        gfx::Rect(size));
+        buffer_id, timestamp, metadata, media::PIXEL_FORMAT_I420,
+        media::VideoFrame::STORAGE_SHMEM, size, gfx::Rect(size));
   }
 
   void BufferDestroyed(int buffer_id) {

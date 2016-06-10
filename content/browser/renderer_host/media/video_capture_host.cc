@@ -91,8 +91,7 @@ void VideoCaptureHost::OnBufferDestroyed(VideoCaptureControllerID controller_id,
 void VideoCaptureHost::OnBufferReady(
     VideoCaptureControllerID controller_id,
     int buffer_id,
-    const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& timestamp) {
+    const scoped_refptr<media::VideoFrame>& video_frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (entries_.find(controller_id) == entries_.end())
     return;
@@ -100,7 +99,7 @@ void VideoCaptureHost::OnBufferReady(
   VideoCaptureMsg_BufferReady_Params params;
   params.device_id = controller_id;
   params.buffer_id = buffer_id;
-  params.timestamp = timestamp;
+  params.timestamp = video_frame->timestamp();
   video_frame->metadata()->MergeInternalValuesInto(&params.metadata);
   params.pixel_format = video_frame->format();
   params.storage_type = video_frame->storage_type();

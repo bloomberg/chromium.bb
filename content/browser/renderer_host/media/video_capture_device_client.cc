@@ -225,9 +225,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     } else if (status == VideoCaptureGpuJpegDecoder::INIT_PASSED &&
         frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
         rotation == 0 && !flip) {
-      // TODO(qiangchen): Pass timestamp into DecodeCapturedData.
-      external_jpeg_decoder_->DecodeCapturedData(
-          data, length, frame_format, reference_time, std::move(buffer));
+      external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
+                                                 reference_time, timestamp,
+                                                 std::move(buffer));
       return;
     }
   }
@@ -323,20 +323,19 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     return;
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                frame_format.frame_rate);
-  OnIncomingCapturedVideoFrame(std::move(buffer), frame, reference_time);
+  frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                                  reference_time);
+  OnIncomingCapturedVideoFrame(std::move(buffer), frame);
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     std::unique_ptr<Buffer> buffer,
-    const scoped_refptr<VideoFrame>& frame,
-    base::TimeTicks reference_time) {
-  // TODO(qiangchen): Dive into DoIncomingCapturedVideoFrameOnIOThread to
-  // process timestamp.
+    const scoped_refptr<VideoFrame>& frame) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_, base::Passed(&buffer), frame, reference_time));
+          controller_, base::Passed(&buffer), frame));
 }
 
 std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>

@@ -128,8 +128,7 @@ class CONTENT_EXPORT VideoCaptureController {
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   virtual void DoIncomingCapturedVideoFrameOnIOThread(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame,
-      const base::TimeTicks& timestamp);
+      const scoped_refptr<media::VideoFrame>& frame);
   virtual void DoErrorOnIOThread();
   virtual void DoLogOnIOThread(const std::string& message);
   virtual void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);

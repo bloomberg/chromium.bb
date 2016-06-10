@@ -202,14 +202,15 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     base::TimeTicks capture_begin_time,
     base::TimeDelta estimated_frame_duration,
     const scoped_refptr<VideoFrame>& frame,
-    base::TimeTicks timestamp,
+    base::TimeTicks reference_time,
     bool success) {
   TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.get(), "success",
-                         success, "timestamp", timestamp.ToInternalValue());
+                         success, "timestamp",
+                         reference_time.ToInternalValue());
 
   base::AutoLock guard(lock_);
 
-  if (oracle_.CompleteCapture(frame_number, success, &timestamp)) {
+  if (oracle_.CompleteCapture(frame_number, success, &reference_time)) {
     TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",
                          TRACE_EVENT_SCOPE_THREAD);
 
@@ -224,12 +225,14 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
                                     base::TimeTicks::Now());
     frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
                                     estimated_frame_duration);
+    frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
+                                    reference_time);
 
     frame->AddDestructionObserver(
         base::Bind(&ThreadSafeCaptureOracle::DidConsumeFrame, this,
                    frame_number, frame->metadata()));
 
-    client_->OnIncomingCapturedVideoFrame(std::move(buffer), frame, timestamp);
+    client_->OnIncomingCapturedVideoFrame(std::move(buffer), frame);
   }
 }
 

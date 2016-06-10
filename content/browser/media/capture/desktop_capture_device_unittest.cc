@@ -93,8 +93,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   }
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks reference_time) override {
+      const scoped_refptr<media::VideoFrame>& frame) override {
     DoOnIncomingCapturedVideoFrame();
   }
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(

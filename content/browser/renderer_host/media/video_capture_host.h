@@ -91,8 +91,7 @@ class CONTENT_EXPORT VideoCaptureHost
                          int buffer_id) override;
   void OnBufferReady(VideoCaptureControllerID id,
                      int buffer_id,
-                     const scoped_refptr<media::VideoFrame>& frame,
-                     const base::TimeTicks& timestamp) override;
+                     const scoped_refptr<media::VideoFrame>& frame) override;
   void OnEnded(VideoCaptureControllerID id) override;
 
  private:
