@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
 import android.net.MailTo;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
@@ -21,6 +22,8 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyU
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -29,10 +32,23 @@ import java.util.Arrays;
  * A {@link ContextMenuPopulator} used for showing the default Chrome context menu.
  */
 public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+
+    private static final String TAG = "CCMenuPopulator";
+
+    /**
+     * Defines the context menu modes
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        NORMAL_MODE, /* Default mode */
+        CUSTOM_TAB_MODE, /* Custom tab mode */
+        FULLSCREEN_TAB_MODE /* Full screen mode */
+    })
+    public @interface ContextMenuMode {}
+
     public static final int NORMAL_MODE = 0;
     public static final int CUSTOM_TAB_MODE = 1;
     public static final int FULLSCREEN_TAB_MODE = 2;
-    private static final String TAG = "CCMenuPopulator";
 
     // Items that are included in all context menus.
     private static final int[] BASE_WHITELIST = {
@@ -158,8 +174,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * Builds a {@link ChromeContextMenuPopulator}.
      * @param delegate The {@link ContextMenuItemDelegate} that will be notified with actions
      *                 to perform when menu items are selected.
+     * @param mode Defines the context menu mode
      */
-    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate, int mode) {
+    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate, @ContextMenuMode int mode) {
         mDelegate = delegate;
         mMode = mode;
     }
