@@ -814,8 +814,13 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
     std::string url;
     content::NavigationEntry* entry =
         initiator->GetController().GetLastCommittedEntry();
-    if (entry)
-      url = entry->GetVirtualURL().spec();
+    if (entry) {
+      url::Replacements<char> url_sanitizer;
+      url_sanitizer.ClearUsername();
+      url_sanitizer.ClearPassword();
+
+      url = entry->GetVirtualURL().ReplaceComponents(url_sanitizer).spec();
+    }
     settings->SetString(printing::kSettingHeaderFooterURL, url);
   }
 
