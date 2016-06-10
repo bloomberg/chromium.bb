@@ -123,7 +123,7 @@ public:
     {
         std::unique_ptr<protocol::ListValue> result = ListValue::create();
         for (auto& item : m_vector)
-            result->pushValue(toValue(item.get()));
+            result->pushValue(toValue(item));
         return result;
     }
 
