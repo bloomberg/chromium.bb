@@ -539,7 +539,11 @@ if (enable_java_templates) {
                                "testonly",
                              ])
       script = "//build/android/gyp/proguard.py"
-      _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
+      if (defined(invoker.proguard_jar_path)) {
+        _proguard_jar_path = invoker.proguard_jar_path
+      } else {
+        _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
+      }
       _output_jar_path = invoker.output_jar_path
       inputs = [
         _proguard_jar_path,

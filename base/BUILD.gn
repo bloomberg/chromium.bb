@@ -2372,6 +2372,11 @@ if (is_android) {
       "android/java/templates/BuildConfig.template",
     ]
     package_name = "org/chromium/base"
+
+    defines = []
+    if (!is_java_debug) {
+      defines += [ "NDEBUG" ]
+    }
   }
 
   # GYP: //base/base.gyp:base_native_libraries_gen

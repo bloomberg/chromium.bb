@@ -15,6 +15,7 @@ import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 
 import java.lang.reflect.Field;
@@ -158,6 +159,8 @@ public class ChromeStrictMode {
      * Turn on StrictMode detection based on build and command-line switches.
      */
     @UiThread
+    // FindBugs doesn't like conditionals with compile time results
+    @SuppressFBWarnings("UCF_USELESS_CONTROL_FLOW_NEXT_LINE")
     public static void configureStrictMode() {
         assert ThreadUtils.runningOnUiThread();
         if (sIsStrictModeAlreadyConfigured) {
@@ -172,7 +175,7 @@ public class ChromeStrictMode {
 
         CommandLine commandLine = CommandLine.getInstance();
         if ("eng".equals(Build.TYPE)
-                || BuildConfig.sIsDebug
+                || BuildConfig.IS_DEBUG
                 || ChromeVersionInfo.isLocalBuild()
                 || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
             turnOnDetection(threadPolicy, vmPolicy);
@@ -192,7 +195,7 @@ public class ChromeStrictMode {
         // closely monitor this on dev channel.
         boolean enableStrictModeWatch =
                 (ChromeVersionInfo.isDevBuild() && Math.random() < UPLOAD_PROBABILITY);
-        if ((ChromeVersionInfo.isLocalBuild() && !BuildConfig.sIsDebug) || enableStrictModeWatch) {
+        if ((ChromeVersionInfo.isLocalBuild() && !BuildConfig.IS_DEBUG) || enableStrictModeWatch) {
             turnOnDetection(threadPolicy, vmPolicy);
             initializeStrictModeWatch();
         }

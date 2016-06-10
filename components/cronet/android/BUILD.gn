@@ -341,7 +341,7 @@ android_apk("cronet_sample_apk") {
   ]
 
   run_findbugs_override = true
-  if (!is_debug) {
+  if (!is_java_debug) {
     proguard_enabled = true
     proguard_configs = [
       "proguard.cfg",
@@ -380,7 +380,7 @@ instrumentation_test_apk("cronet_sample_test_apk") {
   additional_apks = [ "//net/android:net_test_support_apk" ]
 
   run_findbugs_override = true
-  proguard_enabled = !is_debug
+  proguard_enabled = !is_java_debug
 }
 
 generate_jni("cronet_tests_jni_headers") {

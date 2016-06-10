@@ -96,6 +96,11 @@ if (is_android) {
     # Enables verbose proguard output (summaries and unfiltered output).
     proguard_verbose = false
 
+    # Java debug on Android. Having this on enables multidexing, and turning it
+    # off will enable proguard. To access this flag from within Java code, look
+    # at BuildConfig.IS_DEBUG, which is wired to this arg.
+    is_java_debug = is_debug
+
     # Set to true to enable the Errorprone compiler
     use_errorprone_java_compiler = false
 
@@ -116,7 +121,7 @@ if (is_android) {
     enable_incremental_javac = false
 
     # Speed up dexing using dx --incremental.
-    enable_incremental_dx = is_debug
+    enable_incremental_dx = is_java_debug
 
     # Neither of these should ever be used for release builds since they are
     # somewhat experimental and dx --incremental is known to not produce

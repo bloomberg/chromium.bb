@@ -1414,9 +1414,11 @@ if (enable_java_templates) {
   #   requires_sdk_api_level_23: If defined and true, the apk is intended for
   #     installation only on Android M or later. In these releases the system
   #     linker does relocation unpacking, so we can enable it unconditionally.
-  #   secondary_native_libs: the path of native libraries for secondary app abi.
+  #   secondary_native_libs: The path of native libraries for secondary app abi.
   #   run_findbugs_override: Forces run_findbugs on or off. If undefined, the
   #     default will use the build arg run_findbugs.
+  #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
+  #     the proguard used will be the checked in one in //third_party/proguard.
   #
   # Example
   #   android_apk("foo_apk") {
@@ -1574,7 +1576,7 @@ if (enable_java_templates) {
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     if (_proguard_enabled) {
-      _proguard_jar_path = "$base_path.proguard.jar"
+      _proguard_output_jar_path = "$base_path.proguard.jar"
     }
 
     _emma_never_instrument = defined(invoker.testonly) && invoker.testonly
@@ -1609,7 +1611,7 @@ if (enable_java_templates) {
 
       proguard_enabled = _proguard_enabled
       if (_proguard_enabled) {
-        proguard_info = "$_proguard_jar_path.info"
+        proguard_info = "$_proguard_output_jar_path.info"
       }
 
       native_libs = _native_libs
@@ -1695,6 +1697,9 @@ if (enable_java_templates) {
         if (enable_multidex) {
           defines += [ "ENABLE_MULTIDEX" ]
         }
+        if (!is_java_debug) {
+          defines += [ "NDEBUG" ]
+        }
       }
       _srcjar_deps += [ ":${_template_name}__build_config_java" ]
     }
@@ -1766,7 +1771,11 @@ if (enable_java_templates) {
       }
       _proguard_target = "${_template_name}__proguard"
       proguard(_proguard_target) {
-        forward_variables_from(invoker, [ "alternative_android_sdk_jar" ])
+        forward_variables_from(invoker,
+                               [
+                                 "alternative_android_sdk_jar",
+                                 "proguard_jar_path",
+                               ])
         deps = [
           ":$build_config_target",
           ":$java_target",
@@ -1777,7 +1786,7 @@ if (enable_java_templates) {
                    _jar_path,
                  ] + _proguard_configs
 
-        output_jar_path = _proguard_jar_path
+        output_jar_path = _proguard_output_jar_path
         _rebased_proguard_configs =
             rebase_path(_proguard_configs, root_build_dir)
         args = [
@@ -1797,7 +1806,7 @@ if (enable_java_templates) {
           args += [ "--tested-apk-info=@FileArg($_rebased_apk_under_test_build_config:deps_info:proguard_info)" ]
         }
       }
-      _dex_sources = [ _proguard_jar_path ]
+      _dex_sources = [ _proguard_output_jar_path ]
       _dex_deps = [ ":$_proguard_target" ]
     } else {
       if (enable_multidex) {

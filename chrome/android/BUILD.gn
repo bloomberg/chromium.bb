@@ -561,7 +561,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//net/android:net_test_support_apk",
   ]
   isolate_file = "../chrome_public_test_apk.isolate"
-  proguard_enabled = !is_debug
+  proguard_enabled = !is_java_debug
 }
 
 android_library("chrome_sync_shell_test_apk_java") {
@@ -599,5 +599,5 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     ":chrome_sync_shell_test_apk_java",
     ":chrome_sync_shell_test_apk_manifest",
   ]
-  proguard_enabled = !is_debug
+  proguard_enabled = !is_java_debug
 }
