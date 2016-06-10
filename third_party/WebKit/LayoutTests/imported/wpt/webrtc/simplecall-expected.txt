@@ -1,5 +1,6 @@
 CONSOLE ERROR: line 38: Uncaught ReferenceError: RTCPeerConnection is not defined
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: RTCPeerConnection is not defined
+TIMEOUT Can set up a basic WebRTC call. Test timed out
 Harness: the test ran to completion.
 

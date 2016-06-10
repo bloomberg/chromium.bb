@@ -105,15 +105,15 @@
                 " , harness_status.message = " +
                 harness_status.message +
                 "\n";
-        } else {
-            // Iterate through tests array and build string that contains
-            // results for all tests.
-            for (var i = 0; i < tests.length; ++i) {
-                resultStr += convertResult(tests[i].status) + " " +
-                    sanitize(tests[i].name) + " " +
-                    sanitize(tests[i].message) + "\n";
-            }
         }
+        // Iterate through tests array and build string that contains
+        // results for all tests.
+        for (var i = 0; i < tests.length; ++i) {
+            resultStr += convertResult(tests[i].status) + " " +
+                sanitize(tests[i].name) + " " +
+                sanitize(tests[i].message) + "\n";
+        }
+
         resultStr += "Harness: the test ran to completion.\n";
 
         // Set results element's textContent to the results string.
