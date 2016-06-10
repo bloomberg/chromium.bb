@@ -141,25 +141,31 @@ class WebMediaPlayerImplTest : public testing::Test {
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
+  }
+
+  WebMediaPlayerImpl::PlayState ComputePlayStateSuspended() {
+    wmpi_->is_idle_ = false;
+    wmpi_->must_suspend_ = false;
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputeBackgroundedPlayState() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true);
   }
 
   WebMediaPlayerImpl::PlayState ComputeIdlePlayState() {
     wmpi_->is_idle_ = true;
     wmpi_->must_suspend_ = false;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputeMustSuspendPlayState() {
     wmpi_->is_idle_ = false;
     wmpi_->must_suspend_ = true;
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false);
   }
 
   // "Renderer" thread.
@@ -241,7 +247,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_AfterMetadata_AudioOnly) {
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_FALSE(state.is_suspended);
 
-  // Background suspend is not enabled for audio-only.
+  SetPaused(false);
   state = ComputeBackgroundedPlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
@@ -319,6 +325,14 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing_AudioOnly) {
   EXPECT_TRUE(state.is_memory_reporting_enabled);
   EXPECT_FALSE(state.is_suspended);
 
+  // Backgrounding a paused audio only player should suspend, but keep the
+  // session alive for user interactions.
+  SetPaused(true);
+  state = ComputeBackgroundedPlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_TRUE(state.is_suspended);
+
   state = ComputeMustSuspendPlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
@@ -367,6 +381,58 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Ended) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::ENDED, state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_TRUE(state.is_suspended);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_Suspended) {
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+
+  // Suspended players should be resumed unless we have reached the appropriate
+  // ready state and are not seeking.
+  SetPaused(true);
+  state = ComputePlayStateSuspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+
+  SetPaused(false);
+  state = ComputePlayStateSuspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+
+  // Paused players should stay suspended.
+  SetPaused(true);
+  state = ComputePlayStateSuspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_TRUE(state.is_suspended);
+
+  // Playing players should resume into the playing state.
+  SetPaused(false);
+  state = ComputePlayStateSuspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+
+  // If seeking, the previously suspended state does not matter; the player
+  // should always be resumed.
+  SetSeeking(true);
+
+  SetPaused(true);
+  state = ComputePlayStateSuspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED_BUT_NOT_IDLE,
+            state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+
+  SetPaused(false);
+  state = ComputePlayStateSuspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
 }
 
 }  // namespace media

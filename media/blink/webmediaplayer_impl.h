@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "media/base/media_tracks.h"
 #include "media/base/pipeline_impl.h"
@@ -317,6 +318,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_remote,
+                                             bool is_suspended,
                                              bool is_backgrounded);
   void SetDelegateState(DelegateState new_state);
   void SetMemoryReportingState(bool is_memory_reporting_enabled);
@@ -328,6 +330,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // accessed on the media thread.
   void ReportMemoryUsage();
   void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
+
+  // Called during OnHidden() when we want a suspended player to enter the
+  // paused state after some idle timeout.
+  void ScheduleIdlePauseTimer();
 
   blink::WebLocalFrame* frame_;
 
@@ -501,6 +507,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // state will be set to YES or NO respectively if a frame is available.
   enum class CanSuspendState { UNKNOWN, YES, NO };
   CanSuspendState can_suspend_state_;
+
+  // Called some-time after OnHidden() if the media was suspended in a playing
+  // state as part of the call to OnHidden().
+  base::OneShotTimer background_pause_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

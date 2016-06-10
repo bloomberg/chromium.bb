@@ -1116,11 +1116,16 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   UpdatePlayState();
+
+  // Schedule suspended playing media to be paused if the user doesn't come back
+  // to it within some timeout period to avoid any autoplay surprises.
+  ScheduleIdlePauseTimer();
 }
 
 void WebMediaPlayerImpl::OnShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   must_suspend_ = false;
+  background_pause_timer_.Stop();
   UpdatePlayState();
 }
 
@@ -1411,10 +1416,11 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 #else
   bool is_remote = false;
 #endif
+  bool is_suspended = pipeline_controller_.IsSuspended();
   bool is_backgrounded =
       IsBackgroundedSuspendEnabled() && delegate_ && delegate_->IsHidden();
-  PlayState state =
-      UpdatePlayState_ComputePlayState(is_remote, is_backgrounded);
+  PlayState state = UpdatePlayState_ComputePlayState(is_remote, is_suspended,
+                                                     is_backgrounded);
   SetDelegateState(state.delegate_state);
   SetMemoryReportingState(state.is_memory_reporting_enabled);
   SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
@@ -1505,6 +1511,7 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
 
 WebMediaPlayerImpl::PlayState
 WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
+                                                     bool is_suspended,
                                                      bool is_backgrounded) {
   PlayState result;
 
@@ -1519,8 +1526,13 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   bool have_future_data =
       highest_ready_state_ >= WebMediaPlayer::ReadyStateHaveFutureData;
 
-  // Background suspend is not enabled for audio-only players.
+  // Background suspend is not enabled for audio-only players unless paused,
+  // though in the case of audio-only the session should be kept.
   bool background_suspended = is_backgrounded && have_metadata && hasVideo();
+
+  // The |paused_| state is not reliable until we |have_future_data|.
+  bool background_pause_suspended =
+      is_backgrounded && have_future_data && paused_;
 
   // Idle suspend is enabled once there is future data. We don't want to idle
   // suspend before that because play() may never be triggered to leave the idle
@@ -1536,7 +1548,10 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
 
   // Combined suspend state.
   result.is_suspended =
-      is_remote || must_suspend_ || idle_suspended || background_suspended;
+      is_remote || must_suspend_ || idle_suspended || background_suspended ||
+      background_pause_suspended ||
+      // If we're already suspended, see if we can wait for user interaction.
+      (is_suspended && have_future_data && paused_ && !seeking_);
 
   // We do not treat |playback_rate_| == 0 as paused. For the media session,
   // being paused implies displaying a play button, which is incorrect in this
@@ -1574,7 +1589,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
     result.delegate_state = DelegateState::PLAYING;
   }
 
-  // It's not  critical if some cases where memory usage can change are missed,
+  // It's not critical if some cases where memory usage can change are missed,
   // since media memory changes are usually gradual.
   result.is_memory_reporting_enabled =
       can_play && !result.is_suspended && !paused_;
@@ -1620,6 +1635,24 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const int64_t delta = current_memory_usage - last_reported_memory_usage_;
   last_reported_memory_usage_ = current_memory_usage;
   adjust_allocated_memory_cb_.Run(delta);
+}
+
+void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
+  // Only schedule the pause timer if we're playing and are suspended. We use
+  // delegate state as a proxy for suspended here since the suspension may be in
+  // flight at the time of this call.
+  if (paused_ || delegate_state_ != DelegateState::GONE)
+    return;
+
+#if defined(OS_ANDROID)
+  // Remote players will be suspended and locally paused.
+  if (isRemote())
+    return;
+#endif
+
+  // Idle timeout chosen arbitrarily.
+  background_pause_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(5),
+                                this, &WebMediaPlayerImpl::OnPause);
 }
 
 }  // namespace media
