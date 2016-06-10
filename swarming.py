@@ -993,7 +993,7 @@ def CMDbot_delete(parser, args):
       help='Do not prompt for confirmation')
   options, args = parser.parse_args(args)
   if not args:
-    parser.error('Please specific bots to delete')
+    parser.error('Please specify bots to delete')
 
   bots = sorted(args)
   if not options.force:
@@ -1077,6 +1077,20 @@ def CMDbots(parser, args):
         print '  %s' % json.dumps(dimensions, sort_keys=True)
         if bot.get('task_id'):
           print '  task: %s' % bot['task_id']
+  return 0
+
+
+@subcommand.usage('task_id')
+def CMDcancel(parser, args):
+  """Cancels a task."""
+  options, args = parser.parse_args(args)
+  if not args:
+    parser.error('Please specify the task to cancel')
+  for task_id in args:
+    url = '%s/_ah/api/swarming/v1/task/%s/cancel' % (options.swarming, task_id)
+    if net.url_read_json(url, data={'task_id': task_id}, method='POST') is None:
+      print('Deleting %s failed. Probably already gone' % task_id)
+      return 1
   return 0
 
 
