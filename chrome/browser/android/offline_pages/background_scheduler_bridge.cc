@@ -8,7 +8,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/background/request_coordinator.h"
 #include "jni/BackgroundSchedulerBridge_jni.h"
 
@@ -21,7 +21,7 @@ namespace {
 
 // C++ callback that delegates to Java callback.
 void ProcessingDoneCallback(
-    const ScopedJavaGlobalRef<jobject>& j_callback_obj, jboolean result) {
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj, bool result) {
   base::android::RunCallbackAndroid(j_callback_obj, result);
 }
 
@@ -34,6 +34,18 @@ static jboolean StartProcessing(
     const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
+
+  // Lookup/create RequestCoordinator KeyedService and call StartProcessing on
+  // it with bound j_callback_obj.
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetInstance()->
+      GetForBrowserContext(profile);
+  DVLOG(2) << "resource_coordinator: " << coordinator;
+  coordinator->StartProcessing(
+      base::Bind(&ProcessingDoneCallback, j_callback_ref));
+
+
   base::Bind(&ProcessingDoneCallback, j_callback_ref);
   // TODO(dougarnett): lookup/create RequestCoordinator KeyedService
   // and call StartProcessing on it with bound j_callback_obj.
