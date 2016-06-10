@@ -530,7 +530,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK_EQ([notification object], [self window]);
   DCHECK(browser_->tab_strip_model()->empty());
-  windowShim_->OnWindowWillClose();
   [savedRegularWindow_ close];
   // We delete statusBubble here because we need to kill off the dependency
   // that its window has on our window before our window goes away.

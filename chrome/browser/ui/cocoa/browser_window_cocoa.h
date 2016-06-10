@@ -173,9 +173,6 @@ class BrowserWindowCocoa
   // the window's title to reflect that.
   void UpdateAlertState(TabAlertState alert_state);
 
-  // Called when the controller's window invokes -windowWillClose:.
-  void OnWindowWillClose();
-
   // Returns the cocoa-world BrowserWindowController
   BrowserWindowController* cocoa_controller() { return controller_; }
 
@@ -203,10 +200,6 @@ class BrowserWindowCocoa
   // which can be audio playing, muting or none (determined by alert state of
   // tabs.
   TabAlertState alert_state_;
-
-  // True when the controlled window invokes -windowWillClose:, and it may no
-  // longer be safe to access [controller_ window].
-  bool window_closed_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_
