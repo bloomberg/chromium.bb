@@ -130,14 +130,14 @@ void View::ViewCreated(mojom::ViewPtr view,
                        bool user_gesture) {
   if (delegate_) {
     delegate_->ViewCreated(
-        base::WrapUnique(new View(std::move(view), std::move(request))),
+        this, base::WrapUnique(new View(std::move(view), std::move(request))),
         is_popup, initial_bounds, user_gesture);
   }
 }
 
 void View::Close() {
   if (delegate_)
-    delegate_->Close();
+    delegate_->Close(this);
 }
 
 void View::NavigationPending(mojom::NavigationEntryPtr entry) {

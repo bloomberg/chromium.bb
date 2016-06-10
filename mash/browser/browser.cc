@@ -38,6 +38,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -50,6 +51,246 @@ void EnableButton(views::CustomButton* button, bool enabled) {
   button->SetState(enabled ? views::Button::STATE_NORMAL
                            : views::Button::STATE_DISABLED);
 }
+
+class Tab;
+
+class TabStripObserver {
+ public:
+  virtual void OnTabAdded(Tab* added) {}
+  virtual void OnTabRemoved(Tab* removed) {}
+  virtual void OnTabSelected(Tab* selected) {}
+};
+
+class Tab : public views::LabelButton,
+            public navigation::ViewObserver,
+            public TabStripObserver {
+ public:
+  class Background : public views::Background {
+   public:
+    explicit Background(Tab* tab) : tab_(tab) {}
+    ~Background() override {}
+
+   private:
+    // views::Background:
+    void Paint(gfx::Canvas* canvas, views::View* view) const override {
+      DCHECK_EQ(view, tab_);
+      SkColor bg = tab_->selected() ? SK_ColorGRAY : SK_ColorLTGRAY;
+      gfx::Rect lb = view->GetLocalBounds();
+      canvas->FillRect(lb, bg);
+      if (!tab_->selected()) {
+        lb.set_y(lb.bottom() - 1);
+        lb.set_height(1);
+        canvas->FillRect(lb, SK_ColorGRAY);
+      }
+    }
+
+    Tab* tab_;
+
+    DISALLOW_COPY_AND_ASSIGN(Background);
+  };
+
+  Tab(std::unique_ptr<navigation::View> view,
+      views::ButtonListener* listener)
+      : views::LabelButton(listener, base::ASCIIToUTF16("Blank")),
+        view_(std::move(view)) {
+    view_->SetResizerSize(gfx::Size(16, 16));
+    view_->AddObserver(this);
+    set_background(new Background(this));
+  }
+  ~Tab() override {
+    view_->RemoveObserver(this);
+  }
+
+  bool selected() const { return selected_; }
+
+  mus::Window* window() { return window_; }
+  void SetWindow(mus::Window* window) {
+    window_ = window;
+    window_->SetVisible(selected_);
+    view_->EmbedInWindow(window_);
+  }
+  navigation::View* view() { return view_.get(); }
+
+ private:
+  // views::View:
+  gfx::Size GetPreferredSize() const override {
+    gfx::Size ps = views::LabelButton::GetPreferredSize();
+    ps.set_width(180);
+    return ps;
+  }
+
+  // navigation::ViewObserver:
+  void NavigationStateChanged(navigation::View* view) override {
+    if (!view->title().empty())
+      SetText(view->title());
+  }
+
+  // TabStripObserver:
+  void OnTabSelected(Tab* selected) override {
+    selected_ = selected == this;
+    SetTextColor(views::Button::STATE_NORMAL,
+                 selected_ ? SK_ColorWHITE : SK_ColorBLACK);
+    SetTextColor(views::Button::STATE_HOVERED,
+                 selected_ ? SK_ColorWHITE : SK_ColorBLACK);
+    SetTextColor(views::Button::STATE_PRESSED,
+                 selected_ ? SK_ColorWHITE : SK_ColorBLACK);
+    if (window_)
+      window_->SetVisible(selected_);
+  }
+
+  mus::Window* window_ = nullptr;
+  std::unique_ptr<navigation::View> view_;
+  bool selected_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(Tab);
+};
+
+class TabStrip : public views::View,
+                 public views::ButtonListener {
+ public:
+  class Delegate {
+   public:
+    virtual void NewTab() = 0;
+  };
+
+  explicit TabStrip(Delegate* delegate)
+    : delegate_(delegate),
+      tab_container_(new views::View),
+      new_tab_button_(
+          new views::LabelButton(this, base::ASCIIToUTF16("+"))) {
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 5, 0, 0);
+    layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+    layout->SetDefaultFlex(0);
+    SetLayoutManager(layout);
+
+    views::BoxLayout* tab_container_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    tab_container_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+    tab_container_layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+    tab_container_layout->SetDefaultFlex(0);
+    tab_container_->SetLayoutManager(tab_container_layout);
+    AddChildView(tab_container_);
+    layout->SetFlexForView(tab_container_, 1);
+    AddChildView(new_tab_button_);
+  }
+  ~TabStrip() override {
+    for (auto tab : tabs_)
+      RemoveObserver(tab);
+  }
+
+  void SetContainerWindow(mus::Window* container) {
+    DCHECK(!container_);
+    container_ = container;
+    for (auto tab : tabs_) {
+      mus::Window* window = container_->window_tree()->NewWindow();
+      container_->AddChild(window);
+      tab->SetWindow(window);
+    }
+  }
+
+  void AddTab(std::unique_ptr<navigation::View> view) {
+    selected_index_ = static_cast<int>(tabs_.size());
+    Tab* tab = new Tab(std::move(view), this);
+    // We won't have a WindowTree until we're added to a view hierarchy.
+    if (container_) {
+      mus::Window* window = container_->window_tree()->NewWindow();
+      container_->AddChild(window);
+      tab->SetWindow(window);
+    }
+    AddObserver(tab);
+    tabs_.push_back(tab);
+    tab_container_->AddChildView(tab);
+    FOR_EACH_OBSERVER(TabStripObserver, observers_, OnTabAdded(tab));
+    SelectTab(tab);
+  }
+
+  void CloseTabForView(navigation::View* view) {
+    for (auto it = tabs_.begin(); it != tabs_.end(); ++it) {
+      Tab* tab = *it;
+      if (tab->view() == view) {
+        CloseTab(tab);
+        break;
+      }
+    }
+  }
+
+  void CloseTab(Tab* tab) {
+    auto it = std::find(tabs_.begin(), tabs_.end(), tab);
+    int tab_index = static_cast<int>(it - tabs_.begin());
+    if (tab_index < selected_index_)
+      --selected_index_;
+    DCHECK(it != tabs_.end());
+    tabs_.erase(it);
+    RemoveObserver(tab);
+    tab_container_->RemoveChildView(tab);
+    if (tab->selected()) {
+      int next_selected_index = selected_index_;
+      if (selected_index_ == static_cast<int>(tabs_.size()))
+        --next_selected_index;
+      SelectTab(tabs_[next_selected_index]);
+    }
+    Layout();
+    FOR_EACH_OBSERVER(TabStripObserver, observers_, OnTabRemoved(tab));
+    delete tab;
+  }
+
+  bool empty() const { return tabs_.empty(); }
+
+  void SelectTab(Tab* tab) {
+    auto it = std::find(tabs_.begin(), tabs_.end(), tab);
+    DCHECK(it != tabs_.end());
+    selected_index_ = it - tabs_.begin();
+    FOR_EACH_OBSERVER(TabStripObserver, observers_, OnTabSelected(tab));
+  }
+  Tab* selected_tab() {
+    return selected_index_ != -1 ? tabs_[selected_index_] : nullptr;
+  }
+
+  void AddObserver(TabStripObserver* observer) {
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(TabStripObserver* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
+ private:
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override {
+    gfx::Rect lb = GetLocalBounds();
+    lb.set_y(lb.bottom() - 1);
+    lb.set_height(1);
+    canvas->FillRect(lb, SK_ColorGRAY);
+  }
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    auto it = std::find(tabs_.begin(), tabs_.end(), sender);
+    if (it != tabs_.end()) {
+      if (event.IsControlDown())
+        CloseTab(*it);
+      else
+        SelectTab(*it);
+    }
+    else if (sender == new_tab_button_ && delegate_)
+      delegate_->NewTab();
+  }
+
+  Delegate* delegate_;
+  views::View* tab_container_;
+  views::LabelButton* new_tab_button_;
+  std::vector<Tab*> tabs_;
+  int selected_index_ = -1;
+  base::ObserverList<TabStripObserver> observers_;
+  mus::Window* container_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TabStrip);
+};
 
 class NavMenuModel : public ui::MenuModel {
  public:
@@ -282,6 +523,8 @@ class Throbber : public views::View {
 class UI : public views::WidgetDelegateView,
            public views::ButtonListener,
            public views::TextfieldController,
+           public TabStrip::Delegate,
+           public TabStripObserver,
            public navigation::ViewDelegate,
            public navigation::ViewObserver,
            public NavButton::ModelProvider,
@@ -292,13 +535,10 @@ class UI : public views::WidgetDelegateView,
   UI(Browser* browser, Type type, std::unique_ptr<navigation::View> view)
       : browser_(browser),
         type_(type),
-        back_button_(new NavButton(NavButton::Type::BACK,
-                                   this,
-                                   this,
+        tab_strip_(new TabStrip(this)),
+        back_button_(new NavButton(NavButton::Type::BACK, this, this,
                                    base::ASCIIToUTF16("Back"))),
-        forward_button_(new NavButton(NavButton::Type::FORWARD,
-                                      this,
-                                      this,
+        forward_button_(new NavButton(NavButton::Type::FORWARD, this, this,
                                       base::ASCIIToUTF16("Forward"))),
         reload_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Reload"))),
@@ -306,13 +546,13 @@ class UI : public views::WidgetDelegateView,
         debug_button_(new views::LabelButton(this, base::ASCIIToUTF16("DV"))),
         throbber_(new Throbber),
         progress_bar_(new ProgressBar),
-        debug_view_(new DebugView),
-        view_(std::move(view)) {
+        debug_view_(new DebugView) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     back_button_->set_request_focus_on_press(false);
     forward_button_->set_request_focus_on_press(false);
     reload_button_->set_request_focus_on_press(false);
+    AddChildView(tab_strip_);
     AddChildView(back_button_);
     AddChildView(forward_button_);
     AddChildView(reload_button_);
@@ -321,29 +561,28 @@ class UI : public views::WidgetDelegateView,
     AddChildView(throbber_);
     AddChildView(progress_bar_);
     AddChildView(debug_view_);
-    debug_view_->set_view(view_.get());
-    view_->set_delegate(this);
-    view_->AddObserver(this);
-    view_->SetResizerSize(gfx::Size(16, 16));
+
+    tab_strip_->AddObserver(this);
+    tab_strip_->AddTab(std::move(view));
   }
   ~UI() override {
-    view_->RemoveObserver(this);
-    view_->set_delegate(nullptr);
     browser_->RemoveWindow(GetWidget());
   }
 
-  void NavigateTo(const GURL& url) { view_->NavigateToURL(url); }
+  void NavigateTo(const GURL& url) {
+    selected_view()->NavigateToURL(url);
+  }
 
  private:
   // Overridden from views::WidgetDelegate:
   views::View* GetContentsView() override { return this; }
   base::string16 GetWindowTitle() const override {
     // TODO(beng): use resources.
-    if (view_->title().empty())
+    if (selected_view()->title().empty())
       return base::ASCIIToUTF16("Browser");
     base::string16 format = base::ASCIIToUTF16("%s - Browser");
     base::ReplaceFirstSubstringAfterOffset(&format, 0, base::ASCIIToUTF16("%s"),
-                                           view_->title());
+                                           selected_view()->title());
     return format;
   }
   bool CanResize() const override { return true; }
@@ -353,14 +592,14 @@ class UI : public views::WidgetDelegateView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == back_button_) {
-      view_->GoBack();
+      selected_view()->GoBack();
     } else if (sender == forward_button_) {
-      view_->GoForward();
+      selected_view()->GoForward();
     } else if (sender == reload_button_) {
-      if (view_->is_loading())
-        view_->Stop();
+      if (selected_view()->is_loading())
+        selected_view()->Stop();
       else
-        view_->Reload(false);
+        selected_view()->Reload(false);
     } else if (sender == debug_button_) {
       ToggleDebugView();
     }
@@ -369,10 +608,16 @@ class UI : public views::WidgetDelegateView,
   // Overridden from views::View:
   void Layout() override {
     gfx::Rect local_bounds = GetLocalBounds();
+
+    gfx::Size ps = tab_strip_->GetPreferredSize();
+    tab_strip_->SetBoundsRect(
+        gfx::Rect(0, 5, local_bounds.width(), ps.height()));
+
     gfx::Rect bounds = local_bounds;
+    bounds.set_y(tab_strip_->bounds().bottom());
     bounds.Inset(5, 5);
 
-    gfx::Size ps = back_button_->GetPreferredSize();
+    ps = back_button_->GetPreferredSize();
     back_button_->SetBoundsRect(
         gfx::Rect(bounds.x(), bounds.y(), ps.width(), ps.height()));
     ps = forward_button_->GetPreferredSize();
@@ -424,6 +669,8 @@ class UI : public views::WidgetDelegateView,
       int height = local_bounds.height() - y - debug_view_height;
       content_area_->SetBounds(
           gfx::Rect(offset.x(), offset.y(), width, height));
+      for (auto child : content_area_->children())
+        child->SetBounds(gfx::Rect(0, 0, width, height));
     }
   }
   void ViewHierarchyChanged(
@@ -431,8 +678,9 @@ class UI : public views::WidgetDelegateView,
     if (details.is_add && GetWidget() && !content_area_) {
       mus::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
       content_area_ = window->window_tree()->NewWindow(nullptr);
+      content_area_->SetVisible(true);
       window->AddChild(content_area_);
-      view_->EmbedInWindow(content_area_);
+      tab_strip_->SetContainerWindow(content_area_);
     }
   }
 
@@ -441,7 +689,7 @@ class UI : public views::WidgetDelegateView,
                       const ui::KeyEvent& key_event) override {
     switch (key_event.key_code()) {
       case ui::VKEY_RETURN: {
-        view_->NavigateToURL(GURL(prompt_->text()));
+        selected_view()->NavigateToURL(GURL(prompt_->text()));
       } break;
       default:
         break;
@@ -449,19 +697,46 @@ class UI : public views::WidgetDelegateView,
     return false;
   }
 
+  // TabStrip::Delegate:
+  void NewTab() override {
+    tab_strip_->AddTab(browser_->CreateView());
+    tab_strip_->selected_tab()->view()->NavigateToURL(GURL("about:blank"));
+  }
+
+  // TabStripObserver:
+  void OnTabAdded(Tab* added) override {
+    added->view()->AddObserver(this);
+    added->view()->set_delegate(this);
+  }
+  void OnTabSelected(Tab* selected) override {
+    debug_view_->set_view(selected->view());
+    prompt_->SetText(base::UTF8ToUTF16(selected->view()->url().spec()));
+    if (GetWidget())
+      GetWidget()->UpdateWindowTitle();
+  }
+
   // navigation::ViewDelegate:
-  void ViewCreated(std::unique_ptr<navigation::View> view,
+  void ViewCreated(navigation::View* source,
+                   std::unique_ptr<navigation::View> view,
                    bool is_popup,
                    const gfx::Rect& initial_rect,
                    bool user_gesture) override {
-    views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-        new UI(browser_, is_popup ? UI::Type::POPUP : UI::Type::WINDOW,
-               std::move(view)),
-        nullptr, initial_rect);
-    window->Show();
-    browser_->AddWindow(window);
+    if (is_popup) {
+      views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
+          new UI(browser_, is_popup ? UI::Type::POPUP : UI::Type::WINDOW,
+                 std::move(view)),
+          nullptr, initial_rect);
+      window->Show();
+      browser_->AddWindow(window);
+    } else {
+      tab_strip_->AddTab(std::move(view));
+    }
   }
-  void Close() override { GetWidget()->Close(); }
+  void Close(navigation::View* source) override {
+    tab_strip_->CloseTabForView(source);
+    if (tab_strip_->empty())
+      GetWidget()->Close();
+  }
 
   // navigation::ViewObserver:
   void LoadingStateChanged(navigation::View* view) override {
@@ -487,7 +762,7 @@ class UI : public views::WidgetDelegateView,
     if (url.is_valid())
       prompt_->SetText(base::UTF8ToUTF16(url.spec()));
     else
-      prompt_->SetText(base::UTF8ToUTF16(view_->url().spec()));
+      prompt_->SetText(base::UTF8ToUTF16(selected_view()->url().spec()));
   }
 
   // NavButton::ModelProvider:
@@ -495,16 +770,24 @@ class UI : public views::WidgetDelegateView,
       NavButton::Type type) override {
     std::vector<navigation::NavigationListItem> entries;
     if (type == NavButton::Type::BACK) {
-      view_->GetBackMenuItems(&entries);
+      selected_view()->GetBackMenuItems(&entries);
     } else {
-      view_->GetForwardMenuItems(&entries);
+      selected_view()->GetForwardMenuItems(&entries);
     }
     return base::WrapUnique(new NavMenuModel(entries, this));
   }
 
   // NavMenuModel::Delegate:
   void NavigateToOffset(int offset) override {
-    view_->NavigateToOffset(offset);
+    selected_view()->NavigateToOffset(offset);
+  }
+
+  navigation::View* selected_view() {
+    return const_cast<navigation::View*>(
+        static_cast<const UI*>(this)->selected_view());
+  }
+  const navigation::View* selected_view() const {
+    return tab_strip_->selected_tab()->view();
   }
 
   void ToggleDebugView() {
@@ -516,6 +799,7 @@ class UI : public views::WidgetDelegateView,
 
   Type type_;
 
+  TabStrip* tab_strip_;
   views::LabelButton* back_button_;
   views::LabelButton* forward_button_;
   views::LabelButton* reload_button_;
@@ -527,9 +811,6 @@ class UI : public views::WidgetDelegateView,
   mus::Window* content_area_ = nullptr;
 
   DebugView* debug_view_;
-
-  std::unique_ptr<navigation::View> view_;
-
   bool showing_debug_view_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UI);
@@ -548,6 +829,12 @@ void Browser::RemoveWindow(views::Widget* window) {
   windows_.erase(it);
   if (windows_.empty())
     base::MessageLoop::current()->QuitWhenIdle();
+}
+
+std::unique_ptr<navigation::View> Browser::CreateView() {
+  navigation::mojom::ViewFactoryPtr factory;
+  connector_->ConnectToInterface("exe:navigation", &factory);
+  return base::WrapUnique(new navigation::View(std::move(factory)));
 }
 
 void Browser::Initialize(shell::Connector* connector,
@@ -574,10 +861,7 @@ void Browser::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
 
-  navigation::mojom::ViewFactoryPtr factory;
-  connector_->ConnectToInterface("exe:navigation", &factory);
-  UI* ui = new UI(this, UI::Type::WINDOW,
-                  base::WrapUnique(new navigation::View(std::move(factory))));
+  UI* ui = new UI(this, UI::Type::WINDOW, CreateView());
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       ui, nullptr, gfx::Rect(10, 10, 1024, 600));
   ui->NavigateTo(GURL("http://www.google.com/"));

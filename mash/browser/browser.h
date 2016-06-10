@@ -13,6 +13,10 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
+namespace navigation {
+class View;
+}
+
 namespace views {
 class AuraInit;
 class Widget;
@@ -34,6 +38,8 @@ class Browser : public shell::ShellClient,
   // own these widgets.
   void AddWindow(views::Widget* window);
   void RemoveWindow(views::Widget* window);
+
+  std::unique_ptr<navigation::View> CreateView();
 
  private:
   // shell::ShellClient:
