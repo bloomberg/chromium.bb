@@ -54,7 +54,7 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
         self._port = None
 
     def _write(self, msg):
-        print msg  # pylint: disable=print-statement
+        print msg
 
     def _analyze_baseline(self, options, test_name):
         for suffix in self._baseline_suffix_list:

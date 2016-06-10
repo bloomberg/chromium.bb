@@ -75,8 +75,7 @@ class HelpCommand(Command):
         if args:
             command = self._tool.command_by_name(args[0])
             if command:
-                # TODO(qyearsley): Replace print with _log.info
-                print command.standalone_help()  # pylint: disable=print-statement
+                print command.standalone_help()
                 return 0
 
         self.show_all_commands = options.show_all_commands

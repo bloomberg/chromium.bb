@@ -116,5 +116,4 @@ Flakiness dashboard: %s
         flakiness_dashboard_url = self.FLAKINESS_DASHBOARD_URL % ','.join(test_names)
         expectations_string = TestExpectations.list_to_string(lines)
 
-        # pylint: disable=E1601
         print self.OUTPUT % (self.HEADER, expectations_string, flakiness_dashboard_url)
