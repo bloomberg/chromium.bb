@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -48,6 +50,7 @@ import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.widget.Toast;
 
 import java.util.List;
 
@@ -103,6 +106,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mUrlBar.setDelegate(this);
         mUrlBar.setEnabled(false);
         mUrlBar.setAllowFocus(false);
+        mUrlBar.setOnLongClickListener(this);
         mTitleBar = (TextView) findViewById(R.id.title_bar);
         mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
         mTitleUrlContainer = findViewById(R.id.title_url_container);
@@ -586,15 +590,19 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public boolean onLongClick(View v) {
-        CharSequence description = null;
         if (v == mCloseButton) {
-            description = getResources().getString(R.string.close_tab);
+            return showAccessibilityToast(v, getResources().getString(R.string.close_tab));
         } else if (v == mCustomActionButton) {
-            description = mCustomActionButton.getContentDescription();
-        } else {
-            return false;
+            return showAccessibilityToast(v, mCustomActionButton.getContentDescription());
+        } else if (v == mUrlBar) {
+            ClipboardManager clipboard = (ClipboardManager) getContext()
+                    .getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("url", mUrlBar.getText());
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(getContext(), R.string.url_copied, Toast.LENGTH_SHORT).show();
+            return true;
         }
-        return showAccessibilityToast(v, description);
+        return false;
     }
 
     private static String parsePublisherNameFromUrl(String url) {

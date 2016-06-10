@@ -2117,7 +2117,7 @@ You are signing in with a managed account and giving its administrator control o
         Tab opened in background.
       </message>
       <message name="IDS_CONTEXTMENU_COPY_URL" desc="Context menu item for copying the url for query in the omnibox. [CHAR-LIMIT=30]">
-        Copy url
+        Copy URL
       </message>
       <message name="IDS_MENU_OPEN_IN_CHROME" desc="Context sensitive menu item for opening a link in Chrome. [CHAR-LIMIT=30]">
         Open in Chrome
@@ -2139,6 +2139,9 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_CONTENT_PROVIDER_SEARCH_DESCRIPTION" desc="Description for Chrome's entry in QSB's list of search suggestion providers [CHAR-LIMIT=32]">
         Bookmarks and web history
+      </message>
+      <message name="IDS_URL_COPIED" desc="Notification telling the user that the url has been copied to clipboard. [CHAR-LIMIT=32]">
+        URL copied.
       </message>
 
       <!-- Accessibility -->
