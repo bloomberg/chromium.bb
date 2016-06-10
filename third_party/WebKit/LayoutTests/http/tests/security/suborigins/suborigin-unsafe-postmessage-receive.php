@@ -1,5 +1,5 @@
 <?php
-header("Suborigin: foobar 'unsafe-postmessage-receive';");
+header("Suborigin: foobar 'unsafe-postmessage-receive'");
 ?>
 <!DOCTYPE html>
 <html>

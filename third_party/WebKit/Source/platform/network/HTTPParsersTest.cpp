@@ -256,25 +256,25 @@ TEST(HTTPParsersTest, SuboriginParseValidPolicy)
     const Suborigin::SuboriginPolicyOptions unsafePostmessageSendAndReceive[] = {  Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend, Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive };
 
     // All simple, valid policies
-    expectParsePolicyPass("One policy, unsafe-postmessage-send", "foobar 'unsafe-postmessage-send';", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
-    expectParsePolicyPass("One policy, unsafe-postmessage-receive", "foobar 'unsafe-postmessage-receive';", unsafePostmessageReceive, ARRAY_SIZE(unsafePostmessageReceive));
+    expectParsePolicyPass("One policy, unsafe-postmessage-send", "foobar 'unsafe-postmessage-send'", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
+    expectParsePolicyPass("One policy, unsafe-postmessage-receive", "foobar 'unsafe-postmessage-receive'", unsafePostmessageReceive, ARRAY_SIZE(unsafePostmessageReceive));
 
     // Formatting differences of policies and multiple policies
-    expectParsePolicyPass("One policy, whitespace all around", "foobar      'unsafe-postmessage-send'     ;     ", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
-    expectParsePolicyPass("Multiple, same policies", "foobar 'unsafe-postmessage-send'; 'unsafe-postmessage-send';", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
-    expectParsePolicyPass("Multiple, different policies", "foobar 'unsafe-postmessage-send'; 'unsafe-postmessage-receive';", unsafePostmessageSendAndReceive, ARRAY_SIZE(unsafePostmessageSendAndReceive));
-    expectParsePolicyPass("One policy, unknown option", "foobar 'unknown-option';", {}, 0);
+    expectParsePolicyPass("One policy, whitespace all around", "foobar      'unsafe-postmessage-send'          ", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
+    expectParsePolicyPass("Multiple, same policies", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-send'", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
+    expectParsePolicyPass("Multiple, different policies", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-receive'", unsafePostmessageSendAndReceive, ARRAY_SIZE(unsafePostmessageSendAndReceive));
+    expectParsePolicyPass("One policy, unknown option", "foobar 'unknown-option'", {}, 0);
 }
 
 TEST(HTTPParsersTest, SuboriginParseInvalidPolicy)
 {
-    expectParsePolicyFail("One policy, no suborigin name", "'unsafe-postmessage-send';");
-    expectParsePolicyFail("One policy, invalid characters", "foobar 'un$afe-postmessage-send';");
-    expectParsePolicyFail("One policy, caps", "foobar 'UNSAFE-POSTMESSAGE-SEND';");
-    expectParsePolicyFail("One policy, missing first quote", "foobar unsafe-postmessage-send';");
-    expectParsePolicyFail("One policy, missing last quote", "foobar 'unsafe-postmessage-send;");
-    expectParsePolicyFail("One policy, missing semicolon at end", "foobar 'unsafe-postmessage-send'");
-    expectParsePolicyFail("Multiple policies, missing semicolon between options", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-send';");
+    expectParsePolicyFail("One policy, no suborigin name", "'unsafe-postmessage-send'");
+    expectParsePolicyFail("One policy, invalid characters", "foobar 'un$afe-postmessage-send'");
+    expectParsePolicyFail("One policy, caps", "foobar 'UNSAFE-POSTMESSAGE-SEND'");
+    expectParsePolicyFail("One policy, missing first quote", "foobar unsafe-postmessage-send'");
+    expectParsePolicyFail("One policy, missing last quote", "foobar 'unsafe-postmessage-send");
+    expectParsePolicyFail("One policy, invalid character at end", "foobar 'unsafe-postmessage-send';");
+    expectParsePolicyFail("Multiple policies, extra character between options", "foobar 'unsafe-postmessage-send' ; 'unsafe-postmessage-send'");
 }
 
 } // namespace blink

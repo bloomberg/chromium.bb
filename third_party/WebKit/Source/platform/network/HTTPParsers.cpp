@@ -740,16 +740,6 @@ bool parseSuboriginHeader(const String& header, Suborigin* suborigin, WTF::Vecto
             messages.append("Ignoring unknown suborigin policy option " + optionName + ".");
         else
             suborigin->addPolicyOption(option);
-
-        skipWhile<UChar, isASCIISpace>(position, end);
-        if (position == end || *position != ';') {
-            String found = (position == end) ? "end of string" : String(position, 1);
-            messages.append("Invalid suborigin policy Expected ';' at end of policy option. Found \'"  + found + "\' instead.");
-            suborigin->clear();
-            return false;
-        }
-
-        position++;
     }
 
     return true;
