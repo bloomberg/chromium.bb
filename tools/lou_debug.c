@@ -318,45 +318,43 @@ print_phraseLength (TranslationTableOffset offset, char *opcode)
 static int
 show_brailleIndicators (void)
 {
+  char name[BUFSIZE];
+  char *emphNames[] = {"begemphphrase %s",
+		       "endemphphrase %s before",
+		       "endemphphrase %s after",
+		       "begemphword %s",
+		       "endemphword %s",
+		       "emphletter %s",
+		       "begemph %s",
+		       "endemph %s",
+		       NULL};
+  char *capsNames[] = {"firstwordcaps",
+		       "lastwordcapsbefore",
+		       "lastwordcapsafter",
+		       "begcaps",
+		       "endcaps",
+		       "capsletter",
+		       "capsword",
+		       "capswordstop",
+		       NULL};
+
   // FIXME: update to include all UEB opcodes.
-  print_brailleIndicator (table->emphRules[capsRule][firstWordOffset], "firstwordcaps");
-  print_brailleIndicator (table->emphRules[capsRule][lastWordBeforeOffset], "lastwordcapsbefore");
-  print_brailleIndicator (table->emphRules[capsRule][lastWordAfterOffset], "lastwordcapsafter");
-  print_brailleIndicator (table->emphRules[capsRule][firstLetterOffset], "begcaps");
-  print_brailleIndicator (table->emphRules[capsRule][lastLetterOffset], "endcaps");
-  print_brailleIndicator (table->emphRules[capsRule][singleLetterOffset], "capsletter");
-  print_brailleIndicator (table->emphRules[capsRule][wordOffset], "capsword");
-  print_brailleIndicator (table->emphRules[capsRule][wordStopOffset], "capswordstop");
+
+  for (EmphCodeOffset offset = 0; capsNames[offset]; offset++) {
+    print_brailleIndicator (table->emphRules[capsRule][offset],capsNames[offset]);
+  }
   print_phraseLength (table->emphRules[capsRule][lenPhraseOffset], "lencapsphrase");
   print_brailleIndicator (table->letterSign, "letsign");
   print_brailleIndicator (table->numberSign, "numsign");
-  print_brailleIndicator (table->emphRules[emph1Rule][firstWordOffset], "firstwordital");
-  print_brailleIndicator (table->emphRules[emph1Rule][lastWordBeforeOffset], "lastworditalbefore");
-  print_brailleIndicator (table->emphRules[emph1Rule][lastWordAfterOffset], "lastworditalafter");
-  print_brailleIndicator (table->emphRules[emph1Rule][firstLetterOffset], "firstletterital");
-  print_brailleIndicator (table->emphRules[emph1Rule][lastLetterOffset], "lastletterital");
-  print_brailleIndicator (table->emphRules[emph1Rule][singleLetterOffset], "singleletterital");
-  print_brailleIndicator (table->emphRules[emph1Rule][wordOffset], "italword");
-  print_brailleIndicator (table->emphRules[emph1Rule][wordStopOffset], "italwordstop");
-  print_phraseLength (table->emphRules[emph1Rule][lenPhraseOffset], "lenitalphrase");
-  print_brailleIndicator (table->emphRules[emph2Rule][firstWordOffset], "firstwordunder");
-  print_brailleIndicator (table->emphRules[emph2Rule][lastWordBeforeOffset], "lastwordunderbefore");
-  print_brailleIndicator (table->emphRules[emph2Rule][lastWordAfterOffset], "lastwordunderafter");
-  print_brailleIndicator (table->emphRules[emph2Rule][firstLetterOffset], "firstletterunder");
-  print_brailleIndicator (table->emphRules[emph2Rule][lastLetterOffset], "lastletterunder");
-  print_brailleIndicator (table->emphRules[emph2Rule][singleLetterOffset], "singleletterunder");
-  print_brailleIndicator (table->emphRules[emph2Rule][wordOffset], "underword");
-  print_brailleIndicator (table->emphRules[emph2Rule][wordStopOffset], "underwordstop");
-  print_phraseLength (table->emphRules[emph2Rule][lenPhraseOffset], "lenunderphrase");
-  print_brailleIndicator (table->emphRules[emph3Rule][firstWordOffset], "firstwordbold");
-  print_brailleIndicator (table->emphRules[emph3Rule][lastWordBeforeOffset], "lastwordboldbefore");
-  print_brailleIndicator (table->emphRules[emph3Rule][lastWordAfterOffset], "lastwordboldafter");
-  print_brailleIndicator (table->emphRules[emph3Rule][firstLetterOffset], "firstletterbold");
-  print_brailleIndicator (table->emphRules[emph3Rule][lastLetterOffset], "lastletterbold");
-  print_brailleIndicator (table->emphRules[emph3Rule][singleLetterOffset], "singleletterbold");
-  print_brailleIndicator (table->emphRules[emph3Rule][wordOffset], "boldword");
-  print_brailleIndicator (table->emphRules[emph3Rule][wordStopOffset], "boldwordstop");
-  print_phraseLength (table->emphRules[emph3Rule][lenPhraseOffset], "lenboldphrase");
+
+  for (int i = 0; table->emphClasses[i]; i++) {
+    for (EmphCodeOffset offset = 0; emphNames[offset]; offset++) {
+      snprintf(name, BUFSIZE, emphNames[offset], table->emphClasses[i]);
+      print_brailleIndicator (table->emphRules[emph1Rule][offset], name);
+    }
+    snprintf(name, BUFSIZE, "lenemphphrase %s", table->emphClasses[i]);
+    print_phraseLength (table->emphRules[emph1Rule][lenPhraseOffset], name);
+  }
   print_brailleIndicator (table->begComp, "begcomp");
   print_brailleIndicator (table->compBegEmph1, "compbegemph1");
   print_brailleIndicator (table->compEndEmph1, "compendemph1");
