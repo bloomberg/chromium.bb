@@ -13,3 +13,21 @@ source_set("chooser_controller") {
     "//content/public/browser",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_chooser_controller.cc",
+    "mock_chooser_controller.h",
+  ]
+
+  deps = [
+    ":chooser_controller",
+    "//base",
+  ]
+
+  public_deps = [
+    "//testing/gmock",
+  ]
+}

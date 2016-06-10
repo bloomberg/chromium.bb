@@ -2242,6 +2242,8 @@
       'browser/ui/views/certificate_selector.cc',
       'browser/ui/views/certificate_selector.h',
       'browser/ui/views/certificate_viewer_win.cc',
+      'browser/ui/views/chooser_content_view.cc',
+      'browser/ui/views/chooser_content_view.h',
       'browser/ui/views/chrome_javascript_native_dialog_factory_views.cc',
       'browser/ui/views/chrome_views_delegate_chromeos.cc',
       'browser/ui/views/chrome_web_dialog_view.cc',

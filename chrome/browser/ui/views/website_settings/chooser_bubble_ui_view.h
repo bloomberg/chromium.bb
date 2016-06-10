@@ -24,7 +24,7 @@ class ChooserBubbleUiViewDelegate;
 // BubbleManager.
 class ChooserBubbleUiView : public BubbleUi {
  public:
-  ChooserBubbleUiView(Browser* browser, ChooserController* controller);
+  ChooserBubbleUiView(Browser* browser, ChooserController* chooser_controller);
   ~ChooserBubbleUiView() override;
 
   // BubbleUi:
@@ -37,8 +37,10 @@ class ChooserBubbleUiView : public BubbleUi {
   views::View* GetAnchorView();
   views::BubbleBorder::Arrow GetAnchorArrow();
 
-  Browser* browser_;               // Weak.
-  ChooserController* controller_;  // Weak.
+  Browser* browser_;  // Weak.
+  // Weak, owned by ChooserBubbleDelegate.
+  ChooserController* chooser_controller_;
+  // Weak. Owned by its parent view.
   ChooserBubbleUiViewDelegate* chooser_bubble_ui_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiView);
