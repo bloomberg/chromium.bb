@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_screen_util.h"
@@ -92,6 +93,9 @@ const float kCardAspectRatio = 4.0f / 3.0f;
 const int kMinCardsMajor = 3;
 
 const int kOverviewSelectorTransitionMilliseconds = 100;
+
+// The color and opacity of the screen shield in overview.
+const SkColor kShieldColor = SkColorSetARGB(102, 0, 0, 0);
 
 // The color and opacity of the overview selector.
 const SkColor kWindowSelectionColor = SkColorSetARGB(128, 0, 0, 0);
@@ -206,6 +210,46 @@ void ReorderItemsGreedyLeastMovement(std::vector<WmWindow*>* items,
   }
 }
 
+// Creates and returns a background translucent widget parented in
+// |root_window|'s default container and having |background_color|.
+// When |border_thickness| is non-zero, a border is created having
+// |border_color|, otherwise |border_color| parameter is ignored.
+views::Widget* CreateBackgroundWidget(WmWindow* root_window,
+                                      SkColor background_color,
+                                      int border_thickness,
+                                      SkColor border_color) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.keep_on_top = false;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.accept_events = false;
+  widget->set_focus_on_creation(false);
+  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
+      widget, kShellWindowId_DefaultContainer, &params);
+  widget->Init(params);
+  WmWindow* widget_window = WmLookup::Get()->GetWindowForWidget(widget);
+  // Disable the "bounce in" animation when showing the window.
+  widget_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
+  // The background widget should not activate the shelf when passing under it.
+  widget_window->GetWindowState()->set_ignored_by_shelf(true);
+
+  views::View* content_view = new views::View;
+  content_view->set_background(
+      views::Background::CreateSolidBackground(background_color));
+  if (border_thickness) {
+    content_view->SetBorder(
+        views::Border::CreateSolidBorder(border_thickness, border_color));
+  }
+  widget->SetContentsView(content_view);
+  widget_window->GetParent()->StackChildAtBottom(widget_window);
+  widget->Show();
+  // New background widget starts with 0 opacity and then fades in.
+  widget_window->SetOpacity(0.f);
+  return widget;
+}
+
 }  // namespace
 
 WindowGrid::WindowGrid(WmWindow* root_window,
@@ -237,11 +281,22 @@ WindowGrid::~WindowGrid() {
 }
 
 void WindowGrid::PrepareForOverview() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    InitShieldWidget();
   for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
     (*iter)->PrepareForOverview();
 }
 
 void WindowGrid::PositionWindows(bool animate) {
+  if (shield_widget_) {
+    // Keep the background shield widget covering the whole screen.
+    WmWindow* widget_window =
+        WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
+    const gfx::Rect bounds = widget_window->GetParent()->GetBoundsInScreen();
+    display::Display dst_display =
+        display::Screen::GetScreen()->GetDisplayMatching(bounds);
+    widget_window->SetBoundsInScreen(bounds, dst_display);
+  }
   CHECK(!window_list_.empty());
   gfx::Rect bounding_rect;
   gfx::Size item_size;
@@ -405,45 +460,41 @@ void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
   (*iter)->RecomputeWindowTransforms();
 }
 
+void WindowGrid::InitShieldWidget() {
+  shield_widget_.reset(CreateBackgroundWidget(root_window_, kShieldColor, 0,
+                                              SK_ColorTRANSPARENT));
+
+  WmWindow* widget_window =
+      WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
+  const gfx::Rect bounds = widget_window->GetParent()->GetBoundsInScreen();
+  display::Display dst_display =
+      display::Screen::GetScreen()->GetDisplayMatching(bounds);
+  widget_window->SetBoundsInScreen(bounds, dst_display);
+
+  ui::ScopedLayerAnimationSettings animation_settings(
+      widget_window->GetLayer()->GetAnimator());
+  animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kOverviewSelectorTransitionMilliseconds));
+  animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+  animation_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  shield_widget_->SetOpacity(1.f);
+}
+
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
-  selection_widget_.reset(new views::Widget);
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.keep_on_top = false;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.accept_events = false;
-  selection_widget_->set_focus_on_creation(false);
-  root_window_->GetRootWindowController()
-      ->ConfigureWidgetInitParamsForContainer(
-          selection_widget_.get(), kShellWindowId_DefaultContainer, &params);
-  selection_widget_->Init(params);
-  WmWindow* selection_widget_window =
+  selection_widget_.reset(CreateBackgroundWidget(
+      root_window_, kWindowSelectionColor, kWindowSelectionBorderThickness,
+      kWindowSelectionBorderColor));
+
+  WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
-  // Disable the "bounce in" animation when showing the window.
-  selection_widget_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
-  // The selection widget should not activate the shelf when passing under it.
-  selection_widget_window->GetWindowState()->set_ignored_by_shelf(true);
-
-  views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateSolidBackground(kWindowSelectionColor));
-  content_view->SetBorder(views::Border::CreateSolidBorder(
-      kWindowSelectionBorderThickness, kWindowSelectionBorderColor));
-  selection_widget_->SetContentsView(content_view);
-  selection_widget_window->GetParent()->StackChildAtBottom(
-      selection_widget_window);
-  selection_widget_->Show();
-  // New selection widget starts with 0 opacity and then fades in.
-  selection_widget_window->SetOpacity(0.f);
-
   const gfx::Rect target_bounds = SelectedWindow()->target_bounds();
   gfx::Vector2d fade_out_direction =
           GetSlideVectorForFadeIn(direction, target_bounds);
   display::Display dst_display =
       display::Screen::GetScreen()->GetDisplayMatching(target_bounds);
-  selection_widget_window->SetBoundsInScreen(target_bounds - fade_out_direction,
-                                             dst_display);
+  widget_window->SetBoundsInScreen(target_bounds - fade_out_direction,
+                                   dst_display);
 }
 
 void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,

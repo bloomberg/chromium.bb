@@ -169,6 +169,8 @@ class ASH_EXPORT ShelfLayoutManager
   void OnLockStateChanged(bool locked) override;
   void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnShelfAutoHideBehaviorChanged(WmWindow* root_window) override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
 
   // Overriden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(
@@ -244,7 +246,8 @@ class ASH_EXPORT ShelfLayoutManager
           auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
           window_state(wm::WORKSPACE_WINDOW_STATE_DEFAULT),
           is_screen_locked(false),
-          is_adding_user_screen(false) {}
+          is_adding_user_screen(false),
+          is_overview_mode(false) {}
 
     // Returns true if the two states are considered equal. As
     // |auto_hide_state| only matters if |visibility_state| is
@@ -252,11 +255,12 @@ class ASH_EXPORT ShelfLayoutManager
     // appropriate.
     bool Equals(const State& other) const {
       return other.visibility_state == visibility_state &&
-          (visibility_state != SHELF_AUTO_HIDE ||
-           other.auto_hide_state == auto_hide_state) &&
-          other.window_state == window_state &&
-          other.is_screen_locked == is_screen_locked &&
-          other.is_adding_user_screen == is_adding_user_screen;
+             (visibility_state != SHELF_AUTO_HIDE ||
+              other.auto_hide_state == auto_hide_state) &&
+             other.window_state == window_state &&
+             other.is_screen_locked == is_screen_locked &&
+             other.is_adding_user_screen == is_adding_user_screen &&
+             other.is_overview_mode == is_overview_mode;
     }
 
     ShelfVisibilityState visibility_state;
@@ -264,6 +268,7 @@ class ASH_EXPORT ShelfLayoutManager
     wm::WorkspaceWindowState window_state;
     bool is_screen_locked;
     bool is_adding_user_screen;
+    bool is_overview_mode;
   };
 
   // Sets the visibility of the shelf to |state|.

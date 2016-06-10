@@ -102,6 +102,9 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
  private:
   friend class WindowSelectorTest;
 
+  // Initializes the screen shield widget.
+  void InitShieldWidget();
+
   // Internal function to initialize the selection widget.
   void InitSelectionWidget(WindowSelector::Direction direction);
 
@@ -128,6 +131,9 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
 
   // Vector containing the observed windows.
   std::set<WmWindow*> observed_windows_;
+
+  // Widget that darkens the screen background.
+  std::unique_ptr<views::Widget> shield_widget_;
 
   // Widget that indicates to the user which is the selected window.
   std::unique_ptr<views::Widget> selection_widget_;
