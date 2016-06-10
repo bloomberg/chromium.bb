@@ -21,7 +21,7 @@ std::string NativeLibraryLoadError::ToString() const {
 NativeLibrary LoadNativeLibrary(const FilePath& library_path,
                                 NativeLibraryLoadError* error) {
   // dlopen() opens the file off disk.
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   // We deliberately do not use RTLD_DEEPBIND.  For the history why, please
   // refer to the bug tracker.  Some useful bug reports to read include:
@@ -45,13 +45,13 @@ void UnloadNativeLibrary(NativeLibrary library) {
 
 // static
 void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
-                                          const char* name) {
-  return dlsym(library, name);
+                                          StringPiece name) {
+  return dlsym(library, name.data());
 }
 
 // static
-string16 GetNativeLibraryName(const string16& name) {
-  return ASCIIToUTF16("lib") + name + ASCIIToUTF16(".so");
+string16 GetNativeLibraryName(StringPiece16 name) {
+  return ASCIIToUTF16("lib") + name.as_string() + ASCIIToUTF16(".so");
 }
 
 }  // namespace base

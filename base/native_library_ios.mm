@@ -29,14 +29,14 @@ void UnloadNativeLibrary(NativeLibrary library) {
 
 // static
 void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
-                                          const char* name) {
+                                          StringPiece name) {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
 // static
-string16 GetNativeLibraryName(const string16& name) {
-  return name;
+string16 GetNativeLibraryName(StringPiece16 name) {
+  return name.as_string();
 }
 
 }  // namespace base

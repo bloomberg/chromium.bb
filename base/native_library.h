@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -26,7 +26,7 @@ namespace base {
 class FilePath;
 
 #if defined(OS_WIN)
-typedef HMODULE NativeLibrary;
+using NativeLibrary = HMODULE;
 #elif defined(OS_MACOSX)
 enum NativeLibraryType {
   BUNDLE,
@@ -46,9 +46,9 @@ struct NativeLibraryStruct {
     void* dylib;
   };
 };
-typedef NativeLibraryStruct* NativeLibrary;
+using NativeLibrary = NativeLibraryStruct*;
 #elif defined(OS_POSIX)
-typedef void* NativeLibrary;
+using NativeLibrary = void*;
 #endif  // OS_*
 
 struct BASE_EXPORT NativeLibraryLoadError {
@@ -87,13 +87,13 @@ BASE_EXPORT void UnloadNativeLibrary(NativeLibrary library);
 
 // Gets a function pointer from a native library.
 BASE_EXPORT void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
-                                                      const char* name);
+                                                      StringPiece name);
 
 // Returns the full platform specific name for a native library.
 // For example:
 // "mylib" returns "mylib.dll" on Windows, "libmylib.so" on Linux,
 // "mylib.dylib" on Mac.
-BASE_EXPORT string16 GetNativeLibraryName(const string16& name);
+BASE_EXPORT string16 GetNativeLibraryName(StringPiece16 name);
 
 }  // namespace base
 
