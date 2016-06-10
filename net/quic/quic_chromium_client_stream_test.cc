@@ -219,7 +219,7 @@ TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
 
   EXPECT_CALL(delegate_,
               OnHeadersAvailable(headers_, uncompressed_headers.length()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   QuicStreamFrame frame2(kTestStreamId, true, offset, StringPiece());
@@ -243,7 +243,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
 
   EXPECT_CALL(delegate_,
               OnHeadersAvailable(headers_, uncompressed_headers.length()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   const char data[] = "hello world!";
@@ -255,7 +255,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
           CreateFunctor(&QuicChromiumClientStreamTest::ReadData,
                         base::Unretained(this),
                         StringPiece(data, arraysize(data) - 1))));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
@@ -268,7 +268,7 @@ TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
   stream_->OnStreamHeaders(StringPiece(bad_headers));
   stream_->OnStreamHeadersComplete(false, bad_headers.length());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
@@ -282,7 +282,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
 
   EXPECT_CALL(delegate_,
               OnHeadersAvailable(headers_, uncompressed_headers.length()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   const char data[] = "hello world!";
@@ -292,7 +292,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
       .WillOnce(testing::Invoke(CreateFunctor(
           &QuicChromiumClientStream::Reset,
           base::Unretained(stream_), QUIC_STREAM_CANCELLED)));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
@@ -313,7 +313,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 
   EXPECT_CALL(delegate_,
               OnHeadersAvailable(headers_, uncompressed_headers.length()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   const char data[] = "hello world!";
@@ -346,7 +346,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   // Make sure kFinalOffsetHeaderKey is gone from the delivered actual trailers.
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, actual_trailers);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
 
@@ -361,7 +361,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   EXPECT_CALL(delegate_,
               OnHeadersAvailable(headers_, uncompressed_headers.length()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   const char data[] = "hello world!";
@@ -425,7 +425,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, actual_trailers);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
 
@@ -530,7 +530,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeDelegate) {
   EXPECT_CALL(delegate_,
               OnHeadersAvailable(headers_, uncompressed_headers.length()));
   stream->SetDelegate(&delegate_);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Times(2) because OnClose will be called for stream and stream_.
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR)).Times(2);

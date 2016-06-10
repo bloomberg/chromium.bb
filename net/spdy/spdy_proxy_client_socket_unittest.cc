@@ -192,7 +192,7 @@ void SpdyProxyClientSocketTest::TearDown() {
     session_->spdy_session_pool()->CloseAllSessions();
 
   // Empty the current queue.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   PlatformTest::TearDown();
 }
 
@@ -485,7 +485,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   ASSERT_EQ(location, kRedirectUrl);
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
@@ -532,7 +532,7 @@ TEST_P(SpdyProxyClientSocketTest, WasEverUsedReturnsCorrectValues) {
   EXPECT_TRUE(sock_->WasEverUsed());
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // ----------- GetPeerAddress
@@ -1030,7 +1030,7 @@ TEST_P(SpdyProxyClientSocketTest,
             sock_->Read(NULL, 1, CompletionCallback()));
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Reading buffered data from an already closed socket should return
@@ -1117,7 +1117,7 @@ TEST_P(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
             sock_->Write(buf.get(), buf->size(), CompletionCallback()));
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // If the socket is closed with a pending Write(), the callback
@@ -1182,7 +1182,7 @@ TEST_P(SpdyProxyClientSocketTest, DisconnectWithWritePending) {
   EXPECT_FALSE(write_callback_.have_result());
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // If the socket is Disconnected with a pending Read(), the callback
@@ -1216,7 +1216,7 @@ TEST_P(SpdyProxyClientSocketTest, DisconnectWithReadPending) {
   EXPECT_FALSE(read_callback_.have_result());
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // If the socket is Reset when both a read and write are pending,
@@ -1258,7 +1258,7 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePending) {
   EXPECT_TRUE(write_callback_.have_result());
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Makes sure the proxy client socket's source gets the expected NetLog events
@@ -1317,7 +1317,7 @@ TEST_P(SpdyProxyClientSocketTest, NetLog) {
   EXPECT_TRUE(LogContainsEndEvent(entry_list, 9, NetLog::TYPE_SOCKET_ALIVE));
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // CompletionCallback that causes the SpdyProxyClientSocket to be
@@ -1387,7 +1387,7 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   EXPECT_FALSE(write_callback_.have_result());
 
   // Let the RST_STREAM write while |rst| is in-scope.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace net

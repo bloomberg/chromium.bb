@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/load_flags.h"
@@ -2779,7 +2780,7 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   // going to return the same PAC URL as before, but this URL needs to be
   // refetched on the new network.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  base::MessageLoop::current()->RunUntilIdle();  // Notification happens async.
+  base::RunLoop().RunUntilIdle();  // Notification happens async.
 
   // Start a second request.
   ProxyInfo info2;
@@ -2904,7 +2905,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Now that the PAC script is downloaded, it should be used to initialize the
   // ProxyResolver. Simulate a successful parse.
@@ -3019,7 +3020,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
   fetcher->NotifyFetchCompletion(OK, kValidPacScript2);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Now that the PAC script is downloaded, it should be used to initialize the
   // ProxyResolver. Simulate a successful parse.
@@ -3132,7 +3133,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
   fetcher->NotifyFetchCompletion(OK, kValidPacScript1);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(factory->pending_requests().empty());
   ASSERT_TRUE(resolver.pending_requests().empty());
@@ -3242,7 +3243,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   EXPECT_EQ(GURL("http://foopy/proxy.pac"), fetcher->pending_request_url());
   fetcher->NotifyFetchCompletion(ERR_FAILED, std::string());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // At this point the ProxyService should have re-configured itself to use
   // DIRECT connections rather than the given proxy resolver.
@@ -3414,7 +3415,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
 
   // Drain the message loop, so ProxyService is notified of the change
   // and has a chance to re-configure itself.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Start a third request -- this time we expect to get a direct connection
   // since the PAC script poller experienced a failure.

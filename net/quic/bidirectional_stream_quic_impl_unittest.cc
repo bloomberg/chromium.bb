@@ -6,7 +6,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/ip_address.h"
@@ -654,7 +653,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   EXPECT_EQ(trailers, delegate->trailers());
 
   EXPECT_EQ(OK, delegate->ReadData(cb2.callback()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
@@ -1172,7 +1171,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   TestCompletionCallback cb;
   EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, delegate->ReadData(cb.callback()));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, delegate->error());
   EXPECT_EQ(0, delegate->on_data_read_count());
@@ -1281,11 +1280,11 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterSendData) {
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   delegate->CancelStream();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Try to send data after Cancel(), should not get called back.
   delegate->SendData(buf, buf->size(), false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(delegate->on_failed_called());
 
   EXPECT_EQ(0, delegate->on_data_read_count());
@@ -1341,7 +1340,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   // Try to send data after OnFailed(), should not get called back.
   scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
   delegate->SendData(buf, buf->size(), false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ERR_UNEXPECTED, delegate->ReadData(cb.callback()));
   EXPECT_EQ(ERR_UNEXPECTED, delegate->error());
@@ -1392,7 +1391,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
   EXPECT_EQ(ERR_IO_PENDING, delegate->ReadData(cb.callback()));
   delegate->CancelStream();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
@@ -1439,7 +1438,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   delegate->WaitUntilNextCallback();  // OnHeadersReceived
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
@@ -1491,7 +1490,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
       ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0, kResponseBody));
   EXPECT_EQ(static_cast<int64_t>(strlen(kResponseBody)), cb.WaitForResult());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());
@@ -1558,7 +1557,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   trailers.erase(kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(0, delegate->on_data_sent_count());

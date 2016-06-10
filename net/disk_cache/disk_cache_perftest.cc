@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/hash.h"
 #include "base/process/process_metrics.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_time_logger.h"
 #include "base/test/test_file_util.h"
@@ -207,7 +208,7 @@ TEST_F(DiskCachePerfTest, BlockfileHashes) {
 }
 
 void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   cache_.reset();
 
   // Flush all files in the cache out of system memory.
@@ -237,7 +238,7 @@ void DiskCachePerfTest::CacheBackendPerformance() {
   EXPECT_TRUE(TimeWrite());
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
   EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
@@ -246,7 +247,7 @@ void DiskCachePerfTest::CacheBackendPerformance() {
                        "Read disk cache headers only (warm)"));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
   EXPECT_TRUE(
@@ -255,7 +256,7 @@ void DiskCachePerfTest::CacheBackendPerformance() {
       TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (warm)"));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
@@ -311,7 +312,7 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
   }
 
   timer2.Done();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace

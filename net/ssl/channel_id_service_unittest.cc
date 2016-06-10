@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
@@ -318,7 +318,7 @@ TEST_F(ChannelIDServiceTest, CancelRequest) {
 
   // Wait for reply from ChannelIDServiceWorker to be posted back to the
   // ChannelIDService.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Even though the original request was cancelled, the service will still
   // store the result, it just doesn't call the callback.
@@ -343,7 +343,7 @@ TEST_F(ChannelIDServiceTest, CancelRequestByHandleDestruction) {
 
   // Wait for reply from ChannelIDServiceWorker to be posted back to the
   // ChannelIDService.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Even though the original request was cancelled, the service will still
   // store the result, it just doesn't call the callback.
@@ -368,7 +368,7 @@ TEST_F(ChannelIDServiceTest, DestructionWithPendingRequest) {
   // ChannelIDServiceWorker should not post anything back to the
   // non-existent ChannelIDService, but run the loop just to be sure it
   // doesn't.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // If we got here without crashing or a valgrind error, it worked.
 }

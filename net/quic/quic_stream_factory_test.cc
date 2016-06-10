@@ -212,14 +212,14 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
     NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
         NetworkChangeNotifier::SOON_TO_DISCONNECT, network);
     // Spin the message loop so the notification is delivered.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void NotifyNetworkDisconnected(NetworkChangeNotifier::NetworkHandle network) {
     NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
         NetworkChangeNotifier::DISCONNECTED, network);
     // Spin the message loop so the notification is delivered.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -441,7 +441,7 @@ class QuicStreamFactoryTestBase {
   void NotifyIPAddressChanged() {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     // Spin the message loop so the notification is delivered.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructGetRequestPacket(

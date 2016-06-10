@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -629,7 +630,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
       4, kFin, trailers, &spdy_trailers_frame_length, &offset));
 
   // Make sure trailers are processed.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(static_cast<int>(strlen(kResponseBody)),
             stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
@@ -1155,7 +1156,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   // In the course of processing this packet, the QuicHttpStream close itself.
   ProcessPacket(ConstructResponseHeadersPacket(2, kFin, nullptr));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(AtEof());
 
@@ -1204,7 +1205,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   // In the course of processing this packet, the QuicHttpStream close itself.
   ProcessPacket(ConstructResponseHeadersPacket(2, kFin, nullptr));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(AtEof());
 
@@ -1400,7 +1401,7 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
   ProcessPacket(InnerConstructDataPacket(2, promise_id_, false, kFin, 0,
                                          kResponseBody, &server_maker_));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Rendezvous should have succeeded now, so the promised stream
   // should point at our push stream, and we should be able read
@@ -1575,7 +1576,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
   ProcessPacket(InnerConstructDataPacket(2, promise_id_, false, kFin, 0,
                                          kResponseBody, &server_maker_));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Rendezvous should have succeeded now, so the promised stream
   // should point at our push stream, and we should be able read
@@ -1660,7 +1661,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   ProcessPacket(InnerConstructResponseHeadersPacket(
       1, promise_id_, false, &spdy_response_headers_frame_length));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Rendezvous should have failed due to vary mismatch, so the
   // promised stream should have been aborted, and instead we have a
@@ -1693,7 +1694,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   ProcessPacket(InnerConstructResponseHeadersPacket(
       3, stream_id_ + 2, kFin, &spdy_response_header_frame_length));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(OK, promised_stream_->ReadResponseHeaders(callback_.callback()));
   ASSERT_TRUE(response_.headers.get());

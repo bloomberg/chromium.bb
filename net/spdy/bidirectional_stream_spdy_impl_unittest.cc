@@ -360,7 +360,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterCancelStream) {
 
   // Try to send data after Cancel(), should not get called back.
   delegate->SendData(buf.get(), buf->size(), false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(delegate->on_failed_called());
 
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);

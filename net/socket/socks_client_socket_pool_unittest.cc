@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -297,7 +298,7 @@ TEST_F(SOCKSClientSocketPoolTest, CancelDuringTransportConnect) {
   EXPECT_EQ(0, transport_socket_pool_.cancel_count());
 
   // Now wait for the TCP sockets to connect.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ClientSocketPoolTest::kRequestNotFound, GetOrderOfRequest(1));
   EXPECT_EQ(ClientSocketPoolTest::kRequestNotFound, GetOrderOfRequest(2));
@@ -333,7 +334,7 @@ TEST_F(SOCKSClientSocketPoolTest, CancelDuringSOCKSConnect) {
   EXPECT_EQ(0, transport_socket_pool_.release_count());
 
   // Now wait for the async data to reach the SOCKS connect jobs.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ClientSocketPoolTest::kRequestNotFound, GetOrderOfRequest(1));
   EXPECT_EQ(ClientSocketPoolTest::kRequestNotFound, GetOrderOfRequest(2));

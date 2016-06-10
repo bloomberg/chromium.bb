@@ -15,6 +15,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -325,7 +326,7 @@ class SynchConfigGetter {
 
   // [Runs on |io_thread_|] Signals |event_| on cleanup completion.
   void CleanUp() {
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     event_.Signal();
   }
 

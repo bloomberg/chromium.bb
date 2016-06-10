@@ -274,16 +274,16 @@ class QuicNetworkTransactionTest
 
   void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     // Empty the current queue.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     PlatformTest::TearDown();
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientConnectionClosePacket(
@@ -2162,7 +2162,7 @@ class QuicNetworkTransactionWithDestinationTest
 
   void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     HttpNetworkSession::Params params;
 
@@ -2201,10 +2201,10 @@ class QuicNetworkTransactionWithDestinationTest
   void TearDown() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     // Empty the current queue.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     PlatformTest::TearDown();
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetAlternativeService(const std::string& origin) {

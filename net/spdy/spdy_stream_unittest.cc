@@ -84,7 +84,7 @@ class SpdyStreamTest : public ::testing::Test,
     return CreateInsecureSpdySession(session_.get(), key, BoundNetLog());
   }
 
-  void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   NextProto GetProtocol() const {
     return GetParam() == kTestCaseSPDY31 ? kProtoSPDY31 : kProtoHTTP2;

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "crypto/ec_private_key.h"
@@ -100,7 +99,7 @@ class SpdyHttpStreamTest : public testing::Test,
 
   void TearDown() override {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sequenced_data_->AllReadDataConsumed());
     EXPECT_TRUE(sequenced_data_->AllWriteDataConsumed());
   }

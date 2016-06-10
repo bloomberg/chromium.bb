@@ -300,17 +300,17 @@ class HttpNetworkTransactionTest
 
   void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     // Empty the current queue.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     PlatformTest::TearDown();
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   NextProto GetProtocol() const {
@@ -1696,7 +1696,7 @@ TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Should have deferred for network start.
   EXPECT_TRUE(net_start_handler.observed_before_network_start());
@@ -1736,7 +1736,7 @@ TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
 
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Should have deferred for network start.
   EXPECT_TRUE(net_start_handler.observed_before_network_start());
@@ -1784,7 +1784,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose) {
   EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
 
   trans.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
@@ -1822,7 +1822,7 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveEarlyClose2) {
   EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, rv);
 
   trans.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
@@ -4863,7 +4863,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Allow the SpdyProxyClientSocket's write callback to complete.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Now allow the read of the response to complete.
   spdy_data.Resume();
   rv = callback1.WaitForResult();
@@ -6171,13 +6171,13 @@ TEST_P(HttpNetworkTransactionTest,
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the TCPClientSocket was not added back to
   // the pool.
   EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
   trans.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Make sure that the socket didn't get recycled after calling the destructor.
   EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
@@ -6231,7 +6231,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocket) {
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
@@ -6291,7 +6291,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSSLSocket) {
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
   EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
@@ -6357,7 +6357,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
   EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
@@ -6384,7 +6384,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleDeadSSLSocket) {
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
   EXPECT_EQ(1, GetIdleSocketCountInSSLSocketPool(session.get()));
@@ -6444,7 +6444,7 @@ TEST_P(HttpNetworkTransactionTest, RecycleSocketAfterZeroContentLength) {
 
   // Empty the current queue.  This is necessary because idle sockets are
   // added to the connection pool asynchronously with a PostTask.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now check to make sure the socket was added back to the pool.
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
@@ -6617,7 +6617,7 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURL) {
   EXPECT_EQ(100, response->headers->GetContentLength());
 
   // Empty the current queue.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test the request-challenge-retry sequence for basic auth when there is an
@@ -6730,7 +6730,7 @@ TEST_P(HttpNetworkTransactionTest, WrongAuthIdentityInURL) {
   EXPECT_EQ(100, response->headers->GetContentLength());
 
   // Empty the current queue.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 
@@ -6812,7 +6812,7 @@ TEST_P(HttpNetworkTransactionTest, AuthIdentityInURLSuppressed) {
   EXPECT_EQ(100, response->headers->GetContentLength());
 
   // Empty the current queue.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test that previously tried username/passwords for a realm get re-used.
@@ -9763,7 +9763,7 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Transaction is pending on request body initialization.
   ASSERT_FALSE(fake_reader->callback().is_null());
@@ -12293,7 +12293,7 @@ TEST_P(HttpNetworkTransactionTest, SimpleCancel) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   trans.reset();  // Cancel the transaction here.
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test that if a transaction is cancelled after receiving the headers, the
@@ -12340,7 +12340,7 @@ TEST_P(HttpNetworkTransactionTest, CancelAfterHeaders) {
   }
 
   // Let the HttpResponseBodyDrainer drain the socket.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Socket should now be idle, waiting to be reused.
   EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
@@ -13408,7 +13408,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(OK, callback1.WaitForResult());
   EXPECT_TRUE(trans1.GetResponseInfo()->was_fetched_via_spdy);
@@ -13422,7 +13422,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(trans2.GetResponseInfo()->was_fetched_via_spdy);
@@ -13546,7 +13546,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
 
     int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     if (data.IsPaused())
       data.Resume();
     rv = callback1.WaitForResult();
@@ -14101,7 +14101,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(callback2.have_result());
   EXPECT_EQ(OK, callback2.WaitForResult());
@@ -16111,7 +16111,7 @@ TEST_P(HttpNetworkTransactionTest, TokenBindingSpdy) {
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
             trans.Start(&request, callback.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(trans.GetResponseInfo()->was_fetched_via_spdy);
   HttpRequestHeaders headers;

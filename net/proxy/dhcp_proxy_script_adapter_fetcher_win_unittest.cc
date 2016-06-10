@@ -4,6 +4,7 @@
 
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
 
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -159,7 +160,7 @@ class FetcherClient {
 
   void FinishTestAllowCleanup() {
     fetcher_->FinishTest();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   TestCompletionCallback callback_;
@@ -217,7 +218,7 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileDhcp) {
   FetcherClient client;
   client.RunTest();
   client.fetcher_->Cancel();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
   EXPECT_EQ(ERR_ABORTED, client.fetcher_->GetResult());
@@ -235,10 +236,10 @@ TEST(DhcpProxyScriptAdapterFetcher, CancelWhileFetcher) {
   int max_loops = 4;
   while (!client.fetcher_->IsWaitingForFetcher() && max_loops--) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   client.fetcher_->Cancel();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
   EXPECT_EQ(ERR_ABORTED, client.fetcher_->GetResult());

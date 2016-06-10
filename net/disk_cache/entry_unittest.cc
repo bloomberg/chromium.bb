@@ -2153,7 +2153,7 @@ void DiskCacheEntryTest::DoomSparseEntry() {
   // Make sure we do all needed work. This may fail for entry2 if between Close
   // and DoomEntry the system decides to remove all traces of the file from the
   // system cache so we don't see that there is pending IO.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   if (memory_only_) {
     EXPECT_EQ(0, cache_->GetEntryCount());
@@ -2163,7 +2163,7 @@ void DiskCacheEntryTest::DoomSparseEntry() {
       // (it's always async on Posix so it is easy to miss). Unfortunately we
       // don't have any signal to watch for so we can only wait.
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(500));
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
     EXPECT_EQ(0, cache_->GetEntryCount());
   }
@@ -3034,7 +3034,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic4) {
 
   // Finish running the pending tasks so that we fully complete the close
   // operation and destroy the entry object.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // At this point the |entry| must have been destroyed, and called
   // RemoveSelfFromBackend().
@@ -3208,7 +3208,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
 
   // Finish running the pending tasks so that we fully complete the close
   // operation and destroy the entry object.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   for (int i = 0; i < disk_cache::kSimpleEntryFileCount; ++i) {
     base::FilePath entry_file_path = cache_path_.AppendASCII(
@@ -4056,7 +4056,7 @@ TEST_F(DiskCacheEntryTest, SimpleCachePreserveActiveEntries) {
   // one ref; this indicates the IO operation is complete.
   while (!entry1_refptr->HasOneRef()) {
     base::PlatformThread::YieldCurrentThread();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   entry1_refptr = NULL;
 

@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "net/http/mock_http_cache.h"
 #include "net/quic/crypto/quic_server_info.h"
@@ -132,7 +132,7 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   quic_server_info->Persist();
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Open the stored QuicServerInfo.
   quic_server_info.reset(
@@ -148,7 +148,7 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   // Fail instead of DCHECKing double creates.
   cache.disk_cache()->set_double_create_check(false);
   quic_server_info->Persist();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the state was updated.
   quic_server_info.reset(
@@ -204,7 +204,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   quic_server_info1->Persist();
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Persist data for port 80.
   QuicServerId server_id2("www.google.com", 80, PRIVACY_MODE_DISABLED);
@@ -232,7 +232,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   quic_server_info2->Persist();
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify the stored QuicServerInfo for port 443.
   std::unique_ptr<QuicServerInfo> quic_server_info(
@@ -310,7 +310,7 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   EXPECT_FALSE(quic_server_info->IsReadyToPersist());
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
 
@@ -373,7 +373,7 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   EXPECT_FALSE(quic_server_info->IsReadyToPersist());
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
 
@@ -400,7 +400,7 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   EXPECT_FALSE(quic_server_info->IsReadyToPersist());
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
 
@@ -493,7 +493,7 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
   // Wait until Start() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
@@ -521,7 +521,7 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
   EXPECT_FALSE(quic_server_info->IsReadyToPersist());
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
 
@@ -588,7 +588,7 @@ TEST(DiskCacheBasedQuicServerInfo, PersistWhenNotReadyToPersist) {
   EXPECT_TRUE(quic_server_info->IsDataReady());
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the state was updated.
   quic_server_info.reset(
@@ -666,7 +666,7 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersistsWithoutWaiting) {
   quic_server_info->Persist();
 
   // Wait until Persist() does the work.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
 

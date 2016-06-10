@@ -502,7 +502,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
   ClearResolver();
 
   // Give any posted tasks a chance to run (in case there is badness).
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Check that none of the outstanding requests were completed.
   EXPECT_FALSE(callback0.have_result());
@@ -540,7 +540,7 @@ TEST_F(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
   ASSERT_EQ(1u, factory().resolvers().size());
   EXPECT_EQ(1, factory().resolvers()[0]->request_count());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now block the first resolver to ensure a request is sent to the second
   // thread.

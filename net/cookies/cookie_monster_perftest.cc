@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
@@ -49,7 +50,7 @@ class BaseCallback {
     // Therefore, callbacks will actually always complete synchronously. If the
     // tests get more advanced we need to add other means of signaling
     // completion.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(has_run_);
     has_run_ = false;
   }
@@ -149,7 +150,7 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
 
   base::PerfTimeLogger timer3("Cookie_monster_deleteall_single_host");
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   timer3.Done();
 }
 
@@ -182,7 +183,7 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
 
   base::PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   timer3.Done();
 }
 

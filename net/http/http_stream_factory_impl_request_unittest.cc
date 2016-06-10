@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
@@ -156,7 +157,7 @@ TEST_P(HttpStreamFactoryImplRequestTest, DelayMainJob) {
   job->Start(&request);
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(wait_time + 1));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(delay, job->wait_time_);
   EXPECT_TRUE(job->wait_time_.is_zero());

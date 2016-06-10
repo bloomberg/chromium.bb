@@ -15,7 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/ec_private_key.h"
@@ -146,7 +146,7 @@ TEST(DefaultChannelIDStoreTest, TestLoading) {
       "verisign.com", base::Time(),
       base::WrapUnique(crypto::ECPrivateKey::Create()))));
   // Wait for load & queued set task.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, store.GetChannelIDCount());
   store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
       "twitter.com", base::Time(),
@@ -192,7 +192,7 @@ TEST(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
       base::WrapUnique(expected_key->Copy()))));
 
   // Wait for load & queued set tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, store.GetChannelIDCount());
   EXPECT_EQ(OK, store.GetChannelID("verisign.com", &key,
                                    base::Bind(&GetChannelIDCallbackNotCalled)));
@@ -217,7 +217,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncGet) {
                                           base::Unretained(&helper))));
 
   // Wait for load & queued get tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, store.GetChannelIDCount());
   EXPECT_FALSE(key);
   EXPECT_TRUE(helper.called_);
@@ -240,7 +240,7 @@ TEST(DefaultChannelIDStoreTest, TestDeleteAll) {
       "harvard.com", base::Time(),
       base::WrapUnique(crypto::ECPrivateKey::Create()))));
   // Wait for load & queued set tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3, store.GetChannelIDCount());
   int delete_finished = 0;
@@ -263,7 +263,7 @@ TEST(DefaultChannelIDStoreTest, TestDeleteForDomains) {
       "harvard.com", base::Time(),
       base::WrapUnique(crypto::ECPrivateKey::Create()))));
   // Wait for load & queued set tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, store.GetChannelIDCount());
 
   // Whitelist deletion.
@@ -310,7 +310,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncGetAndDeleteAll) {
   // Tasks have not run yet.
   EXPECT_EQ(0u, pre_channel_ids.size());
   // Wait for load & queued tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, store.GetChannelIDCount());
   EXPECT_EQ(2u, pre_channel_ids.size());
   EXPECT_EQ(0u, post_channel_ids.size());
@@ -326,7 +326,7 @@ TEST(DefaultChannelIDStoreTest, TestDelete) {
       "verisign.com", base::Time(),
       base::WrapUnique(crypto::ECPrivateKey::Create()))));
   // Wait for load & queued set task.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
       "google.com", base::Time(),
@@ -385,7 +385,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncDelete) {
   EXPECT_FALSE(a_helper.called_);
   EXPECT_FALSE(b_helper.called_);
   // Wait for load & queued tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delete_finished);
   EXPECT_EQ(1, store.GetChannelIDCount());
   EXPECT_FALSE(key);
@@ -417,7 +417,7 @@ TEST(DefaultChannelIDStoreTest, TestGetAll) {
       "mit.com", base::Time(),
       base::WrapUnique(crypto::ECPrivateKey::Create()))));
   // Wait for load & queued set tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(4, store.GetChannelIDCount());
   ChannelIDStore::ChannelIDList channel_ids;
@@ -442,7 +442,7 @@ TEST(DefaultChannelIDStoreTest, TestInitializeFrom) {
       "both.com", base::Time(),
       base::WrapUnique(crypto::ECPrivateKey::Create()))));
   // Wait for load & queued set tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, store.GetChannelIDCount());
 
   ChannelIDStore::ChannelIDList source_channel_ids;
@@ -499,7 +499,7 @@ TEST(DefaultChannelIDStoreTest, TestAsyncInitializeFrom) {
   store.InitializeFrom(source_channel_ids);
   EXPECT_EQ(0, store.GetChannelIDCount());
   // Wait for load & queued tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, store.GetChannelIDCount());
 
   ChannelIDStore::ChannelIDList channel_ids;

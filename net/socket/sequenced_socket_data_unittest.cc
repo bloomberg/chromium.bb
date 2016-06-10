@@ -490,7 +490,7 @@ TEST_F(SequencedSocketDataTest, SyncReadFromCompletionCallback) {
           base::Bind(&SequencedSocketDataTest::ReentrantReadCallback,
                      base::Unretained(this), kMsg1, kLen1, kLen2, kLen2)));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   AssertReadBufferEquals(kMsg2, kLen2);
 }
 
@@ -615,7 +615,7 @@ TEST_F(SequencedSocketDataTest, HangingRead) {
 
   // Even though the read is scheduled to complete at sequence number 0,
   // verify that the read callback in never called.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(read_callback_.have_result());
 }
 
@@ -795,7 +795,7 @@ TEST_F(SequencedSocketDataTest, SyncWriteFromCompletionCallback) {
           base::Bind(&SequencedSocketDataTest::ReentrantWriteCallback,
                      base::Unretained(this), kLen1, kMsg2, kLen2, kLen2)));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SequencedSocketDataTest, AsyncWriteFromCompletionCallback) {
@@ -1080,7 +1080,7 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperationsThenSynchronousRead) {
   ASSERT_EQ(ERR_IO_PENDING,
             sock_->Write(write_buf.get(), kLen1, helper.callback()));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   AssertReadBufferEquals(kMsg4, kLen4);
 }
 
@@ -1114,7 +1114,7 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperationsThenSynchronousWrite) {
   ASSERT_EQ(ERR_IO_PENDING,
             sock_->Read(helper.read_buf().get(), kLen1, helper.callback()));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test the basic case where a read is paused.
@@ -1132,7 +1132,7 @@ TEST_F(SequencedSocketDataTest, PauseAndResume_PauseRead) {
   ASSERT_TRUE(IsPaused());
 
   // Spinning the message loop should do nothing.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(read_callback_.have_result());
   ASSERT_TRUE(IsPaused());
 
@@ -1160,7 +1160,7 @@ TEST_F(SequencedSocketDataTest, PauseAndResume_WritePauseRead) {
   ASSERT_FALSE(read_callback_.have_result());
 
   // Nothing should happen until the write starts.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(read_callback_.have_result());
   ASSERT_FALSE(IsPaused());
 
@@ -1171,7 +1171,7 @@ TEST_F(SequencedSocketDataTest, PauseAndResume_WritePauseRead) {
   ASSERT_TRUE(IsPaused());
 
   // Spinning the message loop should do nothing.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(read_callback_.have_result());
   ASSERT_TRUE(IsPaused());
 
@@ -1197,7 +1197,7 @@ TEST_F(SequencedSocketDataTest, PauseAndResume_PauseWrite) {
   ASSERT_TRUE(IsPaused());
 
   // Spinning the message loop should do nothing.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(write_callback_.have_result());
   ASSERT_TRUE(IsPaused());
 
@@ -1224,7 +1224,7 @@ TEST_F(SequencedSocketDataTest, PauseAndResume_ReadPauseWrite) {
   ASSERT_FALSE(write_callback_.have_result());
 
   // Nothing should happen until the write starts.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(write_callback_.have_result());
   ASSERT_FALSE(IsPaused());
 
@@ -1235,7 +1235,7 @@ TEST_F(SequencedSocketDataTest, PauseAndResume_ReadPauseWrite) {
   ASSERT_TRUE(IsPaused());
 
   // Spinning the message loop should do nothing.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(write_callback_.have_result());
   ASSERT_TRUE(IsPaused());
 

@@ -13,9 +13,9 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -2535,14 +2535,14 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   // Before initialization, FlushStore() should just run the callback.
   cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(1, counter->callback_count());
 
   // NULL callback is safe.
   cm->FlushStore(base::Closure());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(1, counter->callback_count());
@@ -2550,14 +2550,14 @@ TEST_F(CookieMonsterTest, FlushStore) {
   // After initialization, FlushStore() should delegate to the store.
   GetAllCookies(cm.get());  // Force init.
   cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1, store->flush_count());
   ASSERT_EQ(2, counter->callback_count());
 
   // NULL callback is still safe.
   cm->FlushStore(base::Closure());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2, store->flush_count());
   ASSERT_EQ(2, counter->callback_count());
@@ -2566,12 +2566,12 @@ TEST_F(CookieMonsterTest, FlushStore) {
   cm.reset(new CookieMonster(nullptr, nullptr));
   GetAllCookies(cm.get());  // Force init.
   cm->FlushStore(base::Closure());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2, counter->callback_count());
 
   cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(3, counter->callback_count());
 }
@@ -3369,19 +3369,19 @@ TEST_F(CookieMonsterNotificationTest, NoNotifyWithNoCookie) {
       monster()->AddCallbackForCookie(
           test_url_, "abc",
           base::Bind(&RecordCookieChanges, &cookies, nullptr)));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0U, cookies.size());
 }
 
 TEST_F(CookieMonsterNotificationTest, NoNotifyWithInitialCookie) {
   std::vector<CanonicalCookie> cookies;
   SetCookie(monster(), test_url_, "abc=def");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
       monster()->AddCallbackForCookie(
           test_url_, "abc",
           base::Bind(&RecordCookieChanges, &cookies, nullptr)));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0U, cookies.size());
 }
 
@@ -3393,7 +3393,7 @@ TEST_F(CookieMonsterNotificationTest, NotifyOnSet) {
           test_url_, "abc",
           base::Bind(&RecordCookieChanges, &cookies, &removes)));
   SetCookie(monster(), test_url_, "abc=def");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies.size());
   EXPECT_EQ(1U, removes.size());
 
@@ -3410,12 +3410,12 @@ TEST_F(CookieMonsterNotificationTest, NotifyOnDelete) {
           test_url_, "abc",
           base::Bind(&RecordCookieChanges, &cookies, &removes)));
   SetCookie(monster(), test_url_, "abc=def");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies.size());
   EXPECT_EQ(1U, removes.size());
 
   DeleteCookie(monster(), test_url_, "abc");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2U, cookies.size());
   EXPECT_EQ(2U, removes.size());
 
@@ -3432,13 +3432,13 @@ TEST_F(CookieMonsterNotificationTest, NotifyOnUpdate) {
           test_url_, "abc",
           base::Bind(&RecordCookieChanges, &cookies, &removes)));
   SetCookie(monster(), test_url_, "abc=def");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies.size());
 
   // Replacing an existing cookie is actually a two-phase delete + set
   // operation, so we get an extra notification.
   SetCookie(monster(), test_url_, "abc=ghi");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3U, cookies.size());
   EXPECT_EQ(3U, removes.size());
@@ -3464,11 +3464,11 @@ TEST_F(CookieMonsterNotificationTest, MultipleNotifies) {
           test_url_, "def",
           base::Bind(&RecordCookieChanges, &cookies1, nullptr)));
   SetCookie(monster(), test_url_, "abc=def");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies0.size());
   EXPECT_EQ(0U, cookies1.size());
   SetCookie(monster(), test_url_, "def=abc");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies0.size());
   EXPECT_EQ(1U, cookies1.size());
 }
@@ -3485,7 +3485,7 @@ TEST_F(CookieMonsterNotificationTest, MultipleSameNotifies) {
           test_url_, "abc",
           base::Bind(&RecordCookieChanges, &cookies1, nullptr)));
   SetCookie(monster(), test_url_, "abc=def");
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies0.size());
   EXPECT_EQ(1U, cookies0.size());
 }

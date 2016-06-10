@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -91,7 +92,7 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
       FROM_HERE, base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
                             base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(network_delegate.got_pac_error());
 }
 
@@ -105,7 +106,7 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
       FROM_HERE, base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
                             base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Shouldn't have crashed until here...
 }
 

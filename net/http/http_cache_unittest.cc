@@ -1288,7 +1288,7 @@ TEST(HttpCache, SimpleGET_ManyReaders) {
   }
 
   // Allow all requests to move from the Create queue to the active entry.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first request should be a writer at this point, and the subsequent
   // requests should be pending.
@@ -1353,7 +1353,7 @@ TEST(HttpCache, SimpleGET_RacingReaders) {
   }
 
   // Allow all requests to move from the Create queue to the active entry.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first request should be a writer at this point, and the subsequent
   // requests should be pending.
@@ -1480,7 +1480,7 @@ TEST(HttpCache, FastNoStoreGET_DoneWithPending) {
   }
 
   // Allow all requests to move from the Create queue to the active entry.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first request should be a writer at this point, and the subsequent
   // requests should be pending.
@@ -1527,7 +1527,7 @@ TEST(HttpCache, SimpleGET_ManyWriters_CancelFirst) {
   }
 
   // Allow all requests to move from the Create queue to the active entry.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first request should be a writer at this point, and the subsequent
   // requests should be pending.
@@ -1641,7 +1641,7 @@ TEST(HttpCache, SimpleGET_CancelCreate) {
   cache.disk_cache()->ReleaseAll();
   delete c;
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
@@ -1742,7 +1742,7 @@ TEST(HttpCache, SimpleGET_AbandonedCacheRead) {
 
   // Make sure we pump any pending events, which should include a call to
   // HttpCache::Transaction::OnCacheReadCompleted.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests that we can delete the HttpCache and deal with queued transactions
@@ -1811,14 +1811,14 @@ TEST(HttpCache, SimpleGET_WaitForBackend) {
       &request2, context_list[2]->callback.callback(), BoundNetLog());
 
   // Just to make sure that everything is still pending.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first request should be creating the disk cache.
   EXPECT_FALSE(context_list[0]->callback.have_result());
 
   factory->FinishCreation();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(3, cache.disk_cache()->create_count());
 
@@ -1857,7 +1857,7 @@ TEST(HttpCache, SimpleGET_WaitForBackend_CancelCreate) {
       &request2, context_list[2]->callback.callback(), BoundNetLog());
 
   // Just to make sure that everything is still pending.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The first request should be creating the disk cache.
   EXPECT_FALSE(context_list[0]->callback.have_result());
@@ -1898,7 +1898,7 @@ TEST(HttpCache, DeleteCacheWaitingForBackend) {
   c->trans->Start(&request, c->callback.callback(), BoundNetLog());
 
   // Just to make sure that everything is still pending.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The request should be creating the disk cache.
   EXPECT_FALSE(c->callback.have_result());
@@ -1909,7 +1909,7 @@ TEST(HttpCache, DeleteCacheWaitingForBackend) {
   std::unique_ptr<disk_cache::Backend>* backend = factory->backend();
 
   cache.reset();
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   backend->reset();
   callback.Run(ERR_ABORTED);
@@ -1941,7 +1941,7 @@ TEST(HttpCache, DeleteCacheWaitingForBackend2) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Just to make sure that everything is still pending.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The request should be queued.
   EXPECT_FALSE(c->callback.have_result());
@@ -1951,7 +1951,7 @@ TEST(HttpCache, DeleteCacheWaitingForBackend2) {
   rv = cb.WaitForResult();
 
   // The cache should be gone by now.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OK, c->callback.GetResult(c->result));
   EXPECT_FALSE(cb2.have_result());
 }
@@ -3355,7 +3355,7 @@ TEST(HttpCache, TypicalHEAD_UpdatesResponse) {
   AddMockTransaction(&transaction2);
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Load from the cache.
   transaction2.load_flags |= LOAD_ONLY_FROM_CACHE;
@@ -3395,7 +3395,7 @@ TEST(HttpCache, TypicalHEAD_ConditionalizedRequestUpdatesResponse) {
   AddMockTransaction(&transaction2);
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Load from the cache.
   transaction2.load_flags |= LOAD_ONLY_FROM_CACHE;
@@ -4089,7 +4089,7 @@ TEST(HttpCache, MAYBE_RangeGET_OK) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Write to the cache (30-39).
   MockTransaction transaction(kRangeGET_TransactionOK);
@@ -4103,7 +4103,7 @@ TEST(HttpCache, MAYBE_RangeGET_OK) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Write and read from the cache (20-59).
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
@@ -4156,7 +4156,7 @@ TEST(HttpCache, MAYBE_RangeGET_SyncOK) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Write to the cache (30-39).
   transaction.request_headers = "Range: bytes = 30-39\r\n" EXTRA_HEADER;
@@ -4169,7 +4169,7 @@ TEST(HttpCache, MAYBE_RangeGET_SyncOK) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Write and read from the cache (20-59).
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
@@ -4656,7 +4656,7 @@ TEST(HttpCache, UnknownRangeGET_1) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Write and read from the cache (60-79).
   transaction.request_headers = "Range: bytes = 60-\r\n" EXTRA_HEADER;
@@ -4695,7 +4695,7 @@ TEST(HttpCache, UnknownRangeGET_2) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // Make sure we are done with the previous transaction.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Write and read from the cache (60-79).
   transaction.request_headers = "Range: bytes = -20\r\n" EXTRA_HEADER;
@@ -5041,7 +5041,7 @@ TEST(HttpCache, MAYBE_RangeGET_Previous200) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
   // The last transaction has finished so make sure the entry is deactivated.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Make a request for an invalid range.
   MockTransaction transaction3(kRangeGET_TransactionOK);
@@ -5055,14 +5055,14 @@ TEST(HttpCache, MAYBE_RangeGET_Previous200) {
   EXPECT_EQ(std::string::npos, headers.find("Content-Length: 80"));
 
   // Make sure the entry is deactivated.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Even though the request was invalid, we should have the entry.
   RunTransactionTest(cache.http_cache(), transaction2);
   EXPECT_EQ(3, cache.disk_cache()->open_count());
 
   // Make sure the entry is deactivated.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Now we should receive a range from the server and drop the stored entry.
   handler.set_not_modified(false);
@@ -5290,14 +5290,14 @@ TEST(HttpCache, RangeGET_Cancel3) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   MockDiskEntry::IgnoreCallbacks(true);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   MockDiskEntry::IgnoreCallbacks(false);
 
   // The new transaction is waiting for the query range callback.
   delete c;
 
   // And we should not crash when the callback is delivered.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -6009,7 +6009,7 @@ TEST(HttpCache, GET_IncompleteResource_Cancel) {
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(2, cache.disk_cache()->create_count());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   RemoveMockTransaction(&transaction);
 }
 
@@ -6365,7 +6365,7 @@ TEST(HttpCache, CachedRedirect) {
   // Active entries in the cache are not retired synchronously. Make
   // sure the next run hits the MockHttpCache and open_count is
   // correct.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read from the cache.
   {
@@ -6690,7 +6690,7 @@ TEST(HttpCache, WriteMetadata_OK) {
   buf = NULL;
 
   // Makes sure we finish pending operations.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
@@ -6724,7 +6724,7 @@ TEST(HttpCache, WriteMetadata_Fail) {
                                     buf->size());
 
   // Makes sure we finish pending operations.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
@@ -6755,7 +6755,7 @@ TEST(HttpCache, ReadMetadata) {
                                     buf.get(), buf->size());
 
   // Makes sure we finish pending operations.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Start with a READ mode transaction.
   MockTransaction trans1(kTypicalGET_Transaction);
@@ -6769,7 +6769,7 @@ TEST(HttpCache, ReadMetadata) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(2, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Now make sure that the entry is re-validated with the server.
   trans1.load_flags = LOAD_VALIDATE_CACHE;
@@ -6783,7 +6783,7 @@ TEST(HttpCache, ReadMetadata) {
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(3, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   RemoveMockTransaction(&trans1);
 
   // Now return 200 when validating the entry so the metadata will be lost.
@@ -6820,7 +6820,7 @@ TEST(HttpCache, FilterCompletion) {
   }
 
   // Make sure that the ActiveEntry is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read from the cache.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -6851,7 +6851,7 @@ TEST(HttpCache, DoneReading) {
   // Leave the transaction around.
 
   // Make sure that the ActiveEntry is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read from the cache. This should not deadlock.
   RunTransactionTest(cache.http_cache(), transaction);
@@ -6888,7 +6888,7 @@ TEST(HttpCache, StopCachingDeletesEntry) {
   }
 
   // Make sure that the ActiveEntry is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the entry is gone.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -6929,7 +6929,7 @@ TEST(HttpCache, StopCachingThenDoneReadingDeletesEntry) {
   }
 
   // Make sure that the ActiveEntry is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the entry is gone.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -6964,7 +6964,7 @@ TEST(HttpCache, StopCachingWithAuthDeletesEntry) {
   RemoveMockTransaction(&mock_transaction);
 
   // Make sure that the ActiveEntry is gone.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the entry is gone.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -7286,7 +7286,7 @@ TEST(HttpCache, NetworkBytesRange) {
   RunTransactionAndGetNetworkBytes(cache, transaction, &sent, &received);
   EXPECT_EQ(0, sent);
   EXPECT_EQ(0, received);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read bytes 30-39 from the network.
   transaction.request_headers = "Range: bytes = 30-39\r\n" EXTRA_HEADER;
@@ -7294,7 +7294,7 @@ TEST(HttpCache, NetworkBytesRange) {
   RunTransactionAndGetNetworkBytes(cache, transaction, &sent, &received);
   EXPECT_EQ(MockNetworkTransaction::kTotalSentBytes, sent);
   EXPECT_EQ(MockNetworkTransaction::kTotalReceivedBytes, received);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read bytes 20-29 and 50-59 from the network, bytes 30-49 from the cache.
   transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
@@ -7608,7 +7608,7 @@ TEST(HttpCache, NoStoreResponseShouldNotBlockFollowingRequests) {
       first->trans->Start(&request, first->callback.callback(), BoundNetLog());
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_CACHE, first->trans->GetLoadState());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(LOAD_STATE_IDLE, first->trans->GetLoadState());
   ASSERT_TRUE(first->trans->GetResponseInfo());
   EXPECT_TRUE(first->trans->GetResponseInfo()->headers->HasHeaderValue(
@@ -7625,7 +7625,7 @@ TEST(HttpCache, NoStoreResponseShouldNotBlockFollowingRequests) {
 
   // Here the second transaction proceeds without reading the first body.
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_CACHE, second->trans->GetLoadState());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(LOAD_STATE_IDLE, second->trans->GetLoadState());
   ASSERT_TRUE(second->trans->GetResponseInfo());
   EXPECT_TRUE(second->trans->GetResponseInfo()->headers->HasHeaderValue(

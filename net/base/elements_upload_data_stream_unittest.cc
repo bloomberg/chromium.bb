@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -503,7 +502,7 @@ TEST_F(ElementsUploadDataStreamTest, ReadAsync) {
   TestCompletionCallback read_callback1;
   EXPECT_EQ(static_cast<int>(kTestDataSize),
             stream->Read(buf.get(), kTestDataSize, read_callback1.callback()));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(read_callback1.have_result());
 
   // Consume the second element.

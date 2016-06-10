@@ -481,7 +481,7 @@ TEST_F(DiskCacheTest, CreateBackend) {
     cache.reset();
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests that |BackendImpl| fails to initialize with a missing file.
@@ -550,7 +550,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
       EXPECT_TRUE(cb.have_result());
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
 #if !defined(OS_IOS)
   // Wait for the actual operation to complete, or we'll keep a file handle that
@@ -614,7 +614,7 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
   if (rv == net::ERR_IO_PENDING)
     EXPECT_FALSE(cb.have_result());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Wait for the actual operation to complete, or we'll keep a file handle that
   // may cause issues later.
@@ -648,7 +648,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {
     cache_.reset();
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(cb.have_result());
 }
 
@@ -688,7 +688,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingCreate(bool fast) {
     EXPECT_FALSE(cb.have_result());
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(cb.have_result());
 }
 
@@ -730,7 +730,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingDoom() {
     EXPECT_FALSE(cb.have_result());
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(cb.have_result());
 }
 
@@ -1203,7 +1203,7 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry() {
   // If we evicted the entry in less than 20mS, we have one entry in the cache;
   // if it took more than that, we posted a task and we'll delete the second
   // entry too.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // This may be not thread-safe in general, but for now it's OK so add some
   // ThreadSanitizer annotations to ignore data races on cache_.
@@ -1268,7 +1268,7 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry2() {
   FlushQueueForTest();
 
   // We may abort the eviction before cleaning up everything.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   FlushQueueForTest();
   // If it's not clear enough: we may still have eviction tasks running at this
   // time, so the number of entries is changing while we read it.
@@ -3068,7 +3068,7 @@ void DiskCacheBackendTest::BackendDoomAll() {
   ASSERT_EQ(0, cache_->GetEntryCount());
 
   // We should stop posting tasks at some point (if we post any).
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   disk_cache::Entry *entry3, *entry4;
   EXPECT_NE(net::OK, OpenEntry("third", &entry3));
