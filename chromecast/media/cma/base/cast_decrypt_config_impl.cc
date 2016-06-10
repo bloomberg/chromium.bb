@@ -4,25 +4,16 @@
 
 #include "chromecast/media/cma/base/cast_decrypt_config_impl.h"
 
-#include "media/base/decrypt_config.h"
-
 namespace chromecast {
 namespace media {
 
 CastDecryptConfigImpl::CastDecryptConfigImpl(
-    const ::media::DecryptConfig& config)
-    : key_id_(config.key_id()), iv_(config.iv()) {
-  for (const auto& sample : config.subsamples()) {
-    subsamples_.push_back(
-        SubsampleEntry(sample.clear_bytes, sample.cypher_bytes));
-  }
-}
-
-CastDecryptConfigImpl::CastDecryptConfigImpl(
-    const std::string& key_id,
-    const std::string& iv,
-    const std::vector<SubsampleEntry>& subsamples)
-    : key_id_(key_id), iv_(iv), subsamples_(subsamples) {}
+    std::string key_id,
+    std::string iv,
+    std::vector<SubsampleEntry> subsamples)
+    : key_id_(std::move(key_id)),
+      iv_(std::move(iv)),
+      subsamples_(std::move(subsamples)) {}
 
 CastDecryptConfigImpl::~CastDecryptConfigImpl() {}
 

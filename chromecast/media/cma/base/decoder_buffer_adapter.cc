@@ -20,6 +20,24 @@ DecoderBufferAdapter::DecoderBufferAdapter(
     StreamId stream_id, const scoped_refptr<::media::DecoderBuffer>& buffer)
     : stream_id_(stream_id),
       buffer_(buffer) {
+  DCHECK(buffer_);
+
+  const ::media::DecryptConfig* decrypt_config =
+      buffer_->end_of_stream() ? nullptr : buffer_->decrypt_config();
+  if (decrypt_config && decrypt_config->is_encrypted()) {
+    std::vector<SubsampleEntry> subsamples;
+    for (const auto& sample : decrypt_config->subsamples()) {
+      subsamples.emplace_back(sample.clear_bytes, sample.cypher_bytes);
+    }
+    if (subsamples.empty()) {
+      // DecryptConfig may contain 0 subsamples if all content is encrypted.
+      // Map this case to a single fully-encrypted "subsample" for more
+      // consistent backend handling.
+      subsamples.emplace_back(0, buffer_->data_size());
+    }
+    decrypt_config_.reset(new CastDecryptConfigImpl(
+        decrypt_config->key_id(), decrypt_config->iv(), std::move(subsamples)));
+  }
 }
 
 DecoderBufferAdapter::~DecoderBufferAdapter() {
@@ -50,11 +68,6 @@ size_t DecoderBufferAdapter::data_size() const {
 }
 
 const CastDecryptConfig* DecoderBufferAdapter::decrypt_config() const {
-  if (buffer_->decrypt_config() && !decrypt_config_) {
-    const ::media::DecryptConfig* config = buffer_->decrypt_config();
-    decrypt_config_.reset(new CastDecryptConfigImpl(*config));
-  }
-
   return decrypt_config_.get();
 }
 

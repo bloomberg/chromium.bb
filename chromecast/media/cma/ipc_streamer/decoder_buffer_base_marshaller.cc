@@ -170,27 +170,11 @@ void DecoderBufferBaseMarshaller::Write(
   CHECK(msg->WritePod(buffer->stream_id()));
   CHECK(msg->WritePod(buffer->timestamp()));
 
-  bool has_decrypt_config =
-      (buffer->decrypt_config() != NULL &&
-       buffer->decrypt_config()->iv().size() > 0);
+  bool has_decrypt_config = buffer->decrypt_config() != nullptr;
   CHECK(msg->WritePod(has_decrypt_config));
 
-  if (has_decrypt_config) {
-    // DecryptConfig may contain 0 subsamples if all content is encrypted.
-    // Map this case to a single fully-encrypted "subsample" for more consistent
-    // backend handling.
-    if (buffer->decrypt_config()->subsamples().empty()) {
-      std::vector<SubsampleEntry> encrypted_subsample_list(1);
-      encrypted_subsample_list[0].clear_bytes = 0;
-      encrypted_subsample_list[0].cypher_bytes = buffer->data_size();
-      CastDecryptConfigImpl full_sample_config(
-          buffer->decrypt_config()->key_id(), buffer->decrypt_config()->iv(),
-          encrypted_subsample_list);
-      DecryptConfigMarshaller::Write(full_sample_config, msg);
-    } else {
-      DecryptConfigMarshaller::Write(*buffer->decrypt_config(), msg);
-    }
-  }
+  if (has_decrypt_config)
+    DecryptConfigMarshaller::Write(*buffer->decrypt_config(), msg);
 
   CHECK(msg->WritePod(buffer->data_size()));
   CHECK(msg->WriteBuffer(buffer->data(), buffer->data_size()));

@@ -49,7 +49,7 @@ class DecoderBufferAdapter : public DecoderBufferBase {
 
   StreamId stream_id_;
   scoped_refptr<::media::DecoderBuffer> const buffer_;
-  mutable std::unique_ptr<CastDecryptConfig> decrypt_config_;
+  std::unique_ptr<CastDecryptConfig> decrypt_config_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferAdapter);
 };

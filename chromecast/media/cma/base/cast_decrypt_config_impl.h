@@ -7,20 +7,15 @@
 
 #include "chromecast/public/media/cast_decrypt_config.h"
 
-namespace media {
-class DecryptConfig;
-}
-
 namespace chromecast {
 namespace media {
 
 // Contains all information that a decryptor needs to decrypt a media sample.
 class CastDecryptConfigImpl : public CastDecryptConfig {
  public:
-  CastDecryptConfigImpl(const ::media::DecryptConfig& config);
-  CastDecryptConfigImpl(const std::string& key_id,
-                        const std::string& iv,
-                        const std::vector<SubsampleEntry>& subsamples);
+  CastDecryptConfigImpl(std::string key_id,
+                        std::string iv,
+                        std::vector<SubsampleEntry> subsamples);
   ~CastDecryptConfigImpl() override;
 
   const std::string& key_id() const override;
