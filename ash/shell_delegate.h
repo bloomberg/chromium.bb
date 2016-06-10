@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
 
@@ -18,10 +17,6 @@ class GURL;
 namespace app_list {
 class AppListPresenter;
 class AppListViewDelegate;
-}
-
-namespace aura {
-class Window;
 }
 
 namespace gfx {
@@ -44,6 +39,7 @@ namespace ash {
 
 class AccessibilityDelegate;
 class ContainerDelegate;
+class GPUSupport;
 class MediaDelegate;
 class NewWindowDelegate;
 class PointerWatcherDelegate;
@@ -54,6 +50,7 @@ class SystemTrayDelegate;
 class UserWallpaperDelegate;
 struct ShelfItem;
 class WmShelf;
+class WmWindow;
 
 class ASH_EXPORT VirtualKeyboardStateObserver {
  public:
@@ -87,7 +84,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
-  virtual bool CanShowWindowForUser(aura::Window* window) const = 0;
+  virtual bool CanShowWindowForUser(WmWindow* window) const = 0;
 
   // Returns true if the first window shown on first run should be
   // unconditionally maximized, overriding the heuristic that normally chooses

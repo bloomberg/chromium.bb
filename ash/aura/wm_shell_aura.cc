@@ -80,8 +80,7 @@ bool WmShellAura::IsForceMaximizeOnFirstRun() {
 }
 
 bool WmShellAura::CanShowWindowForUser(WmWindow* window) {
-  return Shell::GetInstance()->delegate()->CanShowWindowForUser(
-      WmWindowAura::GetAuraWindow(window));
+  return Shell::GetInstance()->delegate()->CanShowWindowForUser(window);
 }
 
 void WmShellAura::LockCursor() {

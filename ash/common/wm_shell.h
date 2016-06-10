@@ -70,6 +70,8 @@ class ASH_EXPORT WmShell {
   // Returns true if |window| can be shown for the current user. This is
   // intended to check if the current user matches the user associated with
   // |window|.
+  // TODO(jamescook): Remove this when ShellDelegate is accessible via this
+  // interface.
   virtual bool CanShowWindowForUser(WmWindow* window) = 0;
 
   // See aura::client::CursorClient for details on these.

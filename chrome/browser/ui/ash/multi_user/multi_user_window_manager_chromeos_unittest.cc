@@ -106,9 +106,9 @@ class TestShellDelegateChromeOS : public ash::test::TestShellDelegate {
     return new ash::test::TestSessionStateDelegate;
   }
 
-  bool CanShowWindowForUser(aura::Window* window) const override {
+  bool CanShowWindowForUser(ash::WmWindow* window) const override {
     return ::CanShowWindowForUser(
-        window,
+        ash::WmWindowAura::GetAuraWindow(window),
         base::Bind(&ash::ShellContentState::GetActiveBrowserContext,
                    base::Unretained(ash::ShellContentState::GetInstance())));
   }

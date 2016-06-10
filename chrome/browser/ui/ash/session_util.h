@@ -21,7 +21,7 @@ content::BrowserContext* GetActiveBrowserContext();
 using GetActiveBrowserContextCallback =
     base::Callback<content::BrowserContext*(void)>;
 
-// See documentation in ash/shell_delegate.h for the method of the same name.
+// See documentation in ash::ShellDelegate for the method of the same name.
 // |context| is the content::BrowserContext deemed active for the current
 // scenario. This is passed in because it can differ in tests vs. production.
 // See for example MultiUserWindowManagerTestChromeOS.

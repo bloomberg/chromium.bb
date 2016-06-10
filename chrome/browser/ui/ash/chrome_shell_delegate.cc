@@ -17,6 +17,7 @@
 #include "ash/container_delegate_aura.h"
 #include "ash/content/gpu_support_impl.h"
 #include "ash/pointer_watcher_delegate_aura.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -359,8 +360,9 @@ bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
 }
 
-bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
-  return ::CanShowWindowForUser(window, base::Bind(&GetActiveBrowserContext));
+bool ChromeShellDelegate::CanShowWindowForUser(ash::WmWindow* window) const {
+  return ::CanShowWindowForUser(ash::WmWindowAura::GetAuraWindow(window),
+                                base::Bind(&GetActiveBrowserContext));
 }
 
 bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {

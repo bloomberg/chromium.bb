@@ -11,7 +11,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/shell_delegate.h"
+#include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_item_view.h"
