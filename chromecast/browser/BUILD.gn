@@ -84,6 +84,7 @@ source_set("browser") {
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
     "//chromecast/common",
+    "//chromecast/common/media",
     "//chromecast/media",
     "//chromecast/net",
     "//chromecast/service",

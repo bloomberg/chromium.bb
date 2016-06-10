@@ -2,15 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
 source_set("media") {
   sources = [
     "cast_browser_cdm_factory.cc",
     "cast_browser_cdm_factory.h",
-    "cast_media_client_android.cc",
-    "cast_media_client_android.h",
     "media_pipeline_backend_factory.h",
     "media_pipeline_host.cc",
     "media_pipeline_host.h",
@@ -23,10 +20,6 @@ source_set("media") {
       "cast_renderer.cc",
       "cast_renderer.h",
     ]
-  }
-
-  if (use_playready) {
-    public_configs = [ "//chromecast:playready_config" ]
   }
 
   if (mojo_media_host == "browser") {
@@ -46,9 +39,7 @@ source_set("media") {
     "//media",
   ]
 
-  if (is_android) {
-    deps += [ "//components/cdm/common" ]
-  } else {
+  if (!is_android) {
     sources += [
       "cma_message_filter_host.cc",
       "cma_message_filter_host.h",

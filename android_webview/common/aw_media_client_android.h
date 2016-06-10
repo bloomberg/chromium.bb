@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_MEDIA_CLIENT_ANDROID_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_MEDIA_CLIENT_ANDROID_H_
+#ifndef ANDROID_WEBVIEW_COMMON_AW_MEDIA_CLIENT_ANDROID_H_
+#define ANDROID_WEBVIEW_COMMON_AW_MEDIA_CLIENT_ANDROID_H_
 
 #include "base/macros.h"
 #include "components/cdm/common/widevine_drm_delegate_android.h"
@@ -33,4 +33,4 @@ class AwMediaClientAndroid : public media::MediaClientAndroid {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_MEDIA_CLIENT_ANDROID_H_
+#endif  // ANDROID_WEBVIEW_COMMON_AW_MEDIA_CLIENT_ANDROID_H_

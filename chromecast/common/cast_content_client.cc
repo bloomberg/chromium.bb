@@ -16,6 +16,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_util.h"
 
+#if defined(OS_ANDROID)
+#include "chromecast/common/media/cast_media_client_android.h"
+#endif
+
 namespace chromecast {
 namespace shell {
 
@@ -111,6 +115,12 @@ gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
+
+#if defined(OS_ANDROID)
+::media::MediaClientAndroid* CastContentClient::GetMediaClientAndroid() {
+  return new media::CastMediaClientAndroid();
+}
+#endif  // OS_ANDROID
 
 }  // namespace shell
 }  // namespace chromecast

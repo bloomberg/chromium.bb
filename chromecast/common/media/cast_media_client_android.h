@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
-#define CHROMECAST_BROWSER_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
+#ifndef CHROMECAST_COMMON_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
+#define CHROMECAST_COMMON_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
 
 #include <map>
 
@@ -38,4 +38,4 @@ class CastMediaClientAndroid : public ::media::MediaClientAndroid {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
+#endif  // CHROMECAST_COMMON_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_

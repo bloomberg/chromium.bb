@@ -28,6 +28,9 @@ class CastContentClient : public content::ContentClient {
   base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
+#if defined(OS_ANDROID)
+  media::MediaClientAndroid* GetMediaClientAndroid() override;
+#endif  // OS_ANDROID
 };
 
 }  // namespace shell

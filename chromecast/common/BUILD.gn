@@ -22,6 +22,7 @@ source_set("common") {
     "//base",
     "//chromecast/base",
     "//chromecast/base:cast_version",
+    "//chromecast/common/media",
     "//content/public/common",
     "//ui/base",
     "//ui/gfx",

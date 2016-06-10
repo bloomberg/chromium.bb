@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
+
 # CMA is not used on Android; exclude CMA-specific targets.
 enable_cma = !is_android
 
@@ -12,17 +14,34 @@ source_set("media") {
     "shared_memory_chunk.h",
   ]
 
-  public_deps = [
-    ":cast_messages",
-  ]
-  if (enable_cma) {
-    public_deps += [ ":cma_messages" ]
-  }
-
   deps = [
     "//base",
     "//chromecast/media/cma/ipc",
   ]
+
+  public_deps = [
+    ":cast_messages",
+  ]
+
+  if (enable_cma) {
+    public_deps += [ ":cma_messages" ]
+  }
+
+  if (is_android) {
+    sources += [
+      "cast_media_client_android.cc",
+      "cast_media_client_android.h",
+    ]
+    deps += [
+      "//chromecast/media/base",
+      "//components/cdm/common",
+      "//media/base/android",
+    ]
+  }
+
+  if (use_playready) {
+    public_configs = [ "//chromecast:playready_config" ]
+  }
 }
 
 # GYP target: chromecast.gyp:cast_shell_common

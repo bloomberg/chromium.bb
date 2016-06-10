@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_media_client_android.h"
+#include "android_webview/common/aw_media_client_android.h"
 
 #include <utility>
 
@@ -49,11 +49,9 @@ media::MediaClientAndroid::KeySystemUuidMap::value_type CreateMappingFromString(
 
 AwMediaClientAndroid::AwMediaClientAndroid(
     const std::vector<std::string>& key_system_uuid_mappings)
-    : key_system_uuid_mappings_(key_system_uuid_mappings) {
-}
+    : key_system_uuid_mappings_(key_system_uuid_mappings) {}
 
-AwMediaClientAndroid::~AwMediaClientAndroid() {
-}
+AwMediaClientAndroid::~AwMediaClientAndroid() {}
 
 void AwMediaClientAndroid::AddKeySystemUUIDMappings(KeySystemUuidMap* map) {
   for (const std::string& key_system_uuid_mapping : key_system_uuid_mappings_) {

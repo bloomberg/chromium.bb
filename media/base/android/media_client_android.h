@@ -20,8 +20,9 @@ namespace media {
 class MediaClientAndroid;
 class MediaDrmBridgeDelegate;
 
-// Setter for MediaClientAndroid. This should be called early in embedder
-// lifecycle, before any media playback could occur.
+// Setter for MediaClientAndroid. This should be called in all processes where
+// we want to run media Android code. Also it should be called before any media
+// playback could occur.
 MEDIA_EXPORT void SetMediaClientAndroid(MediaClientAndroid* media_client);
 
 #if defined(MEDIA_IMPLEMENTATION)
@@ -31,8 +32,8 @@ MediaClientAndroid* GetMediaClientAndroid();
 
 using UUID = std::vector<uint8_t>;
 
-// A client interface for embedders (e.g. content/browser) to provide customized
-// additions to Android's browser-side media handling.
+// A client interface for embedders (e.g. content/browser or content/gpu) to
+// provide customized additions to Android's media handling.
 class MEDIA_EXPORT MediaClientAndroid {
  public:
   typedef base::hash_map<std::string, UUID> KeySystemUuidMap;

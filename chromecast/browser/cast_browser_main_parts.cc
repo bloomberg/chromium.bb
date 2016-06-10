@@ -66,7 +66,7 @@
 
 #if defined(OS_ANDROID)
 #include "chromecast/app/android/crash_handler.h"
-#include "chromecast/browser/media/cast_media_client_android.h"
+#include "chromecast/common/media/cast_media_client_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "media/base/android/media_client_android.h"
 #include "media/base/media_switches.h"

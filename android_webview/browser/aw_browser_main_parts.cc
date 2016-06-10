@@ -6,10 +6,10 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_dev_tools_discovery_provider.h"
-#include "android_webview/browser/aw_media_client_android.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
+#include "android_webview/common/aw_media_client_android.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/android/apk_assets.h"

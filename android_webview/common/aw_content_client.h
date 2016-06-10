@@ -32,6 +32,7 @@ class AwContentClient : public content::ContentClient {
   bool CanSendWhileSwappedOut(const IPC::Message* message) override;
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
   bool UsingSynchronousCompositing() override;
+  media::MediaClientAndroid* GetMediaClientAndroid() override;
 
   const std::string& gpu_fingerprint() const { return gpu_fingerprint_; }
 
