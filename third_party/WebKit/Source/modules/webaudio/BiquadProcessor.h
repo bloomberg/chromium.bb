@@ -38,6 +38,7 @@ namespace blink {
 
 class BiquadProcessor final : public AudioDSPKernelProcessor {
 public:
+    // This values are used in histograms and should not be renumbered or deleted.
     enum FilterType {
         LowPass = 0,
         HighPass = 1,

@@ -31,6 +31,7 @@
 #include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/Histogram.h"
 #include "platform/audio/HRTFPanner.h"
 #include "wtf/MathExtras.h"
 
@@ -52,7 +53,6 @@ PannerHandler::PannerHandler(
     AudioParamHandler& orientationZ)
     : AudioHandler(NodeTypePanner, node, sampleRate)
     , m_listener(node.context()->listener())
-    , m_panningModel(Panner::PanningModelEqualPower)
     , m_distanceModel(DistanceEffect::ModelInverse)
     , m_isAzimuthElevationDirty(true)
     , m_isDistanceConeGainDirty(true)
@@ -78,6 +78,10 @@ PannerHandler::PannerHandler(
     m_channelCount = 2;
     m_channelCountMode = ClampedMax;
     m_channelInterpretation = AudioBus::Speakers;
+
+    // Explicitly set the default panning model here so that the histograms
+    // include the default value.
+    setPanningModel("equalpower");
 
     initialize();
 }
@@ -284,6 +288,10 @@ void PannerHandler::setPanningModel(const String& model)
 
 bool PannerHandler::setPanningModel(unsigned model)
 {
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, panningModelHistogram,
+        ("WebAudio.PannerNode.PanningModel", 2));
+    panningModelHistogram.count(model);
+
     switch (model) {
     case Panner::PanningModelEqualPower:
     case Panner::PanningModelHRTF:

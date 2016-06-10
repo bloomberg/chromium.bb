@@ -234,7 +234,47 @@ AudioBuffer* AbstractAudioContext::createBuffer(unsigned numberOfChannels, size_
     // It's ok to call createBuffer, even if the context is closed because the AudioBuffer doesn't
     // really "belong" to any particular context.
 
-    return AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
+    AudioBuffer* buffer = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
+
+    if (buffer) {
+        // Only record the data if the creation succeeded.
+        DEFINE_STATIC_LOCAL(SparseHistogram, audioBufferChannelsHistogram,
+            ("WebAudio.AudioBuffer.NumberOfChannels"));
+
+        // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
+        // at 48kHz).  The number of buckets is fairly arbitrary.
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferLengthHistogram,
+            ("WebAudio.AudioBuffer.Length", 1, 1000000, 50));
+        // The limits are the min and max AudioBuffer sample rates currently
+        // supported.  We use explicit values here instead of
+        // AudioUtilities::minAudioBufferSampleRate() and
+        // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
+        // fairly arbitrary.
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferSampleRateHistogram,
+            ("WebAudio.AudioBuffer.SampleRate", 3000, 192000, 60));
+
+        audioBufferChannelsHistogram.sample(numberOfChannels);
+        audioBufferLengthHistogram.count(numberOfFrames);
+        audioBufferSampleRateHistogram.count(sampleRate);
+
+        // Compute the ratio of the buffer rate and the context rate so we know
+        // how often the buffer needs to be resampled to match the context.  For
+        // the histogram, we multiply the ratio by 100 and round to the nearest
+        // integer.  If the context is closed, don't record this because we
+        // don't have a sample rate for closed context.
+        if (!isContextClosed()) {
+            // The limits are choosen from 100*(3000/192000) = 1.5625 and
+            // 100*(192000/3000) = 6400, where 3000 and 192000 are the current
+            // min and max sample rates possible for an AudioBuffer.  The number
+            // of buckets is fairly arbitrary.
+            DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferSampleRateRatioHistogram,
+                ("WebAudio.AudioBuffer.SampleRateRatio", 1, 6400, 50));
+            float ratio = 100 * sampleRate / this->sampleRate();
+            audioBufferSampleRateRatioHistogram.count(static_cast<int>(0.5 + ratio));
+        }
+    }
+
+    return buffer;
 }
 
 ScriptPromise AbstractAudioContext::decodeAudioData(ScriptState* scriptState, DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)

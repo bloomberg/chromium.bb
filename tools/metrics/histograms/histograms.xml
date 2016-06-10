@@ -60626,6 +60626,63 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.AudioBuffer.Length" units="frames">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The length (in frames) requested by createBuffer(). Recorded for every call
+    to createBuffer(). Probably many (tens or hundreds) per page.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioBuffer.NumberOfChannels">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The number of channels requested by createBuffer(). Recorded for every call
+    to createBuffer(). Probably many (tens or hundreds) per page.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioBuffer.SampleRate" units="Hz">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The sample rate (in Hz) requested by createBuffer(). Recorded for every call
+    to createBuffer(). Probably many (tens or hundreds) per page.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioBuffer.SampleRateRatio">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The ratio of the buffer sample rate from createBuffer() to the context
+    sample rate. This indicates if the buffer needs to be resampled.  Recorded
+    for every call to createBuffer().  Probably many (tens or hundreds) per
+    page.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioContext.HardwareSampleRate" units="Hz">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The hardware sample rate (in Hz) used by an AudioContext. Recorded for every
+    WebAudio AudioContext that is created; probably only one or two per page.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.AudioContext.MaxChannelsAvailable">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The maximum number of (hardware) channels available in an AudioContext.
+    Recorded for every WebAudio AudioContext that is created; probably only one
+    or two per page.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.AudioDestination.CallbackBufferSize">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
@@ -60668,6 +60725,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.BiquadFilter.Type" enum="BiquadFilterType">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The type of the BiquadFilterNode. Recorded each time the type is set. This
+    recorded once (to lowpass) when a biquad filter is created and also recorded
+    whenever the filter type changes due to user action or programatically. It
+    is unlikely the type will change more than once.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.IIRFilterNode.Order">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>
@@ -60675,6 +60743,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The order of the WebAudio IIRFilterNode.  The order is one less than the
     number of feedback coefficients used in the denominator of the IIRFilter
     transfer function.  Recorded each time an IIRFilter is constructed.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.OfflineAudioContext.ChannelCount">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The number of channels specified for the offline audio context. Recorded for
+    every offline context created. Probably only a few per page, but could be
+    potentially much more (thousands).
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.OfflineAudioContext.Length" units="frames">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The length (in frames) specified for the offline audio context. Recorded for
+    every offline context created. Probably only a few per page, but could be
+    potentially much more (thousands).
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.OfflineAudioContext.SampleRate" units="Hz">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The sample rate (in Hz) specified for the offline audio context. Recorded
+    for every offline context created.  Probably only a few per page, but could
+    be potentially much more (thousands).
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.PannerNode.PanningModel" enum="PanningModelType">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The panning model for the PannerNode. Recorded once with the default value
+    at creation and once again whenver it is changed.  Once changed, it is
+    unlikely to be changed again. If there are any PannerNodes created at all,
+    then there is probably one for each source (AudioBufferSourceNode,
+    OscillatorNode, or other source).
   </summary>
 </histogram>
 
@@ -65212,6 +65322,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Unknown"/>
   <int value="1" label="0"/>
   <int value="2" label="1+"/>
+</enum>
+
+<enum name="BiquadFilterType" type="int">
+  <int value="0" label="lowpass"/>
+  <int value="1" label="highpass"/>
+  <int value="2" label="bandpass"/>
+  <int value="3" label="lowshelf"/>
+  <int value="4" label="highshelf"/>
+  <int value="5" label="peaking"/>
+  <int value="6" label="notch"/>
+  <int value="7" label="allpass"/>
 </enum>
 
 <enum name="BlacklistedVideoCaptureDeviceNames" type="int">
@@ -83325,6 +83446,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Forward or backward"/>
   <int value="7" label="Restore"/>
   <int value="8" label="Unknown"/>
+</enum>
+
+<enum name="PanningModelType" type="int">
+  <int value="0" label="equalpower"/>
+  <int value="1" label="HRTF"/>
 </enum>
 
 <enum name="ParsedCookieStatus" type="int">

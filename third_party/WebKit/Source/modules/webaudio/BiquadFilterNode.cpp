@@ -24,6 +24,7 @@
 
 #include "modules/webaudio/BiquadFilterNode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
+#include "platform/Histogram.h"
 
 namespace blink {
 
@@ -135,6 +136,10 @@ bool BiquadFilterNode::setType(unsigned type)
 {
     if (type > BiquadProcessor::Allpass)
         return false;
+
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, filterTypeHistogram,
+        ("WebAudio.BiquadFilter.Type", BiquadProcessor::Allpass + 1));
+    filterTypeHistogram.count(type);
 
     getBiquadProcessor()->setType(static_cast<BiquadProcessor::FilterType>(type));
     return true;

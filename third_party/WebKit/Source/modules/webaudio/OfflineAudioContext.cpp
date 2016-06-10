@@ -35,6 +35,7 @@
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
+#include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 
 namespace blink {
@@ -89,6 +90,24 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
             + ", " + String::number(sampleRate)
             + ")");
     }
+
+    DEFINE_STATIC_LOCAL(SparseHistogram, offlineContextChannelCountHistogram,
+        ("WebAudio.OfflineAudioContext.ChannelCount"));
+    // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
+    // at 48kHz).  The number of buckets is fairly arbitrary.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, offlineContextLengthHistogram,
+        ("WebAudio.OfflineAudioContext.Length", 1, 1000000, 50));
+    // The limits are the min and max AudioBuffer sample rates currently
+    // supported.  We use explicit values here instead of
+    // AudioUtilities::minAudioBufferSampleRate() and
+    // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
+    // fairly arbitrary.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, offlineContextSampleRateHistogram,
+        ("WebAudio.OfflineAudioContext.SampleRate", 3000, 19200, 50));
+
+    offlineContextChannelCountHistogram.sample(numberOfChannels);
+    offlineContextLengthHistogram.count(numberOfFrames);
+    offlineContextSampleRateHistogram.count(sampleRate);
 
     audioContext->suspendIfNeeded();
     return audioContext;

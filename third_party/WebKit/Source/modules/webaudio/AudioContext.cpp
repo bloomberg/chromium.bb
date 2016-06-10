@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBufferCallback.h"
+#include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
@@ -65,6 +66,13 @@ AbstractAudioContext* AudioContext::create(Document& document, ExceptionState& e
     fprintf(stderr, "%p: AudioContext::AudioContext(): %u #%u\n",
         audioContext, audioContext->m_contextId, s_hardwareContextCount);
 #endif
+
+    DEFINE_STATIC_LOCAL(SparseHistogram, maxChannelCountHistogram,
+        ("WebAudio.AudioContext.MaxChannelsAvailable"));
+    DEFINE_STATIC_LOCAL(SparseHistogram, sampleRateHistogram,
+        ("WebAudio.AudioContext.HardwareSampleRate"));
+    maxChannelCountHistogram.sample(audioContext->destination()->maxChannelCount());
+    sampleRateHistogram.sample(audioContext->sampleRate());
 
     return audioContext;
 }

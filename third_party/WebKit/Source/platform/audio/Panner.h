@@ -46,6 +46,7 @@ class PLATFORM_EXPORT Panner {
     USING_FAST_MALLOC(Panner);
     WTF_MAKE_NONCOPYABLE(Panner);
 public:
+    // This values are used in histograms and should not be renumbered or deleted.
     enum {
         PanningModelEqualPower = 0,
         PanningModelHRTF = 1
