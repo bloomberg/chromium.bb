@@ -4,6 +4,7 @@
 
 #include "ash/shelf/overflow_button.h"
 
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -19,17 +20,25 @@
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 OverflowButton::OverflowButton(views::ButtonListener* listener, Shelf* shelf)
     : CustomButton(listener), bottom_image_(nullptr), shelf_(shelf) {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  bottom_image_ = rb->GetImageNamed(IDR_ASH_SHELF_OVERFLOW).ToImageSkia();
+  if (MaterialDesignController::IsShelfMaterial()) {
+    bottom_image_md_ =
+        CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
+    bottom_image_ = &bottom_image_md_;
+  } else {
+    bottom_image_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_ASH_SHELF_OVERFLOW);
+  }
 
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));

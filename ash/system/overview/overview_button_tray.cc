@@ -4,7 +4,9 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -18,6 +20,8 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 
@@ -38,10 +42,17 @@ OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget), icon_(NULL) {
   SetContentsBackground();
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   icon_ = new views::ImageView();
-  icon_->SetImage(
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_OVERVIEW_MODE).ToImageSkia());
+  if (MaterialDesignController::IsShelfMaterial()) {
+    gfx::ImageSkia image_md =
+        CreateVectorIcon(gfx::VectorIconId::SHELF_OVERVIEW, kShelfIconColor);
+    icon_->SetImage(image_md);
+  } else {
+    gfx::ImageSkia* image_non_md =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_AURA_UBER_TRAY_OVERVIEW_MODE);
+    icon_->SetImage(image_non_md);
+  }
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
 

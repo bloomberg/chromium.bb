@@ -5,6 +5,8 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -123,9 +125,17 @@ class WebNotificationButton : public views::CustomButton {
         unread_count_(0) {
     SetLayoutManager(new views::FillLayout);
 
-    no_unread_icon_.SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
-        kWebNotificationColorNoUnread));
+    gfx::ImageSkia image;
+    if (MaterialDesignController::IsShelfMaterial()) {
+      image = CreateVectorIcon(gfx::VectorIconId::SHELF_NOTIFICATIONS,
+                               kShelfIconColor);
+    } else {
+      image =
+          CreateVectorIcon(gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
+                           kWebNotificationColorNoUnread);
+    }
+
+    no_unread_icon_.SetImage(image);
     no_unread_icon_.set_owned_by_client();
 
     unread_label_.set_owned_by_client();

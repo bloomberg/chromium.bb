@@ -43,12 +43,19 @@ class OverflowButton : public views::CustomButton {
   // conform to the material design spec. See crbug.com/617295.
   gfx::Rect CalculateButtonBounds();
 
-  // Left and right images are rotations of bottom_image and are
-  // owned by the overflow button.
+  // Used for bottom shelf alignment. |bottom_image_| points to
+  // |bottom_image_md_| for material design, otherwise it is points to a
+  // resource owned by the ResourceBundle.
+  // TODO(tdanderson): Remove the non-md code once the material design shelf is
+  // enabled by default. See crbug.com/614453.
+  const gfx::ImageSkia* bottom_image_;
+  gfx::ImageSkia bottom_image_md_;
+
+  // Cached rotations of |bottom_image_| used for left and right shelf
+  // alignments.
   gfx::ImageSkia left_image_;
   gfx::ImageSkia right_image_;
-  // Bottom image is owned by the resource bundle.
-  const gfx::ImageSkia* bottom_image_;
+
   Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);

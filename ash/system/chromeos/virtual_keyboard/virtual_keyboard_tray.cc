@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -20,6 +21,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
@@ -28,9 +31,16 @@ VirtualKeyboardTray::VirtualKeyboardTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       button_(NULL) {
   button_ = new views::ImageButton(this);
-  button_->SetImage(views::CustomButton::STATE_NORMAL,
-                    ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                        IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD));
+  if (MaterialDesignController::IsShelfMaterial()) {
+    gfx::ImageSkia image_md =
+        CreateVectorIcon(gfx::VectorIconId::SHELF_KEYBOARD, kShelfIconColor);
+    button_->SetImage(views::CustomButton::STATE_NORMAL, &image_md);
+  } else {
+    gfx::ImageSkia* image_non_md =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD);
+    button_->SetImage(views::CustomButton::STATE_NORMAL, image_non_md);
+  }
   button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                              views::ImageButton::ALIGN_MIDDLE);
 
