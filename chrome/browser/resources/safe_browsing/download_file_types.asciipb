@@ -2289,6 +2289,29 @@ file_types {
   }
 }
 file_types {
+  # Opened as a .gz on Mac. http://crbug.com/600907
+  extension: "as"
+  uma_value: 264
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Opened as a .gz on Mac. http://crbug.com/600907
+  # Similar to a TGZ file
+  extension: "cpgz"
+  uma_value: 265
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
   extension: "command"
   uma_value: 140
   ping_setting: FULL_PING
@@ -2310,10 +2333,33 @@ file_types {
   }
 }
 file_types {
+  # Opened as a .zip on Mac. http://crbug.com/600907
+  # Also: Portable Archive Exchange format, like tar
+  extension: "pax"
+  uma_value: 266
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
   # Automator workflow
   extension: "workflow"
   uma_value: 170
   ping_setting: SAMPLED_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Opened as a .zip on Mac. http://crbug.com/600907
+  extension: "xip"
+  uma_value: 267
+  ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_MAC
     danger_level: ALLOW_ON_USER_GESTURE

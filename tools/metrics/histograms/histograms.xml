@@ -86964,6 +86964,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="261" label="RUN"/>
   <int value="262" label="AD"/>
   <int value="263" label="MPKG"/>
+  <int value="264" label="AS"/>
+  <int value="265" label="CPGZ"/>
+  <int value="266" label="PAX"/>
+  <int value="267" label="XIP"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">
