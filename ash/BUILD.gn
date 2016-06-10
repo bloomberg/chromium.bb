@@ -118,6 +118,10 @@ component("ash") {
       "//ui/chromeos/strings",
       "//ui/display/util",
     ]
+
+    data = [
+      "display/test_data/",
+    ]
   } else {
     sources -= [
       "accelerators/key_hold_detector.cc",

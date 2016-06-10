@@ -216,6 +216,7 @@ test("message_center_unittests") {
   ]
 
   data_deps = [
+    "//third_party/mesa:osmesa",
     "//ui/resources:ui_test_pak_data",
   ]
 

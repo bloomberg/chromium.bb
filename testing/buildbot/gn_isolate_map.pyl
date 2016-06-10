@@ -442,7 +442,7 @@
   },
   "message_center_unittests": {
     "label": "//ui/message_center:message_center_unittests",
-    "type": "console_test_launcher",
+    "type": "windowed_test_launcher",
   },
   "mash_unittests": {
     "label": "//mash:mash_unittests",

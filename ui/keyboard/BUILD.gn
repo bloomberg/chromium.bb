@@ -82,6 +82,10 @@ component("keyboard_with_content") {
     "//ui/wm",
     "//url",
   ]
+
+  data_deps = [
+    ":resources",
+  ]
 }
 
 grit("resources_grit") {

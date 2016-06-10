@@ -176,6 +176,11 @@ test("chromeos_unittests") {
     }
     sources += gypi_values.chromeos_binder_test_sources
   }
+
+  data = [
+    "test/data/",
+    "//net/data/",
+  ]
 }
 
 proto_library("power_manager_proto") {

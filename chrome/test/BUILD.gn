@@ -359,6 +359,7 @@ if (!is_android) {
     if (is_linux) {
       data += [ "$root_out_dir/libppapi_tests.so" ]
     }
+
     if (!is_mac) {
       data_deps += [ "//chrome:packed_extra_resources" ]
     }
@@ -475,10 +476,19 @@ if (!is_android) {
         "//chromeos",
       ]
 
+      data += [
+        "//chrome/browser/chromeos/login/test/https_forwarder.py",
+        "//google_apis/test/",
+        "$root_out_dir/resources/chromeos/",
+      ]
+
+      data_deps += [ "//ui/keyboard:resources" ]
+
       if (enable_nacl) {
         data_deps += [
           "//components/nacl/loader:nacl_helper",
           "//components/nacl/loader:helper_nonsfi",
+          "//ppapi/native_client:irt",
         ]
       }
 
@@ -885,6 +895,35 @@ if (!is_android) {
         "$root_out_dir/chrome_material_200_percent.pak",
       ]
     }
+    if (is_chromeos) {
+      data += [
+        # TODO(GYP): figure out which of these things are
+        # actually needed and also which should be pulled in via
+        # data or data_deps and through which dependencies.
+        "//chrome/browser/chromeos/login/test/https_forwarder.py",
+        "//chrome/browser/resources/chromeos/wallpaper_manager/",
+        "//chromeos/test/data/",
+        "//components/chrome_apps/webstore_widget/cws_widget/",
+        "//ui/file_manager/file_manager/",
+        "//ui/file_manager/gallery/",
+        "//ui/file_manager/image_loader/",
+        "//ui/file_manager/integration_tests/",
+        "//third_party/analytics/",
+        "//third_party/polymer/v1_0/components-chromium/polymer/",
+        "$root_out_dir/chromevox_test_data/",
+        "$root_out_dir/content_shell.pak",
+        "$root_out_dir/locales/",
+        "$root_out_dir/resources/chromeos/",
+      ]
+
+      data_deps = [
+        "//ui/keyboard:resources",
+        "//components/nacl/loader:nacl_helper",
+        "//ppapi/native_client:irt",
+      ]
+    } else {
+      data_deps = []
+    }
 
     deps = [
       ":browser_tests_js_webui",
@@ -955,7 +994,7 @@ if (!is_android) {
     deps += [ "//extensions:chrome_extensions_browsertests" ]
 
     # Runtime dependencies
-    data_deps = [
+    data_deps += [
       "//chrome",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
