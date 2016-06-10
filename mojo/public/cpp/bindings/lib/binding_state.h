@@ -44,10 +44,7 @@ class BindingState<Interface, false> {
     stub_.set_sink(impl_);
   }
 
-  ~BindingState() {
-    if (router_)
-      Close();
-  }
+  ~BindingState() { Close(); }
 
   void Bind(ScopedMessagePipeHandle handle,
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
@@ -82,7 +79,9 @@ class BindingState<Interface, false> {
   }
 
   void Close() {
-    DCHECK(router_);
+    if (!router_)
+      return;
+
     router_->CloseMessagePipe();
     DestroyRouter();
   }
@@ -140,10 +139,7 @@ class BindingState<Interface, true> {
     stub_.set_sink(impl_);
   }
 
-  ~BindingState() {
-    if (router_)
-      Close();
-  }
+  ~BindingState() { Close(); }
 
   void Bind(ScopedMessagePipeHandle handle,
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
@@ -181,7 +177,9 @@ class BindingState<Interface, true> {
   }
 
   void Close() {
-    DCHECK(router_);
+    if (!router_)
+      return;
+
     endpoint_client_.reset();
     router_->CloseMessagePipe();
     router_ = nullptr;
