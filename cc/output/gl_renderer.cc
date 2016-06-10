@@ -589,8 +589,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
 
 static sk_sp<SkImage> WrapTexture(
     const ResourceProvider::ScopedReadLockGL& lock,
-    GrContext* context,
-    bool flip_texture) {
+    GrContext* context) {
   // Wrap a given texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
   GrGLTextureInfo texture_info;
@@ -601,8 +600,7 @@ static sk_sp<SkImage> WrapTexture(
   backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
   backend_texture_description.fTextureHandle =
       skia::GrGLTextureInfoToGrBackendObject(texture_info);
-  backend_texture_description.fOrigin =
-      flip_texture ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
+  backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
 
   return SkImage::MakeFromTexture(context, backend_texture_description);
 }
@@ -614,19 +612,16 @@ static sk_sp<SkImage> ApplyImageFilter(
     const gfx::RectF& dst_rect,
     const gfx::Vector2dF& scale,
     sk_sp<SkImageFilter> filter,
-    const Resource* source_texture_resource,
+    ScopedResource* source_texture_resource,
     SkIPoint* offset,
-    SkIRect* subset,
-    bool flip_texture) {
+    SkIRect* subset) {
   if (!filter || !use_gr_context)
     return nullptr;
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider,
                                           source_texture_resource->id());
 
-  sk_sp<SkImage> src_image =
-      WrapTexture(lock, use_gr_context->context(), flip_texture);
-
+  sk_sp<SkImage> src_image = WrapTexture(lock, use_gr_context->context());
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyImageFilter wrap background texture failed",
@@ -641,7 +636,7 @@ static sk_sp<SkImage> ApplyImageFilter(
   SkIRect clip_bounds = gfx::RectFToSkRect(dst_rect).roundOut();
   clip_bounds.offset(-src_rect.x(), -src_rect.y());
   filter = filter->makeWithLocalMatrix(local_matrix);
-  SkIRect in_subset = SkIRect::MakeWH(src_rect.width(), src_rect.height());
+  SkIRect in_subset = SkIRect::MakeWH(src_image->width(), src_image->height());
   sk_sp<SkImage> image = src_image->makeWithFilter(filter.get(), in_subset,
                                                    clip_bounds, subset, offset);
 
@@ -857,9 +852,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           background_texture->id());
 
-  bool flip_texture = true;
-  sk_sp<SkImage> src_image =
-      WrapTexture(lock, use_gr_context->context(), flip_texture);
+  sk_sp<SkImage> src_image = WrapTexture(lock, use_gr_context->context());
   if (!src_image) {
     TRACE_EVENT_INSTANT0(
         "cc", "ApplyBackgroundFilters wrap background texture failed",
@@ -917,82 +910,14 @@ gfx::QuadF MapQuadToLocalSpace(const gfx::Transform& device_transform,
   return local_quad;
 }
 
-const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-  // Can only collapse a single tile quad.
-  if (pass->quad_list.size() != 1)
-    return nullptr;
-  // If we need copy requests, then render pass has to exist.
-  if (!pass->copy_requests.empty())
-    return nullptr;
-
-  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
-  // Hack: this could be supported by concatenating transforms, but
-  // in practice if there is one quad, it is at the origin of the render pass.
-  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity())
-    return nullptr;
-  // The quad is expected to be the entire layer so that AA edges are correct.
-  if (gfx::Rect(quad->shared_quad_state->quad_layer_bounds) != quad->rect)
-    return nullptr;
-  if (quad->material != DrawQuad::TILED_CONTENT)
-    return nullptr;
-
-  const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
-  // Hack: this could be supported by passing in a subrectangle to draw
-  // render pass, although in practice if there is only one quad there
-  // will be no border texels on the input.
-  if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
-    return nullptr;
-  // Tile quad features not supported in render pass shaders.
-  if (tile_quad->swizzle_contents || tile_quad->nearest_neighbor)
-    return nullptr;
-  // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
-  // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.
-  GLenum target =
-      resource_provider_->GetResourceTextureTarget(tile_quad->resource_id());
-  if (target != GL_TEXTURE_2D)
-    return nullptr;
-#if defined(OS_MACOSX)
-  // On Macs, this path can sometimes lead to all black output.
-  // TODO(enne): investigate this and remove this hack.
-  return nullptr;
-#endif
-
-  return tile_quad;
-}
-
 void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                     const RenderPassDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
-  auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
-  if (bypass != render_pass_bypass_quads_.end()) {
-    TileDrawQuad* tile_quad = &bypass->second;
-    // RGBA_8888 here is arbitrary and unused.
-    Resource tile_resource(tile_quad->resource_id(), tile_quad->texture_size,
-                           ResourceFormat::RGBA_8888);
-    // The projection matrix used by GLRenderer has a flip.  As tile texture
-    // inputs are oriented opposite to framebuffer outputs, don't flip via
-    // texture coords and let the projection matrix naturallyd o it.
-    bool flip_texture = false;
-    DrawRenderPassQuadInternal(frame, quad, clip_region, &tile_resource,
-                               flip_texture);
-  } else {
-    ScopedResource* contents_texture =
-        render_pass_textures_[quad->render_pass_id].get();
-    DCHECK(contents_texture);
-    DCHECK(contents_texture->id());
-    // See above comments about texture flipping.  When the input is a
-    // render pass, it needs to an extra flip to be oriented correctly.
-    bool flip_texture = true;
-    DrawRenderPassQuadInternal(frame, quad, clip_region, contents_texture,
-                               flip_texture);
-  }
-}
+  ScopedResource* contents_texture =
+      render_pass_textures_[quad->render_pass_id].get();
+  DCHECK(contents_texture);
+  DCHECK(contents_texture->id());
 
-void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
-                                            const RenderPassDrawQuad* quad,
-                                            const gfx::QuadF* clip_region,
-                                            const Resource* contents_texture,
-                                            bool flip_texture) {
   SkMatrix scale_matrix;
   scale_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
   gfx::RectF dst_rect(quad->filters.MapRect(quad->rect, scale_matrix));
@@ -1097,6 +1022,7 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
   gfx::Size texture_size = contents_texture->size();
+  bool flip_texture = true;
   gfx::Point src_offset;
   if (!quad->filters.IsEmpty()) {
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
@@ -1131,12 +1057,13 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
         SkIPoint offset;
         SkIRect subset;
         gfx::RectF src_rect(quad->rect);
-        filter_image = ApplyImageFilter(
-            ScopedUseGrContext::Create(this, frame), resource_provider_,
-            src_rect, dst_rect, quad->filters_scale, std::move(filter),
-            contents_texture, &offset, &subset, flip_texture);
-        if (!filter_image)
+        filter_image = ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
+                                        resource_provider_, src_rect, dst_rect,
+                                        quad->filters_scale, std::move(filter),
+                                        contents_texture, &offset, &subset);
+        if (!filter_image) {
           return;
+        }
         filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
                               filter_image->getTextureHandle(true))
                               ->fID;
@@ -1147,7 +1074,6 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
             gfx::RectF(src_rect.x() + offset.fX, src_rect.y() + offset.fY,
                        subset.width(), subset.height());
         src_offset.SetPoint(subset.x(), subset.y());
-        // If the output of the filter needs to be flipped.
         flip_texture =
             filter_image->getTexture()->origin() == kBottomLeft_GrSurfaceOrigin;
       }
@@ -1273,8 +1199,6 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
     gl_->Uniform4f(locations.tex_transform, tex_rect.x(), 1.0f - tex_rect.y(),
                    tex_rect.width(), -tex_rect.height());
   } else {
-    // Tile textures are oriented opposite the framebuffer, so can use
-    // the projection transform to do the flip.
     gl_->Uniform4f(locations.tex_transform, tex_rect.x(), tex_rect.y(),
                    tex_rect.width(), tex_rect.height());
   }
@@ -1290,24 +1214,16 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
       mask_uv_rect.Scale(quad->mask_texture_size.width(),
                          quad->mask_texture_size.height());
     }
-    if (flip_texture) {
-      // Mask textures are oriented vertically flipped relative to the
-      // framebuffer and the RenderPass contents texture, so we flip the tex
-      // coords from the RenderPass texture to find the mask texture coords.
-      gl_->Uniform2f(
-          locations.mask_tex_coord_offset, mask_uv_rect.x(),
-          mask_uv_rect.height() / tex_rect.height() + mask_uv_rect.y());
-      gl_->Uniform2f(locations.mask_tex_coord_scale,
-                     mask_uv_rect.width() / tex_rect.width(),
-                     -mask_uv_rect.height() / tex_rect.height());
-    } else {
-      // Tile textures are oriented the same way as mask textures.
-      gl_->Uniform2f(locations.mask_tex_coord_offset, mask_uv_rect.x(),
-                     mask_uv_rect.y());
-      gl_->Uniform2f(locations.mask_tex_coord_scale,
-                     mask_uv_rect.width() / tex_rect.width(),
-                     mask_uv_rect.height() / tex_rect.height());
-    }
+
+    // Mask textures are oriented vertically flipped relative to the framebuffer
+    // and the RenderPass contents texture, so we flip the tex coords from the
+    // RenderPass texture to find the mask texture coords.
+    gl_->Uniform2f(
+        locations.mask_tex_coord_offset, mask_uv_rect.x(),
+        mask_uv_rect.height() / tex_rect.height() + mask_uv_rect.y());
+    gl_->Uniform2f(locations.mask_tex_coord_scale,
+                   mask_uv_rect.width() / tex_rect.width(),
+                   -mask_uv_rect.height() / tex_rect.height());
 
     last_texture_unit = 1;
   }

@@ -16,15 +16,7 @@ namespace cc {
 class SolidColorContentLayerClient : public ContentLayerClient {
  public:
   explicit SolidColorContentLayerClient(SkColor color, gfx::Size size)
-      : color_(color), size_(size), border_size_(0), border_color_(0) {}
-  explicit SolidColorContentLayerClient(SkColor color,
-                                        gfx::Size size,
-                                        int border_size,
-                                        SkColor border_color)
-      : color_(color),
-        size_(size),
-        border_size_(border_size),
-        border_color_(border_color) {}
+      : color_(color), size_(size) {}
 
   gfx::Rect PaintableRegion() override;
 
@@ -37,8 +29,6 @@ class SolidColorContentLayerClient : public ContentLayerClient {
  private:
   SkColor color_;
   gfx::Size size_;
-  int border_size_;
-  SkColor border_color_;
 };
 
 }  // namespace cc

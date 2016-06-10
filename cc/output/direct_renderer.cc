@@ -141,26 +141,14 @@ DirectRenderer::DirectRenderer(RendererClient* client,
 
 DirectRenderer::~DirectRenderer() {}
 
-const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
-    const RenderPass* pass) {
-  return nullptr;
-}
-
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
-  render_pass_bypass_quads_.clear();
-
   std::unordered_map<RenderPassId, gfx::Size, RenderPassIdHash>
       render_passes_in_frame;
-  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
-    RenderPass* pass = render_passes_in_draw_order[i].get();
-    if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass)) {
-      render_pass_bypass_quads_[pass->id] = *tile_quad;
-      continue;
-    }
+  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
     render_passes_in_frame.insert(std::pair<RenderPassId, gfx::Size>(
-        pass->id, RenderPassTextureSize(pass)));
-  }
+        render_passes_in_draw_order[i]->id,
+        RenderPassTextureSize(render_passes_in_draw_order[i].get())));
 
   std::vector<RenderPassId> passes_to_delete;
   for (auto pass_iter = render_pass_textures_.begin();
@@ -417,11 +405,6 @@ void DirectRenderer::FlushPolygons(
 void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
     DrawingFrame* frame,
     RenderPass* render_pass) {
-  if (render_pass_bypass_quads_.find(render_pass->id) !=
-      render_pass_bypass_quads_.end()) {
-    return;
-  }
-
   DrawRenderPass(frame, render_pass);
 
   bool first_request = true;
