@@ -133,6 +133,7 @@ class LoadingReport(object):
           user_lens, activity, network_lens, self._navigation_start_msec)
 
     self._transfer_size = metrics.TotalTransferSize(trace)[1]
+    self._request_count = len(trace.request_track.GetEvents())
 
     content_lens = ContentClassificationLens(
         trace, ad_rules or [], tracking_rules or [])
@@ -157,7 +158,8 @@ class LoadingReport(object):
         'url': self.trace.url,
         'transfer_size': self._transfer_size,
         'dns_requests': self._dns_requests,
-        'dns_cost_ms': self._dns_cost_msec}
+        'dns_cost_ms': self._dns_cost_msec,
+        'total_requests': self._request_count}
 
     for user_lens_type, user_lens_report in self._user_lens_reports.iteritems():
       for key, value in user_lens_report.GenerateReport().iteritems():

@@ -267,5 +267,9 @@
     {
       "name": "median_blocking_request_count",
       "type": "FLOAT"
+    },
+    {
+      "name": "total_requests",
+      "type": "INTEGER"
     }
 ]

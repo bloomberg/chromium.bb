@@ -143,6 +143,7 @@ class LoadingReportTestCase(unittest.TestCase):
                      loading_report['contentful_ms'])
     self.assertAlmostEqual(self._LOAD_END_TIME - self._NAVIGATION_START_TIME,
                            loading_report['plt_ms'])
+    self.assertEqual(2, loading_report['total_requests'])
     self.assertAlmostEqual(0.34, loading_report['contentful_byte_frac'], 2)
     self.assertAlmostEqual(0.1844, loading_report['significant_byte_frac'], 2)
     self.assertEqual(2, loading_report['plt_requests'])
