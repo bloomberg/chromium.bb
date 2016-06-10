@@ -697,12 +697,14 @@ std::unique_ptr<base::DictionaryValue> WalletMaskedCreditCardToValue(
   SET_STR(last_four);
   SET_INT32(exp_month);
   SET_INT32(exp_year);
+  SET_STR(billing_address_id);
   return value;
 }
 
 std::unique_ptr<base::DictionaryValue> WalletPostalAddressToValue(
     const sync_pb::WalletPostalAddress& proto) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  SET_STR(id);
   SET_STR(recipient_name);
   SET_STR(company_name);
   SET_STR_REP(street_address);

@@ -111,12 +111,14 @@ message WalletMaskedCreditCard {
 
   // Four-digit year (e.g. 2017).
   optional int32 exp_year = 7;
+
+  // The WalletPostalAddress.id of the billing address.
+  optional string billing_address_id = 8;
 }
 
 // Different than an AutofillProfile because this represents some known address
 // on the server that is pulled down rather than synced between Chromes.
 message WalletPostalAddress {
-  // DEPRECATED
   optional string id = 1;
 
   optional string recipient_name = 12;
