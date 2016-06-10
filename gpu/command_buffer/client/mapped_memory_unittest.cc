@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/command_executor.h"
@@ -97,7 +98,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
 
   void TearDown() override {
     // If the CommandExecutor posts any tasks, this forces them to run.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     MappedMemoryTestBase::TearDown();
   }
@@ -157,7 +158,7 @@ class MappedMemoryManagerTest : public MappedMemoryTestBase {
 
   void TearDown() override {
     // If the CommandExecutor posts any tasks, this forces them to run.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     manager_.reset();
     MappedMemoryTestBase::TearDown();
   }

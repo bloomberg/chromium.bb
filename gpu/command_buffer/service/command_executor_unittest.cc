@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
@@ -65,7 +66,7 @@ class CommandExecutorTest : public testing::Test {
   void TearDown() override {
     // Ensure that any unexpected tasks posted by the GPU scheduler are executed
     // in order to fail the test.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   error::Error GetError() { return command_buffer_->GetLastState().error; }

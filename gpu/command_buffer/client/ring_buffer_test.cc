@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -127,7 +128,7 @@ class RingBufferTest : public BaseRingBufferTest {
 
   void TearDown() override {
     // If the CommandExecutor posts any tasks, this forces them to run.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     BaseRingBufferTest::TearDown();
   }

@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/command_executor.h"
@@ -124,7 +125,7 @@ class CommandBufferHelperTest : public testing::Test {
 
   virtual void TearDown() {
     // If the CommandExecutor posts any tasks, this forces them to run.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     test_command_args_.clear();
   }
 
