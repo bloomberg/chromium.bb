@@ -728,6 +728,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // - Only incognito windows were open when the browser exited.
   // |last_used_profile| is the last used incognito profile. Restoring it will
   // create a browser window for the corresponding original profile.
+  // - All of the last opened profiles fail to initialize.
   if (last_opened_profiles.empty()) {
     if (ShowUserManagerOnStartupIfNeeded(last_used_profile, command_line))
       return true;

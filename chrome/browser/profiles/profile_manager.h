@@ -86,7 +86,7 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise it will create and manage it.
   // Because this method might synchronously create a new profile, it should
   // only be called for the initial profile or in tests, where blocking is
-  // acceptable.
+  // acceptable. Returns null if creation of the new profile fails.
   // TODO(bauerb): Migrate calls from other code to GetProfileByPath(), then
   // make this method private.
   Profile* GetProfile(const base::FilePath& profile_dir);
@@ -136,9 +136,10 @@ class ProfileManager : public base::NonThreadSafe,
   // profile.
   std::string GetLastUsedProfileName();
 
-  // Get the Profiles which are currently open, i.e., have open browsers, or
-  // were open the last time Chrome was running. The Profiles appear in the
-  // order they were opened. The last used profile will be on the list, but its
+  // Get the Profiles which are currently open, i.e. have open browsers or were
+  // open the last time Chrome was running. Profiles that fail to initialize are
+  // skipped. The Profiles appear in the order they were opened. The last used
+  // profile will be on the list if it is initialized successfully, but its
   // index on the list will depend on when it was opened (it is not necessarily
   // the last one).
   std::vector<Profile*> GetLastOpenedProfiles(
@@ -247,7 +248,7 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Creates a new profile by calling into the profile's profile creation
   // method. Virtual so that unittests can return a TestingProfile instead
-  // of the Profile's result.
+  // of the Profile's result. Returns null if creation fails.
   virtual Profile* CreateProfileHelper(const base::FilePath& path);
 
   // Creates a new profile asynchronously by calling into the profile's
@@ -294,7 +295,8 @@ class ProfileManager : public base::NonThreadSafe,
   bool AddProfile(Profile* profile);
 
   // Synchronously creates and returns a profile. This handles both the full
-  // creation and adds it to the set managed by this ProfileManager.
+  // creation and adds it to the set managed by this ProfileManager. Returns
+  // null if creation fails.
   Profile* CreateAndInitializeProfile(const base::FilePath& profile_dir);
 
 #if !defined(OS_ANDROID)

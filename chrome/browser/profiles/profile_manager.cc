@@ -613,14 +613,18 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
     std::unique_ptr<base::ListValue> profile_list(
         local_state->GetList(prefs::kProfilesLastActive)->DeepCopy());
     base::ListValue::const_iterator it;
-    std::string profile;
     for (it = profile_list->begin(); it != profile_list->end(); ++it) {
-      if (!(*it)->GetAsString(&profile) || profile.empty() ||
-          profile == base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
+      std::string profile_path;
+      if (!(*it)->GetAsString(&profile_path) ||
+          profile_path.empty() ||
+          profile_path ==
+              base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
         LOG(WARNING) << "Invalid entry in " << prefs::kProfilesLastActive;
         continue;
       }
-      to_return.push_back(GetProfile(user_data_dir.AppendASCII(profile)));
+      Profile* profile = GetProfile(user_data_dir.AppendASCII(profile_path));
+      if (profile)
+        to_return.push_back(profile);
     }
   }
   return to_return;
@@ -1327,7 +1331,6 @@ Profile* ProfileManager::CreateAndInitializeProfile(
   // which would make Bad Things happen if we returned it.
   CHECK(!GetProfileByPathInternal(profile_dir));
   Profile* profile = CreateProfileHelper(profile_dir);
-  DCHECK(profile);
   if (profile) {
     bool result = AddProfile(profile);
     DCHECK(result);
