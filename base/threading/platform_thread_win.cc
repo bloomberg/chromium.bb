@@ -230,6 +230,11 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
 }
 
 // static
+void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
+  CloseHandle(thread_handle.platform_handle());
+}
+
+// static
 void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {

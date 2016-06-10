@@ -21,48 +21,76 @@
 
 namespace base {
 
-// Trivial tests that thread runs and doesn't crash on create and join ---------
+// Trivial tests that thread runs and doesn't crash on create, join, or detach -
 
 namespace {
 
 class TrivialThread : public PlatformThread::Delegate {
  public:
-  TrivialThread() : did_run_(false) {}
+  TrivialThread() : run_event_(WaitableEvent::ResetPolicy::MANUAL,
+                               WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-  void ThreadMain() override { did_run_ = true; }
+  void ThreadMain() override { run_event_.Signal(); }
 
-  bool did_run() const { return did_run_; }
+  WaitableEvent& run_event() { return run_event_; }
 
  private:
-  bool did_run_;
+  WaitableEvent run_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TrivialThread);
 };
 
 }  // namespace
 
-TEST(PlatformThreadTest, Trivial) {
+TEST(PlatformThreadTest, TrivialJoin) {
   TrivialThread thread;
   PlatformThreadHandle handle;
 
-  ASSERT_FALSE(thread.did_run());
+  ASSERT_FALSE(thread.run_event().IsSignaled());
   ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
   PlatformThread::Join(handle);
-  ASSERT_TRUE(thread.did_run());
+  ASSERT_TRUE(thread.run_event().IsSignaled());
 }
 
-TEST(PlatformThreadTest, TrivialTimesTen) {
+TEST(PlatformThreadTest, TrivialJoinTimesTen) {
   TrivialThread thread[10];
   PlatformThreadHandle handle[arraysize(thread)];
 
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_FALSE(thread[n].did_run());
+    ASSERT_FALSE(thread[n].run_event().IsSignaled());
   for (size_t n = 0; n < arraysize(thread); n++)
     ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
   for (size_t n = 0; n < arraysize(thread); n++)
     PlatformThread::Join(handle[n]);
   for (size_t n = 0; n < arraysize(thread); n++)
-    ASSERT_TRUE(thread[n].did_run());
+    ASSERT_TRUE(thread[n].run_event().IsSignaled());
+}
+
+// The following detach tests are by nature racy. The run_event approximates the
+// end and termination of the thread, but threads could persist shortly after
+// the test completes.
+TEST(PlatformThreadTest, TrivialDetach) {
+  TrivialThread thread;
+  PlatformThreadHandle handle;
+
+  ASSERT_FALSE(thread.run_event().IsSignaled());
+  ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
+  PlatformThread::Detach(handle);
+  thread.run_event().Wait();
+}
+
+TEST(PlatformThreadTest, TrivialDetachTimesTen) {
+  TrivialThread thread[10];
+  PlatformThreadHandle handle[arraysize(thread)];
+
+  for (size_t n = 0; n < arraysize(thread); n++)
+    ASSERT_FALSE(thread[n].run_event().IsSignaled());
+  for (size_t n = 0; n < arraysize(thread); n++) {
+    ASSERT_TRUE(PlatformThread::Create(0, &thread[n], &handle[n]));
+    PlatformThread::Detach(handle[n]);
+  }
+  for (size_t n = 0; n < arraysize(thread); n++)
+    thread[n].run_event().Wait();
 }
 
 // Tests of basic thread functions ---------------------------------------------
