@@ -16,8 +16,10 @@ blink::mojom::WebBluetoothScanFilterPtr TypeConverter<
                                                 web_filter) {
   blink::mojom::WebBluetoothScanFilterPtr filter =
       blink::mojom::WebBluetoothScanFilter::New();
+
   if (!web_filter.services.isEmpty())
-    filter->services = Array<String>::From(web_filter.services);
+    filter->services =
+        Array<base::Optional<device::BluetoothUUID>>::From(web_filter.services);
 
   if (web_filter.hasName)
     filter->name = String::From(web_filter.name);
@@ -27,6 +29,7 @@ blink::mojom::WebBluetoothScanFilterPtr TypeConverter<
   return filter;
 }
 
+// static
 blink::mojom::WebBluetoothRequestDeviceOptionsPtr
 TypeConverter<blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
               blink::WebRequestDeviceOptions>::
@@ -37,8 +40,21 @@ TypeConverter<blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
   options->filters = mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>::From(
       web_options.filters);
   options->optional_services =
-      mojo::Array<mojo::String>::From(web_options.optionalServices);
+      mojo::Array<base::Optional<device::BluetoothUUID>>::From(
+          web_options.optionalServices);
   return options;
+}
+
+// static
+base::Optional<device::BluetoothUUID>
+TypeConverter<base::Optional<device::BluetoothUUID>, blink::WebString>::Convert(
+    const blink::WebString& web_string) {
+  base::Optional<device::BluetoothUUID> uuid =
+      device::BluetoothUUID(web_string.utf8());
+
+  DCHECK(uuid->IsValid());
+
+  return uuid;
 }
 
 }  // namespace mojo

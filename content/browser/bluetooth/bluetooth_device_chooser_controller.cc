@@ -24,6 +24,8 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 
+using device::BluetoothUUID;
+
 namespace content {
 
 namespace {
@@ -46,23 +48,10 @@ void LogRequestDeviceOptions(
       VLOG(1) << "Services: ";
       VLOG(1) << "\t[";
       for (const auto& service : filter->services)
-        VLOG(1) << "\t\t" << service;
+        VLOG(1) << "\t\t" << service->canonical_value();
       VLOG(1) << "\t]";
     }
   }
-}
-
-bool IsValidUUID(const mojo::String& uuid) {
-  device::BluetoothUUID parsed_uuid(uuid);
-  return parsed_uuid.IsValid() &&
-         parsed_uuid.format() == device::BluetoothUUID::kFormat128Bit;
-}
-
-bool HasInvalidOptionalServices(
-    const mojo::Array<mojo::String>& optional_services) {
-  return optional_services.end() != std::find_if_not(optional_services.begin(),
-                                                     optional_services.end(),
-                                                     IsValidUUID);
 }
 
 bool IsEmptyOrInvalidFilter(
@@ -79,12 +68,6 @@ bool IsEmptyOrInvalidFilter(
   if (!filter->name_prefix.is_null() &&
       filter->name_prefix.size() > kMaxLengthForDeviceName)
     return true;
-
-  if (!filter->services.is_null()) {
-    const auto& services = filter->services;
-    return services.end() !=
-           std::find_if_not(services.begin(), services.end(), IsValidUUID);
-  }
 
   return false;
 }
@@ -116,10 +99,10 @@ bool MatchesFilter(const device::BluetoothDevice& device,
 
   if (!filter->services.is_null()) {
     const auto& device_uuid_list = device.GetUUIDs();
-    const std::set<device::BluetoothUUID> device_uuids(device_uuid_list.begin(),
-                                                       device_uuid_list.end());
-    for (const auto& service : filter->services) {
-      if (!ContainsKey(device_uuids, device::BluetoothUUID(service))) {
+    const std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash>
+        device_uuids(device_uuid_list.begin(), device_uuid_list.end());
+    for (const base::Optional<BluetoothUUID>& service : filter->services) {
+      if (!ContainsKey(device_uuids, service.value())) {
         return false;
       }
     }
@@ -142,16 +125,16 @@ bool MatchesFilters(
 
 std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
     const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
-  std::unordered_set<std::string> services;
+  std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash> services;
   for (const auto& filter : filters) {
-    for (const std::string& service : filter->services) {
-      services.insert(service);
+    for (const base::Optional<BluetoothUUID>& service : filter->services) {
+      services.insert(service.value());
     }
   }
   auto discovery_filter = base::MakeUnique<device::BluetoothDiscoveryFilter>(
       device::BluetoothDiscoveryFilter::TRANSPORT_DUAL);
-  for (const std::string& service : services) {
-    discovery_filter->AddUUID(device::BluetoothUUID(service));
+  for (const BluetoothUUID& service : services) {
+    discovery_filter->AddUUID(service);
   }
   return discovery_filter;
 }
@@ -234,8 +217,7 @@ void BluetoothDeviceChooserController::GetDevice(
   error_callback_ = error_callback;
 
   // The renderer should never send empty filters.
-  if (HasEmptyOrInvalidFilter(options->filters) ||
-      HasInvalidOptionalServices(options->optional_services)) {
+  if (HasEmptyOrInvalidFilter(options->filters)) {
     web_bluetooth_service_->CrashRendererAndClosePipe(
         bad_message::BDH_EMPTY_OR_INVALID_FILTERS);
     return;

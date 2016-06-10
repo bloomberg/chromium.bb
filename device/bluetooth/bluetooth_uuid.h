@@ -7,14 +7,7 @@
 
 #include <string>
 
-#include "base/pickle.h"
 #include "device/bluetooth/bluetooth_export.h"
-#include "ipc/ipc_param_traits.h"
-
-namespace base {
-class Pickle;
-class PickleIterator;
-}  // namespace base
 
 namespace device {
 
@@ -102,24 +95,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
 void DEVICE_BLUETOOTH_EXPORT
 PrintTo(const BluetoothUUID& uuid, std::ostream* out);
 
-}  // namespace device
-
-namespace IPC {
-
-class Message;
-
-// Tell the IPC system how to serialize and deserialize a BluetoothUUID.
-template <>
-struct DEVICE_BLUETOOTH_EXPORT ParamTraits<device::BluetoothUUID> {
-  typedef device::BluetoothUUID param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
+struct BluetoothUUIDHash {
+  size_t operator()(const device::BluetoothUUID& uuid) const {
+    return std::hash<std::string>()(uuid.canonical_value());
+  }
 };
 
-}  // namespace IPC
+}  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_

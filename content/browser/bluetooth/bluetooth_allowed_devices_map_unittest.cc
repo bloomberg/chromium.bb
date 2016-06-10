@@ -18,11 +18,16 @@ const url::Origin kTestOrigin2(GURL("https://www.example2.com"));
 const std::string kDeviceAddress1 = "00:00:00";
 const std::string kDeviceAddress2 = "11:11:11";
 
-const char kGlucoseUUID[] = "00001808-0000-1000-8000-00805f9b34fb";
-const char kHeartRateUUID[] = "0000180d-0000-1000-8000-00805f9b34fb";
-const char kBatteryServiceUUID[] = "0000180f-0000-1000-8000-00805f9b34fb";
-const char kBloodPressureUUID[] = "00001813-0000-1000-8000-00805f9b34fb";
-const char kCyclingPowerUUID[] = "00001818-0000-1000-8000-00805f9b34fb";
+const char kGlucoseUUIDString[] = "00001808-0000-1000-8000-00805f9b34fb";
+const char kHeartRateUUIDString[] = "0000180d-0000-1000-8000-00805f9b34fb";
+const char kBatteryServiceUUIDString[] = "0000180f-0000-1000-8000-00805f9b34fb";
+const char kBloodPressureUUIDString[] = "00001813-0000-1000-8000-00805f9b34fb";
+const char kCyclingPowerUUIDString[] = "00001818-0000-1000-8000-00805f9b34fb";
+const BluetoothUUID kGlucoseUUID(kGlucoseUUIDString);
+const BluetoothUUID kHeartRateUUID(kHeartRateUUIDString);
+const BluetoothUUID kBatteryServiceUUID(kBatteryServiceUUIDString);
+const BluetoothUUID kBloodPressureUUID(kBloodPressureUUIDString);
+const BluetoothUUID kCyclingPowerUUID(kCyclingPowerUUIDString);
 
 class BluetoothAllowedDevicesMapTest : public testing::Test {
  protected:

@@ -128,6 +128,9 @@
                     '<@(blink_mojo_sources)',
                     '<@(blink_android_mojo_sources)',
                 ],
+                'mojom_typemaps': [
+                  '../../../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
+                ],
             },
             'includes': [
                 '../../../mojo/mojom_bindings_generator_explicit.gypi',
@@ -141,6 +144,7 @@
                 'mojo_bindings_blink_mojom',
                 'mojo_bindings_mojom',
                 '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+                '../../../device/bluetooth/bluetooth.gyp:bluetooth_mojom',
             ],
         },
     ],

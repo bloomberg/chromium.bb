@@ -13,8 +13,8 @@ namespace content {
 
 namespace {
 
-std::string Canonicalize(const std::string& string) {
-  return device::BluetoothUUID(string).canonical_value();
+base::Optional<BluetoothUUID> Canonicalize(const std::string& str) {
+  return base::make_optional(device::BluetoothUUID(str));
 }
 
 }  // namespace
@@ -232,7 +232,8 @@ TEST_F(BluetoothBlacklistTest, IsExcluded_BluetoothScanFilter_ReturnsFalse) {
     mojo::Array<blink::mojom::WebBluetoothScanFilterPtr> single_empty_filter(1);
 
     single_empty_filter[0] = blink::mojom::WebBluetoothScanFilter::New();
-    single_empty_filter[0]->services = mojo::Array<mojo::String>();
+    single_empty_filter[0]->services =
+        mojo::Array<base::Optional<BluetoothUUID>>();
 
     EXPECT_EQ(0u, single_empty_filter[0]->services.size());
     EXPECT_FALSE(list_.IsExcluded(single_empty_filter));
@@ -329,9 +330,10 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUUIDs_NonMatching) {
   {
     // Empty optional_services.
     blink::mojom::WebBluetoothRequestDeviceOptions options;
-    options.optional_services = mojo::Array<mojo::String>();
+    options.optional_services = mojo::Array<base::Optional<BluetoothUUID>>();
 
-    mojo::Array<mojo::String> expected = options.optional_services.Clone();
+    mojo::Array<base::Optional<BluetoothUUID>> expected =
+        options.optional_services.Clone();
 
     list_.RemoveExcludedUUIDs(&options);
     EXPECT_TRUE(options.optional_services.Equals(expected));
@@ -341,7 +343,8 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUUIDs_NonMatching) {
     blink::mojom::WebBluetoothRequestDeviceOptions options;
     options.optional_services.push_back(Canonicalize("0000"));
 
-    mojo::Array<mojo::String> expected = options.optional_services.Clone();
+    mojo::Array<base::Optional<BluetoothUUID>> expected =
+        options.optional_services.Clone();
 
     list_.RemoveExcludedUUIDs(&options);
     EXPECT_TRUE(options.optional_services.Equals(expected));
@@ -354,7 +357,8 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUUIDs_NonMatching) {
     options.optional_services.push_back(Canonicalize("ee02"));
     options.optional_services.push_back(Canonicalize("0003"));
 
-    mojo::Array<mojo::String> expected = options.optional_services.Clone();
+    mojo::Array<base::Optional<BluetoothUUID>> expected =
+        options.optional_services.Clone();
 
     list_.RemoveExcludedUUIDs(&options);
     EXPECT_TRUE(options.optional_services.Equals(expected));
@@ -371,7 +375,7 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUuids_Matching) {
     blink::mojom::WebBluetoothRequestDeviceOptions options;
     options.optional_services.push_back(Canonicalize("eeee"));
 
-    mojo::Array<mojo::String> expected = mojo::Array<mojo::String>();
+    mojo::Array<base::Optional<BluetoothUUID>> expected;
 
     list_.RemoveExcludedUUIDs(&options);
 
@@ -384,7 +388,7 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUuids_Matching) {
     options.optional_services.push_back(Canonicalize("eeee"));
     options.optional_services.push_back(Canonicalize("0001"));
 
-    mojo::Array<mojo::String> expected;
+    mojo::Array<base::Optional<BluetoothUUID>> expected;
     expected.push_back(Canonicalize("0000"));
     expected.push_back(Canonicalize("0001"));
 
@@ -399,7 +403,7 @@ TEST_F(BluetoothBlacklistTest, RemoveExcludedUuids_Matching) {
     options.optional_services.push_back(Canonicalize("eee3"));
     options.optional_services.push_back(Canonicalize("eeee"));
 
-    mojo::Array<mojo::String> expected = mojo::Array<mojo::String>();
+    mojo::Array<base::Optional<BluetoothUUID>> expected;
 
     list_.RemoveExcludedUUIDs(&options);
     EXPECT_TRUE(options.optional_services.Equals(expected));

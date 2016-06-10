@@ -139,7 +139,8 @@ enum class UMAGetPrimaryServiceOutcome {
   COUNT
 };
 // Record the service uuid used when calling getPrimaryService.
-void RecordGetPrimaryServiceService(const device::BluetoothUUID& service);
+void RecordGetPrimaryServiceService(
+    const base::Optional<device::BluetoothUUID>& service);
 // There should be a call to this function for every call to
 // Send(BluetoothMsg_GetPrimaryServiceSuccess) and
 // Send(BluetoothMsg_GetPrimaryServiceError).
@@ -179,7 +180,7 @@ void RecordGetCharacteristicsOutcome(
 // Records the UUID of the characteristic used when calling getCharacteristic.
 void RecordGetCharacteristicsCharacteristic(
     blink::mojom::WebBluetoothGATTQueryQuantity quantity,
-    const std::string& characteristic);
+    const base::Optional<device::BluetoothUUID>& characteristic);
 
 // GATT Operations Metrics
 

@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 #include "content/common/content_export.h"
@@ -58,21 +59,26 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
 
   // Returns true if the origin has previously been granted access to
   // the service.
-  bool IsOriginAllowedToAccessService(const url::Origin& origin,
-                                      const std::string& device_id,
-                                      const std::string& service_uuid) const;
+  bool IsOriginAllowedToAccessService(
+      const url::Origin& origin,
+      const std::string& device_id,
+      const device::BluetoothUUID& service_uuid) const;
 
  private:
   typedef std::map<std::string, std::string> DeviceAddressToIdMap;
   typedef std::map<std::string, std::string> DeviceIdToAddressMap;
-  typedef std::map<std::string, std::set<std::string>> DeviceIdToServicesMap;
+  typedef std::map<
+      std::string,
+      std::unordered_set<device::BluetoothUUID, device::BluetoothUUIDHash>>
+      DeviceIdToServicesMap;
 
   // Returns an id guaranteed to be unique for the map. The id is randomly
   // generated so that an origin can't guess the id used in another origin.
   std::string GenerateDeviceId();
   void AddUnionOfServicesTo(
       const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
-      std::set<std::string>* unionOfServices);
+      std::unordered_set<device::BluetoothUUID, device::BluetoothUUIDHash>*
+          unionOfServices);
 
   // TODO(ortuno): Now that there is only one instance of this class per frame
   // and that this map gets destroyed when navigating consider removing the

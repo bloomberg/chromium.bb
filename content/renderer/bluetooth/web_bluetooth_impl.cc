@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "content/child/mojo/type_converters.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/public/common/service_registry.h"
@@ -66,7 +67,8 @@ void WebBluetoothImpl::getPrimaryService(
     const blink::WebString& service_uuid,
     blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
   GetWebBluetoothService().RemoteServerGetPrimaryService(
-      mojo::String::From(device_id), mojo::String::From(service_uuid),
+      mojo::String::From(device_id),
+      base::make_optional(device::BluetoothUUID(service_uuid.utf8())),
       base::Bind(&WebBluetoothImpl::OnGetPrimaryServiceComplete,
                  base::Unretained(this), device_id,
                  base::Passed(base::WrapUnique(callbacks))));
@@ -79,8 +81,10 @@ void WebBluetoothImpl::getCharacteristics(
     blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) {
   GetWebBluetoothService().RemoteServiceGetCharacteristics(
       mojo::String::From(service_instance_id), quantity,
-      characteristics_uuid.isEmpty() ? nullptr
-                                     : mojo::String::From(characteristics_uuid),
+      characteristics_uuid.isEmpty()
+          ? base::nullopt
+          : base::make_optional(
+                device::BluetoothUUID(characteristics_uuid.utf8())),
       base::Bind(&WebBluetoothImpl::OnGetCharacteristicsComplete,
                  base::Unretained(this), service_instance_id,
                  base::Passed(base::WrapUnique(callbacks))));

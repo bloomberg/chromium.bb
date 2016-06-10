@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
@@ -129,8 +130,8 @@ const std::string& BluetoothAllowedDevicesMap::GetDeviceAddress(
 bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
     const url::Origin& origin,
     const std::string& device_id,
-    const std::string& service_uuid) const {
-  if (BluetoothBlacklist::Get().IsExcluded(BluetoothUUID(service_uuid))) {
+    const BluetoothUUID& service_uuid) const {
+  if (BluetoothBlacklist::Get().IsExcluded(service_uuid)) {
     return false;
   }
 
@@ -159,14 +160,15 @@ std::string BluetoothAllowedDevicesMap::GenerateDeviceId() {
 
 void BluetoothAllowedDevicesMap::AddUnionOfServicesTo(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
-    std::set<std::string>* unionOfServices) {
+    std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash>*
+        unionOfServices) {
   for (const auto& filter : options->filters) {
-    for (const std::string& uuid : filter->services) {
-      unionOfServices->insert(uuid);
+    for (const base::Optional<BluetoothUUID>& uuid : filter->services) {
+      unionOfServices->insert(uuid.value());
     }
   }
-  for (const std::string& uuid : options->optional_services) {
-    unionOfServices->insert(uuid);
+  for (const base::Optional<BluetoothUUID>& uuid : options->optional_services) {
+    unionOfServices->insert(uuid.value());
   }
 }
 

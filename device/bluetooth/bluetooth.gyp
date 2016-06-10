@@ -467,5 +467,46 @@
         },
       ],
     }],
+    ['OS != "ios"', {
+      'targets': [
+        {
+          'target_name': 'bluetooth_interfaces_mojom',
+          'type': 'none',
+          'variables': {
+            'mojom_files': [
+              'public/interfaces/bluetooth_uuid.mojom',
+            ],
+            'mojom_typemaps': [
+              'public/interfaces/bluetooth_uuid.typemap',
+            ],
+          },
+          'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
+        },
+        {
+          'target_name': 'bluetooth_interfaces_blink_mojom',
+          'type': 'none',
+          'variables': {
+            'mojom_files': [
+              'public/interfaces/bluetooth_uuid.mojom',
+            ],
+            'for_blink': 'true',
+          },
+          'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
+        },
+        {
+          'target_name': 'bluetooth_mojom',
+          'type': 'static_library',
+          'export_dependent_settings': [
+            '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
+          'dependencies': [
+            '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+            'bluetooth_interfaces_blink_mojom',
+            'bluetooth_interfaces_mojom',
+            'device_bluetooth',
+          ],
+        },
+      ],
+    }],
   ],
 }

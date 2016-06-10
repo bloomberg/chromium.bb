@@ -186,6 +186,7 @@ mojom("mojo_bindings") {
   ]
   public_deps = [
     ":android_mojo_bindings",
+    "//device/bluetooth/public/interfaces:bluetooth_mojom_bluetooth_uuid",
   ]
 }
 

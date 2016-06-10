@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "device/bluetooth/public/interfaces/bluetooth_uuid.mojom";
+
 // Errors that can occur during Web Bluetooth execution, which are transformed
 // to a DOMException in Source/modules/bluetooth/BluetoothError.cpp.
 //
@@ -69,14 +71,14 @@ enum WebBluetoothError {
 };
 
 struct WebBluetoothScanFilter {
-  array<string>? services;
+  array<device.mojom.BluetoothUUID>? services;
   string? name;
   string? name_prefix;
 };
 
 struct WebBluetoothRequestDeviceOptions {
   array<WebBluetoothScanFilter> filters;
-  array<string> optional_services;
+  array<device.mojom.BluetoothUUID> optional_services;
 };
 
 // Indicates if the function will return a single or multiple
@@ -131,7 +133,7 @@ interface WebBluetoothService {
   // with |device_id|.
   RemoteServerGetPrimaryService(
     string device_id,
-    string service_uuid) => (
+    device.mojom.BluetoothUUID service_uuid) => (
       WebBluetoothError error,
       WebBluetoothRemoteGATTService? service);
 
@@ -141,7 +143,7 @@ interface WebBluetoothService {
   RemoteServiceGetCharacteristics(
     string service_instance_id,
     WebBluetoothGATTQueryQuantity quantity,
-    string? characteristics_uuid) => (
+    device.mojom.BluetoothUUID? characteristics_uuid) => (
       WebBluetoothError error,
       array<WebBluetoothRemoteGATTCharacteristic>? characteristics);
 

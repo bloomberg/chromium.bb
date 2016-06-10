@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/bluetooth/cache_query_result.h"
@@ -101,12 +102,12 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void RemoteServerDisconnect(const mojo::String& device_id) override;
   void RemoteServerGetPrimaryService(
       const mojo::String& device_id,
-      const mojo::String& service_uuid,
+      const base::Optional<device::BluetoothUUID>& service_uuid,
       const RemoteServerGetPrimaryServiceCallback& callback) override;
   void RemoteServiceGetCharacteristics(
       const mojo::String& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
-      const mojo::String& characteristics_uuid,
+      const base::Optional<device::BluetoothUUID>& characteristics_uuid,
       const RemoteServiceGetCharacteristicsCallback& callback) override;
   void RemoteCharacteristicReadValue(
       const mojo::String& characteristic_instance_id,
@@ -130,7 +131,7 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   // Should only be run after the services have been discovered for
   // |device_address|.
   void RemoteServerGetPrimaryServiceImpl(
-      const std::string& service_uuid,
+      const base::Optional<device::BluetoothUUID>& service_uuid,
       const RemoteServerGetPrimaryServiceCallback& callback,
       device::BluetoothDevice* device);
 
