@@ -66,6 +66,7 @@ public class BlimpRendererActivity
     private int mSent;
     private int mReceived;
     private int mCommits;
+    private String mToken = null;
 
     @Override
     @SuppressFBWarnings("DM_EXIT")  // FindBugs doesn't like System.exit().
@@ -180,6 +181,11 @@ public class BlimpRendererActivity
         // TokenSource.Callback.
         if (CommandLine.getInstance().hasSwitch(BlimpClientSwitches.ENGINE_IP)) {
             mBlimpClientSession.connect(null);
+        } else {
+            if (mToken != null) {
+                mBlimpClientSession.connect(mToken);
+                mToken = null;
+            }
         }
     }
 
@@ -247,7 +253,11 @@ public class BlimpRendererActivity
     // TokenSource.Callback implementation.
     @Override
     public void onTokenReceived(String token) {
-        if (mBlimpClientSession != null) mBlimpClientSession.connect(token);
+        if (mBlimpClientSession != null) {
+            mBlimpClientSession.connect(token);
+        } else {
+            mToken = token;
+        }
     }
 
     @Override
