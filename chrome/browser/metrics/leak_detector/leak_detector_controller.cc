@@ -114,15 +114,6 @@ void LeakDetectorController::OnLeaksFound(
   }
 }
 
-MemoryLeakReportProto_Params LeakDetectorController::GetParams() const {
-  return params_;
-}
-
-void LeakDetectorController::SendLeakReports(
-    const std::vector<MemoryLeakReportProto>& reports) {
-  OnLeaksFound(reports);
-}
-
 void LeakDetectorController::GetLeakReports(
     std::vector<MemoryLeakReportProto>* reports) {
   DCHECK(thread_checker_.CalledOnValidThread());
