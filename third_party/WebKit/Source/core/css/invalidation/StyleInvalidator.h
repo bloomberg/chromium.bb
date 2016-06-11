@@ -69,7 +69,7 @@ private:
         { }
 
         void pushInvalidationSet(const SiblingInvalidationSet&);
-        bool matchCurrentInvalidationSets(Element&, RecursionData&) const;
+        bool matchCurrentInvalidationSets(Element&, RecursionData&);
 
         bool isEmpty() const { return m_invalidationEntries.isEmpty(); }
         void advance() { m_elementIndex++; }
@@ -86,7 +86,7 @@ private:
             unsigned m_invalidationLimit;
         };
 
-        mutable Vector<Entry, 16> m_invalidationEntries;
+        Vector<Entry, 16> m_invalidationEntries;
         unsigned m_elementIndex;
     };
 

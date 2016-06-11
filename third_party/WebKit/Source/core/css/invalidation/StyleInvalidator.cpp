@@ -170,7 +170,7 @@ void StyleInvalidator::SiblingData::pushInvalidationSet(const SiblingInvalidatio
     m_invalidationEntries.append(Entry(&invalidationSet, invalidationLimit));
 }
 
-bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& element, RecursionData& recursionData) const
+bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& element, RecursionData& recursionData)
 {
     bool thisElementNeedsStyleRecalc = false;
     ASSERT(!recursionData.wholeSubtreeInvalid());
