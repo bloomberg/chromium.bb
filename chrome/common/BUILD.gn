@@ -51,6 +51,9 @@ buildflag_header("features") {
 }
 
 # GYP version: chrome/chrome_common.gypi:common
+#
+# Use a static library here because many test binaries depend on this but don't
+# require many files from it. This makes linking more efficient.
 static_library("common") {
   sources = rebase_path(gypi_values.chrome_common_sources, ".", "//chrome")
   defines = []
@@ -379,7 +382,9 @@ if (is_win) {
   }
 }
 
-source_set("test_support") {
+# Use a static library here because many test binaries depend on this but don't
+# require many files from it. This makes linking more efficient.
+static_library("test_support") {
   testonly = true
   visibility = [ "//chrome/test:test_support" ]
 

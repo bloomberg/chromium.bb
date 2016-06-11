@@ -22,7 +22,10 @@ content_tests_gypi_values =
                 [ "../content_tests.gypi" ])
 
 # GYP version //content/content_tests.gypi:test_support_content
-source_set("test_support") {
+#
+# Use a static library here because many test binaries depend on this but don't
+# require many files from it. This makes linking more efficient.
+static_library("test_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in

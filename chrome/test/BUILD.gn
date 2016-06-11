@@ -23,7 +23,10 @@ group("test") {
 }
 
 # GYP version: chrome/chrome_tests_unit.gypi:test_support_common
-source_set("test_support") {
+#
+# Use a static library here because many test binaries depend on this but don't
+# require many files from it. This makes linking more efficient.
+static_library("test_support") {
   defines = []
   testonly = true
 
