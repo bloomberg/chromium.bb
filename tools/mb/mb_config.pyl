@@ -330,8 +330,8 @@
         'gn_asan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid',
       'ChromiumOS ASAN Release':
         'gyp_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
-      'MSAN Release (chained origins)': 'gyp_msan_edge_release_bot',
-      'MSAN Release (no origins)': 'gyp_msan_no_origins_edge_release_bot',
+      'MSAN Release (chained origins)': 'gn_msan_edge_release_bot',
+      'MSAN Release (no origins)': 'gn_msan_no_origins_edge_release_bot',
       'Mac ASAN Debug': 'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot',
       'Mac ASAN Release Media':
         'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot',
@@ -551,7 +551,7 @@
       'WebKit Linux (dbg)': 'swarming_gn_debug_bot',
       'WebKit Linux ASAN': 'swarming_gn_asan_lsan_release_bot',
       'WebKit Linux Leak': 'swarming_gn_release_bot',
-      'WebKit Linux MSAN': 'swarming_gyp_msan_release_bot',
+      'WebKit Linux MSAN': 'swarming_gn_msan_release_bot',
       'WebKit Linux Trusty': 'swarming_gn_release_bot',
       'WebKit Linux': 'swarming_gn_release_bot',
       'WebKit Mac Builder (dbg)': 'swarming_gn_debug_bot',
@@ -1304,12 +1304,12 @@
       'gyp', 'drmemory', 'shared', 'release', 'x64',
     ],
 
-    'gyp_msan_edge_release_bot': [
-      'gyp', 'msan', 'edge', 'release_bot',
+    'gn_msan_edge_release_bot': [
+      'gn', 'msan', 'edge', 'release_bot',
     ],
 
-    'gyp_msan_no_origins_edge_release_bot': [
-      'gyp', 'msan_no_origins', 'edge', 'release_bot',
+    'gn_msan_no_origins_edge_release_bot': [
+      'gn', 'msan_no_origins', 'edge', 'release_bot',
     ],
 
     'gyp_official': [
@@ -1578,8 +1578,8 @@
       'swarming', 'gn', 'debug_trybot', 'x86',
     ],
 
-    'swarming_gyp_msan_release_bot': [
-      'swarming', 'gyp', 'msan', 'release_bot',
+    'swarming_gn_msan_release_bot': [
+      'swarming', 'gn', 'msan', 'release_bot',
     ],
 
     'swarming_gn_release_bot': [
