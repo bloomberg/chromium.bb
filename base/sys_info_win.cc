@@ -33,7 +33,9 @@ int64_t AmountOfMemory(DWORDLONG MEMORYSTATUSEX::*memory_field) {
 bool GetDiskSpaceInfo(const base::FilePath& path,
                       int64_t* available_bytes,
                       int64_t* total_bytes) {
-  ULARGE_INTEGER available, total, free;
+  ULARGE_INTEGER available;
+  ULARGE_INTEGER total;
+  ULARGE_INTEGER free;
   if (!GetDiskFreeSpaceExW(path.value().c_str(), &available, &total, &free))
     return false;
 

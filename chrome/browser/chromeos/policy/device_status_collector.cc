@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/statvfs.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <limits>
 #include <memory>
@@ -112,19 +112,19 @@ std::vector<em::VolumeInfo> GetVolumeInfo(
     const std::vector<std::string>& mount_points) {
   std::vector<em::VolumeInfo> result;
   for (const std::string& mount_point : mount_points) {
-    struct statvfs stat = {};  // Zero-clear
-    if (HANDLE_EINTR(statvfs(mount_point.c_str(), &stat)) == 0) {
-      em::VolumeInfo info;
-      info.set_volume_id(mount_point);
-      info.set_storage_total(static_cast<int64_t>(stat.f_blocks) *
-                             stat.f_frsize);
-      info.set_storage_free(static_cast<uint64_t>(stat.f_bavail) *
-                            stat.f_frsize);
-      result.push_back(info);
-    } else {
+    base::FilePath mount_path(mount_point);
+    int64_t free_size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
+    int64_t total_size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
+    if (free_size < 0 || total_size < 0) {
       LOG_IF(ERROR, !mount_point.empty()) << "Unable to get volume status for "
                                           << mount_point;
+      continue;
     }
+    em::VolumeInfo info;
+    info.set_volume_id(mount_point);
+    info.set_storage_total(total_size);
+    info.set_storage_free(free_size);
+    result.push_back(info);
   }
   return result;
 }
@@ -822,7 +822,7 @@ void DeviceStatusCollector::GetNetworkInterfaces(
       0,      // no limit to number of results
       &state_list);
 
-  for (const chromeos::NetworkState* state: state_list) {
+  for (const chromeos::NetworkState* state : state_list) {
     // Determine the connection state and signal strength for |state|.
     em::NetworkState::ConnectionState connection_state_enum =
         em::NetworkState::UNKNOWN;

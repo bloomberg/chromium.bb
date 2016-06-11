@@ -6,8 +6,10 @@
 
 #include <sys/statvfs.h>
 
+#include <algorithm>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -70,20 +72,21 @@ namespace {
 const char kRootPath[] = "/";
 
 // Retrieves total and remaining available size on |mount_path|.
-void GetSizeStatsOnBlockingPool(const std::string& mount_path,
+void GetSizeStatsOnBlockingPool(const base::FilePath& mount_path,
                                 uint64_t* total_size,
                                 uint64_t* remaining_size) {
-  struct statvfs stat = {};  // Zero-clear
-  if (HANDLE_EINTR(statvfs(mount_path.c_str(), &stat)) == 0) {
-    *total_size = static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
-    *remaining_size = static_cast<uint64_t>(stat.f_bavail) * stat.f_frsize;
-  }
+  int64_t size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
+  if (size >= 0)
+    *total_size = size;
+  size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
+  if (size >= 0)
+    *remaining_size = size;
 }
 
 // Used for OnCalculateEvictableCacheSize.
-typedef base::Callback<void(const uint64_t* total_size,
-                            const uint64_t* remaining_space)>
-    GetSizeStatsCallback;
+using GetSizeStatsCallback =
+    base::Callback<void(const uint64_t* total_size,
+                        const uint64_t* remaining_space)>;
 
 // Calculates the real remaining size of Download volume and pass it to
 // GetSizeStatsCallback.
@@ -467,9 +470,8 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     uint64_t* total_size = new uint64_t(0);
     uint64_t* remaining_size = new uint64_t(0);
     BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE,
-        base::Bind(&GetSizeStatsOnBlockingPool, volume->mount_path().value(),
-                   total_size, remaining_size),
+        FROM_HERE, base::Bind(&GetSizeStatsOnBlockingPool, volume->mount_path(),
+                              total_size, remaining_size),
         base::Bind(
             &FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace, this,
             base::Owned(total_size), base::Owned(remaining_size),

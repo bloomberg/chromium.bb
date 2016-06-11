@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/storage_manager_handler.h"
 
-#include <sys/statvfs.h>
+#include <string>
 
 #include "base/files/file_util.h"
-#include "base/posix/eintr_wrapper.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
@@ -21,14 +21,15 @@ namespace chromeos {
 namespace options {
 namespace {
 
-void GetSizeStatOnBlockingPool(const std::string& mount_path,
+void GetSizeStatOnBlockingPool(const base::FilePath& mount_path,
                                int64_t* total_size,
                                int64_t* available_size) {
-  struct statvfs stat = {};
-  if (HANDLE_EINTR(statvfs(mount_path.c_str(), &stat)) == 0) {
-    *total_size = static_cast<int64_t>(stat.f_blocks) * stat.f_frsize;
-    *available_size = static_cast<int64_t>(stat.f_bavail) * stat.f_frsize;
-  }
+  int64_t size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
+  if (size >= 0)
+    *total_size = size;
+  size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
+  if (size >= 0)
+    *available_size = size;
 }
 
 }  // namespace
@@ -105,7 +106,7 @@ void StorageManagerHandler::UpdateSizeStat() {
   content::BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
       base::Bind(&GetSizeStatOnBlockingPool,
-                 downloads_path.value(),
+                 downloads_path,
                  total_size,
                  available_size),
       base::Bind(&StorageManagerHandler::OnGetSizeStat,
