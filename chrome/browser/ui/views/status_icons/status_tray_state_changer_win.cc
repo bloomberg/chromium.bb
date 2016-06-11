@@ -153,7 +153,7 @@ std::unique_ptr<NOTIFYITEM> StatusTrayStateChangerWin::RegisterCallback() {
   // |notify_item_| is used to store the result of the callback from
   // Explorer.exe, which happens synchronously during
   // RegisterCallbackWin8 or RegisterCallbackLegacy.
-  DCHECK(notify_item_.get() == NULL);
+  DCHECK(!notify_item_);
 
   // TODO(dewittj): Add UMA logging here to report if either of our strategies
   // has a tendency to fail on particular versions of Windows.

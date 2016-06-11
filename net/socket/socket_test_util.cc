@@ -895,7 +895,7 @@ int MockTCPClientSocket::Read(IOBuffer* buf, int buf_len,
     return ERR_UNEXPECTED;
 
   // If the buffer is already in use, a read is already in progress!
-  DCHECK(pending_read_buf_.get() == NULL);
+  DCHECK(!pending_read_buf_);
 
   // Store our async IO data.
   pending_read_buf_ = buf;
@@ -1287,7 +1287,7 @@ int MockUDPClientSocket::Read(IOBuffer* buf,
     return ERR_UNEXPECTED;
 
   // If the buffer is already in use, a read is already in progress!
-  DCHECK(pending_read_buf_.get() == NULL);
+  DCHECK(!pending_read_buf_);
 
   // Store our async IO data.
   pending_read_buf_ = buf;

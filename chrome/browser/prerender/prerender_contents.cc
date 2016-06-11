@@ -240,7 +240,7 @@ void PrerenderContents::StartPrerendering(
   DCHECK(profile_ != NULL);
   DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
-  DCHECK(prerender_contents_.get() == NULL);
+  DCHECK(!prerender_contents_);
   DCHECK(size_.IsEmpty());
   DCHECK_EQ(1U, alias_urls_.size());
 
@@ -607,7 +607,7 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 }
 
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
-  if (process_metrics_.get() == NULL) {
+  if (!process_metrics_) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
     if (!GetRenderViewHost() || !GetRenderViewHost()->GetProcess())
       return NULL;

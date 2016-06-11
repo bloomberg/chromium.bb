@@ -162,7 +162,7 @@ BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
 }
 
 void BrowserProcessPlatformPart::CreateProfileHelper() {
-  DCHECK(!created_profile_helper_ && profile_helper_.get() == NULL);
+  DCHECK(!created_profile_helper_ && !profile_helper_);
   created_profile_helper_ = true;
   profile_helper_.reset(new chromeos::ProfileHelper());
 }

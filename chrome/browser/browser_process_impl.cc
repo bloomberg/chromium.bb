@@ -941,7 +941,7 @@ void BrowserProcessImpl::OnKeepAliveRestartStateChanged(bool can_restart){
 }
 
 void BrowserProcessImpl::CreateWatchdogThread() {
-  DCHECK(!created_watchdog_thread_ && watchdog_thread_.get() == NULL);
+  DCHECK(!created_watchdog_thread_ && !watchdog_thread_);
   created_watchdog_thread_ = true;
 
   std::unique_ptr<WatchDogThread> thread(new WatchDogThread());
@@ -953,7 +953,7 @@ void BrowserProcessImpl::CreateWatchdogThread() {
 }
 
 void BrowserProcessImpl::CreateProfileManager() {
-  DCHECK(!created_profile_manager_ && profile_manager_.get() == NULL);
+  DCHECK(!created_profile_manager_ && !profile_manager_);
   created_profile_manager_ = true;
 
   base::FilePath user_data_dir;
@@ -962,7 +962,7 @@ void BrowserProcessImpl::CreateProfileManager() {
 }
 
 void BrowserProcessImpl::CreateLocalState() {
-  DCHECK(!created_local_state_ && local_state_.get() == NULL);
+  DCHECK(!created_local_state_ && !local_state_);
   created_local_state_ = true;
 
   base::FilePath local_state_path;
@@ -1053,13 +1053,13 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 }
 
 void BrowserProcessImpl::CreateIconManager() {
-  DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);
+  DCHECK(!created_icon_manager_ && !icon_manager_);
   created_icon_manager_ = true;
   icon_manager_.reset(new IconManager);
 }
 
 void BrowserProcessImpl::CreateIntranetRedirectDetector() {
-  DCHECK(intranet_redirect_detector_.get() == NULL);
+  DCHECK(!intranet_redirect_detector_);
   std::unique_ptr<IntranetRedirectDetector> intranet_redirect_detector(
       new IntranetRedirectDetector);
   intranet_redirect_detector_.swap(intranet_redirect_detector);
@@ -1067,7 +1067,7 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 
 void BrowserProcessImpl::CreateNotificationPlatformBridge() {
 #if (defined(OS_ANDROID) || defined(OS_MACOSX)) && defined(ENABLE_NOTIFICATIONS)
-  DCHECK(notification_bridge_.get() == NULL);
+  DCHECK(!notification_bridge_);
   notification_bridge_.reset(NotificationPlatformBridge::Create());
   created_notification_bridge_ = true;
 #endif
@@ -1077,7 +1077,7 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 // Android does not use the NotificationUIManager anuymore
 // All notification traffic is routed through NotificationPlatformBridge.
 #if defined(ENABLE_NOTIFICATIONS) && !defined(OS_ANDROID)
-  DCHECK(notification_ui_manager_.get() == NULL);
+  DCHECK(!notification_ui_manager_);
   notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
   created_notification_ui_manager_ = true;
 #endif
@@ -1085,7 +1085,7 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 
 void BrowserProcessImpl::CreateBackgroundModeManager() {
 #if BUILDFLAG(ENABLE_BACKGROUND)
-  DCHECK(background_mode_manager_.get() == NULL);
+  DCHECK(!background_mode_manager_);
   background_mode_manager_.reset(
       new BackgroundModeManager(
               *base::CommandLine::ForCurrentProcess(),
@@ -1094,13 +1094,13 @@ void BrowserProcessImpl::CreateBackgroundModeManager() {
 }
 
 void BrowserProcessImpl::CreateStatusTray() {
-  DCHECK(status_tray_.get() == NULL);
+  DCHECK(!status_tray_);
   status_tray_.reset(StatusTray::Create());
 }
 
 void BrowserProcessImpl::CreatePrintPreviewDialogController() {
 #if defined(ENABLE_PRINT_PREVIEW)
-  DCHECK(print_preview_dialog_controller_.get() == NULL);
+  DCHECK(!print_preview_dialog_controller_);
   print_preview_dialog_controller_ =
       new printing::PrintPreviewDialogController();
 #else
@@ -1110,7 +1110,7 @@ void BrowserProcessImpl::CreatePrintPreviewDialogController() {
 
 void BrowserProcessImpl::CreateBackgroundPrintingManager() {
 #if defined(ENABLE_PRINT_PREVIEW)
-  DCHECK(background_printing_manager_.get() == NULL);
+  DCHECK(!background_printing_manager_);
   background_printing_manager_.reset(new printing::BackgroundPrintingManager());
 #else
   NOTIMPLEMENTED();
@@ -1118,7 +1118,7 @@ void BrowserProcessImpl::CreateBackgroundPrintingManager() {
 }
 
 void BrowserProcessImpl::CreateSafeBrowsingService() {
-  DCHECK(safe_browsing_service_.get() == NULL);
+  DCHECK(!safe_browsing_service_);
   // Set this flag to true so that we don't retry indefinitely to
   // create the service class if there was an error.
   created_safe_browsing_service_ = true;

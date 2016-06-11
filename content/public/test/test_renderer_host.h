@@ -253,7 +253,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // Configures which TestBrowserThreads inside |thread_bundle| are backed by
   // real threads. Must be called before SetUp().
   void SetThreadBundleOptions(int options) {
-    DCHECK(thread_bundle_.get() == NULL);
+    DCHECK(!thread_bundle_);
     thread_bundle_options_ = options;
   }
 

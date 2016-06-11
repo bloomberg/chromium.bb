@@ -49,7 +49,7 @@ BluetoothSocketNet::BluetoothSocketNet(
 }
 
 BluetoothSocketNet::~BluetoothSocketNet() {
-  DCHECK(tcp_socket_.get() == NULL);
+  DCHECK(!tcp_socket_);
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&DeactivateSocket, socket_thread_));
 }

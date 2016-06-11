@@ -143,7 +143,7 @@ ChangeQueue::Change::Change(ChangeType type,
       by_user_(false),
       notification_(std::move(notification)) {
   DCHECK(!id.empty());
-  DCHECK(type != CHANGE_TYPE_DELETE || notification_.get() == NULL);
+  DCHECK(type != CHANGE_TYPE_DELETE || !notification_);
 
   id_ = notification_ ? notification_->id() : notification_list_id_;
 }

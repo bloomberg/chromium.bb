@@ -127,12 +127,12 @@ void DemuxerStreamAdapter::OnNewBuffer(
   }
 
   if (status == ::media::DemuxerStream::kAborted) {
-    DCHECK(input.get() == NULL);
+    DCHECK(!input);
     return;
   }
 
   if (status == ::media::DemuxerStream::kConfigChanged) {
-    DCHECK(input.get() == NULL);
+    DCHECK(!input);
     if (demuxer_stream_->type() == ::media::DemuxerStream::VIDEO)
       video_config_ = demuxer_stream_->video_decoder_config();
     if (demuxer_stream_->type() == ::media::DemuxerStream::AUDIO)
