@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/prefs/pref_change_registrar.h"
 
 #if defined(OS_CHROMEOS)
 #include "content/public/browser/notification_observer.h"
@@ -29,6 +30,7 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
                            public ProfileAttributesStorage::Observer {
  public:
   static const char kProfileInfoChangedEventName[];
+  static const char kProfileManagesSupervisedUsersChangedEventName[];
 
   explicit ProfileInfoHandler(Profile* profile);
   ~ProfileInfoHandler() override;
@@ -53,11 +55,22 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoHandlerTest, GetProfileInfo);
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoHandlerTest, PushProfileInfo);
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoHandlerTest,
+                           GetProfileManagesSupervisedUsers);
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoHandlerTest,
+                           PushProfileManagesSupervisedUsers);
 
   // Callbacks from the page.
   void HandleGetProfileInfo(const base::ListValue* args);
+  void HandleGetProfileManagesSupervisedUsers(const base::ListValue* args);
 
   void PushProfileInfo();
+
+  // Pushes whether the current profile manages supervised users to JavaScript.
+  void PushProfileManagesSupervisedUsersStatus();
+
+  // Returns true if this profile manages supervised users.
+  bool IsProfileManagingSupervisedUsers() const;
 
   std::unique_ptr<base::DictionaryValue> GetAccountNameAndIcon() const;
 
@@ -66,6 +79,9 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   ScopedObserver<ProfileAttributesStorage, ProfileInfoHandler>
       profile_observer_;
+
+  // Used to listen for changes in the list of managed supervised users.
+  PrefChangeRegistrar profile_pref_registrar_;
 
 #if defined(OS_CHROMEOS)
   // Used to listen to ChromeOS user image changes.

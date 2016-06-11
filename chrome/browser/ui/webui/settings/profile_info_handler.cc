@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/common/pref_names.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -30,6 +31,9 @@ namespace settings {
 // static
 const char ProfileInfoHandler::kProfileInfoChangedEventName[] =
     "profile-info-changed";
+const char
+    ProfileInfoHandler::kProfileManagesSupervisedUsersChangedEventName[] =
+        "profile-manages-supervised-users-changed";
 
 ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
     : profile_(profile),
@@ -41,11 +45,22 @@ void ProfileInfoHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getProfileInfo", base::Bind(&ProfileInfoHandler::HandleGetProfileInfo,
                                    base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getProfileManagesSupervisedUsers",
+      base::Bind(&ProfileInfoHandler::HandleGetProfileManagesSupervisedUsers,
+                 base::Unretained(this)));
 }
 
 void ProfileInfoHandler::OnJavascriptAllowed() {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
+
+  PrefService* prefs = profile_->GetPrefs();
+  profile_pref_registrar_.Init(prefs);
+  profile_pref_registrar_.Add(
+      prefs::kSupervisedUsers,
+      base::Bind(&ProfileInfoHandler::PushProfileManagesSupervisedUsersStatus,
+                 base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
@@ -56,6 +71,8 @@ void ProfileInfoHandler::OnJavascriptAllowed() {
 void ProfileInfoHandler::OnJavascriptDisallowed() {
   profile_observer_.Remove(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
+
+  profile_pref_registrar_.RemoveAll();
 
 #if defined(OS_CHROMEOS)
   registrar_.RemoveAll();
@@ -97,10 +114,29 @@ void ProfileInfoHandler::HandleGetProfileInfo(const base::ListValue* args) {
   ResolveJavascriptCallback(*callback_id, *GetAccountNameAndIcon());
 }
 
+void ProfileInfoHandler::HandleGetProfileManagesSupervisedUsers(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  ResolveJavascriptCallback(
+      *callback_id, base::FundamentalValue(IsProfileManagingSupervisedUsers()));
+}
+
 void ProfileInfoHandler::PushProfileInfo() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue(kProfileInfoChangedEventName),
                          *GetAccountNameAndIcon());
+}
+
+void ProfileInfoHandler::PushProfileManagesSupervisedUsersStatus() {
+  CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue(kProfileManagesSupervisedUsersChangedEventName),
+      base::FundamentalValue(IsProfileManagingSupervisedUsers()));
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -146,6 +182,10 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
   response->SetString("name", name);
   response->SetString("iconUrl", icon_url);
   return base::WrapUnique(response);
+}
+
+bool ProfileInfoHandler::IsProfileManagingSupervisedUsers() const {
+  return !profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUsers)->empty();
 }
 
 }  // namespace settings

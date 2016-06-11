@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
@@ -57,7 +59,7 @@ class ProfileInfoHandlerTest : public testing::Test {
     handler_->set_web_ui(&web_ui_);
   }
 
-  void VerifyResponse(const base::Value* call_argument) {
+  void VerifyProfileInfo(const base::Value* call_argument) {
     const base::DictionaryValue* response = nullptr;
     ASSERT_TRUE(call_argument->GetAsDictionary(&response));
 
@@ -112,17 +114,15 @@ TEST_F(ProfileInfoHandlerTest, GetProfileInfo) {
   ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
   EXPECT_TRUE(success);
 
-  VerifyResponse(data.arg3());
+  VerifyProfileInfo(data.arg3());
 }
 
 TEST_F(ProfileInfoHandlerTest, PushProfileInfo) {
-  base::ListValue list_args;
-  list_args.AppendString("get-profile-info-callback-id");
-  handler()->HandleGetProfileInfo(&list_args);
+  handler()->AllowJavascript();
 
   handler()->OnProfileAvatarChanged(base::FilePath());
 
-  EXPECT_EQ(2U, web_ui()->call_data().size());
+  EXPECT_EQ(1U, web_ui()->call_data().size());
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
@@ -131,7 +131,56 @@ TEST_F(ProfileInfoHandlerTest, PushProfileInfo) {
   ASSERT_TRUE(data.arg1()->GetAsString(&event_id));
   EXPECT_EQ(ProfileInfoHandler::kProfileInfoChangedEventName, event_id);
 
-  VerifyResponse(data.arg2());
+  VerifyProfileInfo(data.arg2());
+}
+
+TEST_F(ProfileInfoHandlerTest, GetProfileManagesSupervisedUsers) {
+  base::ListValue list_args;
+  list_args.AppendString("get-profile-manages-supervised-users-callback-id");
+  handler()->HandleGetProfileManagesSupervisedUsers(&list_args);
+
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+  std::string callback_id;
+  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+  EXPECT_EQ("get-profile-manages-supervised-users-callback-id", callback_id);
+
+  bool success = false;
+  ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+  EXPECT_TRUE(success);
+
+  bool has_supervised_users = false;
+  ASSERT_TRUE(data.arg3()->GetAsBoolean(&has_supervised_users));
+  EXPECT_FALSE(has_supervised_users);
+}
+
+TEST_F(ProfileInfoHandlerTest, PushProfileManagesSupervisedUsers) {
+  handler()->AllowJavascript();
+
+  // The handler is notified of the change after |update| is destroyed.
+  std::unique_ptr<DictionaryPrefUpdate> update(
+      new DictionaryPrefUpdate(profile()->GetPrefs(), prefs::kSupervisedUsers));
+  base::DictionaryValue* dict = update->Get();
+  dict->SetWithoutPathExpansion("supervised-user-id",
+                                new base::DictionaryValue);
+  update.reset();
+
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+  std::string event_id;
+  ASSERT_TRUE(data.arg1()->GetAsString(&event_id));
+  EXPECT_EQ(ProfileInfoHandler::kProfileManagesSupervisedUsersChangedEventName,
+            event_id);
+
+  bool has_supervised_users = false;
+  ASSERT_TRUE(data.arg2()->GetAsBoolean(&has_supervised_users));
+  EXPECT_TRUE(has_supervised_users);
 }
 
 }  // namespace settings

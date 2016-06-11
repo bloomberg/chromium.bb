@@ -706,6 +706,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
     {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
     {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
+    {"manageSupervisedUsers", IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS},
 #if defined(OS_CHROMEOS)
     {"enableScreenlock", IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK},
     {"changePictureTitle", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE},
@@ -776,6 +777,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+  html_source->AddString("supervisedUsersUrl",
+                         chrome::kLegacySupervisedUserManagementURL);
   std::string disconnect_help_url =
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kSyncGoogleDashboardURL),

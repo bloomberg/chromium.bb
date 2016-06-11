@@ -210,6 +210,15 @@
             $i18n{manageOtherPeople}
           </paper-button>
         </div>
+
+        <template is="dom-if" if=[[profileManagesSupervisedUsers_]]>
+          <div id="manageSupervisedUsersContainer" class="settings-box">
+            <paper-button class="primary-button"
+                on-tap="onManageSupervisedUsers_">
+              $i18n{manageSupervisedUsers}
+            </paper-button>
+          </div>
+        </template>
       </neon-animatable>
       <template is="dom-if" name="sync">
         <settings-subpage page-title="$i18n{syncPageTitle}">

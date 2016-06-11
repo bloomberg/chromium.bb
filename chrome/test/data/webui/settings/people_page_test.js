@@ -11,6 +11,7 @@ cr.define('settings_people_page', function() {
   var TestProfileInfoBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
       'getProfileInfo',
+      'getProfileManagesSupervisedUsers',
     ]);
   };
 
@@ -27,6 +28,12 @@ cr.define('settings_people_page', function() {
       this.methodCalled('getProfileInfo');
       return Promise.resolve(this.fakeProfileInfo);
     },
+
+    /** @override */
+    getProfileManagesSupervisedUsers: function() {
+      this.methodCalled('getProfileManagesSupervisedUsers');
+      return Promise.resolve(false);
+    }
   };
 
   function registerProfileInfoTests() {
@@ -70,6 +77,21 @@ cr.define('settings_people_page', function() {
           assertEquals('http://pushed-url/',
                        peoplePage.$$('#profile-icon').src);
         });
+      });
+
+      test('GetProfileManagesSupervisedUsers', function() {
+        return browserProxy.whenCalled('getProfileManagesSupervisedUsers').then(
+            function() {
+              Polymer.dom.flush();
+              assertFalse(!!peoplePage.$$('#manageSupervisedUsersContainer'));
+
+              cr.webUIListenerCallback(
+                'profile-manages-supervised-users-changed',
+                true);
+
+              Polymer.dom.flush();
+              assertTrue(!!peoplePage.$$('#manageSupervisedUsersContainer'));
+            });
       });
     });
   }

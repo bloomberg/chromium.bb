@@ -46,6 +46,11 @@ Polymer({
      */
     profileName_: String,
 
+    /**
+     * True if the current profile manages supervised users.
+     */
+    profileManagesSupervisedUsers_: Boolean,
+
     /** @private {!settings.SyncBrowserProxyImpl} */
     syncBrowserProxy_: {
       type: Object,
@@ -112,10 +117,15 @@ Polymer({
 
   /** @override */
   attached: function() {
-    settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
-        this.handleProfileInfo_.bind(this));
+    var profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
+    profileInfoProxy.getProfileInfo().then(this.handleProfileInfo_.bind(this));
     this.addWebUIListener('profile-info-changed',
                           this.handleProfileInfo_.bind(this));
+
+    profileInfoProxy.getProfileManagesSupervisedUsers().then(
+        this.handleProfileManagesSupervisedUsers_.bind(this));
+    this.addWebUIListener('profile-manages-supervised-users-changed',
+                          this.handleProfileManagesSupervisedUsers_.bind(this));
 
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
@@ -141,6 +151,15 @@ Polymer({
   handleProfileInfo_: function(info) {
     this.profileName_ = info.name;
     this.profileIconUrl_ = info.iconUrl;
+  },
+
+  /**
+   * Handler for when the profile starts or stops managing supervised users.
+   * @private
+   * @param {boolean} managesSupervisedUsers
+   */
+  handleProfileManagesSupervisedUsers_: function(managesSupervisedUsers) {
+    this.profileManagesSupervisedUsers_ = managesSupervisedUsers;
   },
 
   /**
@@ -233,6 +252,11 @@ Polymer({
 <if expr="chromeos">
     this.$.pages.setSubpageChain(['users']);
 </if>
+  },
+
+  /** @private */
+  onManageSupervisedUsers_: function() {
+    window.open(loadTimeData.getString('supervisedUsersUrl'));
   },
 
   /**
