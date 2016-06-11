@@ -168,8 +168,8 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
                             0 /* crop_y */,
                             bitmap.info().width(),
                             bitmap.info().height(),
-                            frame->natural_size().width(),
-                            frame->natural_size().height(),
+                            frame->coded_size().width(),
+                            frame->coded_size().height(),
                             libyuv::kRotate0,
                             libyuv::FOURCC_ARGB) == 0) {
     // Success!
