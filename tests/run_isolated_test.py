@@ -208,6 +208,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         None,
         None,
         None,
+        None,
         None)
     self.assertEqual(0, ret)
     return make_tree_call
@@ -448,6 +449,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           store,
           isolateserver.MemoryCache(),
           False,
+          None,
           None,
           None,
           None,

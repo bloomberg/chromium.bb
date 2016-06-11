@@ -57,6 +57,7 @@ import isolateserver
 ISOLATED_OUTDIR_PARAMETER = '${ISOLATED_OUTDIR}'
 CIPD_PATH_PARAMETER = '${CIPD_PATH}'
 EXECUTABLE_SUFFIX_PARAMETER = '${EXECUTABLE_SUFFIX}'
+SWARMING_BOT_FILE_PARAMETER = '${SWARMING_BOT_FILE}'
 
 # Absolute path to this file (can be None if running from zip on Mac).
 THIS_FILE_PATH = os.path.abspath(__file__) if __file__ else None
@@ -153,7 +154,7 @@ def change_tree_read_only(rootdir, read_only):
         (rootdir, read_only, read_only))
 
 
-def process_command(command, out_dir, cipd_path):
+def process_command(command, out_dir, cipd_path, bot_file):
   """Replaces variables in a command line.
 
   Raises:
@@ -177,6 +178,13 @@ def process_command(command, out_dir, cipd_path):
       # Replace slashes only if parameters are present
       # because of arguments like '${ISOLATED_OUTDIR}/foo/bar'
       arg = arg.replace('/', os.sep)
+    if SWARMING_BOT_FILE_PARAMETER in arg:
+      if bot_file:
+        arg = arg.replace(SWARMING_BOT_FILE_PARAMETER, bot_file)
+        arg = arg.replace('/', os.sep)
+      else:
+        logging.warning('SWARMING_BOT_FILE_PARAMETER found in command, but no '
+                        'bot_file specified. Leaving paramater unchanged.')
     return arg
 
   return [fix(arg) for arg in command]
@@ -341,7 +349,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 def map_and_run(
     command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
-    hard_timeout, grace_period, extra_args, cipd_path, cipd_stats):
+    hard_timeout, grace_period, bot_file, extra_args, cipd_path, cipd_stats):
   """Runs a command with optional isolated input/output.
 
   See run_tha_test for argument documentation.
@@ -413,7 +421,7 @@ def map_and_run(
       command = bundle.command + extra_args
 
     command = tools.fix_python_path(command)
-    command = process_command(command, out_dir, cipd_path)
+    command = process_command(command, out_dir, cipd_path, bot_file)
     file_path.ensure_command_has_abs_path(command, cwd)
 
     sys.stdout.flush()
@@ -486,7 +494,8 @@ def map_and_run(
 
 def run_tha_test(
     command, isolated_hash, storage, cache, leak_temp_dir, result_json,
-    root_dir, hard_timeout, grace_period, extra_args, cipd_path, cipd_stats):
+    root_dir, hard_timeout, grace_period, bot_file, extra_args,
+    cipd_path, cipd_stats):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -552,8 +561,9 @@ def run_tha_test(
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
       command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
-      hard_timeout, grace_period, extra_args, cipd_path, cipd_stats)
+      hard_timeout, grace_period, bot_file, extra_args, cipd_path, cipd_stats)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
+
   if result_json:
     # We've found tests to delete 'work' when quitting, causing an exception
     # here. Try to recreate the directory if necessary.
@@ -660,6 +670,10 @@ def create_option_parser():
   parser.add_option(
       '--grace-period', type='float',
       help='Grace period between SIGTERM and SIGKILL')
+  parser.add_option(
+      '--bot-file',
+      help='Path to a file describing the state of the host. The content is '
+           'defined by on_before_task() in bot_config.')
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
       '-s', '--isolated',
@@ -749,12 +763,14 @@ def main(args):
           return run_tha_test(
               command, options.isolated, storage, cache, options.leak_temp_dir,
               options.json, root_dir, options.hard_timeout,
-              options.grace_period, args, cipd_path, cipd_stats)
+              options.grace_period, options.bot_file, args,
+              cipd_path, cipd_stats)
       else:
         return run_tha_test(
             command, options.isolated, None, cache, options.leak_temp_dir,
             options.json, root_dir, options.hard_timeout,
-            options.grace_period, args, cipd_path, cipd_stats)
+            options.grace_period, options.bot_file, args,
+            cipd_path, cipd_stats)
   except cipd.Error as ex:
     print >> sys.stderr, ex.message
     return 1
