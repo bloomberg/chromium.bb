@@ -220,10 +220,39 @@ class Surface : public aura::WindowObserver,
 
   void WillDraw(cc::SurfaceId surface_id);
 
+  // Check whether this Surface and its children need to create new cc::Surface
+  // IDs for their contents next time they get new buffer contents.
+  void CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
+
  private:
+  struct State {
+    State();
+    ~State();
+
+    bool operator==(const State& other);
+    bool operator!=(const State& other) { return !(*this == other); }
+
+    SkRegion opaque_region;
+    SkRegion input_region;
+    float buffer_scale = 1.f;
+    gfx::Size viewport;
+    gfx::RectF crop;
+    bool only_visible_on_secure_output = false;
+    SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
+    float alpha = 1.0f;
+    ;
+  };
+
   bool needs_commit_surface_hierarchy() const {
     return needs_commit_surface_hierarchy_;
   }
+
+  // Returns true if this surface or any child surface needs a commit and has
+  // has_pending_layer_changes_ true.
+  bool HasLayerHierarchyChanged() const;
+
+  // Sets that all children must create new cc::SurfaceIds for their contents.
+  void SetSurfaceHierarchyNeedsCommitToNewSurfaces();
 
   // Commit the current attached buffer to a TextureLayer.
   void CommitTextureContents();
@@ -246,6 +275,16 @@ class Surface : public aura::WindowObserver,
 
   // This window has the layer which contains the Surface contents.
   std::unique_ptr<aura::Window> window_;
+
+  // This is true if it's possible that the layer properties (size, opacity,
+  // etc.) may have been modified since the last commit. Attaching a new
+  // buffer with the same size as the old shouldn't set this to true.
+  bool has_pending_layer_changes_ = true;
+
+  // This is true if the next commit to this surface should put its contents
+  // into a new cc::SurfaceId. This allows for synchronization between Surface
+  // and layer changes.
+  bool needs_commit_to_new_surface_ = true;
 
   // This is true when Attach() has been called and new contents should take
   // effect next time Commit() is called.
@@ -277,14 +316,11 @@ class Surface : public aura::WindowObserver,
   std::list<FrameCallback> frame_callbacks_;
   std::list<FrameCallback> active_frame_callbacks_;
 
-  // The opaque region to take effect when Commit() is called.
-  SkRegion pending_opaque_region_;
+  // This is the state that has yet to be committed.
+  State pending_state_;
 
-  // The input region to take effect when Commit() is called.
-  SkRegion pending_input_region_;
-
-  // The buffer scaling factor to take effect when Commit() is called.
-  float pending_buffer_scale_;
+  // This is the state that has been committed.
+  State state_;
 
   // The stack of sub-surfaces to take effect when Commit() is called.
   // Bottom-most sub-surface at the front of the list and top-most sub-surface
@@ -293,38 +329,11 @@ class Surface : public aura::WindowObserver,
   using SubSurfaceEntryList = std::list<SubSurfaceEntry>;
   SubSurfaceEntryList pending_sub_surfaces_;
 
-  // The viewport to take effect when Commit() is called.
-  gfx::Size pending_viewport_;
-
-  // The crop rectangle to take effect when Commit() is called.
-  gfx::RectF pending_crop_;
-
-  // The active crop rectangle.
-  gfx::RectF crop_;
-
-  // The secure output visibility state to take effect when Commit() is called.
-  bool pending_only_visible_on_secure_output_;
-
-  // The active secure output visibility state.
-  bool only_visible_on_secure_output_;
-
-  // The blend mode state to take effect when Commit() is called.
-  SkXfermode::Mode pending_blend_mode_;
-
-  // The alpha state to take effect when Commit() is called.
-  float pending_alpha_;
-
-  // The active alpha state.
-  float alpha_;
-
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;
 
   // The last resource that was sent to a surface.
   cc::TransferableResource current_resource_;
-
-  // The active input region used for hit testing.
-  SkRegion input_region_;
 
   // This is true if a call to Commit() as been made but
   // CommitSurfaceHierarchy() has not yet been called.

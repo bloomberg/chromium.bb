@@ -189,14 +189,6 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
 Surface::Surface()
     : window_(new aura::Window(new CustomWindowDelegate(this))),
       has_pending_contents_(false),
-      pending_input_region_(SkIRect::MakeLargest()),
-      pending_buffer_scale_(1.0f),
-      pending_only_visible_on_secure_output_(false),
-      only_visible_on_secure_output_(false),
-      pending_blend_mode_(SkXfermode::kSrcOver_Mode),
-      pending_alpha_(1.0f),
-      alpha_(1.0f),
-      input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
       compositor_(nullptr),
@@ -283,20 +275,20 @@ void Surface::SetOpaqueRegion(const SkRegion& region) {
   TRACE_EVENT1("exo", "Surface::SetOpaqueRegion", "region",
                gfx::SkIRectToRect(region.getBounds()).ToString());
 
-  pending_opaque_region_ = region;
+  pending_state_.opaque_region = region;
 }
 
 void Surface::SetInputRegion(const SkRegion& region) {
   TRACE_EVENT1("exo", "Surface::SetInputRegion", "region",
                gfx::SkIRectToRect(region.getBounds()).ToString());
 
-  pending_input_region_ = region;
+  pending_state_.input_region = region;
 }
 
 void Surface::SetBufferScale(float scale) {
   TRACE_EVENT1("exo", "Surface::SetBufferScale", "scale", scale);
 
-  pending_buffer_scale_ = scale;
+  pending_state_.buffer_scale = scale;
 }
 
 void Surface::AddSubSurface(Surface* sub_surface) {
@@ -309,6 +301,7 @@ void Surface::AddSubSurface(Surface* sub_surface) {
 
   DCHECK(!ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
+  has_pending_layer_changes_ = true;
 }
 
 void Surface::RemoveSubSurface(Surface* sub_surface) {
@@ -322,6 +315,7 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(
       FindListEntry(pending_sub_surfaces_, sub_surface));
+  has_pending_layer_changes_ = true;
 }
 
 void Surface::SetSubSurfacePosition(Surface* sub_surface,
@@ -331,7 +325,10 @@ void Surface::SetSubSurfacePosition(Surface* sub_surface,
 
   auto it = FindListEntry(pending_sub_surfaces_, sub_surface);
   DCHECK(it != pending_sub_surfaces_.end());
+  if (it->second == position)
+    return;
   it->second = position;
+  has_pending_layer_changes_ = true;
 }
 
 void Surface::PlaceSubSurfaceAbove(Surface* sub_surface, Surface* reference) {
@@ -359,9 +356,11 @@ void Surface::PlaceSubSurfaceAbove(Surface* sub_surface, Surface* reference) {
   }
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
-  pending_sub_surfaces_.splice(
-      position_it, pending_sub_surfaces_,
-      FindListEntry(pending_sub_surfaces_, sub_surface));
+  auto it = FindListEntry(pending_sub_surfaces_, sub_surface);
+  if (it == position_it)
+    return;
+  pending_sub_surfaces_.splice(position_it, pending_sub_surfaces_, it);
+  has_pending_layer_changes_ = true;
 }
 
 void Surface::PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling) {
@@ -382,40 +381,42 @@ void Surface::PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling) {
   }
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
-  pending_sub_surfaces_.splice(
-      sibling_it, pending_sub_surfaces_,
-      FindListEntry(pending_sub_surfaces_, sub_surface));
+  auto it = FindListEntry(pending_sub_surfaces_, sub_surface);
+  if (it == sibling_it)
+    return;
+  pending_sub_surfaces_.splice(sibling_it, pending_sub_surfaces_, it);
+  has_pending_layer_changes_ = true;
 }
 
 void Surface::SetViewport(const gfx::Size& viewport) {
   TRACE_EVENT1("exo", "Surface::SetViewport", "viewport", viewport.ToString());
 
-  pending_viewport_ = viewport;
+  pending_state_.viewport = viewport;
 }
 
 void Surface::SetCrop(const gfx::RectF& crop) {
   TRACE_EVENT1("exo", "Surface::SetCrop", "crop", crop.ToString());
 
-  pending_crop_ = crop;
+  pending_state_.crop = crop;
 }
 
 void Surface::SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output) {
   TRACE_EVENT1("exo", "Surface::SetOnlyVisibleOnSecureOutput",
                "only_visible_on_secure_output", only_visible_on_secure_output);
 
-  pending_only_visible_on_secure_output_ = only_visible_on_secure_output;
+  pending_state_.only_visible_on_secure_output = only_visible_on_secure_output;
 }
 
 void Surface::SetBlendMode(SkXfermode::Mode blend_mode) {
   TRACE_EVENT1("exo", "Surface::SetBlendMode", "blend_mode", blend_mode);
 
-  pending_blend_mode_ = blend_mode;
+  pending_state_.blend_mode = blend_mode;
 }
 
 void Surface::SetAlpha(float alpha) {
   TRACE_EVENT1("exo", "Surface::SetAlpha", "alpha", alpha);
 
-  pending_alpha_ = alpha;
+  pending_state_.alpha = alpha;
 }
 
 void Surface::Commit() {
@@ -423,36 +424,39 @@ void Surface::Commit() {
 
   needs_commit_surface_hierarchy_ = true;
 
-  if (delegate_)
+  if (state_ != pending_state_)
+    has_pending_layer_changes_ = true;
+
+  if (has_pending_contents_) {
+    if (pending_buffer_ &&
+        (current_resource_.size != pending_buffer_->GetSize())) {
+      has_pending_layer_changes_ = true;
+    } else if (!pending_buffer_ && !current_resource_.size.IsEmpty()) {
+      has_pending_layer_changes_ = true;
+    }
+  }
+
+  if (delegate_) {
     delegate_->OnSurfaceCommit();
-  else
+  } else {
+    CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
     CommitSurfaceHierarchy();
+  }
 }
 
 void Surface::CommitSurfaceHierarchy() {
   DCHECK(needs_commit_surface_hierarchy_);
   needs_commit_surface_hierarchy_ = false;
+  has_pending_layer_changes_ = false;
 
-  // TODO(dcastagna): Make secure_output_only a layer property instead of a
-  // texture mailbox flag so this can be changed without have to provide
-  // new contents.
-  only_visible_on_secure_output_ = pending_only_visible_on_secure_output_;
-  pending_only_visible_on_secure_output_ = false;
-
-  // Update current alpha.
-  alpha_ = pending_alpha_;
-
-  // Update current crop rectangle.
-  crop_ = pending_crop_;
+  state_ = pending_state_;
+  pending_state_.only_visible_on_secure_output = false;
 
   if (factory_owner_) {
     CommitSurfaceContents();
   } else {
     CommitTextureContents();
   }
-
-  // Update current input region.
-  input_region_ = pending_input_region_;
 
   // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface
@@ -490,7 +494,7 @@ bool Surface::IsSynchronized() const {
 }
 
 gfx::Rect Surface::GetHitTestBounds() const {
-  SkIRect bounds = input_region_.getBounds();
+  SkIRect bounds = state_.input_region.getBounds();
   if (!bounds.intersect(
           gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))))
     return gfx::Rect();
@@ -499,18 +503,18 @@ gfx::Rect Surface::GetHitTestBounds() const {
 
 bool Surface::HitTestRect(const gfx::Rect& rect) const {
   if (HasHitTestMask())
-    return input_region_.intersects(gfx::RectToSkIRect(rect));
+    return state_.input_region.intersects(gfx::RectToSkIRect(rect));
 
   return rect.Intersects(gfx::Rect(window_->layer()->size()));
 }
 
 bool Surface::HasHitTestMask() const {
-  return !input_region_.contains(
+  return !state_.input_region.contains(
       gfx::RectToSkIRect(gfx::Rect(window_->layer()->size())));
 }
 
 void Surface::GetHitTestMask(gfx::Path* mask) const {
-  input_region_.getBoundaryPath(mask);
+  state_.input_region.getBoundaryPath(mask);
 }
 
 void Surface::RegisterCursorProvider(Pointer* provider) {
@@ -640,6 +644,41 @@ void Surface::WillDraw(cc::SurfaceId id) {
   }
 }
 
+void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
+  if (HasLayerHierarchyChanged())
+    SetSurfaceHierarchyNeedsCommitToNewSurfaces();
+}
+
+Surface::State::State() : input_region(SkIRect::MakeLargest()) {}
+
+Surface::State::~State() = default;
+
+bool Surface::State::operator==(const State& other) {
+  return (other.crop == crop && alpha == other.alpha &&
+          other.blend_mode == blend_mode && other.viewport == viewport &&
+          other.opaque_region == opaque_region &&
+          other.buffer_scale == buffer_scale &&
+          other.input_region == input_region);
+}
+
+bool Surface::HasLayerHierarchyChanged() const {
+  if (needs_commit_surface_hierarchy_ && has_pending_layer_changes_)
+    return true;
+
+  for (const auto& sub_surface_entry : pending_sub_surfaces_) {
+    if (sub_surface_entry.first->HasLayerHierarchyChanged())
+      return true;
+  }
+  return false;
+}
+
+void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
+  needs_commit_to_new_surface_ = true;
+  for (auto& sub_surface_entry : pending_sub_surfaces_) {
+    sub_surface_entry.first->SetSurfaceHierarchyNeedsCommitToNewSurfaces();
+  }
+}
+
 void Surface::CommitTextureContents() {
   // We update contents if Attach() has been called since last commit.
   if (has_pending_contents_) {
@@ -652,14 +691,14 @@ void Surface::CommitTextureContents() {
     std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
     if (current_buffer_) {
       texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, only_visible_on_secure_output_,
+          &texture_mailbox, state_.only_visible_on_secure_output,
           true /* client_usage */);
     }
 
     // Update layer with the new contents.
     if (texture_mailbox_release_callback) {
       texture_size_in_dip_ = gfx::ScaleToFlooredSize(
-          texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_);
+          texture_mailbox.size_in_pixels(), 1.0f / state_.buffer_scale);
       window_->layer()->SetTextureMailbox(
           texture_mailbox, std::move(texture_mailbox_release_callback),
           texture_size_in_dip_);
@@ -685,22 +724,22 @@ void Surface::CommitTextureContents() {
     // - If a viewport is set then that defines the size, otherwise
     //   the crop rectangle defines the size if set.
     gfx::Size contents_size = texture_size_in_dip_;
-    if (!pending_viewport_.IsEmpty()) {
-      contents_size = pending_viewport_;
-    } else if (!crop_.IsEmpty()) {
-      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(crop_.width()) ||
-                           !gfx::IsExpressibleAsInt(crop_.height()))
-          << "Crop rectangle size (" << crop_.size().ToString()
+    if (!state_.viewport.IsEmpty()) {
+      contents_size = state_.viewport;
+    } else if (!state_.crop.IsEmpty()) {
+      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
+                           !gfx::IsExpressibleAsInt(state_.crop.height()))
+          << "Crop rectangle size (" << state_.crop.size().ToString()
           << ") most be expressible using integers when viewport is not set";
-      contents_size = gfx::ToCeiledSize(crop_.size());
+      contents_size = gfx::ToCeiledSize(state_.crop.size());
     }
-    window_->layer()->SetTextureCrop(crop_);
+    window_->layer()->SetTextureCrop(state_.crop);
     window_->layer()->SetTextureScale(
         static_cast<float>(texture_size_in_dip_.width()) /
             contents_size.width(),
         static_cast<float>(texture_size_in_dip_.height()) /
             contents_size.height());
-    window_->layer()->SetTextureAlpha(alpha_);
+    window_->layer()->SetTextureAlpha(state_.alpha);
     window_->layer()->SetBounds(
         gfx::Rect(window_->layer()->bounds().origin(), contents_size));
   }
@@ -712,8 +751,8 @@ void Surface::CommitTextureContents() {
   // TODO(reveman): Use a more reliable way to force blending off than setting
   // fills-bounds-opaquely.
   window_->layer()->SetFillsBoundsOpaquely(
-      pending_blend_mode_ == SkXfermode::kSrc_Mode ||
-      pending_opaque_region_.contains(
+      state_.blend_mode == SkXfermode::kSrc_Mode ||
+      state_.opaque_region.contains(
           gfx::RectToSkIRect(gfx::Rect(window_->layer()->size()))));
 }
 
@@ -730,7 +769,7 @@ void Surface::CommitSurfaceContents() {
 
       cc::TextureMailbox texture_mailbox;
       texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
-          &texture_mailbox, only_visible_on_secure_output_,
+          &texture_mailbox, state_.only_visible_on_secure_output,
           true /* client_usage */);
       cc::TransferableResource resource;
       resource.id = next_resource_id_++;
@@ -753,22 +792,25 @@ void Surface::CommitSurfaceContents() {
   }
 
   cc::SurfaceId old_surface_id = surface_id_;
-  surface_id_ = factory_owner_->id_allocator_->GenerateId();
-  factory_owner_->surface_factory_->Create(surface_id_);
+  if (needs_commit_to_new_surface_ || surface_id_.is_null()) {
+    needs_commit_to_new_surface_ = false;
+    surface_id_ = factory_owner_->id_allocator_->GenerateId();
+    factory_owner_->surface_factory_->Create(surface_id_);
+  }
 
   gfx::Size buffer_size = current_resource_.size;
   gfx::SizeF scaled_buffer_size(
-      gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / pending_buffer_scale_));
+      gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / state_.buffer_scale));
 
   gfx::Size layer_size;  // Size of the output layer, in DIP.
-  if (!pending_viewport_.IsEmpty()) {
-    layer_size = pending_viewport_;
-  } else if (!crop_.IsEmpty()) {
-    DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(crop_.width()) ||
-                         !gfx::IsExpressibleAsInt(crop_.height()))
-        << "Crop rectangle size (" << crop_.size().ToString()
+  if (!state_.viewport.IsEmpty()) {
+    layer_size = state_.viewport;
+  } else if (!state_.crop.IsEmpty()) {
+    DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(state_.crop.width()) ||
+                         !gfx::IsExpressibleAsInt(state_.crop.height()))
+        << "Crop rectangle size (" << state_.crop.size().ToString()
         << ") most be expressible using integers when viewport is not set";
-    layer_size = gfx::ToCeiledSize(crop_.size());
+    layer_size = gfx::ToCeiledSize(state_.crop.size());
   } else {
     layer_size = gfx::ToCeiledSize(scaled_buffer_size);
   }
@@ -780,12 +822,12 @@ void Surface::CommitSurfaceContents() {
 
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
-  if (!crop_.IsEmpty()) {
-    uv_top_left = crop_.origin();
+  if (!state_.crop.IsEmpty()) {
+    uv_top_left = state_.crop.origin();
 
     uv_top_left.Scale(1.f / scaled_buffer_size.width(),
                       1.f / scaled_buffer_size.height());
-    uv_bottom_right = crop_.bottom_right();
+    uv_bottom_right = state_.crop.bottom_right();
     uv_bottom_right.Scale(1.f / scaled_buffer_size.width(),
                           1.f / scaled_buffer_size.height());
   }
@@ -802,7 +844,7 @@ void Surface::CommitSurfaceContents() {
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->quad_layer_bounds = contents_surface_size;
   quad_state->visible_quad_layer_rect = quad_rect;
-  quad_state->opacity = alpha_;
+  quad_state->opacity = state_.alpha;
 
   bool frame_is_opaque = false;
 
@@ -814,18 +856,18 @@ void Surface::CommitSurfaceContents() {
     float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
     gfx::Rect opaque_rect;
     frame_is_opaque =
-        pending_blend_mode_ == SkXfermode::kSrc_Mode ||
-        pending_opaque_region_.contains(gfx::RectToSkIRect(quad_rect));
+        state_.blend_mode == SkXfermode::kSrc_Mode ||
+        state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect));
     if (frame_is_opaque) {
       opaque_rect = quad_rect;
-    } else if (pending_opaque_region_.isRect()) {
-      opaque_rect = gfx::SkIRectToRect(pending_opaque_region_.getBounds());
+    } else if (state_.opaque_region.isRect()) {
+      opaque_rect = gfx::SkIRectToRect(state_.opaque_region.getBounds());
     }
 
     texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
                          current_resource_.id, true, uv_top_left,
                          uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                         false, false, only_visible_on_secure_output_);
+                         false, false, state_.only_visible_on_secure_output);
     delegated_frame->resource_list.push_back(current_resource_);
   } else {
     cc::SolidColorDrawQuad* solid_quad =
@@ -841,20 +883,23 @@ void Surface::CommitSurfaceContents() {
   factory_owner_->surface_factory_->SubmitCompositorFrame(
       surface_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());
 
-  if (!old_surface_id.is_null()) {
+  if (!old_surface_id.is_null() && old_surface_id != surface_id_) {
     factory_owner_->surface_factory_->SetPreviousFrameSurface(surface_id_,
                                                               old_surface_id);
     factory_owner_->surface_factory_->Destroy(old_surface_id);
   }
 
-  window_->layer()->SetShowSurface(
-      surface_id_,
-      base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
-      base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
-      contents_surface_size, contents_surface_to_layer_scale, layer_size);
-  window_->layer()->SetBounds(
-      gfx::Rect(window_->layer()->bounds().origin(), layer_size));
-  window_->layer()->SetFillsBoundsOpaquely(alpha_ == 1.0f && frame_is_opaque);
+  if (old_surface_id != surface_id_) {
+    window_->layer()->SetShowSurface(
+        surface_id_,
+        base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
+        base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
+        contents_surface_size, contents_surface_to_layer_scale, layer_size);
+    window_->layer()->SetBounds(
+        gfx::Rect(window_->layer()->bounds().origin(), layer_size));
+    window_->layer()->SetFillsBoundsOpaquely(state_.alpha == 1.0f &&
+                                             frame_is_opaque);
+  }
 
   // Reset damage.
   pending_damage_.setEmpty();
@@ -872,9 +917,9 @@ void Surface::SetTextureLayerContents(ui::Layer* layer) {
 
   cc::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
-      current_buffer_->ProduceTextureMailbox(&texture_mailbox,
-                                             only_visible_on_secure_output_,
-                                             false /* client_usage */);
+      current_buffer_->ProduceTextureMailbox(
+          &texture_mailbox, state_.only_visible_on_secure_output,
+          false /* client_usage */);
   if (!texture_mailbox_release_callback)
     return;
 
@@ -882,12 +927,12 @@ void Surface::SetTextureLayerContents(ui::Layer* layer) {
                            std::move(texture_mailbox_release_callback),
                            texture_size_in_dip_);
   layer->SetTextureFlipped(false);
-  layer->SetTextureCrop(crop_);
+  layer->SetTextureCrop(state_.crop);
   layer->SetTextureScale(static_cast<float>(texture_size_in_dip_.width()) /
                              layer->bounds().width(),
                          static_cast<float>(texture_size_in_dip_.height()) /
                              layer->bounds().height());
-  layer->SetTextureAlpha(alpha_);
+  layer->SetTextureAlpha(state_.alpha);
 }
 
 void Surface::SetSurfaceLayerContents(ui::Layer* layer) {

@@ -240,6 +240,7 @@ void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
 // SurfaceDelegate overrides:
 
 void Pointer::OnSurfaceCommit() {
+  surface_->CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces();
   surface_->CommitSurfaceHierarchy();
   surface_->window()->SetBounds(
       gfx::Rect(gfx::Point() - hotspot_.OffsetFromOrigin(),
