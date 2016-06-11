@@ -694,6 +694,8 @@ void linux_buffer_params_create(wl_client* client,
   buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
                                           base::Unretained(buffer_resource)));
 
+  SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
+
   zwp_linux_buffer_params_v1_send_created(resource, buffer_resource);
 }
 
