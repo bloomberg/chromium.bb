@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -146,7 +149,7 @@ void TestWhileContextMenuOpen(bool* did_test_while_menu_open,
 void OnContextMenuWillShow(bool* did_test_while_menu_open,
                            Browser* browser,
                            ToolbarActionView* toolbar_action_view) {
-  base::MessageLoop::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&TestWhileContextMenuOpen, did_test_while_menu_open,
                             browser, toolbar_action_view));
 }

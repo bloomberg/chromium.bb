@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
@@ -78,7 +79,7 @@ class NotificationPermissionContextTest
     : public ChromeRenderViewHostTestHarness {
  public:
   scoped_refptr<base::TestMockTimeTaskRunner> SwitchToMockTime() {
-    old_task_runner_ = base::MessageLoop::current()->task_runner();
+    old_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
         new base::TestMockTimeTaskRunner(base::Time::Now(),
                                          base::TimeTicks::Now()));

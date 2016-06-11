@@ -4,9 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/location.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -59,7 +62,7 @@
     return YES;
 
   base::RunLoop runLoop;
-  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, runLoop.QuitClosure(), TestTimeouts::action_timeout());
   runLoop_ = &runLoop;
   runLoop.Run();

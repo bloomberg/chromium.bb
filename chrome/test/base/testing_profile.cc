@@ -638,7 +638,7 @@ TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
 }
 
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
-  return base::MessageLoop::current()->task_runner();
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 syncable_prefs::TestingPrefServiceSyncable*

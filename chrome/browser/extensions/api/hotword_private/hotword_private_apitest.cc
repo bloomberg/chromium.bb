@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -78,7 +79,7 @@ class MockAudioHistoryHandler : public HotwordAudioHistoryHandler {
   MockAudioHistoryHandler(content::BrowserContext* context,
                           history::WebHistoryService* web_history)
       : HotwordAudioHistoryHandler(context,
-                                   base::MessageLoop::current()->task_runner()),
+                                   base::ThreadTaskRunnerHandle::Get()),
         web_history_(web_history) {}
   ~MockAudioHistoryHandler() override {}
 

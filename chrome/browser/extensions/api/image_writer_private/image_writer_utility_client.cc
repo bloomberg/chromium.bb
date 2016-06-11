@@ -93,7 +93,7 @@ void ImageWriterUtilityClient::Shutdown() {
 void ImageWriterUtilityClient::StartHost() {
   if (!utility_process_host_) {
     scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::MessageLoop::current()->task_runner();
+        base::ThreadTaskRunnerHandle::Get();
     utility_process_host_ = content::UtilityProcessHost::Create(
                                 this, task_runner.get())->AsWeakPtr();
     utility_process_host_->SetName(l10n_util::GetStringUTF16(

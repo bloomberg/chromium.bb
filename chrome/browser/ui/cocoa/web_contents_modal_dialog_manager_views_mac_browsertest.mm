@@ -6,9 +6,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -55,7 +58,7 @@ class WebContentsModalDialogManagerViewsMacTest : public InProcessBrowserTest,
     last_destroyed_ = nullptr;
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
-    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
     run_loop.Run();
     run_loop_ = nullptr;

@@ -7,11 +7,14 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -229,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
 #if defined(OS_POSIX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
-  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(kActionDelayMs));
   content::RunMessageLoop();
@@ -692,12 +695,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
 
 // This functionality is currently broken. http://crbug.com/304865.
 //
-//#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-//// TODO(erg): http://crbug.com/163931
-//#define MAYBE_FocusOnNavigate DISABLED_FocusOnNavigate
-//#else
-//#define MAYBE_FocusOnNavigate FocusOnNavigate
-//#endif
+// #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// // TODO(erg): http://crbug.com/163931
+// #define MAYBE_FocusOnNavigate DISABLED_FocusOnNavigate
+// #else
+// #define MAYBE_FocusOnNavigate FocusOnNavigate
+// #endif
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
   // Needed on Mac.

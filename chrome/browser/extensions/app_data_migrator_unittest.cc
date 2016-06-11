@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/app_data_migrator.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/base/testing_profile.h"
@@ -51,7 +52,7 @@ class AppDataMigratorTest : public testing::Test {
 
     idb_context_ = default_partition_->GetIndexedDBContext();
     idb_context_->SetTaskRunnerForTesting(
-        base::MessageLoop::current()->task_runner().get());
+        base::ThreadTaskRunnerHandle::Get().get());
 
     default_fs_context_ = default_partition_->GetFileSystemContext();
 

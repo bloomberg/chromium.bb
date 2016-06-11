@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
@@ -478,7 +479,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
     extensions::PrinterProviderAPIFactory::GetInstance()->SetTestingFactory(
         env_.profile(), &BuildTestingPrinterProviderAPI);
     extension_printer_handler_.reset(new ExtensionPrinterHandler(
-        env_.profile(), base::MessageLoop::current()->task_runner()));
+        env_.profile(), base::ThreadTaskRunnerHandle::Get()));
 
     pwg_raster_converter_ = new FakePWGRasterConverter();
     extension_printer_handler_->SetPWGRasterConverterForTesting(

@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_browser_data_usage {
@@ -28,7 +29,7 @@ const int32_t kTabId = 10;
 class TabIdProviderTest : public testing::Test {
  public:
   TabIdProviderTest()
-      : task_runner_(base::MessageLoop::current()->task_runner()),
+      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
         tab_id_getter_call_count_(0) {}
 
   ~TabIdProviderTest() override {}

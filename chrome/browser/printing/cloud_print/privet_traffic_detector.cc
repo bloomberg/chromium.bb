@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
@@ -64,13 +65,12 @@ PrivetTrafficDetector::PrivetTrafficDetector(
     net::AddressFamily address_family,
     const base::Closure& on_traffic_detected)
     : on_traffic_detected_(on_traffic_detected),
-      callback_runner_(base::MessageLoop::current()->task_runner()),
+      callback_runner_(base::ThreadTaskRunnerHandle::Get()),
       address_family_(address_family),
       io_buffer_(
           new net::IOBufferWithSize(net::dns_protocol::kMaxMulticastSize)),
       restart_attempts_(kMaxRestartAttempts),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 void PrivetTrafficDetector::Start() {
   content::BrowserThread::PostTask(

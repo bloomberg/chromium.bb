@@ -18,10 +18,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -324,7 +326,7 @@ void DownloadItemViewMd::OnDownloadDestroyed(DownloadItem* download) {
 void DownloadItemViewMd::OnDownloadOpened(DownloadItem* download) {
   disabled_while_opening_ = true;
   SetEnabled(false);
-  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DownloadItemViewMd::Reenable, weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDisabledOnOpenDuration));
@@ -829,7 +831,7 @@ void DownloadItemViewMd::ShowContextMenuImpl(const gfx::Rect& rect,
   // Post a task to release the button.  When we call the Run method on the menu
   // below, it runs an inner message loop that might cause us to be deleted.
   // Posting a task with a WeakPtr lets us safely handle the button release.
-  base::MessageLoop::current()->task_runner()->PostNonNestableTask(
+  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
       FROM_HERE, base::Bind(&DownloadItemViewMd::ReleaseDropdown,
                             weak_ptr_factory_.GetWeakPtr()));
 

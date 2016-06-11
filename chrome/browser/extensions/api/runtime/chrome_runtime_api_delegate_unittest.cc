@@ -9,9 +9,12 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
@@ -104,7 +107,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
       auto no_update = no_updates_.find(id);
       if (no_update != no_updates_.end()) {
         no_updates_.erase(no_update);
-        base::MessageLoop::current()->task_runner()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(&ExtensionDownloaderDelegate::OnExtensionDownloadFailed,
                        base::Unretained(delegate), id,
@@ -118,7 +121,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
         CRXFileInfo info(id, update->second.path, "" /* no hash */);
         std::string version = update->second.version;
         updates_.erase(update);
-        base::MessageLoop::current()->task_runner()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(
                 &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
