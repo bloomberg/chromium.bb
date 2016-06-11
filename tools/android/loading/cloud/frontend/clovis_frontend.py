@@ -38,7 +38,7 @@ instance_helper = common.google_instance_helper.GoogleInstanceHelper(
 app = flask.Flask(__name__)
 
 
-def Render(message, memory_logs=None):
+def RenderJobCreationPage(message, memory_logs=None):
   """Renders the log.html template.
 
   Args:
@@ -48,7 +48,8 @@ def Render(message, memory_logs=None):
   log = None
   if memory_logs:
     log = memory_logs.Flush().split('\n')
-  return flask.render_template('log.html', body=message, log=log)
+  return flask.render_template('log.html', body=message, log=log,
+                               title='Job Creation Status')
 
 
 def PollWorkers(tag, start_time, timeout_hours, email_address, task_url):
@@ -325,7 +326,8 @@ def StartFromJsonString(http_body_str):
   task = ClovisTask.FromJsonString(http_body_str)
   if not task:
     clovis_logger.error('Invalid JSON task.')
-    return Render('Invalid JSON task:\n' + http_body_str, memory_logs)
+    return RenderJobCreationPage(
+        'Invalid JSON task:\n' + http_body_str, memory_logs)
 
   task_tag = task.BackendParams()['tag']
   clovis_logger.info('Start processing %s task with tag %s.' % (task.Action(),
@@ -342,7 +344,7 @@ def StartFromJsonString(http_body_str):
   # Process the job on the queue, to avoid timeout issues.
   deferred.defer(SpawnTasksOnBackgroundQueue, task_tag)
 
-  return Render(
+  return RenderJobCreationPage(
       flask.Markup(
           '<a href="%s">See progress.</a>' % FrontendJob.GetJobURL(task_tag)),
       memory_logs)
@@ -438,7 +440,7 @@ def SpawnTasks(frontend_job):
   if max_instances == -1:
     frontend_job.status = 'instance_count_error'
     return
-  elif task.BackendParams()['instance_count'] == 0:
+  elif max_instances == 0 and task.BackendParams()['instance_count'] > 0:
     frontend_job.status = 'no_instance_available_error'
     return
   elif max_instances < task.BackendParams()['instance_count']:
@@ -523,46 +525,71 @@ def StartFromForm():
   """HTML form endpoint."""
   data_stream = flask.request.files.get('json_task')
   if not data_stream:
-    return Render('Failed, no content.')
+    return RenderJobCreationPage('Failed, no content.')
   http_body_str = data_stream.read()
   return StartFromJsonString(http_body_str)
 
 
-@app.route('/list_jobs')
-def ShowTaskList():
-  """Shows a list of all active jobs."""
-  tags = FrontendJob.ListJobs()
-
-  if not tags:
-    Render('No active jobs.')
-
-  html = flask.Markup('Active tasks:<ul>')
-  for tag in tags:
-    html += flask.Markup(
-        '<li><a href="%s">%s</a></li>') % (FrontendJob.GetJobURL(tag), tag)
-  html += flask.Markup('</ul>')
-  return Render(html)
-
-
-@app.route(FrontendJob.SHOW_JOB_URL)
-def ShowTask():
-  """Shows basic information abour a job."""
+@app.route('/kill_job')
+def KillJob():
   tag = flask.request.args.get('tag')
+  page_title = 'Kill Job'
   if not tag:
-    return Render('Invalid task tag.')
+    return flask.render_template('log.html', body='Failed: Invalid tag.',
+                                 title=page_title)
 
   frontend_job = FrontendJob.GetFromTag(tag)
 
   if not frontend_job:
-    return Render('Task not found.')
+    return flask.render_template('log.html', body='Job not found.',
+                                 title=page_title)
+  Finalize(tag, frontend_job.email, 'CANCELED', frontend_job.task_url)
 
-  message = flask.Markup('Task details:' + frontend_job.RenderAsHtml())
+  body = 'Killed job %s.' % tag
+  return flask.render_template('log.html', body=body, title=page_title)
+
+
+@app.route('/list_jobs')
+def ShowJobList():
+  """Shows a list of all active jobs."""
+  tags = FrontendJob.ListJobs()
+  page_title = 'Active Jobs'
+
+  if not tags:
+    return flask.render_template('log.html', body='No active job.',
+                                 title=page_title)
+
+  html = ''
+  for tag in tags:
+    html += flask.Markup(
+        '<li><a href="%s">%s</a></li>') % (FrontendJob.GetJobURL(tag), tag)
+  html += flask.Markup('</ul>')
+  return flask.render_template('log.html', body=html, title=page_title)
+
+
+@app.route(FrontendJob.SHOW_JOB_URL)
+def ShowJob():
+  """Shows basic information abour a job."""
+  tag = flask.request.args.get('tag')
+  page_title = 'Job Information'
+  if not tag:
+    return flask.render_template('log.html', body='Invalid tag.',
+                                 title=page_title)
+
+  frontend_job = FrontendJob.GetFromTag(tag)
+
+  if not frontend_job:
+    return flask.render_template('log.html', body='Job not found.',
+                                 title=page_title)
 
   log = None
   if frontend_job.log:
     log = frontend_job.log.split('\n')
 
-  return flask.render_template('log.html', body=message, log=log)
+  body = flask.Markup(frontend_job.RenderAsHtml())
+  body += flask.Markup('<a href="/kill_job?tag=%s">Kill</a>' % tag)
+  return flask.render_template('log.html', log=log, title=page_title,
+                               body=body)
 
 
 @app.errorhandler(404)
