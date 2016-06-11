@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
+#include "base/json/json_reader.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "extensions/browser/api/alarms/alarm_manager.h"
 #include "extensions/browser/api/alarms/alarms_api.h"
+#include "extensions/browser/api/alarms/alarms_api_constants.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension_messages.h"
@@ -654,6 +656,64 @@ TEST_F(ExtensionAlarmsSchedulingTest, DifferentMinimumGranularities) {
   EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
                     base::TimeDelta::FromSeconds(12)).ToJsTime(),
                    alarm_manager_->next_poll_time_.ToJsTime());
+}
+
+void FrequencyTestGetAlarmsCallback(ExtensionAlarmsTest* test, Alarm* alarm) {
+  ASSERT_TRUE(alarm);
+  EXPECT_EQ("hello", alarm->js_alarm->name);
+  EXPECT_DOUBLE_EQ(10000, alarm->js_alarm->scheduled_time);
+  EXPECT_THAT(alarm->js_alarm->period_in_minutes,
+              testing::Pointee(testing::DoubleEq(0.0001)));
+
+  test->test_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  // Now wait for the alarm to fire. Our test delegate will quit the
+  // MessageLoop when that happens.
+  base::MessageLoop::current()->Run();
+}
+
+// Tests that alarms with very small period written to storage are also
+// subjected to minimum polling interval.
+// Regression test for https://crbug.com/618540.
+TEST_F(ExtensionAlarmsSchedulingTest, PollFrequencyFromStoredAlarm) {
+  struct {
+    bool is_unpacked;
+    double delay_minimum;
+  } test_data[] = {
+      {true, alarms_api_constants::kDevDelayMinimum},
+      {false, alarms_api_constants::kReleaseDelayMinimum},
+  };
+
+  // Test once for unpacked and once for crx extension.
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
+    test_clock_->SetNow(base::Time::FromDoubleT(10));
+
+    // Mimic retrieving an alarm from StateStore.
+    std::string alarm_args =
+        "[{\"name\": \"hello\", \"scheduledTime\": 10000, "
+        "\"periodInMinutes\": 0.0001}]";
+    std::unique_ptr<base::ListValue> value =
+        base::ListValue::From(base::JSONReader::Read(alarm_args));
+    alarm_manager_->ReadFromStorage(extension()->id(), test_data[i].is_unpacked,
+                                    std::move(value));
+
+    // Let the alarm fire once, we will verify the next polling time afterwards.
+    alarm_manager_->GetAlarm(extension()->id(), "hello",
+                             base::Bind(FrequencyTestGetAlarmsCallback, this));
+
+    // The stored alarm's "periodInMinutes" is much smaller than allowed minimum
+    // in this test (alarms_api_constants::kDevDelayMinimum or
+    // alarms_api_constants::kReleaseDelayMinimum). Make sure
+    // our next poll time corresponds to our allowed minimum and not to the
+    // StateStore specified "periodInMinutes".
+    EXPECT_GE(
+        alarm_manager_->next_poll_time_,
+        // 10s initial clock.
+        base::Time::FromJsTime(10000) +
+            // 10ms in FrequencyTestGetAlarmsCallback.
+            base::TimeDelta::FromMilliseconds(10) +
+            base::TimeDelta::FromSecondsD(test_data[i].delay_minimum * 60));
+    RemoveAlarm("hello");
+  }
 }
 
 // Test that scheduled alarms go off at set intervals, even if their actual

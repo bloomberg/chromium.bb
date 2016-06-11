@@ -12,6 +12,7 @@
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "extensions/browser/api/alarms/alarm_manager.h"
+#include "extensions/browser/api/alarms/alarms_api_constants.h"
 #include "extensions/common/api/alarms.h"
 #include "extensions/common/error_utils.h"
 
@@ -26,8 +27,6 @@ const char kBothRelativeAndAbsoluteTime[] =
     "Cannot set both when and delayInMinutes.";
 const char kNoScheduledTime[] =
     "Must set at least one of when, delayInMinutes, or periodInMinutes.";
-const int kReleaseDelayMinimum = 1;
-const int kDevDelayMinimum = 0;
 
 bool ValidateAlarmCreateInfo(const std::string& alarm_name,
                              const alarms::AlarmCreateInfo& create_info,
@@ -51,37 +50,27 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
   // gets delayed past the boundary).  However, it's still worth warning about
   // relative delays that are shorter than we'll honor.
   if (create_info.delay_in_minutes.get()) {
-    if (*create_info.delay_in_minutes < kReleaseDelayMinimum) {
-      static_assert(kReleaseDelayMinimum == 1,
-                    "warning message must be updated");
-      if (Manifest::IsUnpackedLocation(extension->location()))
+    if (*create_info.delay_in_minutes <
+        alarms_api_constants::kReleaseDelayMinimum) {
+      if (Manifest::IsUnpackedLocation(extension->location())) {
         warnings->push_back(ErrorUtils::FormatErrorMessage(
-            "Alarm delay is less than minimum of 1 minutes."
-            " In released .crx, alarm \"*\" will fire in approximately"
-            " 1 minutes.",
-            alarm_name));
-      else
+            alarms_api_constants::kWarningMinimumDevDelay, alarm_name));
+      } else {
         warnings->push_back(ErrorUtils::FormatErrorMessage(
-            "Alarm delay is less than minimum of 1 minutes."
-            " Alarm \"*\" will fire in approximately 1 minutes.",
-            alarm_name));
+            alarms_api_constants::kWarningMinimumReleaseDelay, alarm_name));
+      }
     }
   }
   if (create_info.period_in_minutes.get()) {
-    if (*create_info.period_in_minutes < kReleaseDelayMinimum) {
-      static_assert(kReleaseDelayMinimum == 1,
-                    "warning message must be updated");
-      if (Manifest::IsUnpackedLocation(extension->location()))
+    if (*create_info.period_in_minutes <
+        alarms_api_constants::kReleaseDelayMinimum) {
+      if (Manifest::IsUnpackedLocation(extension->location())) {
         warnings->push_back(ErrorUtils::FormatErrorMessage(
-            "Alarm period is less than minimum of 1 minutes."
-            " In released .crx, alarm \"*\" will fire approximately"
-            " every 1 minutes.",
-            alarm_name));
-      else
+            alarms_api_constants::kWarningMinimumDevPeriod, alarm_name));
+      } else {
         warnings->push_back(ErrorUtils::FormatErrorMessage(
-            "Alarm period is less than minimum of 1 minutes."
-            " Alarm \"*\" will fire approximately every 1 minutes.",
-            alarm_name));
+            alarms_api_constants::kWarningMinimumReleasePeriod, alarm_name));
+      }
     }
   }
 
@@ -118,12 +107,15 @@ bool AlarmsCreateFunction::RunAsync() {
        it != warnings.end(); ++it)
     WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING, *it);
 
-  Alarm alarm(alarm_name, params->alarm_info,
-              base::TimeDelta::FromMinutes(
-                  Manifest::IsUnpackedLocation(extension()->location())
-                      ? kDevDelayMinimum
-                      : kReleaseDelayMinimum),
-              clock_->Now());
+  const int kSecondsPerMinute = 60;
+  base::TimeDelta granularity =
+      base::TimeDelta::FromSecondsD(
+          (Manifest::IsUnpackedLocation(extension()->location())
+               ? alarms_api_constants::kDevDelayMinimum
+               : alarms_api_constants::kReleaseDelayMinimum)) *
+      kSecondsPerMinute;
+
+  Alarm alarm(alarm_name, params->alarm_info, granularity, clock_->Now());
   AlarmManager::Get(browser_context())
       ->AddAlarm(extension_id(), alarm,
                  base::Bind(&AlarmsCreateFunction::Callback, this));

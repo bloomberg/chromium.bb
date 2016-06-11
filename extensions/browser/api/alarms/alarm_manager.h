@@ -129,6 +129,8 @@ class AlarmManager : public BrowserContextKeyedAPI,
                            DifferentMinimumGranularities);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
                            RepeatingAlarmsScheduledPredictably);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
+                           PollFrequencyFromStoredAlarm);
   friend class BrowserContextKeyedAPIFactory<AlarmManager>;
 
   typedef std::string ExtensionId;
@@ -184,6 +186,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   // Syncs our alarm data for the given extension to/from the state storage.
   void WriteToStorage(const std::string& extension_id);
   void ReadFromStorage(const std::string& extension_id,
+                       bool is_unpacked,
                        std::unique_ptr<base::Value> value);
 
   // Set the timer to go off at the specified |time|, and set |next_poll_time|

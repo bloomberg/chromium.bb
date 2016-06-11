@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
+#include "extensions/browser/api/alarms/alarms_api_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -32,6 +33,8 @@ namespace {
 // A list of alarms that this extension has set.
 const char kRegisteredAlarms[] = "alarms";
 const char kAlarmGranularity[] = "granularity";
+
+const int kSecondsPerMinute = 60;
 
 // The minimum period between polling for alarms to run.
 const base::TimeDelta kDefaultMinPollPeriod() {
@@ -63,16 +66,24 @@ base::TimeDelta TimeDeltaFromDelay(double delay_in_minutes) {
                                            base::Time::kMicrosecondsPerMinute);
 }
 
-std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
+std::vector<Alarm> AlarmsFromValue(const std::string extension_id,
+                                   bool is_unpacked,
+                                   const base::ListValue* list) {
   std::vector<Alarm> alarms;
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    const base::DictionaryValue* alarm_dict = NULL;
+    const base::DictionaryValue* alarm_dict = nullptr;
     Alarm alarm;
     if (list->GetDictionary(i, &alarm_dict) &&
         alarms::Alarm::Populate(*alarm_dict, alarm.js_alarm.get())) {
-      const base::Value* time_value = NULL;
+      const base::Value* time_value = nullptr;
       if (alarm_dict->Get(kAlarmGranularity, &time_value))
         base::GetValueAsTimeDelta(*time_value, &alarm.granularity);
+      alarm.minimum_granularity = base::TimeDelta::FromSecondsD(
+          (is_unpacked ? alarms_api_constants::kDevDelayMinimum
+                       : alarms_api_constants::kReleaseDelayMinimum) *
+          kSecondsPerMinute);
+      if (alarm.granularity < alarm.minimum_granularity)
+        alarm.granularity = alarm.minimum_granularity;
       alarms.push_back(alarm);
     }
   }
@@ -303,10 +314,12 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
 }
 
 void AlarmManager::ReadFromStorage(const std::string& extension_id,
+                                   bool is_unpacked,
                                    std::unique_ptr<base::Value> value) {
   base::ListValue* list = NULL;
   if (value.get() && value->GetAsList(&list)) {
-    std::vector<Alarm> alarm_states = AlarmsFromValue(list);
+    std::vector<Alarm> alarm_states =
+        AlarmsFromValue(extension_id, is_unpacked, list);
     for (size_t i = 0; i < alarm_states.size(); ++i)
       AddAlarmImpl(extension_id, alarm_states[i]);
   }
@@ -413,10 +426,12 @@ void AlarmManager::OnExtensionLoaded(content::BrowserContext* browser_context,
                                      const Extension* extension) {
   StateStore* storage = ExtensionSystem::Get(browser_context_)->state_store();
   if (storage) {
+    bool is_unpacked = Manifest::IsUnpackedLocation(extension->location());
     ready_actions_.insert(ReadyMap::value_type(extension->id(), ReadyQueue()));
-    storage->GetExtensionValue(extension->id(), kRegisteredAlarms,
-                               base::Bind(&AlarmManager::ReadFromStorage,
-                                          AsWeakPtr(), extension->id()));
+    storage->GetExtensionValue(
+        extension->id(), kRegisteredAlarms,
+        base::Bind(&AlarmManager::ReadFromStorage, AsWeakPtr(), extension->id(),
+                   is_unpacked));
   }
 }
 
