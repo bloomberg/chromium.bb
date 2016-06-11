@@ -1,24 +1,15 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/test/web_test.h"
-
-#include <utility>
+#import "ios/web/public/test/web_test_with_web_state.h"
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
-#import "base/test/ios/wait_util.h"
+#include "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#include "ios/web/public/active_state_manager.h"
-#include "ios/web/public/referrer.h"
-#include "ios/web/public/url_schemes.h"
-#import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
-#include "third_party/ocmock/OCMock/OCMock.h"
 
 // Helper Mock to stub out API with C++ objects in arguments.
 @interface WebDelegateMock : OCMockComplexTypeHelper
@@ -36,61 +27,45 @@
 
 namespace web {
 
-#pragma mark -
+WebTestWithWebState::WebTestWithWebState() {}
 
-WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {}
-
-WebTest::~WebTest() {}
-
-void WebTest::SetUp() {
-  PlatformTest::SetUp();
-  BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
-}
-
-void WebTest::TearDown() {
-  BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
-  PlatformTest::TearDown();
-}
-
-TestWebClient* WebTest::GetWebClient() {
-  return static_cast<TestWebClient*>(web_client_.Get());
-}
-
-BrowserState* WebTest::GetBrowserState() {
-  return &browser_state_;
-}
-
-#pragma mark -
-
-WebTestWithWebController::WebTestWithWebController() {}
-
-WebTestWithWebController::~WebTestWithWebController() {}
+WebTestWithWebState::~WebTestWithWebState() {}
 
 static int s_html_load_count;
 
-void WebTestWithWebController::SetUp() {
+void WebTestWithWebState::SetUp() {
   WebTest::SetUp();
-  web_state_impl_.reset(new WebStateImpl(GetBrowserState()));
-  web_state_impl_->GetNavigationManagerImpl().InitializeSession(nil, nil, NO,
-                                                                0);
-  web_state_impl_->SetWebUsageEnabled(true);
-  webController_.reset(web_state_impl_->GetWebController());
+  std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(GetBrowserState()));
+  web_state->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
+  web_state->SetWebUsageEnabled(true);
+  webController_.reset(web_state->GetWebController());
+  web_state_.reset(web_state.release());
 
   // Force generation of child views; necessary for some tests.
   [webController_ triggerPendingLoad];
   s_html_load_count = 0;
 }
 
-void WebTestWithWebController::TearDown() {
-  web_state_impl_.reset();
+void WebTestWithWebState::TearDown() {
+  web_state_.reset();
   WebTest::TearDown();
 }
 
-void WebTestWithWebController::LoadHtml(NSString* html) {
+void WebTestWithWebState::WillProcessTask(
+    const base::PendingTask& pending_task) {
+  // Nothing to do.
+}
+
+void WebTestWithWebState::DidProcessTask(
+    const base::PendingTask& pending_task) {
+  processed_a_task_ = true;
+}
+
+void WebTestWithWebState::LoadHtml(NSString* html) {
   LoadHtml([html UTF8String]);
 }
 
-void WebTestWithWebController::LoadHtml(const std::string& html) {
+void WebTestWithWebState::LoadHtml(const std::string& html) {
   NSString* load_check = CreateLoadCheck();
   std::string marked_html = html + [load_check UTF8String];
   std::string encoded_html;
@@ -103,26 +78,25 @@ void WebTestWithWebController::LoadHtml(const std::string& html) {
   }
 }
 
-void WebTestWithWebController::LoadURL(const GURL& url) {
+void WebTestWithWebState::LoadURL(const GURL& url) {
   // First step is to ensure that the web controller has finished any previous
   // page loads so the new load is not confused.
   while ([webController_ loadPhase] != PAGE_LOADED)
     WaitForBackgroundTasks();
-  id originalMockDelegate = [OCMockObject
-      niceMockForProtocol:@protocol(CRWWebDelegate)];
-  id mockDelegate = [[WebDelegateMock alloc]
-      initWithRepresentedObject:originalMockDelegate];
+  id originalMockDelegate =
+      [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)];
+  id mockDelegate =
+      [[WebDelegateMock alloc] initWithRepresentedObject:originalMockDelegate];
   id existingDelegate = webController_.get().delegate;
   webController_.get().delegate = mockDelegate;
 
   web::NavigationManagerImpl& navManager =
       [webController_ webStateImpl]->GetNavigationManagerImpl();
   navManager.InitializeSession(@"name", nil, NO, 0);
-  [navManager.GetSessionController()
-        addPendingEntry:url
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:NO];
+  [navManager.GetSessionController() addPendingEntry:url
+                                            referrer:web::Referrer()
+                                          transition:ui::PAGE_TRANSITION_TYPED
+                                   rendererInitiated:NO];
 
   [webController_ loadCurrentURL];
   while ([webController_ loadPhase] != PAGE_LOADED)
@@ -131,7 +105,7 @@ void WebTestWithWebController::LoadURL(const GURL& url) {
   [[webController_ view] layoutIfNeeded];
 }
 
-void WebTestWithWebController::WaitForBackgroundTasks() {
+void WebTestWithWebState::WaitForBackgroundTasks() {
   // Because tasks can add new tasks to either queue, the loop continues until
   // the first pass where no activity is seen from either queue.
   bool activitySeen = false;
@@ -156,15 +130,14 @@ void WebTestWithWebController::WaitForBackgroundTasks() {
   messageLoop->RemoveTaskObserver(this);
 }
 
-void WebTestWithWebController::WaitForCondition(ConditionBlock condition) {
+void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
   base::MessageLoop* messageLoop = base::MessageLoop::current();
   DCHECK(messageLoop);
   base::test::ios::WaitUntilCondition(condition, messageLoop,
                                       base::TimeDelta::FromSeconds(10));
 }
 
-NSString* WebTestWithWebController::EvaluateJavaScriptAsString(
-    NSString* script) {
+NSString* WebTestWithWebState::EvaluateJavaScriptAsString(NSString* script) {
   __block base::scoped_nsobject<NSString> evaluationResult;
   [webController_ evaluateJavaScript:script
                  stringResultHandler:^(NSString* result, NSError*) {
@@ -177,7 +150,7 @@ NSString* WebTestWithWebController::EvaluateJavaScriptAsString(
   return [[evaluationResult retain] autorelease];
 }
 
-id WebTestWithWebController::ExecuteJavaScript(NSString* script) {
+id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
   __block base::scoped_nsprotocol<id> executionResult;
   __block bool executionCompleted = false;
   [webController_ executeJavaScript:script
@@ -191,38 +164,27 @@ id WebTestWithWebController::ExecuteJavaScript(NSString* script) {
   return [[executionResult retain] autorelease];
 }
 
-void WebTestWithWebController::WillProcessTask(
-    const base::PendingTask& pending_task) {
-  // Nothing to do.
+web::WebState* WebTestWithWebState::web_state() {
+  return web_state_.get();
 }
 
-void WebTestWithWebController::DidProcessTask(
-    const base::PendingTask& pending_task) {
-  processed_a_task_ = true;
+const web::WebState* WebTestWithWebState::web_state() const {
+  return web_state_.get();
 }
 
-web::WebState* WebTestWithWebController::web_state() {
-  return web_state_impl_.get();
-}
-
-const web::WebState* WebTestWithWebController::web_state() const {
-  return web_state_impl_.get();
-}
-
-bool WebTestWithWebController::ResetPageIfNavigationStalled(
-    NSString* load_check) {
+bool WebTestWithWebState::ResetPageIfNavigationStalled(NSString* load_check) {
   NSString* inner_html = EvaluateJavaScriptAsString(
       @"(document && document.body && document.body.innerHTML) || 'undefined'");
   if ([inner_html rangeOfString:load_check].location == NSNotFound) {
-    web_state_impl_->SetWebUsageEnabled(false);
-    web_state_impl_->SetWebUsageEnabled(true);
+    web_state_->SetWebUsageEnabled(false);
+    web_state_->SetWebUsageEnabled(true);
     [webController_ triggerPendingLoad];
     return true;
   }
   return false;
 }
 
-NSString* WebTestWithWebController::CreateLoadCheck() {
+NSString* WebTestWithWebState::CreateLoadCheck() {
   return [NSString stringWithFormat:@"<p style=\"display: none;\">%d</p>",
                                     s_html_load_count++];
 }

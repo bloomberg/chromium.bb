@@ -22,6 +22,7 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_view_content_view.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
