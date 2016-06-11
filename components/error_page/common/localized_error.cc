@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -648,11 +650,12 @@ void AddLinkedSuggestionToList(const int error_code,
   repl.SetQueryStr(query);
   GURL learn_more_url_with_locale = learn_more_url.ReplaceComponents(repl);
 
-  base::DictionaryValue* suggestion_list_item = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> suggestion_list_item(
+      new base::DictionaryValue);
   suggestion_list_item->SetString("summary", suggestion_string);
   suggestion_list_item->SetString("learnMoreUrl",
       learn_more_url_with_locale.spec());
-  suggestions_summary_list->Append(suggestion_list_item);
+  suggestions_summary_list->Append(std::move(suggestion_list_item));
 }
 
 // Check if a suggestion is in the bitmap of suggestions.
@@ -1047,7 +1050,8 @@ void LocalizedError::GetStrings(
   error_strings->Set("suggestionsSummaryList", suggestions_summary_list);
 
   if (params->search_url.is_valid()) {
-    base::DictionaryValue* search_suggestion = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> search_suggestion(
+        new base::DictionaryValue);
     search_suggestion->SetString("summary",l10n_util::GetStringUTF16(
         IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY));
     search_suggestion->SetString("searchUrl", params->search_url.spec() +
@@ -1055,7 +1059,7 @@ void LocalizedError::GetStrings(
     search_suggestion->SetString("searchTerms", params->search_terms);
     search_suggestion->SetInteger("trackingId",
                                   params->search_tracking_id);
-    suggestions_summary_list->Append(search_suggestion);
+    suggestions_summary_list->Append(std::move(search_suggestion));
   }
 
   // Add the reload suggestion, if needed for pages that didn't come

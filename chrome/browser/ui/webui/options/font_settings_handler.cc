@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -223,7 +224,7 @@ void FontSettingsHandler::FontsListHasLoaded(
 
   std::vector<CharacterEncoding::EncodingInfo>::const_iterator it;
   for (it = encodings->begin(); it != encodings->end(); ++it) {
-    base::ListValue* option = new base::ListValue();
+    std::unique_ptr<base::ListValue> option(new base::ListValue());
     if (it->encoding_id) {
       int cmd_id = it->encoding_id;
       std::string encoding =
@@ -238,7 +239,7 @@ void FontSettingsHandler::FontsListHasLoaded(
       option->AppendString(std::string());
       option->AppendString(std::string());
     }
-    encoding_list.Append(option);
+    encoding_list.Append(std::move(option));
   }
 
   base::ListValue selected_values;

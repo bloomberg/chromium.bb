@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -175,13 +176,13 @@ class GeolocationNetworkProviderTest : public testing::Test {
       int ap_count, int start_index, base::ListValue* wifi_access_point_list) {
     std::vector<std::string> wifi_data;
     for (int i = 0; i < ap_count; ++i) {
-      base::DictionaryValue* ap = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> ap(new base::DictionaryValue());
       ap->SetString("macAddress", base::StringPrintf("%02d-34-56-78-54-32", i));
       ap->SetInteger("signalStrength", start_index + ap_count - i);
       ap->SetInteger("age", 0);
       ap->SetInteger("channel", IndexToChannel(i));
       ap->SetInteger("signalToNoiseRatio", i + 42);
-      wifi_access_point_list->Append(ap);
+      wifi_access_point_list->Append(std::move(ap));
     }
   }
 

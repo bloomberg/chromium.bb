@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_writer.h"
@@ -44,11 +45,12 @@ const char* kURLs[] = {
 
 std::string BuildResponse(bool is_porn) {
   base::DictionaryValue dict;
-  base::DictionaryValue* classification_dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> classification_dict(
+      new base::DictionaryValue);
   if (is_porn)
     classification_dict->SetBoolean("pornography", is_porn);
   base::ListValue* classifications_list = new base::ListValue;
-  classifications_list->Append(classification_dict);
+  classifications_list->Append(std::move(classification_dict));
   dict.SetWithoutPathExpansion("classifications", classifications_list);
   std::string result;
   base::JSONWriter::Write(dict, &result);

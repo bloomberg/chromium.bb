@@ -8,6 +8,7 @@
 #include <cmath>
 #include <set>
 #include <sstream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -595,11 +596,11 @@ void Predictor::SerializeReferrers(base::ListValue* referral_list) {
     base::Value* subresource_list(it->second.Serialize());
 
     // Create a list for each referer.
-    base::ListValue* motivator(new base::ListValue);
+    std::unique_ptr<base::ListValue> motivator(new base::ListValue);
     motivator->AppendString(it->first.spec());
     motivator->Append(subresource_list);
 
-    referral_list->Append(motivator);
+    referral_list->Append(std::move(motivator));
   }
 }
 

@@ -46,9 +46,9 @@ namespace subtle {
 void AppendKeyValuePair(const char* key,
                         base::Value* value,
                         base::ListValue* list) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetWithoutPathExpansion(key, value);
-  list->Append(dictionary);
+  list->Append(std::move(dictionary));
 }
 
 }  // namespace subtle

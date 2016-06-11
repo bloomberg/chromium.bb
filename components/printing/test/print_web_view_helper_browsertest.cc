@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/printing/renderer/print_web_view_helper.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <tuple>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
-#include "components/printing/renderer/print_web_view_helper.h"
 #include "components/printing/test/mock_printer.h"
 #include "components/printing/test/print_mock_render_thread.h"
 #include "components/printing/test/print_test_content_renderer_client.h"
@@ -869,12 +872,13 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
   // Set a page range and update the dictionary to generate only the complete
   // metafile with the selected pages. Page numbers used in the dictionary
   // are 1-based.
-  base::DictionaryValue* page_range = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> page_range(
+      new base::DictionaryValue());
   page_range->SetInteger(kSettingPageRangeFrom, 2);
   page_range->SetInteger(kSettingPageRangeTo, 3);
 
   base::ListValue* page_range_array = new base::ListValue();
-  page_range_array->Append(page_range);
+  page_range_array->Append(std::move(page_range));
 
   dict.Set(kSettingPageRange, page_range_array);
   dict.SetBoolean(kSettingGenerateDraftData, false);

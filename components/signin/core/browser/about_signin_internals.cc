@@ -664,15 +664,16 @@ AboutSigninInternals::SigninStatus::ToValue(
       token_service->GetAccounts();
 
   if(accounts_in_token_service.size() == 0) {
-    base::DictionaryValue* no_token_entry = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> no_token_entry(
+        new base::DictionaryValue());
     no_token_entry->SetString("accountId", "No token in Token Service.");
-    account_info->Append(no_token_entry);
+    account_info->Append(std::move(no_token_entry));
   }
 
   for(const std::string& account_id : accounts_in_token_service) {
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("accountId", account_id);
-    account_info->Append(entry);
+    account_info->Append(std::move(entry));
   }
 
   return signin_status;

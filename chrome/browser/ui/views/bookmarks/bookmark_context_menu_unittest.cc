@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -358,11 +359,11 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->visible());
 
   // Now set the managed bookmarks policy.
-  base::DictionaryValue* dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("name", "Google");
   dict->SetString("url", "http://google.com");
   base::ListValue list;
-  list.Append(dict);
+  list.Append(std::move(dict));
   EXPECT_TRUE(managed->managed_node()->empty());
   profile_->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
   EXPECT_FALSE(managed->managed_node()->empty());

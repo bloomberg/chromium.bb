@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -330,7 +332,8 @@ void AdbTargetsUIHandler::DeviceListChanged(
   for (DevToolsAndroidBridge::RemoteDevices::const_iterator dit =
       devices.begin(); dit != devices.end(); ++dit) {
     DevToolsAndroidBridge::RemoteDevice* device = dit->get();
-    base::DictionaryValue* device_data = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> device_data(
+        new base::DictionaryValue());
     device_data->SetString(kAdbModelField, device->model());
     device_data->SetString(kAdbSerialField, device->serial());
     device_data->SetBoolean(kAdbConnectedField, device->is_connected());
@@ -345,7 +348,8 @@ void AdbTargetsUIHandler::DeviceListChanged(
     for (DevToolsAndroidBridge::RemoteBrowsers::iterator bit =
         browsers.begin(); bit != browsers.end(); ++bit) {
       DevToolsAndroidBridge::RemoteBrowser* browser = bit->get();
-      base::DictionaryValue* browser_data = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> browser_data(
+          new base::DictionaryValue());
       browser_data->SetString(kAdbBrowserNameField, browser->display_name());
       browser_data->SetString(kAdbBrowserUserField, browser->user());
       browser_data->SetString(kAdbBrowserVersionField, browser->version());
@@ -377,10 +381,10 @@ void AdbTargetsUIHandler::DeviceListChanged(
         targets_[target->GetId()] = target;
         page_list->Append(target_data);
       }
-      browser_list->Append(browser_data);
+      browser_list->Append(std::move(browser_data));
     }
 
-    device_list.Append(device_data);
+    device_list.Append(std::move(device_data));
   }
   SendSerializedTargets(device_list);
 }

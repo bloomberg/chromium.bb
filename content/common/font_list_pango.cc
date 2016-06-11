@@ -9,6 +9,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/values.h"
 
@@ -30,11 +31,11 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
 
   for (std::set<std::string>::const_iterator iter = sorted_families.begin();
        iter != sorted_families.end(); ++iter) {
-    base::ListValue* font_item = new base::ListValue();
+    std::unique_ptr<base::ListValue> font_item(new base::ListValue());
     font_item->AppendString(*iter);
     font_item->AppendString(*iter);  // localized name.
     // TODO(yusukes): Support localized family names.
-    font_list->Append(font_item);
+    font_list->Append(std::move(font_item));
   }
 
   return font_list;

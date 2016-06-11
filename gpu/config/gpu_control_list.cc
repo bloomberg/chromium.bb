@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/cpu.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -1530,7 +1532,7 @@ void GpuControlList::GetReasons(base::ListValue* problem_list,
     GpuControlListEntry* entry = active_entries_[i].get();
     if (entry->disabled())
       continue;
-    base::DictionaryValue* problem = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> problem(new base::DictionaryValue());
 
     problem->SetString("description", entry->description());
 
@@ -1552,7 +1554,7 @@ void GpuControlList::GetReasons(base::ListValue* problem_list,
     DCHECK(tag == "workarounds" || tag == "disabledFeatures");
     problem->SetString("tag", tag);
 
-    problem_list->Append(problem);
+    problem_list->Append(std::move(problem));
   }
 }
 

@@ -334,7 +334,7 @@ bool HostedAppHasPermission(const extensions::Extension& extension,
 // the web extent of a hosted |app|.
 void AddExceptionForHostedApp(const std::string& url_pattern,
     const extensions::Extension& app, base::ListValue* exceptions) {
-  base::DictionaryValue* exception = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
 
   std::string setting_string =
       content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
@@ -346,7 +346,7 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
   exception->SetString(site_settings::kSource, "HostedApp");
   exception->SetString(kAppName, app.name());
   exception->SetString(kAppId, app.id());
-  exceptions->Append(exception);
+  exceptions->Append(std::move(exception));
 }
 
 // Asks the |profile| for hosted apps which have the |permission| set, and

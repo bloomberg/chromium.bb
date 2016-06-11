@@ -5,6 +5,7 @@
 #include "components/error_page/renderer/net_error_helper_core.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -344,7 +345,8 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
               kCorrectionResourceTable[correction_index].correction_type) {
         continue;
       }
-      base::DictionaryValue* suggest = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> suggest(
+          new base::DictionaryValue());
       suggest->SetString("summary",
           l10n_util::GetStringUTF16(
               kCorrectionResourceTable[correction_index].resource_id));
@@ -356,7 +358,7 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
       suggest->SetInteger("trackingId", tracking_id);
       suggest->SetInteger("type", static_cast<int>(correction_index));
 
-      params->override_suggestions->Append(suggest);
+      params->override_suggestions->Append(std::move(suggest));
       LogCorrectionTypeShown(static_cast<int>(correction_index));
       break;
     }

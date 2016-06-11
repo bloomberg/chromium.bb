@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -99,7 +100,7 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
     url = GURL(content::kAboutSrcDocURL);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
   dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
@@ -130,7 +131,7 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
     qualifiers->AppendString("from_address_bar");
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args->Append(dict);
+  args->Append(std::move(dict));
 
   std::unique_ptr<Event> event(
       new Event(histogram_value, event_name, std::move(args)));

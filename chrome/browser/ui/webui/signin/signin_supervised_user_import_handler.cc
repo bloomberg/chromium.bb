@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -256,7 +258,8 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
     std::string name;
     value->GetString(SupervisedUserSyncService::kName, &name);
 
-    base::DictionaryValue* supervised_user = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> supervised_user(
+        new base::DictionaryValue);
     supervised_user->SetString("id", it.key());
     supervised_user->SetString("name", name);
 
@@ -284,7 +287,7 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
         supervised_user_ids.find(it.key()) != supervised_user_ids.end();
     supervised_user->SetBoolean("onCurrentDevice", on_current_device);
 
-    supervised_users.Append(supervised_user);
+    supervised_users.Append(std::move(supervised_user));
   }
 
   // Resolve callback with response.

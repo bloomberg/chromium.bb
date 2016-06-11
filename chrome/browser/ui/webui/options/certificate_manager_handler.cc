@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <utility>
@@ -1141,11 +1142,11 @@ void CertificateManagerHandler::PopulateTree(
   certificate_manager_model_->FilterAndBuildOrgGroupingMap(type, &map);
 
   {
-    base::ListValue* nodes = new base::ListValue;
+    std::unique_ptr<base::ListValue> nodes(new base::ListValue);
     for (CertificateManagerModel::OrgGroupingMap::iterator i = map.begin();
          i != map.end(); ++i) {
       // Populate first level (org name).
-      base::DictionaryValue* dict = new base::DictionaryValue;
+      std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
       dict->SetString(kKeyId, OrgNameToId(i->first));
       dict->SetString(kNameId, i->first);
 
@@ -1153,7 +1154,8 @@ void CertificateManagerHandler::PopulateTree(
       base::ListValue* subnodes = new base::ListValue;
       for (net::CertificateList::const_iterator org_cert_it = i->second.begin();
            org_cert_it != i->second.end(); ++org_cert_it) {
-        base::DictionaryValue* cert_dict = new base::DictionaryValue;
+        std::unique_ptr<base::DictionaryValue> cert_dict(
+            new base::DictionaryValue);
         net::X509Certificate* cert = org_cert_it->get();
         cert_dict->SetString(kKeyId, cert_id_map_->CertToId(cert));
         cert_dict->SetString(kNameId, certificate_manager_model_->GetColumnText(
@@ -1176,18 +1178,18 @@ void CertificateManagerHandler::PopulateTree(
             kExtractableId,
             !certificate_manager_model_->IsHardwareBacked(cert));
         // TODO(mattm): Other columns.
-        subnodes->Append(cert_dict);
+        subnodes->Append(std::move(cert_dict));
       }
       std::sort(subnodes->begin(), subnodes->end(), comparator);
 
       dict->Set(kSubNodesId, subnodes);
-      nodes->Append(dict);
+      nodes->Append(std::move(dict));
     }
     std::sort(nodes->begin(), nodes->end(), comparator);
 
     base::ListValue args;
     args.AppendString(tree_name);
-    args.Append(nodes);
+    args.Append(std::move(nodes));
     web_ui()->CallJavascriptFunctionUnsafe("CertificateManager.onPopulateTree",
                                            args);
   }
@@ -1220,10 +1222,10 @@ void CertificateManagerHandler::ShowImportErrors(
   base::ListValue cert_error_list;
   for (size_t i = 0; i < not_imported.size(); ++i) {
     const net::NSSCertDatabase::ImportCertFailure& failure = not_imported[i];
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetString(kNameId, failure.certificate->subject().GetDisplayName());
     dict->SetString(kErrorId, NetErrorToString(failure.net_error));
-    cert_error_list.Append(dict);
+    cert_error_list.Append(std::move(dict));
   }
 
   base::StringValue title_value(title);

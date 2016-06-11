@@ -173,7 +173,8 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunSync() {
        it != all.end(); ++it) {
     const Extension* extension = it->get();
     std::string id = extension->id();
-    base::DictionaryValue* extension_value = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> extension_value(
+        new base::DictionaryValue);
     extension_value->SetString("id", id);
     extension_value->SetString("version", extension->VersionString());
     extension_value->SetString("name", extension->name());
@@ -205,7 +206,7 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunSync() {
         "hasPageAction",
         extension_action_manager->GetPageAction(*extension) != NULL);
 
-    extensions_values->Append(extension_value);
+    extensions_values->Append(std::move(extension_value));
   }
 
   std::unique_ptr<base::DictionaryValue> return_value(

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -38,14 +41,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   base::ListValue list;
-  base::DictionaryValue* node = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> node(new base::DictionaryValue());
   node->SetString("name", "Managed Bookmark");
   node->SetString("url", "http://www.chromium.org");
-  list.Append(node);
-  node = new base::DictionaryValue();
+  list.Append(std::move(node));
+  node.reset(new base::DictionaryValue());
   node->SetString("name", "Managed Folder");
   node->Set("children", new base::ListValue());
-  list.Append(node);
+  list.Append(std::move(node));
   profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
   ASSERT_EQ(2, managed->managed_node()->child_count());
 

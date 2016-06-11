@@ -140,7 +140,7 @@ void CookiesEventRouter::CookieChanged(
     Profile* profile,
     ChromeCookieDetails* details) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean(keys::kRemovedKey, details->removed);
 
   cookies::Cookie cookie = cookies_helpers::CreateCookie(
@@ -175,7 +175,7 @@ void CookiesEventRouter::CookieChanged(
   }
   dict->SetString(keys::kCauseKey, cause);
 
-  args->Append(dict);
+  args->Append(std::move(dict));
 
   GURL cookie_domain =
       cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);

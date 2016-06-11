@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -187,10 +189,10 @@ void FlashDOMHandler::OnUploadListAvailable() {
 void AddPair(base::ListValue* list,
              const base::string16& key,
              const base::string16& value) {
-  base::DictionaryValue* results = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetString("key", key);
   results->SetString("value", value);
-  list->Append(results);
+  list->Append(std::move(results));
 }
 
 void AddPair(base::ListValue* list,

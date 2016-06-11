@@ -4,6 +4,9 @@
 
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/guid.h"
 #include "base/md5.h"
 #include "base/strings/string_util.h"
@@ -35,10 +38,10 @@ template <class StringType>
 void AddPair(base::ListValue* list,
              const base::string16& key,
              const StringType& value) {
-  base::DictionaryValue* results = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetString("key", key);
   results->SetString("value", value);
-  list->Append(results);
+  list->Append(std::move(results));
 }
 
 }  // namespace

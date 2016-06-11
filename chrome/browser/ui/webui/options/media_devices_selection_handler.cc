@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
@@ -109,10 +112,10 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
   std::string default_id;
   base::ListValue device_list;
   for (size_t i = 0; i < devices.size(); ++i) {
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("name", devices[i].name);
     entry->SetString("id",  devices[i].id);
-    device_list.Append(entry);
+    device_list.Append(std::move(entry));
     if (devices[i].id == default_device)
       default_id = default_device;
   }

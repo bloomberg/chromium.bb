@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -65,11 +67,11 @@ class MessageSender : public content::NotificationObserver {
   static std::unique_ptr<base::ListValue> BuildEventArguments(
       const bool last_message,
       const std::string& data) {
-    base::DictionaryValue* event = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> event(new base::DictionaryValue());
     event->SetBoolean("lastMessage", last_message);
     event->SetString("data", data);
     std::unique_ptr<base::ListValue> arguments(new base::ListValue());
-    arguments->Append(event);
+    arguments->Append(std::move(event));
     return arguments;
   }
 

@@ -4,6 +4,8 @@
 
 #include "components/crash/core/browser/crashes_ui_util.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/i18n/time_formatting.h"
@@ -42,12 +44,12 @@ void UploadListToValue(UploadList* upload_list, base::ListValue* out_value) {
   upload_list->GetUploads(50, &crashes);
 
   for (const auto& info : crashes) {
-    base::DictionaryValue* crash = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> crash(new base::DictionaryValue());
     crash->SetString("id", info.upload_id);
     crash->SetString("time",
                      base::TimeFormatFriendlyDateAndTime(info.upload_time));
     crash->SetString("local_id", info.local_id);
-    out_value->Append(crash);
+    out_value->Append(std::move(crash));
   }
 }
 

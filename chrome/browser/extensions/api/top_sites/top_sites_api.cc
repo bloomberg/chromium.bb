@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -40,13 +41,14 @@ void TopSitesGetFunction::OnMostVisitedURLsAvailable(
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
     if (!url.url.is_empty()) {
-      base::DictionaryValue* page_value = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> page_value(
+          new base::DictionaryValue());
       page_value->SetString("url", url.url.spec());
       if (url.title.empty())
         page_value->SetString("title", url.url.spec());
       else
         page_value->SetString("title", url.title);
-      pages_value->Append(page_value);
+      pages_value->Append(std::move(page_value));
     }
   }
 

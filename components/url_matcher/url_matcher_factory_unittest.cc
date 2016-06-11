@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -49,12 +52,12 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   // }
 
   // Port range: Allow 80;1000-1010.
-  base::ListValue* port_range = new base::ListValue();
+  std::unique_ptr<base::ListValue> port_range(new base::ListValue());
   port_range->AppendInteger(1000);
   port_range->AppendInteger(1010);
   base::ListValue* port_ranges = new base::ListValue();
   port_ranges->AppendInteger(80);
-  port_ranges->Append(port_range);
+  port_ranges->Append(std::move(port_range));
 
   base::ListValue* scheme_list = new base::ListValue();
   scheme_list->AppendString("http");

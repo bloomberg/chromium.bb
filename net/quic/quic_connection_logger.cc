@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -127,11 +128,11 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
   const PacketTimeVector& received_times = frame->received_packet_times;
   for (PacketTimeVector::const_iterator it = received_times.begin();
        it != received_times.end(); ++it) {
-    base::DictionaryValue* info = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue());
     info->SetInteger("packet_number", static_cast<int>(it->first));
     info->SetString("received",
                     base::Int64ToString(it->second.ToDebuggingValue()));
-    received->Append(info);
+    received->Append(std::move(info));
   }
 
   return std::move(dict);

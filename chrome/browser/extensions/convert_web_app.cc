@@ -9,7 +9,9 @@
 
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -125,10 +127,11 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     icons->SetString(size, icon_path);
 
     if (icon.url.is_valid()) {
-      base::DictionaryValue* linked_icon = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> linked_icon(
+          new base::DictionaryValue());
       linked_icon->SetString(keys::kLinkedAppIconURL, icon.url.spec());
       linked_icon->SetInteger(keys::kLinkedAppIconSize, icon.width);
-      linked_icons->Append(linked_icon);
+      linked_icons->Append(std::move(linked_icon));
     }
   }
 

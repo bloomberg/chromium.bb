@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1232,10 +1233,10 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
             template_url_service_->search_terms_data()))
       continue;
 
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("name", model_urls[i]->short_name());
     entry->SetInteger("index", i);
-    search_engines.Append(entry);
+    search_engines.Append(std::move(entry));
     if (model_urls[i] == default_url)
       default_index = i;
   }
@@ -1355,7 +1356,8 @@ std::unique_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
     // The items in |profile_value| are also described in
     // chrome/browser/resources/options/browser_options.js in a @typedef for
     // Profile. Please update it whenever you add or remove any keys here.
-    base::DictionaryValue* profile_value = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> profile_value(
+        new base::DictionaryValue());
     profile_value->SetString("name", entry->GetName());
     base::FilePath profile_path = entry->GetPath();
     profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
@@ -1375,7 +1377,7 @@ std::unique_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
                                profiles::GetDefaultAvatarIconUrl(icon_index));
     }
 
-    profile_info_list->Append(profile_value);
+    profile_info_list->Append(std::move(profile_value));
   }
 
   return profile_info_list;
@@ -2004,14 +2006,14 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
   base::ListValue zoom_factors_value;
   for (std::vector<double>::const_iterator i = zoom_factors.begin();
        i != zoom_factors.end(); ++i) {
-    base::ListValue* option = new base::ListValue();
+    std::unique_ptr<base::ListValue> option(new base::ListValue());
     double factor = *i;
     int percent = static_cast<int>(factor * 100 + 0.5);
     option->AppendString(base::FormatPercent(percent));
     option->AppendDouble(factor);
     bool selected = content::ZoomValuesEqual(factor, default_zoom_factor);
     option->AppendBoolean(selected);
-    zoom_factors_value.Append(option);
+    zoom_factors_value.Append(std::move(option));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("BrowserOptions.setupPageZoomSelector",

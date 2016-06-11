@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
@@ -169,7 +172,8 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   int index = 0;
   for (net::X509Certificate::OSCertHandles::const_iterator i =
       cert_chain.begin(); i != cert_chain.end(); ++i, ++index) {
-    base::DictionaryValue* cert_node = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> cert_node(
+        new base::DictionaryValue());
     base::ListValue cert_details;
     cert_node->SetString("label", x509_certificate_model::GetTitle(*i).c_str());
     cert_node->SetDouble("payload.index", index);
@@ -179,7 +183,7 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
 
     // Add this node to the children list for the next iteration.
     children = new base::ListValue();
-    children->Append(cert_node);
+    children->Append(std::move(cert_node));
   }
   // Set the last node as the top of the certificate hierarchy.
   cert_info.Set("hierarchy", children);

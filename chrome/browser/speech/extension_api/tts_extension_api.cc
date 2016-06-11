@@ -5,6 +5,8 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -321,7 +323,8 @@ bool TtsGetVoicesFunction::RunSync() {
   std::unique_ptr<base::ListValue> result_voices(new base::ListValue());
   for (size_t i = 0; i < voices.size(); ++i) {
     const VoiceData& voice = voices[i];
-    base::DictionaryValue* result_voice = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> result_voice(
+        new base::DictionaryValue());
     result_voice->SetString(constants::kVoiceNameKey, voice.name);
     result_voice->SetBoolean(constants::kRemoteKey, voice.remote);
     if (!voice.lang.empty())
@@ -341,7 +344,7 @@ bool TtsGetVoicesFunction::RunSync() {
     }
     result_voice->Set(constants::kEventTypesKey, event_types);
 
-    result_voices->Append(result_voice);
+    result_voices->Append(std::move(result_voice));
   }
 
   SetResult(std::move(result_voices));

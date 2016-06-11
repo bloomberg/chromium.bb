@@ -7,6 +7,9 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -149,12 +152,13 @@ void Referrer::Deserialize(const base::Value& value) {
 base::Value* Referrer::Serialize() const {
   base::ListValue* subresource_list(new base::ListValue);
   for (const_iterator it = begin(); it != end(); ++it) {
-    base::StringValue* url_spec(new base::StringValue(it->first.spec()));
-    base::FundamentalValue* rate(new base::FundamentalValue(
-        it->second.subresource_use_rate()));
+    std::unique_ptr<base::StringValue> url_spec(
+        new base::StringValue(it->first.spec()));
+    std::unique_ptr<base::FundamentalValue> rate(
+        new base::FundamentalValue(it->second.subresource_use_rate()));
 
-    subresource_list->Append(url_spec);
-    subresource_list->Append(rate);
+    subresource_list->Append(std::move(url_spec));
+    subresource_list->Append(std::move(rate));
   }
   return subresource_list;
 }

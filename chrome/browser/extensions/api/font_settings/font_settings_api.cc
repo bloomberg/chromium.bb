@@ -340,10 +340,11 @@ bool FontSettingsGetFontListFunction::CopyFontsToResult(
       return false;
     }
 
-    base::DictionaryValue* font_name = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> font_name(
+        new base::DictionaryValue());
     font_name->Set(kFontIdKey, new base::StringValue(name));
     font_name->Set(kDisplayNameKey, new base::StringValue(localized_name));
-    result->Append(font_name);
+    result->Append(std::move(font_name));
   }
 
   SetResult(std::move(result));

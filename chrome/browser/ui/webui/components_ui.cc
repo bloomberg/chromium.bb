@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -172,12 +174,13 @@ base::ListValue* ComponentsUI::LoadComponents() {
   for (size_t j = 0; j < component_ids.size(); ++j) {
     update_client::CrxUpdateItem item;
     if (cus->GetComponentDetails(component_ids[j], &item)) {
-      base::DictionaryValue* component_entry = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> component_entry(
+          new base::DictionaryValue());
       component_entry->SetString("id", component_ids[j]);
       component_entry->SetString("name", item.component.name);
       component_entry->SetString("version", item.component.version.GetString());
       component_entry->SetString("status", ServiceStatusToString(item.state));
-      component_list->Append(component_entry);
+      component_list->Append(std::move(component_entry));
     }
   }
 

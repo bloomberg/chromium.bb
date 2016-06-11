@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -230,13 +231,14 @@ void TabsEventRouter::TabInsertedAt(WebContents* contents,
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->AppendInteger(tab_id);
 
-  base::DictionaryValue* object_args = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> object_args(
+      new base::DictionaryValue());
   object_args->Set(tabs_constants::kNewWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(contents)));
   object_args->Set(tabs_constants::kNewPositionKey,
                    new FundamentalValue(index));
-  args->Append(object_args);
+  args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_ATTACHED, tabs::OnAttached::kEventName,
@@ -252,13 +254,14 @@ void TabsEventRouter::TabDetachedAt(WebContents* contents, int index) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->AppendInteger(ExtensionTabUtil::GetTabId(contents));
 
-  base::DictionaryValue* object_args = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> object_args(
+      new base::DictionaryValue());
   object_args->Set(tabs_constants::kOldWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(contents)));
   object_args->Set(tabs_constants::kOldPositionKey,
                    new FundamentalValue(index));
-  args->Append(object_args);
+  args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_DETACHED, tabs::OnDetached::kEventName,
@@ -273,12 +276,13 @@ void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->AppendInteger(tab_id);
 
-  base::DictionaryValue* object_args = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> object_args(
+      new base::DictionaryValue());
   object_args->SetInteger(tabs_constants::kWindowIdKey,
                           ExtensionTabUtil::GetWindowIdOfTab(contents));
   object_args->SetBoolean(tabs_constants::kWindowClosing,
                           tab_strip_model->closing_all());
-  args->Append(object_args);
+  args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_REMOVED, tabs::OnRemoved::kEventName,
@@ -368,7 +372,8 @@ void TabsEventRouter::TabMoved(WebContents* contents,
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->AppendInteger(ExtensionTabUtil::GetTabId(contents));
 
-  base::DictionaryValue* object_args = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> object_args(
+      new base::DictionaryValue());
   object_args->Set(tabs_constants::kWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(contents)));
@@ -376,7 +381,7 @@ void TabsEventRouter::TabMoved(WebContents* contents,
                    new FundamentalValue(from_index));
   object_args->Set(tabs_constants::kToIndexKey,
                    new FundamentalValue(to_index));
-  args->Append(object_args);
+  args->Append(std::move(object_args));
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_MOVED, tabs::OnMoved::kEventName,

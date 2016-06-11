@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -90,10 +93,11 @@ class WebrtcEventLogApiTest : public WebRtcTestBase {
 
   void AppendTabIdAndUrl(base::ListValue* parameters,
                          content::WebContents* tab) {
-    base::DictionaryValue* request_info = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> request_info(
+        new base::DictionaryValue());
     request_info->SetInteger("tabId",
                              extensions::ExtensionTabUtil::GetTabId(tab));
-    parameters->Append(request_info);
+    parameters->Append(std::move(request_info));
     parameters->AppendString(tab->GetURL().GetOrigin().spec());
   }
 

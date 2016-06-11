@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -380,7 +383,8 @@ base::Value* GetProblems() {
   for (size_t i = 0; !eof; ++i) {
     const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
     if (gpu_feature_info.disabled) {
-      base::DictionaryValue* problem = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> problem(
+          new base::DictionaryValue());
       problem->SetString(
           "description", gpu_feature_info.disabled_description);
       problem->Set("crBugs", new base::ListValue());
@@ -389,7 +393,7 @@ base::Value* GetProblems() {
       disabled_features->AppendString(gpu_feature_info.name);
       problem->Set("affectedGpuSettings", disabled_features);
       problem->SetString("tag", "disabledFeatures");
-      problem_list->Append(problem);
+      problem_list->Append(std::move(problem));
     }
   }
   return problem_list;

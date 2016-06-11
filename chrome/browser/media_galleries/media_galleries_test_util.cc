@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -52,11 +54,11 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   base::ListValue* permission_detail_list = new base::ListValue;
   for (size_t i = 0; i < media_galleries_permissions.size(); i++)
     permission_detail_list->AppendString(media_galleries_permissions[i]);
-  base::DictionaryValue* media_galleries_permission =
-      new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> media_galleries_permission(
+      new base::DictionaryValue());
   media_galleries_permission->Set("mediaGalleries", permission_detail_list);
   base::ListValue* permission_list = new base::ListValue;
-  permission_list->Append(media_galleries_permission);
+  permission_list->Append(std::move(media_galleries_permission));
   manifest->Set(extensions::manifest_keys::kPermissions, permission_list);
 
   extensions::ExtensionPrefs* extension_prefs =

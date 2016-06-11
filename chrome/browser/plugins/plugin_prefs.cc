@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -481,14 +482,14 @@ void PluginPrefs::OnUpdatePreferences(
   // Add the plugin files.
   std::set<base::string16> group_names;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    base::DictionaryValue* summary = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
     summary->SetString("path", plugins[i].path.value());
     summary->SetString("name", plugins[i].name);
     summary->SetString("version", plugins[i].version);
     bool enabled = true;
     plugin_state_.Get(plugins[i].path, &enabled);
     summary->SetBoolean("enabled", enabled);
-    plugins_list->Append(summary);
+    plugins_list->Append(std::move(summary));
 
     std::unique_ptr<PluginMetadata> plugin_metadata(
         finder->GetPluginMetadata(plugins[i]));
@@ -499,7 +500,7 @@ void PluginPrefs::OnUpdatePreferences(
   // Add the plugin groups.
   for (std::set<base::string16>::const_iterator it = group_names.begin();
       it != group_names.end(); ++it) {
-    base::DictionaryValue* summary = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
     summary->SetString("name", *it);
     bool enabled = true;
     std::map<base::string16, bool>::iterator gstate_it =
@@ -507,7 +508,7 @@ void PluginPrefs::OnUpdatePreferences(
     if (gstate_it != plugin_group_state_.end())
       enabled = gstate_it->second;
     summary->SetBoolean("enabled", enabled);
-    plugins_list->Append(summary);
+    plugins_list->Append(std::move(summary));
   }
 }
 

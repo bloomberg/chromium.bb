@@ -160,10 +160,10 @@ void SystemInfoUIHTMLSource::RequestComplete() {
     for (SystemLogsResponse::const_iterator it = response_->begin();
          it != response_->end();
          ++it) {
-      base::DictionaryValue* val = new base::DictionaryValue;
+      std::unique_ptr<base::DictionaryValue> val(new base::DictionaryValue);
       val->SetString("statName", it->first);
       val->SetString("statValue", it->second);
-      details->Append(val);
+      details->Append(std::move(val));
     }
   }
   static const base::StringPiece systeminfo_html(

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -215,10 +216,10 @@ void ClearBrowserDataHandler::GetLocalizedValues(
         label_string = l10n_util::GetStringUTF16(IDS_CLEAR_DATA_EVERYTHING);
         break;
     }
-    base::ListValue* option = new base::ListValue();
+    std::unique_ptr<base::ListValue> option(new base::ListValue());
     option->AppendInteger(i);
     option->AppendString(label_string);
-    time_list->Append(option);
+    time_list->Append(std::move(option));
   }
   localized_strings->Set("clearBrowserDataTimeList", time_list);
   localized_strings->SetBoolean("showDeleteBrowsingHistoryCheckboxes",

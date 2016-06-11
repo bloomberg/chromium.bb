@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -316,10 +317,10 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
       continue;
 
     group_identifiers.insert(group_identifier);
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString(keys::kIdKey, group_identifier);
     dict->SetString(keys::kDescriptionKey, plugin_metadata->name());
-    list->Append(dict);
+    list->Append(std::move(dict));
   }
   SetResult(std::move(list));
   BrowserThread::PostTask(

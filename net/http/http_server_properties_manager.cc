@@ -4,6 +4,8 @@
 
 #include "net/http/http_server_properties_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -1193,7 +1195,8 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
     const AlternativeService alternative_service =
         alternative_service_info.alternative_service;
     DCHECK(IsAlternateProtocolValid(alternative_service.protocol));
-    base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> alternative_service_dict(
+        new base::DictionaryValue);
     alternative_service_dict->SetInteger(kPortKey, alternative_service.port);
     if (!alternative_service.host.empty()) {
       alternative_service_dict->SetString(kHostKey, alternative_service.host);
@@ -1205,7 +1208,7 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
         kExpirationKey,
         base::Int64ToString(
             alternative_service_info.expiration.ToInternalValue()));
-    alternative_service_list->Append(alternative_service_dict);
+    alternative_service_list->Append(std::move(alternative_service_dict));
   }
   if (alternative_service_list->GetSize() == 0)
     return;

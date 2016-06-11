@@ -4,6 +4,9 @@
 
 #include "net/http/http_server_properties_manager.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -242,15 +245,17 @@ TEST_P(HttpServerPropertiesManagerTest,
   server_pref_dict->SetBoolean("supports_spdy", true);
 
   // Set up alternative_services for http://www.google.com:80.
-  base::DictionaryValue* alternative_service_dict0 = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> alternative_service_dict0(
+      new base::DictionaryValue);
   alternative_service_dict0->SetInteger("port", 443);
   alternative_service_dict0->SetString("protocol_str", "npn-h2");
-  base::DictionaryValue* alternative_service_dict1 = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> alternative_service_dict1(
+      new base::DictionaryValue);
   alternative_service_dict1->SetInteger("port", 1234);
   alternative_service_dict1->SetString("protocol_str", "quic");
   base::ListValue* alternative_service_list0 = new base::ListValue;
-  alternative_service_list0->Append(alternative_service_dict0);
-  alternative_service_list0->Append(alternative_service_dict1);
+  alternative_service_list0->Append(std::move(alternative_service_dict0));
+  alternative_service_list0->Append(std::move(alternative_service_dict1));
   server_pref_dict->SetWithoutPathExpansion("alternative_service",
                                             alternative_service_list0);
 
@@ -279,11 +284,12 @@ TEST_P(HttpServerPropertiesManagerTest,
   server_pref_dict1->SetBoolean("supports_spdy", true);
 
   // Set up alternative_services for mail.google.com:80.
-  base::DictionaryValue* alternative_service_dict2 = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> alternative_service_dict2(
+      new base::DictionaryValue);
   alternative_service_dict2->SetString("protocol_str", "npn-spdy/3.1");
   alternative_service_dict2->SetInteger("port", 444);
   base::ListValue* alternative_service_list1 = new base::ListValue;
-  alternative_service_list1->Append(alternative_service_dict2);
+  alternative_service_list1->Append(std::move(alternative_service_dict2));
   server_pref_dict1->SetWithoutPathExpansion("alternative_service",
                                              alternative_service_list1);
 
@@ -454,11 +460,12 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   server_pref_dict->SetBoolean("supports_spdy", true);
 
   // Set up alternative_service for www.google.com:65536.
-  base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> alternative_service_dict(
+      new base::DictionaryValue);
   alternative_service_dict->SetString("protocol_str", "npn-h2");
   alternative_service_dict->SetInteger("port", 80);
   base::ListValue* alternative_service_list = new base::ListValue;
-  alternative_service_list->Append(alternative_service_dict);
+  alternative_service_list->Append(std::move(alternative_service_dict));
   server_pref_dict->SetWithoutPathExpansion("alternative_service",
                                             alternative_service_list);
 
@@ -535,11 +542,12 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   server_pref_dict->SetBoolean("supports_spdy", true);
 
   // Set up alternative_service for www.google.com:80.
-  base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> alternative_service_dict(
+      new base::DictionaryValue);
   alternative_service_dict->SetString("protocol_str", "npn-h2");
   alternative_service_dict->SetInteger("port", 65536);
   base::ListValue* alternative_service_list = new base::ListValue;
-  alternative_service_list->Append(alternative_service_dict);
+  alternative_service_list->Append(std::move(alternative_service_dict));
   server_pref_dict->SetWithoutPathExpansion("alternative_service",
                                             alternative_service_list);
 
@@ -992,11 +1000,12 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
 
   for (int i = 1; i <= 200; ++i) {
     // Set up alternative_service for www.google.com:i.
-    base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> alternative_service_dict(
+        new base::DictionaryValue);
     alternative_service_dict->SetString("protocol_str", "quic");
     alternative_service_dict->SetInteger("port", i);
     base::ListValue* alternative_service_list = new base::ListValue;
-    alternative_service_list->Append(alternative_service_dict);
+    alternative_service_list->Append(std::move(alternative_service_dict));
     base::DictionaryValue* server_pref_dict = new base::DictionaryValue;
     server_pref_dict->SetWithoutPathExpansion("alternative_service",
                                               alternative_service_list);
@@ -1270,7 +1279,8 @@ TEST_P(HttpServerPropertiesManagerTest,
 TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   std::unique_ptr<base::ListValue> alternative_service_list(
       new base::ListValue);
-  base::DictionaryValue* expired_dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> expired_dict(
+      new base::DictionaryValue);
   expired_dict->SetString("protocol_str", "npn-h2");
   expired_dict->SetString("host", "expired.example.com");
   expired_dict->SetInteger("port", 443);
@@ -1278,15 +1288,15 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
       base::Time::Now() - base::TimeDelta::FromDays(1);
   expired_dict->SetString(
       "expiration", base::Int64ToString(time_one_day_ago.ToInternalValue()));
-  alternative_service_list->Append(expired_dict);
+  alternative_service_list->Append(std::move(expired_dict));
 
-  base::DictionaryValue* valid_dict = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> valid_dict(new base::DictionaryValue);
   valid_dict->SetString("protocol_str", "npn-h2");
   valid_dict->SetString("host", "valid.example.com");
   valid_dict->SetInteger("port", 443);
   valid_dict->SetString(
       "expiration", base::Int64ToString(one_day_from_now_.ToInternalValue()));
-  alternative_service_list->Append(valid_dict);
+  alternative_service_list->Append(std::move(valid_dict));
 
   base::DictionaryValue server_pref_dict;
   server_pref_dict.SetWithoutPathExpansion("alternative_service",

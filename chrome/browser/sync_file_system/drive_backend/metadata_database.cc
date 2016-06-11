@@ -1601,7 +1601,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpFiles(
       NOTREACHED();
       continue;
     }
-    base::DictionaryValue* file = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> file(new base::DictionaryValue);
 
     base::FilePath path = BuildDisplayPathForTracker(tracker);
     file->SetString("path", path.AsUTF8Unsafe());
@@ -1621,7 +1621,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpFiles(
 
     file->Set("details", details);
 
-    files->Append(file);
+    files->Append(std::move(file));
   }
 
   return files;
@@ -1647,7 +1647,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   std::unique_ptr<base::ListValue> trackers(new base::ListValue);
 
   // Append the first element for metadata.
-  base::DictionaryValue* metadata = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
   const char *trackerKeys[] = {
     "tracker_id", "path", "file_id", "tracker_kind", "app_id",
     "active", "dirty", "folder_listing", "demoted",
@@ -1659,7 +1659,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Trackers");
   metadata->Set("keys", keys);
-  trackers->Append(metadata);
+  trackers->Append(std::move(metadata));
 
   // Append tracker data.
   std::vector<int64_t> tracker_ids(index_->GetAllTrackerIDs());
@@ -1672,7 +1672,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
       continue;
     }
 
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     base::FilePath path = BuildDisplayPathForTracker(tracker);
     dict->SetString("tracker_id", base::Int64ToString(tracker_id));
     dict->SetString("path", path.AsUTF8Unsafe());
@@ -1701,7 +1701,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
       dict->SetString("missing", details.missing() ? "true" : "false");
       dict->SetString("change_id", base::Int64ToString(details.change_id()));
     }
-    trackers->Append(dict);
+    trackers->Append(std::move(dict));
   }
   return trackers;
 }
@@ -1710,7 +1710,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
   std::unique_ptr<base::ListValue> files(new base::ListValue);
 
   // Append the first element for metadata.
-  base::DictionaryValue* metadata = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
   const char *fileKeys[] = {
     "file_id", "title", "type", "md5", "etag", "missing",
     "change_id", "parents"
@@ -1721,7 +1721,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Metadata");
   metadata->Set("keys", keys);
-  files->Append(metadata);
+  files->Append(std::move(metadata));
 
   // Append metadata data.
   std::vector<std::string> metadata_ids(index_->GetAllMetadataIDs());
@@ -1734,7 +1734,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
       continue;
     }
 
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetString("file_id", file_id);
     if (file.has_details()) {
       const FileDetails& details = file.details();
@@ -1750,7 +1750,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
         parents.push_back(details.parent_folder_ids(i));
       dict->SetString("parents", base::JoinString(parents, ","));
     }
-    files->Append(dict);
+    files->Append(std::move(dict));
   }
   return files;
 }

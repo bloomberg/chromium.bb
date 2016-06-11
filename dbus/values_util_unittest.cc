@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_writer.h"
@@ -613,11 +614,12 @@ TEST(ValuesUtilTest, AppendList) {
   const double kDoubleValue = 4.9;
   const std::string kStringValue = "fifty";
 
-  base::ListValue* list_value = new base::ListValue();
+  std::unique_ptr<base::ListValue> list_value(new base::ListValue());
   list_value->AppendBoolean(kBoolValue);
   list_value->AppendInteger(kInt32Value);
 
-  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dictionary_value(
+      new base::DictionaryValue());
   dictionary_value->SetBoolean(kKey1, kBoolValue);
   dictionary_value->SetInteger(kKey2, kDoubleValue);
 
@@ -626,8 +628,8 @@ TEST(ValuesUtilTest, AppendList) {
   test_list.AppendInteger(kInt32Value);
   test_list.AppendDouble(kDoubleValue);
   test_list.AppendString(kStringValue);
-  test_list.Append(list_value);  // takes ownership
-  test_list.Append(dictionary_value);  // takes ownership
+  test_list.Append(std::move(list_value));
+  test_list.Append(std::move(dictionary_value));
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());
@@ -656,11 +658,12 @@ TEST(ValuesUtilTest, AppendListAsVariant) {
   const double kDoubleValue = 4.9;
   const std::string kStringValue = "fifty";
 
-  base::ListValue* list_value = new base::ListValue();
+  std::unique_ptr<base::ListValue> list_value(new base::ListValue());
   list_value->AppendBoolean(kBoolValue);
   list_value->AppendInteger(kInt32Value);
 
-  base::DictionaryValue* dictionary_value = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dictionary_value(
+      new base::DictionaryValue());
   dictionary_value->SetBoolean(kKey1, kBoolValue);
   dictionary_value->SetInteger(kKey2, kDoubleValue);
 
@@ -669,8 +672,8 @@ TEST(ValuesUtilTest, AppendListAsVariant) {
   test_list.AppendInteger(kInt32Value);
   test_list.AppendDouble(kDoubleValue);
   test_list.AppendString(kStringValue);
-  test_list.Append(list_value);  // takes ownership
-  test_list.Append(dictionary_value);  // takes ownership
+  test_list.Append(std::move(list_value));
+  test_list.Append(std::move(dictionary_value));
 
   std::unique_ptr<Response> response(Response::CreateEmpty());
   MessageWriter writer(response.get());

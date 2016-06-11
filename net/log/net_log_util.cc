@@ -385,7 +385,8 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
         const HostCache::Key& key = pair.first;
         const HostCache::Entry& entry = pair.second;
 
-        base::DictionaryValue* entry_dict = new base::DictionaryValue();
+        std::unique_ptr<base::DictionaryValue> entry_dict(
+            new base::DictionaryValue());
 
         entry_dict->SetString("hostname", key.hostname);
         entry_dict->SetInteger("address_family",
@@ -404,7 +405,7 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
           entry_dict->Set("addresses", address_list);
         }
 
-        entry_list->Append(entry_dict);
+        entry_list->Append(std::move(entry_dict));
       }
 
       cache_info_dict->Set("entries", entry_list);

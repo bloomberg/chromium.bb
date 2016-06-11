@@ -249,10 +249,10 @@ TEST(JsonSchemaCompilerArrayTest, ReturnIntegerArrayResultCreate) {
       ReturnIntegerArray::Results::Create(integers);
 
   base::ListValue expected;
-  base::ListValue* expected_argument = new base::ListValue();
+  std::unique_ptr<base::ListValue> expected_argument(new base::ListValue());
   expected_argument->AppendInteger(1);
   expected_argument->AppendInteger(2);
-  expected.Append(expected_argument);
+  expected.Append(std::move(expected_argument));
   EXPECT_TRUE(results->Equals(&expected));
 }
 
@@ -266,13 +266,13 @@ TEST(JsonSchemaCompilerArrayTest, ReturnRefArrayResultCreate) {
       ReturnRefArray::Results::Create(items);
 
   base::ListValue expected;
-  base::ListValue* expected_argument = new base::ListValue();
-  base::DictionaryValue* first = new base::DictionaryValue();
+  std::unique_ptr<base::ListValue> expected_argument(new base::ListValue());
+  std::unique_ptr<base::DictionaryValue> first(new base::DictionaryValue());
   first->SetInteger("val", 1);
-  expected_argument->Append(first);
-  base::DictionaryValue* second = new base::DictionaryValue();
+  expected_argument->Append(std::move(first));
+  std::unique_ptr<base::DictionaryValue> second(new base::DictionaryValue());
   second->SetInteger("val", 2);
-  expected_argument->Append(second);
-  expected.Append(expected_argument);
+  expected_argument->Append(std::move(second));
+  expected.Append(std::move(expected_argument));
   EXPECT_TRUE(results->Equals(&expected));
 }

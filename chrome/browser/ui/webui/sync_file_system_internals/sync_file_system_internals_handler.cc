@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -152,12 +154,12 @@ void SyncFileSystemInternalsHandler::GetLog(
     if (log_entry->id <= last_log_id_sent)
       continue;
 
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetInteger("id", log_entry->id);
     dict->SetString("time",
         google_apis::util::FormatTimeAsStringLocaltime(log_entry->when));
     dict->SetString("logEvent", log_entry->what);
-    list.Append(dict);
+    list.Append(std::move(dict));
     last_log_id_sent = log_entry->id;
   }
   if (list.empty())

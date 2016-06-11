@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h"
 
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -47,11 +49,11 @@ void ConvertExtensionStatusToDictionary(
     if (!extension)
       continue;
 
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetString("extensionID", extension_id);
     dict->SetString("extensionName", extension->name());
     dict->SetString("status", itr->second);
-    list.Append(dict);
+    list.Append(std::move(dict));
   }
 
   callback.Run(list);

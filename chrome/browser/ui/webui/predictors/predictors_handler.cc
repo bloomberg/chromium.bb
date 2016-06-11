@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/predictors/predictors_handler.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
@@ -65,14 +68,14 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
              autocomplete_action_predictor_->db_cache_.begin();
          it != autocomplete_action_predictor_->db_cache_.end();
          ++it) {
-      base::DictionaryValue* entry = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
       entry->SetString("user_text", it->first.user_text);
       entry->SetString("url", it->first.url.spec());
       entry->SetInteger("hit_count", it->second.number_of_hits);
       entry->SetInteger("miss_count", it->second.number_of_misses);
       entry->SetDouble("confidence",
           autocomplete_action_predictor_->CalculateConfidenceForDbEntry(it));
-      db->Append(entry);
+      db->Append(std::move(entry));
     }
     dict.Set("db", db);
   }
@@ -109,13 +112,14 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
     base::ListValue* db) const {
   for (ResourcePrefetchPredictor::PrefetchDataMap::const_iterator it =
        data_map.begin(); it != data_map.end(); ++it) {
-    base::DictionaryValue* main = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> main(new base::DictionaryValue());
     main->SetString("main_frame_url", it->first);
     base::ListValue* resources = new base::ListValue();
     for (ResourcePrefetchPredictor::ResourceRows::const_iterator
          row = it->second.resources.begin();
          row != it->second.resources.end(); ++row) {
-      base::DictionaryValue* resource = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> resource(
+          new base::DictionaryValue());
       resource->SetString("resource_url", row->resource_url.spec());
       resource->SetString("resource_type",
                           ConvertResourceType(row->resource_type));
@@ -124,9 +128,9 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
       resource->SetInteger("consecutive_misses", row->consecutive_misses);
       resource->SetDouble("position", row->average_position);
       resource->SetDouble("score", row->score);
-      resources->Append(resource);
+      resources->Append(std::move(resource));
     }
     main->Set("resources", resources);
-    db->Append(main);
+    db->Append(std::move(main));
   }
 }

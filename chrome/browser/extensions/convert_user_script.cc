@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -137,7 +139,8 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   for (size_t i = 0; i < script.exclude_globs().size(); ++i)
     excludes->AppendString(script.exclude_globs().at(i));
 
-  base::DictionaryValue* content_script = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> content_script(
+      new base::DictionaryValue());
   content_script->Set(keys::kMatches, matches);
   content_script->Set(keys::kExcludeMatches, exclude_matches);
   content_script->Set(keys::kIncludeGlobs, includes);
@@ -153,7 +156,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     content_script->SetString(keys::kRunAt, values::kRunAtDocumentIdle);
 
   base::ListValue* content_scripts = new base::ListValue();
-  content_scripts->Append(content_script);
+  content_scripts->Append(std::move(content_script));
 
   root->Set(keys::kContentScripts, content_scripts);
 

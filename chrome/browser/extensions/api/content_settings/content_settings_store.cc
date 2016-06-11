@@ -260,7 +260,8 @@ base::ListValue* ContentSettingsStore::GetSettingsForExtension(
         NULL));  // We already hold the lock.
     while (rule_iterator->HasNext()) {
       const Rule& rule = rule_iterator->Next();
-      base::DictionaryValue* setting_dict = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> setting_dict(
+          new base::DictionaryValue());
       setting_dict->SetString(keys::kPrimaryPatternKey,
                               rule.primary_pattern.ToString());
       setting_dict->SetString(keys::kSecondaryPatternKey,
@@ -278,7 +279,7 @@ base::ListValue* ContentSettingsStore::GetSettingsForExtension(
       DCHECK(!setting_string.empty());
 
       setting_dict->SetString(keys::kContentSettingKey, setting_string);
-      settings->Append(setting_dict);
+      settings->Append(std::move(setting_dict));
     }
   }
   return settings;

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/prerender/prerender_history.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -37,7 +40,8 @@ base::Value* PrerenderHistory::GetEntriesAsValue() const {
        it != entries_.rend();
        ++it) {
     const Entry& entry = *it;
-    base::DictionaryValue* entry_dict = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> entry_dict(
+        new base::DictionaryValue());
     entry_dict->SetString("url", entry.url.spec());
     entry_dict->SetString("final_status",
                           NameFromFinalStatus(entry.final_status));
@@ -47,7 +51,7 @@ base::Value* PrerenderHistory::GetEntriesAsValue() const {
     entry_dict->SetString(
         "end_time",
         base::Int64ToString((entry.end_time - epoch_start).InMilliseconds()));
-    return_list->Append(entry_dict);
+    return_list->Append(std::move(entry_dict));
   }
   return return_list;
 }

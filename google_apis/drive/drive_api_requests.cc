@@ -5,7 +5,6 @@
 #include "google_apis/drive/drive_api_requests.h"
 
 #include <stddef.h>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -417,9 +416,9 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
   if (!parents_.empty()) {
     base::ListValue* parents_value = new base::ListValue;
     for (size_t i = 0; i < parents_.size(); ++i) {
-      base::DictionaryValue* parent = new base::DictionaryValue;
+      std::unique_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
       parent->SetString("id", parents_[i]);
-      parents_value->Append(parent);
+      parents_value->Append(std::move(parent));
     }
     root.Set("parents", parents_value);
   }
@@ -495,9 +494,9 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
   if (!parents_.empty()) {
     base::ListValue* parents_value = new base::ListValue;
     for (size_t i = 0; i < parents_.size(); ++i) {
-      base::DictionaryValue* parent = new base::DictionaryValue;
+      std::unique_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
       parent->SetString("id", parents_[i]);
-      parents_value->Append(parent);
+      parents_value->Append(std::move(parent));
     }
     root.Set("parents", parents_value);
   }
@@ -549,9 +548,9 @@ bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
   if (!parents_.empty()) {
     base::ListValue* parents_value = new base::ListValue;
     for (size_t i = 0; i < parents_.size(); ++i) {
-      base::DictionaryValue* parent = new base::DictionaryValue;
+      std::unique_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
       parent->SetString("id", parents_[i]);
-      parents_value->Append(parent);
+      parents_value->Append(std::move(parent));
     }
     root.Set("parents", parents_value);
   }

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
@@ -40,11 +41,11 @@ void ProxyEventRouter::OnProxyError(
     void* profile,
     int error_code) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean(keys::kProxyEventFatal, true);
   dict->SetString(keys::kProxyEventError, net::ErrorToString(error_code));
   dict->SetString(keys::kProxyEventDetails, std::string());
-  args->Append(dict);
+  args->Append(std::move(dict));
 
   if (profile) {
     event_router->DispatchEventToRenderers(
@@ -63,7 +64,7 @@ void ProxyEventRouter::OnPACScriptError(
     int line_number,
     const base::string16& error) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean(keys::kProxyEventFatal, false);
   dict->SetString(keys::kProxyEventError,
                   net::ErrorToString(net::ERR_PAC_SCRIPT_FAILED));
@@ -76,7 +77,7 @@ void ProxyEventRouter::OnPACScriptError(
     error_msg = base::UTF16ToUTF8(error);
   }
   dict->SetString(keys::kProxyEventDetails, error_msg);
-  args->Append(dict);
+  args->Append(std::move(dict));
 
   if (profile) {
     event_router->DispatchEventToRenderers(

@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/base64.h"
@@ -1007,7 +1008,8 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     if (extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
             .is_empty())
       continue;
-    base::DictionaryValue* extension_info = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> extension_info(
+        new base::DictionaryValue());
     extension_info->Set(
         "startPage",
         new base::StringValue(extensions::chrome_manifest_urls::GetDevToolsPage(
@@ -1017,7 +1019,7 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
                         new base::FundamentalValue(
                             extension->permissions_data()->HasAPIPermission(
                                 extensions::APIPermission::kExperimental)));
-    results.Append(extension_info);
+    results.Append(std::move(extension_info));
   }
   CallClientFunction("DevToolsAPI.addExtensions",
                      &results, NULL, NULL);

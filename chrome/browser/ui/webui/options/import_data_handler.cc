@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -178,7 +178,8 @@ void ImportDataHandler::InitializePage() {
         importer_list_->GetSourceProfileAt(i);
     uint16_t browser_services = source_profile.services_supported;
 
-    base::DictionaryValue* browser_profile = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> browser_profile(
+        new base::DictionaryValue());
     browser_profile->SetString("name", source_profile.importer_name);
     browser_profile->SetInteger("index", i);
     browser_profile->SetBoolean("history",
@@ -192,7 +193,7 @@ void ImportDataHandler::InitializePage() {
     browser_profile->SetBoolean("autofill-form-data",
         (browser_services & importer::AUTOFILL_FORM_DATA) != 0);
 
-    browser_profiles.Append(browser_profile);
+    browser_profiles.Append(std::move(browser_profile));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(

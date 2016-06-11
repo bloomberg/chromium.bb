@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -268,7 +270,8 @@ void PluginMetricsProvider::RecordCurrentState() {
     if (!IsPluginProcess(stats.process_type))
       continue;
 
-    base::DictionaryValue* plugin_dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> plugin_dict(
+        new base::DictionaryValue);
 
     plugin_dict->SetString(prefs::kStabilityPluginName, cache_iter->first);
     plugin_dict->SetInteger(prefs::kStabilityPluginLaunches,
@@ -279,7 +282,7 @@ void PluginMetricsProvider::RecordCurrentState() {
                             stats.instances);
     plugin_dict->SetInteger(prefs::kStabilityPluginLoadingErrors,
                             stats.loading_errors);
-    plugins->Append(plugin_dict);
+    plugins->Append(std::move(plugin_dict));
   }
   child_process_stats_buffer_.clear();
 }

@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -136,10 +139,10 @@ void InstantUIMessageHandler::GetDebugInfo(const base::ListValue* args) {
   base::ListValue* entries = new base::ListValue();
   for (std::list<DebugEvent>::const_iterator it = events.begin();
        it != events.end(); ++it) {
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("time", FormatTime(it->first));
     entry->SetString("text", it->second);
-    entries->Append(entry);
+    entries->Append(std::move(entry));
   }
   data.Set("entries", entries);
 

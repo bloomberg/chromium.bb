@@ -4,6 +4,9 @@
 
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -301,14 +304,14 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("sub", "value");
   list = new base::ListValue();
-  base::DictionaryValue* sub = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> sub(new base::DictionaryValue());
   sub->SetInteger("aaa", 111);
   sub->SetInteger("bbb", 222);
-  list->Append(sub);
-  sub = new base::DictionaryValue();
+  list->Append(std::move(sub));
+  sub.reset(new base::DictionaryValue());
   sub->SetString("ccc", "333");
   sub->SetString("ddd", "444");
-  list->Append(sub);
+  list->Append(std::move(sub));
   dict->Set("sublist", list);
   expected_value.Set("dictionary", dict);
 
@@ -364,10 +367,10 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
 
   base::ListValue* list = new base::ListValue();
   for (int i = 0; i < 2; ++i) {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetInteger("subdictindex", i);
     dict->Set("subdict", policy_dict.DeepCopy());
-    list->Append(dict);
+    list->Append(std::move(dict));
   }
   policy_dict.Set("list", list);
   policy_dict.Set("dict", policy_dict.DeepCopy());

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_internals_ui.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -165,7 +166,8 @@ ListValue* GetRegistrationListValue(
        it != registrations.end();
        ++it) {
     const ServiceWorkerRegistrationInfo& registration = *it;
-    DictionaryValue* registration_info = new DictionaryValue();
+    std::unique_ptr<class base::DictionaryValue> registration_info(
+        new DictionaryValue());
     registration_info->SetString("scope", registration.pattern.spec());
     registration_info->SetString(
         "registration_id", base::Int64ToString(registration.registration_id));
@@ -184,7 +186,7 @@ ListValue* GetRegistrationListValue(
       registration_info->Set("waiting", waiting_info);
     }
 
-    result->Append(registration_info);
+    result->Append(std::move(registration_info));
   }
   return result;
 }

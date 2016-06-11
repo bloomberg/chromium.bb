@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/handler_options_handler.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -89,11 +91,11 @@ static void GetHandlersAsListValue(
     base::ListValue* handler_list) {
   ProtocolHandlerRegistry::ProtocolHandlerList::const_iterator handler;
   for (handler = handlers.begin(); handler != handlers.end(); ++handler) {
-    base::ListValue* handlerValue = new base::ListValue();
+    std::unique_ptr<base::ListValue> handlerValue(new base::ListValue());
     handlerValue->AppendString(handler->protocol());
     handlerValue->AppendString(handler->url().spec());
     handlerValue->AppendString(handler->url().host());
-    handler_list->Append(handlerValue);
+    handler_list->Append(std::move(handlerValue));
   }
 }
 

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -308,14 +309,16 @@ base::Value* PDFiumPage::GetAccessibleContentAsValue(int rotation) {
           line.push_back('-');
         }
 
-        base::DictionaryValue* text_node = new base::DictionaryValue();
+        std::unique_ptr<base::DictionaryValue> text_node(
+            new base::DictionaryValue());
         text_node->SetString(kTextNodeType, kTextNodeTypeText);
         text_node->SetString(kTextNodeText, line);
 
         base::ListValue* text_nodes = new base::ListValue();
-        text_nodes->Append(text_node);
+        text_nodes->Append(std::move(text_node));
 
-        base::DictionaryValue* line_node = new base::DictionaryValue();
+        std::unique_ptr<base::DictionaryValue> line_node(
+            new base::DictionaryValue());
         line_node->SetDouble(kTextBoxLeft, line_rect.x());
         line_node->SetDouble(kTextBoxTop, line_rect.y());
         line_node->SetDouble(kTextBoxWidth, line_rect.width());
@@ -323,7 +326,7 @@ base::Value* PDFiumPage::GetAccessibleContentAsValue(int rotation) {
         line_node->SetDouble(kTextBoxFontSize,
                              FPDFText_GetFontSize(text_page, i));
         line_node->Set(kTextBoxNodes, text_nodes);
-        text->Append(line_node);
+        text->Append(std::move(line_node));
 
         line.clear();
         line_rect = pp::Rect();

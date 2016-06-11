@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -103,12 +104,13 @@ base::ListValue* LanguageOptionsHandler::GetLanguageList() {
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(display_name);
     std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
-    base::DictionaryValue* dictionary = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> dictionary(
+        new base::DictionaryValue());
     dictionary->SetString("code",  pair.first);
     dictionary->SetString("displayName", adjusted_display_name);
     dictionary->SetString("textDirection", directionality);
     dictionary->SetString("nativeDisplayName", adjusted_native_display_name);
-    language_list->Append(dictionary);
+    language_list->Append(std::move(dictionary));
   }
 
   return language_list;

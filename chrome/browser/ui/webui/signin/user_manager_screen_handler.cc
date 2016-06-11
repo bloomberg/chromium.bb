@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
 #include <stddef.h>
+
 #include <utility>
 #include <vector>
 
@@ -889,7 +890,8 @@ void UserManagerScreenHandler::SendUserList() {
     if (entry->IsOmitted())
       continue;
 
-    base::DictionaryValue* profile_value = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> profile_value(
+        new base::DictionaryValue());
     base::FilePath profile_path = entry->GetPath();
 
     profile_value->SetString(kKeyUsername, entry->GetUserName());
@@ -930,7 +932,7 @@ void UserManagerScreenHandler::SendUserList() {
         g_browser_process->profile_manager()->GetProfileByPath(profile_path);
     profile_value->SetBoolean(kKeyIsProfileLoaded, profile != nullptr);
 
-    users_list.Append(profile_value);
+    users_list.Append(std::move(profile_value));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(

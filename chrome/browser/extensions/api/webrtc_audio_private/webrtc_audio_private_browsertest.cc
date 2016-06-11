@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -90,9 +93,10 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
 
  protected:
   void AppendTabIdToRequestInfo(base::ListValue* params, int tab_id) {
-    base::DictionaryValue* request_info = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> request_info(
+        new base::DictionaryValue());
     request_info->SetInteger("tabId", tab_id);
-    params->Append(request_info);
+    params->Append(std::move(request_info));
   }
 
   std::string InvokeGetActiveSink(int tab_id) {

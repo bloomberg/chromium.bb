@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_writer.h"
@@ -72,7 +73,8 @@ std::string BuildGetFamilyMembersResponse(
   base::ListValue* list = new base::ListValue;
   for (size_t i = 0; i < members.size(); i++) {
     const FamilyInfoFetcher::FamilyMember& member = members[i];
-    base::DictionaryValue* member_dict = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> member_dict(
+        new base::DictionaryValue);
     member_dict->SetStringWithoutPathExpansion("userId",
                                                member.obfuscated_gaia_id);
     member_dict->SetStringWithoutPathExpansion(
@@ -97,7 +99,7 @@ std::string BuildGetFamilyMembersResponse(
 
       member_dict->SetWithoutPathExpansion("profile", profile_dict);
     }
-    list->Append(member_dict);
+    list->Append(std::move(member_dict));
   }
   dict.SetWithoutPathExpansion("members", list);
   std::string result;

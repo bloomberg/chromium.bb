@@ -4,6 +4,9 @@
 
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -911,11 +914,11 @@ void GpuDataManagerImplPrivate::ProcessCrashed(
 base::ListValue* GpuDataManagerImplPrivate::GetLogMessages() const {
   base::ListValue* value = new base::ListValue;
   for (size_t ii = 0; ii < log_messages_.size(); ++ii) {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetInteger("level", log_messages_[ii].level);
     dict->SetString("header", log_messages_[ii].header);
     dict->SetString("message", log_messages_[ii].message);
-    value->Append(dict);
+    value->Append(std::move(dict));
   }
   return value;
 }

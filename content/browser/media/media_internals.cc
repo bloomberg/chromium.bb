@@ -5,6 +5,8 @@
 #include "content/browser/media/media_internals.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -611,7 +613,8 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     for (const auto& format : video_capture_device_info.supported_formats)
       format_list->AppendString(media::VideoCaptureFormat::ToString(format));
 
-    base::DictionaryValue* device_dict = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> device_dict(
+        new base::DictionaryValue());
     device_dict->SetString("id", video_capture_device_info.name.id());
     device_dict->SetString(
         "name", video_capture_device_info.name.GetNameAndModel());
@@ -621,7 +624,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     device_dict->SetString(
         "captureApi", video_capture_device_info.name.GetCaptureApiTypeString());
 #endif
-    video_capture_capabilities_cached_data_.Append(device_dict);
+    video_capture_capabilities_cached_data_.Append(std::move(device_dict));
   }
 
   SendVideoCaptureDeviceCapabilities();

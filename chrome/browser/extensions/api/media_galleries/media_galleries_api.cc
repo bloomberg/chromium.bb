@@ -711,14 +711,15 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
 
   metadata::AttachedImage* current_image =
       &(*attached_images)[blob_uuids->size()];
-  base::DictionaryValue* attached_image = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> attached_image(
+      new base::DictionaryValue);
   attached_image->Set(kBlobUUIDKey, new base::StringValue(
       current_blob->GetUUID()));
   attached_image->Set(kTypeKey, new base::StringValue(
       current_image->type));
   attached_image->Set(kSizeKey, new base::FundamentalValue(
       base::checked_cast<int>(current_image->data.size())));
-  attached_images_list->Append(attached_image);
+  attached_images_list->Append(std::move(attached_image));
 
   blob_uuids->push_back(current_blob->GetUUID());
   extensions::BlobHolder* holder =

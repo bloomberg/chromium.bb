@@ -628,9 +628,9 @@ static base::ListValue* CreatePermissionList(const T& permissions) {
       i != permissions.end(); ++i) {
     std::unique_ptr<base::Value> detail(i->ToValue());
     if (detail) {
-      base::DictionaryValue* tmp = new base::DictionaryValue();
+      std::unique_ptr<base::DictionaryValue> tmp(new base::DictionaryValue());
       tmp->Set(i->name(), detail.release());
-      values->Append(tmp);
+      values->Append(std::move(tmp));
     } else {
       values->AppendString(i->name());
     }

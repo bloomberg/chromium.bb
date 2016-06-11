@@ -4,6 +4,9 @@
 
 #include "components/flags_ui/flags_state.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -163,12 +166,12 @@ base::Value* CreateChoiceData(const FeatureEntry& entry,
          entry.type == FeatureEntry::FEATURE_VALUE);
   base::ListValue* result = new base::ListValue;
   for (int i = 0; i < entry.num_choices; ++i) {
-    base::DictionaryValue* value = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
     const std::string name = entry.NameForChoice(i);
     value->SetString("internal_name", name);
     value->SetString("description", entry.DescriptionForChoice(i));
     value->SetBoolean("selected", enabled_entries.count(name) > 0);
-    result->Append(value);
+    result->Append(std::move(value));
   }
   return result;
 }
