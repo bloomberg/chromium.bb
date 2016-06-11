@@ -68341,6 +68341,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="15" label="Failed to encrypt with cryptohome TPM key"/>
   <int value="16" label="TSS communication error"/>
   <int value="17" label="TSS invalid handle"/>
+  <int value="18" label="Keyset wrapped both by TPM and Scrypt"/>
 </enum>
 
 <enum name="CryptohomeMigrationToGaiaId" type="int">
