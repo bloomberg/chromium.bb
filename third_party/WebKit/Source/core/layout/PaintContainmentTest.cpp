@@ -11,6 +11,12 @@
 namespace blink {
 
 class PaintContainmentTest : public RenderingTest {
+private:
+    void SetUp() override
+    {
+        RenderingTest::SetUp();
+        enableCompositing();
+    }
 };
 
 static void checkIsClippingStackingContextAndContainer(LayoutBoxModelObject& obj)
@@ -49,6 +55,14 @@ TEST_F(PaintContainmentTest, InlinePaintContainment)
     ASSERT(obj && obj->isLayoutBlock());
     LayoutBlock& layoutBlock = toLayoutBlock(*obj);
     checkIsClippingStackingContextAndContainer(layoutBlock);
+}
+
+TEST_F(PaintContainmentTest, SvgWithContainmentShouldNotCrash)
+{
+    // SVG doesn't currently support PaintLayers and should not crash with layer-related properties.
+    setBodyInnerHTML("<svg><text y='20' style='contain: paint'>Foo</text></svg>");
+    setBodyInnerHTML("<svg><foreignObject style='contain: paint'>Foo</foreignObject></svg>");
+    setBodyInnerHTML("<svg><foreignObject><span style='contain: paint'>Foo</span></foreignObject></svg>");
 }
 
 } // namespace blink
