@@ -237,6 +237,8 @@ TEST_F(TextureManagerTest, SetParameter) {
   SetParameter(texture_ref, GL_TEXTURE_WRAP_T, GL_NEAREST, GL_INVALID_ENUM);
   EXPECT_EQ(static_cast<GLenum>(GL_CLAMP_TO_EDGE), texture->wrap_t());
   SetParameter(texture_ref, GL_TEXTURE_MAX_ANISOTROPY_EXT, 0, GL_INVALID_VALUE);
+  SetParameter(texture_ref, GL_TEXTURE_IMMUTABLE_FORMAT, 0, GL_INVALID_ENUM);
+  SetParameter(texture_ref, GL_TEXTURE_IMMUTABLE_LEVELS, 0, GL_INVALID_ENUM);
 }
 
 TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {

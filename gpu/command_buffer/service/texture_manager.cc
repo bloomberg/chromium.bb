@@ -1213,6 +1213,9 @@ GLenum Texture::SetParameteri(
       }
       swizzle_a_ = param;
       break;
+    case GL_TEXTURE_IMMUTABLE_FORMAT:
+    case GL_TEXTURE_IMMUTABLE_LEVELS:
+      return GL_INVALID_ENUM;
     default:
       NOTREACHED();
       return GL_INVALID_ENUM;
@@ -1251,6 +1254,9 @@ GLenum Texture::SetParameterf(
         return GL_INVALID_VALUE;
       }
       break;
+    case GL_TEXTURE_IMMUTABLE_FORMAT:
+    case GL_TEXTURE_IMMUTABLE_LEVELS:
+      return GL_INVALID_ENUM;
     default:
       NOTREACHED();
       return GL_INVALID_ENUM;
