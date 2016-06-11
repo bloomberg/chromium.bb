@@ -20,8 +20,8 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  * as a dynamic resource.
  */
 public class ContextualSearchCaptionControl extends OverlayPanelInflater {
-    private static final float CAPTION_OPACITY_OPAQUE = 1.f;
-    private static final float CAPTION_OPACITY_TRANSPARENT = 0.f;
+    private static final float ANIMATION_PERCENTAGE_ZERO = 0.f;
+    private static final float ANIMATION_PERCENTAGE_COMPLETE = 1.f;
 
     /**
      * The caption View.
@@ -34,9 +34,14 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
     private boolean mIsVisible;
 
     /**
-     * The caption opacity.
+     * The caption animation percentage, which controls how and where to draw.
      */
-    private float mOpacity;
+    private float mAnimationPercentage;
+
+    /**
+     * Whether a new snapshot has been captured by the system yet.
+     */
+    private boolean mDidCapture;
 
     /**
      * @param panel             The panel.
@@ -56,6 +61,8 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
      *        e.g. a Quick Answer.
      */
     public void setCaption(String caption) {
+        mDidCapture = false;
+
         inflate();
 
         mCaption.setText(sanitizeText(caption));
@@ -69,10 +76,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
      */
     public void hide() {
         mIsVisible = false;
-        mOpacity = CAPTION_OPACITY_TRANSPARENT;
-
-        // Snapshot the transparent caption.
-        invalidate();
+        mAnimationPercentage = ANIMATION_PERCENTAGE_ZERO;
     }
 
     /**
@@ -80,18 +84,34 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
      */
     private void show() {
         mIsVisible = true;
-        // When the Panel is in transition it will get the right opacity during the
-        // state transition update.
+        // When the Panel is in transition it will get the right animation percentage during the
+        // state-transition update.
         if (mOverlayPanel.isPeeking()) {
-            mOpacity = CAPTION_OPACITY_OPAQUE;
+            mAnimationPercentage = ANIMATION_PERCENTAGE_COMPLETE;
         }
     }
 
     /**
-     * @return The current opacity of the Caption.
+     * Controls whether the caption is visible and can be rendered.
+     * The caption must be visible in order to draw it and take a snapshot.
+     * Even though the caption is visible the user might not be able to see it due to a
+     * completely transparent opacity associated with an animation percentage of zero.
+     * @return Whether the caption is visible or not.
      */
-    public float getOpacity() {
-        return mOpacity;
+    public boolean getIsVisible() {
+        return mIsVisible;
+    }
+
+    /**
+     * Gets the animation percentage which controls the drawing of the caption and how high to
+     * position it in the Bar.
+     * @return The current percentage ranging from 0.0 to 1.0.
+     */
+    public float getAnimationPercentage() {
+        // If we don't yet have a snapshot captured, stay at zero.  See crbug.com/608914.
+        if (!mDidCapture) return ANIMATION_PERCENTAGE_ZERO;
+
+        return mAnimationPercentage;
     }
 
     /**
@@ -101,7 +121,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
     public void onUpdateFromCloseToPeek(float percentage) {
         if (!mIsVisible) return;
 
-        mOpacity = CAPTION_OPACITY_OPAQUE;
+        mAnimationPercentage = ANIMATION_PERCENTAGE_COMPLETE;
     }
 
     /**
@@ -112,10 +132,8 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
         if (!mIsVisible) return;
 
         float fadingOutPercentage = Math.max(0f, (percentage - 0.5f) * 2);
-        mOpacity = MathUtils.interpolate(
-                CAPTION_OPACITY_OPAQUE,
-                CAPTION_OPACITY_TRANSPARENT,
-                fadingOutPercentage);
+        mAnimationPercentage = MathUtils.interpolate(
+                ANIMATION_PERCENTAGE_COMPLETE, ANIMATION_PERCENTAGE_ZERO, fadingOutPercentage);
     }
 
     /**
@@ -125,7 +143,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
     public void onUpdateFromExpandToMaximize(float percentage) {
         if (!mIsVisible) return;
 
-        mOpacity = CAPTION_OPACITY_TRANSPARENT;
+        mAnimationPercentage = ANIMATION_PERCENTAGE_ZERO;
     }
 
     @Override
@@ -134,5 +152,11 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
 
         View view = getView();
         mCaption = (TextView) view.findViewById(R.id.contextual_search_caption);
+    }
+
+    @Override
+    protected void onCaptureEnd() {
+        super.onCaptureEnd();
+        mDidCapture = true;
     }
 }

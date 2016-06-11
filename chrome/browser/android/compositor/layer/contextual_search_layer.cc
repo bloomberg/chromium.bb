@@ -95,7 +95,8 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_height,
     float search_context_opacity,
     float search_term_opacity,
-    float search_caption_opacity,
+    float search_caption_animation_percentage,
+    bool search_caption_visible,
     bool search_bar_border_visible,
     float search_bar_border_height,
     bool search_bar_shadow_visible,
@@ -275,14 +276,20 @@ void ContextualSearchLayer::SetProperties(
   // -----------------------------------------------------------------
   // Search Caption Text
   // -----------------------------------------------------------------
-  if (search_caption_opacity != 0.f && search_caption_.get()) {
+  // We don't want to load the resource if it won't ever be used, and since
+  // captions are still rare, we only load if visible.
+  ui::ResourceManager::Resource* search_caption_resource = nullptr;
+  if (search_caption_visible) {
+    // Grabs the dynamic Search Caption resource so we can get a snapshot.
+    search_caption_resource = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, search_caption_resource_id);
+  }
+  // Once a valid snapshot is available, the caller will set the animation
+  // percentage so the caption can actually be seen by the user.
+  if (search_caption_animation_percentage != 0.f && search_caption_.get()) {
     if (search_caption_->parent() != text_container_) {
       AddBarTextLayer(search_caption_);
     }
-    // Grabs the dynamic Search Caption resource.
-    ui::ResourceManager::Resource* search_caption_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                       search_caption_resource_id);
     if (search_caption_resource) {
         // Calculate position of the Caption, and the main bar text.
         // Without a caption the bar text is not moved from it's default
@@ -298,8 +305,9 @@ void ContextualSearchLayer::SetProperties(
         // Get the current centered position set up by the OverlayPanelLayer.
         float bar_text_top_centered = bar_text_->position().y();
         float bar_text_adjust = search_caption_height + text_margin;
-        float bar_text_top = bar_text_top_centered -
-                                bar_text_adjust * search_caption_opacity / 2;
+        float bar_text_top =
+            bar_text_top_centered -
+            bar_text_adjust * search_caption_animation_percentage / 2;
         // Move the main bar text up.
         bar_text_->SetPosition(gfx::PointF(0.f, bar_text_top));
         // Add the caption
@@ -307,7 +315,7 @@ void ContextualSearchLayer::SetProperties(
             search_caption_resource->ui_resource->id());
         search_caption_->SetBounds(search_caption_resource->size);
         search_caption_->SetPosition(gfx::PointF(0.f, search_caption_top));
-        search_caption_->SetOpacity(search_caption_opacity);
+        search_caption_->SetOpacity(search_caption_animation_percentage);
     }
   } else if (search_caption_.get() && search_caption_->parent()) {
     search_caption_->RemoveFromParent();

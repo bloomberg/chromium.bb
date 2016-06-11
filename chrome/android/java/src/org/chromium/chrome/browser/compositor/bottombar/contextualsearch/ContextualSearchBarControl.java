@@ -130,7 +130,7 @@ public class ContextualSearchBarControl
     }
 
     /**
-     * Sets the caption to display in the control and shows the caption.
+     * Sets the caption to display in the control and sets the caption visible.
      * @param caption The caption to display.
      */
     public void setCaption(String caption) {
@@ -138,10 +138,20 @@ public class ContextualSearchBarControl
     }
 
     /**
-     * @return The current opacity of the Caption control.
+     * Gets the current animation percentage for the Caption control, which guides the vertical
+     * position and opacity of the caption.
+     * @return The animation percentage ranging from 0.0 to 1.0.
+     *
      */
-    public float getCaptionOpacity() {
-        return mCaptionControl.getOpacity();
+    public float getCaptionAnimationPercentage() {
+        return mCaptionControl.getAnimationPercentage();
+    }
+
+    /**
+     * @return Whether the caption control is visible.
+     */
+    public boolean getCaptionVisible() {
+        return mCaptionControl.getIsVisible();
     }
 
     /**

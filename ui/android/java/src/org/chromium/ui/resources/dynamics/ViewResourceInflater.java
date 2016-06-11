@@ -18,13 +18,16 @@ import android.view.ViewTreeObserver;
  *
  * By default, the View is inflated without being attached to the hierarchy, which allows
  * subclasses to read/modify the View "offscreen", via the method {@link #onFinishInflate()}.
- * Only when a new snapshot of the View is required, which happens when the method
- * {@link #invalidate()} is called, and the View is automatically detached from the
- * hierarchy after the snapshot is captured.
+ * When a new snapshot of the View is required, which is triggered when the method
+ * {@link #invalidate()} is called, the View is drawn and automatically detached from the
+ * hierarchy after the snapshot has been captured.  View drawing and capturing is done async,
+ * so when calling {@link #invalidate()} the caller may want to wait until onCaptureEnd has been
+ * called to make sure a new snapshot has been captured in cases where rendering an older snapshot
+ * for a frame or two would be problematic.  This can be done by overriding onCaptureEnd.
  *
  * There's also an option to not attach to the hierarchy at all, by overriding the method
- * {@link #shouldAttachView()} and making it return false (the default is yes). In this case
- * the changes to the View will always be "offscreen". By default, an unspecified value of
+ * {@link #shouldAttachView()} and making it return false (the default is true). In this case
+ * the changes to the View will always be "offscreen". By default an unspecified value of
  * {@link View.MeasureSpec} will be used to determine the width and height of the View.
  * It's possible to specify custom size constraints by overriding the methods
  * {@link #getWidthMeasureSpec()} and {@link #getHeightMeasureSpec()}.
@@ -402,26 +405,20 @@ public class ViewResourceInflater {
     /**
      * Called when a snapshot is captured.
      */
-    private void onCaptureEnd() {
+    protected void onCaptureEnd() {
         if (shouldDetachViewAfterCapturing()) {
             detachView();
         }
     }
 
     /**
-     * A custom {@link ViewTreeObserver.OnDrawListener} that calls the method {@link #onDraw()}.
+     * A custom {@link ViewTreeObserver.OnDrawListener} that invalidates the resource when
+     * the view is drawn.
      */
     private class ViewInflaterOnDrawListener implements ViewTreeObserver.OnDrawListener {
         @Override
         public void onDraw() {
-            ViewResourceInflater.this.onDraw();
+            invalidateResource();
         }
-    }
-
-    /**
-     * Called when the View is drawn,
-     */
-    private void onDraw() {
-        invalidateResource();
     }
 }
