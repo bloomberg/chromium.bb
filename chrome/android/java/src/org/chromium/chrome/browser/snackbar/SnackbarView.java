@@ -15,6 +15,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.CoordinatorLayout.Behavior;
 import android.support.design.widget.CoordinatorLayout.LayoutParams;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -25,6 +26,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -48,6 +50,7 @@ class SnackbarView {
     private final ImageView mProfileImageView;
     private final int mAnimationDuration;
     private final boolean mIsTablet;
+    private ViewGroup mOriginalParent;
     private ViewGroup mParent;
     private Snackbar mSnackbar;
 
@@ -100,7 +103,8 @@ class SnackbarView {
     SnackbarView(Activity activity, OnClickListener listener, Snackbar snackbar) {
         mActivity = activity;
         mIsTablet = DeviceFormFactor.isTablet(activity);
-        mParent = findParentView(activity);
+        mOriginalParent = findParentView(activity);
+        mParent = mOriginalParent;
         mView = (ViewGroup) LayoutInflater.from(activity).inflate(
                 R.layout.snackbar, mParent, false);
         mAnimationDuration = mView.getResources()
@@ -114,16 +118,7 @@ class SnackbarView {
     }
 
     void show() {
-        if (mParent instanceof CoordinatorLayout) {
-            CoordinatorLayout.LayoutParams lp = (LayoutParams) mView.getLayoutParams();
-            lp.setBehavior(mBehavior);
-            mParent.addView(mView, lp);
-        } else {
-            mParent.addView(mView);
-        }
-        adjustViewPosition();
-        mView.getViewTreeObserver().addOnGlobalLayoutListener(mLayoutListener);
-
+        addToParent();
         mView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
@@ -187,6 +182,18 @@ class SnackbarView {
         }
     }
 
+    /**
+     * @see SnackbarManager#overrideParent(ViewGroup)
+     */
+    void overrideParent(ViewGroup overridingParent) {
+        mParent = overridingParent == null ? mOriginalParent : overridingParent;
+        if (isShowing()) {
+            mView.getViewTreeObserver().removeOnGlobalLayoutListener(mLayoutListener);
+            ((ViewGroup) mView.getParent()).removeView(mView);
+        }
+        addToParent();
+    }
+
     boolean isShowing() {
         return mView.isShown();
     }
@@ -208,6 +215,24 @@ class SnackbarView {
      */
     boolean update(Snackbar snackbar) {
         return updateInternal(snackbar, true);
+    }
+
+    private void addToParent() {
+        // LayoutParams in CoordinatorLayout and FrameLayout cannot be used interchangeably. Thus
+        // we create new LayoutParams every time.
+        if (mParent instanceof CoordinatorLayout) {
+            CoordinatorLayout.LayoutParams lp = new LayoutParams(getLayoutParams());
+            lp.gravity = Gravity.BOTTOM | Gravity.START;
+            lp.setBehavior(mBehavior);
+            mParent.addView(mView, lp);
+        } else if (mParent instanceof FrameLayout) {
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(getLayoutParams());
+            lp.gravity = Gravity.BOTTOM | Gravity.START;
+            mParent.addView(mView, lp);
+        } else {
+            assert false : "Only FrameLayout and CoordinatorLayout are supported to show snackbars";
+        }
+        mView.getViewTreeObserver().addOnGlobalLayoutListener(mLayoutListener);
     }
 
     private boolean updateInternal(Snackbar snackbar, boolean animate) {

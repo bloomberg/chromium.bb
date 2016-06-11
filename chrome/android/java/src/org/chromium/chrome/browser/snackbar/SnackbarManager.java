@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -143,6 +144,19 @@ public class SnackbarManager implements OnClickListener {
     public void onClick(View v) {
         mSnackbars.removeCurrentDueToAction();
         updateView();
+    }
+
+    /**
+     * Temporarily changes the parent {@link ViewGroup} of the snackbar. If a snackbar is currently
+     * showing, this method removes the snackbar from its original parent, and attaches it to the
+     * given parent. If <code>null</code> is given, the snackbar will be reattached to its original
+     * parent.
+     *
+     * @param overridingParent The temporary parent of the snackbar. If null, previous calls of this
+     *                         method will be reverted.
+     */
+    public void overrideParent(ViewGroup overridingParent) {
+        if (mView != null) mView.overrideParent(overridingParent);
     }
 
     /**

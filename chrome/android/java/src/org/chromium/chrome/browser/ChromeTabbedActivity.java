@@ -519,7 +519,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (isTablet()) {
                 EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
                         getTabModelSelector(), getTabCreator(false), ChromeTabbedActivity.this,
-                        getAppMenuHandler(), mLayoutManager);
+                        getAppMenuHandler(), getSnackbarManager(), mLayoutManager);
                 bgViewWrapper.initialize();
             }
 
