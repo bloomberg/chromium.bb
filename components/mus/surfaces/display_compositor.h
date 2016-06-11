@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_SURFACES_DISPLAY_COMPOSITOR_H_
 #define COMPONENTS_MUS_SURFACES_DISPLAY_COMPOSITOR_H_
 
+#include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -13,16 +14,19 @@
 #include "components/mus/surfaces/surfaces_state.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace mus {
+namespace cc {
+class Display;
+}
 
-class TopLevelDisplayClient;
+namespace mus {
 
 // TODO(fsamuel): This should become a mojo interface for the mus-gpu split.
 // TODO(fsamuel): This should not be a SurfaceFactoryClient.
 // The DisplayCompositor receives CompositorFrames from all sources,
 // creates a top-level CompositorFrame once per tick, and generates graphical
 // output.
-class DisplayCompositor : public cc::SurfaceFactoryClient {
+class DisplayCompositor : public cc::SurfaceFactoryClient,
+                          public cc::DisplayClient {
  public:
   DisplayCompositor(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                     gfx::AcceleratedWidget widget,
@@ -56,6 +60,10 @@ class DisplayCompositor : public cc::SurfaceFactoryClient {
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
+  // DisplayClient implementation.
+  void DisplayOutputSurfaceLost() override;
+  void DisplaySetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SurfacesState> surfaces_state_;
   cc::SurfaceFactory factory_;
@@ -63,7 +71,7 @@ class DisplayCompositor : public cc::SurfaceFactoryClient {
   cc::SurfaceId surface_id_;
 
   gfx::Size display_size_;
-  std::unique_ptr<TopLevelDisplayClient> display_client_;
+  std::unique_ptr<cc::Display> display_;
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
 };
 

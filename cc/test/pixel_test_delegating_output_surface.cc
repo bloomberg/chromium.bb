@@ -32,18 +32,14 @@ PixelTestDelegatingOutputSurface::PixelTestDelegatingOutputSurface(
     : OutputSurface(std::move(compositor_context_provider),
                     std::move(worker_context_provider),
                     nullptr),
+      shared_bitmap_manager_(shared_bitmap_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       allow_force_reclaim_resources_(allow_force_reclaim_resources),
       synchronous_composite_(synchronous_composite),
       surface_manager_(new SurfaceManager),
       surface_id_allocator_(
           new SurfaceIdAllocator(kCompositorSurfaceNamespace)),
       surface_factory_(new SurfaceFactory(surface_manager_.get(), this)),
-      display_(new Display(&display_client_,
-                           surface_manager_.get(),
-                           shared_bitmap_manager,
-                           gpu_memory_buffer_manager,
-                           RendererSettings(),
-                           surface_id_allocator_->id_namespace())),
       weak_ptrs_(this) {
   capabilities_.delegated_rendering = true;
   capabilities_.can_force_reclaim_resources = allow_force_reclaim_resources_;
@@ -85,15 +81,20 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   CHECK(task_runner);
 
+  display_.reset(new Display(surface_manager_.get(), shared_bitmap_manager_,
+                             gpu_memory_buffer_manager_, RendererSettings(),
+                             surface_id_allocator_->id_namespace(), task_runner,
+                             std::move(output_surface)));
+  display_->SetEnlargePassTextureAmountForTesting(enlarge_pass_texture_amount_);
+
   if (synchronous_composite_) {
-    bool init =
-        display_->InitializeSynchronous(std::move(output_surface), task_runner);
+    bool init = display_->InitializeSynchronous(&display_client_);
     CHECK(init);
   } else {
     begin_frame_source_.reset(new BackToBackBeginFrameSource(task_runner));
     display_->SetBeginFrameSource(begin_frame_source_.get());
 
-    bool init = display_->Initialize(std::move(output_surface), task_runner);
+    bool init = display_->Initialize(&display_client_);
     CHECK(init);
   }
 
@@ -139,6 +140,12 @@ void PixelTestDelegatingOutputSurface::SwapBuffers(CompositorFrame* frame) {
     display_->DrawAndSwap();
 }
 
+void PixelTestDelegatingOutputSurface::SetEnlargePassTextureAmount(
+    const gfx::Size& amount) {
+  DCHECK(!HasClient());
+  enlarge_pass_texture_amount_ = amount;
+}
+
 void PixelTestDelegatingOutputSurface::DrawCallback(SurfaceDrawStatus) {
   client_->DidSwapBuffersComplete();
 }
@@ -160,11 +167,6 @@ void PixelTestDelegatingOutputSurface::ReturnResources(
 void PixelTestDelegatingOutputSurface::SetBeginFrameSource(
     BeginFrameSource* begin_frame_source) {
   client_->SetBeginFrameSource(begin_frame_source);
-}
-
-void PixelTestDelegatingOutputSurface::SetEnlargePassTextureAmount(
-    const gfx::Size& amount) {
-  display_->SetEnlargePassTextureAmountForTesting(amount);
 }
 
 }  // namespace cc

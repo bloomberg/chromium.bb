@@ -103,13 +103,10 @@ class DisplayTest : public testing::Test {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
 };
 
-class TestDisplayClient : public DisplayClient {
+class StubDisplayClient : public DisplayClient {
  public:
-  TestDisplayClient() {}
-  ~TestDisplayClient() override {}
-
-  void OutputSurfaceLost() override {}
-  void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override {}
+  void DisplayOutputSurfaceLost() override {}
+  void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override {}
 };
 
 class TestDisplayScheduler : public DisplayScheduler {
@@ -155,28 +152,34 @@ class TestDisplayScheduler : public DisplayScheduler {
 
 class TestDisplay : public Display {
  public:
-  TestDisplay(DisplayClient* client,
-              SurfaceManager* manager,
+  TestDisplay(SurfaceManager* manager,
               SharedBitmapManager* bitmap_manager,
               gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
               const RendererSettings& settings,
-              uint32_t compositor_surface_namespace)
-      : Display(client,
-                manager,
+              uint32_t compositor_surface_namespace,
+              base::SingleThreadTaskRunner* task_runner,
+              std::unique_ptr<OutputSurface> output_surface)
+      : Display(manager,
                 bitmap_manager,
                 gpu_memory_buffer_manager,
                 settings,
-                compositor_surface_namespace) {}
+                compositor_surface_namespace,
+                task_runner,
+                std::move(output_surface)),
+        task_runner_(task_runner) {}
 
   TestDisplayScheduler& scheduler() {
     return *static_cast<TestDisplayScheduler*>(scheduler_.get());
   }
 
  protected:
-  void CreateScheduler(base::SingleThreadTaskRunner* task_runner) override {
-    scheduler_.reset(
-        new TestDisplayScheduler(this, vsync_begin_frame_source_, task_runner));
+  void CreateScheduler() override {
+    scheduler_.reset(new TestDisplayScheduler(this, vsync_begin_frame_source_,
+                                              task_runner_));
   }
+
+ private:
+  base::SingleThreadTaskRunner* task_runner_;
 };
 
 void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
@@ -186,13 +189,14 @@ void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
 // Check that frame is damaged and swapped only under correct conditions.
 TEST_F(DisplayTest, DisplayDamaged) {
   SetUpContext(nullptr);
-  TestDisplayClient client;
+  StubDisplayClient client;
   RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
-  TestDisplay display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
-                      settings, id_allocator_.id_namespace());
-  display.Initialize(std::move(output_surface_), task_runner_.get());
+  TestDisplay display(&manager_, shared_bitmap_manager_.get(), nullptr,
+                      settings, id_allocator_.id_namespace(),
+                      task_runner_.get(), std::move(output_surface_));
+  display.Initialize(&client);
   TestDisplayScheduler& scheduler = display.scheduler();
 
   SurfaceId surface_id(id_allocator_.GenerateId());
@@ -453,13 +457,14 @@ TEST_F(DisplayTest, Finish) {
 
   SurfaceId surface_id(id_allocator_.GenerateId());
 
-  TestDisplayClient client;
+  StubDisplayClient client;
   RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
-  TestDisplay display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
-                      settings, surface_id.id_namespace());
-  display.Initialize(std::move(output_surface_), task_runner_.get());
+  TestDisplay display(&manager_, shared_bitmap_manager_.get(), nullptr,
+                      settings, surface_id.id_namespace(), task_runner_.get(),
+                      std::move(output_surface_));
+  display.Initialize(&client);
 
   display.SetSurfaceId(surface_id, 1.f);
 

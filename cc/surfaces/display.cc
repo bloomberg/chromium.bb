@@ -15,7 +15,6 @@
 #include "cc/output/gl_renderer.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_renderer.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
@@ -42,22 +41,21 @@ class EmptyBeginFrameSource : public cc::BeginFrameSource {
 
 namespace cc {
 
-Display::Display(DisplayClient* client,
-                 SurfaceManager* manager,
+Display::Display(SurfaceManager* manager,
                  SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
-                 uint32_t compositor_surface_namespace)
-    : client_(client),
-      surface_manager_(manager),
+                 uint32_t compositor_surface_namespace,
+                 base::SingleThreadTaskRunner* task_runner,
+                 std::unique_ptr<OutputSurface> output_surface)
+    : surface_manager_(manager),
       bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       compositor_surface_namespace_(compositor_surface_namespace),
-      device_scale_factor_(1.f),
-      swapped_since_resize_(false),
-      vsync_begin_frame_source_(nullptr),
-      observed_begin_frame_source_(nullptr) {
+      task_runner_(task_runner),
+      output_surface_(std::move(output_surface)),
+      texture_mailbox_deleter_(task_runner) {
   surface_manager_->AddObserver(this);
 }
 
@@ -74,9 +72,9 @@ Display::~Display() {
   }
 }
 
-void Display::CreateScheduler(base::SingleThreadTaskRunner* task_runner) {
+void Display::CreateScheduler() {
   DCHECK(!scheduler_);
-  if (!task_runner) {
+  if (!task_runner_) {
     // WebView doesn't have a task runner or a real begin frame source,
     // so just create something fake here.
     internal_begin_frame_source_.reset(new EmptyBeginFrameSource());
@@ -88,37 +86,30 @@ void Display::CreateScheduler(base::SingleThreadTaskRunner* task_runner) {
     observed_begin_frame_source_ = vsync_begin_frame_source_;
     if (settings_.disable_display_vsync) {
       internal_begin_frame_source_.reset(
-          new BackToBackBeginFrameSource(task_runner));
+          new BackToBackBeginFrameSource(task_runner_));
       observed_begin_frame_source_ = internal_begin_frame_source_.get();
     }
   }
 
   scheduler_.reset(
-      new DisplayScheduler(this, observed_begin_frame_source_, task_runner,
+      new DisplayScheduler(this, observed_begin_frame_source_, task_runner_,
                            output_surface_->capabilities().max_frames_pending));
   surface_manager_->RegisterBeginFrameSource(observed_begin_frame_source_,
                                              compositor_surface_namespace_);
 }
 
-bool Display::Initialize(std::unique_ptr<OutputSurface> output_surface,
-                         base::SingleThreadTaskRunner* task_runner) {
-  DCHECK(!output_surface_);
-  output_surface_ = std::move(output_surface);
+bool Display::Initialize(DisplayClient* client) {
+  client_ = client;
   if (!output_surface_->BindToClient(this))
     return false;
-  texture_mailbox_deleter_.reset(new TextureMailboxDeleter(task_runner));
-  CreateScheduler(task_runner);
+  CreateScheduler();
   return true;
 }
 
-bool Display::InitializeSynchronous(
-    std::unique_ptr<OutputSurface> output_surface,
-    base::SingleThreadTaskRunner* task_runner) {
-  DCHECK(!output_surface_);
-  output_surface_ = std::move(output_surface);
+bool Display::InitializeSynchronous(DisplayClient* client) {
+  client_ = client;
   if (!output_surface_->BindToClient(this))
     return false;
-  texture_mailbox_deleter_.reset(new TextureMailboxDeleter(task_runner));
   // No scheduler created here.
   return true;
 }
@@ -191,7 +182,7 @@ void Display::InitializeRenderer() {
   if (output_surface_->context_provider()) {
     std::unique_ptr<GLRenderer> renderer = GLRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
-        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
+        &texture_mailbox_deleter_, settings_.highp_threshold_min);
     if (!renderer)
       return;
     renderer_ = std::move(renderer);
@@ -199,7 +190,7 @@ void Display::InitializeRenderer() {
 #if defined(ENABLE_VULKAN)
     std::unique_ptr<VulkanRenderer> renderer = VulkanRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
-        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
+        &texture_mailbox_deleter_, settings_.highp_threshold_min);
     if (!renderer)
       return;
     renderer_ = std::move(renderer);
@@ -232,7 +223,7 @@ void Display::DidLoseOutputSurface() {
     scheduler_->OutputSurfaceLost();
   // WARNING: The client may delete the Display in this method call. Do not
   // make any additional references to members after this call.
-  client_->OutputSurfaceLost();
+  client_->DisplayOutputSurfaceLost();
 }
 
 void Display::UpdateRootSurfaceResourcesLocked() {
@@ -376,7 +367,7 @@ void Display::SetBeginFrameSource(BeginFrameSource* source) {
 }
 
 void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
-  client_->SetMemoryPolicy(policy);
+  client_->DisplaySetMemoryPolicy(policy);
 }
 
 void Display::OnDraw(const gfx::Transform& transform,

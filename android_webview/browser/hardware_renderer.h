@@ -42,8 +42,8 @@ class HardwareRenderer : public cc::DisplayClient,
 
  private:
   // cc::DisplayClient overrides.
-  void OutputSurfaceLost() override {}
-  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
+  void DisplayOutputSurfaceLost() override {}
+  void DisplaySetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;

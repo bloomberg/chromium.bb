@@ -10,7 +10,6 @@
 #include "cc/surfaces/display.h"
 #include "components/mus/surfaces/direct_output_surface.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
-#include "components/mus/surfaces/top_level_display_client.h"
 
 #if defined(USE_OZONE)
 #include "components/mus/surfaces/direct_output_surface_ozone.h"
@@ -37,29 +36,32 @@ DisplayCompositor::DisplayCompositor(
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(surfaces_context_provider->BindToCurrentThread());
 
-  std::unique_ptr<cc::OutputSurface> output_surface;
+  std::unique_ptr<cc::OutputSurface> display_output_surface;
   if (surfaces_context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
-    output_surface = base::WrapUnique(new DirectOutputSurfaceOzone(
+    display_output_surface = base::WrapUnique(new DirectOutputSurfaceOzone(
         surfaces_context_provider, widget, task_runner_.get(), GL_TEXTURE_2D,
         GL_RGB));
 #else
     NOTREACHED();
 #endif
   } else {
-    output_surface = base::WrapUnique(
+    display_output_surface = base::WrapUnique(
         new DirectOutputSurface(surfaces_context_provider, task_runner_.get()));
   }
 
-  int max_frames_pending = output_surface->capabilities().max_frames_pending;
+  int max_frames_pending =
+      display_output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
 
-  display_client_.reset(new TopLevelDisplayClient(
-      std::move(output_surface), surfaces_state_->manager(),
-      nullptr /* bitmap_manager */, nullptr /* gpu_memory_buffer_manager */,
-      cc::RendererSettings(), task_runner_, allocator_.id_namespace()));
+  display_.reset(
+      new cc::Display(surfaces_state_->manager(), nullptr /* bitmap_manager */,
+                      nullptr /* gpu_memory_buffer_manager */,
+                      cc::RendererSettings(), allocator_.id_namespace(),
+                      task_runner_.get(), std::move(display_output_surface)));
 
-  display_client_->Initialize();
+  bool init = display_->Initialize(this);
+  DCHECK(init);  // The context provider was already bound above.
 }
 
 DisplayCompositor::~DisplayCompositor() {
@@ -78,10 +80,9 @@ void DisplayCompositor::SubmitCompositorFrame(
     surface_id_ = allocator_.GenerateId();
     factory_.Create(surface_id_);
     display_size_ = frame_size;
-    display_client_->display()->Resize(display_size_);
+    display_->Resize(display_size_);
   }
-  display_client_->display()->SetSurfaceId(surface_id_,
-                                           frame->metadata.device_scale_factor);
+  display_->SetSurfaceId(surface_id_, frame->metadata.device_scale_factor);
   factory_.SubmitCompositorFrame(surface_id_, std::move(frame), callback);
 }
 
@@ -99,5 +100,14 @@ void DisplayCompositor::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(fsamuel): Implement this.
 }
+
+void DisplayCompositor::DisplayOutputSurfaceLost() {
+  // TODO(fsamuel): This looks like it would crash if a frame was in flight and
+  // will be submitted.
+  display_.reset();
+}
+
+void DisplayCompositor::DisplaySetMemoryPolicy(
+    const cc::ManagedMemoryPolicy& policy) {}
 
 }  // namespace mus

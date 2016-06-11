@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
+#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_scheduler.h"
@@ -51,20 +52,20 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
                                    public RendererClient,
                                    public SurfaceDamageObserver {
  public:
-  Display(DisplayClient* client,
-          SurfaceManager* manager,
+  Display(SurfaceManager* manager,
           SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
-          uint32_t compositor_surface_namespace);
+          uint32_t compositor_surface_namespace,
+          base::SingleThreadTaskRunner* task_runner,
+          std::unique_ptr<OutputSurface> output_surface);
   ~Display() override;
 
-  bool Initialize(std::unique_ptr<OutputSurface> output_surface,
-                  base::SingleThreadTaskRunner* task_runner);
+  bool Initialize(DisplayClient* client);
+
   // When this variant is used, no DisplayScheduler is created, and the caller
   // is responsible for calling DrawAndSwap when required.
-  bool InitializeSynchronous(std::unique_ptr<OutputSurface> output_surface,
-                             base::SingleThreadTaskRunner* task_runner);
+  bool InitializeSynchronous(DisplayClient* client);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
@@ -110,7 +111,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
  protected:
   // Virtual for tests.
-  virtual void CreateScheduler(base::SingleThreadTaskRunner* task_runner);
+  virtual void CreateScheduler();
 
   void InitializeRenderer();
   void UpdateRootSurfaceResourcesLocked();
@@ -123,24 +124,27 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   SurfaceId current_surface_id_;
   uint32_t compositor_surface_namespace_;
   gfx::Size current_surface_size_;
-  float device_scale_factor_;
-  bool swapped_since_resize_;
+  float device_scale_factor_ = 1.f;
+  bool swapped_since_resize_ = false;
   gfx::Rect external_clip_;
   gfx::Size enlarge_texture_amount_;
   bool output_is_secure_ = false;
+
+  // TODO(danakj): Not needed if we create the scheduler from the constructor.
+  base::SingleThreadTaskRunner* task_runner_;
 
   std::unique_ptr<OutputSurface> output_surface_;
   // An internal synthetic BFS. May be null when not used.
   std::unique_ptr<BeginFrameSource> internal_begin_frame_source_;
   // The real BFS tied to vsync provided by the BrowserCompositorOutputSurface.
-  BeginFrameSource* vsync_begin_frame_source_;
+  BeginFrameSource* vsync_begin_frame_source_ = nullptr;
   // The current BFS driving the Display/DisplayScheduler.
-  BeginFrameSource* observed_begin_frame_source_;
+  BeginFrameSource* observed_begin_frame_source_ = nullptr;
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
+  TextureMailboxDeleter texture_mailbox_deleter_;
   std::unique_ptr<DirectRenderer> renderer_;
-  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 
  private:

@@ -287,17 +287,19 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   // Set the correct FBO before kModeDraw. The GL commands run in kModeDraw
   // require a correctly bound FBO. The FBO remains until the next kModeDraw.
   // So kModeProcess between kModeDraws has correctly bound FBO, too.
-  if (draw_info->mode == AwDrawGLInfo::kModeDraw && !hardware_renderer_ &&
-      !IsInsideHardwareRelease() && HasFrameForHardwareRendererOnRT()) {
-    hardware_renderer_.reset(new HardwareRenderer(this));
-    hardware_renderer_->CommitFrame();
-  }
   if (hardware_renderer_) {
     hardware_renderer_->SetBackingFrameBufferObject(
         state_restore.framebuffer_binding_ext());
   }
 
   ScopedAllowGL allow_gl;
+  if (!hardware_renderer_ && draw_info->mode == AwDrawGLInfo::kModeDraw &&
+      !IsInsideHardwareRelease() && HasFrameForHardwareRendererOnRT()) {
+    hardware_renderer_.reset(new HardwareRenderer(this));
+    hardware_renderer_->SetBackingFrameBufferObject(
+        state_restore.framebuffer_binding_ext());
+    hardware_renderer_->CommitFrame();
+  }
 
   if (draw_info->mode == AwDrawGLInfo::kModeProcessNoContext) {
     LOG(ERROR) << "Received unexpected kModeProcessNoContext";

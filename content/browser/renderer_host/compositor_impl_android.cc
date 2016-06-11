@@ -39,7 +39,7 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/onscreen_display_client.h"
+#include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -493,7 +493,7 @@ void CompositorImpl::SetVisible(bool visible) {
       host_->ReleaseOutputSurface();
     pending_swapbuffers_ = 0;
     establish_gpu_channel_timeout_.Stop();
-    display_client_.reset();
+    display_.reset();
   } else {
     host_->SetVisible(true);
     if (output_surface_request_pending_)
@@ -514,8 +514,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   size_ = size;
   if (host_)
     host_->SetViewportSize(size);
-  if (display_client_)
-    display_client_->display()->Resize(size);
+  if (display_)
+    display_->Resize(size);
   root_layer_->SetBounds(size);
 }
 
@@ -597,7 +597,7 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
       SharedVulkanContextProviderAndroid();
-  std::unique_ptr<cc::OutputSurface> real_output_surface;
+  std::unique_ptr<cc::OutputSurface> display_output_surface;
 #if defined(ENABLE_VULKAN)
   std::unique_ptr<VulkanOutputSurface> vulkan_surface;
   if (vulkan_context_provider) {
@@ -608,12 +608,12 @@ void CompositorImpl::CreateOutputSurface() {
       vulkan_surface->Destroy();
       vulkan_surface.reset();
     } else {
-      real_output_surface = std::move(vulkan_surface);
+      display_output_surface = std::move(vulkan_surface);
     }
   }
 #endif
 
-  if (!real_output_surface) {
+  if (!display_output_surface) {
     // This is used for the browser compositor (offscreen) and for the display
     // compositor (onscreen), so ask for capabilities needed by either one.
     // The default framebuffer for an offscreen context is not used, so it does
@@ -691,7 +691,7 @@ void CompositorImpl::CreateOutputSurface() {
         command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
     DCHECK(context_provider.get());
 
-    real_output_surface = base::WrapUnique(new OutputSurfaceWithoutParent(
+    display_output_surface = base::WrapUnique(new OutputSurfaceWithoutParent(
         this, context_provider,
         base::Bind(&CompositorImpl::PopulateGpuCapabilities,
                    base::Unretained(this)),
@@ -699,27 +699,25 @@ void CompositorImpl::CreateOutputSurface() {
   }
 
   cc::SurfaceManager* manager = GetSurfaceManager();
-  display_client_.reset(new cc::OnscreenDisplayClient(
-      std::move(real_output_surface), manager,
-      HostSharedBitmapManager::current(),
-      BrowserGpuMemoryBufferManager::current(),
-      host_->settings().renderer_settings, base::ThreadTaskRunnerHandle::Get(),
-      surface_id_allocator_->id_namespace()));
+  display_.reset(new cc::Display(manager, HostSharedBitmapManager::current(),
+                                 BrowserGpuMemoryBufferManager::current(),
+                                 host_->settings().renderer_settings,
+                                 surface_id_allocator_->id_namespace(),
+                                 base::ThreadTaskRunnerHandle::Get().get(),
+                                 std::move(display_output_surface)));
 
-  std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
+  std::unique_ptr<cc::SurfaceDisplayOutputSurface> delegated_output_surface(
       vulkan_context_provider
           ? new cc::SurfaceDisplayOutputSurface(
-                manager, surface_id_allocator_.get(),
+                manager, surface_id_allocator_.get(), display_.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
-          : new cc::SurfaceDisplayOutputSurface(manager,
-                                                surface_id_allocator_.get(),
-                                                context_provider, nullptr));
+          : new cc::SurfaceDisplayOutputSurface(
+                manager, surface_id_allocator_.get(), display_.get(),
+                context_provider, nullptr));
 
-  display_client_->set_surface_output_surface(surface_output_surface.get());
-  surface_output_surface->set_display_client(display_client_.get());
-  display_client_->display()->Resize(size_);
-  host_->SetOutputSurface(std::move(surface_output_surface));
+  display_->Resize(size_);
+  host_->SetOutputSurface(std::move(delegated_output_surface));
 }
 
 void CompositorImpl::PopulateGpuCapabilities(

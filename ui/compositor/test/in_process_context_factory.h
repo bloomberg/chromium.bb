@@ -6,8 +6,10 @@
 #define UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_FACTORY_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
+#include "cc/surfaces/display.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_image_factory.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -19,7 +21,6 @@ class Thread;
 }
 
 namespace cc {
-class OnscreenDisplayClient;
 class SurfaceManager;
 }
 
@@ -75,7 +76,8 @@ class InProcessContextFactory : public ContextFactory {
   bool context_factory_for_test_;
   cc::SurfaceManager* surface_manager_;
 
-  base::hash_map<Compositor*, cc::OnscreenDisplayClient*> per_compositor_data_;
+  base::hash_map<Compositor*, std::unique_ptr<cc::Display>>
+      per_compositor_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };

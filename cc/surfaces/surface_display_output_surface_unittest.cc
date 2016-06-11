@@ -6,7 +6,9 @@
 
 #include <memory>
 
-#include "cc/surfaces/onscreen_display_client.h"
+#include "cc/output/renderer_settings.h"
+#include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_output_surface.h"
@@ -20,80 +22,46 @@
 namespace cc {
 namespace {
 
-class FakeOnscreenDisplayClient : public OnscreenDisplayClient {
- public:
-  FakeOnscreenDisplayClient(
-      SurfaceManager* manager,
-      SharedBitmapManager* bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const RendererSettings& settings,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      uint32_t compositor_surface_namespace)
-      : OnscreenDisplayClient(FakeOutputSurface::Create3d(),
-                              manager,
-                              bitmap_manager,
-                              gpu_memory_buffer_manager,
-                              settings,
-                              task_runner,
-                              compositor_surface_namespace) {
-    // Ownership is passed to another object later, store a pointer
-    // to it now for future reference.
-    fake_output_surface_ =
-        static_cast<FakeOutputSurface*>(output_surface_.get());
-    fake_output_surface_->set_max_frames_pending(2);
-  }
-
-  FakeOutputSurface* output_surface() { return fake_output_surface_; }
-
- protected:
-  FakeOutputSurface* fake_output_surface_;
-};
-
 class SurfaceDisplayOutputSurfaceTest : public testing::Test {
  public:
   SurfaceDisplayOutputSurfaceTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
+        begin_frame_source_(new BackToBackBeginFrameSource(task_runner_.get())),
         allocator_(0),
         display_size_(1920, 1080),
         display_rect_(display_size_),
-        display_client_(&surface_manager_,
-                        &bitmap_manager_,
-                        &gpu_memory_buffer_manager_,
-                        renderer_settings_,
-                        task_runner_,
-                        allocator_.id_namespace()),
-        context_provider_(TestContextProvider::Create()),
-        surface_display_output_surface_(&surface_manager_,
-                                        &allocator_,
-                                        context_provider_,
-                                        nullptr) {
+        context_provider_(TestContextProvider::Create()) {
     surface_manager_.RegisterSurfaceIdNamespace(allocator_.id_namespace());
-    output_surface_ = display_client_.output_surface();
-    display_client_.set_surface_output_surface(
-        &surface_display_output_surface_);
-    surface_display_output_surface_.set_display_client(&display_client_);
+
+    std::unique_ptr<FakeOutputSurface> display_output_surface =
+        FakeOutputSurface::Create3d();
+    display_output_surface_ = display_output_surface.get();
+    display_output_surface_->set_max_frames_pending(2);
+
+    display_.reset(new Display(&surface_manager_, &bitmap_manager_,
+                               &gpu_memory_buffer_manager_, renderer_settings_,
+                               allocator_.id_namespace(), task_runner_.get(),
+                               std::move(display_output_surface)));
+    delegated_output_surface_.reset(new SurfaceDisplayOutputSurface(
+        &surface_manager_, &allocator_, display_.get(), context_provider_,
+        nullptr));
 
     // Set the Display's begin frame source like a real browser compositor
     // output surface would.
-    begin_frame_source_.reset(
-        new BackToBackBeginFrameSource(task_runner_.get()));
-    display_client_.display()->SetBeginFrameSource(begin_frame_source_.get());
+    display_->SetBeginFrameSource(begin_frame_source_.get());
+    delegated_output_surface_->BindToClient(&delegated_output_surface_client_);
+    display_->Resize(display_size_);
 
-    surface_display_output_surface_.BindToClient(
-        &surface_display_output_surface_client_);
-
-    display_client_.display()->Resize(display_size_);
-
-    EXPECT_FALSE(surface_display_output_surface_client_
-                     .did_lose_output_surface_called());
+    EXPECT_FALSE(
+        delegated_output_surface_client_.did_lose_output_surface_called());
   }
 
   ~SurfaceDisplayOutputSurfaceTest() override {}
 
-  void SwapBuffersWithDamage(const gfx::Rect& damage_rect_) {
+  void SwapBuffersWithDamage(const gfx::Rect& damage_rect) {
     std::unique_ptr<RenderPass> render_pass(RenderPass::Create());
-    render_pass->SetNew(RenderPassId(1, 1), display_rect_, damage_rect_,
+    render_pass->SetNew(RenderPassId(1, 1), display_rect_, damage_rect,
                         gfx::Transform());
 
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
@@ -102,16 +70,16 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
     CompositorFrame frame;
     frame.delegated_frame_data = std::move(frame_data);
 
-    surface_display_output_surface_.SwapBuffers(&frame);
+    delegated_output_surface_->SwapBuffers(&frame);
   }
 
   void SetUp() override {
     // Draw the first frame to start in an "unlocked" state.
     SwapBuffersWithDamage(display_rect_);
 
-    EXPECT_EQ(0u, output_surface_->num_sent_frames());
+    EXPECT_EQ(0u, display_output_surface_->num_sent_frames());
     task_runner_->RunUntilIdle();
-    EXPECT_EQ(1u, output_surface_->num_sent_frames());
+    EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   }
 
  protected:
@@ -122,59 +90,58 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
 
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;
-  FakeOutputSurface* output_surface_;
   SurfaceManager surface_manager_;
   TestSharedBitmapManager bitmap_manager_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   RendererSettings renderer_settings_;
-  FakeOnscreenDisplayClient display_client_;
 
   scoped_refptr<TestContextProvider> context_provider_;
-
-  FakeOutputSurfaceClient surface_display_output_surface_client_;
-  SurfaceDisplayOutputSurface surface_display_output_surface_;
+  FakeOutputSurface* display_output_surface_ = nullptr;
+  std::unique_ptr<Display> display_;
+  FakeOutputSurfaceClient delegated_output_surface_client_;
+  std::unique_ptr<SurfaceDisplayOutputSurface> delegated_output_surface_;
 };
 
 TEST_F(SurfaceDisplayOutputSurfaceTest, DamageTriggersSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(2u, output_surface_->num_sent_frames());
+  EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
 TEST_F(SurfaceDisplayOutputSurfaceTest, NoDamageDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(gfx::Rect());
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
 }
 
 TEST_F(SurfaceDisplayOutputSurfaceTest, SuspendedDoesNotTriggerSwapBuffers) {
   SwapBuffersWithDamage(display_rect_);
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
-  output_surface_->set_suspended_for_recycle(true);
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
+  display_output_surface_->set_suspended_for_recycle(true);
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   SwapBuffersWithDamage(display_rect_);
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
-  output_surface_->set_suspended_for_recycle(false);
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
+  display_output_surface_->set_suspended_for_recycle(false);
   SwapBuffersWithDamage(display_rect_);
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(2u, output_surface_->num_sent_frames());
+  EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
 TEST_F(SurfaceDisplayOutputSurfaceTest,
        LockingResourcesDoesNotIndirectlyCauseDamage) {
-  surface_display_output_surface_.ForceReclaimResources();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  delegated_output_surface_->ForceReclaimResources();
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunPendingTasks();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
 
   SwapBuffersWithDamage(gfx::Rect());
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
+  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
 }
 
 }  // namespace

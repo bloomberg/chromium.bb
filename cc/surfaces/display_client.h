@@ -5,22 +5,14 @@
 #ifndef CC_SURFACES_DISPLAY_CLIENT_H_
 #define CC_SURFACES_DISPLAY_CLIENT_H_
 
-#include <memory>
-
-#include "base/time/time.h"
-
 namespace cc {
-
-class BeginFrameSource;
 struct ManagedMemoryPolicy;
 
 class DisplayClient {
  public:
-  virtual void OutputSurfaceLost() = 0;
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
-
- protected:
   virtual ~DisplayClient() {}
+  virtual void DisplayOutputSurfaceLost() = 0;
+  virtual void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
 };
 
 }  // namespace cc

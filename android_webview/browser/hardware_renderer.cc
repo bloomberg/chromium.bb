@@ -58,9 +58,17 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
   surface_id_allocator_->RegisterSurfaceIdNamespace(surface_manager_.get());
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->id_namespace(), this);
-  display_.reset(new cc::Display(this, surface_manager_.get(), nullptr, nullptr,
-                                 settings,
-                                 surface_id_allocator_->id_namespace()));
+
+  std::unique_ptr<ParentOutputSurface> output_surface_holder(
+      new ParentOutputSurface(AwRenderThreadContextProvider::Create(
+          gl_surface_, DeferredGpuCommandService::GetInstance())));
+  output_surface_ = output_surface_holder.get();
+  display_.reset(new cc::Display(
+      surface_manager_.get(), nullptr /* shared_bitmap_manager */,
+      nullptr /* gpu_memory_buffer_manager */, settings,
+      surface_id_allocator_->id_namespace(), nullptr /* task_runner */,
+      std::move(output_surface_holder)));
+  display_->Initialize(this);
 }
 
 HardwareRenderer::~HardwareRenderer() {
@@ -213,15 +221,6 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
 
   display_->Resize(viewport);
 
-  if (!output_surface_) {
-    scoped_refptr<cc::ContextProvider> context_provider =
-        AwRenderThreadContextProvider::Create(
-            gl_surface_, DeferredGpuCommandService::GetInstance());
-    std::unique_ptr<ParentOutputSurface> output_surface_holder(
-        new ParentOutputSurface(context_provider));
-    output_surface_ = output_surface_holder.get();
-    display_->Initialize(std::move(output_surface_holder), nullptr);
-  }
   output_surface_->SetGLState(gl_state);
   display_->SetExternalClip(clip);
   display_->DrawAndSwap();

@@ -41,19 +41,23 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
 
   // Allow tests to enlarge the backing texture for a non-root render pass, to
   // simulate reusing a larger texture from a previous frame for a new
-  // render pass.
+  // render pass. This should be called before the output surface is bound.
   void SetEnlargePassTextureAmount(const gfx::Size& amount);
 
  private:
   void DrawCallback(SurfaceDrawStatus);
 
   class PixelTestDisplayClient : public DisplayClient {
-    void OutputSurfaceLost() override {}
-    void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override {}
+    void DisplayOutputSurfaceLost() override {}
+    void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override {}
   };
 
+  SharedBitmapManager* const shared_bitmap_manager_;
+  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
   const bool allow_force_reclaim_resources_;
   const bool synchronous_composite_;
+
+  gfx::Size enlarge_pass_texture_amount_;
 
   std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
 

@@ -23,7 +23,7 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
-#include "cc/surfaces/onscreen_display_client.h"
+#include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
@@ -150,16 +150,11 @@ bool IsCALayersDisabledFromCommandLine() {
 namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
-  gpu::SurfaceHandle surface_handle;
-  BrowserCompositorOutputSurface* surface;
-  ReflectorImpl* reflector;
-  std::unique_ptr<cc::OnscreenDisplayClient> display_client;
+  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+  BrowserCompositorOutputSurface* display_output_surface = nullptr;
+  ReflectorImpl* reflector = nullptr;
+  std::unique_ptr<cc::Display> display;
   bool output_is_secure = false;
-
-  PerCompositorData()
-      : surface_handle(gpu::kNullSurfaceHandle),
-        surface(nullptr),
-        reflector(nullptr) {}
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
@@ -281,7 +276,9 @@ void GpuProcessTransportFactory::CreateOutputSurface(
   if (!data) {
     data = CreatePerCompositorData(compositor.get());
   } else {
-    data->surface = nullptr;
+    // TODO(danakj): We can destroy the |data->display| here when the compositor
+    // destroys its OutputSurface before calling back here.
+    data->display_output_surface = nullptr;
   }
 
 #if defined(OS_WIN)
@@ -423,7 +420,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
-  std::unique_ptr<BrowserCompositorOutputSurface> surface;
+  std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
 #if defined(ENABLE_VULKAN)
   std::unique_ptr<VulkanBrowserCompositorOutputSurface> vulkan_surface;
   if (vulkan_context_provider) {
@@ -434,34 +431,36 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       vulkan_surface->Destroy();
       vulkan_surface.reset();
     } else {
-      surface = std::move(vulkan_surface);
+      display_output_surface = std::move(vulkan_surface);
     }
   }
 #endif
 
-  if (!surface) {
+  if (!display_output_surface) {
     if (!create_gpu_output_surface) {
-      surface = base::WrapUnique(new SoftwareBrowserCompositorOutputSurface(
-          CreateSoftwareOutputDevice(compositor.get()),
-          compositor->vsync_manager(), compositor->task_runner().get()));
+      display_output_surface =
+          base::WrapUnique(new SoftwareBrowserCompositorOutputSurface(
+              CreateSoftwareOutputDevice(compositor.get()),
+              compositor->vsync_manager(), compositor->task_runner().get()));
     } else {
       DCHECK(context_provider);
       const auto& capabilities = context_provider->ContextCapabilities();
       if (data->surface_handle == gpu::kNullSurfaceHandle) {
-        surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
-            context_provider, compositor->vsync_manager(),
-            compositor->task_runner().get(),
-            std::unique_ptr<
-                display_compositor::CompositorOverlayCandidateValidator>()));
+        display_output_surface =
+            base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
+                context_provider, compositor->vsync_manager(),
+                compositor->task_runner().get(),
+                std::unique_ptr<display_compositor::
+                                    CompositorOverlayCandidateValidator>()));
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
-        surface = base::WrapUnique(new GpuOutputSurfaceMac(
+        display_output_surface = base::WrapUnique(new GpuOutputSurfaceMac(
             context_provider, data->surface_handle, compositor->vsync_manager(),
             compositor->task_runner().get(),
             CreateOverlayCandidateValidator(compositor->widget()),
             BrowserGpuMemoryBufferManager::current()));
 #else
-        surface =
+        display_output_surface =
             base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
                 context_provider, data->surface_handle,
                 compositor->vsync_manager(), compositor->task_runner().get(),
@@ -476,49 +475,48 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         // Overlays are only supported on surfaceless output surfaces on Mac.
         validator = CreateOverlayCandidateValidator(compositor->widget());
 #endif
-        surface = base::WrapUnique(new GpuBrowserCompositorOutputSurface(
-            context_provider, compositor->vsync_manager(),
-            compositor->task_runner().get(), std::move(validator)));
+        display_output_surface =
+            base::WrapUnique(new GpuBrowserCompositorOutputSurface(
+                context_provider, compositor->vsync_manager(),
+                compositor->task_runner().get(), std::move(validator)));
       }
     }
   }
 
-  data->surface = surface.get();
+  data->display_output_surface = display_output_surface.get();
   if (data->reflector)
-    data->reflector->OnSourceSurfaceReady(data->surface);
+    data->reflector->OnSourceSurfaceReady(data->display_output_surface);
 
 #if defined(OS_WIN)
   gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
       compositor->widget());
 #endif
 
-  // This gets a bit confusing. Here we have a ContextProvider in the |surface|
-  // configured to render directly to this widget. We need to make an
-  // OnscreenDisplayClient associated with that context, then return a
-  // SurfaceDisplayOutputSurface set up to draw to the display's surface.
-  cc::SurfaceManager* manager = surface_manager_.get();
-  std::unique_ptr<cc::OnscreenDisplayClient> display_client(
-      new cc::OnscreenDisplayClient(
-          std::move(surface), manager, HostSharedBitmapManager::current(),
-          BrowserGpuMemoryBufferManager::current(),
-          compositor->GetRendererSettings(), compositor->task_runner(),
-          compositor->surface_id_allocator()->id_namespace()));
+  // The Display owns and uses the |display_output_surface| created above.
+  data->display = base::MakeUnique<cc::Display>(
+      surface_manager_.get(), HostSharedBitmapManager::current(),
+      BrowserGpuMemoryBufferManager::current(),
+      compositor->GetRendererSettings(),
+      compositor->surface_id_allocator()->id_namespace(),
+      compositor->task_runner().get(), std::move(display_output_surface));
 
-  std::unique_ptr<cc::SurfaceDisplayOutputSurface> output_surface(
+  // The |delegated_output_surface| is given back to the compositor, it
+  // delegates to the Display as its root surface. Importantly, it shares the
+  // same ContextProvider as the Display's output surface.
+  std::unique_ptr<cc::SurfaceDisplayOutputSurface> delegated_output_surface(
       vulkan_context_provider
           ? new cc::SurfaceDisplayOutputSurface(
-                manager, compositor->surface_id_allocator(),
+                surface_manager_.get(), compositor->surface_id_allocator(),
+                data->display.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
           : new cc::SurfaceDisplayOutputSurface(
-                manager, compositor->surface_id_allocator(), context_provider,
+                surface_manager_.get(), compositor->surface_id_allocator(),
+                data->display.get(), context_provider,
                 shared_worker_context_provider_));
-  display_client->set_surface_output_surface(output_surface.get());
-  output_surface->set_display_client(display_client.get());
-  display_client->display()->Resize(compositor->size());
-  display_client->display()->SetOutputIsSecure(data->output_is_secure);
-  data->display_client = std::move(display_client);
-  compositor->SetOutputSurface(std::move(output_surface));
+  data->display->Resize(compositor->size());
+  data->display->SetOutputIsSecure(data->output_is_secure);
+  compositor->SetOutputSurface(std::move(delegated_output_surface));
 }
 
 std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
@@ -530,7 +528,7 @@ std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
   std::unique_ptr<ReflectorImpl> reflector(
       new ReflectorImpl(source_compositor, target_layer));
   source_data->reflector = reflector.get();
-  if (BrowserCompositorOutputSurface* source_surface = source_data->surface)
+  if (auto* source_surface = source_data->display_output_surface)
     reflector->OnSourceSurfaceReady(source_surface);
   return std::move(reflector);
 }
@@ -621,8 +619,8 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
     return;
   PerCompositorData* data = it->second;
   DCHECK(data);
-  if (data->display_client)
-    data->display_client->display()->Resize(size);
+  if (data->display)
+    data->display->Resize(size);
 }
 
 void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
@@ -633,9 +631,9 @@ void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
     return;
   PerCompositorData* data = it->second;
   DCHECK(data);
-  if (data->surface) {
-    data->surface->begin_frame_source()->SetAuthoritativeVSyncInterval(
-        interval);
+  if (data->display_output_surface) {
+    data->display_output_surface->begin_frame_source()
+        ->SetAuthoritativeVSyncInterval(interval);
   }
 }
 
@@ -647,8 +645,8 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
   PerCompositorData* data = it->second;
   DCHECK(data);
   data->output_is_secure = secure;
-  if (data->display_client)
-    data->display_client->display()->SetOutputIsSecure(secure);
+  if (data->display)
+    data->display->SetOutputIsSecure(secure);
 }
 
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
@@ -685,8 +683,8 @@ void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
     return;
   PerCompositorData* data = it->second;
   DCHECK(data);
-  if (data->surface)
-    data->surface->SetSurfaceSuspendedForRecycle(suspended);
+  if (data->display_output_surface)
+    data->display_output_surface->SetSurfaceSuspendedForRecycle(suspended);
 }
 #endif
 

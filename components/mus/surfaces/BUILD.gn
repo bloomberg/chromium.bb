@@ -15,8 +15,6 @@ source_set("surfaces") {
     "surfaces_context_provider_delegate.h",
     "surfaces_state.cc",
     "surfaces_state.h",
-    "top_level_display_client.cc",
-    "top_level_display_client.h",
   ]
 
   deps = [

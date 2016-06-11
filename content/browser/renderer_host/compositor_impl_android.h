@@ -31,9 +31,9 @@ class SkBitmap;
 struct ANativeWindow;
 
 namespace cc {
+class Display;
 class Layer;
 class LayerTreeHost;
-class OnscreenDisplayClient;
 class SurfaceIdAllocator;
 class SurfaceManager;
 class VulkanInProcessContextProvider;
@@ -142,7 +142,7 @@ class CONTENT_EXPORT CompositorImpl
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
-  std::unique_ptr<cc::OnscreenDisplayClient> display_client_;
+  std::unique_ptr<cc::Display> display_;
 
   gfx::Size size_;
   bool has_transparent_background_;
