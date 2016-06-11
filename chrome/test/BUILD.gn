@@ -924,9 +924,14 @@ if (!is_android) {
 
       data_deps = [
         "//ui/keyboard:resources",
-        "//components/nacl/loader:nacl_helper",
-        "//ppapi/native_client:irt",
       ]
+
+      if (enable_nacl) {
+        data_deps += [
+          "//components/nacl/loader:nacl_helper",
+          "//ppapi/native_client:irt",
+        ]
+      }
     } else {
       data_deps = []
     }
