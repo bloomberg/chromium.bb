@@ -8,6 +8,19 @@ import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
+// TODO(beng): A general note about structs & methods in this file.
+//
+// These types are (for the most part) fairly rote copies of enums, structs &
+// interfaces from //content/public/browser & friends.
+// Not a huge amount of thought has been put into which values & methods should
+// be made available, the emphasis has been on getting a working service up and
+// running that is useful. It would be worth taking a pass through this set at
+// some point, condensing it, figuring out how it relates to stuff in
+// content/public/browser, etc.
+//
+// For now, it's duplicated here because this service is still experimental and
+// I didn't want to disrupt content/public/browser based on an experiment.
+
 // Copied from //content/public/browser/navigation_entry.h
 struct NavigationEntry {
   int32 id;
@@ -27,6 +40,22 @@ enum NavigationType {
   NAV_IGNORE
 };
 
+// Copied from //ui/base/window_open_disposition.h
+enum WindowOpenDisposition {
+  UNKNOWN,
+  SUPPRESS_OPEN,
+  CURRENT_TAB,
+  SINGLETON_TAB,
+  NEW_FOREGROUND_TAB,
+  NEW_BACKGROUND_TAB,
+  NEW_POPUP,
+  NEW_WINDOW,
+  SAVE_TO_DISK,
+  OFF_THE_RECORD,
+  IGNORE_ACTION,
+  WINDOW_OPEN_DISPOSITION_LAST = IGNORE_ACTION
+};
+
 // Copied from //content/public/browser/navigation_details.h
 struct NavigationCommittedDetails {
   int32 entry;
@@ -40,11 +69,18 @@ struct NavigationCommittedDetails {
   int32 http_status_code;
 };
 
+// Copied from //content/public/browser/page_navigator.h
+struct OpenURLParams {
+  url.mojom.Url url;
+  WindowOpenDisposition disposition;
+};
+
 interface ViewFactory {
   CreateView(ViewClient client, View& view);
 };
 
 interface ViewClient {
+  OpenURL(OpenURLParams params);
   LoadingStateChanged(bool is_loading);
   NavigationStateChanged(url.mojom.Url url,
                          string title,

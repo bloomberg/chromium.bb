@@ -36,6 +36,10 @@ class ViewDelegate {
   // Called when an action within the page has requested that the View be
   // closed.
   virtual void Close(View* source) = 0;
+
+  // Called when the application in the source view wants the delegate to
+  // navigate the view according to |params|.
+  virtual void OpenURL(View* source, mojom::OpenURLParamsPtr params) = 0;
 };
 
 }  // namespace navigation

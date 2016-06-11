@@ -61,6 +61,9 @@ class ViewImpl : public mojom::View,
                       bool user_gesture,
                       bool* was_blocked) override;
   void CloseContents(content::WebContents* source) override;
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
   void NavigationStateChanged(content::WebContents* source,

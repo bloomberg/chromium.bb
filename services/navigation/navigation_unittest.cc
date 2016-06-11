@@ -36,6 +36,7 @@ class NavigationTest : public shell::test::ShellTest,
 
  private:
   // mojom::ViewClient:
+  void OpenURL(mojom::OpenURLParamsPtr params) override {}
   void LoadingStateChanged(bool is_loading) override {
     // Should see loading start, then stop.
     if (++load_count_ == 2 && loop_)

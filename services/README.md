@@ -1,11 +1,11 @@
-Chrome Platform Services
+Chrome Foundation Services
 ====
 
 ### Overview
 
-This directory contains Chrome Platform Services. If you think of Chrome as a
-"portable OS," Chrome Platform Services can be thought of as that OS' "system
-services".
+This directory contains Chrome Foundation Services. If you think of Chrome as a
+"portable OS," Chrome Foundation Services can be thought of as that OS'
+foundational "system services" layer.
 
 Roughly each subdirectory here corresponds to a service that:
 
@@ -39,3 +39,15 @@ differently, e.g. by combining them into a single package.
 
 ### High-level Design Doc
 https://docs.google.com/document/d/15I7sQyQo6zsqXVNAlVd520tdGaS8FCicZHrN0yRu-oU/edit#heading=h.p37l9e7o0io5
+
+### Relationship to other top-level directories in //
+
+Services can be thought of as integrators of library code from across the
+Chromium repository, most commonly //base and //mojo (obviously) but for each
+service also //components, //ui, etc in accordance with the functionality they
+provide.
+
+Not everything in //components is automatically a service in its own right.
+Think of //components as sort of like a //lib. Individual //components can
+define, implement and use mojom interfaces, but only //services have unique
+identities with the Mojo Shell.

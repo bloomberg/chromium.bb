@@ -99,6 +99,7 @@ class UI : public views::WidgetDelegateView,
   }
 
   // navigation::mojom::ViewClient:
+  void OpenURL(navigation::mojom::OpenURLParamsPtr params) override {}
   void LoadingStateChanged(bool is_loading) override {}
   void NavigationStateChanged(const GURL& url,
                               const mojo::String& title,

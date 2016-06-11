@@ -93,7 +93,6 @@ class Tab : public views::LabelButton,
       views::ButtonListener* listener)
       : views::LabelButton(listener, base::ASCIIToUTF16("Blank")),
         view_(std::move(view)) {
-    view_->SetResizerSize(gfx::Size(16, 16));
     view_->AddObserver(this);
     set_background(new Background(this));
   }
@@ -233,7 +232,8 @@ class TabStrip : public views::View,
       int next_selected_index = selected_index_;
       if (selected_index_ == static_cast<int>(tabs_.size()))
         --next_selected_index;
-      SelectTab(tabs_[next_selected_index]);
+      if (next_selected_index >= 0)
+        SelectTab(tabs_[next_selected_index]);
     }
     Layout();
     FOR_EACH_OBSERVER(TabStripObserver, observers_, OnTabRemoved(tab));
@@ -721,21 +721,39 @@ class UI : public views::WidgetDelegateView,
                    bool is_popup,
                    const gfx::Rect& initial_rect,
                    bool user_gesture) override {
-    if (is_popup) {
-      views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-          new UI(browser_, is_popup ? UI::Type::POPUP : UI::Type::WINDOW,
-                 std::move(view)),
-          nullptr, initial_rect);
-      window->Show();
-      browser_->AddWindow(window);
-    } else {
+    if (is_popup)
+      CreateNewWindow(std::move(view), initial_rect, is_popup);
+    else
       tab_strip_->AddTab(std::move(view));
-    }
   }
   void Close(navigation::View* source) override {
     tab_strip_->CloseTabForView(source);
     if (tab_strip_->empty())
       GetWidget()->Close();
+  }
+  void OpenURL(navigation::View* source,
+               navigation::mojom::OpenURLParamsPtr params) override {
+    switch (params->disposition) {
+      case navigation::mojom::WindowOpenDisposition::CURRENT_TAB:
+        selected_view()->NavigateToURL(params->url);
+        break;
+      case navigation::mojom::WindowOpenDisposition::NEW_FOREGROUND_TAB:
+        tab_strip_->AddTab(browser_->CreateView());
+        tab_strip_->selected_tab()->view()->NavigateToURL(params->url);
+        break;
+      case navigation::mojom::WindowOpenDisposition::NEW_POPUP:
+      case navigation::mojom::WindowOpenDisposition::NEW_WINDOW: {
+        std::unique_ptr<navigation::View> view = browser_->CreateView();
+        view->NavigateToURL(params->url);
+        CreateNewWindow(
+            std::move(view), gfx::Rect(),
+            params->disposition ==
+                navigation::mojom::WindowOpenDisposition::NEW_POPUP);
+        break;
+      }
+      default:
+        break;
+    }
   }
 
   // navigation::ViewObserver:
@@ -788,6 +806,20 @@ class UI : public views::WidgetDelegateView,
   }
   const navigation::View* selected_view() const {
     return tab_strip_->selected_tab()->view();
+  }
+
+  void CreateNewWindow(std::unique_ptr<navigation::View> view,
+                       const gfx::Rect& initial_bounds,
+                       bool is_popup) {
+    gfx::Rect bounds = initial_bounds;
+    if (bounds.IsEmpty())
+      bounds = gfx::Rect(10, 10, 400, 300);
+    views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
+        new UI(browser_, is_popup ? UI::Type::POPUP : UI::Type::WINDOW,
+               std::move(view)),
+        nullptr, bounds);
+    window->Show();
+    browser_->AddWindow(window);
   }
 
   void ToggleDebugView() {

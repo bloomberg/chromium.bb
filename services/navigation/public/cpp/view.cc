@@ -98,6 +98,11 @@ void View::EmbedInWindow(mus::Window* parent) {
 ////////////////////////////////////////////////////////////////////////////////
 // View, mojom::ViewClient implementation:
 
+void View::OpenURL(mojom::OpenURLParamsPtr params) {
+  if (delegate_)
+    delegate_->OpenURL(this, std::move(params));
+}
+
 void View::LoadingStateChanged(bool is_loading) {
   is_loading_ = is_loading;
   FOR_EACH_OBSERVER(ViewObserver, observers_, LoadingStateChanged(this));

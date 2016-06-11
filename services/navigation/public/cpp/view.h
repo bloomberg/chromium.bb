@@ -76,6 +76,7 @@ class View : public mojom::ViewClient {
 
  private:
   // mojom::ViewClient:
+  void OpenURL(mojom::OpenURLParamsPtr params) override;
   void LoadingStateChanged(bool is_loading) override;
   void NavigationStateChanged(const GURL& url,
                               const mojo::String& title,

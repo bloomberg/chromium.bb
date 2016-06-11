@@ -159,6 +159,26 @@ void ViewImpl::CloseContents(content::WebContents* source) {
   client_->Close();
 }
 
+content::WebContents* ViewImpl::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  mojom::OpenURLParamsPtr params_ptr = mojom::OpenURLParams::New();
+  params_ptr->url = params.url;
+  params_ptr->disposition =
+      static_cast<mojom::WindowOpenDisposition>(params.disposition);
+  client_->OpenURL(std::move(params_ptr));
+  // TODO(beng): Obviously this is the wrong thing to return for dispositions
+  // that would lead to the creation of a new View, i.e. NEW_TAB, NEW_POPUP etc.
+  // However it seems the callers of this function that we've seen so far
+  // disregard the return value. Rather than returning |source| I'm returning
+  // nullptr to locate (via crash) any sites that depend on a valid result.
+  // If we actually had to do this then we'd have to create the new WebContents
+  // here, store it with a cookie, and pass the cookie through to the client to
+  // pass back with their call to CreateView(), so it would get bound to the
+  // WebContents.
+  return nullptr;
+}
+
 void ViewImpl::LoadingStateChanged(content::WebContents* source,
                                    bool to_different_document) {
   client_->LoadingStateChanged(source->IsLoading());
@@ -191,8 +211,11 @@ gfx::Rect ViewImpl::GetRootWindowResizerRect() const {
 void ViewImpl::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-  DCHECK(content::Source<content::NavigationController>(source).ptr() ==
-         &web_view_->GetWebContents()->GetController());
+  if (content::Source<content::NavigationController>(source).ptr() !=
+      &web_view_->GetWebContents()->GetController()) {
+    return;
+  }
+
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       const content::NavigationEntry* entry =
