@@ -752,4 +752,12 @@ void WebFrameTestClient::didClearWindowObject(blink::WebLocalFrame* frame) {
   web_test_proxy_base_->BindTo(frame);
 }
 
+bool WebFrameTestClient::runFileChooser(
+    const blink::WebFileChooserParams& params,
+    blink::WebFileChooserCompletion* completion) {
+  delegate_->PrintMessage("Mock: Opening a file chooser.\n");
+  // FIXME: Add ability to set file names to a file upload control.
+  return false;
+}
+
 }  // namespace test_runner

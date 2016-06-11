@@ -103,14 +103,6 @@ void WebViewTestClient::printPage(blink::WebLocalFrame* frame) {
   frame->printEnd();
 }
 
-bool WebViewTestClient::runFileChooser(
-    const blink::WebFileChooserParams& params,
-    blink::WebFileChooserCompletion* completion) {
-  delegate()->PrintMessage("Mock: Opening a file chooser.\n");
-  // FIXME: Add ability to set file names to a file upload control.
-  return false;
-}
-
 void WebViewTestClient::showValidationMessage(
     const blink::WebRect& anchor_in_root_view,
     const blink::WebString& main_message,

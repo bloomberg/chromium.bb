@@ -65,6 +65,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   ppapi::host::PpapiHost ppapi_host_;
 
   RenderView* render_view_;
+  RenderFrame* render_frame_;
   PP_Instance pp_instance_;
 
   bool has_user_gesture_;

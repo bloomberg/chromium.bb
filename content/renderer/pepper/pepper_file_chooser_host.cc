@@ -154,9 +154,10 @@ int32_t PepperFileChooserHost::OnShow(
   params.requestor = renderer_ppapi_host_->GetDocumentURL(pp_instance());
 
   handler_ = new CompletionHandler(AsWeakPtr());
-  RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
-      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
-  if (!render_view || !render_view->runFileChooser(params, handler_)) {
+  RenderFrameImpl* render_frame = static_cast<RenderFrameImpl*>(
+      renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance()));
+
+  if (!render_frame || !render_frame->runFileChooser(params, handler_)) {
     delete handler_;
     handler_ = NULL;
     return PP_ERROR_NOACCESS;

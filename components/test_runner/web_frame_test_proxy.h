@@ -291,6 +291,10 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     test_client()->didClearWindowObject(frame);
     Base::didClearWindowObject(frame);
   }
+  bool runFileChooser(const blink::WebFileChooserParams& params,
+                      blink::WebFileChooserCompletion* completion) override {
+    return test_client()->runFileChooser(params, completion);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);

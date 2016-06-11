@@ -730,13 +730,6 @@ bool WebContentsImpl::HasValidFrameSource() {
   return true;
 }
 
-void WebContentsImpl::RunFileChooser(
-    RenderViewHost* render_view_host,
-    const FileChooserParams& params) {
-  if (delegate_)
-    delegate_->RunFileChooser(GetMainFrame(), params);
-}
-
 NavigationControllerImpl& WebContentsImpl::GetController() {
   return controller_;
 }
@@ -4107,6 +4100,12 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
                  render_frame_host->GetProcess()->GetID(),
                  render_frame_host->GetRoutingID(), reply_msg,
                  false));
+}
+
+void WebContentsImpl::RunFileChooser(RenderFrameHost* render_frame_host,
+                                     const FileChooserParams& params) {
+  if (delegate_)
+    delegate_->RunFileChooser(render_frame_host, params);
 }
 
 WebContents* WebContentsImpl::GetAsWebContents() {

@@ -61,8 +61,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/favicon_url.h"
-#include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -391,15 +389,6 @@ static void ConvertToFaviconSizes(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-struct RenderViewImpl::PendingFileChooser {
-  PendingFileChooser(const FileChooserParams& p, WebFileChooserCompletion* c)
-      : params(p),
-        completion(c) {
-  }
-  FileChooserParams params;
-  WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
-};
 
 namespace {
 
@@ -808,15 +797,6 @@ RenderViewImpl::~RenderViewImpl() {
        it != disambiguation_bitmaps_.end();
        ++it)
     delete it->second;
-
-  // If file chooser is still waiting for answer, dispatch empty answer.
-  while (!file_chooser_completions_.empty()) {
-    if (file_chooser_completions_.front()->completion) {
-      file_chooser_completions_.front()->completion->didChooseFile(
-          WebVector<WebString>());
-    }
-    file_chooser_completions_.pop_front();
-  }
 
 #if defined(OS_ANDROID)
   // The date/time picker client is both a std::unique_ptr member of this class
@@ -1277,7 +1257,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
-    IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -1666,36 +1645,6 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
   }
 
   return did_execute_command;
-}
-
-bool RenderViewImpl::runFileChooser(
-    const blink::WebFileChooserParams& params,
-    WebFileChooserCompletion* chooser_completion) {
-  // Do not open the file dialog in a hidden RenderView.
-  if (is_hidden())
-    return false;
-  FileChooserParams ipc_params;
-  if (params.directory)
-    ipc_params.mode = FileChooserParams::UploadFolder;
-  else if (params.multiSelect)
-    ipc_params.mode = FileChooserParams::OpenMultiple;
-  else if (params.saveAs)
-    ipc_params.mode = FileChooserParams::Save;
-  else
-    ipc_params.mode = FileChooserParams::Open;
-  ipc_params.title = params.title;
-  ipc_params.default_file_name =
-      blink::WebStringToFilePath(params.initialValue).BaseName();
-  ipc_params.accept_types.reserve(params.acceptTypes.size());
-  for (size_t i = 0; i < params.acceptTypes.size(); ++i)
-    ipc_params.accept_types.push_back(params.acceptTypes[i]);
-  ipc_params.need_local_path = params.needLocalPath;
-#if defined(OS_ANDROID)
-  ipc_params.capture = params.useMediaCapture;
-#endif
-  ipc_params.requestor = params.requestor;
-
-  return ScheduleFileChooser(ipc_params, chooser_completion);
 }
 
 void RenderViewImpl::SetValidationMessageDirection(
@@ -2444,42 +2393,6 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
   enumeration_completions_.erase(id);
 }
 
-void RenderViewImpl::OnFileChooserResponse(
-    const std::vector<content::FileChooserFileInfo>& files) {
-  // This could happen if we navigated to a different page before the user
-  // closed the chooser.
-  if (file_chooser_completions_.empty())
-    return;
-
-  // Convert Chrome's SelectedFileInfo list to WebKit's.
-  WebVector<WebFileChooserCompletion::SelectedFileInfo> selected_files(
-      files.size());
-  for (size_t i = 0; i < files.size(); ++i) {
-    WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.path = files[i].file_path.AsUTF16Unsafe();
-    selected_file.displayName =
-        base::FilePath(files[i].display_name).AsUTF16Unsafe();
-    if (files[i].file_system_url.is_valid()) {
-      selected_file.fileSystemURL = files[i].file_system_url;
-      selected_file.length = files[i].length;
-      selected_file.modificationTime = files[i].modification_time.ToDoubleT();
-      selected_file.isDirectory = files[i].is_directory;
-    }
-    selected_files[i] = selected_file;
-  }
-
-  if (file_chooser_completions_.front()->completion)
-    file_chooser_completions_.front()->completion->didChooseFile(
-        selected_files);
-  file_chooser_completions_.pop_front();
-
-  // If there are more pending file chooser requests, schedule one now.
-  if (!file_chooser_completions_.empty()) {
-    Send(new ViewHostMsg_RunFileChooser(
-        GetRoutingID(), file_chooser_completions_.front()->params));
-  }
-}
-
 void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
                                         const gfx::Size& max_size) {
   DCHECK(disable_scrollbars_size_limit_.IsEmpty());
@@ -2956,31 +2869,6 @@ void RenderViewImpl::SetScreenMetricsEmulationParameters(
     else
       webview()->disableDeviceEmulation();
   }
-}
-
-bool RenderViewImpl::ScheduleFileChooser(
-    const FileChooserParams& params,
-    WebFileChooserCompletion* completion) {
-  static const size_t kMaximumPendingFileChooseRequests = 4;
-  if (file_chooser_completions_.size() > kMaximumPendingFileChooseRequests) {
-    // This sanity check prevents too many file choose requests from getting
-    // queued which could DoS the user. Getting these is most likely a
-    // programming error (there are many ways to DoS the user so it's not
-    // considered a "real" security check), either in JS requesting many file
-    // choosers to pop up, or in a plugin.
-    //
-    // TODO(brettw) we might possibly want to require a user gesture to open
-    // a file picker, which will address this issue in a better way.
-    return false;
-  }
-
-  file_chooser_completions_.push_back(
-      base::WrapUnique(new PendingFileChooser(params, completion)));
-  if (file_chooser_completions_.size() == 1) {
-    // Actually show the browse dialog when this is the first request.
-    Send(new ViewHostMsg_RunFileChooser(GetRoutingID(), params));
-  }
-  return true;
 }
 
 blink::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {

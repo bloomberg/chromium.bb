@@ -71,6 +71,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -548,6 +549,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                     OnRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
                                     OnRunBeforeUnloadConfirm)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
@@ -1523,6 +1525,19 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   GetProcess()->SetIgnoreInputEvents(true);
   render_view_host_->GetWidget()->StopHangMonitorTimeout();
   delegate_->RunBeforeUnloadConfirm(this, is_reload, reply_msg);
+}
+
+void RenderFrameHostImpl::OnRunFileChooser(const FileChooserParams& params) {
+  // Do not allow messages with absolute paths in them as this can permit a
+  // renderer to coerce the browser to perform I/O on a renderer controlled
+  // path.
+  if (params.default_file_name != params.default_file_name.BaseName()) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_FILE_CHOOSER_PATH);
+    return;
+  }
+
+  delegate_->RunFileChooser(this, params);
 }
 
 void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
@@ -2627,7 +2642,28 @@ int RenderFrameHostImpl::GetProxyCount() {
 void RenderFrameHostImpl::FilesSelectedInChooser(
     const std::vector<content::FileChooserFileInfo>& files,
     FileChooserParams::Mode permissions) {
-  render_view_host_->FilesSelectedInChooser(files, permissions);
+  storage::FileSystemContext* const file_system_context =
+      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
+                                          GetSiteInstance())
+          ->GetFileSystemContext();
+  // Grant the security access requested to the given files.
+  for (const auto& file : files) {
+    if (permissions == FileChooserParams::Save) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
+          GetProcess()->GetID(), file.file_path);
+    } else {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+          GetProcess()->GetID(), file.file_path);
+    }
+    if (file.file_system_url.is_valid()) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
+          GetProcess()->GetID(),
+          file_system_context->CrackURL(file.file_system_url)
+              .mount_filesystem_id());
+    }
+  }
+
+  Send(new FrameMsg_RunFileChooserResponse(routing_id_, files));
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

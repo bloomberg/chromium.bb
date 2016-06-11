@@ -38,6 +38,7 @@ class WakeLockServiceContext;
 class WebContents;
 struct AXEventNotificationDetails;
 struct ContextMenuParams;
+struct FileChooserParams;
 struct TransitionLayerData;
 
 // An interface implemented by an object interested in knowing about the state
@@ -80,6 +81,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
+
+  // Called when a file selection is to be done.
+  virtual void RunFileChooser(RenderFrameHost* render_frame_host,
+                              const FileChooserParams& params) {}
 
   // Another page accessed the top-level initial empty document, which means it
   // is no longer safe to display a pending URL without risking a URL spoof.

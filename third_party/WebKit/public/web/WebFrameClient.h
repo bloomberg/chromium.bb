@@ -35,6 +35,7 @@
 #include "WebAXObject.h"
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
+#include "WebFileChooserParams.h"
 #include "WebFrame.h"
 #include "WebFrameOwnerProperties.h"
 #include "WebHistoryCommitType.h"
@@ -78,6 +79,7 @@ class WebDataSource;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
+class WebFileChooserCompletion;
 class WebFormElement;
 class WebInstalledAppClient;
 class WebMediaPlayer;
@@ -438,6 +440,13 @@ public:
     // the user selects 'OK' or false otherwise.
     virtual bool runModalBeforeUnloadDialog(bool isReload) { return true; }
 
+    // This method returns immediately after showing the dialog. When the
+    // dialog is closed, it should call the WebFileChooserCompletion to
+    // pass the results of the dialog. Returns false if
+    // WebFileChooseCompletion will never be called.
+    virtual bool runFileChooser(
+        const blink::WebFileChooserParams& params,
+        WebFileChooserCompletion* chooserCompletion) { return false; }
 
     // UI ------------------------------------------------------------------
 

@@ -133,9 +133,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;
-  void FilesSelectedInChooser(
-      const std::vector<FileChooserFileInfo>& files,
-      FileChooserParams::Mode permissions) override;
   RenderViewHostDelegate* GetDelegate() const override;
   int GetEnabledBindings() const override;
   SiteInstanceImpl* GetSiteInstance() const override;
@@ -302,7 +299,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                             const gfx::Rect& node_bounds_in_viewport);
   void OnClosePageACK();
   void OnDidZoomURL(double zoom_level, const GURL& url);
-  void OnRunFileChooser(const FileChooserParams& params);
   void OnFocusedNodeTouched(bool editable);
   void OnFocus();
 

@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
 
+#include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper/fake_pepper_plugin_instance.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -16,7 +17,10 @@ MockRendererPpapiHost::MockRendererPpapiHost(RenderView* render_view,
       render_view_(render_view),
       pp_instance_(instance),
       has_user_gesture_(false),
-      plugin_instance_(new FakePepperPluginInstance) {}
+      plugin_instance_(new FakePepperPluginInstance) {
+  if (render_view)
+    render_frame_ = render_view->GetMainRenderFrame();
+}
 
 MockRendererPpapiHost::~MockRendererPpapiHost() {}
 
@@ -35,6 +39,8 @@ PepperPluginInstance* MockRendererPpapiHost::GetPluginInstance(
 
 RenderFrame* MockRendererPpapiHost::GetRenderFrameForInstance(
     PP_Instance instance) const {
+  if (instance == pp_instance_)
+    return render_frame_;
   return NULL;
 }
 

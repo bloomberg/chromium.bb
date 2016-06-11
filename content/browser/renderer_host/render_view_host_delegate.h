@@ -146,11 +146,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // JavaScript window.focus() method).
   virtual void Activate() {}
 
-  // Called when a file selection is to be done.
-  virtual void RunFileChooser(
-      RenderViewHost* render_view_host,
-      const FileChooserParams& params) {}
-
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 

@@ -6,9 +6,9 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/core.h"
@@ -41,7 +41,6 @@ class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
 struct DropData;
-struct FileChooserFileInfo;
 struct WebPreferences;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
@@ -167,13 +166,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // the given point.
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location, const blink::WebPluginAction& action) = 0;
-
-  // Notifies the Listener that one or more files have been chosen by the user
-  // from a file chooser dialog for the form. |permissions| is the file
-  // selection mode in which the chooser dialog was created.
-  virtual void FilesSelectedInChooser(
-      const std::vector<content::FileChooserFileInfo>& files,
-      FileChooserParams::Mode permissions) = 0;
 
   virtual RenderViewHostDelegate* GetDelegate() const = 0;
 

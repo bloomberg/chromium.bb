@@ -106,6 +106,8 @@ class WebFrameTestClient : public blink::WebFrameClient {
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
   void didClearWindowObject(blink::WebLocalFrame* frame) override;
+  bool runFileChooser(const blink::WebFileChooserParams& params,
+                      blink::WebFileChooserCompletion* completion) override;
 
  private:
   // Borrowed pointers to other parts of Layout Tests state.

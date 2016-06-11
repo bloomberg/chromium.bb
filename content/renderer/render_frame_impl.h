@@ -152,6 +152,8 @@ class UserMediaClientImpl;
 class WakeLockDispatcher;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
+struct FileChooserFileInfo;
+struct FileChooserParams;
 struct FrameReplicationState;
 struct NavigationParams;
 struct RequestNavigationParams;
@@ -541,6 +543,9 @@ class CONTENT_EXPORT RenderFrameImpl
                             const blink::WebString& default_value,
                             blink::WebString* actual_value) override;
   bool runModalBeforeUnloadDialog(bool is_reload) override;
+  bool runFileChooser(
+      const blink::WebFileChooserParams& params,
+      blink::WebFileChooserCompletion* chooser_completion) override;
   void showContextMenu(const blink::WebContextMenuData& data) override;
   void willSendRequest(blink::WebLocalFrame* frame,
                        unsigned identifier,
@@ -822,6 +827,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnStopFinding(StopFindAction action);
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
+  void OnFileChooserResponse(
+      const std::vector<content::FileChooserFileInfo>& files);
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnGetNearestFindResult(int request_id, float x, float y);
@@ -892,6 +899,15 @@ class CONTENT_EXPORT RenderFrameImpl
                             const base::string16& default_value,
                             const GURL& frame_url,
                             base::string16* result);
+
+  // Adds the given file chooser request to the file_chooser_completion_ queue
+  // (see that var for more) and requests the chooser be displayed if there are
+  // no other waiting items in the queue.
+  //
+  // Returns true if the chooser was successfully scheduled. False means we
+  // didn't schedule anything.
+  bool ScheduleFileChooser(const FileChooserParams& params,
+                           blink::WebFileChooserCompletion* completion);
 
   // Loads the appropriate error page for the specified failure into the frame.
   void LoadNavigationErrorPage(const blink::WebURLRequest& failed_request,
@@ -1228,6 +1244,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // is necessary because modal dialogs have a ScopedPageLoadDeferrer on the
   // stack that interferes with swapping out.
   bool suppress_further_dialogs_;
+
+  // The current and pending file chooser completion objects. If the queue is
+  // nonempty, the first item represents the currently running file chooser
+  // callback, and the remaining elements are the other file chooser completion
+  // still waiting to be run (in order).
+  struct PendingFileChooser;
+  std::deque<std::unique_ptr<PendingFileChooser>> file_chooser_completions_;
 
 #if defined(USE_EXTERNAL_POPUP_MENU)
   // The external popup for the currently showing select popup.

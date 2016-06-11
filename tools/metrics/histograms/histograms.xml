@@ -65145,7 +65145,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="RFH_NO_PROXY_TO_PARENT"/>
   <int value="5" label="RPH_DESERIALIZATION_FAILED"/>
   <int value="6" label="RVH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
-  <int value="7" label="RVH_FILE_CHOOSER_PATH"/>
+  <int value="7" label="RFH_FILE_CHOOSER_PATH"/>
   <int value="8" label="RWH_SYNTHETIC_GESTURE"/>
   <int value="9" label="RWH_FOCUS"/>
   <int value="10" label="RWH_BLUR"/>

@@ -93,6 +93,7 @@ class TimeoutMonitor;
 class WebBluetoothServiceImpl;
 struct ContentSecurityPolicyHeader;
 struct ContextMenuParams;
+struct FileChooserParams;
 struct GlobalRequestID;
 struct FileChooserParams;
 struct Referrer;
@@ -656,6 +657,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void OnRunBeforeUnloadConfirm(const GURL& frame_url,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
+  void OnRunFileChooser(const FileChooserParams& params);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           uint32_t start_offset,
                                           uint32_t end_offset);

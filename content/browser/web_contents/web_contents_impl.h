@@ -428,6 +428,8 @@ class CONTENT_EXPORT WebContentsImpl
   void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                               bool is_reload,
                               IPC::Message* reply_msg) override;
+  void RunFileChooser(RenderFrameHost* render_frame_host,
+                      const FileChooserParams& params) override;
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
                      const std::string& name) override;
@@ -496,8 +498,6 @@ class CONTENT_EXPORT WebContentsImpl
                         uint64_t upload_position,
                         uint64_t upload_size) override;
   void Activate() override;
-  void RunFileChooser(RenderViewHost* render_view_host,
-                      const FileChooserParams& params) override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
   void CreateNewWindow(
       SiteInstance* source_site_instance,

@@ -38,8 +38,6 @@ class WebViewTestClient : public blink::WebViewClient {
                              blink::WebTextDirection main_message_hint,
                              const blink::WebString& sub_message,
                              blink::WebTextDirection sub_message_hint) override;
-  bool runFileChooser(const blink::WebFileChooserParams& params,
-                      blink::WebFileChooserCompletion* completion) override;
   void startDragging(blink::WebLocalFrame* frame,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,

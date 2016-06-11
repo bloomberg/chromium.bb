@@ -69,6 +69,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
@@ -151,6 +153,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
 #include "storage/common/data_element.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -851,6 +854,14 @@ bool UseMojoCdm() {
 
 }  // namespace
 
+struct RenderFrameImpl::PendingFileChooser {
+  PendingFileChooser(const FileChooserParams& p,
+                     blink::WebFileChooserCompletion* c)
+      : params(p), completion(c) {}
+  FileChooserParams params;
+  blink::WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
+};
+
 // static
 RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
                                          int32_t routing_id) {
@@ -1114,6 +1125,15 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
+  // If file chooser is still waiting for answer, dispatch empty answer.
+  while (!file_chooser_completions_.empty()) {
+    if (file_chooser_completions_.front()->completion) {
+      file_chooser_completions_.front()->completion->didChooseFile(
+          WebVector<WebString>());
+    }
+    file_chooser_completions_.pop_front();
+  }
+
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
 
@@ -1505,6 +1525,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
+    IPC_MESSAGE_HANDLER(FrameMsg_RunFileChooserResponse, OnFileChooserResponse)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -2216,6 +2237,31 @@ bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,
   Send(new FrameHostMsg_RunJavaScriptMessage(
       routing_id_, message, default_value, frame_url, type, &success, result));
   return success;
+}
+
+bool RenderFrameImpl::ScheduleFileChooser(
+    const FileChooserParams& params,
+    blink::WebFileChooserCompletion* completion) {
+  static const size_t kMaximumPendingFileChooseRequests = 4;
+  if (file_chooser_completions_.size() > kMaximumPendingFileChooseRequests) {
+    // This sanity check prevents too many file choose requests from getting
+    // queued which could DoS the user. Getting these is most likely a
+    // programming error (there are many ways to DoS the user so it's not
+    // considered a "real" security check), either in JS requesting many file
+    // choosers to pop up, or in a plugin.
+    //
+    // TODO(brettw): We might possibly want to require a user gesture to open
+    // a file picker, which will address this issue in a better way.
+    return false;
+  }
+
+  file_chooser_completions_.push_back(
+      base::WrapUnique(new PendingFileChooser(params, completion)));
+  if (file_chooser_completions_.size() == 1) {
+    // Actually show the browse dialog when this is the first request.
+    Send(new FrameHostMsg_RunFileChooser(routing_id_, params));
+  }
+  return true;
 }
 
 void RenderFrameImpl::LoadNavigationErrorPage(
@@ -3744,6 +3790,37 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
   return success;
 }
 
+bool RenderFrameImpl::runFileChooser(
+    const blink::WebFileChooserParams& params,
+    blink::WebFileChooserCompletion* chooser_completion) {
+  // Do not open the file dialog in a hidden RenderView.
+  if (render_view_->is_hidden())
+    return false;
+
+  FileChooserParams ipc_params;
+  if (params.directory)
+    ipc_params.mode = FileChooserParams::UploadFolder;
+  else if (params.multiSelect)
+    ipc_params.mode = FileChooserParams::OpenMultiple;
+  else if (params.saveAs)
+    ipc_params.mode = FileChooserParams::Save;
+  else
+    ipc_params.mode = FileChooserParams::Open;
+  ipc_params.title = params.title;
+  ipc_params.default_file_name =
+      blink::WebStringToFilePath(params.initialValue).BaseName();
+  ipc_params.accept_types.reserve(params.acceptTypes.size());
+  for (const auto& type : params.acceptTypes)
+    ipc_params.accept_types.push_back(type);
+  ipc_params.need_local_path = params.needLocalPath;
+#if defined(OS_ANDROID)
+  ipc_params.capture = params.useMediaCapture;
+#endif
+  ipc_params.requestor = params.requestor;
+
+  return ScheduleFileChooser(ipc_params, chooser_completion);
+}
+
 void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   blink::WebRect position_in_window(params.x, params.y, 0, 0);
@@ -5127,6 +5204,43 @@ void RenderFrameImpl::OnEnableViewSourceMode() {
 
 void RenderFrameImpl::OnSuppressFurtherDialogs() {
   suppress_further_dialogs_ = true;
+}
+
+void RenderFrameImpl::OnFileChooserResponse(
+    const std::vector<content::FileChooserFileInfo>& files) {
+  // This could happen if we navigated to a different page before the user
+  // closed the chooser.
+  if (file_chooser_completions_.empty())
+    return;
+
+  // Convert Chrome's SelectedFileInfo list to WebKit's.
+  WebVector<blink::WebFileChooserCompletion::SelectedFileInfo> selected_files(
+      files.size());
+  for (size_t i = 0; i < files.size(); ++i) {
+    blink::WebFileChooserCompletion::SelectedFileInfo selected_file;
+    selected_file.path = files[i].file_path.AsUTF16Unsafe();
+    selected_file.displayName =
+        base::FilePath(files[i].display_name).AsUTF16Unsafe();
+    if (files[i].file_system_url.is_valid()) {
+      selected_file.fileSystemURL = files[i].file_system_url;
+      selected_file.length = files[i].length;
+      selected_file.modificationTime = files[i].modification_time.ToDoubleT();
+      selected_file.isDirectory = files[i].is_directory;
+    }
+    selected_files[i] = selected_file;
+  }
+
+  if (file_chooser_completions_.front()->completion) {
+    file_chooser_completions_.front()->completion->didChooseFile(
+        selected_files);
+  }
+  file_chooser_completions_.pop_front();
+
+  // If there are more pending file chooser requests, schedule one now.
+  if (!file_chooser_completions_.empty()) {
+    Send(new FrameHostMsg_RunFileChooser(
+        routing_id_, file_chooser_completions_.front()->params));
+  }
 }
 
 #if defined(OS_ANDROID)

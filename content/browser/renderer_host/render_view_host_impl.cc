@@ -777,33 +777,6 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(GetRoutingID(), reverse));
 }
 
-void RenderViewHostImpl::FilesSelectedInChooser(
-    const std::vector<content::FileChooserFileInfo>& files,
-    FileChooserParams::Mode permissions) {
-  storage::FileSystemContext* const file_system_context =
-      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
-                                          GetSiteInstance())
-          ->GetFileSystemContext();
-  // Grant the security access requested to the given files.
-  for (size_t i = 0; i < files.size(); ++i) {
-    const content::FileChooserFileInfo& file = files[i];
-    if (permissions == FileChooserParams::Save) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
-          GetProcess()->GetID(), file.file_path);
-    } else {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-          GetProcess()->GetID(), file.file_path);
-    }
-    if (file.file_system_url.is_valid()) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
-          GetProcess()->GetID(),
-          file_system_context->CrackURL(file.file_system_url)
-          .mount_filesystem_id());
-    }
-  }
-  Send(new ViewMsg_RunFileChooserResponse(GetRoutingID(), files));
-}
-
 void RenderViewHostImpl::DirectoryEnumerationFinished(
     int request_id,
     const std::vector<base::FilePath>& files) {
@@ -891,7 +864,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1251,19 +1223,6 @@ void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
                                      GetRoutingID(),
                                      zoom_level,
                                      net::GetHostOrSpecFromURL(url));
-}
-
-void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
-  // Do not allow messages with absolute paths in them as this can permit a
-  // renderer to coerce the browser to perform I/O on a renderer controlled
-  // path.
-  if (params.default_file_name != params.default_file_name.BaseName()) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RVH_FILE_CHOOSER_PATH);
-    return;
-  }
-
-  delegate_->RunFileChooser(this, params);
 }
 
 void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {

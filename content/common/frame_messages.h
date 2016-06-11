@@ -29,6 +29,8 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_importance_signals.h"
@@ -101,6 +103,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::LoFiState,
                               content::LOFI_UNSPECIFIED,
                               content::LOFI_ON)
+IPC_ENUM_TRAITS_MAX_VALUE(content::FileChooserParams::Mode,
+                          content::FileChooserParams::Save)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
   IPC_STRUCT_TRAITS_MEMBER(forward)
@@ -554,6 +558,27 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(source)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(file_path)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
+  IPC_STRUCT_TRAITS_MEMBER(modification_time)
+  IPC_STRUCT_TRAITS_MEMBER(length)
+  IPC_STRUCT_TRAITS_MEMBER(is_directory)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
+  IPC_STRUCT_TRAITS_MEMBER(mode)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(default_file_name)
+  IPC_STRUCT_TRAITS_MEMBER(accept_types)
+  IPC_STRUCT_TRAITS_MEMBER(need_local_path)
+#if defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(capture)
+#endif
+  IPC_STRUCT_TRAITS_MEMBER(requestor)
+IPC_STRUCT_TRAITS_END()
+
 #if defined(USE_EXTERNAL_POPUP_MENU)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
@@ -938,6 +963,9 @@ IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 // Tells the frame to suppress any further modal dialogs. This ensures that no
 // ScopedPageLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
+
+IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
+                    std::vector<content::FileChooserFileInfo>)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
@@ -1470,6 +1498,10 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_Find_Reply,
 
 // Sends hittesting data needed to perform hittesting on the browser process.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
+
+// Asks the browser to display the file chooser.  The result is returned in a
+// FrameMsg_RunFileChooserResponse message.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser, content::FileChooserParams)
 
 #if defined(USE_EXTERNAL_POPUP_MENU)
 

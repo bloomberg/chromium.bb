@@ -341,9 +341,6 @@ class CONTENT_EXPORT RenderViewImpl
   void saveImageFromDataURL(const blink::WebString& data_url) override;
   void didCancelCompositionOnSelectionChange() override;
   bool handleCurrentKeyboardEvent() override;
-  bool runFileChooser(
-      const blink::WebFileChooserParams& params,
-      blink::WebFileChooserCompletion* chooser_completion) override;
   void SetValidationMessageDirection(base::string16* main_text,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
@@ -637,8 +634,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnDisableAutoResize(const gfx::Size& new_size);
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
-  void OnFileChooserResponse(
-      const std::vector<content::FileChooserFileInfo>& files);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const blink::WebMediaPlayerAction& action);
   void OnPluginActionAt(const gfx::Point& location,
@@ -909,13 +904,6 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
 
   // Misc ----------------------------------------------------------------------
-
-  // The current and pending file chooser completion objects. If the queue is
-  // nonempty, the first item represents the currently running file chooser
-  // callback, and the remaining elements are the other file chooser completion
-  // still waiting to be run (in order).
-  struct PendingFileChooser;
-  std::deque<std::unique_ptr<PendingFileChooser>> file_chooser_completions_;
 
   // The current directory enumeration callback
   std::map<int, blink::WebFileChooserCompletion*> enumeration_completions_;

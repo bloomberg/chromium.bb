@@ -36,8 +36,6 @@
 #include "../platform/WebString.h"
 #include "WebAXEnums.h"
 #include "WebContentDetectionResult.h"
-#include "WebFileChooserCompletion.h"
-#include "WebFileChooserParams.h"
 #include "WebFrame.h"
 #include "WebPopupType.h"
 #include "WebTextDirection.h"
@@ -133,13 +131,6 @@ public:
     virtual bool handleCurrentKeyboardEvent() { return false; }
 
     // Dialogs -------------------------------------------------------------
-
-    // This method returns immediately after showing the dialog. When the
-    // dialog is closed, it should call the WebFileChooserCompletion to
-    // pass the results of the dialog. Returns false if
-    // WebFileChooseCompletion will never be called.
-    virtual bool runFileChooser(const WebFileChooserParams&,
-                                WebFileChooserCompletion*) { return false; }
 
     // Ask users to choose date/time for the specified parameters. When a user
     // chooses a value, an implementation of this function should call

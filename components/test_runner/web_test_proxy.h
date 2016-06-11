@@ -230,10 +230,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   blink::WebSpeechRecognizer* speechRecognizer() override {
     return view_test_client()->speechRecognizer();
   }
-  bool runFileChooser(const blink::WebFileChooserParams& params,
-                      blink::WebFileChooserCompletion* completion) override {
-    return view_test_client()->runFileChooser(params, completion);
-  }
   void showValidationMessage(
       const blink::WebRect& anchor_in_root_view,
       const blink::WebString& main_message,
