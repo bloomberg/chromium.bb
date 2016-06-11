@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"
 #include "jni/VideoCapture_jni.h"
+#include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 #include "mojo/public/cpp/bindings/string.h"
 
@@ -157,6 +158,15 @@ void VideoCaptureDeviceAndroid::TakePhoto(
     base::AutoLock lock(photo_callbacks_lock_);
     photo_callbacks_.push_back(std::move(heap_callback));
   }
+}
+
+void VideoCaptureDeviceAndroid::GetPhotoCapabilities() {
+  JNIEnv* env = AttachCurrentThread();
+
+  PhotoCapabilities caps(
+      Java_VideoCapture_getPhotoCapabilities(env, j_capture_.obj()));
+  DVLOG(1) << "zoom min-current-max " << caps.getMinZoom() << " - "
+           << caps.getCurrentZoom() << " - " << caps.getMaxZoom();
 }
 
 void VideoCaptureDeviceAndroid::OnFrameAvailable(

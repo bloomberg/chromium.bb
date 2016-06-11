@@ -228,6 +228,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mPreviewSession;
+    private CaptureRequest mPreviewRequest;
 
     private CameraState mCameraState = CameraState.STOPPED;
 
@@ -292,9 +293,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         surfaceList.add(imageReader.getSurface());
 
-        final CaptureRequest previewRequest = previewRequestBuilder.build();
+        mPreviewRequest = previewRequestBuilder.build();
         final CrPreviewSessionListener captureSessionListener =
-                new CrPreviewSessionListener(previewRequest);
+                new CrPreviewSessionListener(mPreviewRequest);
         try {
             mCameraDevice.createCaptureSession(surfaceList, captureSessionListener, null);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
@@ -546,6 +547,23 @@ public class VideoCaptureCamera2 extends VideoCapture {
         mCameraDevice.close();
         changeCameraStateAndNotify(CameraState.STOPPED);
         return true;
+    }
+
+    public PhotoCapabilities getPhotoCapabilities() {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+
+        // The Max zoom is returned as x100 by the API to avoid using floating point.
+        final int maxZoom = Math.round(
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
+                * 100);
+
+        // Width Ratio x100 is used as measure of current zoom.
+        final int currentZoom = 100 * mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width()
+                / cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+                          .width();
+
+        // There is no min-zoom per se, so clamp it to always 100.
+        return new PhotoCapabilities(maxZoom, 100, currentZoom);
     }
 
     @Override

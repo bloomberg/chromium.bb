@@ -25,6 +25,8 @@ source_set("capture") {
     "device_monitor_mac.mm",
     "system_message_window_win.cc",
     "system_message_window_win.h",
+    "video/android/photo_capabilities.cc",
+    "video/android/photo_capabilities.h",
     "video/android/video_capture_device_android.cc",
     "video/android/video_capture_device_android.h",
     "video/android/video_capture_device_factory_android.cc",

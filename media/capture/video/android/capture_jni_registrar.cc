@@ -8,12 +8,14 @@
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
 
+#include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_android.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 
 namespace media {
 
 static base::android::RegistrationMethod kCaptureRegisteredMethods[] = {
+    {"PhotoCapabilities", PhotoCapabilities::RegisterPhotoCapabilities},
     {"VideoCaptureDevice",
      VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice},
     {"VideoCaptureDeviceFactory",

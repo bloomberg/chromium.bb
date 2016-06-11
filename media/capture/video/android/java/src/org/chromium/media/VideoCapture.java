@@ -49,6 +49,9 @@ public abstract class VideoCapture {
     public abstract boolean stopCapture();
 
     @CalledByNative
+    public abstract PhotoCapabilities getPhotoCapabilities();
+
+    @CalledByNative
     public abstract boolean takePhoto(final long callbackId);
 
     @CalledByNative

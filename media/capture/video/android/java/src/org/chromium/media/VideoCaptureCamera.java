@@ -294,6 +294,21 @@ public abstract class VideoCaptureCamera
     }
 
     @Override
+    public PhotoCapabilities getPhotoCapabilities() {
+        android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
+        if (!parameters.isZoomSupported()) return new PhotoCapabilities(0, 0, 0);
+
+        Log.d(TAG, "parameters.getZoomRatios(): " + parameters.getZoomRatios().toString());
+
+        // The Max zoom is returned as x100 by the API to avoid using floating point.
+        final int maxZoom = parameters.getZoomRatios().get(parameters.getMaxZoom());
+        final int currentZoom = 100 + 100 * parameters.getZoom();
+
+        // Min zoom is always 100. TODO(mcasas): consider double-checking.
+        return new PhotoCapabilities(maxZoom, 100, currentZoom);
+    }
+
+    @Override
     public boolean takePhoto(final long callbackId) {
         if (mCamera == null || !mIsRunning) {
             Log.e(TAG, "takePhoto: mCamera is null or is not running");

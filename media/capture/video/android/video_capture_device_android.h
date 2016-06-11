@@ -58,6 +58,10 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   void StopAndDeAllocate() override;
   void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback) override;
 
+  // TODO(mcasas): This method should override appropriately, at the moment is
+  // just a placeholder to call its java counterpart: https://crbug.com/518807.
+  void GetPhotoCapabilities();
+
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
   void OnFrameAvailable(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
