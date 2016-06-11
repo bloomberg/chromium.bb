@@ -934,8 +934,12 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
 }
 
 // Due to http://crbug.com/612711, we are not isolating iframes from platform
-// apps.
+// apps with --isolate-extenions.
 IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, PlatformAppsNotIsolated) {
+  // --site-per-process will still isolate iframes from platform apps, so skip
+  // the test in that case.
+  if (content::AreAllSitesIsolatedForTesting())
+    return;
   CreateAppWithSandboxPage("Extension One");
   scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
   details->StartFetchAndWait();
